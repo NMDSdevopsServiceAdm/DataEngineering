@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import MagicMock
 
 import polars as pl
@@ -72,6 +73,62 @@ class TestCalculateResiduals:
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
+class TestCalculateResidualsGroupColumns:
+    row_id = "row_id"
+    group_col = "group_col"
+    first_col = "first_col"
+    second_col = "second_col"
+
+    input_lf = pl.LazyFrame(
+        {
+            row_id: [1, 2, 3, 4],
+            IndCqc.location_id: ["1-001"] * 4,
+            IndCqc.cqc_location_import_date: [
+                date(2023, 1, 1),
+                date(2023, 2, 1),
+                date(2023, 3, 1),
+                date(2023, 4, 1),
+            ],
+            group_col: ["A", "A", "B", "B"],
+            first_col: [None, None, 10.0, None],
+            second_col: [None, None, 5.0, None],
+        }
+    )
+
+    def test_default_group_columns_backfills_residual_over_locationid(
+        self,
+    ):
+        returned_lf = job.calculate_residuals(
+            self.input_lf, self.first_col, self.second_col
+        )
+
+        expected_lf = pl.LazyFrame(
+            {self.row_id: [1, 2, 3, 4], IndCqc.residual: [5.0, 5.0, 5.0, None]}
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf.select(self.row_id, IndCqc.residual), expected_lf
+        )
+
+    def test_group_columns_parameter_backfills_residual_over_given_groups(
+        self,
+    ):
+        returned_lf = job.calculate_residuals(
+            self.input_lf,
+            self.first_col,
+            self.second_col,
+            group_columns=[IndCqc.location_id, self.group_col],
+        )
+
+        expected_lf = pl.LazyFrame(
+            {self.row_id: [1, 2, 3, 4], IndCqc.residual: [None, None, 5.0, None]}
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf.select(self.row_id, IndCqc.residual), expected_lf
+        )
 
 
 class TestCalculateProportionOfTimeBetweenSubmissions:

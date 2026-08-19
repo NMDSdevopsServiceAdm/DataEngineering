@@ -39,7 +39,7 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.location_id: str(CategoricalColumnTypes.LocationCatType),
         IndCqcColumns.cqc_location_import_date: "Date",
         IndCqcColumns.main_job_role_clean_labelled: str(
-            CategoricalColumnTypes.JobRoleEnumType
+            CategoricalColumnTypes.JobRoleCatType
         ),
         IndCqcColumns.primary_service_type: str(
             CategoricalColumnTypes.PrimaryServiceEnumType

@@ -7,12 +7,18 @@ from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     PublishedJobRoleLabels,
 )
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
+    SLVPrepareCategoricalValues,
+)
 
 # Roles that exist under the same name in both job-role taxonomies are
 # collated into this set object.
 ROLES_SHARED_BY_BOTH_JOB_ROLE_TAXONOMIES = set(
-    CatColType.JobRoleEnumType.categories
-) & set(CatColType.PublishedJobRoleLabelEnumType.categories)
+    CatVals.main_job_role_labels_column_values.categorical_values
+) & set(
+    SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+)
 
 
 def collapse_job_role_estimates_to_published_labels(
@@ -65,7 +71,7 @@ def collapse_job_role_estimates_to_published_labels(
             .then(pl.lit(PublishedJobRoleLabels.other_direct_care))
             .otherwise(pl.lit(PublishedJobRoleLabels.other))
         )
-        .cast(CatColType.PublishedJobRoleLabelEnumType)
+        .cast(CatColType.PublishedJobRoleLabelCatType)
         .alias(SLVCols.published_job_role_label)
     )
 

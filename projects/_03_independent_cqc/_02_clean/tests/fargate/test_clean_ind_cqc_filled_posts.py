@@ -20,7 +20,7 @@ class MainTests(CleanIndFilledPostsTests):
     @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
     @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
     @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
-    @patch(f"{PATCH_PATH}.create_column_with_repeated_values_removed")
+    @patch(f"{PATCH_PATH}.cUtils.remove_repeated_values_over_time")
     @patch(f"{PATCH_PATH}.calculate_ascwds_filled_posts")
     @patch(f"{PATCH_PATH}.populate_missing_care_home_number_of_beds")
     @patch(f"{PATCH_PATH}.replace_zero_beds_with_null")
@@ -39,7 +39,7 @@ class MainTests(CleanIndFilledPostsTests):
         replace_zero_beds_with_null_mock: Mock,
         populate_missing_care_home_number_of_beds_mock: Mock,
         calculate_ascwds_filled_posts_mock: Mock,
-        create_column_with_repeated_values_removed_mock: Mock,
+        remove_repeated_values_over_time_mock: Mock,
         calculate_filled_posts_per_bed_ratio_mock: Mock,
         create_banded_bed_count_column_mock: Mock,
         clean_ascwds_filled_post_outliers_mock: Mock,
@@ -68,7 +68,7 @@ class MainTests(CleanIndFilledPostsTests):
         replace_zero_beds_with_null_mock.assert_called_once()
         populate_missing_care_home_number_of_beds_mock.assert_called_once()
         calculate_ascwds_filled_posts_mock.assert_called_once()
-        self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
+        remove_repeated_values_over_time_mock.assert_called_once()
         self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 2)
         create_banded_bed_count_column_mock.assert_called_once()
         clean_ascwds_filled_post_outliers_mock.assert_called_once()

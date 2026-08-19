@@ -1,11 +1,16 @@
 import sys
 
 import pointblank as pb
+import polars as pl
+import polars.selectors as cs
 
 from polars_utils import utils
 from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils import (
+    validation_utils as vUtils,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsCategoricalValues as CatValues,
@@ -32,10 +37,14 @@ def main(
         compare_path (str): path to a dataset to compare against for expected size
     """
 
-    source_df = utils.read_parquet(
-        f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
-    ).with_columns(
-        str_length_cols([IndCqcColumns.location_id]),
+    raw_source_df = utils.read_parquet(
+        f"s3://{bucket_name}/{source_path}"
+    ).with_columns(str_length_cols([IndCqcColumns.location_id]))
+    # services_offered (a List column) is needed by 3 of the custom business rules
+    # below, so it's kept even though other Struct/List columns are excluded as
+    # pointblank cannot validate them directly.
+    source_df = raw_source_df.select(
+        ~cs.by_dtype(pl.Struct, pl.List) | cs.by_name(IndCqcColumns.services_offered)
     )
     compare_df = utils.read_parquet(
         f"s3://{bucket_name}/{compare_path}",
@@ -68,8 +77,8 @@ def main(
                 IndCqcColumns.current_ons_import_date,
                 IndCqcColumns.current_cssr,
                 IndCqcColumns.current_region,
-                #         IndCqcColumns.estimate_filled_posts,
-                #         IndCqcColumns.estimate_filled_posts_source,
+                IndCqcColumns.estimate_filled_posts,
+                IndCqcColumns.estimate_filled_posts_source,
             ]
         )
         # index columns
@@ -82,11 +91,16 @@ def main(
         # between (inclusive)
         .col_vals_between(IndCqcColumns.ascwds_filled_posts, 1.0, 3000.0, na_pass=True)
         .col_vals_between(IndCqcColumns.ascwds_pir_merged, 1.0, 3000.0, na_pass=True)
-        # .col_vals_between(IndCqcColumns.care_home_model, -100.0, 3000.0)
-        # .col_vals_between(
-        #     IndCqcColumns.imputed_posts_non_res_combined_model, -100.0, 3000.0
-        # )
-        # .col_vals_between(IndCqcColumns.estimate_filled_posts, 1.0, 3000.0)
+        .col_vals_between(IndCqcColumns.care_home_model, -100.0, 3000.0, na_pass=True)
+        .col_vals_between(
+            IndCqcColumns.imputed_posts_non_res_combined_model,
+            -100.0,
+            3000.0,
+            na_pass=True,
+        )
+        .col_vals_between(
+            IndCqcColumns.estimate_filled_posts, 1.0, 3000.0, na_pass=True
+        )
         .col_vals_between(
             IndCqcColumns.non_res_with_dormancy_model, -100.0, 3000.0, na_pass=True
         )
@@ -97,7 +111,9 @@ def main(
         .col_vals_between(
             IndCqcColumns.pir_people_directly_employed_dedup, 1, 3000, na_pass=True
         )
-        # .col_vals_between(IndCqcColumns.imputed_pir_filled_posts_model, -100.0, 3000.0)
+        .col_vals_between(
+            IndCqcColumns.imputed_pir_filled_posts_model, -100.0, 3000.0, na_pass=True
+        )
         .col_vals_between(IndCqcColumns.posts_rolling_average_model, 1.0, 3000.0)
         # categorical
         .col_vals_in_set(
@@ -127,10 +143,10 @@ def main(
                 None,
             ],
         )
-        # .col_vals_in_set(
-        #     IndCqcColumns.estimate_filled_posts_source,
-        #     CatValues.estimate_filled_posts_source_column_values.categorical_values,
-        # )
+        .col_vals_in_set(
+            IndCqcColumns.estimate_filled_posts_source,
+            CatValues.estimate_filled_posts_source_column_values.categorical_values,
+        )
         # distinct values
         .specially(
             vl.is_unique_count_equal(
@@ -174,17 +190,30 @@ def main(
             ),
             brief=f"{IndCqcColumns.ascwds_filled_posts_source} needs to be one of {CatValues.ascwds_filled_posts_source_column_values.categorical_values}",
         )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.estimate_filled_posts_source,
-        #         CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.estimate_filled_posts_source} needs to be one of {CatValues.estimate_filled_posts_source_column_values.categorical_values}",
-        # )
-        # TODO - Add custom validation rule that the data in carehome and primary_service_type should be related.
-        # TODO - Add custom validation rule that primary_service_type_second_level correctly allocates shared lives.
-        # TODO - Add custom validation rule that primary_service_type_second_level correctly allocates care homes with nursing.
-        # TODO - Add custom validation rule that primary_service_type_second_level correctly allocates care homes without nursing.
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.estimate_filled_posts_source,
+                CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.estimate_filled_posts_source} needs to be one of {CatValues.estimate_filled_posts_source_column_values.categorical_values}",
+        )
+        # custom business rules
+        .col_vals_expr(
+            vUtils.care_home_matches_primary_service_type_expr(),
+            brief="care_home and primary_service_type should be related.",
+        )
+        .col_vals_expr(
+            vUtils.shared_lives_services_offered_expr(),
+            brief="If primary_service_type_second_level is 'Shared Lives', services_offered must contain 'Shared Lives'.",
+        )
+        .col_vals_expr(
+            vUtils.care_home_with_nursing_services_offered_expr(),
+            brief="If primary_service_type_second_level is 'Care home with nursing', services_offered must contain 'Care home service with nursing' and must not contain 'Shared Lives'.",
+        )
+        .col_vals_expr(
+            vUtils.care_home_without_nursing_services_offered_expr(),
+            brief="If primary_service_type_second_level is 'Care home without nursing', services_offered must contain 'Care home service without nursing' and must not contain 'Shared Lives' or 'Care home service with nursing'.",
+        )
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)

@@ -42,7 +42,7 @@ class ValidateEstimatedIndCQCFilledPostsDataTests(unittest.TestCase):
 
         mock_read_parquet.assert_has_calls(
             [
-                call("s3://bucket/my/dataset/", exclude_complex_types=True),
+                call("s3://bucket/my/dataset/"),
                 call(
                     "s3://bucket/other/dataset/",
                     selected_columns=job.imputed_ind_cqc_cols_to_import,
@@ -76,6 +76,7 @@ class ValidateEstimatedIndCQCFilledPostsDataTests(unittest.TestCase):
             "col_vals_between",
             "col_vals_in_set",
             "specially",
+            "col_vals_expr",
         }
 
         for assertion in expected_assertions:

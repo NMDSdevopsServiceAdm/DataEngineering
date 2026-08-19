@@ -60,8 +60,8 @@ class TestAddJobRoleGroupsColumn:
             )
         ]
         expected_schema = {
-            IndCQC.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
-            self.job_group_col: CategoricalColumnTypes.JobGroupEnumType,
+            IndCQC.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleCatType,
+            self.job_group_col: CategoricalColumnTypes.JobGroupCatType,
         }
         expected_lf = pl.LazyFrame(
             data=expected_data, schema=expected_schema, orient="row"

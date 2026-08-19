@@ -5,6 +5,7 @@ import polars as pl
 
 from polars_utils import expressions as expr
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
@@ -25,24 +26,24 @@ columns = {
     ASCWPClean.establishment_updated_date: "Date",
     ASCWPClean.master_update_date: "Date",
     ASCWPClean.last_logged_in_date: "Date",
-    ASCWPClean.la_permission: "String",
-    ASCWPClean.is_bulk_uploader: "String",
-    ASCWPClean.is_parent: "String",
+    ASCWPClean.la_permission: str(CategoricalColumnTypes.LaPermissionCatType),
+    ASCWPClean.is_bulk_uploader: str(CategoricalColumnTypes.IsBulkUploaderCatType),
+    ASCWPClean.is_parent: str(CategoricalColumnTypes.IsParentCatType),
     ASCWPClean.parent_permission: "String",
-    ASCWPClean.registration_type: "String",
+    ASCWPClean.registration_type: str(CategoricalColumnTypes.RegistrationTypeCatType),
     ASCWPClean.provider_id: "String",
     ASCWPClean.location_id: "String",
-    ASCWPClean.establishment_type: "String",
+    ASCWPClean.establishment_type: str(CategoricalColumnTypes.EstablishmentTypeCatType),
     ASCWPClean.establishment_name: "String",
     ASCWPClean.address: "String",
     ASCWPClean.postcode: "String",
-    ASCWPClean.region_id: "String",
+    ASCWPClean.region_id: str(CategoricalColumnTypes.RegionIdCatType),
     ASCWPClean.total_staff: "Int32",
     ASCWPClean.worker_records: "Int32",
     ASCWPClean.total_starters: "String",
     ASCWPClean.total_leavers: "String",
     ASCWPClean.total_vacancies: "String",
-    ASCWPClean.main_service_id: "String",
+    ASCWPClean.main_service_id: str(CategoricalColumnTypes.MainServiceIdCatType),
     ASCWPClean.version: "String",
     ASCWPClean.import_date: "String",
     ASCWPClean.ascwds_workplace_import_date: "Date",

@@ -146,6 +146,13 @@ def join_postcode_data(
     A successful join is determined by the presence of a non-null value in the
     current_cssr column of the ONS postcode directory.
 
+    The join is collected immediately rather than left lazy: predicate
+    pushdown otherwise rewrites the matched/unmatched branches below into two
+    structurally different post-optimization plans, which Polars' default
+    common-subexpression elimination cannot deduplicate. Left lazy, each
+    branch re-derives the full join from scratch at every downstream
+    consumption, which was the root cause of this job's Fargate OOM.
+
     Args:
         locations_lf (pl.LazyFrame): Workplace LazyFrame with a postcode column.
         postcode_lf (pl.LazyFrame): ONS Postcode directory LazyFrame.
@@ -156,10 +163,14 @@ def join_postcode_data(
     """
     orig_columns = locations_lf.collect_schema().names()
 
-    joined_lf = locations_lf.join(
-        postcode_lf,
-        [ONSClean.contemporary_ons_import_date, postcode_col],
-        "left",
+    joined_lf = (
+        locations_lf.join(
+            postcode_lf,
+            [ONSClean.contemporary_ons_import_date, postcode_col],
+            "left",
+        )
+        .collect()
+        .lazy()
     )
 
     matched_cssr = pl.col(ONSClean.current_cssr).is_not_null()

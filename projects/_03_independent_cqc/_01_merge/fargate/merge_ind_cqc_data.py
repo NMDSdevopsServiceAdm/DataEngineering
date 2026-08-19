@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc._01_merge.fargate.utils.merge_utils import (
     join_data_into_cqc_lf,
 )
@@ -112,16 +113,18 @@ def main(
         cleaned_ct_care_home_source (str): s3 path to the cleaned capacity tracker care home data
         destination (str): s3 path to save the output data
     """
+    # care_home is cast on every source here, before the joins below, since it's
+    # used as a join key
     cleaned_cqc_location_lf = utils.scan_parquet(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
-    )
+    ).with_columns(pl.col(CQCLClean.care_home).cast(CatColType.CareHomeEnumType))
     print("Cleaned CQC location LazyFrame read in")
 
     cleaned_cqc_pir_lf = utils.scan_parquet(
         cleaned_cqc_pir_source,
         selected_columns=cleaned_cqc_pir_columns_to_import,
-    )
+    ).with_columns(pl.col(CQCPIRClean.care_home).cast(CatColType.CareHomeEnumType))
     print("Cleaned CQC PIR LazyFrame read in")
 
     cleaned_ascwds_workplace_lf = utils.scan_parquet(
@@ -132,13 +135,13 @@ def main(
 
     cleaned_ct_non_res_lf = utils.scan_parquet(
         cleaned_ct_non_res_source, selected_columns=cleaned_ct_non_res_columns_to_import
-    )
+    ).with_columns(pl.col(CTNRClean.care_home).cast(CatColType.CareHomeEnumType))
     print("Cleaned capacity tracker non-residential LazyFrame read in")
 
     cleaned_ct_care_home_lf = utils.scan_parquet(
         cleaned_ct_care_home_source,
         selected_columns=cleaned_ct_care_home_columns_to_import,
-    )
+    ).with_columns(pl.col(CTCHClean.care_home).cast(CatColType.CareHomeEnumType))
     print("Cleaned capacity tracker care home LazyFrame read in")
 
     independent_cqc_lf = cleaned_cqc_location_lf.filter(

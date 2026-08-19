@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 import polars.testing as pl_testing
 import pytest
@@ -138,6 +140,72 @@ class TestGetPreviousValue:
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
+class TestModelExtrapolationGroupColumns:
+    row_id = "row_id"
+    group_col = "group_col"
+
+    input_lf = pl.LazyFrame(
+        {
+            row_id: [1, 2, 3, 4],
+            IndCQC.location_id: ["1-001"] * 4,
+            IndCQC.cqc_location_import_date: [
+                date(2023, 1, 1),
+                date(2023, 2, 1),
+                date(2023, 3, 1),
+                date(2023, 4, 1),
+            ],
+            group_col: ["A", "A", "B", "B"],
+            IndCQC.ascwds_pir_merged: [10.0, None, None, None],
+            IndCQC.posts_rolling_average_model: [1.0, 1.0, 1.0, 1.0],
+        }
+    )
+
+    def test_default_group_columns_extrapolates_over_locationid_only(
+        self,
+    ):
+        returned_lf = job.model_extrapolation(
+            self.input_lf,
+            column_with_null_values=IndCQC.ascwds_pir_merged,
+            model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
+            extrapolation_method="nominal",
+        )
+
+        expected_lf = pl.LazyFrame(
+            {
+                self.row_id: [1, 2, 3, 4],
+                IndCQC.extrapolation_model: [None, 10.0, 10.0, 10.0],
+            }
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf.select(self.row_id, IndCQC.extrapolation_model),
+            expected_lf,
+        )
+
+    def test_group_columns_parameter_extrapolates_over_given_groups(
+        self,
+    ):
+        returned_lf = job.model_extrapolation(
+            self.input_lf,
+            column_with_null_values=IndCQC.ascwds_pir_merged,
+            model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
+            extrapolation_method="nominal",
+            group_columns=[IndCQC.location_id, self.group_col],
+        )
+
+        expected_lf = pl.LazyFrame(
+            {
+                self.row_id: [1, 2, 3, 4],
+                IndCQC.extrapolation_model: [None, 10.0, None, None],
+            }
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf.select(self.row_id, IndCQC.extrapolation_model),
+            expected_lf,
+        )
 
 
 class TestExtrapolationCalculationExpressions:

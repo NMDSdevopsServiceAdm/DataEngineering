@@ -81,6 +81,66 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    remove_repeated_values_over_time_schema = pl.Schema(
+        [
+            ("location_id", pl.String()),
+            ("date", pl.Date()),
+            ("value", pl.Int64()),
+        ]
+    )
+    expected_remove_repeated_values_over_time_schema = pl.Schema(
+        list(remove_repeated_values_over_time_schema.items())
+        + [
+            ("value_deduplicated", pl.Int64()),
+        ]
+    )
+    remove_repeated_values_over_time_multiple_partition_columns_schema = pl.Schema(
+        [
+            ("location_id", pl.String()),
+            ("job_role", pl.String()),
+            ("date", pl.Date()),
+            ("value", pl.Int64()),
+        ]
+    )
+    expected_remove_repeated_values_over_time_multiple_partition_columns_schema = pl.Schema(
+        list(remove_repeated_values_over_time_multiple_partition_columns_schema.items())
+        + [
+            ("value_deduplicated", pl.Int64()),
+        ]
+    )
+
+    remove_repeated_values_over_time_multiple_columns_schema = pl.Schema(
+        [
+            ("location_id", pl.String()),
+            ("date", pl.Date()),
+            ("first_value", pl.Int64()),
+            ("second_value", pl.String()),
+        ]
+    )
+    expected_remove_repeated_values_over_time_multiple_columns_schema = pl.Schema(
+        list(remove_repeated_values_over_time_multiple_columns_schema.items())
+        + [
+            ("first_value_deduplicated", pl.Int64()),
+            ("second_value_deduplicated", pl.String()),
+        ]
+    )
+
+    remove_repeated_values_over_time_selector_schema = pl.Schema(
+        [
+            ("location_id", pl.String()),
+            ("date", pl.Date()),
+            ("value_a", pl.Int64()),
+            ("value_b", pl.String()),
+        ]
+    )
+    expected_remove_repeated_values_over_time_selector_schema = pl.Schema(
+        list(remove_repeated_values_over_time_selector_schema.items())
+        + [
+            ("value_a_deduplicated", pl.Int64()),
+            ("value_b_deduplicated", pl.String()),
+        ]
+    )
+
 
 @dataclass
 class RawDataAdjustmentsSchemas:
