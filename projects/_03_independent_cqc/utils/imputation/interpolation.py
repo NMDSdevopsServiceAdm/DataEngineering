@@ -42,7 +42,9 @@ def model_interpolation(
 
     Returns:
         pl.LazyFrame: The LazyFrame with the interpolated values in the
-            'interpolation_model' column
+            'interpolation_model' column. Row order isn't guaranteed, and no
+            sort is needed here -- the known caller, calculate_rolling_sums,
+            doesn't rely on row order.
 
     Raises:
         ValueError: If chosen method does not match 'straight' or 'trend'.
@@ -116,13 +118,8 @@ def calculate_residuals(
     specified columns, then backward fills the residual into rows where
     either of the specified columns are null.
 
-    Note: an `over(..., order_by=...)` variant (avoiding this sort) was
-    measured as ~8% *higher* peak memory on a synthetic 4M-row, 74-column
-    frame, not lower. Polars' optimiser already collapses this sort with the
-    other identical sorts in this module into a single physical sort, so
-    there was no redundant full-frame sort to remove in the first place;
-    `order_by` instead added distinct per-window ordering work that the
-    optimiser can't fold together. Don't reintroduce it without re-measuring.
+    Note: replacing this sort with `over(..., order_by=...)` was tried and
+    measured, and used ~8% more peak memory, not less.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the data.
@@ -158,13 +155,8 @@ def calculate_proportion_of_days_between_submissions(
     Calculates the proportion of days between consecutive non-null values
     based on cqc_location_import_date.
 
-    Note: an `over(..., order_by=...)` variant (avoiding this sort) was
-    measured as ~8% *higher* peak memory on a synthetic 4M-row, 74-column
-    frame, not lower. Polars' optimiser already collapses this sort with the
-    other identical sorts in this module into a single physical sort, so
-    there was no redundant full-frame sort to remove in the first place;
-    `order_by` instead added distinct per-window ordering work that the
-    optimiser can't fold together. Don't reintroduce it without re-measuring.
+    Note: replacing this sort with `over(..., order_by=...)` was tried and
+    measured, and used ~8% more peak memory, not less.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the data.
