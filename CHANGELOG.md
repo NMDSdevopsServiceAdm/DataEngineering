@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
 
 ### Fixed
+- Fixed the CQC API integration tests failing the whole CI pipeline during a CQC API outage: the tests now skip instead of fail on a recognised outage signature, and were split into their own non-blocking CircleCI job.
 
 ## [v2026.07.0] - 17/08/2026
 
