@@ -96,7 +96,6 @@ def main(
         .col_vals_ge(
             columns=EMPLOYMENT_STATUS_SPLIT_COLUMNS,
             value=0,
-            na_pass=True,
             brief="Employment status split columns are non-negative",
         )
     )
@@ -112,8 +111,7 @@ def main(
         expr=(
             (sum_of_splits - pl.col(METRIC)).abs()
             <= pl.col(METRIC).abs() * EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE
-        )
-        | sum_of_splits.is_null(),
+        ),
         brief="Employment status splits sum back to the filled-post metric",
     ).interrogate()
 
