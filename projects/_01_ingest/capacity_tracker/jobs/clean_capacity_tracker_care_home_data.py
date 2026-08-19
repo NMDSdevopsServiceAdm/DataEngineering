@@ -79,6 +79,8 @@ def main(
         capacity_tracker_care_home_df
     )
 
+    # On Polars conversion: cast columns to Categorical/Enum where possible,
+    # e.g. care_home -> CategoricalColumnTypes.CareHomeEnumType.
     print(f"Exporting as parquet to {cleaned_capacity_tracker_care_home_destination}")
     utils.write_to_parquet(
         capacity_tracker_care_home_df,
