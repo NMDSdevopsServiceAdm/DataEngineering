@@ -1636,13 +1636,6 @@ class ModelImputation:
         "imputed_values": pl.Float32,
     }
 
-    input_split_dataset_for_imputation_schema = {
-        "row_id": pl.Int8,
-        IndCQC.location_id: pl.String,
-        IndCQC.care_home: pl.String,
-        "null_values": pl.Float32,
-    }
-
 
 @dataclass
 class ModelRateOfChangeSchemas:
