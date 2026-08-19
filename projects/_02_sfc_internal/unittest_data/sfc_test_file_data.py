@@ -43,6 +43,11 @@ class ReconciliationData:
     ]
     # fmt: on
 
+    purge_filter_ascwds_workplace_rows = [
+        ("not_purged", date(2024, 4, 1), date(2022, 4, 1)),
+        ("purged", date(2020, 1, 1), date(2022, 4, 1)),
+    ]
+
     input_cqc_dereg_locations_rows = [
         (date(2024, 1, 1), "1-901", "Deregistered", date(2024, 1, 1)),
         (date(2024, 4, 1), "1-902", "Deregistered", date(2024, 1, 1)),
@@ -72,6 +77,20 @@ class ReconciliationUtilsData:
     dates_to_use_rows = [
         ("1-001", date(2024, 3, 28)),
         ("1-002", date(2023, 1, 1)),
+    ]
+
+    add_removed_by_purge_date_filter_column_rows = [
+        (
+            "1",
+            date(2024, 1, 1),
+            date(2022, 1, 1),
+        ),  # active on/after purge date - NOT removed
+        ("2", date(2020, 1, 1), date(2022, 1, 1)),  # active before purge date - removed
+    ]
+
+    expected_removed_by_purge_date_filter_rows = [
+        ("1", False),
+        ("2", True),
     ]
 
     regtype_rows = [
@@ -320,13 +339,15 @@ class MergeCoverageData:
     # fmt: on
 
     sample_in_ascwds_rows = [
-        (None,),
-        ("1",),
+        (None, None),
+        ("1", False),
+        ("2", True),
     ]
 
     expected_in_ascwds_rows = [
-        (None, 0),
-        ("1", 1),
+        (None, None, 0),
+        ("1", False, 1),
+        ("2", True, 0),
     ]
 
     sample_cqc_locations_rows = [("1-000000001",), ("1-000000002",)]

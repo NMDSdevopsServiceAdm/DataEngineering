@@ -68,6 +68,8 @@ SFC_INTERNAL_COLUMNS = [
     AWPClean.worker_records,
     AWPClean.last_logged_in_date,
     AWPClean.la_permission,
+    AWPClean.workplace_last_active_date,
+    AWPClean.purge_date,
 ]
 
 columns_to_apply_labels = [
@@ -134,13 +136,11 @@ def main(
     lf = wUtils.create_purge_date_columns(lf)
 
     # The LazyFrame is split into two at this point:
-    # - SfC internal pipeline (filtered to workplaces last *active* on or after the purge date)
+    # - SfC internal pipeline (includes workplaces exceeding their purge date)
     # - Cleaned ASC-WDS workplace data (filtered to workplaces last *amended* on or after the purge date)
 
     # SfC Internal pipeline
-    sfc_internal_lf = lf.filter(
-        pl.col(AWPClean.workplace_last_active_date) >= pl.col(AWPClean.purge_date)
-    ).select(SFC_INTERNAL_COLUMNS)
+    sfc_internal_lf = lf.select(SFC_INTERNAL_COLUMNS)
 
     utils.sink_to_parquet(
         sfc_internal_lf, output_path=ascwds_for_sfc_internal_destination

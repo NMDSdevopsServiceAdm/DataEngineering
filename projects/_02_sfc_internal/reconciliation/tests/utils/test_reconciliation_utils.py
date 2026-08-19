@@ -577,3 +577,30 @@ class CreateDescriptionColumnForParentAccountsTests(ReconciliationTests):
             self.returned_data[7][ReconColumn.description],
             self.expected_data[7][ReconColumn.description],
         )
+
+
+class TestAddRemovedByPurgeDateFilterColumn:
+    def test_adds_removed_by_purge_date_filter_column_with_expected_values(self, spark):
+        input_df = spark.createDataFrame(
+            Data.add_removed_by_purge_date_filter_column_rows,
+            Schemas.add_removed_by_purge_date_filter_column_schema,
+        )
+
+        returned_df = job.add_removed_by_purge_date_filter_column(input_df)
+
+        expected_df = spark.createDataFrame(
+            Data.expected_removed_by_purge_date_filter_rows,
+            Schemas.expected_removed_by_purge_date_filter_schema,
+        )
+        assert returned_df.collect() == expected_df.collect()
+
+    def test_drops_workplace_last_active_date_and_purge_date_columns(self, spark):
+        input_df = spark.createDataFrame(
+            Data.add_removed_by_purge_date_filter_column_rows,
+            Schemas.add_removed_by_purge_date_filter_column_schema,
+        )
+
+        returned_df = job.add_removed_by_purge_date_filter_column(input_df)
+
+        assert AWPClean.workplace_last_active_date not in returned_df.columns
+        assert AWPClean.purge_date not in returned_df.columns

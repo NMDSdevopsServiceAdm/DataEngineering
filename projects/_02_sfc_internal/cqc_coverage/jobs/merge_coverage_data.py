@@ -75,6 +75,8 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.parent_permission,
     AWPClean.last_logged_in_date,
     AWPClean.la_permission,
+    AWPClean.workplace_last_active_date,
+    AWPClean.purge_date,
 ]
 cqc_ratings_columns_to_import = [
     AWPClean.location_id,
@@ -109,6 +111,9 @@ def main(
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
+    )
+    ascwds_workplace_df = rUtils.add_removed_by_purge_date_filter_column(
+        ascwds_workplace_df
     )
 
     cqc_ratings_df = utils.read_from_parquet(
@@ -220,10 +225,11 @@ def join_ascwds_data_into_cqc_location_df(
 
 def add_flag_for_in_ascwds(merged_coverage_df: DataFrame) -> DataFrame:
     """
-    Add a column to the merged coverage dataframe which flags if CQC location is in ASC-WDS.
+    Add a column to the merged coverage dataframe which flags if CQC location is in ASC-WDS
+    and has not exceeded their *active* purge date.
 
-    Requirements which are not arguments: ASC-WDS establishmentid.
-    When row has an ASC-WDS establishmentid then value is 1, otherwise value is 0.
+    When row has an ASC-WDS establishmentid and was not removed by the purge date filter then
+    value is 1, otherwise value is 0.
 
     Args:
         merged_coverage_df (DataFrame): A dataframe of CQC locations with ASC-WDS columns joined via locationid.
@@ -234,7 +240,8 @@ def add_flag_for_in_ascwds(merged_coverage_df: DataFrame) -> DataFrame:
     return merged_coverage_df.withColumn(
         CoverageColumns.in_ascwds,
         F.when(
-            F.isnull(AWPClean.establishment_id),
+            F.isnull(AWPClean.establishment_id)
+            | F.col(AWPClean.removed_by_purge_date_filter),
             InAscwds.not_in_ascwds,
         ).otherwise(InAscwds.is_in_ascwds),
     )

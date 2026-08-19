@@ -357,4 +357,26 @@ def final_column_selection(df: DataFrame) -> DataFrame:
         ReconColumn.workplace_id,
     ).sort(ReconColumn.description, ReconColumn.nmds)
 
-    return df
+
+def add_removed_by_purge_date_filter_column(df: DataFrame) -> DataFrame:
+    """
+    Add a flag showing whether a row failed the ASC-WDS purge-date filter.
+
+    `workplace_last_active_date` and `purge_date` are already computed
+    upstream by `create_purge_date_columns` in
+    `_01_ingest/ascwds/fargate/utils/clean_workplace_utils.py` and selected
+    into `ascwds_for_sfc_internal` (see `SFC_INTERNAL_COLUMNS`).
+
+    Args:
+        df (DataFrame): ASC-WDS workplace data with `workplace_last_active_date`
+            and `purge_date`.
+
+    Returns:
+        DataFrame: input df with `removed_by_purge_date_filter` added and
+            `workplace_last_active_date`/`purge_date` dropped.
+    """
+    df = df.withColumn(
+        AWPClean.removed_by_purge_date_filter,
+        F.col(AWPClean.workplace_last_active_date) < F.col(AWPClean.purge_date),
+    )
+    return df.drop(AWPClean.workplace_last_active_date, AWPClean.purge_date)
