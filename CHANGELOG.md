@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
 
 ### Improved
+- Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
 
 ### Fixed
 

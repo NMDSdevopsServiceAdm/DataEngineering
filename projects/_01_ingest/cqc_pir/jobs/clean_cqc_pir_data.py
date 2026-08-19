@@ -45,6 +45,8 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
 
     cqc_pir_df = null_people_directly_employed_outliers(cqc_pir_df)
 
+    # On Polars conversion: cast columns to Categorical/Enum where possible,
+    # e.g. care_home -> CategoricalColumnTypes.CareHomeEnumType.
     utils.write_to_parquet(cqc_pir_df, cleaned_cqc_pir_destination, mode="overwrite")
 
 
