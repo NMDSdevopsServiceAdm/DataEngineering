@@ -2,6 +2,7 @@ import json
 import re
 import unittest
 from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import Generator
 
 import pytest
@@ -36,6 +37,76 @@ def _is_cqc_api_outage(exc: Exception) -> bool:
         if status_code == 403 and CQC_GATEWAY_SIGNATURE in message:
             return True
     return False
+
+
+@dataclass
+class CqcApiOutageTestCase:
+    id: str
+    exception: Exception
+    expected_is_outage: bool
+
+    def as_pytest_param(self):
+        return pytest.param(self.exception, self.expected_is_outage, id=self.id)
+
+
+cqc_api_outage_test_cases = [
+    CqcApiOutageTestCase(
+        id="gateway_403_html_page_is_outage",
+        exception=Exception(
+            "API response: 403 - <html><hr><center>"
+            "Microsoft-Azure-Application-Gateway/v2</center></html>"
+        ),
+        expected_is_outage=True,
+    ),
+    CqcApiOutageTestCase(
+        id="server_5xx_is_outage",
+        exception=Exception("API response: 503 - Service Unavailable"),
+        expected_is_outage=True,
+    ),
+    CqcApiOutageTestCase(
+        id="retry_exhaustion_is_outage",
+        exception=Exception("Max retries exceeded: some detail"),
+        expected_is_outage=True,
+    ),
+    CqcApiOutageTestCase(
+        id="raw_connection_error_is_outage",
+        exception=requests.exceptions.ConnectionError("boom"),
+        expected_is_outage=True,
+    ),
+    CqcApiOutageTestCase(
+        id="raw_timeout_is_outage",
+        exception=requests.exceptions.Timeout("boom"),
+        expected_is_outage=True,
+    ),
+    CqcApiOutageTestCase(
+        id="missing_user_agent_403_is_not_outage",
+        exception=Exception(
+            "API response: 403, ensure you have set a User-Agent header"
+        ),
+        expected_is_outage=False,
+    ),
+    CqcApiOutageTestCase(
+        id="not_found_404_is_not_outage",
+        exception=cqc.NoProviderOrLocationException("API response: 404 - not found"),
+        expected_is_outage=False,
+    ),
+    CqcApiOutageTestCase(
+        id="assertion_failure_is_not_outage",
+        exception=AssertionError("1 != 2"),
+        expected_is_outage=False,
+    ),
+]
+
+
+class TestIsCqcApiOutage:
+    @pytest.mark.parametrize(
+        "exception, expected_is_outage",
+        [c.as_pytest_param() for c in cqc_api_outage_test_cases],
+    )
+    def test_returns_expected_result_for_exception_shape(
+        self, exception, expected_is_outage
+    ):
+        assert _is_cqc_api_outage(exception) == expected_is_outage
 
 
 class CqcApiIntegrationTests(unittest.TestCase):
