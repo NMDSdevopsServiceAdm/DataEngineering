@@ -68,11 +68,11 @@ class TestMain:
             {
                 IndCqcColumns.location_id: ["1-001"] * PUBLISHED_ROLE_COUNT,
                 job.METRIC: [10.0] * PUBLISHED_ROLE_COUNT,
-                SLVCols.filled_posts_perm: [5.0] * PUBLISHED_ROLE_COUNT,
-                SLVCols.filled_posts_temp: [2.0] * PUBLISHED_ROLE_COUNT,
-                SLVCols.filled_posts_bank_or_pool: [1.5] * PUBLISHED_ROLE_COUNT,
-                SLVCols.filled_posts_agency: [1.0] * PUBLISHED_ROLE_COUNT,
-                SLVCols.filled_posts_other: [0.5] * PUBLISHED_ROLE_COUNT,
+                SLVCols.estimated_emp_stat_perm: [5.0] * PUBLISHED_ROLE_COUNT,
+                SLVCols.estimated_emp_stat_temp: [2.0] * PUBLISHED_ROLE_COUNT,
+                SLVCols.estimated_emp_stat_bank_or_pool: [1.5] * PUBLISHED_ROLE_COUNT,
+                SLVCols.estimated_emp_stat_agency: [1.0] * PUBLISHED_ROLE_COUNT,
+                SLVCols.estimated_emp_stat_other: [0.5] * PUBLISHED_ROLE_COUNT,
             }
         )
 

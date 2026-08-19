@@ -77,12 +77,12 @@ JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES = {
 
 EXPECTED_SCHEMA_OVERRIDES = {
     **JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES,
-    SLVCols.filled_posts_perm: pl.Float64,
-    SLVCols.filled_posts_temp: pl.Float64,
-    SLVCols.filled_posts_bank_or_pool: pl.Float64,
-    SLVCols.filled_posts_agency: pl.Float64,
-    SLVCols.filled_posts_other: pl.Float64,
-    SLVCols.calculated_employees: pl.Float64,
+    SLVCols.estimated_emp_stat_perm: pl.Float64,
+    SLVCols.estimated_emp_stat_temp: pl.Float64,
+    SLVCols.estimated_emp_stat_bank_or_pool: pl.Float64,
+    SLVCols.estimated_emp_stat_agency: pl.Float64,
+    SLVCols.estimated_emp_stat_other: pl.Float64,
+    SLVCols.estimated_employees: pl.Float64,
 }
 
 
@@ -94,7 +94,9 @@ class TestApplyEmploymentStatusMagicNumbers:
             for case in Data.apply_employment_status_magic_numbers_test_cases
         ],
     )
-    def test_splits_metric_and_computes_error_column_as_expected(self, case):
+    def test_splits_metric_and_computes_estimated_employees_column_as_expected(
+        self, case
+    ):
         job_role_estimates_lf = pl.LazyFrame(
             case.job_role_estimates_data,
             schema_overrides=JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES,

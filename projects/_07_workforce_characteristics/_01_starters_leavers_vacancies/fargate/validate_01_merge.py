@@ -19,11 +19,11 @@ COMPARE_COLS_TO_IMPORT = [
 METRIC = IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
 
 EMPLOYMENT_STATUS_SPLIT_COLUMNS = [
-    SLVCols.filled_posts_perm,
-    SLVCols.filled_posts_temp,
-    SLVCols.filled_posts_bank_or_pool,
-    SLVCols.filled_posts_agency,
-    SLVCols.filled_posts_other,
+    SLVCols.estimated_emp_stat_perm,
+    SLVCols.estimated_emp_stat_temp,
+    SLVCols.estimated_emp_stat_bank_or_pool,
+    SLVCols.estimated_emp_stat_agency,
+    SLVCols.estimated_emp_stat_other,
 ]
 
 # A fixed absolute tolerance recurs as float32 drift scales with magnitude, not row

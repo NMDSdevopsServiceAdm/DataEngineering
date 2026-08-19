@@ -127,14 +127,14 @@ def apply_employment_status_magic_numbers(
     employment_status_rates_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
-    Splits the job-role filled-post estimate into employment-status components.
+    Splits the job-role filled-post estimate into estimated employment-status
+    components.
 
-    Temporary stopgap (ticket 1838) ahead of a dedicated employment status
-    estimation pipeline, expected to be removed within a few months. Multiplies
-    the filled-post metric by each of the CSV's employment-status rates
-    (assumed to sum to ~1 per row) to produce 5 filled-post-by-status columns,
-    then adds an error column comparing the ASCWDS employees headcount against
-    the permanent+temporary portion of the split.
+    Temporary stopgap ahead of a dedicated employment status estimation
+    pipeline, expected to be removed within a few months. Multiplies the
+    filled-post metric by each of the CSV's employment-status rates (assumed to
+    sum to ~1 per row) to produce 5 estimated-filled-post-by-status columns,
+    then adds an estimated_employees column.
 
     Args:
         job_role_estimates_lf (pl.LazyFrame): merged job role estimates, already
@@ -144,8 +144,9 @@ def apply_employment_status_magic_numbers(
             data, keyed by service and weighting_job_role.
 
     Returns:
-        pl.LazyFrame: job_role_estimates_lf with 5 new filled-post-by-employment-status
-            columns and an calculated_employees column.
+        pl.LazyFrame: job_role_estimates_lf with 5 new
+            estimated-filled-post-by-employment-status
+            columns and an estimated_employees column.
     """
     metric = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
 
@@ -178,19 +179,19 @@ def apply_employment_status_magic_numbers(
         )
         .with_columns(
             (pl.col(metric) * pl.col(EmpStatRates.emp_stat_perm)).alias(
-                SLVCols.filled_posts_perm
+                SLVCols.estimated_emp_stat_perm
             ),
             (pl.col(metric) * pl.col(EmpStatRates.emp_stat_temp)).alias(
-                SLVCols.filled_posts_temp
+                SLVCols.estimated_emp_stat_temp
             ),
             (pl.col(metric) * pl.col(EmpStatRates.emp_stat_bank_or_pool)).alias(
-                SLVCols.filled_posts_bank_or_pool
+                SLVCols.estimated_emp_stat_bank_or_pool
             ),
             (pl.col(metric) * pl.col(EmpStatRates.emp_stat_agency)).alias(
-                SLVCols.filled_posts_agency
+                SLVCols.estimated_emp_stat_agency
             ),
             (pl.col(metric) * pl.col(EmpStatRates.emp_stat_other)).alias(
-                SLVCols.filled_posts_other
+                SLVCols.estimated_emp_stat_other
             ),
         )
         .drop(
@@ -203,7 +204,8 @@ def apply_employment_status_magic_numbers(
     )
 
     return job_role_estimates_lf.with_columns(
-        (pl.col(SLVCols.filled_posts_perm) + pl.col(SLVCols.filled_posts_temp)).alias(
-            SLVCols.calculated_employees
-        )
+        (
+            pl.col(SLVCols.estimated_emp_stat_perm)
+            + pl.col(SLVCols.estimated_emp_stat_temp)
+        ).alias(SLVCols.estimated_employees)
     )
