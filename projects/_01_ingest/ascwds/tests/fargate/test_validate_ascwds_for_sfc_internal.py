@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 import polars as pl
 
 import projects._01_ingest.ascwds.fargate.validate_ascwds_for_sfc_internal as job
+from polars_utils.column_types import CategoricalColumnTypes
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -45,20 +46,20 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 AWPClean.master_update_date: pl.Date,
                 AWPClean.master_update_date_org: pl.Date,
                 AWPClean.establishment_created_date: pl.Date,
-                AWPClean.is_parent: pl.String,
+                AWPClean.is_parent: CategoricalColumnTypes.IsParentCatType,
                 AWPClean.parent_id: pl.String,
                 AWPClean.organisation_id: pl.String,
                 AWPClean.parent_permission: pl.String,
-                AWPClean.establishment_type: pl.String,
-                AWPClean.registration_type: pl.String,
+                AWPClean.establishment_type: CategoricalColumnTypes.EstablishmentTypeCatType,
+                AWPClean.registration_type: CategoricalColumnTypes.RegistrationTypeCatType,
                 AWPClean.location_id: pl.String,
-                AWPClean.main_service_id: pl.String,
+                AWPClean.main_service_id: CategoricalColumnTypes.MainServiceIdCatType,
                 AWPClean.establishment_name: pl.String,
-                AWPClean.region_id: pl.String,
+                AWPClean.region_id: CategoricalColumnTypes.RegionIdCatType,
                 AWPClean.total_staff: pl.String,
                 AWPClean.worker_records: pl.String,
                 AWPClean.last_logged_in_date: pl.Date,
-                AWPClean.la_permission: pl.String,
+                AWPClean.la_permission: CategoricalColumnTypes.LaPermissionCatType,
             },
         )
 

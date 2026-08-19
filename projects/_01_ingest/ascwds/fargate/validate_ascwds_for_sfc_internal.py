@@ -3,6 +3,7 @@ import sys
 import pointblank as pb
 
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
@@ -20,20 +21,22 @@ EXPECTED_SCHEMA = pb.Schema(
         AWPClean.master_update_date: "Date",
         AWPClean.master_update_date_org: "Date",
         AWPClean.establishment_created_date: "Date",
-        AWPClean.is_parent: "String",
+        AWPClean.is_parent: str(CategoricalColumnTypes.IsParentCatType),
         AWPClean.parent_id: "String",
         AWPClean.organisation_id: "String",
         AWPClean.parent_permission: "String",
-        AWPClean.establishment_type: "String",
-        AWPClean.registration_type: "String",
+        AWPClean.establishment_type: str(
+            CategoricalColumnTypes.EstablishmentTypeCatType
+        ),
+        AWPClean.registration_type: str(CategoricalColumnTypes.RegistrationTypeCatType),
         AWPClean.location_id: "String",
-        AWPClean.main_service_id: "String",
+        AWPClean.main_service_id: str(CategoricalColumnTypes.MainServiceIdCatType),
         AWPClean.establishment_name: "String",
-        AWPClean.region_id: "String",
+        AWPClean.region_id: str(CategoricalColumnTypes.RegionIdCatType),
         AWPClean.total_staff: "String",
         AWPClean.worker_records: "String",
         AWPClean.last_logged_in_date: "Date",
-        AWPClean.la_permission: "String",
+        AWPClean.la_permission: str(CategoricalColumnTypes.LaPermissionCatType),
     }
 )
 

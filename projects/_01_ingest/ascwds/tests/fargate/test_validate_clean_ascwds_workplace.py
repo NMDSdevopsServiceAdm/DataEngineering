@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 import polars as pl
 
 import projects._01_ingest.ascwds.fargate.validate_clean_ascwds_workplace as job
+from polars_utils.column_types import CategoricalColumnTypes
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as ASCWPClean,
 )
@@ -66,24 +67,24 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 ASCWPClean.establishment_updated_date: pl.Date,
                 ASCWPClean.master_update_date: pl.Date,
                 ASCWPClean.last_logged_in: pl.Date,
-                ASCWPClean.la_permission: pl.String,
-                ASCWPClean.is_bulk_uploader: pl.String,
-                ASCWPClean.is_parent: pl.String,
+                ASCWPClean.la_permission: CategoricalColumnTypes.LaPermissionCatType,
+                ASCWPClean.is_bulk_uploader: CategoricalColumnTypes.IsBulkUploaderCatType,
+                ASCWPClean.is_parent: CategoricalColumnTypes.IsParentCatType,
                 ASCWPClean.parent_permission: pl.String,
-                ASCWPClean.registration_type: pl.String,
+                ASCWPClean.registration_type: CategoricalColumnTypes.RegistrationTypeCatType,
                 ASCWPClean.provider_id: pl.String,
                 ASCWPClean.location_id: pl.String,
-                ASCWPClean.establishment_type: pl.String,
+                ASCWPClean.establishment_type: CategoricalColumnTypes.EstablishmentTypeCatType,
                 ASCWPClean.establishment_name: pl.String,
                 ASCWPClean.address: pl.String,
                 ASCWPClean.postcode: pl.String,
-                ASCWPClean.region_id: pl.String,
+                ASCWPClean.region_id: CategoricalColumnTypes.RegionIdCatType,
                 ASCWPClean.total_staff: pl.Int32,
                 ASCWPClean.worker_records: pl.Int32,
                 ASCWPClean.total_starters: pl.String,
                 ASCWPClean.total_leavers: pl.String,
                 ASCWPClean.total_vacancies: pl.String,
-                ASCWPClean.main_service_id: pl.String,
+                ASCWPClean.main_service_id: CategoricalColumnTypes.MainServiceIdCatType,
                 ASCWPClean.version: pl.String,
                 ASCWPClean.import_date: pl.String,
                 ASCWPClean.ascwds_workplace_import_date: pl.Date,

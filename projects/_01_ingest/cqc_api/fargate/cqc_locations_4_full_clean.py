@@ -2,6 +2,7 @@ import polars as pl
 
 from polars_utils import raw_data_adjustments, utils
 from polars_utils.cleaning_utils import column_to_date
+from polars_utils.column_types import CategoricalColumnTypes
 from projects._01_ingest.cqc_api.fargate.utils import cleaning_utils as cUtils
 from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -108,6 +109,45 @@ def main(
         cqc_reg_lf,
         ons_lf,
         manual_postcode_corrections_source,
+    )
+
+    # Cast to Categorical/Enum here so it's saved in the output parquet file.
+    cqc_reg_lf = cqc_reg_lf.with_columns(
+        pl.col(CQCLClean.care_home).cast(CategoricalColumnTypes.CareHomeEnumType),
+        pl.col(CQCLClean.dormancy).cast(CategoricalColumnTypes.DormancyEnumType),
+        pl.col(CQCLClean.cqc_sector).cast(CategoricalColumnTypes.CqcSectorEnumType),
+        pl.col(CQCLClean.primary_service_type).cast(
+            CategoricalColumnTypes.PrimaryServiceEnumType
+        ),
+        pl.col(CQCLClean.primary_service_type_second_level).cast(
+            CategoricalColumnTypes.PrimaryServiceTypeSecondLevelCatType
+        ),
+        pl.col(CQCLClean.current_rural_urban_ind_11).cast(
+            CategoricalColumnTypes.OnsRuralUrbanInd11EnumType
+        ),
+        pl.col(CQCLClean.specialism_dementia).cast(
+            CategoricalColumnTypes.SpecialismDementiaCatType
+        ),
+        pl.col(CQCLClean.specialism_learning_disabilities).cast(
+            CategoricalColumnTypes.SpecialismLearningDisabilitiesCatType
+        ),
+        pl.col(CQCLClean.specialism_mental_health).cast(
+            CategoricalColumnTypes.SpecialismMentalHealthCatType
+        ),
+        pl.col(CQCLClean.contemporary_region).cast(
+            CategoricalColumnTypes.OnsRegionCatType
+        ),
+        pl.col(CQCLClean.contemporary_cssr).cast(CategoricalColumnTypes.OnsCssrCatType),
+        pl.col(CQCLClean.contemporary_sub_icb).cast(
+            CategoricalColumnTypes.OnsSubIcbCatType
+        ),
+        pl.col(CQCLClean.contemporary_icb).cast(CategoricalColumnTypes.OnsIcbCatType),
+        pl.col(CQCLClean.contemporary_icb_region).cast(
+            CategoricalColumnTypes.OnsIcbRegionCatType
+        ),
+        pl.col(CQCLClean.current_region).cast(CategoricalColumnTypes.OnsRegionCatType),
+        pl.col(CQCLClean.current_cssr).cast(CategoricalColumnTypes.OnsCssrCatType),
+        pl.col(CQCLClean.current_icb).cast(CategoricalColumnTypes.OnsIcbCatType),
     )
 
     utils.sink_to_parquet(
