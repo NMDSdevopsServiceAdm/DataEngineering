@@ -83,6 +83,12 @@ class TestMain:
         create_purge_date_columns_mock.assert_called_once()
         discover_combined_schema_mock.assert_called_once_with(self.WORKPLACE_SOURCE)
         find_duplicate_workplace_submissions_mock.assert_called_once()
+        # engine="streaming" matters here specifically - a plain .collect()
+        # silently drops this whole query to the in-memory engine, which is
+        # what caused the OOM this call site was fixed for.
+        find_duplicate_workplace_submissions_mock.return_value.collect.assert_called_once_with(
+            engine="streaming"
+        )
         assert null_duplicate_workplace_data_mock.call_count == 2
         remove_rows_with_duplicate_location_ids_mock.assert_called_once()
         assert is_slv_job_role_column_mock.call_count == 2
