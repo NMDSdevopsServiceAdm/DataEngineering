@@ -26,7 +26,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.id_per_locationid_import_date_job_role: pl.String,
             IndCqcColumns.location_id: CategoricalColumnTypes.LocationCatType,
             IndCqcColumns.cqc_location_import_date: pl.Date,
-            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
+            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleCatType,
         }
 
         source_schema = {
@@ -36,7 +36,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.estimate_filled_posts: pl.Float32,
             IndCqcColumns.primary_service_type: CategoricalColumnTypes.PrimaryServiceEnumType,
             IndCqcColumns.id_per_locationid_import_date: pl.UInt32,
-            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
+            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleCatType,
             IndCqcColumns.ascwds_job_role_counts: pl.Int16,
             IndCqcColumns.job_role_filtering_rule: CategoricalColumnTypes.JobRoleFilteringRuleCatType,
             IndCqcColumns.ascwds_job_role_ratios: pl.Float32,

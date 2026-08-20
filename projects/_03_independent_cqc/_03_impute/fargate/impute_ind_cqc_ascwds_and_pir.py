@@ -86,23 +86,41 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         extrapolation_method="ratio",
     )
 
-    # model_calculate_rolling_average - posts_rolling_average_model
+    lf = calculate_rolling_average(
+        lf,
+        IndCQC.imputed_filled_post_model,
+        f"{NumericalValues.number_of_days_in_window}d",
+        [IndCQC.primary_service_type],
+        IndCQC.posts_rolling_average_model,
+    )
 
-    # create_banded_bed_count_column
+    lf = cUtils.create_banded_bed_count_column(
+        lf,
+        IndCQC.number_of_beds_banded_for_rolling_avg,
+        [0, 1, 10, 15, 20, 25, 50, float("Inf")],
+    )
 
-    # model_calculate_rolling_average - banded_bed_ratio_rolling_average_model
+    lf = calculate_rolling_average(
+        lf,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model,
+        f"{NumericalValues.number_of_days_in_window}d",
+        [
+            IndCQC.primary_service_type,
+            IndCQC.number_of_beds_banded_for_rolling_avg,
+        ],
+        IndCQC.banded_bed_ratio_rolling_average_model,
+    )
 
-    # convert_care_home_ratios_to_posts - unhash after `model_calculate_rolling_average` converted
-    # lf = lf.with_columns(
-    #     pl.when(is_care_home())
-    #     .then(
-    #         pl.col(IndCQC.banded_bed_ratio_rolling_average_model)
-    #         * pl.col(IndCQC.number_of_beds)
-    #     )
-    #     .otherwise(pl.col(IndCQC.posts_rolling_average_model))
-    #     .cast(pl.Float32)
-    #     .alias(IndCQC.posts_rolling_average_model)
-    # )
+    lf = lf.with_columns(
+        pl.when(is_care_home())
+        .then(
+            pl.col(IndCQC.banded_bed_ratio_rolling_average_model)
+            * pl.col(IndCQC.number_of_beds)
+        )
+        .otherwise(pl.col(IndCQC.posts_rolling_average_model))
+        .cast(pl.Float32)
+        .alias(IndCQC.posts_rolling_average_model)
+    )
 
     lf = lf.with_columns(
         pl.when(is_care_home())
@@ -158,32 +176,55 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
 
 
 def calculate_rolling_average(
+    lf: pl.LazyFrame,
     column_to_average: str,
     period: str,
-    columns_to_partition_by: list,
-) -> pl.Expr:
+    columns_to_partition_by: list[str],
+    new_column_name: str,
+) -> pl.LazyFrame:
     """
-    Calculate the rolling mean of the "column_to_average" over a given period
-    and partition.
+    Add the rolling mean of "column_to_average" over a given period and
+    partition. For example, a 3-day rolling average includes the current day
+    plus the two preceding days.
 
-    This function calculates the rolling mean of a column based on a given
-    number of days and a column to partition by. For example, a 3-day rolling
-    average includes the current day plus the two preceding days.
+    Rewritten from an `Expr.rolling().over()` implementation, which caused a
+    production OOM: that combination keeps a per-window-function cache alive
+    for the whole frame, and this pipeline's partition columns are low-cardinality
+    (a handful of service types/bed bands), so each partition held millions of rows.
+    Investigating the memory usage of this functions during runtime showed it
+    increased by ~10GB per 5 seconds before reaching 60GB limit.
+    This version narrows to only the columns the calculation needs, sorts
+    (required for grouped rolling), computes the rolling mean via the native
+    grouped-rolling API, then joins the small per-partition-per-date result back
+    onto the full frame - joining a tiny lookup table is far cheaper than running the window
+    function across every other column in the frame.
 
     Args:
+        lf (pl.LazyFrame): The LazyFrame to add the rolling average to.
         column_to_average (str): The name of the column with the values to average.
-        period (str): period (str): String language timedelta. See:
-          https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.rolling.html
-        columns_to_partition_by (list): The name of the column to partition the window by.
+        period (str): String language timedelta. See:
+          https://docs.pola.rs/api/python/stable/reference/lazyframe/api/polars.LazyFrame.rolling.html
+        columns_to_partition_by (list[str]): The columns to partition the window by.
+        new_column_name (str): The name to give the new rolling average column.
 
     Returns:
-        pl.Expr: Expression for rolling mean of column_to_average.
+        pl.LazyFrame: `lf` with `new_column_name` added.
     """
-    return (
-        pl.mean(column_to_average)
-        .rolling(index_column=IndCQC.cqc_location_import_date, period=period)
-        .over(columns_to_partition_by)
+    join_columns = [*columns_to_partition_by, IndCQC.cqc_location_import_date]
+
+    rolling_lf = (
+        lf.select([*join_columns, column_to_average])
+        .sort(join_columns)
+        .rolling(
+            index_column=IndCQC.cqc_location_import_date,
+            period=period,
+            group_by=columns_to_partition_by,
+        )
+        .agg(pl.col(column_to_average).mean().alias(new_column_name))
+        .unique(subset=join_columns, keep="any")
     )
+
+    return lf.join(rolling_lf, on=join_columns, how="left")
 
 
 if __name__ == "__main__":

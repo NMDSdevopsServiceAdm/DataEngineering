@@ -1,15 +1,57 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_values.categorical_columns_by_dataset import (
+    SLVPrepareCategoricalValues,
+)
 
 COMPARE_COLS_TO_IMPORT = [
-    IndCqcColumns.location_id,
+    IndCqcColumns.id_per_locationid_import_date,
 ]
+
+METRIC = IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
+
+EMPLOYMENT_STATUS_SPLIT_COLUMNS = [
+    SLVCols.estimated_emp_stat_perm,
+    SLVCols.estimated_emp_stat_temp,
+    SLVCols.estimated_emp_stat_bank_or_pool,
+    SLVCols.estimated_emp_stat_agency,
+    SLVCols.estimated_emp_stat_other,
+]
+
+EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE = 1e-5
+
+
+def calculate_expected_row_count(compare_df: pl.DataFrame) -> int:
+    """
+    Derives the expected merged row count from the pre-collapse compare dataset.
+
+    compare_df is job_role_estimates_source at its original row count with all job roles,
+    but _01_merge collapses job role estimates down to the published job role
+    labels (see merge_utils.collapse_job_role_estimates_to_published_labels) before
+    joining, so the merged output has fewer rows per location/import-date group rather
+    than compare_df's original.
+
+    Args:
+        compare_df (pl.DataFrame): job_role_estimates_source.
+
+    Returns:
+        int: distinct location/import-date groups in compare_df, multiplied by the
+            number of published job role labels.
+    """
+    distinct_location_import_dates = compare_df.n_unique(
+        subset=[IndCqcColumns.id_per_locationid_import_date]
+    )
+    return distinct_location_import_dates * len(
+        SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+    )
 
 
 def main(
@@ -31,7 +73,7 @@ def main(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,
     )
-    expected_row_count = compare_df.height
+    expected_row_count = calculate_expected_row_count(compare_df)
 
     validation = (
         pb.Validate(
@@ -45,8 +87,27 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        ).interrogate()
+        ).col_vals_ge(
+            columns=EMPLOYMENT_STATUS_SPLIT_COLUMNS,
+            value=0,
+            brief="Employment status split columns are non-negative",
+        )
     )
+    for column in EMPLOYMENT_STATUS_SPLIT_COLUMNS:
+        validation = validation.col_vals_expr(
+            expr=(pl.col(column) <= pl.col(METRIC)) | pl.col(column).is_null(),
+            brief=f"{column} does not exceed {METRIC}",
+        )
+
+    sum_of_splits = sum(pl.col(column) for column in EMPLOYMENT_STATUS_SPLIT_COLUMNS)
+    validation = validation.col_vals_expr(
+        expr=(
+            (sum_of_splits - pl.col(METRIC)).abs()
+            <= pl.col(METRIC).abs() * EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE
+        ),
+        brief="Employment status splits sum back to the filled-post metric",
+    ).interrogate()
+
     vl.write_reports(validation, bucket_name, reports_path)
 
 

@@ -1,8 +1,9 @@
-import unittest
+from dataclasses import dataclass
 from unittest.mock import ANY, Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import projects._03_independent_cqc._03_impute.fargate.impute_ind_cqc_ascwds_and_pir as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
@@ -18,7 +19,7 @@ PATCH_PATH = (
 )
 
 
-class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
+class TestImputeIndCqcAscwdsAndPir:
     TEST_CLEANED_IND_CQC_DATA_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
 
@@ -26,6 +27,8 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.nullify_ct_values_previous_to_first_submission")
+    @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
+    @patch(f"{PATCH_PATH}.calculate_rolling_average")
     @patch(f"{PATCH_PATH}.model_imputation")
     @patch(f"{PATCH_PATH}.merge_ascwds_and_pir_filled_post_submissions")
     @patch(f"{PATCH_PATH}.convert_pir_to_filled_posts")
@@ -42,6 +45,8 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
         convert_pir_to_filled_posts_mock: Mock,
         merge_ascwds_and_pir_filled_post_submissions_mock: Mock,
         model_imputation_mock: Mock,
+        calculate_rolling_average_mock: Mock,
+        create_banded_bed_count_column_mock: Mock,
         nullify_ct_values_previous_to_first_submission_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -52,12 +57,14 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
         )
 
         scan_parquet_mock.assert_called_once()
-        self.assertEqual(forward_fill_latest_known_value_mock.call_count, 2)
+        assert forward_fill_latest_known_value_mock.call_count == 2
         calculate_filled_posts_per_bed_ratio_mock.assert_called_once()
-        self.assertEqual(model_roc_trendline_mock.call_count, 2)
+        assert model_roc_trendline_mock.call_count == 2
         convert_pir_to_filled_posts_mock.assert_called_once()
         merge_ascwds_and_pir_filled_post_submissions_mock.assert_called_once()
-        self.assertEqual(model_imputation_mock.call_count, 4)
+        assert model_imputation_mock.call_count == 4
+        assert calculate_rolling_average_mock.call_count == 2
+        create_banded_bed_count_column_mock.assert_called_once()
         nullify_ct_values_previous_to_first_submission_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
@@ -65,20 +72,85 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
         )
 
 
-class CalculateRollingAverageTests(unittest.TestCase):
-    def test_calculate_rolling_average_returns_expected_values(self):
+@dataclass
+class CalculateRollingAverageTestCase:
+    id: str
+    rows: list
+    schema: pl.Schema
+    column_to_average: str
+    columns_to_partition_by: list
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+calculate_rolling_average_cases = [
+    CalculateRollingAverageTestCase(
+        id="single_partition_column_with_duplicate_group_and_date",
+        rows=Data.expected_rolling_average_rows,
+        schema=Schemas.expected_rolling_average_schema,
+        column_to_average=IndCQC.ascwds_filled_posts_dedup_clean,
+        columns_to_partition_by=[IndCQC.location_id],
+    ),
+    CalculateRollingAverageTestCase(
+        id="multiple_partition_columns",
+        rows=Data.expected_multiple_partition_columns_rolling_average_rows,
+        schema=Schemas.expected_multiple_partition_columns_rolling_average_schema,
+        column_to_average=IndCQC.imputed_filled_post_model,
+        columns_to_partition_by=[
+            IndCQC.primary_service_type,
+            IndCQC.number_of_beds_banded_for_rolling_avg,
+        ],
+    ),
+    CalculateRollingAverageTestCase(
+        id="excludes_nulls_from_the_mean",
+        rows=Data.expected_rolling_average_with_null_rows,
+        schema=Schemas.expected_rolling_average_with_null_schema,
+        column_to_average=IndCQC.ascwds_filled_posts_dedup_clean,
+        columns_to_partition_by=[IndCQC.location_id],
+    ),
+    CalculateRollingAverageTestCase(
+        id="preserves_other_columns_not_involved_in_the_calculation",
+        rows=Data.expected_rolling_average_preserves_other_columns_rows,
+        schema=Schemas.expected_rolling_average_preserves_other_columns_schema,
+        column_to_average=IndCQC.ascwds_filled_posts_dedup_clean,
+        columns_to_partition_by=[IndCQC.location_id],
+    ),
+]
+
+
+class TestCalculateRollingAverage:
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in calculate_rolling_average_cases]
+    )
+    def test_calculate_rolling_average_returns_expected_values(self, case):
+        expected_lf = pl.LazyFrame(case.rows, case.schema, orient="row")
+        test_lf = expected_lf.drop(IndCQC.posts_rolling_average_model)
+
+        returned_lf = job.calculate_rolling_average(
+            test_lf,
+            column_to_average=case.column_to_average,
+            period=Data.test_rolling_average_period,
+            columns_to_partition_by=case.columns_to_partition_by,
+            new_column_name=IndCQC.posts_rolling_average_model,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+    def test_calculate_rolling_average_is_independent_of_input_row_order(self):
         expected_lf = pl.LazyFrame(
             Data.expected_rolling_average_rows,
             Schemas.expected_rolling_average_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop(IndCQC.posts_rolling_average_model)
-        returned_lf = test_lf.with_columns(
-            job.calculate_rolling_average(
-                column_to_average=IndCQC.ascwds_filled_posts_dedup_clean,
-                period=Data.test_rolling_average_period,
-                columns_to_partition_by=[IndCQC.location_id],
-            ).alias(IndCQC.posts_rolling_average_model)
+        test_lf = expected_lf.drop(IndCQC.posts_rolling_average_model).reverse()
+
+        returned_lf = job.calculate_rolling_average(
+            test_lf,
+            column_to_average=IndCQC.ascwds_filled_posts_dedup_clean,
+            period=Data.test_rolling_average_period,
+            columns_to_partition_by=[IndCQC.location_id],
+            new_column_name=IndCQC.posts_rolling_average_model,
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)

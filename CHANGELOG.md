@@ -6,7 +6,38 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added a temporary bake-off job to the job role pipeline which compares different ways of filling ASC-WDS job role ratios before the rolling ratio is calculated, varying both how far a known value is carried beyond a workplace's own submissions and how large a gap between submissions is still interpolated, alongside diagnostics showing how much real data sits behind each one, so the alternatives can be charted before we choose how to extrapolate job role estimates over time.
+- Added a Terraform-managed sample raw-data bucket (`sfc-main-sample-raw-data`) in `main`, with cross-account read access, as a curated source for non-prod branches to seed their own raw buckets from.
+
+- Added a reusable `RunDiagnostics` utility to Polars Utils, capturing memory, thread, and Polars streaming-fallback evidence for a job run, with each sample written durably to S3 so evidence survives an out-of-memory kill.
+
+- Added an `oom-diagnostics` Claude Code skill documenting how to run `RunDiagnostics` via a throwaway Fargate task, choose a sampling interval, and read back its S3 output.
+
+- Extracted the independent CQC clean job's repeated-value deduplication into a reusable `remove_repeated_values_over_time` function in Polars Utils (generalised to multiple columns and configurable partition/date columns), and used it in the SLV clean job to deduplicate starters, leavers and vacancies over time.
+
+- Implemented `apply_employment_status_magic_numbers` in the SLV merge job: splits the job-role filled-post estimate into 5 estimated-employment-status components using the CSV rates loaded previously, plus a estimated employees column. Added validation to check the split columns are non-negative, don't exceed the source estimate, and sum back to it within a relative tolerance. This is a temporary stopgap ahead of a dedicated employment status estimation pipeline, expected to be removed within a few months.
+
+- Added a git union merge driver for `CHANGELOG.md` so concurrent branches appending changelog entries no longer conflict on merge.
+
+### Changed
+- Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
+- Re-enabled the rolling-average imputation calls in the Polars impute job (disabled since an earlier OOM investigation traced the real cause elsewhere), and added the corresponding `posts_rolling_average_model` range validation to match the PySpark job.
+
+- Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
+
+### Improved
+- Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
+
+### Fixed
+- Fixed the CQC API integration tests failing the whole CI pipeline during a CQC API outage: the tests now skip instead of fail on a recognised outage signature, and were split into their own non-blocking CircleCI job.
+
+## [v2026.07.0] - 17/08/2026
+
+### Added
+- Added the missing validation checks to the imputed independent CQC pointblank validation job, covering the imputed and capacity tracker model columns, the rate of change trendlines, and the relationship between `careHome` and `primary_service_type`.
+
+- Added a validation check that `ascwds_job_role_rolling_ratio` sums to 1 across job roles within each primary service type, size group and import date group.
+
+- Joined job role estimates with metadata (on `id_per_locationid_import_date`) in the SLV merge job.
 
 - Added `new-ticket`, `commit-push`, and `open-pr` Claude Code skills to run the ticket workflow (branch → SPEC → commits → PR) consistently, and an output-style guideline in CLAUDE.md. Trimmed the existing skills to cross-reference CLAUDE.md/PR templates instead of restating them, and updated remaining `pipenv` mentions to their `uv` equivalents.
 
@@ -30,7 +61,13 @@ All notable changes to this project will be documented in this file.
 
 - Added a reusable `not_null_filter_expr` to Polars Utils, and used it in the SLV prepare step to exclude ASCWDS workplace records for non-CQC locations (null `location_id`).
 
+- Added `reshape_job_role_cols_to_rows` to the SLV prepare job, reshaping wide per-job-role columns into one row per establishment/date/job-role label, wired in after job-role relabelling; updated the merge step and prepare validation to match the new long-format output.
+
+- Joined employees/starters/leavers/vacancies onto the job role estimates in the SLV merge job. Since the two datasets use different job-role taxonomies (37 granular ASC-WDS roles vs. 15 published roles), job role estimates are first collapsed onto the published roles before joining. Updated the merge validation's expected row count to account for the collapse.
+
 ### Changed
+- Reduced CircleCI credit consumption in `task-containerisation`. A new `decide-images` job works out which `docker-bake` targets a push changed, deriving each target's trigger paths from its Dockerfile's own `COPY` sources, and includes any target with no image in ECR under the branch tag yet. `task-containerisation` then skips entirely when nothing relevant changed, and otherwise bakes only the affected targets instead of all seven. Also removed Docker Layer Caching from the job: measurement showed it's billed as a flat ~200-credit surcharge for being declared, regardless of whether it does anything, so dropping it saves roughly 90% of the job's cost on both build and skip paths. Applies to branch builds only; merges to main still build everything. Also reordered all seven fargate Dockerfiles to install dependencies before copying job source, so a source-only change no longer invalidates the `pip install` layer. Deduplicated the branch-name-sanitising logic that was copy-pasted across five CircleCI steps into a single shared command, and fixed a shell-injection risk in `terraform-destroy`'s use of it: a crafted branch name could previously break out of a quoted shell string spliced from CircleCI pipeline parameters, so that value is now passed through the step's `environment:` key instead, which is never re-parsed as shell syntax.
+
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
 - Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to use a semi/anti join instead of an `.over()`-based window filter, avoiding both a polars optimiser crash on the newer version and reducing peak memory under the streaming engine. Fargate Docker requirements are now split between a shared `docker_requirements/requirements.txt` for deps common to every project and small per-project `requirements-extra.txt` files for the two projects with additional deps (cqc_api; _04_model), instead of one shared file installing every project's deps everywhere.
@@ -65,12 +102,27 @@ All notable changes to this project will be documented in this file.
 
 - Reworked `reduce_to_published_roles` in the SLV prepare job to derive which raw ASC-WDS job role codes are published versus fold into an 'other' group from the team's own `PublishedJobRoleLabels`/job-group definitions, instead of a hand-maintained mapping dict that needed manual upkeep whenever ASC-WDS's raw job role codes changed.
 
+- Consolidated the file/S3-path helper functions duplicated across `utils/utils.py`, `polars_utils/utils.py`, and `projects/_01_ingest/utils/utils.py` (including three copies of `split_s3_uri`) into a single dependency-light `utils/file_utils.py`, importable by both PySpark and Polars code without pulling in the other framework. Updated every consumer to import from the new module, deleted the now-empty `projects/_01_ingest/utils/utils.py`, and added the missing Dockerfile `COPY utils/file_utils.py` to every Fargate image that depends on it via `polars_utils`.
+
+- Completed the Polars migration of functions within `estimate_ind_cqc_filled_posts.py`.
+
+- Refactored calculate_rolling_average to be more memory efficient. Calls to the function are still commented out.
+  I've prepared the calls for being uncommented and the patch/mock tests, and removed unittest dependency in the tests.
+
+- Renamed the SLV pipeline's `job_role_label` column to `published_job_role_label`, to make explicit that it only ever holds canonical published job role labels.
+
+- Updated pointblank validation for the estimates job within the Ind CQC pipeline, and added the custom validation rules that hadn't been converted from PySpark yet.
+
 ### Improved
+- Replaced groupby-agg-explode-join broadcasts with `.over()` in the job role imputation utils, reducing peak memory in the Estimate Filled Posts by Job Role imputation step. The frame is now explicitly sorted by location, job role, and date beforehand, so imputed ratios broadcast onto the correct rows regardless of source row order.
+
 - Reduced CircleCI credit usage by removing `no-cache = true` from all `docker-bake.hcl` image targets, so the already-enabled Docker layer caching actually takes effect instead of every image rebuilding from scratch on every push.
 
 - Added dependency caching (`uv` and Spark/Ivy JARs, keyed on `uv.lock`) to the CircleCI `test` job, saving ~10-13s per run on the `install dependencies` and `Fetch Spark JARs` steps versus no caching at all, measured directly across cache-hit and forced cache-miss runs including restore/save overhead.
 
 - Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
+
+- Replaced several `group_by`+`join` broadcast-back workarounds with `.over()` across the ASCWDS workplace, direct payments extrapolation, and CQC bed-count/winsorization cleaning steps, reducing peak memory for each.
 
 - Removed mid-pipeline LazyFrame collects from the PIR-to-filled-posts ratio and non-residential rate-of-change cleaning steps in the imputation pipeline, computing them as lazy expressions instead so the query stays fused end-to-end.
 
@@ -78,12 +130,20 @@ All notable changes to this project will be documented in this file.
 
 - Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
 
+- Cast low-cardinality columns to `Categorical`/`Enum` in the IND CQC merge job, and added the named dtype constants to `polars_utils/column_types.py`.
+
 ### Fixed
+- Widened the lower limit on the difference between `estimate_filled_posts` and `estimate_filled_posts_from_all_job_roles` from -0.0002 to -0.002, so float32 drift in the job role sum no longer fails the check on large locations.
+
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
 - Fixed Schema mismatch error while generating grouped providers output.
 
 - Added missing error notifications for the CQC/ASC-WDS orchestrator and crawler-refresh steps in three ingestion pipelines, and a bounded timeout for the ASC-WDS worker/workplace file-arrival polling loops.
+
+- Fixed a broken import in the shared ingestion utils that caused the ASC-WDS, Capacity Tracker, CQC PIR, and ONS PySpark Glue ingestion jobs to fail with `ModuleNotFoundError: No module named 'polars'`. Inlined the affected `split_s3_uri` helper instead of importing it, so this file no longer depends on PySpark/pydeequ either.
+
+- Fixed the `cqc-api` Fargate task's OOM in `cqc_locations_4_full_clean.py` by forcing the postcode join to materialize before the matched/unmatched split, instead of the temporary fix of increasing the task's resources.
 
 ## [v2026.06.0] - 15/07/2026
 

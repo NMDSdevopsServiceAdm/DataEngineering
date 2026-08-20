@@ -4,9 +4,13 @@ from datetime import date
 from unittest.mock import Mock, call, patch
 
 import polars as pl
+import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_03_impute as job
 from polars_utils.column_types import CategoricalColumnTypes
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    SumRollingRatiosAcrossJobRolesData as Data,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_03_impute"
@@ -19,7 +23,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.id_per_locationid_import_date_job_role: pl.UInt32,
             IndCqcColumns.location_id: CategoricalColumnTypes.LocationCatType,
             IndCqcColumns.cqc_location_import_date: pl.Date,
-            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
+            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleCatType,
             IndCqcColumns.primary_service_type: CategoricalColumnTypes.PrimaryServiceEnumType,
             IndCqcColumns.estimate_filled_posts: pl.Float32,
             IndCqcColumns.ascwds_job_role_counts: pl.Int16,
@@ -161,6 +165,35 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             returned_df[IndCqcColumns.ascwds_job_role_ratios].to_list(),
             expected_df[IndCqcColumns.ascwds_job_role_ratios].to_list(),
         )
+
+
+class TestSumRollingRatiosAcrossJobRoles:
+    schema = {
+        IndCqcColumns.primary_service_type: pl.String,
+        IndCqcColumns.estimate_filled_posts_size_group: pl.String,
+        IndCqcColumns.cqc_location_import_date: pl.Date,
+        IndCqcColumns.main_job_role_clean_labelled: pl.String,
+        IndCqcColumns.location_id: pl.String,
+        IndCqcColumns.ascwds_job_role_rolling_ratio: pl.Float32,
+    }
+
+    @pytest.mark.parametrize(
+        "rows,expected_totals",
+        [
+            case.as_pytest_param()
+            for case in Data.sum_rolling_ratios_across_job_roles_test_cases
+        ],
+    )
+    def test_totals_match_expected(self, rows, expected_totals):
+        df = pl.DataFrame(rows, self.schema, orient="row")
+
+        returned_totals = (
+            job.sum_rolling_ratios_across_job_roles(df)
+            .get_column(IndCqcColumns.ascwds_job_role_rolling_ratio)
+            .to_list()
+        )
+
+        assert sorted(returned_totals) == pytest.approx(sorted(expected_totals))
 
 
 if __name__ == "__main__":

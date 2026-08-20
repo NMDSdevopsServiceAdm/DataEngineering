@@ -22,7 +22,7 @@ class AllocateImportDatesTests(unittest.TestCase):
     def setUp(self) -> None:
         self.delta_dates = [20250101, 20250201, 20250301]
 
-    @patch(f"{PATCH_PATH}.utils.list_s3_parquet_import_dates")
+    @patch(f"{PATCH_PATH}.file_utils.list_s3_parquet_import_dates")
     def test_allocate_import_dates_when_processed_list_populated(
         self, list_s3_mock: Mock
     ):
@@ -38,7 +38,7 @@ class AllocateImportDatesTests(unittest.TestCase):
         self.assertEqual(returned_dates_to_process, [20250201, 20250301])
         self.assertEqual(returned_processed_dates, processed_dates)
 
-    @patch(f"{PATCH_PATH}.utils.list_s3_parquet_import_dates")
+    @patch(f"{PATCH_PATH}.file_utils.list_s3_parquet_import_dates")
     def test_allocate_import_dates_when_processed_list_empty(self, list_s3_mock: Mock):
         processed_dates = []
         list_s3_mock.side_effect = [self.delta_dates, processed_dates]
