@@ -425,6 +425,9 @@ jobs:
           command: |
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
+            # AWS CLI v2 pipes list/get-style output through a pager by default;
+            # with no TTY here it hangs indefinitely producing no output at all.
+            export AWS_PAGER=""
             . /tmp/sanitised_branch.env
             if [ "$SANITISED_CIRCLE_BRANCH" = "main" ]; then
               exit 0
