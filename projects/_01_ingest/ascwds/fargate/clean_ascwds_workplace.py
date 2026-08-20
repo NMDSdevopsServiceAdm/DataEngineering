@@ -160,8 +160,17 @@ def main(
     # (just the duplicate establishment_id/date pairs), so it's collected once
     # here rather than left lazy - it feeds both outputs below, and leaving it
     # lazy would re-run the wide combined-schema scan+hash for each of them.
+    #
+    # engine="streaming" matters: a plain .collect() silently drops to the
+    # in-memory engine for this whole query, including the wide select+hash
+    # over combined_lf's full history - measured (ticket 1906 OOM
+    # investigation) at 39GB+ and still climbing before being OOM-killed at
+    # the container's 60GB limit, versus 26.4GB peak (completing successfully)
+    # with the streaming engine on the same real data.
     duplicate_keys = (
-        wUtils.find_duplicate_workplace_submissions(combined_lf).collect().lazy()
+        wUtils.find_duplicate_workplace_submissions(combined_lf)
+        .collect(engine="streaming")
+        .lazy()
     )
 
     # The LazyFrame is split into two at this point:
