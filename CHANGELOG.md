@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Extracted the independent CQC clean job's repeated-value deduplication into a reusable `remove_repeated_values_over_time` function in Polars Utils (generalised to multiple columns and configurable partition/date columns), and used it in the SLV clean job to deduplicate starters, leavers and vacancies over time.
 
+- Implemented `apply_employment_status_magic_numbers` in the SLV merge job: splits the job-role filled-post estimate into 5 estimated-employment-status components using the CSV rates loaded previously, plus a estimated employees column. Added validation to check the split columns are non-negative, don't exceed the source estimate, and sum back to it within a relative tolerance. This is a temporary stopgap ahead of a dedicated employment status estimation pipeline, expected to be removed within a few months.
+
 ### Changed
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
 

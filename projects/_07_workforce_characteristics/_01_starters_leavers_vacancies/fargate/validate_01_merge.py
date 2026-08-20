@@ -7,6 +7,7 @@ from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
@@ -14,6 +15,18 @@ from utils.column_values.categorical_columns_by_dataset import (
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,
 ]
+
+METRIC = IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
+
+EMPLOYMENT_STATUS_SPLIT_COLUMNS = [
+    SLVCols.estimated_emp_stat_perm,
+    SLVCols.estimated_emp_stat_temp,
+    SLVCols.estimated_emp_stat_bank_or_pool,
+    SLVCols.estimated_emp_stat_agency,
+    SLVCols.estimated_emp_stat_other,
+]
+
+EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE = 1e-5
 
 
 def calculate_expected_row_count(compare_df: pl.DataFrame) -> int:
@@ -74,8 +87,27 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        ).interrogate()
+        ).col_vals_ge(
+            columns=EMPLOYMENT_STATUS_SPLIT_COLUMNS,
+            value=0,
+            brief="Employment status split columns are non-negative",
+        )
     )
+    for column in EMPLOYMENT_STATUS_SPLIT_COLUMNS:
+        validation = validation.col_vals_expr(
+            expr=(pl.col(column) <= pl.col(METRIC)) | pl.col(column).is_null(),
+            brief=f"{column} does not exceed {METRIC}",
+        )
+
+    sum_of_splits = sum(pl.col(column) for column in EMPLOYMENT_STATUS_SPLIT_COLUMNS)
+    validation = validation.col_vals_expr(
+        expr=(
+            (sum_of_splits - pl.col(METRIC)).abs()
+            <= pl.col(METRIC).abs() * EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE
+        ),
+        brief="Employment status splits sum back to the filled-post metric",
+    ).interrogate()
+
     vl.write_reports(validation, bucket_name, reports_path)
 
 
