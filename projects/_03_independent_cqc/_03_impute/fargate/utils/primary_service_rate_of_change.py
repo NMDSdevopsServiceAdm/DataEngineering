@@ -101,7 +101,7 @@ def model_primary_service_rate_of_change_trendline(
             pl.col(TempCol.current_period),
             pl.col(TempCol.current_period_interpolated),
         )
-        .cast(pl.Float32)
+        .cast(pl.Float64)
         .alias(TempCol.current_period_interpolated)
     )
 
@@ -109,7 +109,7 @@ def model_primary_service_rate_of_change_trendline(
         pl.col(TempCol.current_period_interpolated)
         .shift(1)
         .over(IndCqc.location_id, order_by=IndCqc.cqc_location_import_date)
-        .cast(pl.Float32)
+        .cast(pl.Float64)
         .alias(TempCol.previous_period_interpolated)
     )
 
@@ -182,14 +182,14 @@ def calculate_rolling_sums(
         .otherwise(None)
         .rolling_sum_by(by=IndCqc.cqc_location_import_date, window_size=window)
         .over(group_cols)
-        .cast(pl.Float32)
+        .cast(pl.Float64)
         .alias(TempCol.rolling_current_sum),
         pl.when(paired)
         .then(pl.col(TempCol.previous_period_cleaned))
         .otherwise(None)
         .rolling_sum_by(by=IndCqc.cqc_location_import_date, window_size=window)
         .over(group_cols)
-        .cast(pl.Float32)
+        .cast(pl.Float64)
         .alias(TempCol.rolling_previous_sum),
     )
 
@@ -303,12 +303,12 @@ def clean_non_residential_rate_of_change(
             pl.when(keep)
             .then(pl.col(prev))
             .otherwise(None)
-            .cast(pl.Float32)
+            .cast(pl.Float64)
             .alias(TempCol.previous_period_cleaned),
             pl.when(keep)
             .then(pl.col(curr))
             .otherwise(None)
-            .cast(pl.Float32)
+            .cast(pl.Float64)
             .alias(TempCol.current_period_cleaned),
         ]
     ).drop(TempCol.abs_change, TempCol.perc_change, TempCol.abs_pct, TempCol.perc_pct)
