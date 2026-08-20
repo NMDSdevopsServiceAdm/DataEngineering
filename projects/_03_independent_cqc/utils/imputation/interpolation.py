@@ -65,7 +65,6 @@ def model_interpolation(
         )
 
     elif method == "straight":
-        lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
         lf = lf.with_columns(
             (
                 pl.when(pl.col(column_with_null_values).is_not_null())
@@ -73,7 +72,7 @@ def model_interpolation(
                 .otherwise(None)
                 .shift(1)
                 .forward_fill()
-                .over(group_columns)
+                .over(group_columns, order_by=IndCqc.cqc_location_import_date)
             ).alias(IndCqc.previous_non_null_value)
         )
 
@@ -117,6 +116,7 @@ def calculate_residuals(
     specified columns, then backward fills the residual into rows where
     either of the specified columns are null.
 
+
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the data.
         first_column (str): The name of the first column that contains values.
@@ -130,14 +130,14 @@ def calculate_residuals(
     """
     group_columns = group_columns or [IndCqc.location_id]
 
-    lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
-
     residual_expr = pl.when(
         pl.col(first_column).is_not_null() & pl.col(second_column).is_not_null()
     ).then(pl.col(first_column) - pl.col(second_column))
 
     lf = lf.with_columns(
-        residual_expr.backward_fill().over(group_columns).alias(IndCqc.residual)
+        residual_expr.backward_fill()
+        .over(group_columns, order_by=IndCqc.cqc_location_import_date)
+        .alias(IndCqc.residual)
     )
     return lf
 
@@ -150,6 +150,7 @@ def calculate_proportion_of_days_between_submissions(
     """
     Calculates the proportion of days between consecutive non-null values
     based on cqc_location_import_date.
+
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the data.
@@ -165,12 +166,15 @@ def calculate_proportion_of_days_between_submissions(
     """
     group_columns = group_columns or [IndCqc.location_id]
 
-    lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
     val_not_null_date = pl.when(pl.col(column_with_null_values).is_not_null()).then(
         pl.col(IndCqc.cqc_location_import_date)
     )
-    previous_submission_date = val_not_null_date.forward_fill().over(group_columns)
-    next_submission_date = val_not_null_date.backward_fill().over(group_columns)
+    previous_submission_date = val_not_null_date.forward_fill().over(
+        group_columns, order_by=IndCqc.cqc_location_import_date
+    )
+    next_submission_date = val_not_null_date.backward_fill().over(
+        group_columns, order_by=IndCqc.cqc_location_import_date
+    )
 
     condition = pl.col(IndCqc.cqc_location_import_date).is_between(
         previous_submission_date, next_submission_date, "none"
