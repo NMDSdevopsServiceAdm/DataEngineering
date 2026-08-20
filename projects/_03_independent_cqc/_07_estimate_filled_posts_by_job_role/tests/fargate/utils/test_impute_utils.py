@@ -129,9 +129,10 @@ class TestAddImputedASCWDSJobRoleRatios:
         )
         input_lf = expected_lf.drop(IndCQC.imputed_ascwds_job_role_ratios)
 
-        returned_lf = job.add_imputed_ascwds_job_role_ratios(input_lf).select(
-            Schemas.add_imputed_ascwds_job_role_ratios_expected_schema.keys()
-        )
+        # Deliberately not selecting the expected columns first: the drop lists for the
+        # extrapolation and interpolation temp columns are repeated by hand in the function,
+        # so comparing the whole frame is what catches one of them leaking into the output.
+        returned_lf = job.add_imputed_ascwds_job_role_ratios(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
 

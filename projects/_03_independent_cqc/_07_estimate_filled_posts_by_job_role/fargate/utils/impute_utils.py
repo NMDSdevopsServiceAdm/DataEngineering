@@ -308,14 +308,21 @@ def add_imputed_ascwds_job_role_ratios(
     Outside a workplace's known dates the ratios follow the nominal change in the trendline
     indefinitely, so the workplace keeps its own level while moving with its stratum. Interior
     gaps ride the same trendline, with the residual apportioned by days rather than by rows.
-    Neither direction is capped: only the trendline needs limiting, which
-    `add_imputed_job_role_ratios_for_trendline` already does.
+    Neither direction is capped, and the trendline is carried across every date, so a workplace
+    that submitted once still receives a split for every other date. The limits in
+    `add_imputed_job_role_ratios_for_trendline` bound which workplaces contribute to the
+    trendline, not how far it reaches.
 
     Ratios are floored at zero and then re-shared across job roles. Nominal extrapolation
-    already preserves the sum of 1 exactly, since all job roles of a workplace share the same
-    known dates and the trendline itself sums to 1 — so re-sharing only repairs the cases where
-    a falling trendline took a ratio below zero. That also means the flooring can never zero
-    every job role, because a set summing to 1 must hold at least one positive value.
+    already preserves the sum of 1 to float32 precision, since all job roles of a workplace
+    share the same known dates and the trendline itself sums to 1 — so re-sharing mainly repairs
+    the cases where a falling trendline took a ratio below zero. Because a set summing to 1 must
+    hold at least one positive value, flooring can never zero every job role at once, leaving
+    the re-share no division by zero to guard against.
+
+    Requires the trendline to be non-null on every row, which `validate_03_impute` enforces.
+    A null trendline nulls both the extrapolation and the interpolation, which would leave a
+    workplace that did submit with no imputed split at all.
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset containing job role ratios and the
@@ -346,6 +353,8 @@ def add_imputed_ascwds_job_role_ratios(
             IndCQC.interpolation_model,
         )
         .clip(lower_bound=0)
+        # Trend interpolation returns Float64, so cast before this lands on the full frame.
+        .cast(pl.Float32)
         .alias(TempCols.unnormalised_ratios)
     ).drop(
         IndCQC.extrapolation_forwards,
