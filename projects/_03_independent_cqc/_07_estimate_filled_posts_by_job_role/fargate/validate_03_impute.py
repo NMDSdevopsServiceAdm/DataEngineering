@@ -358,13 +358,6 @@ def other_validation(
             right=1.001,
             brief="ascwds_job_role_rolling_ratio should sum to 1 across job roles within each primary service type, size group and import date",
         )
-        .col_vals_between(
-            pre=sum_rolling_ratios_across_job_roles,
-            columns=IndCqcColumns.ascwds_job_role_rolling_ratio,
-            left=0.999,
-            right=1.001,
-            brief="ascwds_job_role_rolling_ratio should sum to 1 across job roles within each primary service type, size group and import date",
-        )
         # Date plausibility
         .col_vals_ge(
             columns=IndCqcColumns.cqc_location_import_date,
