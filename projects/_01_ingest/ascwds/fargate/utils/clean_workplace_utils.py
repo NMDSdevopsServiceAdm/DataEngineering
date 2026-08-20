@@ -4,6 +4,7 @@ from typing import Generator
 import polars as pl
 import polars.selectors as cs
 
+import polars_utils.cleaning_utils as cUtils
 import polars_utils.expressions as expr
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -28,41 +29,6 @@ TEST_ACCOUNTS: set[str] = {
     "51818",
 }
 
-# Establishment IDs known to contain duplicated ASC-WDS submissions.
-#
-# These records represent the same workplace data uploaded against multiple
-# accounts. The issue was raised with the support team but there is no way of
-# automatically blocking this going forwards.
-#
-# There are two sets of workplaces here who submitted the exact same ASCWDS
-# files on the same day.
-# - Four locations ("48904" to "49968")
-# - 18 locations ("50538" to "50870").
-DUPLICATE_ESTABLISHMENT_IDS: set[str] = {
-    "48904",
-    "49966",
-    "49967",
-    "49968",
-    "50538",
-    "50561",
-    "50590",
-    "50596",
-    "50598",
-    "50621",
-    "50623",
-    "50624",
-    "50627",
-    "50629",
-    "50639",
-    "50640",
-    "50767",
-    "50769",
-    "50770",
-    "50771",
-    "50869",
-    "50870",
-}
-
 
 def valid_workplace_filter() -> pl.Expr:
     """
@@ -70,18 +36,110 @@ def valid_workplace_filter() -> pl.Expr:
 
     Removes:
         - Internal Skills for Care test organisations.
-        - Known duplicate workplace submissions.
 
     Returns:
         pl.Expr: A Polars expression that can be used to filter a LazyFrame.
     """
-    return (
-        # exclude test accounts
-        ~pl.col(AWPClean.organisation_id).is_in(TEST_ACCOUNTS)
-        &
-        # exclude duplicate establishments
-        ~pl.col(AWPClean.establishment_id).is_in(DUPLICATE_ESTABLISHMENT_IDS)
+    return ~pl.col(AWPClean.organisation_id).is_in(TEST_ACCOUNTS)
+
+
+# Columns that represent the actual submitted workforce data: staffing totals,
+# job role, service type and user type breakdowns. Two establishment_ids with
+# identical values across these columns on the same import date are treated as
+# the same underlying ASC-WDS submission uploaded under different accounts,
+# rather than as separate workplaces.
+#
+# `_changedate`/`_savedate` columns are excluded even though they share the
+# `st`/`ut` prefixes, since they're per-account bookkeeping rather than
+# submitted content.
+DUPLICATE_CONTENT_COLUMNS: cs.Selector = cs.by_name(
+    AWPClean.total_staff,
+    AWPClean.worker_records,
+    AWPClean.total_starters,
+    AWPClean.total_leavers,
+    AWPClean.total_vacancies,
+    AWPClean.total_staff_bounded,
+    AWPClean.worker_records_bounded,
+    require_all=False,
+) | (
+    (cs.starts_with("jr") | cs.starts_with("st") | cs.starts_with("ut"))
+    & ~cs.ends_with("changedate", "savedate")
+)
+
+
+def find_duplicate_workplace_submissions(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Identify establishment_ids that submitted identical workforce data on the
+    same import date, under a different account.
+
+    Establishment_ids are grouped by a hash of DUPLICATE_CONTENT_COLUMNS rather
+    than the columns themselves, keeping the group_by key small regardless of
+    how wide the content set is.
+
+    Args:
+        lf (pl.LazyFrame): Raw ASC-WDS workplace LazyFrame (e.g. the
+            combined-schema scan used for job role columns), with a string
+            `import_date` column and one row per establishment_id/import_date.
+
+    Returns:
+        pl.LazyFrame: Two columns, establishment_id and
+            ascwds_workplace_import_date, one row per establishment_id that is
+            part of a duplicate-content group.
+    """
+    content_hash_lf = lf.select(
+        AWPClean.establishment_id,
+        AWPClean.import_date,
+        pl.struct(DUPLICATE_CONTENT_COLUMNS).hash().alias("content_hash"),
     )
+
+    duplicate_keys = (
+        content_hash_lf.group_by(AWPClean.import_date, "content_hash")
+        .agg(pl.col(AWPClean.establishment_id))
+        .filter(pl.col(AWPClean.establishment_id).list.len() > 1)
+        .select(AWPClean.import_date, AWPClean.establishment_id)
+        .explode(AWPClean.establishment_id)
+    )
+
+    return cUtils.column_to_date(
+        duplicate_keys, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
+    ).select(AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date)
+
+
+def null_duplicate_workplace_data(
+    lf: pl.LazyFrame, duplicate_keys: pl.LazyFrame
+) -> pl.LazyFrame:
+    """
+    Null DUPLICATE_CONTENT_COLUMNS for every row matching a duplicate
+    establishment_id/ascwds_workplace_import_date key.
+
+    Args:
+        lf (pl.LazyFrame): ASC-WDS workplace LazyFrame containing
+            establishment_id and ascwds_workplace_import_date.
+        duplicate_keys (pl.LazyFrame): Output of
+            find_duplicate_workplace_submissions - establishment_id and
+            ascwds_workplace_import_date pairs to null.
+
+    Returns:
+        pl.LazyFrame: Input LazyFrame with DUPLICATE_CONTENT_COLUMNS nulled on
+            matching rows. Non-matching rows and non-content columns are
+            unchanged.
+    """
+    is_duplicate_col = "is_duplicate_workplace_submission"
+
+    lf = lf.join(
+        duplicate_keys.with_columns(pl.lit(True).alias(is_duplicate_col)),
+        on=[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
+        how="left",
+    )
+
+    null_content_expr = (
+        pl.when(pl.col(is_duplicate_col).is_not_null())
+        .then(None)
+        .otherwise(DUPLICATE_CONTENT_COLUMNS)
+        .name.keep()
+    )
+
+    return lf.with_columns(null_content_expr).drop(is_duplicate_col)
 
 
 def remove_rows_with_duplicate_location_ids(lf: pl.LazyFrame) -> pl.LazyFrame:

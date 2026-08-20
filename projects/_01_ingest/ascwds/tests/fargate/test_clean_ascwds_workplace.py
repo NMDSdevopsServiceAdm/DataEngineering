@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
@@ -11,7 +10,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 PATCH_PATH = "projects._01_ingest.ascwds.fargate.clean_ascwds_workplace"
 
 
-class MainTests(unittest.TestCase):
+class TestMain:
     WORKPLACE_SOURCE = "some/source"
     DATA_LABELS_SOURCE = "some/labels/source"
     CLEANED_WORKPLACE_DESTINATION = "some/destination"
@@ -20,6 +19,8 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.merge_legacy_job_role_columns")
     @patch(f"{PATCH_PATH}.expr.is_slv_job_role_column")
+    @patch(f"{PATCH_PATH}.wUtils.null_duplicate_workplace_data")
+    @patch(f"{PATCH_PATH}.wUtils.find_duplicate_workplace_submissions")
     @patch(f"{PATCH_PATH}.utils.discover_combined_schema")
     @patch(f"{PATCH_PATH}.wUtils.remove_rows_with_duplicate_location_ids")
     @patch(f"{PATCH_PATH}.wUtils.create_purge_date_columns")
@@ -42,6 +43,8 @@ class MainTests(unittest.TestCase):
         create_purge_date_columns_mock: Mock,
         remove_rows_with_duplicate_location_ids_mock: Mock,
         discover_combined_schema_mock: Mock,
+        find_duplicate_workplace_submissions_mock: Mock,
+        null_duplicate_workplace_data_mock: Mock,
         is_slv_job_role_column_mock: Mock,
         merge_legacy_job_role_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -78,8 +81,10 @@ class MainTests(unittest.TestCase):
         )
         apply_categorical_labels_mock.assert_called_once()
         create_purge_date_columns_mock.assert_called_once()
-        remove_rows_with_duplicate_location_ids_mock.assert_called_once()
         discover_combined_schema_mock.assert_called_once_with(self.WORKPLACE_SOURCE)
+        find_duplicate_workplace_submissions_mock.assert_called_once()
+        assert null_duplicate_workplace_data_mock.call_count == 2
+        remove_rows_with_duplicate_location_ids_mock.assert_called_once()
         assert is_slv_job_role_column_mock.call_count == 2
         merge_legacy_job_role_columns_mock.assert_called_once_with(
             ANY, job.legacy_job_roles_dict

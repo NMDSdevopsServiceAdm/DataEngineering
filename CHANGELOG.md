@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
 
+- Replaced the hardcoded list of known duplicate ASC-WDS workplace establishment IDs (and the unused `exclusions.json`/`is_unique_workplace_data` config it duplicated) with runtime detection of establishments that submitted identical workforce data on the same import date, nulling their data automatically instead of relying on a manually maintained list.
+
 ### Improved
 
 ### Fixed

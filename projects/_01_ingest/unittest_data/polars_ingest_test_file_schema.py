@@ -521,3 +521,8 @@ class TestCleanAscwdsWorkplaceUtilsSchemas:
         AWPClean.version: pl.String,
         AWPClean.import_date: pl.Date,
     }
+
+    duplicate_workplace_keys_schema = {
+        AWPClean.establishment_id: pl.String,
+        AWPClean.ascwds_workplace_import_date: pl.Date,
+    }

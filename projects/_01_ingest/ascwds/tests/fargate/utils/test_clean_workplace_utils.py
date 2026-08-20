@@ -17,31 +17,60 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 
 
 class TestValidWorkplaceFilter:
-    def test_valid_workplace_filter_returns_correct_rows(self):
-        input_lf = pl.LazyFrame(
-            {
-                AWPClean.organisation_id: [
-                    "305",  # test account
-                    "123",
-                    "1234",
-                    "28470",  # test account
-                ],
-                AWPClean.establishment_id: [
-                    "1",
-                    "48904",  # duplicate
-                    "12",
-                    "50640",  # duplicate
-                ],
-            }
-        )
-        expected_lf = pl.LazyFrame(
-            {
-                AWPClean.organisation_id: ["1234"],
-                AWPClean.establishment_id: ["12"],
-            }
-        )
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.valid_workplace_filter_test_cases
+        ],
+    )
+    def test_excludes_test_accounts(self, case):
+        input_lf = pl.LazyFrame(case.input_data)
+        expected_lf = pl.LazyFrame(case.expected_data)
 
         returned_lf = input_lf.filter(job.valid_workplace_filter())
+
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
+
+
+class TestFindDuplicateWorkplaceSubmissions:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.find_duplicate_workplace_submissions_test_cases
+        ],
+    )
+    def test_find_duplicate_workplace_submissions(self, case):
+        input_lf = pl.LazyFrame(case.input_data)
+        expected_lf = pl.LazyFrame(
+            case.expected_data, Schemas.duplicate_workplace_keys_schema
+        )
+
+        returned_lf = job.find_duplicate_workplace_submissions(input_lf)
+
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
+
+
+class TestNullDuplicateWorkplaceData:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.null_duplicate_workplace_data_test_cases
+        ],
+    )
+    def test_null_duplicate_workplace_data(self, case):
+        input_lf = pl.LazyFrame(case.input_data)
+        duplicate_keys_lf = pl.LazyFrame(
+            case.duplicate_keys_data, Schemas.duplicate_workplace_keys_schema
+        )
+        # Nulling never changes a column's dtype, so the expected frame should
+        # match input_lf's inferred schema rather than re-infer from data that
+        # may be all-None.
+        expected_lf = pl.LazyFrame(case.expected_data, input_lf.collect_schema())
+
+        returned_lf = job.null_duplicate_workplace_data(input_lf, duplicate_keys_lf)
 
         pl_testing.assert_frame_equal(expected_lf, returned_lf)
 

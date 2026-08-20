@@ -133,6 +133,17 @@ def main(
 
     lf = wUtils.create_purge_date_columns(lf)
 
+    combined_schema = utils.discover_combined_schema(workplace_source)
+    combined_lf = utils.scan_parquet(workplace_source, schema=combined_schema)
+
+    # find_duplicate_workplace_submissions returns a tiny post-group_by result
+    # (just the duplicate establishment_id/date pairs), so it's collected once
+    # here rather than left lazy - it feeds both outputs below, and leaving it
+    # lazy would re-run the wide combined-schema scan+hash for each of them.
+    duplicate_keys = (
+        wUtils.find_duplicate_workplace_submissions(combined_lf).collect().lazy()
+    )
+
     # The LazyFrame is split into two at this point:
     # - SfC internal pipeline (filtered to workplaces last *active* on or after the purge date)
     # - Cleaned ASC-WDS workplace data (filtered to workplaces last *amended* on or after the purge date)
@@ -141,6 +152,10 @@ def main(
     sfc_internal_lf = lf.filter(
         pl.col(AWPClean.workplace_last_active_date) >= pl.col(AWPClean.purge_date)
     ).select(SFC_INTERNAL_COLUMNS)
+
+    sfc_internal_lf = wUtils.null_duplicate_workplace_data(
+        sfc_internal_lf, duplicate_keys
+    )
 
     utils.sink_to_parquet(
         sfc_internal_lf, output_path=ascwds_for_sfc_internal_destination
@@ -153,8 +168,7 @@ def main(
 
     workplace_lf = wUtils.remove_rows_with_duplicate_location_ids(workplace_lf)
 
-    combined_schema = utils.discover_combined_schema(workplace_source)
-    slv_lf = utils.scan_parquet(workplace_source, schema=combined_schema).select(
+    slv_lf = combined_lf.select(
         *[AWPClean.establishment_id, AWPClean.import_date],
         expr.is_slv_job_role_column(),
     )
@@ -182,6 +196,8 @@ def main(
     workplace_lf = wUtils.merge_legacy_job_role_columns(
         workplace_lf, legacy_job_roles_dict
     )
+
+    workplace_lf = wUtils.null_duplicate_workplace_data(workplace_lf, duplicate_keys)
 
     utils.sink_to_parquet(workplace_lf, output_path=cleaned_workplace_destination)
 

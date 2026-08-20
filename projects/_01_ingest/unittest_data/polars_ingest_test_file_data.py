@@ -1611,6 +1611,28 @@ class MergeLegacyJobRoleColumnsTestCase:
 
 
 @dataclass
+class ValidWorkplaceFilterTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
+class FindDuplicateWorkplaceSubmissionsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
+class NullDuplicateWorkplaceDataTestCase:
+    id: str
+    input_data: dict[str, Any]
+    duplicate_keys_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
 class TestCleanAscwdsWorkplaceUtilsData:
     purge_date_test_cases = [
         CleanWorkplaceUtilsTestCase(
@@ -1910,6 +1932,201 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
             expected_data={
                 "jr101emp": 10,
+            },
+        ),
+    ]
+
+    valid_workplace_filter_test_cases = [
+        ValidWorkplaceFilterTestCase(
+            id="excludes_test_accounts_only",
+            input_data={
+                AWPClean.organisation_id: ["305", "123", "1234", "28470"],
+                AWPClean.establishment_id: ["1", "2", "3", "4"],
+            },
+            expected_data={
+                AWPClean.organisation_id: ["123", "1234"],
+                AWPClean.establishment_id: ["2", "3"],
+            },
+        ),
+    ]
+
+    find_duplicate_workplace_submissions_test_cases = [
+        FindDuplicateWorkplaceSubmissionsTestCase(
+            id="flags_establishment_ids_sharing_identical_content_on_same_import_date",
+            input_data={
+                AWPClean.establishment_id: ["1", "2", "3"],
+                AWPClean.import_date: ["20260101", "20260101", "20260101"],
+                AWPClean.total_staff: ["10", "10", "5"],
+                AWPClean.job_role_01_employees: ["4", "4", "1"],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.ascwds_workplace_import_date: [
+                    date(2026, 1, 1),
+                    date(2026, 1, 1),
+                ],
+            },
+        ),
+        FindDuplicateWorkplaceSubmissionsTestCase(
+            id="flags_all_ids_in_a_group_of_three_or_more",
+            input_data={
+                AWPClean.establishment_id: ["1", "2", "3", "4"],
+                AWPClean.import_date: ["20260101", "20260101", "20260101", "20260101"],
+                AWPClean.total_staff: ["10", "10", "10", "5"],
+                AWPClean.job_role_01_employees: ["4", "4", "4", "1"],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["1", "2", "3"],
+                AWPClean.ascwds_workplace_import_date: [
+                    date(2026, 1, 1),
+                    date(2026, 1, 1),
+                    date(2026, 1, 1),
+                ],
+            },
+        ),
+        FindDuplicateWorkplaceSubmissionsTestCase(
+            id="does_not_flag_when_a_content_column_differs",
+            input_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.import_date: ["20260101", "20260101"],
+                AWPClean.total_staff: ["10", "10"],
+                AWPClean.job_role_01_employees: ["4", "5"],
+            },
+            expected_data={
+                AWPClean.establishment_id: [],
+                AWPClean.ascwds_workplace_import_date: [],
+            },
+        ),
+        FindDuplicateWorkplaceSubmissionsTestCase(
+            id="does_not_flag_matching_content_on_different_import_dates",
+            input_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.import_date: ["20260101", "20260201"],
+                AWPClean.total_staff: ["10", "10"],
+                AWPClean.job_role_01_employees: ["4", "4"],
+            },
+            expected_data={
+                AWPClean.establishment_id: [],
+                AWPClean.ascwds_workplace_import_date: [],
+            },
+        ),
+        FindDuplicateWorkplaceSubmissionsTestCase(
+            id="ignores_non_content_columns_when_comparing",
+            input_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.import_date: ["20260101", "20260101"],
+                AWPClean.total_staff: ["10", "10"],
+                AWPClean.job_role_01_employees: ["4", "4"],
+                AWPClean.establishment_name: ["Sunnyside", "Meadow View"],
+                AWPClean.master_update_date: ["20260101", "20260105"],
+                AWPClean.is_parent: ["0", "1"],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.ascwds_workplace_import_date: [
+                    date(2026, 1, 1),
+                    date(2026, 1, 1),
+                ],
+            },
+        ),
+        FindDuplicateWorkplaceSubmissionsTestCase(
+            id="returns_empty_when_no_duplicates_exist",
+            input_data={
+                AWPClean.establishment_id: ["1", "2", "3"],
+                AWPClean.import_date: ["20260101", "20260101", "20260101"],
+                AWPClean.total_staff: ["10", "8", "5"],
+                AWPClean.job_role_01_employees: ["4", "3", "1"],
+            },
+            expected_data={
+                AWPClean.establishment_id: [],
+                AWPClean.ascwds_workplace_import_date: [],
+            },
+        ),
+    ]
+
+    null_duplicate_workplace_data_test_cases = [
+        NullDuplicateWorkplaceDataTestCase(
+            id="nulls_content_columns_for_rows_matching_a_duplicate_key",
+            input_data={
+                AWPClean.establishment_id: ["1", "2", "3"],
+                AWPClean.ascwds_workplace_import_date: [
+                    date(2026, 1, 1),
+                    date(2026, 1, 1),
+                    date(2026, 1, 1),
+                ],
+                AWPClean.total_staff: [10, 10, 5],
+                AWPClean.job_role_01_employees: [4, 4, 1],
+                AWPClean.establishment_name: ["Sunnyside", "Meadow View", "Oak Lodge"],
+            },
+            duplicate_keys_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.ascwds_workplace_import_date: [
+                    date(2026, 1, 1),
+                    date(2026, 1, 1),
+                ],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["1", "2", "3"],
+                AWPClean.ascwds_workplace_import_date: [
+                    date(2026, 1, 1),
+                    date(2026, 1, 1),
+                    date(2026, 1, 1),
+                ],
+                AWPClean.total_staff: [None, None, 5],
+                AWPClean.job_role_01_employees: [None, None, 1],
+                AWPClean.establishment_name: ["Sunnyside", "Meadow View", "Oak Lodge"],
+            },
+        ),
+        NullDuplicateWorkplaceDataTestCase(
+            id="leaves_non_matching_rows_unchanged",
+            input_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.ascwds_workplace_import_date: [
+                    date(2026, 1, 1),
+                    date(2026, 2, 1),
+                ],
+                AWPClean.total_staff: [10, 8],
+            },
+            duplicate_keys_data={
+                AWPClean.establishment_id: [],
+                AWPClean.ascwds_workplace_import_date: [],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.ascwds_workplace_import_date: [
+                    date(2026, 1, 1),
+                    date(2026, 2, 1),
+                ],
+                AWPClean.total_staff: [10, 8],
+            },
+        ),
+        NullDuplicateWorkplaceDataTestCase(
+            id="leaves_non_content_columns_unchanged_on_matched_rows",
+            input_data={
+                AWPClean.establishment_id: ["1"],
+                AWPClean.ascwds_workplace_import_date: [date(2026, 1, 1)],
+                AWPClean.total_staff: [10],
+                AWPClean.address: ["1 Example Street"],
+                AWPClean.establishment_type: ["1"],
+                AWPClean.location_id: ["LOC-001"],
+                AWPClean.is_parent: ["0"],
+                AWPClean.parent_permission: ["1"],
+                AWPClean.master_update_date: [date(2026, 1, 1)],
+            },
+            duplicate_keys_data={
+                AWPClean.establishment_id: ["1"],
+                AWPClean.ascwds_workplace_import_date: [date(2026, 1, 1)],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["1"],
+                AWPClean.ascwds_workplace_import_date: [date(2026, 1, 1)],
+                AWPClean.total_staff: [None],
+                AWPClean.address: ["1 Example Street"],
+                AWPClean.establishment_type: ["1"],
+                AWPClean.location_id: ["LOC-001"],
+                AWPClean.is_parent: ["0"],
+                AWPClean.parent_permission: ["1"],
+                AWPClean.master_update_date: [date(2026, 1, 1)],
             },
         ),
     ]
