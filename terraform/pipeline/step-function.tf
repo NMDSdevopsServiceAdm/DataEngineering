@@ -334,10 +334,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         ]
       },
       {
-        # Task ARNs aren't known until Step Functions submits the task, so AWS's
-        # own .sync IAM template scopes these to Resource "*" rather than the
-        # RunTask statement's task-definition ARNs -- without this, StopExecution
-        # never actually stops the underlying ECS task.
+        # Resource "*" per AWS's own .sync IAM template -- task ARNs aren't
+        # known until Step Functions submits the task.
         "Effect" : "Allow",
         "Action" : [
           "ecs:StopTask",

@@ -425,19 +425,14 @@ jobs:
           command: |
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
-            # AWS CLI v2 pipes list/get-style output through a pager by default;
-            # with no TTY here it hangs indefinitely producing no output at all.
+            # No TTY here, and AWS CLI v2's pager hangs without one.
             export AWS_PAGER=""
             . /tmp/sanitised_branch.env
             if [ "$SANITISED_CIRCLE_BRANCH" = "main" ]; then
               exit 0
             fi
 
-            # terraform destroy fails against a cluster/crawler that's still
-            # running -- Step Functions stopping an execution doesn't stop
-            # its ECS task (separately fixed via IAM), and never stops a
-            # Glue crawler at all (started via a fire-and-forget AWS-SDK
-            # integration, not .sync). Force-stop both before destroy runs.
+            # destroy fails against a still-running cluster/crawler; force-stop first.
             for CLUSTER in "${SANITISED_CIRCLE_BRANCH}-cluster" "${SANITISED_CIRCLE_BRANCH}-model-cluster"; do
               TASK_ARNS=$(aws ecs list-tasks --cluster "$CLUSTER" --desired-status RUNNING --query 'taskArns[]' --output text 2>/dev/null || true)
               for TASK_ARN in $TASK_ARNS; do
@@ -455,8 +450,7 @@ jobs:
               fi
             done
 
-            # stop-task/stop-crawler only request a stop -- wait (best-effort)
-            # for a terminal state, since destroy would still fail mid-stop.
+            # stop calls above just request a stop; wait for it to actually land.
             for i in $(seq 1 12); do
               BUSY=""
               for CLUSTER in "${SANITISED_CIRCLE_BRANCH}-cluster" "${SANITISED_CIRCLE_BRANCH}-model-cluster"; do
