@@ -1,35 +1,22 @@
-from dataclasses import dataclass, fields
+from dataclasses import fields
 from typing import Optional
 
 import polars as pl
 
 from polars_utils.expressions import percentage_share
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    JobRoleImputeTempColumns as TempCols,
+)
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
-# How far a known job role ratio is carried, and the widest gap that is interpolated.
 EDGE_FILL_PERIOD: str = "2y"
 INTERPOLATION_CAP_PERIOD: str = "5y"
 
-# The grain every fill works within: one workplace's series for one job role.
 JOB_ROLE_GROUPS: list[str] = [
     IndCQC.location_id,
     IndCQC.main_job_role_clean_labelled,
 ]
-
-
-@dataclass
-class TempCols:
-    """The names of the temporary columns used while building the trendline."""
-
-    first_known_date: str = "first_known_date"
-    last_known_date: str = "last_known_date"
-    first_known_value: str = "first_known_value"
-    last_known_value: str = "last_known_value"
-    previous_known_date: str = "previous_known_date"
-    next_known_date: str = "next_known_date"
-    ratio_total: str = "ratio_total"
-    contributing_rows: str = "contributing_rows"
 
 
 def create_imputed_ascwds_job_role_counts(
@@ -169,7 +156,10 @@ def add_fill_boundaries(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFra
     Add the first and last known ratio and date, and the nearest known date either side of
     every row, for each workplace and job role.
 
-    The masked `max` broadcasts a single non-null value onto every row of the group.
+    Each known value is copied onto every row of its group by masking out the other rows, then
+    taking `.max()` over the group. Split into two `.with_columns()` calls so the second can read
+    the boundary dates back as columns, instead of repeating the expressions that built them and
+    making Polars compute those windows twice.
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset containing job role ratios
@@ -193,8 +183,6 @@ def add_fill_boundaries(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFra
         .alias(TempCols.next_known_date),
     )
 
-    # Reads the boundary dates as columns rather than repeating their expressions, which would
-    # make Polars compute those two windows a second time.
     return estimated_job_role_posts_lf.with_columns(
         pl.when(is_known & (pl.col(order_key) == pl.col(TempCols.first_known_date)))
         .then(pl.col(IndCQC.ascwds_job_role_ratios))
@@ -268,17 +256,19 @@ def create_ascwds_job_role_rolling_ratio(
     """
     Create rolling ASC-WDS job role ratios over a 6-month period.
 
-    The ratio is the mean trendline job role share across the workplaces contributing to a primary
-    service type, estimated filled posts size group and cleaned main job role label. Each
-    workplace counts once per month it contributes, regardless of size.
+    The ratio is the mean trendline job role share across the workplaces contributing to a
+    primary service type, size group and job role, counting each workplace once regardless of
+    size. Ratios sum to 1 across job roles without extra normalisation, because a workplace has
+    every job role ratio populated or none of them.
 
-    Ratios are summed and counted separately so the rolling window divides one total by the
-    other. The result sums to 1 across job roles without explicit normalisation, because a
-    workplace has all of its job role ratios populated or none of them.
-
-    Pre-aggregating before the rolling calculation keeps processing within the Polars streaming
-    engine, and is valid because every location sharing a service type, size group and import
-    date receives the same ratio.
+    Steps:
+        1. Total the ratios and count the contributing workplaces per month, pre-aggregated so
+           the calculation stays within the Polars streaming engine.
+        2. Roll both totals over a 6-month window on this small aggregated dataset.
+        3. Divide one total by the other, carrying the nearest known ratio into any group with
+           no contributing workplaces.
+        4. Join the ratio back onto the location-level dataset and drop the temporary columns
+           (matched by their string values, since those now differ from the attribute names).
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset to calculate ratio on
@@ -304,7 +294,6 @@ def create_ascwds_job_role_rolling_ratio(
     order_key = IndCQC.cqc_location_import_date
     monthly_groups = rolling_groups + [order_key]
 
-    # STEP A: Total the ratios and count the contributing workplaces per month.
     # polars_streaming: groupby-agg pre-aggregation workaround; data reduction allows streaming but limits flexibility
     monthly_totals_lf = estimated_job_role_posts_lf.group_by(monthly_groups).agg(
         pl.col(IndCQC.imputed_job_role_ratios_for_trendline)
@@ -316,7 +305,6 @@ def create_ascwds_job_role_rolling_ratio(
         .alias(TempCols.contributing_rows),
     )
 
-    # STEP B: Roll both totals over 6 months on the small dataset.
     # polars_streaming: .rolling() with groupby requires pre-aggregation workaround; could use .over() for grouped rolling windows when streaming is supported
     rolling_agg_lf = (
         monthly_totals_lf.sort(*rolling_groups, order_key)
@@ -327,8 +315,6 @@ def create_ascwds_job_role_rolling_ratio(
         )
     )
 
-    # STEP C: Divide one total by the other, carrying the nearest known ratio into any group
-    # with no contributing workplaces.
     rolling_agg_lf = rolling_agg_lf.with_columns(
         pl.when(pl.col(TempCols.contributing_rows) > 0)
         .then(pl.col(TempCols.ratio_total) / pl.col(TempCols.contributing_rows))
@@ -345,8 +331,6 @@ def create_ascwds_job_role_rolling_ratio(
         TempCols.ratio_total, TempCols.contributing_rows
     )
 
-    # STEP D: Join back to the location level dataset and drop the temporary columns. Field
-    # defaults hold the column names, which differ from the field names.
     columns_to_drop = [field.default for field in fields(TempCols)]
 
     return estimated_job_role_posts_lf.join(

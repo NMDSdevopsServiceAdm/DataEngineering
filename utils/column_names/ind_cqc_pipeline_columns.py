@@ -349,6 +349,20 @@ class IndCqcColumns:
 
 
 @dataclass
+class JobRoleImputeTempColumns:
+    """The names of the temporary columns used while imputing ASC-WDS job role ratios."""
+
+    first_known_date: str = "jr_impute_first_known_date"
+    last_known_date: str = "jr_impute_last_known_date"
+    first_known_value: str = "jr_impute_first_known_value"
+    last_known_value: str = "jr_impute_last_known_value"
+    previous_known_date: str = "jr_impute_previous_known_date"
+    next_known_date: str = "jr_impute_next_known_date"
+    ratio_total: str = "jr_impute_ratio_total"
+    contributing_rows: str = "jr_impute_contributing_rows"
+
+
+@dataclass
 class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
