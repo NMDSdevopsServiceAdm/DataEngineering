@@ -2042,6 +2042,35 @@ class TestCleanAscwdsWorkplaceUtilsData:
                 AWPClean.ascwds_workplace_import_date: [],
             },
         ),
+        FindDuplicateWorkplaceSubmissionsTestCase(
+            id="does_not_flag_rows_where_all_content_is_null_zero_or_not_known",
+            input_data={
+                AWPClean.establishment_id: ["1", "2", "3"],
+                AWPClean.import_date: ["20260101", "20260101", "20260101"],
+                AWPClean.total_staff: [None, None, None],
+                AWPClean.job_role_01_employees: ["0", "0", "0"],
+            },
+            expected_data={
+                AWPClean.establishment_id: [],
+                AWPClean.ascwds_workplace_import_date: [],
+            },
+        ),
+        FindDuplicateWorkplaceSubmissionsTestCase(
+            id="flags_rows_with_at_least_one_substantive_value_even_if_others_are_trivial",
+            input_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.import_date: ["20260101", "20260101"],
+                AWPClean.total_staff: ["15", "15"],
+                AWPClean.job_role_01_employees: ["-1", "-1"],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.ascwds_workplace_import_date: [
+                    date(2026, 1, 1),
+                    date(2026, 1, 1),
+                ],
+            },
+        ),
     ]
 
     null_duplicate_workplace_data_test_cases = [

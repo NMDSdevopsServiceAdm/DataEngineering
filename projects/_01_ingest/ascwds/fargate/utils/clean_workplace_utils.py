@@ -66,6 +66,17 @@ DUPLICATE_CONTENT_COLUMNS: cs.Selector = cs.by_name(
     & ~cs.ends_with("changedate", "savedate")
 )
 
+# 0 and -1 ("not known") are non-informative placeholder values for these
+# columns, same as null - a group of establishment_ids that only share
+# null/0/-1 values isn't a real duplicate submission, just an absence of
+# data, and "no data" is common enough to produce false-positive matches if
+# not excluded before grouping.
+HAS_SUBSTANTIVE_DUPLICATE_CONTENT: pl.Expr = pl.any_horizontal(
+    DUPLICATE_CONTENT_COLUMNS.cast(pl.Int32, strict=False).is_not_null()
+    & (DUPLICATE_CONTENT_COLUMNS.cast(pl.Int32, strict=False) != 0)
+    & (DUPLICATE_CONTENT_COLUMNS.cast(pl.Int32, strict=False) != -1)
+)
+
 
 def find_duplicate_workplace_submissions(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
@@ -74,7 +85,10 @@ def find_duplicate_workplace_submissions(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Establishment_ids are grouped by a hash of DUPLICATE_CONTENT_COLUMNS rather
     than the columns themselves, keeping the group_by key small regardless of
-    how wide the content set is.
+    how wide the content set is. Rows with no substantive content (every
+    DUPLICATE_CONTENT_COLUMNS value is null, 0, or -1) are excluded before
+    grouping, since coincidentally sharing an absence of data isn't a genuine
+    duplicate submission.
 
     Args:
         lf (pl.LazyFrame): Raw ASC-WDS workplace LazyFrame (e.g. the
@@ -86,10 +100,15 @@ def find_duplicate_workplace_submissions(lf: pl.LazyFrame) -> pl.LazyFrame:
             ascwds_workplace_import_date, one row per establishment_id that is
             part of a duplicate-content group.
     """
-    content_hash_lf = lf.select(
-        AWPClean.establishment_id,
-        AWPClean.import_date,
-        pl.struct(DUPLICATE_CONTENT_COLUMNS).hash().alias("content_hash"),
+    content_hash_lf = (
+        lf.select(
+            AWPClean.establishment_id,
+            AWPClean.import_date,
+            pl.struct(DUPLICATE_CONTENT_COLUMNS).hash().alias("content_hash"),
+            HAS_SUBSTANTIVE_DUPLICATE_CONTENT.alias("has_substantive_content"),
+        )
+        .filter(pl.col("has_substantive_content"))
+        .drop("has_substantive_content")
     )
 
     duplicate_keys = (
