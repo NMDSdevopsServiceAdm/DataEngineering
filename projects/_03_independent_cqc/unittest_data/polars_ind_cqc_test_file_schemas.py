@@ -595,6 +595,7 @@ class ValidateImputedIndCqcAscwdsAndPir:
             (IndCQC.ascwds_pir_merged, pl.Float64()),
             (IndCQC.imputed_filled_post_model, pl.Float32()),
             (IndCQC.imputed_filled_posts_per_bed_ratio_model, pl.Float32()),
+            (IndCQC.posts_rolling_average_model, pl.Float32()),
             (IndCQC.ct_combined_care_home_and_non_res, pl.Float32()),
             (
                 IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
