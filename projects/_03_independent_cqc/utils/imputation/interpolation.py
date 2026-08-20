@@ -42,9 +42,7 @@ def model_interpolation(
 
     Returns:
         pl.LazyFrame: The LazyFrame with the interpolated values in the
-            'interpolation_model' column. Row order isn't guaranteed, and no
-            sort is needed here -- the known caller, calculate_rolling_sums,
-            doesn't rely on row order.
+            'interpolation_model' column.
 
     Raises:
         ValueError: If chosen method does not match 'straight' or 'trend'.
