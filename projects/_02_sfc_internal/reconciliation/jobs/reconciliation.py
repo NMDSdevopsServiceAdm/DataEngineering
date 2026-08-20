@@ -26,14 +26,8 @@ def main(
     cqc_location_df = utils.read_from_parquet(cqc_locations_snapshot_source)
     ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source)
 
-    # ascwds_for_sfc_internal no longer excludes purge-filtered rows at source
-    # (ticket 1908), so re-derive and drop them here to keep this job's
-    # behaviour unchanged.
-    ascwds_workplace_df = rUtils.add_removed_by_purge_date_filter_column(
-        ascwds_workplace_df
-    )
     ascwds_workplace_df = ascwds_workplace_df.filter(
-        ~F.col(AWPClean.removed_by_purge_date_filter)
+        F.col(AWPClean.workplace_last_active_date) >= F.col(AWPClean.purge_date)
     ).drop(AWPClean.removed_by_purge_date_filter)
 
     (

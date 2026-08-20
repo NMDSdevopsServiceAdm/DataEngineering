@@ -112,9 +112,11 @@ def main(
         ascwds_workplace_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
-    ascwds_workplace_df = rUtils.add_removed_by_purge_date_filter_column(
-        ascwds_workplace_df
-    )
+
+    ascwds_workplace_df = ascwds_workplace_df.withColumn(
+        AWPClean.removed_by_purge_date_filter,
+        F.col(AWPClean.workplace_last_active_date) < F.col(AWPClean.purge_date),
+    ).drop(AWPClean.workplace_last_active_date, AWPClean.purge_date)
 
     cqc_ratings_df = utils.read_from_parquet(
         cqc_ratings_source,

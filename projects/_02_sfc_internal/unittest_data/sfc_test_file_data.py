@@ -79,16 +79,6 @@ class ReconciliationUtilsData:
         ("1-002", date(2023, 1, 1)),
     ]
 
-    add_removed_by_purge_date_filter_column_rows = [
-        ("1", date(2024, 1, 1), date(2022, 1, 1)),  # active on/after purge date - NOT removed
-        ("2", date(2020, 1, 1), date(2022, 1, 1)),  # active before purge date - removed
-    ] # fmt: skip
-
-    expected_removed_by_purge_date_filter_rows = [
-        ("1", False),
-        ("2", True),
-    ]
-
     regtype_rows = [
         ("1", "Not regulated"),
         ("2", "CQC regulated"),

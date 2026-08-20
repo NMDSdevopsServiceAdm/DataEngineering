@@ -63,12 +63,10 @@ class MainTests(SetupForTests):
     @patch(f"{PATCH_PATH}.join_ascwds_data_into_cqc_location_df")
     @patch(f"{PATCH_PATH}.cUtils.remove_duplicates_based_on_column_order")
     @patch(f"{PATCH_PATH}.cUtils.reduce_dataset_to_earliest_file_per_month")
-    @patch(f"{PATCH_PATH}.rUtils.add_removed_by_purge_date_filter_column")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_mock: Mock,
-        add_removed_by_purge_date_filter_column_mock: Mock,
         reduce_dataset_to_earliest_file_per_month_mock: Mock,
         remove_duplicates_based_on_column_order_mock: Mock,
         join_ascwds_data_into_cqc_location_df_mock: Mock,
@@ -97,7 +95,6 @@ class MainTests(SetupForTests):
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 4)
-        add_removed_by_purge_date_filter_column_mock.assert_called_once()
         reduce_dataset_to_earliest_file_per_month_mock.assert_called_once()
         self.assertEqual(remove_duplicates_based_on_column_order_mock.call_count, 2)
         join_ascwds_data_into_cqc_location_df_mock.assert_called_once()
