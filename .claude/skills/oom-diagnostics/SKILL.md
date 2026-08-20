@@ -91,20 +91,14 @@ candidates against real production data:
 4. **Step Function**: add a new manual-start-only definition under
    `terraform/pipeline/step-functions/dynamic/`, following an existing
    definition's structure, referencing the new task's ARN vars and pointing
-   `Command` args at the distinctly-named output. Add a `TimeoutSeconds` to
-   the task state so a stuck run can't block a branch teardown indefinitely
-   (see the callout below).
+   `Command` args at the distinctly-named output.
 
 5. **CircleCI**: check `.circleci/config.yml`'s `copy-main-data` job for every
    input your prototype script reads — add any missing `aws s3 sync` line so
    the branch bucket actually has the data before the task runs.
 
 6. **Run it manually** — start the Step Function execution by hand; never
-   auto-triggered by an orchestrator. **Before merging or closing this
-   branch** (which triggers `terraform destroy` in CI), confirm the
-   execution has finished, or stop it manually — nothing here times a run
-   out early, and a still-running task can make destroy fail trying to tear
-   down infra it's still using.
+   auto-triggered by an orchestrator.
 
 ### Comparing candidate implementations
 
