@@ -12,7 +12,10 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     ImputeJobRoleSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import PrimaryServiceType
+from utils.column_values.categorical_column_values import (
+    MainJobRoleLabels,
+    PrimaryServiceType,
+)
 
 
 class TestCreateImputedASCWDSJobRoleCounts:
@@ -99,64 +102,45 @@ class TestGetPercentageShareRatios:
 
 class TestAddFillBoundaries:
     def test_boundaries_describe_each_job_role_series(self):
-        input_lf = pl.LazyFrame(
+        expected_lf = pl.LazyFrame(
             data=[
                 # A gap, so the nearest known dates differ from the row's own date.
-                ("1", "care_worker", date(2024, 1, 1), 0.4),
-                ("1", "care_worker", date(2024, 2, 1), None),
-                ("1", "care_worker", date(2024, 3, 1), 0.6),
+                ("1", "care_worker", date(2024, 1, 1), 0.4, date(2024, 1, 1), date(2024, 3, 1), date(2024, 1, 1), date(2024, 1, 1), 0.4, 0.6),
+                ("1", "care_worker", date(2024, 2, 1), None, date(2024, 1, 1), date(2024, 3, 1), date(2024, 1, 1), date(2024, 3, 1), 0.4, 0.6),
+                ("1", "care_worker", date(2024, 3, 1), 0.6, date(2024, 1, 1), date(2024, 3, 1), date(2024, 3, 1), date(2024, 3, 1), 0.4, 0.6),
                 # A second job role with its own boundaries.
-                ("1", "registered_nurse", date(2024, 1, 1), None),
-                ("1", "registered_nurse", date(2024, 2, 1), 0.9),
-                ("1", "registered_nurse", date(2024, 3, 1), None),
+                ("1", "registered_nurse", date(2024, 1, 1), None, date(2024, 2, 1), date(2024, 2, 1), None, date(2024, 2, 1), 0.9, 0.9),
+                ("1", "registered_nurse", date(2024, 2, 1), 0.9, date(2024, 2, 1), date(2024, 2, 1), date(2024, 2, 1), date(2024, 2, 1), 0.9, 0.9),
+                ("1", "registered_nurse", date(2024, 3, 1), None, date(2024, 2, 1), date(2024, 2, 1), date(2024, 2, 1), None, 0.9, 0.9),
             ],
             schema={
                 IndCQC.location_id: pl.String,
                 IndCQC.main_job_role_clean_labelled: pl.String,
                 IndCQC.cqc_location_import_date: pl.Date,
                 IndCQC.ascwds_job_role_ratios: pl.Float32,
+                job.TempCols.first_known_date: pl.Date,
+                job.TempCols.last_known_date: pl.Date,
+                job.TempCols.previous_known_date: pl.Date,
+                job.TempCols.next_known_date: pl.Date,
+                job.TempCols.first_known_value: pl.Float32,
+                job.TempCols.last_known_value: pl.Float32,
             },
             orient="row",
-        )
-        returned_df = (
-            job.add_fill_boundaries(input_lf)
-            .sort(IndCQC.main_job_role_clean_labelled, IndCQC.cqc_location_import_date)
-            .collect()
+        )  # fmt: skip
+        input_lf = expected_lf.select(
+            IndCQC.location_id,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.cqc_location_import_date,
+            IndCQC.ascwds_job_role_ratios,
         )
 
-        assert (
-            returned_df.get_column(job.TempCols.first_known_date).to_list()
-            == [date(2024, 1, 1)] * 3 + [date(2024, 2, 1)] * 3
+        returned_lf = job.add_fill_boundaries(input_lf).sort(
+            IndCQC.main_job_role_clean_labelled, IndCQC.cqc_location_import_date
         )
-        assert (
-            returned_df.get_column(job.TempCols.last_known_date).to_list()
-            == [date(2024, 3, 1)] * 3 + [date(2024, 2, 1)] * 3
+
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_column_order=False, rel_tol=0.0001
         )
-        assert (
-            returned_df.get_column(job.TempCols.first_known_value).to_list()
-            == [pytest.approx(0.4)] * 3 + [pytest.approx(0.9)] * 3
-        )
-        assert (
-            returned_df.get_column(job.TempCols.last_known_value).to_list()
-            == [pytest.approx(0.6)] * 3 + [pytest.approx(0.9)] * 3
-        )
-        # The row inside the gap is bounded by the dates either side of it.
-        assert returned_df.get_column(job.TempCols.previous_known_date).to_list() == [
-            date(2024, 1, 1),
-            date(2024, 1, 1),
-            date(2024, 3, 1),
-            None,
-            date(2024, 2, 1),
-            date(2024, 2, 1),
-        ]
-        assert returned_df.get_column(job.TempCols.next_known_date).to_list() == [
-            date(2024, 1, 1),
-            date(2024, 3, 1),
-            date(2024, 3, 1),
-            date(2024, 2, 1),
-            date(2024, 2, 1),
-            None,
-        ]
 
 
 class TestAddImputedJobRoleRatiosForTrendline:
@@ -211,32 +195,47 @@ class TestCreateASCWDSJobRoleRollingRatio:
         )
 
     def test_ratios_sum_to_one_across_job_roles(self):
-        expected_lf = pl.LazyFrame(
-            Data.create_ascwds_job_role_rolling_ratio_test_cases[0].data,
-            Schemas.create_ascwds_job_role_rolling_ratio_expected_schema,
+        # Two workplaces sharing a primary service type, size group and date, each
+        # with their job role ratios summing to 1 on their own.
+        input_lf = pl.LazyFrame(
+            data=[
+                ("1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, 0.4),
+                ("1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, 0.6),
+                ("2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 18.0, 0.2),
+                ("2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 18.0, 0.8),
+            ],
+            schema={
+                IndCQC.location_id: pl.String,
+                IndCQC.cqc_location_import_date: pl.Date,
+                IndCQC.primary_service_type: pl.String,
+                IndCQC.main_job_role_clean_labelled: pl.String,
+                IndCQC.estimate_filled_posts: pl.Float32,
+                IndCQC.ascwds_job_role_ratios: pl.Float32,
+            },
             orient="row",
-        )
-        input_lf = expected_lf.drop(
-            IndCQC.ascwds_job_role_rolling_ratio,
-            IndCQC.estimate_filled_posts_size_group,
-        )
+        )  # fmt: skip
         stratum = [
             IndCQC.primary_service_type,
             IndCQC.estimate_filled_posts_size_group,
             IndCQC.cqc_location_import_date,
         ]
-        totals = (
+
+        # Every workplace in a stratum shares the same rolling ratio, so reduce to one
+        # row per job role before summing, or the total would be inflated by however
+        # many workplaces are in that stratum.
+        totals_lf = (
             job.create_ascwds_job_role_rolling_ratio(input_lf)
-            .collect()
-            # One row per job role first; deduplicating on the ratio would collapse
-            # roles that happen to match.
             .unique(subset=stratum + [IndCQC.main_job_role_clean_labelled])
             .group_by(stratum)
             .agg(pl.col(IndCQC.ascwds_job_role_rolling_ratio).sum())
-            .get_column(IndCQC.ascwds_job_role_rolling_ratio)
-            .to_list()
         )
-        assert [round(total, 4) for total in totals] == [1.0] * len(totals)
+        expected_lf = totals_lf.select(stratum).with_columns(
+            pl.lit(1.0, dtype=pl.Float32).alias(IndCQC.ascwds_job_role_rolling_ratio)
+        )
+
+        pl_testing.assert_frame_equal(
+            totals_lf, expected_lf, check_row_order=False, rel_tol=0.0001
+        )
 
 
 class TestEstimateFilledPostsSizeGroupExpression:
