@@ -230,7 +230,7 @@ def add_flag_for_in_ascwds(merged_coverage_df: DataFrame) -> DataFrame:
     Add a column to the merged coverage dataframe which flags if CQC location is in ASC-WDS
     and has not exceeded their *active* purge date.
 
-    When row has an ASC-WDS establishmentid and was not removed by the purge date filter then
+    When row has an ASC-WDS establishmentid and removed_by_purge_date_filter is false then
     value is 1, otherwise value is 0.
 
     Args:
