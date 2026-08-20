@@ -79,6 +79,20 @@ module "clean_cqc_pir_data_job" {
   }
 }
 
+module "bulk_download_cqc_locations_job" {
+  source          = "../modules/glue-job"
+  script_dir      = "projects/_01_ingest/cqc_api/jobs"
+  script_name     = "archived_bulk_download_cqc_locations.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "5.0"
+
+  job_parameters = {
+    "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
+  }
+}
+
 module "ingest_ascwds_dataset_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/ascwds/jobs"
