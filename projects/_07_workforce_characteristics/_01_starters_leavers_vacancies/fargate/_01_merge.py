@@ -122,8 +122,9 @@ def main(
         how="left",
     )
 
-    # TODO: Placeholder only
-    # mUtils.apply_employment_status_magic_numbers()
+    job_role_estimates_lf = mUtils.apply_employment_status_magic_numbers(
+        job_role_estimates_lf, employment_status_rates_lf
+    )
 
     utils.sink_to_parquet(
         lazy_df=job_role_estimates_lf,
