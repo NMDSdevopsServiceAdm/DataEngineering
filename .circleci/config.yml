@@ -415,29 +415,9 @@ jobs:
           command: |
             aws s3 sync "s3://sfc-main-pipeline-resources/models/" "s3://$BRANCH_RESOURCES_BUCKET/models/"
       - run:
-          name: Seed non-prod raw bucket with one sample CSV per type
+          name: Seed non-prod raw bucket from sample bucket
           command: |
-            # Copies only the most recently uploaded object under each prefix, since
-            # this branch bucket only needs a snapshot to exercise ingest against, not
-            # full history - and hardcoding a specific filename here would silently
-            # break as soon as prod's real raw filenames move on.
-            copy_latest_object() {
-              local prefix="$1"
-              local key
-              key=$(aws s3 ls "s3://sfc-data-engineering-raw/${prefix}" | sort | tail -n 1 | awk '{print $4}')
-              if [ -n "$key" ]; then
-                aws s3 cp "s3://sfc-data-engineering-raw/${prefix}${key}" "s3://$BRANCH_RAW_BUCKET/${prefix}${key}"
-              else
-                echo "No object found under ${prefix}, skipping" >&2
-              fi
-            }
-
-            copy_latest_object "domain=ASCWDS/dataset=worker/"
-            copy_latest_object "domain=ASCWDS/dataset=workplace/"
-            copy_latest_object "domain=CQC/dataset=pir/"
-            copy_latest_object "domain=ONS/dataset=postcode_directory/"
-            copy_latest_object "domain=capacity_tracker/dataset=capacity_tracker_care_home/"
-            copy_latest_object "domain=capacity_tracker/dataset=capacity_tracker_non_res/"
+            aws s3 sync "s3://sfc-main-sample-raw-data/" "s3://$BRANCH_RAW_BUCKET/" --delete
 
   terraform-destroy:
     working_directory: /tmp/project
