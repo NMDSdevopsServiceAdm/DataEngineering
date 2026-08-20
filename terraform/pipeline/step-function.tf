@@ -157,6 +157,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     # ecs tasks
     cqc_api_task_arn                   = module.cqc-api.task_arn
     ascwds_task_arn                    = module.ascwds.task_arn
+    ascwds_oom_diag_task_arn           = module.ascwds_oom_diag.task_arn
     sfc_internal_task_arn              = module._02_sfc_internal.task_arn
     independent_cqc_task_arn           = module._03_independent_cqc.task_arn
     independent_cqc_model_task_arn     = module._03_independent_cqc_model.task_arn
@@ -166,6 +167,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     # ecs task security groups
     cqc_api_security_group_id                   = module.cqc-api.security_group_id
     ascwds_security_group_id                    = module.ascwds.security_group_id
+    ascwds_oom_diag_security_group_id           = module.ascwds_oom_diag.security_group_id
     sfc_internal_security_group_id              = module._02_sfc_internal.security_group_id
     independent_cqc_security_group_id           = module._03_independent_cqc.security_group_id
     independent_cqc_model_security_group_id     = module._03_independent_cqc_model.security_group_id
@@ -325,6 +327,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Resource" : [
           module.cqc-api.task_arn,
           module.ascwds.task_arn,
+          module.ascwds_oom_diag.task_arn,
           module._02_sfc_internal.task_arn,
           module._03_independent_cqc.task_arn,
           module._03_independent_cqc_model.task_arn,
@@ -341,6 +344,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module.cqc-api.task_role_arn,
           module.ascwds.task_exc_role_arn,
           module.ascwds.task_role_arn,
+          module.ascwds_oom_diag.task_exc_role_arn,
+          module.ascwds_oom_diag.task_role_arn,
           module._02_sfc_internal.task_exc_role_arn,
           module._02_sfc_internal.task_role_arn,
           module._03_independent_cqc.task_exc_role_arn,

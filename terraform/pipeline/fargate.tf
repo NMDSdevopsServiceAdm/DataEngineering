@@ -39,6 +39,23 @@ module "ascwds" {
   ]
 }
 
+# THROWAWAY - ticket 1906 OOM investigation only. Reuses the real ascwds ECR
+# image (both prototype scripts live alongside the real job's *.py, picked
+# up by the Dockerfile's wildcard COPY). Delete this module, its 3
+# step-function.tf wiring points, and the 4 throwaway Step Function
+# definitions once the investigation concludes.
+module "ascwds_oom_diag" {
+  source        = "../modules/fargate-task"
+  task_name     = "ascwds-oom-diag"
+  ecr_repo_name = "fargate/ascwds"
+  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
+  tag_name      = terraform.workspace
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" },
+    { "name" : "POLARS_VERBOSE", "value" : "1" },
+  ]
+}
+
 module "_02_sfc_internal" {
   source        = "../modules/fargate-task"
   task_name     = "_02_sfc_internal"
