@@ -39,6 +39,22 @@ module "ascwds" {
   ]
 }
 
+# THROWAWAY - ticket 1906 data-check export only. Reuses the real ascwds ECR
+# image (export_duplicate_rows_temp.py lives alongside the real job's *.py,
+# picked up by the Dockerfile's wildcard COPY). Delete this module, its 3
+# step-function.tf wiring points, and the Step Function definition once the
+# data check concludes.
+module "ascwds_export_dup_rows" {
+  source        = "../modules/fargate-task"
+  task_name     = "ascwds-export-dup-rows"
+  ecr_repo_name = "fargate/ascwds"
+  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
+  tag_name      = terraform.workspace
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" },
+  ]
+}
+
 module "_02_sfc_internal" {
   source        = "../modules/fargate-task"
   task_name     = "_02_sfc_internal"

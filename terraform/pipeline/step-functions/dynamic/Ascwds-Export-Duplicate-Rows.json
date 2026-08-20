@@ -1,0 +1,37 @@
+{
+  "Comment": "THROWAWAY - ticket 1906 data-check export. Manual-start only, never referenced by an orchestrator. Delete once the data check concludes.",
+  "StartAt": "Export Duplicate ASCWDS Workplace Rows",
+  "States": {
+    "Export Duplicate ASCWDS Workplace Rows": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "LaunchType": "FARGATE",
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${ascwds_export_dup_rows_task_arn}",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${ascwds_export_dup_rows_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "ascwds-export-dup-rows-container",
+              "Command": [
+                "export_duplicate_rows_temp.py",
+                "--workplace_source",
+                "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                "--duplicate_rows_temp_destination",
+                "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_duplicate_rows_temp/"
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}
