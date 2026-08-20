@@ -57,6 +57,8 @@ def main(
         upper_limit=MAX_BOUND,
     )
 
+    # On Polars conversion: cast columns to Categorical/Enum where possible,
+    # e.g. care_home -> CategoricalColumnTypes.CareHomeEnumType.
     print(f"Exporting as parquet to {cleaned_capacity_tracker_non_res_destination}")
     utils.write_to_parquet(
         capacity_tracker_non_res_df,

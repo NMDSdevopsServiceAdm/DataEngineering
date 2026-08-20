@@ -141,8 +141,8 @@ class CleanPostcodeColumnTests(RunPostcodeMatchingTests):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class JoinPostcodeDataTests(RunPostcodeMatchingTests):
-    def test_returns_expected_dataframe(self):
+class TestJoinPostcodeData:
+    def test_returns_expected_matched_and_unmatched_dataframes(self):
         locations_lf = pl.LazyFrame(
             data=Data.join_postcode_data_locations_rows,
             schema=Schemas.join_postcode_data_locations_schema,
@@ -151,9 +151,11 @@ class JoinPostcodeDataTests(RunPostcodeMatchingTests):
             data=Data.join_postcode_data_postcodes_rows,
             schema=Schemas.join_postcode_data_postcodes_schema,
         )
+
         returned_matched_lf, returned_unmatched_lf = job.join_postcode_data(
             locations_lf, postcode_lf, CQCLClean.postcode_cleaned
         )
+
         expected_matched_lf = pl.LazyFrame(
             data=Data.expected_join_postcode_data_matched_rows,
             schema=Schemas.expected_join_postcode_data_matched_schema,
@@ -162,7 +164,6 @@ class JoinPostcodeDataTests(RunPostcodeMatchingTests):
             data=Data.expected_join_postcode_data_unmatched_rows,
             schema=Schemas.expected_join_postcode_data_unmatched_schema,
         )
-
         pl_testing.assert_frame_equal(returned_matched_lf, expected_matched_lf)
         pl_testing.assert_frame_equal(returned_unmatched_lf, expected_unmatched_lf)
 

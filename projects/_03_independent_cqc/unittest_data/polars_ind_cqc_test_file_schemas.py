@@ -302,19 +302,25 @@ class MergeIndCQCSchemas:
             (CQCLClean.location_id, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.care_home, pl.String()),
-            (CQCLClean.cqc_sector, pl.String()),
-            (CQCLClean.dormancy, pl.String()),
-            (CQCLClean.primary_service_type, pl.String()),
-            (CQCLClean.primary_service_type_second_level, pl.String()),
-            (ONSClean.current_rural_urban_ind_11, pl.String()),
-            (ONSClean.contemporary_region, pl.String()),
-            (ONSClean.contemporary_cssr, pl.String()),
-            (ONSClean.contemporary_sub_icb, pl.String()),
-            (ONSClean.contemporary_icb, pl.String()),
-            (ONSClean.contemporary_icb_region, pl.String()),
-            (ONSClean.current_region, pl.String()),
-            (ONSClean.current_cssr, pl.String()),
-            (ONSClean.current_icb, pl.String()),
+            (CQCLClean.cqc_sector, CatColType.CqcSectorEnumType),
+            (CQCLClean.dormancy, CatColType.DormancyEnumType),
+            (CQCLClean.primary_service_type, CatColType.PrimaryServiceEnumType),
+            (
+                CQCLClean.primary_service_type_second_level,
+                CatColType.PrimaryServiceTypeSecondLevelCatType,
+            ),
+            (
+                ONSClean.current_rural_urban_ind_11,
+                CatColType.OnsRuralUrbanInd11EnumType,
+            ),
+            (ONSClean.contemporary_region, CatColType.OnsRegionCatType),
+            (ONSClean.contemporary_cssr, CatColType.OnsCssrCatType),
+            (ONSClean.contemporary_sub_icb, CatColType.OnsSubIcbCatType),
+            (ONSClean.contemporary_icb, CatColType.OnsIcbCatType),
+            (ONSClean.contemporary_icb_region, CatColType.OnsIcbRegionCatType),
+            (ONSClean.current_region, CatColType.OnsRegionCatType),
+            (ONSClean.current_cssr, CatColType.OnsCssrCatType),
+            (ONSClean.current_icb, CatColType.OnsIcbCatType),
         ]
     )
     cqc_pir_schema = pl.Schema(
@@ -589,6 +595,7 @@ class ValidateImputedIndCqcAscwdsAndPir:
             (IndCQC.ascwds_pir_merged, pl.Float64()),
             (IndCQC.imputed_filled_post_model, pl.Float32()),
             (IndCQC.imputed_filled_posts_per_bed_ratio_model, pl.Float32()),
+            (IndCQC.posts_rolling_average_model, pl.Float32()),
             (IndCQC.ct_combined_care_home_and_non_res, pl.Float32()),
             (
                 IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
@@ -851,38 +858,6 @@ class CleanFilteringUtilsSchemas:
         list(aggregate_values_to_provider_level_schema.items())
         + [
             (IndCQC.ct_care_home_total_employed_cleaned_provider_sum, pl.Int64()),
-        ]
-    )
-
-
-@dataclass
-class CleanUtilsSchemas:
-    locations_with_repeated_value_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            ("integer_column", pl.Int64()),
-            (IndCQC.cqc_location_import_date, pl.Date()),
-        ]
-    )
-
-    expected_locations_without_repeated_values_schema = pl.Schema(
-        list(locations_with_repeated_value_schema.items())
-        + [
-            ("integer_column_deduplicated", pl.Int64()),
-        ]
-    )
-    providers_with_repeated_value_schema = pl.Schema(
-        [
-            (IndCQC.provider_id, pl.String()),
-            ("integer_column", pl.Int64()),
-            (IndCQC.cqc_location_import_date, pl.Date()),
-        ]
-    )
-
-    expected_providers_without_repeated_values_schema = pl.Schema(
-        list(providers_with_repeated_value_schema.items())
-        + [
-            ("integer_column_deduplicated", pl.Int64()),
         ]
     )
 
@@ -1668,13 +1643,6 @@ class ModelImputation:
         "null_values": pl.Float32,
         "trend_model": pl.Float32,
         "imputed_values": pl.Float32,
-    }
-
-    input_split_dataset_for_imputation_schema = {
-        "row_id": pl.Int8,
-        IndCQC.location_id: pl.String,
-        IndCQC.care_home: pl.String,
-        "null_values": pl.Float32,
     }
 
 

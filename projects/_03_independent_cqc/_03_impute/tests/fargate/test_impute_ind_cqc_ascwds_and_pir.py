@@ -27,8 +27,8 @@ class TestImputeIndCqcAscwdsAndPir:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.nullify_ct_values_previous_to_first_submission")
-    # @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
-    # @patch(f"{PATCH_PATH}.calculate_rolling_average")
+    @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
+    @patch(f"{PATCH_PATH}.calculate_rolling_average")
     @patch(f"{PATCH_PATH}.model_imputation")
     @patch(f"{PATCH_PATH}.merge_ascwds_and_pir_filled_post_submissions")
     @patch(f"{PATCH_PATH}.convert_pir_to_filled_posts")
@@ -45,8 +45,8 @@ class TestImputeIndCqcAscwdsAndPir:
         convert_pir_to_filled_posts_mock: Mock,
         merge_ascwds_and_pir_filled_post_submissions_mock: Mock,
         model_imputation_mock: Mock,
-        # calculate_rolling_average_mock: Mock,
-        # create_banded_bed_count_column_mock: Mock,
+        calculate_rolling_average_mock: Mock,
+        create_banded_bed_count_column_mock: Mock,
         nullify_ct_values_previous_to_first_submission_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -63,8 +63,8 @@ class TestImputeIndCqcAscwdsAndPir:
         convert_pir_to_filled_posts_mock.assert_called_once()
         merge_ascwds_and_pir_filled_post_submissions_mock.assert_called_once()
         assert model_imputation_mock.call_count == 4
-        # assert calculate_rolling_average_mock.call_count == 2
-        # create_banded_bed_count_column_mock.assert_called_once()
+        assert calculate_rolling_average_mock.call_count == 2
+        create_banded_bed_count_column_mock.assert_called_once()
         nullify_ct_values_previous_to_first_submission_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,

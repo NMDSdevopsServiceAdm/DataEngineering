@@ -215,12 +215,32 @@ jobs:
           command: |
             uv run pytest \
               -n auto --dist loadfile \
+              --ignore=tests/integration/test_cqc_api_integration.py \
               --cov=. \
               --cov-report=xml \
               --cov-report=html
       - run:
             name: Output Coverage Report
             command: uv run coverage report
+
+  # Hits the live CQC API directly (no mocking), so it can fail purely from a
+  # CQC-side outage. Split out from `test` and not `requires:`-gated by
+  # anything, so an unhandled failure here can't block terraform-plan/apply.
+  test-cqc-integration:
+    docker:
+      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+    resource_class: small
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-test-deps-{{ checksum "uv.lock" }}
+      - run:
+          name: install dependencies
+          command: uv sync --locked
+      - run:
+          name: Run CQC API integration tests
+          command: uv run pytest tests/integration/test_cqc_api_integration.py -v
 
   lint-python:
     docker:
@@ -462,6 +482,10 @@ workflows:
           filters:
             branches:
               only: main
+      - test-cqc-integration:
+          filters:
+            branches:
+              only: main
       - terraform-plan:
           context: prod
           requires:
@@ -529,6 +553,10 @@ workflows:
       - test:
           requires:
             - terraform-apply
+          filters:
+            branches:
+              ignore: main
+      - test-cqc-integration:
           filters:
             branches:
               ignore: main

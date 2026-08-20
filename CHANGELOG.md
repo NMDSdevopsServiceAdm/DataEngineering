@@ -6,6 +6,27 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Extracted the independent CQC clean job's repeated-value deduplication into a reusable `remove_repeated_values_over_time` function in Polars Utils (generalised to multiple columns and configurable partition/date columns), and used it in the SLV clean job to deduplicate starters, leavers and vacancies over time.
+
+- Implemented `apply_employment_status_magic_numbers` in the SLV merge job: splits the job-role filled-post estimate into 5 estimated-employment-status components using the CSV rates loaded previously, plus a estimated employees column. Added validation to check the split columns are non-negative, don't exceed the source estimate, and sum back to it within a relative tolerance. This is a temporary stopgap ahead of a dedicated employment status estimation pipeline, expected to be removed within a few months.
+
+### Changed
+- Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
+- Re-enabled the rolling-average imputation calls in the Polars impute job (disabled since an earlier OOM investigation traced the real cause elsewhere), and added the corresponding `posts_rolling_average_model` range validation to match the PySpark job.
+
+- Changed how the ASC-WDS job role rolling ratio is built. It is now based on a temporary set of ratios which only carries a workplace's known job role split for up to two years beyond their submissions and only fills gaps of up to five years between them, rather than repeating it indefinitely, so the ratio reflects how the workforce actually changes over time. Each workplace now counts once regardless of size, so the ratio describes a typical workplace of that type rather than being dominated by the largest ones. These temporary ratios are saved alongside the rest of the output as `imputed_job_role_ratios_for_trendline`, so they can be checked in Athena if the rolling ratio ever looks wrong, but they are not used to produce any estimate. Job role estimates for workplaces which have submitted data are unaffected.
+
+- Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
+
+### Improved
+- Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
+
+### Fixed
+- Fixed the CQC API integration tests failing the whole CI pipeline during a CQC API outage: the tests now skip instead of fail on a recognised outage signature, and were split into their own non-blocking CircleCI job.
+
+## [v2026.07.0] - 17/08/2026
+
+### Added
 - Added the missing validation checks to the imputed independent CQC pointblank validation job, covering the imputed and capacity tracker model columns, the rate of change trendlines, and the relationship between `careHome` and `primary_service_type`.
 
 - Added a validation check that `ascwds_job_role_rolling_ratio` sums to 1 across job roles within each primary service type, size group and import date group.
@@ -42,8 +63,6 @@ All notable changes to this project will be documented in this file.
 - Reduced CircleCI credit consumption in `task-containerisation`. A new `decide-images` job works out which `docker-bake` targets a push changed, deriving each target's trigger paths from its Dockerfile's own `COPY` sources, and includes any target with no image in ECR under the branch tag yet. `task-containerisation` then skips entirely when nothing relevant changed, and otherwise bakes only the affected targets instead of all seven. Also removed Docker Layer Caching from the job: measurement showed it's billed as a flat ~200-credit surcharge for being declared, regardless of whether it does anything, so dropping it saves roughly 90% of the job's cost on both build and skip paths. Applies to branch builds only; merges to main still build everything. Also reordered all seven fargate Dockerfiles to install dependencies before copying job source, so a source-only change no longer invalidates the `pip install` layer. Deduplicated the branch-name-sanitising logic that was copy-pasted across five CircleCI steps into a single shared command, and fixed a shell-injection risk in `terraform-destroy`'s use of it: a crafted branch name could previously break out of a quoted shell string spliced from CircleCI pipeline parameters, so that value is now passed through the step's `environment:` key instead, which is never re-parsed as shell syntax.
 
 - Increased the `cqc-api` Fargate task's resources from 8 vCPU/60GB to 16 vCPU/64GB to fix OOM errors in `cqc_locations_4_full_clean.py`.
-
-- Changed how the ASC-WDS job role rolling ratio is built. It is now based on a temporary set of ratios which only carries a workplace's known job role split for up to two years beyond their submissions and only fills gaps of up to five years between them, rather than repeating it indefinitely, so the ratio reflects how the workforce actually changes over time. Each workplace now counts once regardless of size, so the ratio describes a typical workplace of that type rather than being dominated by the largest ones. These temporary ratios are saved alongside the rest of the output as `imputed_job_role_ratios_for_trendline`, so they can be checked in Athena if the rolling ratio ever looks wrong, but they are not used to produce any estimate. Job role estimates for workplaces which have submitted data are unaffected.
 
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
@@ -119,6 +138,8 @@ All notable changes to this project will be documented in this file.
 - Added missing error notifications for the CQC/ASC-WDS orchestrator and crawler-refresh steps in three ingestion pipelines, and a bounded timeout for the ASC-WDS worker/workplace file-arrival polling loops.
 
 - Fixed a broken import in the shared ingestion utils that caused the ASC-WDS, Capacity Tracker, CQC PIR, and ONS PySpark Glue ingestion jobs to fail with `ModuleNotFoundError: No module named 'polars'`. Inlined the affected `split_s3_uri` helper instead of importing it, so this file no longer depends on PySpark/pydeequ either.
+
+- Fixed the `cqc-api` Fargate task's OOM in `cqc_locations_4_full_clean.py` by forcing the postcode join to materialize before the matched/unmatched split, instead of the temporary fix of increasing the task's resources.
 
 ## [v2026.06.0] - 15/07/2026
 
