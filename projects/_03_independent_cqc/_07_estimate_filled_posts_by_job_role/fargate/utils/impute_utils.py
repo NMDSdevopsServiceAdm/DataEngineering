@@ -4,6 +4,12 @@ from typing import Optional
 import polars as pl
 
 from polars_utils.expressions import percentage_share
+from projects._03_independent_cqc.utils.imputation.extrapolation import (
+    model_extrapolation,
+)
+from projects._03_independent_cqc.utils.imputation.interpolation import (
+    model_interpolation,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     JobRoleImputeTempColumns as TempCols,
@@ -17,54 +23,6 @@ JOB_ROLE_GROUPS: list[str] = [
     IndCQC.location_id,
     IndCQC.main_job_role_clean_labelled,
 ]
-
-
-def create_imputed_ascwds_job_role_counts(
-    estimated_job_role_posts_lf: pl.LazyFrame,
-) -> pl.LazyFrame:
-    """
-    Impute job role ratios per location and job role by interpolation, forward fill,
-    and backward fill, then broadcast the result back onto every row with `.over()`.
-
-    The frame is sorted by (location_id, job_role, date) before the `.over()` call,
-    since its default mapping strategy writes results back in original row order and
-    would otherwise misassign values on unsorted input.
-
-    Args:
-        estimated_job_role_posts_lf(pl.LazyFrame): dataset to impute
-
-    Returns:
-        pl.LazyFrame: dataset with additional columns with imputed data
-    """
-    impute_groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
-    order_key = IndCQC.cqc_location_import_date
-
-    estimated_job_role_posts_lf = get_percent_share_ratios(
-        estimated_job_role_posts_lf,
-        input_col=IndCQC.ascwds_job_role_counts,
-        output_col=IndCQC.ascwds_job_role_ratios,
-    )
-
-    imputed_ratios = (
-        pl.col(IndCQC.ascwds_job_role_ratios)
-        .interpolate()
-        .forward_fill()
-        .backward_fill()
-        .over(impute_groups)
-        .alias(IndCQC.imputed_ascwds_job_role_ratios)
-    )
-
-    # Must be sorted before the .over() call above — see docstring.
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(
-        *impute_groups, order_key
-    ).with_columns(imputed_ratios)
-
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        pl.col(IndCQC.estimate_filled_posts)
-        .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
-        .alias(IndCQC.imputed_ascwds_job_role_counts)
-    )
-    return estimated_job_role_posts_lf
 
 
 def get_percent_share_ratios(
@@ -338,3 +296,86 @@ def create_ascwds_job_role_rolling_ratio(
         on=monthly_groups,
         how="left",
     ).drop(*columns_to_drop, strict=False)
+
+
+def add_imputed_ascwds_job_role_ratios(
+    estimated_job_role_posts_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Impute job role ratios by carrying each workplace's own known split along the rolling
+    ratio trendline.
+
+    Outside a workplace's known dates the ratios follow the nominal change in the trendline
+    indefinitely, so the workplace keeps its own level while moving with its stratum. Interior
+    gaps ride the same trendline, with the residual apportioned by days rather than by rows.
+    Neither direction is capped: only the trendline needs limiting, which
+    `add_imputed_job_role_ratios_for_trendline` already does.
+
+    Ratios are floored at zero and then re-shared across job roles. Nominal extrapolation
+    already preserves the sum of 1 exactly, since all job roles of a workplace share the same
+    known dates and the trendline itself sums to 1 — so re-sharing only repairs the cases where
+    a falling trendline took a ratio below zero. That also means the flooring can never zero
+    every job role, because a set summing to 1 must hold at least one positive value.
+
+    Args:
+        estimated_job_role_posts_lf(pl.LazyFrame): dataset containing job role ratios and the
+            rolling ratio trendline
+
+    Returns:
+        pl.LazyFrame: dataset with an additional column of imputed job role ratios
+    """
+    estimated_job_role_posts_lf = model_extrapolation(
+        estimated_job_role_posts_lf,
+        column_with_null_values=IndCQC.ascwds_job_role_ratios,
+        model_to_extrapolate_from=IndCQC.ascwds_job_role_rolling_ratio,
+        extrapolation_method="nominal",
+        group_columns=JOB_ROLE_GROUPS,
+    )
+
+    estimated_job_role_posts_lf = model_interpolation(
+        estimated_job_role_posts_lf,
+        column_with_null_values=IndCQC.ascwds_job_role_ratios,
+        method="trend",
+        group_columns=JOB_ROLE_GROUPS,
+    )
+
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        pl.coalesce(
+            IndCQC.ascwds_job_role_ratios,
+            IndCQC.extrapolation_model,
+            IndCQC.interpolation_model,
+        )
+        .clip(lower_bound=0)
+        .alias(TempCols.unnormalised_ratios)
+    ).drop(
+        IndCQC.extrapolation_forwards,
+        IndCQC.extrapolation_model,
+        IndCQC.interpolation_model,
+    )
+
+    estimated_job_role_posts_lf = get_percent_share_ratios(
+        estimated_job_role_posts_lf,
+        input_col=TempCols.unnormalised_ratios,
+        output_col=IndCQC.imputed_ascwds_job_role_ratios,
+    )
+
+    return estimated_job_role_posts_lf.drop(TempCols.unnormalised_ratios)
+
+
+def add_imputed_ascwds_job_role_counts(
+    estimated_job_role_posts_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Split a workplace's estimated filled posts across job roles at the imputed ratios.
+
+    Args:
+        estimated_job_role_posts_lf(pl.LazyFrame): dataset containing imputed job role ratios
+
+    Returns:
+        pl.LazyFrame: dataset with an additional column of imputed job role counts
+    """
+    return estimated_job_role_posts_lf.with_columns(
+        pl.col(IndCQC.estimate_filled_posts)
+        .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
+        .alias(IndCQC.imputed_ascwds_job_role_counts)
+    )

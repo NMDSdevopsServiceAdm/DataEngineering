@@ -360,6 +360,7 @@ class JobRoleImputeTempColumns:
     next_known_date: str = "jr_impute_next_known_date"
     ratio_total: str = "jr_impute_ratio_total"
     contributing_rows: str = "jr_impute_contributing_rows"
+    unnormalised_ratios: str = "jr_impute_unnormalised_ratios"
 
 
 @dataclass

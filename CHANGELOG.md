@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
 
+- Job role estimates for the dates between and beyond a workplace's own submissions now follow the trend of similar workplaces, instead of repeating that workplace's last submitted job role split unchanged. Each workplace keeps its own mix of roles but moves with its group over time, and the mix still adds up to all of its estimated filled posts. Dates where a workplace actually submitted are unchanged, and workplaces that have never submitted still use their group's ratio.
+
 ### Improved
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
 

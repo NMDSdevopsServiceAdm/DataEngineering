@@ -18,61 +18,6 @@ from utils.column_values.categorical_column_values import (
 )
 
 
-class TestCreateImputedASCWDSJobRoleCounts:
-    @pytest.mark.parametrize(
-        "create_imputed_ascwds_job_role_counts_data",
-        [
-            case.as_pytest_param()
-            for case in Data.create_imputed_ascwds_job_role_counts_test_cases
-        ],
-    )
-    def test_create_imputed_ascwds_job_role_counts(
-        self, create_imputed_ascwds_job_role_counts_data
-    ):
-        expected_lf = pl.LazyFrame(
-            create_imputed_ascwds_job_role_counts_data,
-            Schemas.create_imputed_ascwds_job_role_counts_expected_schema,
-            orient="row",
-        )
-        input_lf = expected_lf.drop(
-            IndCQC.ascwds_job_role_ratios,
-            IndCQC.imputed_ascwds_job_role_ratios,
-            IndCQC.imputed_ascwds_job_role_counts,
-        )
-        returned_lf = job.create_imputed_ascwds_job_role_counts(input_lf)
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
-
-
-class TestCreateImputedASCWDSJobRoleCountsRowOrder:
-    def test_result_correct_when_source_rows_not_sorted_by_date(self):
-        expected_lf = pl.LazyFrame(
-            data=[
-                ("1", "1", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
-                ("2", "1", "job_role_a", date(2026, 1, 2), None, 2.0, None, 0.7, 1.4),
-                ("3", "1", "job_role_a", date(2026, 1, 3), 4, 4.0, 0.4, 0.4, 1.6),
-                ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, None, 1.0, 1.0),
-                ("5", "1", "job_role_b", date(2026, 1, 2), 2, 2.0, 1.0, 1.0, 2.0),
-                ("6", "1", "job_role_b", date(2026, 1, 3), 6, 6.0, 0.6, 0.6, 3.6),
-            ],
-            schema=Schemas.create_imputed_ascwds_job_role_counts_expected_schema,
-            orient="row",
-        )
-        # Rows arrive out of date order within a group (e.g. as read back from
-        # Athena), which is what previously exposed the sort_by-inside-.over() bug:
-        # results got broadcast onto the wrong rows unless the source happened to
-        # already be sorted by date within each group.
-        input_lf = expected_lf.drop(
-            IndCQC.ascwds_job_role_ratios,
-            IndCQC.imputed_ascwds_job_role_ratios,
-            IndCQC.imputed_ascwds_job_role_counts,
-        ).sort(IndCQC.cqc_location_import_date, descending=True)
-
-        returned_lf = job.create_imputed_ascwds_job_role_counts(input_lf).sort(
-            IndCQC.id_per_locationid_import_date_job_role
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
-
-
 class TestGetPercentageShareRatios:
     def test_over_groups(self):
         expected_lf = pl.LazyFrame(
@@ -164,6 +109,116 @@ class TestAddImputedJobRoleRatiosForTrendline:
             Schemas.add_imputed_job_role_ratios_for_trendline_expected_schema.keys()
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
+
+
+class TestAddImputedASCWDSJobRoleRatios:
+    @pytest.mark.parametrize(
+        "add_imputed_ascwds_job_role_ratios_data",
+        [
+            case.as_pytest_param()
+            for case in Data.add_imputed_ascwds_job_role_ratios_test_cases
+        ],
+    )
+    def test_add_imputed_ascwds_job_role_ratios(
+        self, add_imputed_ascwds_job_role_ratios_data
+    ):
+        expected_lf = pl.LazyFrame(
+            add_imputed_ascwds_job_role_ratios_data,
+            Schemas.add_imputed_ascwds_job_role_ratios_expected_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(IndCQC.imputed_ascwds_job_role_ratios)
+
+        returned_lf = job.add_imputed_ascwds_job_role_ratios(input_lf).select(
+            Schemas.add_imputed_ascwds_job_role_ratios_expected_schema.keys()
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
+
+    def test_result_correct_when_source_rows_not_sorted_by_date(self):
+        sort_key = [
+            IndCQC.location_id,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.cqc_location_import_date,
+        ]
+        # February is 31 of the 60 days from January to March, hence 0.696667 rather than 0.70.
+        expected_lf = pl.LazyFrame(
+            data=[
+                ("1", MainJobRoleLabels.care_worker, date(2024, 1, 1), 0.8, 0.5, 0.8),
+                (
+                    "1",
+                    MainJobRoleLabels.registered_nurse,
+                    date(2024, 1, 1),
+                    0.2,
+                    0.5,
+                    0.2,
+                ),
+                (
+                    "1",
+                    MainJobRoleLabels.care_worker,
+                    date(2024, 2, 1),
+                    None,
+                    0.5,
+                    0.696667,
+                ),
+                (
+                    "1",
+                    MainJobRoleLabels.registered_nurse,
+                    date(2024, 2, 1),
+                    None,
+                    0.5,
+                    0.303333,
+                ),
+                ("1", MainJobRoleLabels.care_worker, date(2024, 3, 1), 0.6, 0.5, 0.6),
+                (
+                    "1",
+                    MainJobRoleLabels.registered_nurse,
+                    date(2024, 3, 1),
+                    0.4,
+                    0.5,
+                    0.4,
+                ),
+            ],  # fmt: skip
+            schema=Schemas.add_imputed_ascwds_job_role_ratios_expected_schema,
+            orient="row",
+        )
+        # Rows can arrive out of date order within a group, e.g. as read back from Athena.
+        # Every window carries order_by, so no prior sort of the source is needed.
+        input_lf = expected_lf.drop(IndCQC.imputed_ascwds_job_role_ratios).sort(
+            IndCQC.cqc_location_import_date, descending=True
+        )
+
+        returned_lf = (
+            job.add_imputed_ascwds_job_role_ratios(input_lf)
+            .select(Schemas.add_imputed_ascwds_job_role_ratios_expected_schema.keys())
+            .sort(sort_key)
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf.sort(sort_key), rel_tol=0.0001
+        )
+
+
+class TestAddImputedASCWDSJobRoleCounts:
+    def test_counts_are_the_estimated_posts_at_the_imputed_ratio(self):
+        expected_lf = pl.LazyFrame(
+            data=[
+                (10.0, 0.4, 4.0),
+                (10.0, None, None),
+                (None, 0.4, None),
+            ],
+            schema={
+                IndCQC.estimate_filled_posts: pl.Float32,
+                IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,
+                IndCQC.imputed_ascwds_job_role_counts: pl.Float32,
+            },
+            orient="row",
+        )
+        input_lf = expected_lf.drop(IndCQC.imputed_ascwds_job_role_counts)
+
+        returned_lf = job.add_imputed_ascwds_job_role_counts(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class TestCreateASCWDSJobRoleRollingRatio:
