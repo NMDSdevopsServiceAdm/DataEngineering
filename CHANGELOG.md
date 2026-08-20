@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Improved
 
 ### Fixed
+- Fixed Step Functions executions not actually stopping their underlying ECS task on manual stop, due to a missing IAM permission, and added a safety net to force-stop orphaned ECS tasks and Glue crawlers before a branch's infrastructure is destroyed in CI.
 
 ## [v2026.07.0] - 17/08/2026
 
