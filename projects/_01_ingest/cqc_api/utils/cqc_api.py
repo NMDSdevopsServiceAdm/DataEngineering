@@ -1,6 +1,5 @@
 from typing import Generator, Iterable, List
 
-import polars as pl
 import requests
 from ratelimit import limits, sleep_and_retry
 from requests.adapters import HTTPAdapter
@@ -298,6 +297,8 @@ def normalise_structs(record: dict, schema: dict) -> dict:
     Returns:
         dict: Record with schema columns normalised; extra columns untouched.
     """
+    import polars as pl
+
     record = record or {}
     fixed = dict(record)  # preserve all columns including unknowns
 
@@ -337,7 +338,7 @@ def normalise_structs(record: dict, schema: dict) -> dict:
 def build_dataframe_from_api(
     api_generator: Generator[dict, None, None],
     schema: dict,
-) -> pl.DataFrame:
+) -> "pl.DataFrame":
     """
     Consumes an API generator, normalises known schema columns on every row,
     and returns a Polars DataFrame.
@@ -361,6 +362,8 @@ def build_dataframe_from_api(
     Returns:
         pl.DataFrame: Newly constructed DataFrame with new raw data
     """
+    import polars as pl
+
     known_cols = set(schema.keys())
     new_cols_seen: set[str] = set()
     rows: list[dict] = []
