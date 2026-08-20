@@ -107,9 +107,8 @@ def model_primary_service_rate_of_change_trendline(
 
     lf = lf.with_columns(
         pl.col(TempCol.current_period_interpolated)
-        .sort_by(IndCqc.cqc_location_import_date)
         .shift(1)
-        .over(IndCqc.location_id)
+        .over(IndCqc.location_id, order_by=IndCqc.cqc_location_import_date)
         .cast(pl.Float32)
         .alias(TempCol.previous_period_interpolated)
     )
