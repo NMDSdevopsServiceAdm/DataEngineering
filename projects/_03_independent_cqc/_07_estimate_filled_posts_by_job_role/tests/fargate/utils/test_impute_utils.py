@@ -143,44 +143,16 @@ class TestAddImputedASCWDSJobRoleRatios:
         # February is 31 of the 60 days to March, hence 0.696667 not 0.70.
         expected_lf = pl.LazyFrame(
             data=[
-                ("1", MainJobRoleLabels.care_worker, date(2024, 1, 1), 0.8, 0.5, 0.8),
-                (
-                    "1",
-                    MainJobRoleLabels.registered_nurse,
-                    date(2024, 1, 1),
-                    0.2,
-                    0.5,
-                    0.2,
-                ),
-                (
-                    "1",
-                    MainJobRoleLabels.care_worker,
-                    date(2024, 2, 1),
-                    None,
-                    0.5,
-                    0.696667,
-                ),
-                (
-                    "1",
-                    MainJobRoleLabels.registered_nurse,
-                    date(2024, 2, 1),
-                    None,
-                    0.5,
-                    0.303333,
-                ),
-                ("1", MainJobRoleLabels.care_worker, date(2024, 3, 1), 0.6, 0.5, 0.6),
-                (
-                    "1",
-                    MainJobRoleLabels.registered_nurse,
-                    date(2024, 3, 1),
-                    0.4,
-                    0.5,
-                    0.4,
-                ),
-            ],  # fmt: skip
+                ("1", MainJobRoleLabels.care_worker,      date(2024, 1, 1), 0.8,  0.5, 0.8),
+                ("1", MainJobRoleLabels.registered_nurse, date(2024, 1, 1), 0.2,  0.5, 0.2),
+                ("1", MainJobRoleLabels.care_worker,      date(2024, 2, 1), None, 0.5, 0.696667),
+                ("1", MainJobRoleLabels.registered_nurse, date(2024, 2, 1), None, 0.5, 0.303333),
+                ("1", MainJobRoleLabels.care_worker,      date(2024, 3, 1), 0.6,  0.5, 0.6),
+                ("1", MainJobRoleLabels.registered_nurse, date(2024, 3, 1), 0.4,  0.5, 0.4),
+            ],
             schema=Schemas.add_imputed_ascwds_job_role_ratios_expected_schema,
             orient="row",
-        )
+        )  # fmt: skip
         # Rows can arrive unsorted, e.g. read back from Athena.
         input_lf = expected_lf.drop(IndCQC.imputed_ascwds_job_role_ratios).sort(
             IndCQC.cqc_location_import_date, descending=True
