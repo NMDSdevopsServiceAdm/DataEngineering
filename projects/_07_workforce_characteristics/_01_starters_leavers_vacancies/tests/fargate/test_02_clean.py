@@ -2,6 +2,8 @@ import unittest
 from unittest.mock import ANY, Mock, patch
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._02_clean as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._02_clean"
 
@@ -11,12 +13,12 @@ class MainTests(unittest.TestCase):
     CLEANED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.cUtils.deduplicate_slv_over_time")
+    @patch(f"{PATCH_PATH}.cUtils.remove_repeated_values_over_time")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        deduplicate_slv_over_time_mock: Mock,
+        remove_repeated_values_over_time_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -25,9 +27,15 @@ class MainTests(unittest.TestCase):
         )
 
         scan_parquet_mock.assert_called_once_with(self.MERGED_DATA_SOURCE)
-
-        # TODO: Uncomment these assertions when the placeholder functions are implemented
-        # deduplicate_slv_over_time_mock.assert_called_once()
+        remove_repeated_values_over_time_mock.assert_called_once_with(
+            scan_parquet_mock.return_value,
+            columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
+            partition_by_columns=[
+                IndCQC.location_id,
+                SLVCols.published_job_role_label,
+            ],
+            date_column=IndCQC.cqc_location_import_date,
+        )
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,

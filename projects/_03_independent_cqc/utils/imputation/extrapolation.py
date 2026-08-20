@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import ExtrapolationColumns
@@ -12,6 +14,7 @@ def model_extrapolation(
     column_with_null_values: str,
     model_to_extrapolate_from: str,
     extrapolation_method: str,
+    group_columns: Optional[List[str]] = None,
 ) -> pl.LazyFrame:
     """
     Perform extrapolation on a column with null values using specified models.
@@ -20,9 +23,8 @@ def model_extrapolation(
     after the last known submission are extrapolated, either by nominal or ratio
     method as specified in 'extrapolation_method'.
 
-    The process consists of: - Computing per-group (location_id) aggregates such
-    as first/last submission
-      dates and first submitted values
+    The process consists of: - Computing per-group aggregates such
+    as first/last submission dates and first submitted values
     - Deriving previous submitted values within each group
     - Applying either ratio-based or nominal extrapolation logic
     - Producing two output columns:
@@ -48,6 +50,12 @@ def model_extrapolation(
         extrapolation_method (str): Method used for extrapolation, either:
             - "ratio": scales values based on proportional change in the model
             - "nominal": adjusts values based on absolute change in the model
+        group_columns (Optional[List[str]]): Columns to partition the
+            per-group calculations by. Defaults to `[location_id]` alone
+            when None. A caller should widen this when a location's own
+            attributes can change over time (e.g. `care_home` status), so
+            that periods with different attribute values don't get mixed
+            into the same extrapolation group.
 
     Returns:
         pl.LazyFrame: LazyFrame with extrapolated columns added and temporary
@@ -56,8 +64,10 @@ def model_extrapolation(
     Raises:
         ValueError: If `extrapolation_method` is not "ratio" or "nominal".
     """
+    group_columns = group_columns or [IndCqc.location_id]
+
     lf = build_extrapolation_aggregates(
-        lf, column_with_null_values, model_to_extrapolate_from
+        lf, column_with_null_values, model_to_extrapolate_from, group_columns
     )
 
     # Only keep model values when we actually have an observation
@@ -70,8 +80,12 @@ def model_extrapolation(
     # Get last observed values
     lf = lf.with_columns(
         [
-            get_previous_value(column_with_null_values).alias(TEMP.previous_value),
-            get_previous_value(TEMP.model_with_nulls).alias(TEMP.previous_model),
+            get_previous_value(column_with_null_values, group_columns).alias(
+                TEMP.previous_value
+            ),
+            get_previous_value(TEMP.model_with_nulls, group_columns).alias(
+                TEMP.previous_model
+            ),
         ]
     )
 
@@ -108,32 +122,40 @@ def model_extrapolation(
 
 
 def build_extrapolation_aggregates(
-    lf: pl.LazyFrame, value_col: str, model_col: str
+    lf: pl.LazyFrame,
+    value_col: str,
+    model_col: str,
+    group_columns: Optional[List[str]] = None,
 ) -> pl.LazyFrame:
     """
-    Add per-location extrapolation boundary values as columns on every row.
+    Add per-group extrapolation boundary values as columns on every row.
 
-    For each `location_id`, computes the first and last submission dates where
-    `value_col` is non-null, and the `value_col`/`model_col` values observed on
-    that first submission date. These are added as new columns rather than
-    aggregated into a separate LazyFrame, so no join is needed to bring them
-    back onto the full dataset — cheaper than the group_by+join equivalent
-    since it avoids materialising and merging a second frame.
+    For each group (`location_id` alone by default), computes the first and
+    last submission dates where `value_col` is non-null, and the
+    `value_col`/`model_col` values observed on that first submission date.
+    These are added as new columns rather than aggregated into a separate
+    LazyFrame, so no join is needed to bring them back onto the full dataset —
+    cheaper than the group_by+join equivalent since it avoids materialising
+    and merging a second frame.
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame containing time series data.
         value_col (str): Column containing observed values with nulls.
         model_col (str): Column containing model values used for extrapolation.
+        group_columns (Optional[List[str]]): Columns to partition the
+            calculations by. Defaults to `[location_id]` alone when None.
 
     Returns:
         pl.LazyFrame: The input LazyFrame with four extra columns —
             `first_submission_time`, `final_submission_time`, `first_value`, and
-            `first_model` — repeated across every row for a given `location_id`.
+            `first_model` — repeated across every row for a given group.
     """
+    group_columns = group_columns or [IndCqc.location_id]
+
     is_observed = pl.col(value_col).is_not_null()
 
     first_submission_time_expr = (
-        pl.when(is_observed).then(pl.col(IMPORT_DATE)).min().over(IndCqc.location_id)
+        pl.when(is_observed).then(pl.col(IMPORT_DATE)).min().over(group_columns)
     )
     is_first_observed_row = is_observed & (
         pl.col(IMPORT_DATE) == first_submission_time_expr
@@ -144,44 +166,48 @@ def build_extrapolation_aggregates(
         pl.when(is_observed)
         .then(pl.col(IMPORT_DATE))
         .max()
-        .over(IndCqc.location_id)
+        .over(group_columns)
         .alias(TEMP.final_submission_time),
         pl.when(is_first_observed_row)
         .then(pl.col(value_col))
         .max()
-        .over(IndCqc.location_id)
+        .over(group_columns)
         .alias(TEMP.first_value),
         pl.when(is_first_observed_row)
         .then(pl.col(model_col))
         .max()
-        .over(IndCqc.location_id)
+        .over(group_columns)
         .alias(TEMP.first_model),
     )
 
 
-def get_previous_value(col: str) -> pl.Expr:
+def get_previous_value(col: str, group_columns: Optional[List[str]] = None) -> pl.Expr:
     """
     Generate an expression for the previous observed non-null value within a group.
 
-    This expression forward-fills null values within each `location_id` group,
-    then shifts the result by one row to obtain the most recent prior observed value.
+    This expression forward-fills null values within each group, then shifts
+    the result by one row to obtain the most recent prior observed value.
 
     It is used to support forward extrapolation, where the last known value
     prior to a gap is required.
 
     Args:
         col (str): Name of the column to compute previous values for.
+        group_columns (Optional[List[str]]): Columns to partition the
+            calculation by. Defaults to `[location_id]` alone when None.
 
     Returns:
         pl.Expr: Polars expression representing the previous observed value
-        within each `location_id` group.
+        within each group.
     """
+    group_columns = group_columns or [IndCqc.location_id]
+
     return (
         pl.col(col)
         .sort_by(IMPORT_DATE)
         .fill_null(strategy="forward")
         .shift(1)
-        .over(IndCqc.location_id, order_by=IMPORT_DATE)
+        .over(group_columns, order_by=IMPORT_DATE)
     )
 
 
