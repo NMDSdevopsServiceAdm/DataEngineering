@@ -305,24 +305,12 @@ def add_imputed_ascwds_job_role_ratios(
     Impute job role ratios by carrying each workplace's own known split along the rolling
     ratio trendline.
 
-    Outside a workplace's known dates the ratios follow the nominal change in the trendline
-    indefinitely, so the workplace keeps its own level while moving with its stratum. Interior
-    gaps ride the same trendline, with the residual apportioned by days rather than by rows.
-    Neither direction is capped, and the trendline is carried across every date, so a workplace
-    that submitted once still receives a split for every other date. The limits in
-    `add_imputed_job_role_ratios_for_trendline` bound which workplaces contribute to the
-    trendline, not how far it reaches.
+    Ratios follow the nominal change in the trendline, uncapped in both directions, with
+    interior gaps apportioned by days rather than by rows. They are then floored at zero and
+    re-shared across job roles, since flooring is what breaks their total of 1.
 
-    Ratios are floored at zero and then re-shared across job roles. Nominal extrapolation
-    already preserves the sum of 1 to float32 precision, since all job roles of a workplace
-    share the same known dates and the trendline itself sums to 1 — so re-sharing mainly repairs
-    the cases where a falling trendline took a ratio below zero. Because a set summing to 1 must
-    hold at least one positive value, flooring can never zero every job role at once, leaving
-    the re-share no division by zero to guard against.
-
-    Requires the trendline to be non-null on every row, which `validate_03_impute` enforces.
-    A null trendline nulls both the extrapolation and the interpolation, which would leave a
-    workplace that did submit with no imputed split at all.
+    Requires a non-null trendline: a null would leave a workplace that did submit with no
+    imputed split at all.
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset containing job role ratios and the

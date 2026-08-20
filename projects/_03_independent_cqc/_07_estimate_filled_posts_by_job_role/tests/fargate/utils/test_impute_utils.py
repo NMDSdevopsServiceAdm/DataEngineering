@@ -129,9 +129,7 @@ class TestAddImputedASCWDSJobRoleRatios:
         )
         input_lf = expected_lf.drop(IndCQC.imputed_ascwds_job_role_ratios)
 
-        # Deliberately not selecting the expected columns first: the drop lists for the
-        # extrapolation and interpolation temp columns are repeated by hand in the function,
-        # so comparing the whole frame is what catches one of them leaking into the output.
+        # Comparing every column, so a leaked temp column fails the test.
         returned_lf = job.add_imputed_ascwds_job_role_ratios(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
@@ -142,7 +140,7 @@ class TestAddImputedASCWDSJobRoleRatios:
             IndCQC.main_job_role_clean_labelled,
             IndCQC.cqc_location_import_date,
         ]
-        # February is 31 of the 60 days from January to March, hence 0.696667 rather than 0.70.
+        # February is 31 of the 60 days to March, hence 0.696667 not 0.70.
         expected_lf = pl.LazyFrame(
             data=[
                 ("1", MainJobRoleLabels.care_worker, date(2024, 1, 1), 0.8, 0.5, 0.8),
@@ -183,8 +181,7 @@ class TestAddImputedASCWDSJobRoleRatios:
             schema=Schemas.add_imputed_ascwds_job_role_ratios_expected_schema,
             orient="row",
         )
-        # Rows can arrive out of date order within a group, e.g. as read back from Athena.
-        # Every window carries order_by, so no prior sort of the source is needed.
+        # Rows can arrive unsorted, e.g. read back from Athena.
         input_lf = expected_lf.drop(IndCQC.imputed_ascwds_job_role_ratios).sort(
             IndCQC.cqc_location_import_date, descending=True
         )

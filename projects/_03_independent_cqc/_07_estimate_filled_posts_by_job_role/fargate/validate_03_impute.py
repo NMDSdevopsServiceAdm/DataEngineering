@@ -379,8 +379,6 @@ def other_validation(
             right=1.001,
             brief="ascwds_job_role_rolling_ratio should sum to 1 across job roles within each primary service type, size group and import date",
         )
-        # Re-sharing divides by the total of this same group, so the total is 1 by
-        # construction. What this catches is a group that came out NaN or all zero.
         .col_vals_between(
             pre=sum_imputed_ratios_across_job_roles,
             columns=IndCqcColumns.imputed_ascwds_job_role_ratios,
@@ -388,8 +386,6 @@ def other_validation(
             right=1.001,
             brief="imputed_ascwds_job_role_ratios should sum to 1 across job roles within each workplace and import date",
         )
-        # Proves extrapolation reached every date of a workplace that ever submitted, and
-        # nothing was carried into one that never did.
         .col_vals_expr(
             expr=(
                 pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_not_null()
