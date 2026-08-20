@@ -2133,6 +2133,20 @@ class ImputeJobRoleData:
                 (6, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 8.0, 0.1, "CHWN 1 to 19", 0.1),
             ],
         ),
+        # Three job roles, so the means (0.35, 0.4, 0.25) still total 1 without any one of
+        # them being an obvious complement of the others. Post-weighting would give care
+        # workers 0.2545 rather than 0.35.
+        ImputeJobRoleTestCase(
+            id="when_ratios_must_sum_to_one_across_job_roles",
+            data=[
+                (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker,        4.0, 0.5, "CHWN 1 to 19", 0.35),
+                (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse,   4.0, 0.3, "CHWN 1 to 19", 0.4),
+                (3, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_care_worker, 4.0, 0.2, "CHWN 1 to 19", 0.25),
+                (4, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker,        18.0, 0.2, "CHWN 1 to 19", 0.35),
+                (5, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse,   18.0, 0.5, "CHWN 1 to 19", 0.4),
+                (6, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_care_worker, 18.0, 0.3, "CHWN 1 to 19", 0.25),
+            ],
+        ),
     ]  # fmt: skip
 
     add_imputed_job_role_ratios_for_trendline_test_cases = [

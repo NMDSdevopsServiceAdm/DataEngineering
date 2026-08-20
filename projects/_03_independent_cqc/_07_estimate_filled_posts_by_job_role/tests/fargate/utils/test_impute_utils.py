@@ -194,49 +194,6 @@ class TestCreateASCWDSJobRoleRollingRatio:
             returned_lf, expected_lf, check_column_order=False, rel_tol=0.0001
         )
 
-    def test_ratios_sum_to_one_across_job_roles(self):
-        # Two workplaces sharing a primary service type, size group and date, each
-        # with their job role ratios summing to 1 on their own.
-        input_lf = pl.LazyFrame(
-            data=[
-                ("1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, 0.4),
-                ("1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, 0.6),
-                ("2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 18.0, 0.2),
-                ("2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 18.0, 0.8),
-            ],
-            schema={
-                IndCQC.location_id: pl.String,
-                IndCQC.cqc_location_import_date: pl.Date,
-                IndCQC.primary_service_type: pl.String,
-                IndCQC.main_job_role_clean_labelled: pl.String,
-                IndCQC.estimate_filled_posts: pl.Float32,
-                IndCQC.ascwds_job_role_ratios: pl.Float32,
-            },
-            orient="row",
-        )  # fmt: skip
-        stratum = [
-            IndCQC.primary_service_type,
-            IndCQC.estimate_filled_posts_size_group,
-            IndCQC.cqc_location_import_date,
-        ]
-
-        # Every workplace in a stratum shares the same rolling ratio, so reduce to one
-        # row per job role before summing, or the total would be inflated by however
-        # many workplaces are in that stratum.
-        totals_lf = (
-            job.create_ascwds_job_role_rolling_ratio(input_lf)
-            .unique(subset=stratum + [IndCQC.main_job_role_clean_labelled])
-            .group_by(stratum)
-            .agg(pl.col(IndCQC.ascwds_job_role_rolling_ratio).sum())
-        )
-        expected_lf = totals_lf.select(stratum).with_columns(
-            pl.lit(1.0, dtype=pl.Float32).alias(IndCQC.ascwds_job_role_rolling_ratio)
-        )
-
-        pl_testing.assert_frame_equal(
-            totals_lf, expected_lf, check_row_order=False, rel_tol=0.0001
-        )
-
 
 class TestEstimateFilledPostsSizeGroupExpression:
     def test_estimate_filled_posts_size_group_expression(self):
