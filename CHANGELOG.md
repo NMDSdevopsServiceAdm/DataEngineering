@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a Terraform-managed sample raw-data bucket (`sfc-main-sample-raw-data`) in `main`, with cross-account read access, as a curated source for non-prod branches to seed their own raw buckets from.
+
 - Added a reusable `RunDiagnostics` utility to Polars Utils, capturing memory, thread, and Polars streaming-fallback evidence for a job run, with each sample written durably to S3 so evidence survives an out-of-memory kill.
 
 - Added an `oom-diagnostics` Claude Code skill documenting how to run `RunDiagnostics` via a throwaway Fargate task, choose a sampling interval, and read back its S3 output.
