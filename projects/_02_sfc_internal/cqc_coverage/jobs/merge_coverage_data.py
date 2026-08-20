@@ -242,10 +242,10 @@ def add_flag_for_in_ascwds(merged_coverage_df: DataFrame) -> DataFrame:
     return merged_coverage_df.withColumn(
         CoverageColumns.in_ascwds,
         F.when(
-            F.isnull(AWPClean.establishment_id)
-            | F.col(AWPClean.removed_by_purge_date_filter),
-            InAscwds.not_in_ascwds,
-        ).otherwise(InAscwds.is_in_ascwds),
+            (F.isnotnull(AWPClean.establishment_id))
+            & (F.col(AWPClean.removed_by_purge_date_filter) == False),
+            InAscwds.is_in_ascwds,
+        ).otherwise(InAscwds.not_in_ascwds),
     )
 
 

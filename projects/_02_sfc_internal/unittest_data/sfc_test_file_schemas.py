@@ -358,6 +358,8 @@ class MergeCoverageData:
             StructField(AWPClean.master_update_date, DateType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.total_staff, IntegerType(), True),
+            StructField(AWPClean.workplace_last_active_date, DateType(), True),
+            StructField(AWPClean.purge_date, DateType(), True),
         ]
     )
 
