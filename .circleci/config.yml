@@ -67,7 +67,10 @@ commands:
 jobs:
   # Works out which docker-bake targets this push needs, so
   # task-containerisation can skip setup_remote_docker entirely when nothing
-  # changed. Separate job because docker:latest has no python.
+  # changed, and whether this push should seed the non-prod raw data bucket,
+  # so copy-main-data can skip triggering the ingest Step Functions for
+  # branches unrelated to ingest. Separate job because docker:latest has no
+  # python.
   decide-images:
     docker:
       # cimg over the lint jobs' uv image: this job needs git, which that
@@ -108,12 +111,19 @@ jobs:
             mkdir -p /tmp/bake
             python scripts/select_bake_targets.py > /tmp/bake/targets
             echo "Targets to build: $(cat /tmp/bake/targets)"
+      - run:
+          name: Decide whether to seed the raw bucket
+          command: |
+            mkdir -p /tmp/bake
+            python scripts/select_raw_bucket_seed.py > /tmp/bake/seed-raw-bucket
+            echo "Seed raw bucket: $(cat /tmp/bake/seed-raw-bucket)"
       - persist_to_workspace:
           # Namespaced, because later jobs attach this same workspace at the
           # repo root and a bare "targets" file there reads as repo content.
           root: /tmp
           paths:
             - bake/targets
+            - bake/seed-raw-bucket
 
   task-containerisation:
     parameters:
@@ -417,7 +427,16 @@ jobs:
       - run:
           name: Seed non-prod raw bucket from sample bucket
           command: |
-            aws s3 sync "s3://sfc-main-sample-raw-data/" "s3://$BRANCH_RAW_BUCKET/" --delete
+            # Defaults to seeding when the flag file is missing/unreadable --
+            # same defensive direction as decide-images' own missing-file
+            # fallback (build everything rather than silently building
+            # nothing): here, seed anyway rather than silently never testing
+            # a real ingest change.
+            if [ "$(cat bake/seed-raw-bucket 2>/dev/null)" = "false" ]; then
+              echo "No ingest-related changes detected. Skipping raw bucket seed."
+            else
+              aws s3 sync "s3://sfc-main-sample-raw-data/" "s3://$BRANCH_RAW_BUCKET/" --delete
+            fi
 
   terraform-destroy:
     working_directory: /tmp/project
@@ -539,6 +558,7 @@ workflows:
           context: non-prod
           requires:
             - terraform-apply
+            - decide-images
       - test:
           requires:
             - terraform-apply
