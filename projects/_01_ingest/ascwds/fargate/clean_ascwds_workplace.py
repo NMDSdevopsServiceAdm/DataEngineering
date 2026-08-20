@@ -4,6 +4,7 @@ import polars.selectors as cs
 from polars_utils import cleaning_utils as cUtils
 from polars_utils import expressions as expr
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes
 from projects._01_ingest.ascwds.fargate.utils import clean_workplace_utils as wUtils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -129,6 +130,25 @@ def main(
         data_labels_lf,
         columns_to_apply_labels,
         add_as_new_column=False,
+    )
+
+    # Cast to Categorical/Enum here so it's saved in the output parquet file.
+    lf = lf.with_columns(
+        pl.col(AWPClean.region_id).cast(CategoricalColumnTypes.RegionIdCatType),
+        pl.col(AWPClean.establishment_type).cast(
+            CategoricalColumnTypes.EstablishmentTypeCatType
+        ),
+        pl.col(AWPClean.registration_type).cast(
+            CategoricalColumnTypes.RegistrationTypeCatType
+        ),
+        pl.col(AWPClean.main_service_id).cast(
+            CategoricalColumnTypes.MainServiceIdCatType
+        ),
+        pl.col(AWPClean.la_permission).cast(CategoricalColumnTypes.LaPermissionCatType),
+        pl.col(AWPClean.is_bulk_uploader).cast(
+            CategoricalColumnTypes.IsBulkUploaderCatType
+        ),
+        pl.col(AWPClean.is_parent).cast(CategoricalColumnTypes.IsParentCatType),
     )
 
     lf = wUtils.create_purge_date_columns(lf)

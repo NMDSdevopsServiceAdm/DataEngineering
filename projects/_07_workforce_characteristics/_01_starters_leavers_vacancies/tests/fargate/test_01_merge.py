@@ -48,8 +48,7 @@ class TestMain:
 
         collapse_job_role_estimates_to_published_labels_mock.assert_called_once()
 
-        # TODO: Uncomment when the placeholder function is implemented
-        # apply_employment_status_magic_numbers_mock.assert_called_once()
+        apply_employment_status_magic_numbers_mock.assert_called_once()
 
         scan_csv_mock.assert_called_once_with(
             self.EMPLOYMENT_STATUS_RATES_SOURCE, schema=ANY

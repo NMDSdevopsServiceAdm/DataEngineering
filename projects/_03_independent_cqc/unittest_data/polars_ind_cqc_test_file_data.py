@@ -8,6 +8,7 @@ import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
+    RUI,
     ASCWDSFilledPostsSource,
     AscwdsFilteringRule,
     CareHome,
@@ -21,7 +22,6 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
     Region,
-    RUI,
     Sector,
     Services,
 )
@@ -457,10 +457,10 @@ class ValidateImputedIndCqcAscwdsAndPir:
     # columns null, covering the na_pass path. The imputed capacity tracker values are
     # deliberately below 1, which the cleaned columns they impute cannot be.
     imputed_ind_cqc_ascwds_and_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  1.0,  5.0,  5.0,  None, 1.0,  5.0,  1.0,  0.5,  None),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, 5.0,  5.0,  5.0,  5.0,  None, 5.0,  1.0,  None, 0.5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  None, None, None, None, None, None, None, None, None),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, None, None, None, None, None, None, None, None, None),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  1.0,  5.0,  5.0,  None, 1.0,  5.0,  5.0,  1.0,  0.5,  None),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, 5.0,  5.0,  5.0,  5.0,  None, 5.0,  5.0,  1.0,  None, 0.5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  None, None, None, None, None, None, None, None, None, None),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, None, None, None, None, None, None, None, None, None, None),
     ] # fmt: skip
 
 
@@ -1037,90 +1037,6 @@ class CleanFilteringUtilsData:
         ("1-006", "1-0003", None, date(2025, 1, 1), None),
         ("1-001", "1-0001", 2, date(2025, 2, 1), 4),
         ("1-002", "1-0001", 2, date(2025, 2, 1), 4),
-    ]
-
-
-@dataclass
-class CleanUtilsData:
-    locations_with_repeated_value_rows = [
-        ("1-0001", 1, date(2023, 2, 1)),
-        ("1-0001", 2, date(2023, 3, 1)),
-        ("1-0001", 2, date(2023, 4, 1)),
-        ("1-0001", 3, date(2023, 8, 1)),
-        ("1-0002", 3, date(2023, 2, 1)),
-        ("1-0002", 9, date(2023, 4, 1)),
-        ("1-0002", 3, date(2024, 1, 1)),
-        ("1-0002", 3, date(2024, 2, 1)),
-    ]
-    expected_locations_without_repeated_value_rows = [
-        ("1-0001", 1, date(2023, 2, 1), 1),
-        ("1-0001", 2, date(2023, 3, 1), 2),
-        ("1-0001", 1, date(2023, 4, 1), 1),
-        ("1-0001", 3, date(2023, 8, 1), 3),
-        ("1-0002", 3, date(2023, 2, 1), 3),
-        ("1-0002", 9, date(2023, 4, 1), 9),
-        ("1-0002", 3, date(2024, 1, 1), 3),
-        ("1-0002", 9, date(2024, 2, 1), 9),
-    ]
-    location_without_repeated_value_rows = [
-        ("1-0001", 1, date(2023, 2, 1)),
-        ("1-0001", 2, date(2023, 3, 1)),
-        ("1-0001", 1, date(2023, 4, 1)),
-        ("1-0001", 3, date(2023, 8, 1)),
-        ("1-0002", 3, date(2023, 2, 1)),
-        ("1-0002", 9, date(2023, 4, 1)),
-        ("1-0002", 3, date(2024, 1, 1)),
-        ("1-0002", 9, date(2024, 2, 1)),
-    ]
-    expected_locations_without_repeated_values_when_input_has_repeated_values_rows = [
-        ("1-0001", 1, date(2023, 2, 1), 1),
-        ("1-0001", 2, date(2023, 3, 1), 2),
-        ("1-0001", 2, date(2023, 4, 1), None),
-        ("1-0001", 3, date(2023, 8, 1), 3),
-        ("1-0002", 3, date(2023, 2, 1), 3),
-        ("1-0002", 9, date(2023, 4, 1), 9),
-        ("1-0002", 3, date(2024, 1, 1), 3),
-        ("1-0002", 3, date(2024, 2, 1), None),
-    ]
-    providers_with_repeated_value_rows = [
-        ("1-0001", 1, date(2023, 2, 1)),
-        ("1-0001", 2, date(2023, 3, 1)),
-        ("1-0001", 2, date(2023, 4, 1)),
-        ("1-0001", 3, date(2023, 8, 1)),
-        ("1-0002", 3, date(2023, 2, 1)),
-        ("1-0002", 9, date(2023, 4, 1)),
-        ("1-0002", 3, date(2024, 1, 1)),
-        ("1-0002", 3, date(2024, 2, 1)),
-    ]
-    expected_providers_without_repeated_value_rows = [
-        ("1-0001", 1, date(2023, 2, 1), 1),
-        ("1-0001", 2, date(2023, 3, 1), 2),
-        ("1-0001", 1, date(2023, 4, 1), 1),
-        ("1-0001", 3, date(2023, 8, 1), 3),
-        ("1-0002", 3, date(2023, 2, 1), 3),
-        ("1-0002", 9, date(2023, 4, 1), 9),
-        ("1-0002", 3, date(2024, 1, 1), 3),
-        ("1-0002", 9, date(2024, 2, 1), 9),
-    ]
-    providers_without_repeated_value_rows = [
-        ("1-0001", 1, date(2023, 2, 1)),
-        ("1-0001", 2, date(2023, 3, 1)),
-        ("1-0001", 1, date(2023, 4, 1)),
-        ("1-0001", 3, date(2023, 8, 1)),
-        ("1-0002", 3, date(2023, 2, 1)),
-        ("1-0002", 9, date(2023, 4, 1)),
-        ("1-0002", 3, date(2024, 1, 1)),
-        ("1-0002", 9, date(2024, 2, 1)),
-    ]
-    expected_providers_without_repeated_values_when_input_has_repeated_values_rows = [
-        ("1-0001", 1, date(2023, 2, 1), 1),
-        ("1-0001", 2, date(2023, 3, 1), 2),
-        ("1-0001", 2, date(2023, 4, 1), None),
-        ("1-0001", 3, date(2023, 8, 1), 3),
-        ("1-0002", 3, date(2023, 2, 1), 3),
-        ("1-0002", 9, date(2023, 4, 1), 9),
-        ("1-0002", 3, date(2024, 1, 1), 3),
-        ("1-0002", 3, date(2024, 2, 1), None),
     ]
 
 
@@ -3040,6 +2956,15 @@ class ModelImputation:
                 ("1-002", date(2023, 1, 1), CareHome.care_home, None, 1.0, None),
                 ("1-002", date(2023, 2, 1), CareHome.care_home, 20.0, 2.0, None),
                 ("1-002", date(2023, 3, 1), CareHome.care_home, None, 3.0, None),
+            ],
+        ),
+        ModelImputationTestCase(
+            id="when_location_changes_care_home_status_only_the_matching_period_is_imputed",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 50.0, 1.0, 50.0),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, 51.0),
+                ("1-001", date(2023, 3, 1), CareHome.care_home, 50.0, 3.0, None),
+                ("1-001", date(2023, 4, 1), CareHome.care_home, None, 4.0, None),
             ],
         ),
     ] # fmt: skip
