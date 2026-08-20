@@ -217,6 +217,31 @@ class TestApplyCategoricalLabels:
             )
 
 
+class TestRemoveRepeatedValuesOverTime:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.remove_repeated_values_over_time_test_cases
+        ],
+    )
+    def test_remove_repeated_values_over_time(self, case):
+        test_lf = pl.LazyFrame(case.test_data, case.test_schema, orient="row")
+
+        returned_lf = job.remove_repeated_values_over_time(
+            test_lf,
+            columns_to_clean=case.columns_to_clean,
+            partition_by_columns=case.partition_by_columns,
+            date_column=case.date_column,
+        )
+
+        expected_lf = pl.LazyFrame(
+            case.expected_data, case.expected_schema, orient="row"
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
 class ColumnToDateTests(unittest.TestCase):
     def test_converts_date_string_without_hyphens_to_date(self):
         lf = pl.LazyFrame(

@@ -2,6 +2,7 @@ import polars as pl
 
 from polars_utils import utils
 from polars_utils.cleaning_utils import column_to_date
+from polars_utils.column_types import CategoricalColumnTypes
 from schemas.cqc_provider_schema_polars import POLARS_PROVIDER_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
@@ -25,11 +26,20 @@ cqc_provider_cols_to_import = [
 
 def main(full_flattened_source: str, full_cleaned_destination: str) -> None:
     print("Reading Full Flattened CQC Provider LazyFrame in")
-    cqc_reg_lf = utils.scan_parquet(
-        full_flattened_source,
-        schema=POLARS_PROVIDER_SCHEMA,
-        selected_columns=cqc_provider_cols_to_import,
-    ).filter(pl.col(CQCPClean.registration_status) == RegistrationStatus.registered)
+    cqc_reg_lf = (
+        utils.scan_parquet(
+            full_flattened_source,
+            schema=POLARS_PROVIDER_SCHEMA,
+            selected_columns=cqc_provider_cols_to_import,
+        )
+        .with_columns(
+            pl.col(CQCPClean.type).cast(CategoricalColumnTypes.ProviderTypeCatType),
+            pl.col(CQCPClean.registration_status).cast(
+                CategoricalColumnTypes.RegistrationStatusEnumType
+            ),
+        )
+        .filter(pl.col(CQCPClean.registration_status) == RegistrationStatus.registered)
+    )
 
     cqc_reg_lf = column_to_date(
         cqc_reg_lf, Keys.import_date, CQCPClean.cqc_provider_import_date
