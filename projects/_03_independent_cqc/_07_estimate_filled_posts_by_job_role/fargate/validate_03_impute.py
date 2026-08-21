@@ -36,6 +36,7 @@ OTHER_VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.imputed_ascwds_job_role_ratios,
     IndCqcColumns.imputed_ascwds_job_role_counts,
     IndCqcColumns.estimate_filled_posts_size_group,
+    IndCqcColumns.imputed_job_role_ratios_for_trendline,
     IndCqcColumns.ascwds_job_role_rolling_ratio,
 ]
 
@@ -78,6 +79,7 @@ OTHER_VAL_EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.imputed_ascwds_job_role_ratios: "Float32",
         IndCqcColumns.imputed_ascwds_job_role_counts: "Float32",
         IndCqcColumns.estimate_filled_posts_size_group: "String",
+        IndCqcColumns.imputed_job_role_ratios_for_trendline: "Float32",
         IndCqcColumns.ascwds_job_role_rolling_ratio: "Float32",
     }
 )
@@ -121,6 +123,27 @@ def sum_rolling_ratios_across_job_roles(df: pl.DataFrame) -> pl.DataFrame:
         )
         .group_by(group_columns)
         .agg(pl.col(IndCqcColumns.ascwds_job_role_rolling_ratio).sum())
+    )
+
+
+def sum_imputed_ratios_across_job_roles(df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Helper function to total the imputed job role ratios within each workplace and
+    import date.
+
+    Workplaces that have never submitted are null across every job role, so they are
+    dropped rather than totalled to zero.
+    """
+
+    group_columns = [
+        IndCqcColumns.location_id,
+        IndCqcColumns.cqc_location_import_date,
+    ]
+
+    return (
+        df.filter(pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_not_null())
+        .group_by(group_columns)
+        .agg(pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).sum())
     )
 
 
@@ -340,19 +363,43 @@ def other_validation(
             columns=[
                 IndCqcColumns.ascwds_job_role_ratios,
                 IndCqcColumns.imputed_ascwds_job_role_ratios,
+                IndCqcColumns.imputed_job_role_ratios_for_trendline,
                 IndCqcColumns.ascwds_job_role_rolling_ratio,
             ],
             left=0,
             right=1,
             na_pass=True,
-            brief="ascwds_job_role_ratios, imputed_ascwds_job_role_ratios and ascwds_job_role_rolling_ratio should be between 0 and 1 where present",
+            brief="ascwds_job_role_ratios, imputed_ascwds_job_role_ratios, imputed_job_role_ratios_for_trendline and ascwds_job_role_rolling_ratio should be between 0 and 1 where present",
         )
+        # Guards the property the unweighted mean relies on to self-normalise.
         .col_vals_between(
             pre=sum_rolling_ratios_across_job_roles,
             columns=IndCqcColumns.ascwds_job_role_rolling_ratio,
             left=0.999,
             right=1.001,
             brief="ascwds_job_role_rolling_ratio should sum to 1 across job roles within each primary service type, size group and import date",
+        )
+        .col_vals_between(
+            pre=sum_imputed_ratios_across_job_roles,
+            columns=IndCqcColumns.imputed_ascwds_job_role_ratios,
+            left=0.999,
+            right=1.001,
+            brief="imputed_ascwds_job_role_ratios should sum to 1 across job roles within each workplace and import date",
+        )
+        .col_vals_expr(
+            expr=(
+                pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_not_null()
+                == pl.col(IndCqcColumns.ascwds_job_role_ratios)
+                .is_not_null()
+                .any()
+                .over(
+                    [
+                        IndCqcColumns.location_id,
+                        IndCqcColumns.main_job_role_clean_labelled,
+                    ]
+                )
+            ),
+            brief="imputed_ascwds_job_role_ratios should be populated on exactly those workplace and job role series with at least one submission",
         )
         # Date plausibility
         .col_vals_ge(

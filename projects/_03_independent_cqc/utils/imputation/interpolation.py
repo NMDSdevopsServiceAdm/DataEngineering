@@ -3,6 +3,9 @@ from typing import List, Optional
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from utils.column_names.ind_cqc_pipeline_columns import InterpolationColumns
+
+TEMP = InterpolationColumns()  # Temporary column names used during interpolation
 
 
 def model_interpolation(
@@ -169,12 +172,20 @@ def calculate_proportion_of_days_between_submissions(
     val_not_null_date = pl.when(pl.col(column_with_null_values).is_not_null()).then(
         pl.col(IndCqc.cqc_location_import_date)
     )
-    previous_submission_date = val_not_null_date.forward_fill().over(
-        group_columns, order_by=IndCqc.cqc_location_import_date
+
+    # Materialised before anything derives from them: the expressions are referenced several
+    # times below, and repeating them would make Polars recompute each window every time.
+    lf = lf.with_columns(
+        val_not_null_date.forward_fill()
+        .over(group_columns, order_by=IndCqc.cqc_location_import_date)
+        .alias(TEMP.previous_submission_date),
+        val_not_null_date.backward_fill()
+        .over(group_columns, order_by=IndCqc.cqc_location_import_date)
+        .alias(TEMP.next_submission_date),
     )
-    next_submission_date = val_not_null_date.backward_fill().over(
-        group_columns, order_by=IndCqc.cqc_location_import_date
-    )
+
+    previous_submission_date = pl.col(TEMP.previous_submission_date)
+    next_submission_date = pl.col(TEMP.next_submission_date)
 
     condition = pl.col(IndCqc.cqc_location_import_date).is_between(
         previous_submission_date, next_submission_date, "none"
@@ -183,7 +194,7 @@ def calculate_proportion_of_days_between_submissions(
         next_submission_date - previous_submission_date
     ).dt.total_days()
 
-    lf = lf.with_columns(
+    return lf.with_columns(
         pl.when(condition)
         .then(days_between_values)
         .alias(IndCqc.days_between_submissions),
@@ -195,8 +206,7 @@ def calculate_proportion_of_days_between_submissions(
             / days_between_values
         )
         .alias(IndCqc.proportion_of_days_between_submissions),
-    )
-    return lf
+    ).drop(TEMP.previous_submission_date, TEMP.next_submission_date)
 
 
 def calculate_interpolated_values(

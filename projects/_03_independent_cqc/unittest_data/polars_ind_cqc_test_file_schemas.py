@@ -1429,18 +1429,6 @@ class TestJoinEstimatesToAscwds:
 @dataclass
 class ImputeJobRoleSchemas:
 
-    create_imputed_ascwds_job_role_counts_expected_schema = {
-        IndCQC.id_per_locationid_import_date_job_role: pl.UInt32,
-        IndCQC.location_id: pl.String,
-        IndCQC.main_job_role_clean_labelled: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.estimate_filled_posts: pl.Float32,
-        IndCQC.ascwds_job_role_ratios: pl.Float32,  # extra col
-        IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,  # extra col
-        IndCQC.imputed_ascwds_job_role_counts: pl.Float32,  # extra col
-    }
-
     create_ascwds_job_role_rolling_ratio_expected_schema = {
         IndCQC.id_per_locationid_import_date_job_role: pl.UInt16,
         IndCQC.location_id: pl.String,
@@ -1448,9 +1436,26 @@ class ImputeJobRoleSchemas:
         IndCQC.primary_service_type: pl.String,
         IndCQC.main_job_role_clean_labelled: pl.String,
         IndCQC.estimate_filled_posts: pl.Float32,
-        IndCQC.estimate_filled_posts_size_group: pl.String,
-        IndCQC.imputed_ascwds_job_role_counts: pl.Float32,
+        IndCQC.ascwds_job_role_ratios: pl.Float32,
+        IndCQC.estimate_filled_posts_size_group: pl.String,  # extra col
+        IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,  # extra col
+    }
+
+    add_imputed_job_role_ratios_for_trendline_expected_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_job_role_ratios: pl.Float32,
+        IndCQC.imputed_job_role_ratios_for_trendline: pl.Float32,  # extra col
+    }
+
+    add_imputed_ascwds_job_role_ratios_expected_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_job_role_ratios: pl.Float32,
         IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
+        IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,  # extra col
     }
 
 

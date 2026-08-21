@@ -153,21 +153,20 @@ def build_extrapolation_aggregates(
     group_columns = group_columns or [IndCqc.location_id]
 
     is_observed = pl.col(value_col).is_not_null()
+    observed_date = pl.when(is_observed).then(pl.col(IMPORT_DATE))
 
-    first_submission_time_expr = (
-        pl.when(is_observed).then(pl.col(IMPORT_DATE)).min().over(group_columns)
+    lf = lf.with_columns(
+        observed_date.min().over(group_columns).alias(TEMP.first_submission_time),
+        observed_date.max().over(group_columns).alias(TEMP.final_submission_time),
     )
+
+    # Reads the first submission date back as a column. Repeating the expression that built it
+    # would make Polars compute that window again for each of the two values below.
     is_first_observed_row = is_observed & (
-        pl.col(IMPORT_DATE) == first_submission_time_expr
+        pl.col(IMPORT_DATE) == pl.col(TEMP.first_submission_time)
     )
 
     return lf.with_columns(
-        first_submission_time_expr.alias(TEMP.first_submission_time),
-        pl.when(is_observed)
-        .then(pl.col(IMPORT_DATE))
-        .max()
-        .over(group_columns)
-        .alias(TEMP.final_submission_time),
         pl.when(is_first_observed_row)
         .then(pl.col(value_col))
         .max()

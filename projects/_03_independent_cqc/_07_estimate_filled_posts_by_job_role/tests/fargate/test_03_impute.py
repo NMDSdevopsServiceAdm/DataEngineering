@@ -1,47 +1,75 @@
-import unittest
-from unittest.mock import ANY, Mock, call, patch
-
-import polars as pl
+from unittest.mock import ANY, Mock, patch
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._03_impute as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._03_impute"
 
+CLEANED_DATA_SOURCE = "some/source"
+IMPUTED_DATA_DESTINATION = "some/destination"
 
-class MainTests(unittest.TestCase):
-    CLEANED_DATA_SOURCE = "some/source"
-    IMPUTED_DATA_DESTINATION = "some/destination"
 
-    mock_estimated_job_role_posts_lf = pl.LazyFrame()
-
+class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.iUtils.add_imputed_ascwds_job_role_counts")
+    @patch(f"{PATCH_PATH}.iUtils.add_imputed_ascwds_job_role_ratios")
     @patch(f"{PATCH_PATH}.iUtils.create_ascwds_job_role_rolling_ratio")
-    @patch(f"{PATCH_PATH}.iUtils.create_imputed_ascwds_job_role_counts")
-    @patch(
-        f"{PATCH_PATH}.utils.scan_parquet",
-        side_effect=[mock_estimated_job_role_posts_lf],
-    )
-    def test_main_runs(
+    @patch(f"{PATCH_PATH}.iUtils.get_percent_share_ratios")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_each_step_reads_the_previous_step_output(
         self,
         scan_parquet_mock: Mock,
-        create_imputed_ascwds_job_role_counts_mock: Mock,
+        get_percent_share_ratios_mock: Mock,
         create_ascwds_job_role_rolling_ratio_mock: Mock,
+        add_imputed_ascwds_job_role_ratios_mock: Mock,
+        add_imputed_ascwds_job_role_counts_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        job.main(self.CLEANED_DATA_SOURCE, self.IMPUTED_DATA_DESTINATION)
+        job.main(CLEANED_DATA_SOURCE, IMPUTED_DATA_DESTINATION)
 
-        self.assertEqual(scan_parquet_mock.call_count, 1)
-        scan_parquet_mock.assert_has_calls(
-            [
-                call(self.CLEANED_DATA_SOURCE),
-            ]
+        # The rolling ratio trendline is what the impute extrapolates along, so it has to be
+        # built first. Threading each step's output into the next is what pins that order.
+        assert (
+            get_percent_share_ratios_mock.call_args.args[0]
+            is scan_parquet_mock.return_value
+        )
+        assert (
+            create_ascwds_job_role_rolling_ratio_mock.call_args.args[0]
+            is get_percent_share_ratios_mock.return_value
+        )
+        assert (
+            add_imputed_ascwds_job_role_ratios_mock.call_args.args[0]
+            is create_ascwds_job_role_rolling_ratio_mock.return_value
+        )
+        assert (
+            add_imputed_ascwds_job_role_counts_mock.call_args.args[0]
+            is add_imputed_ascwds_job_role_ratios_mock.return_value
         )
 
-        create_imputed_ascwds_job_role_counts_mock.assert_called_once()
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.iUtils.add_imputed_ascwds_job_role_counts")
+    @patch(f"{PATCH_PATH}.iUtils.add_imputed_ascwds_job_role_ratios")
+    @patch(f"{PATCH_PATH}.iUtils.create_ascwds_job_role_rolling_ratio")
+    @patch(f"{PATCH_PATH}.iUtils.get_percent_share_ratios")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_source_is_read_and_result_written_once(
+        self,
+        scan_parquet_mock: Mock,
+        get_percent_share_ratios_mock: Mock,
+        create_ascwds_job_role_rolling_ratio_mock: Mock,
+        add_imputed_ascwds_job_role_ratios_mock: Mock,
+        add_imputed_ascwds_job_role_counts_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
+        job.main(CLEANED_DATA_SOURCE, IMPUTED_DATA_DESTINATION)
 
-        create_ascwds_job_role_rolling_ratio_mock.assert_called_once()
-
+        scan_parquet_mock.assert_called_once_with(CLEANED_DATA_SOURCE)
+        get_percent_share_ratios_mock.assert_called_once_with(
+            ANY,
+            input_col=IndCQC.ascwds_job_role_counts,
+            output_col=IndCQC.ascwds_job_role_ratios,
+        )
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=ANY,
-            output_path=self.IMPUTED_DATA_DESTINATION,
+            lazy_df=add_imputed_ascwds_job_role_counts_mock.return_value,
+            output_path=IMPUTED_DATA_DESTINATION,
         )

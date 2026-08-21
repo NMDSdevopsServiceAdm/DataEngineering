@@ -208,6 +208,7 @@ class IndCqcColumns:
     )
     imputed_ascwds_job_role_counts: str = "imputed_ascwds_job_role_counts"
     imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
+    imputed_job_role_ratios_for_trendline: str = "imputed_job_role_ratios_for_trendline"
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
     imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
@@ -348,6 +349,21 @@ class IndCqcColumns:
 
 
 @dataclass
+class JobRoleImputeTempColumns:
+    """The names of the temporary columns used while imputing ASC-WDS job role ratios."""
+
+    first_known_date: str = "jr_impute_first_known_date"
+    last_known_date: str = "jr_impute_last_known_date"
+    first_known_value: str = "jr_impute_first_known_value"
+    last_known_value: str = "jr_impute_last_known_value"
+    previous_known_date: str = "jr_impute_previous_known_date"
+    next_known_date: str = "jr_impute_next_known_date"
+    ratio_total: str = "jr_impute_ratio_total"
+    contributing_rows: str = "jr_impute_contributing_rows"
+    unnormalised_ratios: str = "jr_impute_unnormalised_ratios"
+
+
+@dataclass
 class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
@@ -413,6 +429,14 @@ class ExtrapolationColumns:
     model_with_nulls: str = "_model_with_nulls"
     previous_model: str = "_previous_model"
     previous_value: str = "_previous_value"
+
+
+@dataclass
+class InterpolationColumns:
+    """The names of the temporary columns created during the interpolation process."""
+
+    previous_submission_date: str = "_previous_submission_date"
+    next_submission_date: str = "_next_submission_date"
 
 
 @dataclass
