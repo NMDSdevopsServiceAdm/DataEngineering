@@ -61,6 +61,24 @@ module "_03_independent_cqc" {
   tag_name = terraform.workspace
 }
 
+# Throwaway, for one memory investigation into the job role imputation step. Reuses the
+# real job's image and matches its sizing so peak memory reflects the true boundary.
+# POLARS_VERBOSE has to be set here: Polars' Rust core reads it once, before any Python
+# in the task runs. Remove with _03_impute_prototype.py.
+module "_03_independent_cqc_prototype" {
+  source        = "../modules/fargate-task"
+  task_name     = "_03_independent_cqc_prototype"
+  ecr_repo_name = "fargate/03_independent_cqc"
+  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
+  cpu_size      = 8192
+  ram_size      = 61440
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" },
+    { "name" : "POLARS_VERBOSE", "value" : "1" }
+  ]
+  tag_name = terraform.workspace
+}
+
 module "_03_independent_cqc_model" {
   source        = "../modules/fargate-task"
   task_name     = "_03_independent_cqc_model"

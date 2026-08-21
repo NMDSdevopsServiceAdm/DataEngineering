@@ -162,6 +162,8 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     independent_cqc_model_task_arn     = module._03_independent_cqc_model.task_arn
     direct_payments_task_arn           = module._04_direct_payments.task_arn
     workforce_characteristics_task_arn = module._07_workforce_characteristics.task_arn
+    # Throwaway, remove with _03_impute_prototype.py
+    independent_cqc_prototype_task_arn = module._03_independent_cqc_prototype.task_arn
 
     # ecs task security groups
     cqc_api_security_group_id                   = module.cqc-api.security_group_id
@@ -171,6 +173,8 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     independent_cqc_model_security_group_id     = module._03_independent_cqc_model.security_group_id
     direct_payments_security_group_id           = module._04_direct_payments.security_group_id
     workforce_characteristics_security_group_id = module._07_workforce_characteristics.security_group_id
+    # Throwaway, remove with _03_impute_prototype.py
+    independent_cqc_prototype_security_group_id = module._03_independent_cqc_prototype.security_group_id
 
     # models
     preprocessor_name = "preprocess_non_res_pir"
@@ -330,6 +334,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._03_independent_cqc_model.task_arn,
           module._04_direct_payments.task_arn,
           module._07_workforce_characteristics.task_arn,
+          # Throwaway, remove with _03_impute_prototype.py
+          module._03_independent_cqc_prototype.task_arn,
           aws_ecs_cluster.polars_cluster.arn
         ]
       },
@@ -350,7 +356,10 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._04_direct_payments.task_exc_role_arn,
           module._04_direct_payments.task_role_arn,
           module._07_workforce_characteristics.task_exc_role_arn,
-          module._07_workforce_characteristics.task_role_arn
+          module._07_workforce_characteristics.task_role_arn,
+          # Throwaway, remove with _03_impute_prototype.py
+          module._03_independent_cqc_prototype.task_exc_role_arn,
+          module._03_independent_cqc_prototype.task_role_arn
         ],
         Condition = {
           StringLike = {
