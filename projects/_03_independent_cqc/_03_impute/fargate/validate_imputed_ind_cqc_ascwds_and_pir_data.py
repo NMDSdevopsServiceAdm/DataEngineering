@@ -131,7 +131,7 @@ def main(
             ),
             brief=f"{IndCQC.combined_ratio_and_filled_posts} should be between 0 and 20 for care homes and between 0 and 3000 otherwise",
         )
-        # TODO: validation for posts_rolling_average_model
+        .col_vals_between(IndCQC.posts_rolling_average_model, 0.0, 3000.0, na_pass=True)
         # categorical
         .col_vals_in_set(
             IndCQC.care_home,

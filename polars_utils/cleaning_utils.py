@@ -256,3 +256,60 @@ def cast_date_strings_to_dates(
     return lf.with_columns(
         date_columns.str.strptime(pl.Date, raw_date_format, strict=False)
     )
+
+
+def remove_repeated_values_over_time(
+    lf: pl.LazyFrame,
+    columns_to_clean: list[str] | cs.Selector,
+    partition_by_columns: str | list[str],
+    date_column: str,
+) -> pl.LazyFrame:
+    """
+    Replaces consecutive repeated values with null, for one or more columns at once.
+
+    For each column, rows are ordered by date_column within each partition_by_columns
+    group. A value is kept only the first time it appears in a run; later repeats of
+    the same value are replaced with null. Each column's deduplicated values are added
+    as a new "<original>_deduplicated" column; the original columns are kept unchanged.
+
+    Args:
+        lf (pl.LazyFrame): The LazyFrame to clean.
+        columns_to_clean (list[str] | cs.Selector): Column names, or a selector.
+        partition_by_columns (str | list[str]): Column(s) identifying each entity's
+            timeline (e.g. location_id, or [establishment_id, published_job_role_label]
+            when a single entity has multiple independent timelines).
+        date_column (str): Column to order rows by within each partition.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with one new "<original>_deduplicated"
+            column per input column.
+    """
+    columns = (
+        lf.select(columns_to_clean).collect_schema().names()
+        if not isinstance(columns_to_clean, list)
+        else columns_to_clean
+    )
+    partition_by_columns_list = (
+        partition_by_columns
+        if isinstance(partition_by_columns, list)
+        else [partition_by_columns]
+    )
+
+    dedup_exprs = []
+    for column in columns:
+        last_value = (
+            pl.col(column)
+            .shift(1)
+            .over(
+                partition_by=partition_by_columns,
+                order_by=[*partition_by_columns_list, date_column],
+            )
+        )
+        dedup_exprs.append(
+            pl.when(last_value.is_null() | (pl.col(column) != last_value))
+            .then(pl.col(column))
+            .otherwise(None)
+            .alias(f"{column}_deduplicated")
+        )
+
+    return lf.with_columns(dedup_exprs)

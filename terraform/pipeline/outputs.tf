@@ -10,6 +10,10 @@ output "raw_bucket_name" {
   value = local.raw_bucket_name
 }
 
+output "sample_raw_bucket_name" {
+  value = local.workspace_prefix == "main" ? module.sample_raw_bucket[0].bucket_name : null
+}
+
 output "account_id" {
   value = data.aws_caller_identity.current.account_id
 }

@@ -11,6 +11,8 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
+)
+from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
 
@@ -67,6 +69,51 @@ class TestCollapseJobRoleEstimatesToPublishedLabels:
         )
 
 
+JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES = {
+    IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
+    SLVCols.published_job_role_label: CatColType.PublishedJobRoleLabelCatType,
+    METRIC: pl.Float64,
+}
+
+EXPECTED_SCHEMA_OVERRIDES = {
+    **JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES,
+    SLVCols.estimated_emp_stat_perm: pl.Float64,
+    SLVCols.estimated_emp_stat_temp: pl.Float64,
+    SLVCols.estimated_emp_stat_bank_or_pool: pl.Float64,
+    SLVCols.estimated_emp_stat_agency: pl.Float64,
+    SLVCols.estimated_emp_stat_other: pl.Float64,
+    SLVCols.estimated_employees: pl.Float64,
+}
+
+
 class TestApplyEmploymentStatusMagicNumbers:
-    def test_apply_employment_status_magic_numbers(self):
-        pass
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.apply_employment_status_magic_numbers_test_cases
+        ],
+    )
+    def test_splits_metric_and_computes_estimated_employees_column_as_expected(
+        self, case
+    ):
+        job_role_estimates_lf = pl.LazyFrame(
+            case.job_role_estimates_data,
+            schema_overrides=JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES,
+            orient="row",
+        )
+        employment_status_rates_lf = pl.LazyFrame(case.employment_status_rates_data)
+        expected_lf = pl.LazyFrame(
+            case.expected_data, schema_overrides=EXPECTED_SCHEMA_OVERRIDES, orient="row"
+        )
+
+        returned_lf = job.apply_employment_status_magic_numbers(
+            job_role_estimates_lf, employment_status_rates_lf
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+            check_column_order=False,
+        )
