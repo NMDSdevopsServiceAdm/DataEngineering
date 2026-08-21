@@ -35,16 +35,16 @@ from scripts.select_bake_targets import (  # noqa: E402
 # Ingest domains that actually read from the raw bucket. `cqc_api` is a
 # sibling ingest domain that reads from the CQC API directly, not the raw
 # bucket, so it's deliberately excluded.
+#
+# To add a new trigger path: add it here, plus a
+# `returns_true_when_changed_path_is_under_<name>` case in
+# scripts/tests/test_select_raw_bucket_seed.py's `trigger_path_cases`.
 INGEST_TRIGGER_PATHS: tuple[str, ...] = (
     "projects/_01_ingest/ascwds",
     "projects/_01_ingest/capacity_tracker",
     "projects/_01_ingest/cqc_pir",
     "projects/_01_ingest/ons_pd",
     "terraform/pipeline/eventbridge.tf",
-    "terraform/pipeline/iam.tf",
-    "terraform/pipeline/s3.tf",
-    "terraform/modules/fargate-task",
-    ".circleci/config.yml",
 )
 
 

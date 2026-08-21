@@ -23,22 +23,6 @@ trigger_path_cases = [
         "terraform/pipeline/eventbridge.tf",
         id="returns_true_when_eventbridge_terraform_changed",
     ),
-    pytest.param(
-        "terraform/pipeline/iam.tf",
-        id="returns_true_when_raw_bucket_iam_terraform_changed",
-    ),
-    pytest.param(
-        "terraform/pipeline/s3.tf",
-        id="returns_true_when_raw_bucket_s3_terraform_changed",
-    ),
-    pytest.param(
-        "terraform/modules/fargate-task/iam.tf",
-        id="returns_true_when_fargate_task_raw_bucket_wiring_changed",
-    ),
-    pytest.param(
-        ".circleci/config.yml",
-        id="returns_true_when_circleci_config_changed",
-    ),
 ]
 
 
@@ -61,6 +45,20 @@ class TestShouldSeedRawBucket:
 
     def test_returns_false_for_empty_changed_paths(self):
         assert job.should_seed_raw_bucket([]) is False
+
+    def test_returns_false_when_raw_bucket_iam_terraform_changed(self):
+        assert job.should_seed_raw_bucket(["terraform/pipeline/iam.tf"]) is False
+
+    def test_returns_false_when_raw_bucket_s3_terraform_changed(self):
+        assert job.should_seed_raw_bucket(["terraform/pipeline/s3.tf"]) is False
+
+    def test_returns_false_when_fargate_task_raw_bucket_wiring_changed(self):
+        changed_paths = ["terraform/modules/fargate-task/iam.tf"]
+
+        assert job.should_seed_raw_bucket(changed_paths) is False
+
+    def test_returns_false_when_circleci_config_changed(self):
+        assert job.should_seed_raw_bucket([".circleci/config.yml"]) is False
 
 
 class TestMain:
