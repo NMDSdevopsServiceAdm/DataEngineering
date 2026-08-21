@@ -1448,9 +1448,17 @@ class ImputeJobRoleSchemas:
         IndCQC.primary_service_type: pl.String,
         IndCQC.main_job_role_clean_labelled: pl.String,
         IndCQC.estimate_filled_posts: pl.Float32,
-        IndCQC.estimate_filled_posts_size_group: pl.String,
-        IndCQC.imputed_ascwds_job_role_counts: pl.Float32,
-        IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
+        IndCQC.ascwds_job_role_ratios: pl.Float32,
+        IndCQC.estimate_filled_posts_size_group: pl.String,  # extra col
+        IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,  # extra col
+    }
+
+    add_imputed_job_role_ratios_for_trendline_expected_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_job_role_ratios: pl.Float32,
+        IndCQC.imputed_job_role_ratios_for_trendline: pl.Float32,  # extra col
     }
 
 

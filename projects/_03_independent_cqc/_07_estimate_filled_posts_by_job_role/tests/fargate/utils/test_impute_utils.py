@@ -12,7 +12,10 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     ImputeJobRoleSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import PrimaryServiceType
+from utils.column_values.categorical_column_values import (
+    MainJobRoleLabels,
+    PrimaryServiceType,
+)
 
 
 class TestCreateImputedASCWDSJobRoleCounts:
@@ -97,6 +100,72 @@ class TestGetPercentageShareRatios:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
 
 
+class TestAddFillBoundaries:
+    def test_boundaries_describe_each_job_role_series(self):
+        expected_lf = pl.LazyFrame(
+            data=[
+                # A gap, so the nearest known dates differ from the row's own date.
+                ("1", "care_worker", date(2024, 1, 1), 0.4, date(2024, 1, 1), date(2024, 3, 1), date(2024, 1, 1), date(2024, 1, 1), 0.4, 0.6),
+                ("1", "care_worker", date(2024, 2, 1), None, date(2024, 1, 1), date(2024, 3, 1), date(2024, 1, 1), date(2024, 3, 1), 0.4, 0.6),
+                ("1", "care_worker", date(2024, 3, 1), 0.6, date(2024, 1, 1), date(2024, 3, 1), date(2024, 3, 1), date(2024, 3, 1), 0.4, 0.6),
+                # A second job role with its own boundaries.
+                ("1", "registered_nurse", date(2024, 1, 1), None, date(2024, 2, 1), date(2024, 2, 1), None, date(2024, 2, 1), 0.9, 0.9),
+                ("1", "registered_nurse", date(2024, 2, 1), 0.9, date(2024, 2, 1), date(2024, 2, 1), date(2024, 2, 1), date(2024, 2, 1), 0.9, 0.9),
+                ("1", "registered_nurse", date(2024, 3, 1), None, date(2024, 2, 1), date(2024, 2, 1), date(2024, 2, 1), None, 0.9, 0.9),
+            ],
+            schema={
+                IndCQC.location_id: pl.String,
+                IndCQC.main_job_role_clean_labelled: pl.String,
+                IndCQC.cqc_location_import_date: pl.Date,
+                IndCQC.ascwds_job_role_ratios: pl.Float32,
+                job.TempCols.first_known_date: pl.Date,
+                job.TempCols.last_known_date: pl.Date,
+                job.TempCols.previous_known_date: pl.Date,
+                job.TempCols.next_known_date: pl.Date,
+                job.TempCols.first_known_value: pl.Float32,
+                job.TempCols.last_known_value: pl.Float32,
+            },
+            orient="row",
+        )  # fmt: skip
+        input_lf = expected_lf.select(
+            IndCQC.location_id,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.cqc_location_import_date,
+            IndCQC.ascwds_job_role_ratios,
+        )
+
+        returned_lf = job.add_fill_boundaries(input_lf).sort(
+            IndCQC.main_job_role_clean_labelled, IndCQC.cqc_location_import_date
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_column_order=False, rel_tol=0.0001
+        )
+
+
+class TestAddImputedJobRoleRatiosForTrendline:
+    @pytest.mark.parametrize(
+        "add_imputed_job_role_ratios_for_trendline_data",
+        [
+            case.as_pytest_param()
+            for case in Data.add_imputed_job_role_ratios_for_trendline_test_cases
+        ],
+    )
+    def test_add_imputed_job_role_ratios_for_trendline(
+        self, add_imputed_job_role_ratios_for_trendline_data
+    ):
+        expected_lf = pl.LazyFrame(
+            add_imputed_job_role_ratios_for_trendline_data,
+            Schemas.add_imputed_job_role_ratios_for_trendline_expected_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(IndCQC.imputed_job_role_ratios_for_trendline)
+        returned_lf = job.add_imputed_job_role_ratios_for_trendline(input_lf).select(
+            Schemas.add_imputed_job_role_ratios_for_trendline_expected_schema.keys()
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
+
+
 class TestCreateASCWDSJobRoleRollingRatio:
     @pytest.mark.parametrize(
         "create_ascwds_job_role_rolling_ratio_data",
@@ -117,7 +186,10 @@ class TestCreateASCWDSJobRoleRollingRatio:
             IndCQC.ascwds_job_role_rolling_ratio,
             IndCQC.estimate_filled_posts_size_group,
         )
-        returned_lf = job.create_ascwds_job_role_rolling_ratio(input_lf)
+        # The trendline ratios are also returned, but have their own test class.
+        returned_lf = job.create_ascwds_job_role_rolling_ratio(input_lf).select(
+            Schemas.create_ascwds_job_role_rolling_ratio_expected_schema.keys()
+        )
         pl_testing.assert_frame_equal(
             returned_lf, expected_lf, check_column_order=False, rel_tol=0.0001
         )
