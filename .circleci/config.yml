@@ -167,6 +167,7 @@ jobs:
             mkdir -p ~/.docker
             ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com"
             printf '{\n  "credHelpers": {\n    "%s": "ecr-login"\n  }\n}\n' "$ECR_REGISTRY" > ~/.docker/config.json
+            echo "Configured docker-credential-ecr-login v${ECR_CREDENTIAL_HELPER_VERSION} for ${ECR_REGISTRY}"
       - run:
           name: Build Docker Images
           command: |
