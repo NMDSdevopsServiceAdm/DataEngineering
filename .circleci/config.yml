@@ -484,6 +484,9 @@ jobs:
               echo "Waiting for tasks/crawlers to fully stop (attempt $i/12)..."
               sleep 10
             done
+            if [ -n "$BUSY" ]; then
+              echo "WARNING: tasks/crawlers still not fully stopped after 120s; terraform destroy may fail"
+            fi
       - run:
           name: terraform destroy
           command: |
