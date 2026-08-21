@@ -267,12 +267,12 @@ def clean_non_residential_rate_of_change(
             pl.when(qualifying_row_expr)
             .then(pl.col(TempCol.abs_change))
             .otherwise(None)
-            .quantile(abs_percentile)
+            .quantile(abs_percentile, interpolation="linear")
             .alias(TempCol.abs_pct),
             pl.when(qualifying_row_expr)
             .then(pl.col(TempCol.perc_change))
             .otherwise(None)
-            .quantile(perc_percentile)
+            .quantile(perc_percentile, interpolation="linear")
             .alias(TempCol.perc_pct),
         ]
     )
