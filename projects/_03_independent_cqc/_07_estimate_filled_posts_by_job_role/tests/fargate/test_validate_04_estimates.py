@@ -9,6 +9,12 @@ import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_04_estimates as job
 from polars_utils.column_types import CategoricalColumnTypes
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    ValidateJobRoleRatiosMergedData as Data,
+)
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
+    ValidateJobRoleRatiosMergedSchemas as Schemas,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns, PartitionKeys
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
@@ -211,6 +217,20 @@ class TestEstimatesPercentageExpressions:
         assert "pcts must be a tuple of two values: (lower_bound, upper_bound)" in str(
             excinfo.value
         )
+
+
+class TestAscwdsJobRoleRatiosMergedMatchesCoalesceSource:
+    expected_lf = pl.LazyFrame(
+        data=Data.ascwds_job_role_ratios_merged_matches_coalesce_source_rows,
+        schema=Schemas.ascwds_job_role_ratios_merged_matches_coalesce_source_schema,
+        orient="row",
+    )
+    test_lf = expected_lf.drop("expression")
+
+    def test_ascwds_job_role_ratios_merged_matches_coalesce_source(self):
+        expr = job.ascwds_job_role_ratios_merged_matches_coalesce_source()
+        result = self.test_lf.with_columns(expr.alias("expression"))
+        pl_testing.assert_frame_equal(result, self.expected_lf)
 
 
 if __name__ == "__main__":
