@@ -185,6 +185,8 @@ jobs:
             . /tmp/sanitised_branch.env
             # No target list (main, or an absent file) means build everything.
             BAKE_TARGETS=$(cat /tmp/bake/targets 2>/dev/null || echo all)
+            # TEMP: targets file is empty (nothing changed), force a full rebuild for testing -- revert before merge
+            BAKE_TARGETS=all
             docker buildx bake $BAKE_TARGETS --push
 
   test:
