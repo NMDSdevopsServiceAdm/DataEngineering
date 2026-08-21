@@ -441,6 +441,53 @@ jobs:
       - export_sanitised_branch:
           branch_override: << pipeline.parameters.GHA_Meta >>
       - run:
+          name: force-stop running ECS tasks and Glue crawlers before destroy
+          command: |
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
+            # No TTY here, and AWS CLI v2's pager hangs without one.
+            export AWS_PAGER=""
+            . /tmp/sanitised_branch.env
+            if [ "$SANITISED_CIRCLE_BRANCH" = "main" ]; then
+              exit 0
+            fi
+
+            # destroy fails against a still-running cluster/crawler; force-stop first.
+            for CLUSTER in "${SANITISED_CIRCLE_BRANCH}-cluster" "${SANITISED_CIRCLE_BRANCH}-model-cluster"; do
+              TASK_ARNS=$(aws ecs list-tasks --cluster "$CLUSTER" --desired-status RUNNING --query 'taskArns[]' --output text 2>/dev/null || true)
+              for TASK_ARN in $TASK_ARNS; do
+                echo "Force-stopping orphaned task $TASK_ARN in cluster $CLUSTER"
+                aws ecs stop-task --cluster "$CLUSTER" --task "$TASK_ARN" --reason "Branch deleted, force-stopping before terraform destroy" || true
+              done
+            done
+
+            CRAWLER_NAMES=$(aws glue list-crawlers --query 'CrawlerNames[]' --output text | tr '\t' '\n' | grep "^${SANITISED_CIRCLE_BRANCH}-data_engineering_" || true)
+            for CRAWLER in $CRAWLER_NAMES; do
+              STATE=$(aws glue get-crawler --name "$CRAWLER" --query 'Crawler.State' --output text 2>/dev/null || true)
+              if [ "$STATE" = "RUNNING" ]; then
+                echo "Force-stopping running crawler $CRAWLER"
+                aws glue stop-crawler --name "$CRAWLER" || true
+              fi
+            done
+
+            # stop calls above just request a stop; wait for it to actually land.
+            for i in $(seq 1 12); do
+              BUSY=""
+              for CLUSTER in "${SANITISED_CIRCLE_BRANCH}-cluster" "${SANITISED_CIRCLE_BRANCH}-model-cluster"; do
+                BUSY="${BUSY}$(aws ecs list-tasks --cluster "$CLUSTER" --query 'taskArns[]' --output text 2>/dev/null || true)"
+              done
+              for CRAWLER in $CRAWLER_NAMES; do
+                STATE=$(aws glue get-crawler --name "$CRAWLER" --query 'Crawler.State' --output text 2>/dev/null || true)
+                [ "$STATE" != "READY" ] && BUSY="${BUSY}x"
+              done
+              [ -z "$BUSY" ] && break
+              echo "Waiting for tasks/crawlers to fully stop (attempt $i/12)..."
+              sleep 10
+            done
+            if [ -n "$BUSY" ]; then
+              echo "WARNING: tasks/crawlers still not fully stopped after 120s; terraform destroy may fail"
+            fi
+      - run:
           name: terraform destroy
           command: |
             unset AWS_ACCESS_KEY_ID

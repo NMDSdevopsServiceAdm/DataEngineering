@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
 - Removed a dead `lf.sort()` call (its result was never reassigned) in model_interpolation. Converted the module's remaining sorts to `over(..., order_by=...)`, measured as using much less peak memory than sorting.
 
 ### Fixed
+- Fixed Step Functions executions not actually stopping their underlying ECS task on manual stop, due to a missing IAM permission, and added a safety net to force-stop orphaned ECS tasks and Glue crawlers before a branch's infrastructure is destroyed in CI.
 - Fixed the CQC API integration tests failing the whole CI pipeline during a CQC API outage: the tests now skip instead of fail on a recognised outage signature, and were split into their own non-blocking CircleCI job.
 
 ## [v2026.07.0] - 17/08/2026

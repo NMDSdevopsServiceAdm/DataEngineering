@@ -334,6 +334,16 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         ]
       },
       {
+        # Resource "*" per AWS's own .sync IAM template -- task ARNs aren't
+        # known until Step Functions submits the task.
+        "Effect" : "Allow",
+        "Action" : [
+          "ecs:StopTask",
+          "ecs:DescribeTasks"
+        ],
+        "Resource" : "*"
+      },
+      {
         Effect = "Allow",
         Action = "iam:PassRole",
         Resource = [
