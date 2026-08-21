@@ -146,7 +146,8 @@ jobs:
                     echo "No target list found. Building every target."
                   elif [ -z "$(cat /tmp/bake/targets)" ]; then
                     echo "No docker build context changed and every image is already in ECR. Skipping build."
-                    circleci-agent step halt
+                    # TEMP: forcing a rebuild to test the ECR credential helper -- revert before merge
+                    # circleci-agent step halt
                   fi
       - setup_remote_docker
       - aws-cli/setup:
@@ -159,8 +160,14 @@ jobs:
             # check https://github.com/awslabs/amazon-ecr-credential-helper/releases
             # for newer versions periodically
             ECR_CREDENTIAL_HELPER_VERSION=0.12.0
-            wget -q -O /usr/local/bin/docker-credential-ecr-login \
-              "https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/${ECR_CREDENTIAL_HELPER_VERSION}/linux-amd64/docker-credential-ecr-login"
+            ECR_CREDENTIAL_HELPER_URL="https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/${ECR_CREDENTIAL_HELPER_VERSION}/linux-amd64/docker-credential-ecr-login"
+            ECR_HELPER_DIR=$(mktemp -d)
+            wget -q -O "${ECR_HELPER_DIR}/docker-credential-ecr-login" "$ECR_CREDENTIAL_HELPER_URL"
+            wget -q -O "${ECR_HELPER_DIR}/docker-credential-ecr-login.sha256" "${ECR_CREDENTIAL_HELPER_URL}.sha256"
+            # This job assumes an OIDC role with ECR push access (prod, on main) -- verify
+            # the download against AWS's published checksum before trusting it.
+            (cd "$ECR_HELPER_DIR" && sha256sum -c docker-credential-ecr-login.sha256)
+            mv "${ECR_HELPER_DIR}/docker-credential-ecr-login" /usr/local/bin/docker-credential-ecr-login
             chmod +x /usr/local/bin/docker-credential-ecr-login
 
             # Scoped to this registry only, so Docker Hub pulls aren't routed through it
