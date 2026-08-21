@@ -33,6 +33,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed a dead `lf.sort()` call (its result was never reassigned) in model_interpolation. Converted the module's remaining sorts to `over(..., order_by=...)`, measured as using much less peak memory than sorting.
 
+- Stopped the shared extrapolation and interpolation models recomputing the same window functions several times over. The first submission date and the previous and next submission dates are now read back as columns instead of having their expressions repeated, taking the job role imputation from 15 window evaluations to 10 with no change to its output.
+
 ### Fixed
 - Fixed the CQC API integration tests failing the whole CI pipeline during a CQC API outage: the tests now skip instead of fail on a recognised outage signature, and were split into their own non-blocking CircleCI job.
 

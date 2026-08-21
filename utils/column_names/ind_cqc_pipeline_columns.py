@@ -432,6 +432,14 @@ class ExtrapolationColumns:
 
 
 @dataclass
+class InterpolationColumns:
+    """The names of the temporary columns created during the interpolation process."""
+
+    previous_submission_date: str = "_previous_submission_date"
+    next_submission_date: str = "_next_submission_date"
+
+
+@dataclass
 class ModelRegistryKeys:
     auto_retrain: str = "auto_retrain"
     dependent: str = "dependent"
