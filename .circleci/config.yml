@@ -162,9 +162,13 @@ jobs:
             # Fetches a fresh ECR token on demand via the OIDC-derived AWS
             # identity, instead of `docker login` writing it to
             # ~/.docker/config.json unencrypted (base64, not encryption) for
-            # the rest of the job.
+            # the rest of the job. No "latest" alias exists in AWS's release
+            # bucket -- only version-numbered paths -- so this is pinned;
+            # check https://github.com/awslabs/amazon-ecr-credential-helper/releases
+            # for newer versions periodically.
+            ECR_CREDENTIAL_HELPER_VERSION=0.12.0
             wget -q -O /usr/local/bin/docker-credential-ecr-login \
-              https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/latest/linux-amd64/docker-credential-ecr-login
+              "https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/${ECR_CREDENTIAL_HELPER_VERSION}/linux-amd64/docker-credential-ecr-login"
             chmod +x /usr/local/bin/docker-credential-ecr-login
 
             # Scoped to just this registry (credHelpers, not a global
