@@ -28,7 +28,7 @@ def main(
 
     ascwds_workplace_df = ascwds_workplace_df.filter(
         F.col(AWPClean.workplace_last_active_date) >= F.col(AWPClean.purge_date)
-    )
+    ).drop(AWPClean.workplace_last_active_date, AWPClean.purge_date)
 
     (
         first_of_most_recent_month,

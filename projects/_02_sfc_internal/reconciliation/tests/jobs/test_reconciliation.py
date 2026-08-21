@@ -117,4 +117,5 @@ class MainDefensiveFilterTests(ReconciliationTests):
             row[AWPClean.establishment_id] for row in filtered_df.collect()
         }
         self.assertEqual(remaining_establishment_ids, {"not_purged"})
-        self.assertNotIn(AWPClean.removed_by_purge_date_filter, filtered_df.columns)
+        self.assertNotIn(AWPClean.workplace_last_active_date, filtered_df.columns)
+        self.assertNotIn(AWPClean.purge_date, filtered_df.columns)
