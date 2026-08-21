@@ -134,6 +134,24 @@ class TestAddImputedASCWDSJobRoleRatios:
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
 
+    def test_submitted_ratios_are_returned_unchanged(self):
+        # These three total 0.99999994 in Float32, so re-sharing them would move each by a
+        # rounding step and the imputed column would no longer match what was submitted.
+        expected_lf = pl.LazyFrame(
+            data=[
+                ("1", MainJobRoleLabels.care_worker,        date(2024, 1, 1), 18 / 55, 0.5, 18 / 55),
+                ("1", MainJobRoleLabels.registered_nurse,   date(2024, 1, 1), 29 / 55, 0.5, 29 / 55),
+                ("1", MainJobRoleLabels.senior_care_worker, date(2024, 1, 1), 8 / 55,  0.5, 8 / 55),
+            ],
+            schema=Schemas.add_imputed_ascwds_job_role_ratios_expected_schema,
+            orient="row",
+        )  # fmt: skip
+        input_lf = expected_lf.drop(IndCQC.imputed_ascwds_job_role_ratios)
+
+        returned_lf = job.add_imputed_ascwds_job_role_ratios(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_exact=True)
+
     def test_result_correct_when_source_rows_not_sorted_by_date(self):
         sort_key = [
             IndCQC.location_id,

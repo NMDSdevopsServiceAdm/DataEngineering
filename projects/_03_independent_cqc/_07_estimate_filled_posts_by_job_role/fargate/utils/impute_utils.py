@@ -306,8 +306,10 @@ def add_imputed_ascwds_job_role_ratios(
     ratio trendline.
 
     Ratios follow the nominal change in the trendline, uncapped in both directions, with
-    interior gaps apportioned by days rather than by rows. They are then floored at zero and
-    re-shared across job roles, since flooring is what breaks their total of 1.
+    interior gaps apportioned by days rather than by rows. Imputed values are floored at zero
+    and re-shared across job roles, since flooring is what breaks their total of 1. A
+    workplace's own submitted ratios are left alone: they already total 1, so re-sharing them
+    would only move them by a float rounding step.
 
     Requires a non-null trendline: a null would leave a workplace that did submit with no
     imputed split at all.
@@ -335,12 +337,12 @@ def add_imputed_ascwds_job_role_ratios(
     )
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        pl.coalesce(
-            IndCQC.ascwds_job_role_ratios,
-            IndCQC.extrapolation_model,
-            IndCQC.interpolation_model,
+        pl.when(pl.col(IndCQC.ascwds_job_role_ratios).is_null())
+        .then(
+            pl.coalesce(IndCQC.extrapolation_model, IndCQC.interpolation_model).clip(
+                lower_bound=0
+            )
         )
-        .clip(lower_bound=0)
         # Trend interpolation returns Float64, so cast before this lands on the full frame.
         .cast(pl.Float32)
         .alias(TempCols.unnormalised_ratios)
@@ -354,6 +356,12 @@ def add_imputed_ascwds_job_role_ratios(
         estimated_job_role_posts_lf,
         input_col=TempCols.unnormalised_ratios,
         output_col=IndCQC.imputed_ascwds_job_role_ratios,
+    )
+
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        pl.coalesce(
+            IndCQC.ascwds_job_role_ratios, IndCQC.imputed_ascwds_job_role_ratios
+        ).alias(IndCQC.imputed_ascwds_job_role_ratios)
     )
 
     return estimated_job_role_posts_lf.drop(TempCols.unnormalised_ratios)
