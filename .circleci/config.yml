@@ -153,13 +153,29 @@ jobs:
           role_arn: $AWS_ROLE_ARN
           region: $AWS_REGION
       - run:
-          name: Build Docker Images
+          name: Configure ECR credential helper
           command: |
-            # UNSET old keys to force AWS CLI to use OIDC
+            # UNSET old keys to force AWS CLI/credential helper to use OIDC
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
-            # Authenticate Docker to ECR
-            aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
+
+            # Fetches a fresh ECR token on demand via the OIDC-derived AWS
+            # identity, instead of `docker login` writing it to
+            # ~/.docker/config.json unencrypted (base64, not encryption) for
+            # the rest of the job.
+            wget -q -O /usr/local/bin/docker-credential-ecr-login \
+              https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/latest/linux-amd64/docker-credential-ecr-login
+            chmod +x /usr/local/bin/docker-credential-ecr-login
+
+            # Scoped to just this registry (credHelpers, not a global
+            # credsStore) so the Docker Hub python:3.11-slim base-image pull
+            # in the same `docker buildx bake` run isn't routed through it.
+            mkdir -p ~/.docker
+            ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com"
+            printf '{\n  "credHelpers": {\n    "%s": "ecr-login"\n  }\n}\n' "$ECR_REGISTRY" > ~/.docker/config.json
+      - run:
+          name: Build Docker Images
+          command: |
             echo "Rebuilding lambdas and pushing to ECR."
             . /tmp/sanitised_branch.env
             # No target list (main, or an absent file) means build everything.
