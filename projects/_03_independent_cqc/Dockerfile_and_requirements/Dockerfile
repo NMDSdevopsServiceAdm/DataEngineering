@@ -39,8 +39,6 @@ COPY projects/_03_independent_cqc/_06_estimate_filled_posts/fargate/validate_est
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_01_merge.py /app/_01_merge.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_02_clean.py /app/_02_clean.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_03_impute.py /app/_03_impute.py
-# Throwaway, for one memory investigation. Remove with _03_impute_prototype.py.
-COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_03_impute_prototype.py /app/_03_impute_prototype.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_04_estimate.py /app/_04_estimate.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_01_merge.py /app/validate_01_merge.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_01_merge_metadata.py /app/validate_01_merge_metadata.py
