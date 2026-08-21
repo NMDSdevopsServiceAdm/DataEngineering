@@ -146,8 +146,7 @@ jobs:
                     echo "No target list found. Building every target."
                   elif [ -z "$(cat /tmp/bake/targets)" ]; then
                     echo "No docker build context changed and every image is already in ECR. Skipping build."
-                    # TEMP: forcing a rebuild to test the ECR credential helper -- revert before merge
-                    # circleci-agent step halt
+                    circleci-agent step halt
                   fi
       - setup_remote_docker
       - aws-cli/setup:
@@ -185,8 +184,6 @@ jobs:
             . /tmp/sanitised_branch.env
             # No target list (main, or an absent file) means build everything.
             BAKE_TARGETS=$(cat /tmp/bake/targets 2>/dev/null || echo all)
-            # TEMP: targets file is empty (nothing changed), force a full rebuild for testing -- revert before merge
-            BAKE_TARGETS=all
             docker buildx bake $BAKE_TARGETS --push
 
   test:
