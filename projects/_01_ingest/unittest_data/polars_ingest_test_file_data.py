@@ -1956,6 +1956,11 @@ class TestCleanAscwdsWorkplaceUtilsData:
             input_data={
                 AWPClean.establishment_id: ["1", "2", "3"],
                 AWPClean.import_date: ["20260101", "20260101", "20260101"],
+                AWPClean.establishment_save_date: [
+                    "01/01/2026",
+                    "01/01/2026",
+                    "01/01/2026",
+                ],
                 AWPClean.total_staff: ["10", "10", "5"],
                 AWPClean.job_role_01_employees: ["4", "4", "1"],
             },
@@ -1972,6 +1977,12 @@ class TestCleanAscwdsWorkplaceUtilsData:
             input_data={
                 AWPClean.establishment_id: ["1", "2", "3", "4"],
                 AWPClean.import_date: ["20260101", "20260101", "20260101", "20260101"],
+                AWPClean.establishment_save_date: [
+                    "01/01/2026",
+                    "01/01/2026",
+                    "01/01/2026",
+                    "01/01/2026",
+                ],
                 AWPClean.total_staff: ["10", "10", "10", "5"],
                 AWPClean.job_role_01_employees: ["4", "4", "4", "1"],
             },
@@ -1989,6 +2000,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
             input_data={
                 AWPClean.establishment_id: ["1", "2"],
                 AWPClean.import_date: ["20260101", "20260101"],
+                AWPClean.establishment_save_date: ["01/01/2026", "01/01/2026"],
                 AWPClean.total_staff: ["10", "10"],
                 AWPClean.job_role_01_employees: ["4", "5"],
             },
@@ -2002,6 +2014,35 @@ class TestCleanAscwdsWorkplaceUtilsData:
             input_data={
                 AWPClean.establishment_id: ["1", "2"],
                 AWPClean.import_date: ["20260101", "20260201"],
+                AWPClean.establishment_save_date: ["01/01/2026", "01/01/2026"],
+                AWPClean.total_staff: ["10", "10"],
+                AWPClean.job_role_01_employees: ["4", "4"],
+            },
+            expected_data={
+                AWPClean.establishment_id: [],
+                AWPClean.ascwds_workplace_import_date: [],
+            },
+        ),
+        FindDuplicateWorkplaceSubmissionsTestCase(
+            id="does_not_flag_matching_content_with_different_save_dates",
+            input_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.import_date: ["20260101", "20260101"],
+                AWPClean.establishment_save_date: ["01/01/2026", "02/01/2026"],
+                AWPClean.total_staff: ["10", "10"],
+                AWPClean.job_role_01_employees: ["4", "4"],
+            },
+            expected_data={
+                AWPClean.establishment_id: [],
+                AWPClean.ascwds_workplace_import_date: [],
+            },
+        ),
+        FindDuplicateWorkplaceSubmissionsTestCase(
+            id="does_not_flag_matching_content_when_save_date_is_null",
+            input_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.import_date: ["20260101", "20260101"],
+                AWPClean.establishment_save_date: [None, None],
                 AWPClean.total_staff: ["10", "10"],
                 AWPClean.job_role_01_employees: ["4", "4"],
             },
@@ -2015,6 +2056,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
             input_data={
                 AWPClean.establishment_id: ["1", "2"],
                 AWPClean.import_date: ["20260101", "20260101"],
+                AWPClean.establishment_save_date: ["01/01/2026", "01/01/2026"],
                 AWPClean.total_staff: ["10", "10"],
                 AWPClean.job_role_01_employees: ["4", "4"],
                 AWPClean.establishment_name: ["Sunnyside", "Meadow View"],
@@ -2034,6 +2076,11 @@ class TestCleanAscwdsWorkplaceUtilsData:
             input_data={
                 AWPClean.establishment_id: ["1", "2", "3"],
                 AWPClean.import_date: ["20260101", "20260101", "20260101"],
+                AWPClean.establishment_save_date: [
+                    "01/01/2026",
+                    "01/01/2026",
+                    "01/01/2026",
+                ],
                 AWPClean.total_staff: ["10", "8", "5"],
                 AWPClean.job_role_01_employees: ["4", "3", "1"],
             },
@@ -2047,6 +2094,11 @@ class TestCleanAscwdsWorkplaceUtilsData:
             input_data={
                 AWPClean.establishment_id: ["1", "2", "3"],
                 AWPClean.import_date: ["20260101", "20260101", "20260101"],
+                AWPClean.establishment_save_date: [
+                    "01/01/2026",
+                    "01/01/2026",
+                    "01/01/2026",
+                ],
                 AWPClean.total_staff: [None, None, None],
                 AWPClean.job_role_01_employees: ["0", "0", "0"],
             },
@@ -2060,6 +2112,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
             input_data={
                 AWPClean.establishment_id: ["1", "2"],
                 AWPClean.import_date: ["20260101", "20260101"],
+                AWPClean.establishment_save_date: ["01/01/2026", "01/01/2026"],
                 AWPClean.total_staff: ["15", "15"],
                 AWPClean.job_role_01_employees: ["-1", "-1"],
             },

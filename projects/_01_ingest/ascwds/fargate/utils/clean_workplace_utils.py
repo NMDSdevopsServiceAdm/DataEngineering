@@ -81,7 +81,7 @@ HAS_SUBSTANTIVE_DUPLICATE_CONTENT: pl.Expr = pl.any_horizontal(
 def find_duplicate_workplace_submissions(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Identify establishment_ids that submitted identical workforce data on the
-    same import date, under a different account.
+    same import date and establishment_save_date, under a different account.
 
     Establishment_ids are grouped by a hash of DUPLICATE_CONTENT_COLUMNS rather
     than the columns themselves, keeping the group_by key small regardless of
@@ -90,29 +90,47 @@ def find_duplicate_workplace_submissions(lf: pl.LazyFrame) -> pl.LazyFrame:
     grouping, since coincidentally sharing an absence of data isn't a genuine
     duplicate submission.
 
+    establishment_save_date is included in the group_by key alongside the
+    content hash: the underlying problem this catches is one person entering
+    the same data for several establishments in one sitting, which shows up
+    as identical content saved on the same day. Content matching alone was
+    found (ticket 1906) to also flag establishments that coincidentally share
+    a small amount of substantive content without being genuine duplicates;
+    requiring the same save date as well as the same content removes those,
+    since unrelated establishments matching on both is far less likely than
+    on content alone. Rows with a null establishment_save_date are excluded
+    from matching for the same reason HAS_SUBSTANTIVE_DUPLICATE_CONTENT
+    excludes null content - two unrelated rows both missing a save date
+    would otherwise collide as a false match.
+
     Args:
         lf (pl.LazyFrame): Raw ASC-WDS workplace LazyFrame (e.g. the
-            combined-schema scan used for job role columns), with a string
-            `import_date` column and one row per establishment_id/import_date.
+            combined-schema scan used for job role columns), with string
+            `import_date`/`establishment_save_date` columns and one row per
+            establishment_id/import_date.
 
     Returns:
         pl.LazyFrame: Two columns, establishment_id and
             ascwds_workplace_import_date, one row per establishment_id that is
             part of a duplicate-content group.
     """
-    content_hash_lf = (
-        lf.select(
-            AWPClean.establishment_id,
-            AWPClean.import_date,
-            pl.struct(DUPLICATE_CONTENT_COLUMNS).hash().alias("content_hash"),
-            HAS_SUBSTANTIVE_DUPLICATE_CONTENT.alias("has_substantive_content"),
-        )
-        .filter(pl.col("has_substantive_content"))
-        .drop("has_substantive_content")
+    content_hash_lf = lf.select(
+        AWPClean.establishment_id,
+        AWPClean.import_date,
+        AWPClean.establishment_save_date,
+        pl.struct(DUPLICATE_CONTENT_COLUMNS).hash().alias("content_hash"),
+        HAS_SUBSTANTIVE_DUPLICATE_CONTENT.alias("has_substantive_content"),
     )
+    content_hash_lf = cUtils.cast_date_strings_to_dates(content_hash_lf)
+    content_hash_lf = content_hash_lf.filter(
+        pl.col("has_substantive_content")
+        & pl.col(AWPClean.establishment_save_date).is_not_null()
+    ).drop("has_substantive_content")
 
     duplicate_keys = (
-        content_hash_lf.group_by(AWPClean.import_date, "content_hash")
+        content_hash_lf.group_by(
+            AWPClean.import_date, AWPClean.establishment_save_date, "content_hash"
+        )
         .agg(pl.col(AWPClean.establishment_id))
         .filter(pl.col(AWPClean.establishment_id).list.len() > 1)
         .select(AWPClean.import_date, AWPClean.establishment_id)

@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
 
 - Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
 
-- Replaced the hardcoded list of known duplicate ASC-WDS workplace establishment IDs (and the unused `exclusions.json`/`is_unique_workplace_data` config it duplicated) with runtime detection of establishments that submitted identical workforce data on the same import date, nulling their data automatically instead of relying on a manually maintained list.
+- Replaced the hardcoded list of known duplicate ASC-WDS workplace establishment IDs (and the unused `exclusions.json`/`is_unique_workplace_data` config it duplicated) with runtime detection of establishments that submitted identical, substantive workforce data on the same import date and save date, nulling their data automatically instead of relying on a manually maintained list.
 
 ### Improved
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
