@@ -67,8 +67,11 @@ commands:
 jobs:
   # Works out which docker-bake targets this push needs, so
   # task-containerisation can skip setup_remote_docker entirely when nothing
-  # changed. Separate job because docker:latest has no python.
-  decide-images:
+  # changed, and whether this push should seed the non-prod raw data bucket,
+  # so copy-main-data can skip triggering the ingest Step Functions for
+  # branches unrelated to ingest. Separate job because docker:latest has no
+  # python.
+  decide-bake-and-seed:
     docker:
       # cimg over the lint jobs' uv image: this job needs git, which that
       # image lacks, and only needs boto3 so the fuller env buys nothing.
@@ -103,17 +106,24 @@ jobs:
             # need the aws-cli orb just to read one ECR tag.
             echo "$CIRCLE_OIDC_TOKEN_V2" > /tmp/oidc-token
             export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/oidc-token
-            export AWS_ROLE_SESSION_NAME=decide-images
+            export AWS_ROLE_SESSION_NAME=decide-bake-and-seed
             . /tmp/sanitised_branch.env
             mkdir -p /tmp/bake
             python scripts/select_bake_targets.py > /tmp/bake/targets
             echo "Targets to build: $(cat /tmp/bake/targets)"
+      - run:
+          name: Decide whether to seed the raw bucket
+          command: |
+            mkdir -p /tmp/bake
+            python scripts/select_raw_bucket_seed.py > /tmp/bake/seed-raw-bucket
+            echo "Seed raw bucket: $(cat /tmp/bake/seed-raw-bucket)"
       - persist_to_workspace:
           # Namespaced, because later jobs attach this same workspace at the
           # repo root and a bare "targets" file there reads as repo content.
           root: /tmp
           paths:
             - bake/targets
+            - bake/seed-raw-bucket
 
   task-containerisation:
     parameters:
@@ -121,7 +131,7 @@ jobs:
         type: boolean
         default: false
         description: >
-          Dev only. Use decide-images' target list, skipping the build when
+          Dev only. Use decide-bake-and-seed's target list, skipping the build when
           nothing relevant changed. Main always bakes every target, because a
           merge-base diff against main is empty by definition there.
     docker:
@@ -139,7 +149,7 @@ jobs:
                 command: |
                   # Must run before setup_remote_docker, or halting saves nothing.
                   # Checks content not size -- an empty result is still 1 byte.
-                  # Missing-file case can't fire today (decide-images is a hard
+                  # Missing-file case can't fire today (decide-bake-and-seed is a hard
                   # requirement here) -- kept as a defensive fallback that builds
                   # everything rather than silently building nothing.
                   if [ ! -f /tmp/bake/targets ]; then
@@ -188,7 +198,7 @@ jobs:
       # Runs the selector's CLI against the repo's real bake file and
       # Dockerfiles. The unit tests cover the selection logic; this covers main()
       # and catches a bake file or Dockerfile edit the parser can't read, which
-      # would otherwise only surface in decide-images on somebody's next push.
+      # would otherwise only surface in decide-bake-and-seed on somebody's next push.
       # --skip-ecr-check because this job has no AWS credentials.
       - run:
           name: Smoke test bake target selection
@@ -346,11 +356,19 @@ jobs:
             unset AWS_SECRET_ACCESS_KEY
             cd terraform/pipeline
             echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
+      - run:
+          name: save raw bucket name
+          command: |
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
+            cd terraform/pipeline
+            echo $(terraform output --raw raw_bucket_name) > raw_bucket_name
       - persist_to_workspace:
           root: .
           paths:
             - ./terraform/pipeline/pipeline_resources_bucket_name
             - ./terraform/pipeline/datasets_bucket_name
+            - ./terraform/pipeline/raw_bucket_name
 
   deploy-dependencies:
     docker:
@@ -403,6 +421,7 @@ jobs:
             unset AWS_SECRET_ACCESS_KEY
             echo 'export BRANCH_DATASET_BUCKET=$(cat terraform/pipeline/datasets_bucket_name)' >> "$BASH_ENV"
             echo 'export BRANCH_RESOURCES_BUCKET=$(cat terraform/pipeline/pipeline_resources_bucket_name)' >> "$BASH_ENV"
+            echo 'export BRANCH_RAW_BUCKET=$(cat terraform/pipeline/raw_bucket_name)' >> "$BASH_ENV"
       - run:
           name: Copy main datasets to non-prod dataset bucket
           command: |
@@ -425,6 +444,19 @@ jobs:
           name: Copy models to non-prod dataset
           command: |
             aws s3 sync "s3://sfc-main-pipeline-resources/models/" "s3://$BRANCH_RESOURCES_BUCKET/models/"
+      - run:
+          name: Seed non-prod raw bucket from sample bucket
+          command: |
+            # Defaults to seeding when the flag file is missing/unreadable --
+            # same defensive direction as decide-bake-and-seed's own missing-file
+            # fallback (build everything rather than silently building
+            # nothing): here, seed anyway rather than silently never testing
+            # a real ingest change.
+            if [ "$(cat bake/seed-raw-bucket 2>/dev/null)" = "false" ]; then
+              echo "No ingest-related changes detected. Skipping raw bucket seed."
+            else
+              aws s3 sync "s3://sfc-main-sample-raw-data/" "s3://$BRANCH_RAW_BUCKET/" --delete
+            fi
 
   terraform-destroy:
     working_directory: /tmp/project
@@ -555,7 +587,7 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-      - decide-images:
+      - decide-bake-and-seed:
           context: non-prod
           filters:
             branches:
@@ -564,7 +596,7 @@ workflows:
           context: non-prod
           select_targets: true
           requires:
-            - decide-images
+            - decide-bake-and-seed
           filters:
             branches:
               ignore: main
@@ -597,6 +629,10 @@ workflows:
           context: non-prod
           requires:
             - terraform-apply
+            - decide-bake-and-seed
+          filters:
+            branches:
+              ignore: main
       - test:
           requires:
             - terraform-apply
