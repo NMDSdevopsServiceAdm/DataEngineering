@@ -39,6 +39,17 @@ module "ascwds" {
   ]
 }
 
+module "cqc-pir" {
+  source        = "../modules/fargate-task"
+  task_name     = "cqc-pir"
+  ecr_repo_name = "fargate/01_ingest"
+  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
+  tag_name      = "cqc_pir-${terraform.workspace}"
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" },
+  ]
+}
+
 module "_02_sfc_internal" {
   source        = "../modules/fargate-task"
   task_name     = "_02_sfc_internal"
