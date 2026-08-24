@@ -72,6 +72,35 @@ resource "aws_iam_policy" "s3_read_write_policy" {
   })
 }
 
+resource "aws_iam_policy" "raw_bucket_read_policy" {
+  count       = var.raw_bucket_arn != null ? 1 : 0
+  name_prefix = "${local.workspace_prefix}-raw-bucket-read-"
+  description = "IAM policy for read-only access to the raw data landing bucket."
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "AllowRawBucketReadOnly",
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ],
+        Resource = [
+          var.raw_bucket_arn,
+          "${var.raw_bucket_arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_read_raw_bucket" {
+  count      = var.raw_bucket_arn != null ? 1 : 0
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = aws_iam_policy.raw_bucket_read_policy[0].arn
+}
+
 data "aws_secretsmanager_secret" "cqc_api_primary_key" {
   name = var.secret_name
 }

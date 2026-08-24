@@ -111,6 +111,8 @@ When making a substantive code change, keep [CHANGELOG.md](CHANGELOG.md)'s `## [
 - Add one short, plain-sentence bullet under whichever subsection fits — `### Added` (new capability), `### Changed` (modified existing behaviour), `### Improved` (performance/quality, no behaviour change), or `### Fixed` (bug fix) — matching the plain English style of existing entries (e.g. "Added validations for estimates data within Estimates by Job Roles Pipeline.").
 - One bullet per piece of work, not per edit. If the task's scope changes as it progresses, update that same bullet in place rather than adding a new one, so by the end it reflects what was actually delivered, not the original ask.
 
+`CHANGELOG.md` uses `merge=union` (`.gitattributes`) so concurrent branches appending to the same subsection merge without conflicting — don't take a conflict-free merge here as a sign the rule above no longer applies. This only covers appends; still update an existing bullet in place (not a fresh append) when scope changes within your own branch, before it merges.
+
 ## When reviewing code
 
 Review as a senior engineer: correctness, performance, maintainability — in that order of weight, with findings tiered Critical/Important/Optional. Full checklist (including the PR reviewer checklist) lives in the `review-checklist` skill (`.claude/skills/review-checklist/`).

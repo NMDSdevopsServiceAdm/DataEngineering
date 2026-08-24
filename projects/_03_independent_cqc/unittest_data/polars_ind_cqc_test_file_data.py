@@ -2545,6 +2545,18 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
 
 
 @dataclass
+class ValidateJobRoleRatiosMergedData:
+    ascwds_job_role_ratios_merged_matches_coalesce_source_rows = [
+        (0.5, 0.4, 0.3, 0.5, True),    # ascwds_job_role_ratios not null, merged matches it
+        (0.5, 0.4, 0.3, 0.4, False),   # ascwds_job_role_ratios not null, merged does not match it
+        (None, 0.4, 0.3, 0.4, True),   # imputed not null, merged matches it
+        (None, 0.4, 0.3, 0.3, False),  # imputed not null, merged does not match it
+        (None, None, 0.3, 0.3, True),  # both null, merged matches rolling ratio
+        (None, None, 0.3, 0.5, False), # both null, merged does not match rolling ratio
+    ] # fmt: skip
+
+
+@dataclass
 class ModelInterpolationTestCase:
     id: str
     data: list[Any]
