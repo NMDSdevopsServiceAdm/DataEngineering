@@ -1,8 +1,8 @@
 from unittest.mock import ANY, Mock, patch
 
-import projects._03_independent_cqc._10_publication.fargate._02_clean as job
+import projects._03_independent_cqc._10_publication.fargate._02_clean_pub_data as job
 
-PATCH_PATH = "projects._03_independent_cqc._10_publication.fargate._02_clean"
+PATCH_PATH = "projects._03_independent_cqc._10_publication.fargate._02_clean_pub_data"
 
 TEST_SOURCE = "some/directory"
 TEST_DESTINATION = "some/other/directory"

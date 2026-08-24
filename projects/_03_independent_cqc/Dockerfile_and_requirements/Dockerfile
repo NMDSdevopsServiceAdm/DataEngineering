@@ -46,5 +46,9 @@ COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_03_impute.py /app/validate_03_impute.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_04_estimates.py /app/validate_04_estimates.py
 COPY projects/_03_independent_cqc/_09_archive_estimates/fargate/archive_filled_posts_estimates.py /app/archive_filled_posts_estimates.py
+COPY projects/_03_independent_cqc/_10_publication/fargate/_01_merge_pub_data.py /app/_01_merge_pub_data.py
+COPY projects/_03_independent_cqc/_10_publication/fargate/validate_01_merge_pub_data.py /app/validate_01_merge_pub_data.py
+COPY projects/_03_independent_cqc/_10_publication/fargate/_02_clean_pub_data.py /app/_02_clean_pub_data.py
+COPY projects/_03_independent_cqc/_10_publication/fargate/validate_02_clean_pub_data.py /app/validate_02_clean_pub_data.py
 
 ENTRYPOINT ["python"]

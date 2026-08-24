@@ -1,8 +1,8 @@
 from unittest.mock import ANY, Mock, patch
 
-import projects._03_independent_cqc._10_publication.fargate._01_merge as job
+import projects._03_independent_cqc._10_publication.fargate._01_merge_pub_data as job
 
-PATCH_PATH = "projects._03_independent_cqc._10_publication.fargate._01_merge"
+PATCH_PATH = "projects._03_independent_cqc._10_publication.fargate._01_merge_pub_data"
 
 TEST_ESTIMATES_SOURCE = "some/directory"
 TEST_METADATA_SOURCE = "some/metadata/directory"
