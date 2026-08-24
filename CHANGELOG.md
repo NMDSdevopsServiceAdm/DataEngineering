@@ -43,6 +43,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed pycache files accidentally committed to the repo, and added `__pycache__/` to `.gitignore` to stop it happening again.
 
+- Narrowed the non-prod raw bucket seed gate to the specific files that actually read, write, or validate raw data, instead of whole ingest project directories, so unrelated changes elsewhere in an ingest domain (tests, downstream clean jobs) no longer trigger an unnecessary reseed. Also fixed a redeploy failure where the ASCWDS ingest job's fixed sample-data output partition collided with its own previous run's output, by clearing that partition before each reseed.
+
 ## [v2026.07.0] - 17/08/2026
 
 ### Added

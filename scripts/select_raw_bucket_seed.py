@@ -32,18 +32,26 @@ from scripts.select_bake_targets import (  # noqa: E402
     path_triggers_rebuild,
 )
 
-# Ingest domains that actually read from the raw bucket. `cqc_api` is a
-# sibling ingest domain that reads from the CQC API directly, not the raw
-# bucket, so it's deliberately excluded.
+# Specific files that actually read/write the raw data, or validate it before
+# cleaning -- not whole domain directories. A directory-level trigger also
+# matched tests, fixtures, and downstream clean/validate-cleaned jobs that
+# never touch the raw read path, defeating the point of the gate. `cqc_api` is
+# a sibling ingest domain that reads from the CQC API directly, not the raw
+# bucket, so it's excluded entirely. `capacity_tracker` has no raw-validate
+# job in this repo, so it only gets its ingest entrypoint.
 #
 # To add a new trigger path: add it here, plus a
-# `returns_true_when_changed_path_is_under_<name>` case in
+# `returns_true_when_<name>_changed` case in
 # scripts/tests/test_select_raw_bucket_seed.py's `trigger_path_cases`.
 INGEST_TRIGGER_PATHS: tuple[str, ...] = (
-    "projects/_01_ingest/ascwds",
-    "projects/_01_ingest/capacity_tracker",
-    "projects/_01_ingest/cqc_pir",
-    "projects/_01_ingest/ons_pd",
+    "projects/_01_ingest/ascwds/jobs/ingest_ascwds_dataset.py",
+    "projects/_01_ingest/ascwds/jobs/validate_ascwds_worker_raw_data.py",
+    "projects/_01_ingest/ascwds/jobs/validate_ascwds_workplace_raw_data.py",
+    "projects/_01_ingest/capacity_tracker/jobs/ingest_capacity_tracker_data.py",
+    "projects/_01_ingest/cqc_pir/fargate/ingest_cqc_pir_data.py",
+    "projects/_01_ingest/cqc_pir/fargate/validate_cqc_pir_raw_data.py",
+    "projects/_01_ingest/ons_pd/jobs/ingest_ons_data.py",
+    "projects/_01_ingest/ons_pd/jobs/validate_postcode_directory_raw_data.py",
     "terraform/pipeline/eventbridge.tf",
 )
 
