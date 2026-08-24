@@ -479,8 +479,8 @@ jobs:
               # this fixed sentinel partition, so a redeploy that re-triggers
               # ingest against unchanged sample data collides with the
               # previous run's output unless it's cleared first.
-              aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/version=0.0.0-sample/" --recursive
-              aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/version=0.0.0-sample/" --recursive
+              aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/version=0.0.0/" --recursive
+              aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/version=0.0.0/" --recursive
               aws s3 sync "s3://sfc-main-sample-raw-data/" "s3://$BRANCH_RAW_BUCKET/" --delete
             fi
 
