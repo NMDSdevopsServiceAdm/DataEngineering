@@ -32,7 +32,16 @@ class TestShouldSeedRawBucket:
         assert job.should_seed_raw_bucket([changed_path]) is True
 
     def test_returns_false_when_only_unrelated_paths_changed(self):
-        changed_paths = ["README.md", "projects/_07_workforce_characteristics/foo.py"]
+        # Includes paths that were trigger paths before this ticket's trigger
+        # list was trimmed, so a re-add wouldn't silently pass unnoticed.
+        changed_paths = [
+            "README.md",
+            "projects/_07_workforce_characteristics/foo.py",
+            "terraform/pipeline/iam.tf",
+            "terraform/pipeline/s3.tf",
+            "terraform/modules/fargate-task/iam.tf",
+            ".circleci/config.yml",
+        ]
 
         assert job.should_seed_raw_bucket(changed_paths) is False
 
@@ -45,20 +54,6 @@ class TestShouldSeedRawBucket:
 
     def test_returns_false_for_empty_changed_paths(self):
         assert job.should_seed_raw_bucket([]) is False
-
-    def test_returns_false_when_raw_bucket_iam_terraform_changed(self):
-        assert job.should_seed_raw_bucket(["terraform/pipeline/iam.tf"]) is False
-
-    def test_returns_false_when_raw_bucket_s3_terraform_changed(self):
-        assert job.should_seed_raw_bucket(["terraform/pipeline/s3.tf"]) is False
-
-    def test_returns_false_when_fargate_task_raw_bucket_wiring_changed(self):
-        changed_paths = ["terraform/modules/fargate-task/iam.tf"]
-
-        assert job.should_seed_raw_bucket(changed_paths) is False
-
-    def test_returns_false_when_circleci_config_changed(self):
-        assert job.should_seed_raw_bucket([".circleci/config.yml"]) is False
 
 
 class TestMain:
