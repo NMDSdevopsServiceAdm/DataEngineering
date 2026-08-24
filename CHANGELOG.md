@@ -37,8 +37,10 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed Step Functions executions not actually stopping their underlying ECS task on manual stop, due to a missing IAM permission, and added a safety net to force-stop orphaned ECS tasks and Glue crawlers before a branch's infrastructure is destroyed in CI.
 - Fixed the CQC API integration tests failing the whole CI pipeline during a CQC API outage: the tests now skip instead of fail on a recognised outage signature, and were split into their own non-blocking CircleCI job.
-- Removed pycache files accidentally committed to the repo, and added `__pycache__/` to `.gitignore` to stop it happening again.
+
 - Fixed the ascwds_job_role_ratios_merged validation check to cover all three coalesce source branches, instead of relying on incidental equality for one of them.
+
+- Removed pycache files accidentally committed to the repo, and added `__pycache__/` to `.gitignore` to stop it happening again.
 
 ## [v2026.07.0] - 17/08/2026
 
