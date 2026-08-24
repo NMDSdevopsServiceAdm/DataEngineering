@@ -481,6 +481,12 @@ jobs:
               # previous run's output unless it's cleared first.
               aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/version=0.0.0/" --recursive
               aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/version=0.0.0/" --recursive
+              # aws s3 sync skips files that already match the destination, so an
+              # unchanged sample bucket would otherwise never re-fire the S3
+              # "object created" event that triggers ingest on a redeploy. Wipe
+              # the raw bucket first -- it's populated only by this step, so a
+              # full wipe-then-resync can't lose anything else.
+              aws s3 rm "s3://$BRANCH_RAW_BUCKET/" --recursive
               aws s3 sync "s3://sfc-main-sample-raw-data/" "s3://$BRANCH_RAW_BUCKET/" --delete
             fi
 
