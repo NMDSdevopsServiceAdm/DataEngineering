@@ -15,18 +15,18 @@
               "Parameters": {
                 "LaunchType": "FARGATE",
                 "Cluster": "${polars_cluster_arn}",
-                "TaskDefinition": "${cqc_pir_task_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
                     "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${cqc_pir_security_group_id}"],
+                    "SecurityGroups": ["${ingest_security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
                 },
                 "Overrides": {
                   "ContainerOverrides": [
                     {
-                      "Name": "cqc-pir-container",
+                      "Name": "_01_ingest-container",
                       "Command.$": "States.Array('ingest_cqc_pir_data.py', '--source', $.jobs.ingest_cqc_pir_data.source, '--destination', '${dataset_bucket_uri}/domain=CQC/dataset=pir/')"
                     }
                   ]
@@ -64,18 +64,18 @@
                       "Parameters": {
                         "LaunchType": "FARGATE",
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${cqc_pir_task_arn}",
+                        "TaskDefinition": "${ingest_task_arn}",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${cqc_pir_security_group_id}"],
+                            "SecurityGroups": ["${ingest_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "cqc-pir-container",
+                              "Name": "_01_ingest-container",
                               "Command": [
                                 "validate_cqc_pir_raw_data.py",
                                 "--bucket_name",
@@ -83,7 +83,7 @@
                                 "--source_path",
                                 "domain=CQC/dataset=pir/",
                                 "--reports_path",
-                                "domain=data_validation_reports/dataset=validation_pdq_pir_raw/"
+                                "domain=data_validation_reports/dataset=validation_cqc_pir_raw/"
                               ]
                             }
                           ]

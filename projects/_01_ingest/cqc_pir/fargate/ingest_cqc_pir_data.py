@@ -32,8 +32,8 @@ def main(source: str, destination: str) -> None:
 
     Args:
         source (str): the S3 URI of the raw PIR CSV file to ingest.
-        destination (str): the S3 URI of the destination bucket/prefix for
-            parquet output.
+        destination (str): an S3 URI naming the destination bucket; only the
+            bucket is used, the output path mirrors the source key's directory.
     """
     _, key = file_utils.split_s3_uri(source)
     output_path = file_utils.construct_destination_path(destination, key) + "/"
