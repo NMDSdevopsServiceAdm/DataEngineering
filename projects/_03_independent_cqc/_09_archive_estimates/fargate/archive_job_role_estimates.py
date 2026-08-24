@@ -21,7 +21,7 @@ def main(
             metadata (not yet used)
         filled_posts_estimates_source (str): source s3 directory for the overall
             filled posts estimates (not yet used)
-        archive_destination (str): s3 URI to append job role archive data to
+        archive_destination (str): s3 URI to write job role archive data to
     """
     print("Archiving independent CQC filled posts by job role...")
 
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         ),
         (
             "--archive_destination",
-            "S3 URI to append job role archive data to",
+            "S3 URI to write job role archive data to",
         ),
     )
 

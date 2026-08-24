@@ -34,6 +34,7 @@ class TestMain:
             DESTINATION,
         )
 
+        assert scan_parquet_mock.call_count == 3
         scan_parquet_mock.assert_has_calls(
             [
                 call(ESTIMATES_SOURCE),
