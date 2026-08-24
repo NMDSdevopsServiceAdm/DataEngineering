@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
 - Re-enabled the rolling-average imputation calls in the Polars impute job (disabled since an earlier OOM investigation traced the real cause elsewhere), and added the corresponding `posts_rolling_average_model` range validation to match the PySpark job.
 
-- Limited how long the ASC-WDS job role rolling ratio carries a workplace's known job role split: up to 2 years past their last submission (extrapolation), with gaps of up to 5 years filled in between (interpolation), instead of repeating it forever. Each workplace also now counts once towards the ratio regardless of size. Job role estimates for workplaces with submitted data are unaffected. The two periods are configured in the impute job rather than the shared utils, matching this repo's convention for pipeline-specific numeric values.
+- Limited how long the ASC-WDS job role rolling ratio carries a workplace's known job role split: up to 2 years past their last submission (extrapolation), with gaps of up to 5 years filled in between (interpolation), instead of repeating it forever. Each workplace also now counts once towards the ratio regardless of size. Job role estimates for workplaces with submitted data are unaffected.
 
 - Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
 
