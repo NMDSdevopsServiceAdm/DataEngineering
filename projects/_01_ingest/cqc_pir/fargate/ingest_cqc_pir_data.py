@@ -27,16 +27,17 @@ PIR_SCHEMA = pl.Schema(
 )
 
 
-def main(source: str, destination: str) -> None:
+def main(source: str, destination_prefix: str) -> None:
     """Ingests a single raw CQC PIR CSV file and sinks it to parquet.
 
     Args:
         source (str): the S3 URI of the raw PIR CSV file to ingest.
-        destination (str): an S3 URI naming the destination bucket; only the
-            bucket is used, the output path mirrors the source key's directory.
+        destination_prefix (str): an S3 URI naming the destination bucket,
+            with a trailing slash (e.g. "s3://bucket/"); the output path
+            mirrors the source key's directory within it.
     """
     _, key = file_utils.split_s3_uri(source)
-    output_path = file_utils.construct_destination_path(destination, key) + "/"
+    output_path = file_utils.construct_destination_path(destination_prefix, key) + "/"
 
     print(f"Reading CSV from {source} with schema: {PIR_SCHEMA}")
     pir_lf = pl.scan_csv(source, schema=PIR_SCHEMA)
@@ -50,8 +51,8 @@ if __name__ == "__main__":
 
     args = utils.get_args(
         ("--source", "A CSV file used as job input"),
-        ("--destination", "A destination directory for outputting parquet files"),
+        ("--destination_prefix", "A destination bucket for outputting parquet files"),
     )
 
-    main(args.source, args.destination)
+    main(args.source, args.destination_prefix)
     print("Fargate job 'ingest_cqc_pir_data' complete")
