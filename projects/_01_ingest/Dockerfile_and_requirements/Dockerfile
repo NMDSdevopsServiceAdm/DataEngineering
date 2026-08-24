@@ -19,6 +19,7 @@ COPY utils/column_values utils/column_values
 COPY projects/_01_ingest/capacity_tracker/fargate/utils projects/_01_ingest/capacity_tracker/fargate/utils
 
 # Copy all python jobs to WORKDIR
+COPY projects/_01_ingest/cqc_pir/fargate/*.py .
 COPY projects/_01_ingest/capacity_tracker/fargate/*.py .
 
 ENTRYPOINT ["python"]

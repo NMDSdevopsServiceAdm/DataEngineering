@@ -45,3 +45,9 @@ variable "ephemeral_storage_size" {
 variable "environment" {
   type = list(map(string))
 }
+
+variable "raw_bucket_arn" {
+  description = "ARN of the raw data landing bucket to grant this task read-only access to. Omit for tasks that don't read raw data."
+  type        = string
+  default     = null
+}
