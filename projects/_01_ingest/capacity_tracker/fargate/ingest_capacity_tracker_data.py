@@ -12,14 +12,58 @@ def main(source: str, destination: str) -> None:
 
     Args:
         source (str): A single CSV file in S3 to ingest.
-        destination (str): Destination S3 directory for the ingested parquet.
+        destination (str): Destination S3 directory naming the target domain/dataset
+            (e.g. "s3://bucket/domain=capacity_tracker/dataset=capacity_tracker_care_home_polars/").
+            The source key's own partition path (year/month/day/import_date) is
+            appended to it, so the clean step's Hive-partition discovery can pick up
+            import_date the same way it does for the PySpark output.
     """
     bucket, key = file_utils.split_s3_uri(source)
+    # TEMPORARY, while this job runs alongside the PySpark version for output
+    # comparison: `destination`'s dataset name is "_polars"-suffixed, so it can't
+    # reuse `file_utils.construct_destination_path` as-is (that keeps only the
+    # bucket from `destination` and rebuilds the whole path from `key`, which
+    # would reproduce the PySpark job's unsuffixed path and collide with it).
+    # Once the PySpark version is retired and `destination` no longer needs to
+    # diverge from the source's own dataset name, delete `partition_path_from_key`
+    # and replace the next line with:
+    #   new_destination = file_utils.construct_destination_path(destination, key)
+    new_destination = destination.rstrip("/") + "/" + partition_path_from_key(key)
 
     file_sample = file_utils.read_partial_csv_content(bucket, key)
     delimiter = file_utils.identify_csv_delimiter(file_sample)
 
-    ingest_dataset(source, destination, delimiter)
+    ingest_dataset(source, new_destination, delimiter)
+
+
+def partition_path_from_key(key: str) -> str:
+    """
+    Extract the partition path following the 'dataset=' segment of a raw S3 key.
+
+    TEMPORARY, see the comment in `main` — delete this once the PySpark version
+    is retired.
+
+    The raw CSV has no import_date column of its own — it's only present as a
+    Hive-style "import_date=YYYYMMDD" folder in the S3 key. Preserving that
+    (and the other partition folders alongside it) in the output lets
+    `polars_utils.utils.scan_parquet` auto-discover import_date as a column when
+    the clean job reads it back, the same way Spark does for the PySpark output.
+
+    Args:
+        key (str): S3 key of a raw capacity tracker CSV, e.g.
+            "domain=capacity_tracker/dataset=capacity_tracker_care_home/year=2026/month=08/day=01/import_date=20260801/file.csv".
+
+    Returns:
+        str: The partition path with a trailing slash, e.g.
+            "year=2026/month=08/day=01/import_date=20260801/".
+    """
+    directory_parts = file_utils.get_file_directory(key).split("/")
+    dataset_index = next(
+        index
+        for index, part in enumerate(directory_parts)
+        if part.startswith("dataset=")
+    )
+    return "/".join(directory_parts[dataset_index + 1 :]) + "/"
 
 
 def ingest_dataset(source: str, destination: str, delimiter: str) -> None:

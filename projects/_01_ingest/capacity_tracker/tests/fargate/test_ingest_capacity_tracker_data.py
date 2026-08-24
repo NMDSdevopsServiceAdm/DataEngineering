@@ -7,12 +7,17 @@ import projects._01_ingest.capacity_tracker.fargate.ingest_capacity_tracker_data
 
 PATCH_PATH = "projects._01_ingest.capacity_tracker.fargate.ingest_capacity_tracker_data"
 
+SOURCE_KEY = (
+    "domain=capacity_tracker/dataset=capacity_tracker_care_home/"
+    "year=2026/month=08/day=01/import_date=20260801/file.csv"
+)
+
 
 class TestMain:
     @patch(f"{PATCH_PATH}.ingest_dataset")
     @patch(f"{PATCH_PATH}.file_utils.identify_csv_delimiter")
     @patch(f"{PATCH_PATH}.file_utils.read_partial_csv_content")
-    def test_main_detects_delimiter_and_ingests_to_the_given_destination(
+    def test_main_detects_delimiter_and_ingests_with_partition_path_preserved(
         self,
         read_partial_csv_content_mock: Mock,
         identify_csv_delimiter_mock: Mock,
@@ -20,14 +25,27 @@ class TestMain:
     ):
         read_partial_csv_content_mock.return_value = "col1,col2\n1,2"
         identify_csv_delimiter_mock.return_value = ","
+        source = f"s3://bucket/{SOURCE_KEY}"
 
-        job.main("s3://bucket/some/path/file.csv", "s3://bucket/destination")
-
-        read_partial_csv_content_mock.assert_called_once_with(
-            "bucket", "some/path/file.csv"
+        job.main(
+            source,
+            "s3://bucket/domain=capacity_tracker/dataset=capacity_tracker_care_home_polars",
         )
+
+        read_partial_csv_content_mock.assert_called_once_with("bucket", SOURCE_KEY)
         ingest_dataset_mock.assert_called_once_with(
-            "s3://bucket/some/path/file.csv", "s3://bucket/destination", ","
+            source,
+            "s3://bucket/domain=capacity_tracker/dataset=capacity_tracker_care_home_polars/"
+            "year=2026/month=08/day=01/import_date=20260801/",
+            ",",
+        )
+
+
+class TestPartitionPathFromKey:
+    def test_returns_path_after_dataset_segment_with_trailing_slash(self):
+        assert (
+            job.partition_path_from_key(SOURCE_KEY)
+            == "year=2026/month=08/day=01/import_date=20260801/"
         )
 
 
