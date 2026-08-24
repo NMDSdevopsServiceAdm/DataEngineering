@@ -475,17 +475,13 @@ jobs:
             if [ "$(cat bake/seed-raw-bucket 2>/dev/null)" = "false" ]; then
               echo "No ingest-related changes detected. Skipping raw bucket seed."
             else
-              # ASCWDS writes with Spark's default (error-if-exists) mode to
-              # this fixed sentinel partition, so a redeploy that re-triggers
-              # ingest against unchanged sample data collides with the
-              # previous run's output unless it's cleared first.
+              # ASCWDS writes with Spark's error-if-exists mode to a fixed sentinel
+              # path, so a redeploy's rerun collides with the previous output.
               aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/version=0.0.0/" --recursive
               aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/version=0.0.0/" --recursive
-              # aws s3 sync skips files that already match the destination, so an
-              # unchanged sample bucket would otherwise never re-fire the S3
-              # "object created" event that triggers ingest on a redeploy. Wipe
-              # the raw bucket first -- it's populated only by this step, so a
-              # full wipe-then-resync can't lose anything else.
+              # sync skips unchanged files, so it'd never re-fire the ingest
+              # trigger on a redeploy without this. Safe to wipe -- nothing
+              # else writes to this bucket.
               aws s3 rm "s3://$BRANCH_RAW_BUCKET/" --recursive
               aws s3 sync "s3://sfc-main-sample-raw-data/" "s3://$BRANCH_RAW_BUCKET/" --delete
             fi

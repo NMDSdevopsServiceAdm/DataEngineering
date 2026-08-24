@@ -32,16 +32,12 @@ from scripts.select_bake_targets import (  # noqa: E402
     path_triggers_rebuild,
 )
 
-# Specific files that actually read/write the raw data, or validate it before
-# cleaning -- not whole domain directories. A directory-level trigger also
-# matched tests, fixtures, and downstream clean/validate-cleaned jobs that
-# never touch the raw read path, defeating the point of the gate. `cqc_api` is
-# a sibling ingest domain that reads from the CQC API directly, not the raw
-# bucket, so it's excluded entirely. `capacity_tracker` has no raw-validate
-# job in this repo, so it only gets its ingest entrypoint.
+# Specific files that read/write/validate the raw data -- not whole domain
+# directories, which also matched tests and downstream clean/validate-cleaned
+# jobs. `cqc_api` reads the CQC API directly, so it's excluded; `capacity_tracker`
+# has no raw-validate job here, so it only gets its ingest entrypoint.
 #
-# To add a new trigger path: add it here, plus a
-# `returns_true_when_<name>_changed` case in
+# To add a new trigger path: add it here, plus a matching case in
 # scripts/tests/test_select_raw_bucket_seed.py's `trigger_path_cases`.
 INGEST_TRIGGER_PATHS: tuple[str, ...] = (
     "projects/_01_ingest/ascwds/jobs/ingest_ascwds_dataset.py",
