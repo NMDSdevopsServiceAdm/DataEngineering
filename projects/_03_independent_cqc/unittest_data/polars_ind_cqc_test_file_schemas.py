@@ -1559,6 +1559,19 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
     )
 
 
+@dataclass
+class ValidateJobRoleRatiosMergedSchemas:
+    ascwds_job_role_ratios_merged_matches_coalesce_source_schema = pl.Schema(
+        {
+            IndCQC.ascwds_job_role_ratios: pl.Float32,
+            IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,
+            IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
+            IndCQC.ascwds_job_role_ratios_merged: pl.Float32,
+            "expression": pl.Boolean,
+        }
+    )
+
+
 class InterpolationSchema:
     interpolation_schema = {
         IndCQC.location_id: pl.String,
