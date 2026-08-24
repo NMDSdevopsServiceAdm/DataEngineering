@@ -46,6 +46,127 @@
               "End": true
             }
           }
+        },
+        {
+          "StartAt": "Ingest Capacity Tracker Care Home (Polars)",
+          "States": {
+            "Ingest Capacity Tracker Care Home (Polars)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command.$": "States.Array('ingest_capacity_tracker_data.py', '--source', $.jobs.ingest_capacity_tracker_data.source, '--destination', '${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_polars/')"
+                    }
+                  ]
+                }
+              },
+              "Next": "Clean Capacity Tracker Care Home data (Polars)",
+              "Catch": [
+                {
+                  "ErrorEquals": ["States.ALL"],
+                  "Next": "Polars Branch Failed (Care Home)",
+                  "ResultPath": "$.polars_error"
+                }
+              ]
+            },
+            "Clean Capacity Tracker Care Home data (Polars)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command": [
+                        "clean_capacity_tracker_care_home_data.py",
+                        "--capacity_tracker_care_home_source",
+                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_polars/",
+                        "--cleaned_capacity_tracker_care_home_destination",
+                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned_polars/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Validate cleaned CT Care Home data (Polars)",
+              "Catch": [
+                {
+                  "ErrorEquals": ["States.ALL"],
+                  "Next": "Polars Branch Failed (Care Home)",
+                  "ResultPath": "$.polars_error"
+                }
+              ]
+            },
+            "Validate cleaned CT Care Home data (Polars)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command": [
+                        "validate_clean_capacity_tracker_care_home_data.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned_polars/",
+                        "--reports_path",
+                        "domain=data_validation_reports/dataset=validation_capacity_tracker_care_home_cleaned_polars/",
+                        "--compare_path",
+                        "domain=capacity_tracker/dataset=capacity_tracker_care_home_polars/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true,
+              "Catch": [
+                {
+                  "ErrorEquals": ["States.ALL"],
+                  "Next": "Polars Branch Failed (Care Home)",
+                  "ResultPath": "$.polars_error"
+                }
+              ]
+            },
+            "Polars Branch Failed (Care Home)": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
         }
       ],
       "Next": "Run Crawler and Handle Error",
