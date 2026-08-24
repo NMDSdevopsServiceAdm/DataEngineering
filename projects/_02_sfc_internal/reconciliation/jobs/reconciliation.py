@@ -3,10 +3,15 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
+from pyspark.sql import functions as F
+
 from projects._02_sfc_internal.reconciliation.utils import (
     reconciliation_utils as rUtils,
 )
 from utils import utils
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 
 
 def main(
@@ -20,6 +25,10 @@ def main(
 
     cqc_location_df = utils.read_from_parquet(cqc_locations_snapshot_source)
     ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source)
+
+    ascwds_workplace_df = ascwds_workplace_df.filter(
+        F.col(AWPClean.workplace_last_active_date) >= F.col(AWPClean.purge_date)
+    ).drop(AWPClean.workplace_last_active_date, AWPClean.purge_date)
 
     (
         first_of_most_recent_month,

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from pyspark.sql.types import (
     ArrayType,
+    BooleanType,
     DateType,
     FloatType,
     IntegerType,
@@ -50,6 +51,13 @@ class ReconciliationSchema:
             StructField(AWPClean.main_service_id, StringType(), True),
             StructField(AWPClean.establishment_name, StringType(), True),
             StructField(AWPClean.region_id, StringType(), True),
+        ]
+    )
+    purge_filter_ascwds_workplace_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.workplace_last_active_date, DateType(), True),
+            StructField(AWPClean.purge_date, DateType(), True),
         ]
     )
     input_cqc_dereg_locations_schema = StructType(
@@ -350,6 +358,8 @@ class MergeCoverageData:
             StructField(AWPClean.master_update_date, DateType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.total_staff, IntegerType(), True),
+            StructField(AWPClean.workplace_last_active_date, DateType(), True),
+            StructField(AWPClean.purge_date, DateType(), True),
         ]
     )
 
@@ -366,12 +376,15 @@ class MergeCoverageData:
             StructField(AWPClean.master_update_date, DateType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.total_staff, IntegerType(), True),
+            StructField(AWPClean.workplace_last_active_date, DateType(), True),
+            StructField(AWPClean.purge_date, DateType(), True),
         ]
     )
 
     sample_in_ascwds_schema = StructType(
         [
             StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.removed_by_purge_date_filter, BooleanType(), True),
         ]
     )
 

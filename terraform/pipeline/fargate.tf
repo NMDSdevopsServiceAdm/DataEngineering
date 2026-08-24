@@ -29,11 +29,12 @@ module "cqc-api" {
 }
 
 module "ascwds" {
-  source        = "../modules/fargate-task"
-  task_name     = "ascwds"
-  ecr_repo_name = "fargate/ascwds"
-  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
-  tag_name      = terraform.workspace
+  source         = "../modules/fargate-task"
+  task_name      = "ascwds"
+  ecr_repo_name  = "fargate/ascwds"
+  cluster_arn    = aws_ecs_cluster.polars_cluster.arn
+  tag_name       = terraform.workspace
+  raw_bucket_arn = "arn:aws:s3:::${local.raw_bucket_name}"
   environment = [
     { "name" : "AWS_REGION", "value" : "eu-west-2" },
   ]
