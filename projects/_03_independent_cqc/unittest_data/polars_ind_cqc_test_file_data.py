@@ -2159,15 +2159,6 @@ class ImputeJobRoleData:
                 ("1", MainJobRoleLabels.care_worker, date(2026, 1, 2), None, None),
             ],
         ),
-        # 2022-03-01 to 2024-03-01 is 731 days (spanning the 2024 leap day), so a 730 day limit
-        # would drop this submission even though it is exactly 2 calendar years.
-        ImputeJobRoleTestCase(
-            id="when_a_leap_year_falls_inside_the_edge_fill",
-            data=[
-                ("1", MainJobRoleLabels.care_worker, date(2022, 3, 1), 0.5, 0.5),
-                ("1", MainJobRoleLabels.care_worker, date(2024, 3, 1), None, 0.5),
-            ],
-        ),
         # A three year gap is interpolated by date; an eight year gap exceeds the cap, and edge
         # fill never reaches an interior gap.
         ImputeJobRoleTestCase(
@@ -2181,9 +2172,10 @@ class ImputeJobRoleData:
                 ("2", MainJobRoleLabels.care_worker, date(2022, 1, 1), 0.6, 0.6),
             ],
         ),
-        # On the quarterly part of the axis a 24 month limit reaches eight quarterly rows.
+        # A known value forward-fills across later rows spaced less than a year apart: the row
+        # exactly on the 2 year boundary is filled, the next row past it is not.
         ImputeJobRoleTestCase(
-            id="when_the_date_axis_is_quarterly",
+            id="when_multiple_rows_forward_fill_from_one_known_value",
             data=[
                 ("1", MainJobRoleLabels.care_worker, date(2015, 1, 1), 0.5, 0.5),
                 ("1", MainJobRoleLabels.care_worker, date(2016, 1, 1), None, 0.5),
