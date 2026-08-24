@@ -2159,11 +2159,12 @@ class ImputeJobRoleData:
                 ("1", MainJobRoleLabels.care_worker, date(2026, 1, 2), None, None),
             ],
         ),
-        # 2023-03-01 to 2024-03-01 is 366 days, so a 365 day limit would drop this submission.
+        # 2022-03-01 to 2024-03-01 is 731 days (spanning the 2024 leap day), so a 730 day limit
+        # would drop this submission even though it is exactly 2 calendar years.
         ImputeJobRoleTestCase(
             id="when_a_leap_year_falls_inside_the_edge_fill",
             data=[
-                ("1", MainJobRoleLabels.care_worker, date(2023, 3, 1), 0.5, 0.5),
+                ("1", MainJobRoleLabels.care_worker, date(2022, 3, 1), 0.5, 0.5),
                 ("1", MainJobRoleLabels.care_worker, date(2024, 3, 1), None, 0.5),
             ],
         ),

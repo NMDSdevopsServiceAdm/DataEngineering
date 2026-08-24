@@ -327,10 +327,6 @@ def create_ascwds_job_role_rolling_ratio(
         .over(rolling_groups, order_by=order_key)
     )
 
-    rolling_agg_lf = rolling_agg_lf.drop(
-        TempCols.ratio_total, TempCols.contributing_rows
-    )
-
     columns_to_drop = [field.default for field in fields(TempCols)]
 
     return estimated_job_role_posts_lf.join(
