@@ -2,10 +2,10 @@ from polars_utils import utils
 
 
 def main(
-    estimate_ind_cqc_filled_posts_by_job_role_source: str,
-    estimate_ind_cqc_filled_posts_by_job_role_metadata_source: str,
-    estimate_ind_cqc_filled_posts_source: str,
-    archive_ind_cqc_filled_posts_by_job_role_destination: str,
+    job_role_estimates_source: str,
+    job_role_metadata_source: str,
+    filled_posts_estimates_source: str,
+    archive_destination: str,
 ) -> None:
     """
     Archives the independent CQC filled posts by job role estimates.
@@ -15,31 +15,23 @@ def main(
     neither is used yet.
 
     Args:
-        estimate_ind_cqc_filled_posts_by_job_role_source (str): source s3 directory for
-            estimate_ind_cqc_filled_posts_by_job_role
-        estimate_ind_cqc_filled_posts_by_job_role_metadata_source (str): source s3
-            directory for the job role merge metadata (not yet used)
-        estimate_ind_cqc_filled_posts_source (str): source s3 directory for the overall
-            estimate_ind_cqc_filled_posts (not yet used)
-        archive_ind_cqc_filled_posts_by_job_role_destination (str): s3 URI to append
-            job role archive data to
+        job_role_estimates_source (str): source s3 directory for the job role
+            filled posts estimates
+        job_role_metadata_source (str): source s3 directory for the job role merge
+            metadata (not yet used)
+        filled_posts_estimates_source (str): source s3 directory for the overall
+            filled posts estimates (not yet used)
+        archive_destination (str): s3 URI to append job role archive data to
     """
     print("Archiving independent CQC filled posts by job role...")
 
-    estimate_filled_posts_by_job_role_lf = utils.scan_parquet(
-        estimate_ind_cqc_filled_posts_by_job_role_source
-    )
-    utils.scan_parquet(estimate_ind_cqc_filled_posts_by_job_role_metadata_source)
-    utils.scan_parquet(estimate_ind_cqc_filled_posts_source)
+    job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
+    utils.scan_parquet(job_role_metadata_source)
+    utils.scan_parquet(filled_posts_estimates_source)
 
-    print(
-        f"Exporting as parquet to {archive_ind_cqc_filled_posts_by_job_role_destination}"
-    )
+    print(f"Exporting as parquet to {archive_destination}")
 
-    utils.sink_to_parquet(
-        estimate_filled_posts_by_job_role_lf,
-        archive_ind_cqc_filled_posts_by_job_role_destination,
-    )
+    utils.sink_to_parquet(job_role_estimates_lf, archive_destination)
 
     print("Completed archive independent CQC filled posts by job role")
 
@@ -49,28 +41,28 @@ if __name__ == "__main__":
 
     args = utils.get_args(
         (
-            "--estimate_ind_cqc_filled_posts_by_job_role_source",
-            "Source s3 directory for estimate_ind_cqc_filled_posts_by_job_role",
+            "--job_role_estimates_source",
+            "Source s3 directory for the job role filled posts estimates",
         ),
         (
-            "--estimate_ind_cqc_filled_posts_by_job_role_metadata_source",
+            "--job_role_metadata_source",
             "Source s3 directory for the job role merge metadata",
         ),
         (
-            "--estimate_ind_cqc_filled_posts_source",
-            "Source s3 directory for the overall estimate_ind_cqc_filled_posts",
+            "--filled_posts_estimates_source",
+            "Source s3 directory for the overall filled posts estimates",
         ),
         (
-            "--archive_ind_cqc_filled_posts_by_job_role_destination",
+            "--archive_destination",
             "S3 URI to append job role archive data to",
         ),
     )
 
     main(
-        estimate_ind_cqc_filled_posts_by_job_role_source=args.estimate_ind_cqc_filled_posts_by_job_role_source,
-        estimate_ind_cqc_filled_posts_by_job_role_metadata_source=args.estimate_ind_cqc_filled_posts_by_job_role_metadata_source,
-        estimate_ind_cqc_filled_posts_source=args.estimate_ind_cqc_filled_posts_source,
-        archive_ind_cqc_filled_posts_by_job_role_destination=args.archive_ind_cqc_filled_posts_by_job_role_destination,
+        job_role_estimates_source=args.job_role_estimates_source,
+        job_role_metadata_source=args.job_role_metadata_source,
+        filled_posts_estimates_source=args.filled_posts_estimates_source,
+        archive_destination=args.archive_destination,
     )
 
     print("Finished Archive Independent CQC Job Role Estimates job")
