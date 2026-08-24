@@ -8,44 +8,19 @@ from utils import file_utils
 
 def main(source: str, destination: str) -> None:
     """
-    Ingest raw Capacity Tracker CSV extract(s) into parquet.
+    Ingest a single raw Capacity Tracker CSV extract into parquet.
 
     Args:
-        source (str): A single CSV file, or an S3 directory of CSV files, to ingest.
+        source (str): A single CSV file in S3 to ingest.
         destination (str): Destination S3 directory for the ingested parquet.
     """
-    if file_utils.is_csv(source):
-        print("Single file provided to job. Handling single file.")
-        bucket, key = file_utils.split_s3_uri(source)
-        new_destination = file_utils.construct_destination_path(destination, key)
-        handle_job(source, bucket, key, new_destination)
-        return
+    bucket, key = file_utils.split_s3_uri(source)
+    new_destination = file_utils.construct_destination_path(destination, key)
 
-    print("Multiple files provided to job. Handling each file...")
-    bucket, prefix = file_utils.split_s3_uri(source)
-    objects_list = file_utils.get_s3_objects_list(bucket, prefix)
-
-    for key in objects_list:
-        new_source = file_utils.construct_s3_uri(bucket, key)
-        new_destination = file_utils.construct_destination_path(destination, key)
-        handle_job(new_source, bucket, key, new_destination)
-
-
-def handle_job(
-    source: str, source_bucket: str, source_key: str, destination: str
-) -> None:
-    """
-    Detect a CSV file's delimiter and ingest it.
-
-    Args:
-        source (str): S3 path of the CSV file to ingest.
-        source_bucket (str): S3 bucket containing the source file.
-        source_key (str): S3 key of the source file, used to sample its content.
-        destination (str): Destination S3 directory for the ingested parquet.
-    """
-    file_sample = file_utils.read_partial_csv_content(source_bucket, source_key)
+    file_sample = file_utils.read_partial_csv_content(bucket, key)
     delimiter = file_utils.identify_csv_delimiter(file_sample)
-    ingest_dataset(source, destination, delimiter)
+
+    ingest_dataset(source, new_destination, delimiter)
 
 
 def ingest_dataset(source: str, destination: str, delimiter: str) -> None:
@@ -90,7 +65,7 @@ if __name__ == "__main__":
     args = utils.get_args(
         (
             "--source",
-            "A CSV file or directory of csv files in s3 with capacity tracker data to import",
+            "A single CSV file in s3 with capacity tracker data to import",
         ),
         (
             "--destination",

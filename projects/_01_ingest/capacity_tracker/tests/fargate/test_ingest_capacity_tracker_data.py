@@ -9,47 +9,10 @@ PATCH_PATH = "projects._01_ingest.capacity_tracker.fargate.ingest_capacity_track
 
 
 class TestMain:
-    @patch(f"{PATCH_PATH}.handle_job")
-    @patch(f"{PATCH_PATH}.file_utils.get_s3_objects_list")
-    def test_main_handles_single_csv_source(
-        self, get_s3_objects_list_mock: Mock, handle_job_mock: Mock
-    ):
-        job.main("s3://bucket/some/path/file.csv", "s3://bucket/destination")
-
-        get_s3_objects_list_mock.assert_not_called()
-        handle_job_mock.assert_called_once_with(
-            "s3://bucket/some/path/file.csv",
-            "bucket",
-            "some/path/file.csv",
-            "s3://bucket/some/path",
-        )
-
-    @patch(f"{PATCH_PATH}.handle_job")
-    @patch(f"{PATCH_PATH}.file_utils.get_s3_objects_list")
-    def test_main_handles_a_directory_of_csvs(
-        self, get_s3_objects_list_mock: Mock, handle_job_mock: Mock
-    ):
-        get_s3_objects_list_mock.return_value = [
-            "some/path/file_one.csv",
-            "some/path/file_two.csv",
-        ]
-
-        job.main("s3://bucket/some/path", "s3://bucket/destination")
-
-        assert handle_job_mock.call_count == 2
-        handle_job_mock.assert_any_call(
-            "s3://bucket/some/path/file_one.csv",
-            "bucket",
-            "some/path/file_one.csv",
-            "s3://bucket/some/path",
-        )
-
-
-class TestHandleJob:
     @patch(f"{PATCH_PATH}.ingest_dataset")
     @patch(f"{PATCH_PATH}.file_utils.identify_csv_delimiter")
     @patch(f"{PATCH_PATH}.file_utils.read_partial_csv_content")
-    def test_handle_job_detects_delimiter_and_ingests(
+    def test_main_detects_delimiter_and_ingests_the_single_source_file(
         self,
         read_partial_csv_content_mock: Mock,
         identify_csv_delimiter_mock: Mock,
@@ -58,10 +21,13 @@ class TestHandleJob:
         read_partial_csv_content_mock.return_value = "col1,col2\n1,2"
         identify_csv_delimiter_mock.return_value = ","
 
-        job.handle_job("s3://bucket/file.csv", "bucket", "file.csv", "s3://bucket/dest")
+        job.main("s3://bucket/some/path/file.csv", "s3://bucket/destination")
 
+        read_partial_csv_content_mock.assert_called_once_with(
+            "bucket", "some/path/file.csv"
+        )
         ingest_dataset_mock.assert_called_once_with(
-            "s3://bucket/file.csv", "s3://bucket/dest", ","
+            "s3://bucket/some/path/file.csv", "s3://bucket/some/path", ","
         )
 
 
