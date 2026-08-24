@@ -66,16 +66,19 @@ def main(
         .col_vals_not_null([CTCHClean.cqc_id, CTCHClean.ct_care_home_import_date])
         # index columns
         .rows_distinct([CTCHClean.cqc_id, CTCHClean.ct_care_home_import_date])
-        # numeric column values are between (inclusive)
-        .col_vals_between(CTCHClean.nurses_employed, 0, 1000)
-        .col_vals_between(CTCHClean.care_workers_employed, 0, 1000)
-        .col_vals_between(CTCHClean.non_care_workers_employed, 0, 1000)
-        .col_vals_between(CTCHClean.agency_nurses_employed, 0, 1000)
-        .col_vals_between(CTCHClean.agency_care_workers_employed, 0, 2500)
-        .col_vals_between(CTCHClean.agency_non_care_workers_employed, 0, 1000)
-        .col_vals_between(CTCHClean.non_agency_total_employed, 0, 1000)
-        .col_vals_between(CTCHClean.agency_total_employed, 0, 4000)
-        .col_vals_between(CTCHClean.ct_care_home_total_employed, 1, 4000)
+        # numeric column values are between (inclusive); nulls pass since the
+        # clean job nulls out-of-range values rather than dropping the row
+        .col_vals_between(CTCHClean.nurses_employed, 0, 1000, na_pass=True)
+        .col_vals_between(CTCHClean.care_workers_employed, 0, 1000, na_pass=True)
+        .col_vals_between(CTCHClean.non_care_workers_employed, 0, 1000, na_pass=True)
+        .col_vals_between(CTCHClean.agency_nurses_employed, 0, 1000, na_pass=True)
+        .col_vals_between(CTCHClean.agency_care_workers_employed, 0, 2500, na_pass=True)
+        .col_vals_between(
+            CTCHClean.agency_non_care_workers_employed, 0, 1000, na_pass=True
+        )
+        .col_vals_between(CTCHClean.non_agency_total_employed, 0, 1000, na_pass=True)
+        .col_vals_between(CTCHClean.agency_total_employed, 0, 4000, na_pass=True)
+        .col_vals_between(CTCHClean.ct_care_home_total_employed, 1, 4000, na_pass=True)
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
