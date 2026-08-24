@@ -1,4 +1,4 @@
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._10_publication.fargate._01_merge_pub_data as job
 
@@ -18,6 +18,15 @@ class TestMain:
         scan_parquet_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
+        archived_jr_estimate_lf = Mock(name="archived_jr_estimate_lf")
+        archived_jr_metadata_lf = Mock(name="archived_jr_metadata_lf")
+        archived_geography_lf = Mock(name="archived_geography_lf")
+        scan_parquet_mock.side_effect = [
+            archived_jr_estimate_lf,
+            archived_jr_metadata_lf,
+            archived_geography_lf,
+        ]
+
         job.main(
             TEST_ESTIMATES_SOURCE,
             TEST_METADATA_SOURCE,
@@ -31,6 +40,6 @@ class TestMain:
         scan_parquet_mock.assert_any_call(TEST_GEOGRAPHY_SOURCE)
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=ANY,
+            lazy_df=archived_jr_estimate_lf,
             output_path=TEST_DESTINATION,
         )
