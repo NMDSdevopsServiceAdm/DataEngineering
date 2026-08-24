@@ -45,16 +45,22 @@ def ingest_dataset(source: str, destination: str, delimiter: str) -> None:
 
 def sanitise_column_names(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Replace invalid characters in column names with characters to match current file names.
+    Replace invalid characters in column names and lowercase them.
+
+    Raw extract headers are PascalCase (e.g. "CqcId"), but `utils.column_names.
+    capacity_tracker_columns` names are all lowercase (e.g. "cqcid") to match what the
+    legacy PySpark job produced under Spark's case-insensitive column resolution.
+    Polars has no such case-insensitivity, so columns are lowercased here to match.
 
     Args:
         lf (pl.LazyFrame): A LazyFrame with capacity tracker data.
 
     Returns:
-        pl.LazyFrame: The input LazyFrame with invalid characters removed from column names.
+        pl.LazyFrame: The input LazyFrame with invalid characters removed from column
+            names, and column names lowercased.
     """
     rename_map = {
-        column: column.replace(" ", "_").replace("(", "").replace(")", "")
+        column: column.replace(" ", "_").replace("(", "").replace(")", "").lower()
         for column in lf.collect_schema().names()
     }
     return lf.rename(rename_map)

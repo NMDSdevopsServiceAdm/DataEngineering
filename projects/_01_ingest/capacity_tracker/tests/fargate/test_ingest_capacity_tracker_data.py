@@ -52,9 +52,13 @@ class TestIngestDataset:
 
 
 class TestSanitiseColumnNames:
-    def test_replaces_spaces_and_removes_parentheses(self):
-        test_lf = pl.LazyFrame(schema=["some col", "another(one)", "unchanged"])
-        expected_lf = pl.LazyFrame(schema=["some_col", "anotherone", "unchanged"])
+    def test_replaces_spaces_removes_parentheses_and_lowercases(self):
+        test_lf = pl.LazyFrame(
+            schema=["Some Col", "Another(One)", "unchanged", "CqcId"]
+        )
+        expected_lf = pl.LazyFrame(
+            schema=["some_col", "anotherone", "unchanged", "cqcid"]
+        )
 
         returned_lf = job.sanitise_column_names(test_lf)
 
