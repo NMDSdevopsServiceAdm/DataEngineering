@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Migrated the Capacity Tracker ingest stage (ingest, clean, and validate jobs) from PySpark to Polars, replacing pydeequ validation with pointblank. The new Polars jobs run alongside the existing PySpark ones in the Step Function, writing to `_polars`-suffixed datasets, so outputs can be compared before cutover.
+
 - Added a Terraform-managed sample raw-data bucket (`sfc-main-sample-raw-data`) in `main`, with cross-account read access, as a curated source for non-prod branches to seed their own raw buckets from.
 
 - Added a reusable `RunDiagnostics` utility to Polars Utils, capturing memory, thread, and Polars streaming-fallback evidence for a job run, with each sample written durably to S3 so evidence survives an out-of-memory kill.

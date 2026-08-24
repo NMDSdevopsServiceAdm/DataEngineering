@@ -30,6 +30,7 @@ CAPACITY_TRACKER_CARE_HOME_COLUMNS = [
 MAX_BOUND_DIRECTLY_EMPLOYED: int = 1000
 
 
+# converted to polars -> projects/_01_ingest/capacity_tracker/fargate/clean_capacity_tracker_care_home_data.py
 def main(
     capacity_tracker_care_home_source: str,
     cleaned_capacity_tracker_care_home_destination: str,

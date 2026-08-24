@@ -16,6 +16,7 @@ from utils.validation.validation_utils import (
 )
 
 
+# converted to polars -> projects/_01_ingest/capacity_tracker/fargate/validate_clean_capacity_tracker_non_res_data.py
 def main(
     capacity_tracker_non_res_source: str,
     capacity_tracker_non_res_cleaned_source: str,
