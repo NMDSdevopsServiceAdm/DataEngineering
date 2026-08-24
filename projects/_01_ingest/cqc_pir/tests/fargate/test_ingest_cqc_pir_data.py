@@ -44,6 +44,9 @@ class TestMain:
         returned_lf = mock_sink_to_parquet.call_args.kwargs["lazy_df"]
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
+    source = "s3://source-bucket/domain=CQC/dataset=pir/file.csv"
+    destination_prefix = "s3://dest-bucket/"
+
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
     def test_sinks_to_a_path_derived_from_the_source_key_and_destination_prefix(
@@ -54,17 +57,14 @@ class TestMain:
         mock_lf = Mock(spec=pl.LazyFrame)
         mock_scan_csv.return_value = mock_lf
 
-        job.main(
-            "s3://source-bucket/domain=CQC/dataset=pir/file.csv",
-            "s3://dest-bucket/",
-        )
+        job.main(self.source, self.destination_prefix)
 
         mock_scan_csv.assert_called_once_with(
-            "s3://source-bucket/domain=CQC/dataset=pir/file.csv",
+            self.source,
             schema=job.PIR_SCHEMA,
             encoding="utf8-lossy",
         )
         mock_sink_to_parquet.assert_called_once_with(
             lazy_df=mock_lf,
-            output_path="s3://dest-bucket/domain=CQC/dataset=pir/",
+            output_path=f"{self.destination_prefix}domain=CQC/dataset=pir/",
         )
