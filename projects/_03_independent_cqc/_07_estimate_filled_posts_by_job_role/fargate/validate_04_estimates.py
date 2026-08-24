@@ -389,21 +389,13 @@ def other_validation(
             brief="imputed_ascwds_job_role_counts and imputed_ascwds_job_role_ratios must be populated or not populated on the same rows",
         )
         .col_vals_expr(
-            (
-                (pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_null())
-                & (
-                    pl.col(IndCqcColumns.ascwds_job_role_ratios_merged)
-                    == pl.col(IndCqcColumns.ascwds_job_role_rolling_ratio)
-                )
-            )
-            | (
-                (pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_not_null())
-                & (
-                    pl.col(IndCqcColumns.ascwds_job_role_ratios_merged)
-                    == pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios)
-                )
+            ascwds_job_role_ratios_merged_matches_coalesce_source(),
+            brief=(
+                "Where ascwds_job_role_ratios is not null, ascwds_job_role_ratios_merged should "
+                "equal it. Otherwise, where imputed_ascwds_job_role_ratios is not null, "
+                "ascwds_job_role_ratios_merged should equal it. Otherwise, "
+                "ascwds_job_role_ratios_merged should equal ascwds_job_role_rolling_ratio."
             ),
-            brief="Where imputed_ascwds_job_role_ratios is null, ascwds_job_role_ratios_merged should equal ascwds_job_role_rolling_ratio. Where imputed_ascwds_job_role_ratios is not null, ascwds_job_role_ratios_merged should equal imputed_ascwds_job_role_ratios",
         )
         # estimates between (inclusive)
         .col_vals_expr(
@@ -435,6 +427,34 @@ def other_validation(
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, f"{reports_path}other_validation/")
+
+
+def ascwds_job_role_ratios_merged_matches_coalesce_source() -> pl.Expr:
+    """
+    Constructs an expression checking that ascwds_job_role_ratios_merged equals whichever of
+        the three coalesced source columns took priority for that row, matching the coalesce
+        order used to build it (see polars_utils.utils.coalesce_with_source_labels).
+
+    Returns:
+        pl.Expr: the expression for validating the merged ratio against its priority source column
+    """
+    merged_col = pl.col(IndCqcColumns.ascwds_job_role_ratios_merged)
+    ratios_col = pl.col(IndCqcColumns.ascwds_job_role_ratios)
+    imputed_col = pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios)
+
+    return (
+        (ratios_col.is_not_null() & (merged_col == ratios_col))
+        | (
+            ratios_col.is_null()
+            & imputed_col.is_not_null()
+            & (merged_col == imputed_col)
+        )
+        | (
+            ratios_col.is_null()
+            & imputed_col.is_null()
+            & (merged_col == pl.col(IndCqcColumns.ascwds_job_role_rolling_ratio))
+        )
+    )
 
 
 def estimates_percentage_expressions(name: str, pcts: tuple[float]) -> pl.Expr:
