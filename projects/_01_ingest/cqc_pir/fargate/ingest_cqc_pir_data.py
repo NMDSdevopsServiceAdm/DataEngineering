@@ -40,7 +40,11 @@ def main(source: str, destination_prefix: str) -> None:
     output_path = file_utils.construct_destination_path(destination_prefix, key) + "/"
 
     print(f"Reading CSV from {source} with schema: {PIR_SCHEMA}")
-    pir_lf = pl.scan_csv(source, schema=PIR_SCHEMA)
+    # PIR submissions arrive as Excel-exported CSVs, which are frequently not
+    # valid UTF-8 (e.g. curly quotes/en-dashes in free-text fields encoded as
+    # Windows-1252) - utf8-lossy replaces invalid byte sequences rather than
+    # raising, matching the old PySpark job's more permissive CSV parsing.
+    pir_lf = pl.scan_csv(source, schema=PIR_SCHEMA, encoding="utf8-lossy")
 
     print(f"Sinking parquet to {output_path}")
     utils.sink_to_parquet(lazy_df=pir_lf, output_path=output_path)

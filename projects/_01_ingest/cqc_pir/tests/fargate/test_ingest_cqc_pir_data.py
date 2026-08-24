@@ -62,6 +62,7 @@ class TestMain:
         mock_scan_csv.assert_called_once_with(
             "s3://source-bucket/domain=CQC/dataset=pir/file.csv",
             schema=job.PIR_SCHEMA,
+            encoding="utf8-lossy",
         )
         mock_sink_to_parquet.assert_called_once_with(
             lazy_df=mock_lf,
