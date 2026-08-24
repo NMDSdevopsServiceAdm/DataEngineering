@@ -1,0 +1,143 @@
+{
+  "StartAt": "Merge data",
+  "States": {
+    "Merge data": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${independent_cqc_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_03_independent_cqc-container",
+              "Command": [
+                "_01_merge.py",
+                "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
+                "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
+                "--jr_archive_geography_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
+                "--merge_data_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/"
+              ]
+            }
+          ]
+        }
+      },
+      "Next": "Clean and validate merged data"
+    },
+    "Clean and validate merged data": {
+      "Type": "Parallel",
+      "Next": "Validate cleaned data",
+      "Branches": [
+        {
+          "StartAt": "Clean data",
+          "States": {
+            "Clean data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "_02_clean.py",
+                        "--merge_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/",
+                        "--filter_aggregate_select_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_10_02_cleaned_data/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Validate merged data",
+          "States": {
+            "Validate merged data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "validate_01_merge.py",
+                        "--bucket_name", "${dataset_bucket_name}",
+                        "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/",
+                        "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
+                        "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_10_01_merged_data/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "Validate cleaned data": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${independent_cqc_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_03_independent_cqc-container",
+              "Command": [
+                "validate_02_clean.py",
+                "--bucket_name", "${dataset_bucket_name}",
+                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_10_02_cleaned_data/",
+                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/",
+                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_10_02_cleaned_data/"
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}

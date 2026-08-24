@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 
 - Added a git union merge driver for `CHANGELOG.md` so concurrent branches appending changelog entries no longer conflict on merge.
 
+- Added a new `_10_publication` stage to the independent CQC pipeline, with placeholder `_01_merge`, `_02_clean` Polars scripts, their tests and validation scripts and a standalone Step Function to run them, ready for the real publication logic to land into.
+
 ### Changed
 - Replaced `docker login` with the AWS ECR credential helper (checksum-verified before use) in the `task-containerisation` CircleCI job, so the ECR auth token is no longer written to the job container's disk unencrypted.
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
