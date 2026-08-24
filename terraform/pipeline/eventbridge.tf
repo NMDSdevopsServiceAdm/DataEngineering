@@ -1,7 +1,7 @@
 resource "aws_cloudwatch_event_rule" "ascwds_csv_added" {
-  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  state       = "ENABLED"
   name        = "${local.workspace_prefix}-ascwds-csv-added"
-  description = "Captures when a new ASC WDS worker or workspace CSV is uploaded to sfc-data-engineering-raw bucket"
+  description = "Captures when a new ASC WDS worker or workspace CSV is uploaded to the raw bucket"
 
   event_pattern = <<EOF
 {
@@ -9,7 +9,7 @@ resource "aws_cloudwatch_event_rule" "ascwds_csv_added" {
   "detail-type": ["Object Created"],
   "detail": {
     "bucket": {
-      "name": ["sfc-data-engineering-raw"]
+      "name": ["${local.raw_bucket_name}"]
     },
     "object": {
       "key": [ {"prefix": "domain=ASCWDS/dataset=worker" }, {"prefix": "domain=ASCWDS/dataset=workplace" }  ]
@@ -20,9 +20,9 @@ EOF
 }
 
 resource "aws_cloudwatch_event_rule" "cqc_pir_csv_added" {
-  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  state       = "ENABLED"
   name        = "${local.workspace_prefix}-cqc-pir-csv-added"
-  description = "Captures when a new CQC PIR CSV is uploaded to sfc-data-engineering-raw bucket"
+  description = "Captures when a new CQC PIR CSV is uploaded to the raw bucket"
 
   event_pattern = <<EOF
 {
@@ -30,7 +30,7 @@ resource "aws_cloudwatch_event_rule" "cqc_pir_csv_added" {
   "detail-type": ["Object Created"],
   "detail": {
     "bucket": {
-      "name": ["sfc-data-engineering-raw"]
+      "name": ["${local.raw_bucket_name}"]
     },
     "object": {
       "key": [ {"prefix": "domain=CQC/dataset=pir" }  ]
@@ -41,9 +41,9 @@ EOF
 }
 
 resource "aws_cloudwatch_event_rule" "ons_pd_csv_added" {
-  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  state       = "ENABLED"
   name        = "${local.workspace_prefix}-ons-pd-csv-added"
-  description = "Captures when a new ONS Postcode Directory CSV is uploaded to sfc-data-engineering-raw bucket"
+  description = "Captures when a new ONS Postcode Directory CSV is uploaded to the raw bucket"
 
   event_pattern = <<EOF
 {
@@ -51,7 +51,7 @@ resource "aws_cloudwatch_event_rule" "ons_pd_csv_added" {
   "detail-type": ["Object Created"],
   "detail": {
     "bucket": {
-      "name": ["sfc-data-engineering-raw"]
+      "name": ["${local.raw_bucket_name}"]
     },
     "object": {
       "key": [ {"prefix": "domain=ONS/dataset=postcode_directory" }  ]
@@ -62,9 +62,9 @@ EOF
 }
 
 resource "aws_cloudwatch_event_rule" "ct_care_home_csv_added" {
-  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  state       = "ENABLED"
   name        = "${local.workspace_prefix}-ct-care_home-csv-added"
-  description = "Captures when a new Capacity Tracker care home CSV is uploaded to sfc-data-engineering-raw bucket"
+  description = "Captures when a new Capacity Tracker care home CSV is uploaded to the raw bucket"
 
   event_pattern = <<EOF
 {
@@ -72,7 +72,7 @@ resource "aws_cloudwatch_event_rule" "ct_care_home_csv_added" {
   "detail-type": ["Object Created"],
   "detail": {
     "bucket": {
-      "name": ["sfc-data-engineering-raw"]
+      "name": ["${local.raw_bucket_name}"]
     },
     "object": {
       "key": [ {"prefix": "domain=capacity_tracker/dataset=capacity_tracker_care_home" }  ]
@@ -83,9 +83,9 @@ EOF
 }
 
 resource "aws_cloudwatch_event_rule" "ct_non_res_csv_added" {
-  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  state       = "ENABLED"
   name        = "${local.workspace_prefix}-ct-non_res-csv-added"
-  description = "Captures when a new Capacity Tracker non residential CSV is uploaded to sfc-data-engineering-raw bucket"
+  description = "Captures when a new Capacity Tracker non residential CSV is uploaded to the raw bucket"
 
   event_pattern = <<EOF
 {
@@ -93,7 +93,7 @@ resource "aws_cloudwatch_event_rule" "ct_non_res_csv_added" {
   "detail-type": ["Object Created"],
   "detail": {
     "bucket": {
-      "name": ["sfc-data-engineering-raw"]
+      "name": ["${local.raw_bucket_name}"]
     },
     "object": {
       "key": [ {"prefix": "domain=capacity_tracker/dataset=capacity_tracker_non_res" }  ]
