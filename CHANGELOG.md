@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file.
 
 - Added a git union merge driver for `CHANGELOG.md` so concurrent branches appending changelog entries no longer conflict on merge.
 
+- Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the pipeline's step function after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet) ahead of a future rework of the job-role dataset shape.
+
 ### Changed
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
 - Re-enabled the rolling-average imputation calls in the Polars impute job (disabled since an earlier OOM investigation traced the real cause elsewhere), and added the corresponding `posts_rolling_average_model` range validation to match the PySpark job.
