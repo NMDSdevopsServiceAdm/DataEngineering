@@ -12,7 +12,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.ingest_dataset")
     @patch(f"{PATCH_PATH}.file_utils.identify_csv_delimiter")
     @patch(f"{PATCH_PATH}.file_utils.read_partial_csv_content")
-    def test_main_detects_delimiter_and_ingests_the_single_source_file(
+    def test_main_detects_delimiter_and_ingests_to_the_given_destination(
         self,
         read_partial_csv_content_mock: Mock,
         identify_csv_delimiter_mock: Mock,
@@ -27,7 +27,7 @@ class TestMain:
             "bucket", "some/path/file.csv"
         )
         ingest_dataset_mock.assert_called_once_with(
-            "s3://bucket/some/path/file.csv", "s3://bucket/some/path", ","
+            "s3://bucket/some/path/file.csv", "s3://bucket/destination", ","
         )
 
 

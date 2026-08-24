@@ -15,12 +15,11 @@ def main(source: str, destination: str) -> None:
         destination (str): Destination S3 directory for the ingested parquet.
     """
     bucket, key = file_utils.split_s3_uri(source)
-    new_destination = file_utils.construct_destination_path(destination, key)
 
     file_sample = file_utils.read_partial_csv_content(bucket, key)
     delimiter = file_utils.identify_csv_delimiter(file_sample)
 
-    ingest_dataset(source, new_destination, delimiter)
+    ingest_dataset(source, destination, delimiter)
 
 
 def ingest_dataset(source: str, destination: str, delimiter: str) -> None:
