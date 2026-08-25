@@ -10,48 +10,6 @@
           "States": {
             "Ingest Capacity Tracker Non Res": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${ingest_ct_non_res_job_name}",
-                "Arguments": {
-                  "--source.$": "$.jobs.ingest_capacity_tracker_data.source",
-                  "--destination": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/"
-                }
-              },
-              "Next": "Clean Capacity Tracker Non Res data"
-            },
-            "Clean Capacity Tracker Non Res data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_ct_non_res_data_job_name}",
-                "Arguments": {
-                  "--capacity_tracker_non_res_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/",
-                  "--cleaned_capacity_tracker_non_res_destination": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
-                }
-              },
-              "Next": "Validate cleaned CT Non Res data"
-            },
-            "Validate cleaned CT Non Res data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${validate_ct_non_res_cleaned_data_job_name}",
-                "Arguments": {
-                  "--capacity_tracker_non_res_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/",
-                  "--capacity_tracker_non_res_cleaned_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_capacity_tracker_non_residential_cleaned_data/"
-                }
-              },
-              "End": true
-            }
-          }
-        },
-        {
-          "StartAt": "Ingest Capacity Tracker Non Res (Polars)",
-          "States": {
-            "Ingest Capacity Tracker Non Res (Polars)": {
-              "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
                 "LaunchType": "FARGATE",
@@ -68,21 +26,14 @@
                   "ContainerOverrides": [
                     {
                       "Name": "_01_ingest-container",
-                      "Command.$": "States.Array('ingest_capacity_tracker_data.py', '--source', $.jobs.ingest_capacity_tracker_data.source, '--destination', '${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_polars/')"
+                      "Command.$": "States.Array('ingest_capacity_tracker_data.py', '--source', $.jobs.ingest_capacity_tracker_data.source, '--destination', '${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/')"
                     }
                   ]
                 }
               },
-              "Next": "Clean Capacity Tracker Non Res data (Polars)",
-              "Catch": [
-                {
-                  "ErrorEquals": ["States.ALL"],
-                  "Next": "Polars Branch Failed (Non Res)",
-                  "ResultPath": "$.polars_error"
-                }
-              ]
+              "Next": "Clean Capacity Tracker Non Res data"
             },
-            "Clean Capacity Tracker Non Res data (Polars)": {
+            "Clean Capacity Tracker Non Res data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
@@ -103,24 +54,17 @@
                       "Command": [
                         "clean_capacity_tracker_non_res_data.py",
                         "--capacity_tracker_non_res_source",
-                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_polars/",
+                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/",
                         "--cleaned_capacity_tracker_non_res_destination",
-                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned_polars/"
+                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
                       ]
                     }
                   ]
                 }
               },
-              "Next": "Validate cleaned CT Non Res data (Polars)",
-              "Catch": [
-                {
-                  "ErrorEquals": ["States.ALL"],
-                  "Next": "Polars Branch Failed (Non Res)",
-                  "ResultPath": "$.polars_error"
-                }
-              ]
+              "Next": "Validate cleaned CT Non Res data"
             },
-            "Validate cleaned CT Non Res data (Polars)": {
+            "Validate cleaned CT Non Res data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
@@ -143,27 +87,16 @@
                         "--bucket_name",
                         "${dataset_bucket_name}",
                         "--source_path",
-                        "domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned_polars/",
+                        "domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/",
                         "--reports_path",
-                        "domain=data_validation_reports/dataset=validation_capacity_tracker_non_residential_cleaned_polars/",
+                        "domain=data_validation_reports/dataset=validation_capacity_tracker_non_residential_cleaned/",
                         "--compare_path",
-                        "domain=capacity_tracker/dataset=capacity_tracker_non_residential_polars/"
+                        "domain=capacity_tracker/dataset=capacity_tracker_non_residential/"
                       ]
                     }
                   ]
                 }
               },
-              "End": true,
-              "Catch": [
-                {
-                  "ErrorEquals": ["States.ALL"],
-                  "Next": "Polars Branch Failed (Non Res)",
-                  "ResultPath": "$.polars_error"
-                }
-              ]
-            },
-            "Polars Branch Failed (Non Res)": {
-              "Type": "Pass",
               "End": true
             }
           }
