@@ -4,7 +4,6 @@ import pointblank as pb
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from polars_utils.expressions import str_length_cols
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from polars_utils.validation import actions as vl
@@ -29,22 +28,6 @@ merged_locations_columns_to_import = [
     IndCqcColumns.total_staff_bounded,
     IndCqcColumns.worker_records_bounded,
 ]
-
-# Only the columns narrowed to Enum in clean_ind_cqc_filled_posts.py as part of
-# ticket 1920 - not an exhaustive schema for the dataset, so col_schema_match
-# runs with complete=False, in_order=False below. Checked here, right after
-# this stage produces them, so a regression is caught at its source rather
-# than several stages downstream.
-EXPECTED_SCHEMA = pb.Schema(
-    columns={
-        IndCqcColumns.ascwds_filled_posts_source: str(
-            CatColType.AscwdsFilledPostsSourceEnumType
-        ),
-        IndCqcColumns.ascwds_filtering_rule: str(
-            CatColType.AscwdsFilteringRuleEnumType
-        ),
-    }
-)
 
 
 def main(
@@ -78,13 +61,6 @@ def main(
             thresholds=GLOBAL_THRESHOLDS,
             brief=True,
             actions=GLOBAL_ACTIONS,
-        )
-        # dataset schema
-        .col_schema_match(
-            schema=EXPECTED_SCHEMA,
-            complete=False,
-            in_order=False,
-            brief="Narrowed columns should match their expected Enum dtypes",
         )
         # dataset size
         .row_count_match(

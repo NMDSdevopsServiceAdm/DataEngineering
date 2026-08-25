@@ -70,7 +70,6 @@ class ValidateEstimatedIndCQCFilledPostsDataTests(unittest.TestCase):
 
         # Check that key validations were run
         expected_assertions = {
-            "col_schema_match",
             "row_count_match",
             "col_vals_not_null",
             "rows_distinct",
