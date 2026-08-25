@@ -28,7 +28,7 @@ def main(
     job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
     utils.scan_parquet(job_role_metadata_source)
     utils.scan_parquet(filled_posts_estimates_source)
-    # 'testing'
+
     print(f"Exporting as parquet to {archive_destination}")
 
     utils.sink_to_parquet(job_role_estimates_lf, archive_destination)
