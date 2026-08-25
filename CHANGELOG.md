@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a per-branch raw data landing bucket (mirroring prod's `sfc-data-engineering-raw`), seeded at deploy time from a new curated sample bucket in main (`sfc-main-sample-raw-data`), so raw ingest steps and their EventBridge triggers can be tested end-to-end on a branch. The seed step now only runs (and only triggers the ingest Step Functions) when a push actually touches ingest-related paths, so unrelated branches skip it on their first deploy.
+
 - Added a Terraform-managed sample raw-data bucket (`sfc-main-sample-raw-data`) in `main`, with cross-account read access, as a curated source for non-prod branches to seed their own raw buckets from.
 
 - Added a reusable `RunDiagnostics` utility to Polars Utils, capturing memory, thread, and Polars streaming-fallback evidence for a job run, with each sample written durably to S3 so evidence survives an out-of-memory kill.
@@ -18,13 +20,20 @@ All notable changes to this project will be documented in this file.
 
 - Added a git union merge driver for `CHANGELOG.md` so concurrent branches appending changelog entries no longer conflict on merge.
 
+- Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the standalone job role step function (`Ind-CQC-Filled-Post-Estimates-By-Role`) after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet), deliberately kept out of the main pipeline until partitioning is in place, ahead of a future rework of the job-role dataset shape.
+
 ### Changed
+- Migrated the CQC PIR ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on a new shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Reads the raw CSV with `utf8-lossy` encoding, since supplier PIR files are frequently not valid UTF-8.
+- Replaced `docker login` with the AWS ECR credential helper (checksum-verified before use) in the `task-containerisation` CircleCI job, so the ECR auth token is no longer written to the job container's disk unencrypted.
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
 - Re-enabled the rolling-average imputation calls in the Polars impute job (disabled since an earlier OOM investigation traced the real cause elsewhere), and added the corresponding `posts_rolling_average_model` range validation to match the PySpark job.
+
+- Limited how long the ASC-WDS job role rolling ratio carries a workplace's known job role split: up to 2 years past their last submission (extrapolation), with gaps of up to 5 years filled in between (interpolation), instead of repeating it forever. Each workplace also now counts once towards the ratio regardless of size. Job role estimates for workplaces with submitted data are unaffected.
 
 - Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
 
 - Removed the legacy PySpark impute and estimate-filled-posts jobs now that their Polars replacements are signed off, and dropped the `polars` suffix from their S3 paths and step-function state names now that only one implementation remains.
+- sfc_internal data now includes workplaces exceeding their *active* purge date. The merge coverage job adds a boolean column removed_by_purge_date_filter. The in_ascwds column now takes that filter into account. The reconciliation job also creates removed_by_purge_date_filter then filters upon it to remove purged workplaces.
 
 ### Improved
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
@@ -32,7 +41,12 @@ All notable changes to this project will be documented in this file.
 - Removed a dead `lf.sort()` call (its result was never reassigned) in model_interpolation. Converted the module's remaining sorts to `over(..., order_by=...)`, measured as using much less peak memory than sorting.
 
 ### Fixed
+- Fixed Step Functions executions not actually stopping their underlying ECS task on manual stop, due to a missing IAM permission, and added a safety net to force-stop orphaned ECS tasks and Glue crawlers before a branch's infrastructure is destroyed in CI.
 - Fixed the CQC API integration tests failing the whole CI pipeline during a CQC API outage: the tests now skip instead of fail on a recognised outage signature, and were split into their own non-blocking CircleCI job.
+
+- Fixed the ascwds_job_role_ratios_merged validation check to cover all three coalesce source branches, instead of relying on incidental equality for one of them.
+
+- Removed pycache files accidentally committed to the repo, and added `__pycache__/` to `.gitignore` to stop it happening again.
 
 ## [v2026.07.0] - 17/08/2026
 

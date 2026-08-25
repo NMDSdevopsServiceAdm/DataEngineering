@@ -38,6 +38,8 @@ terraform {
 locals {
   workspace_prefix           = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 30)
   is_development_environment = local.workspace_prefix != "main"
+  # main keeps reading prod's hand-managed raw bucket; every other workspace gets its own.
+  raw_bucket_name = local.is_development_environment ? module.raw_bucket[0].bucket_name : "sfc-data-engineering-raw"
 }
 
 data "aws_caller_identity" "current" {}

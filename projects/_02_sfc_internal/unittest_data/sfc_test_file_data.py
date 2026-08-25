@@ -43,6 +43,11 @@ class ReconciliationData:
     ]
     # fmt: on
 
+    purge_filter_ascwds_workplace_rows = [
+        ("not_purged", date(2024, 4, 1), date(2022, 4, 1)),
+        ("purged", date(2020, 1, 1), date(2022, 4, 1)),
+    ]
+
     input_cqc_dereg_locations_rows = [
         (date(2024, 1, 1), "1-901", "Deregistered", date(2024, 1, 1)),
         (date(2024, 4, 1), "1-902", "Deregistered", date(2024, 1, 1)),
@@ -282,7 +287,7 @@ class ReconciliationUtilsData:
 
 @dataclass
 class MergeCoverageData:
-    # fmt: off
+
     clean_cqc_location_for_merge_rows = [
         (date(2024, 1, 1), "1-000000001", "Name 1", "AB1 2CD", "Independent", "Y", 10),
         (date(2024, 1, 1), "1-000000002", "Name 2", "EF3 4GH", "Independent", "N", None),
@@ -293,40 +298,45 @@ class MergeCoverageData:
         (date(2024, 3, 1), "1-000000001", "Name 1", "AB1 2CD", "Independent", "Y", 10),
         (date(2024, 3, 1), "1-000000002", "Name 2", "EF3 4GH", "Independent", "N", None),
         (date(2024, 3, 1), "1-000000003", "Name 3", "IJ5 6KL", "Independent", "N", None),
-    ]
-    # fmt: on
+    ] # fmt: skip
 
     clean_ascwds_workplace_for_merge_rows = [
-        (date(2024, 1, 1), "1-000000001", date(2024, 1, 1), "1", 1),
-        (date(2024, 1, 1), "1-000000003", date(2024, 1, 1), "3", 2),
-        (date(2024, 1, 5), "1-000000001", date(2024, 1, 1), "1", 3),
-        (date(2024, 1, 9), "1-000000001", date(2024, 1, 1), "1", 4),
-        (date(2024, 1, 9), "1-000000003", date(2024, 1, 1), "3", 5),
-        (date(2024, 3, 1), "1-000000003", date(2024, 1, 1), "4", 6),
-    ]
+        (date(2024, 1, 1), "1-000000001", date(2024, 1, 1), "1", 1, date(2024, 1, 1), date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-000000003", date(2024, 1, 1), "3", 2, date(2024, 1, 1), date(2024, 1, 1)),
+        (date(2024, 1, 5), "1-000000001", date(2024, 1, 1), "1", 3, date(2024, 1, 1), date(2024, 1, 1)),
+        (date(2024, 1, 9), "1-000000001", date(2024, 1, 1), "1", 4, date(2024, 1, 1), date(2024, 1, 1)),
+        (date(2024, 1, 9), "1-000000003", date(2024, 1, 1), "3", 5, date(2024, 1, 1), date(2024, 1, 1)),
+        (date(2024, 3, 1), "1-000000003", date(2024, 1, 1), "4", 6, date(2024, 1, 1), date(2024, 1, 1)),
+    ]# fmt: skip
 
-    # fmt: off
     expected_cqc_and_ascwds_merged_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Name 1", "AB1 2CD", "Independent", "Y", 10, date(2024, 1, 1), "1", 1),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Name 2", "EF3 4GH", "Independent", "N", None, None, None, None),
-        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Name 3", "IJ5 6KL", "Independent", "N", None, date(2024, 1, 1), "3", 2),
-        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Name 1", "AB1 2CD", "Independent", "Y", 10, date(2024, 1, 1), "1", 4),
-        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Name 2", "EF3 4GH", "Independent", "N", None, None, None, None),
-        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Name 3", "IJ5 6KL", "Independent", "N", None, date(2024, 1, 1), "3", 5),
-        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Name 1", "AB1 2CD", "Independent", "Y", 10, None, None, None),
-        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Name 2", "EF3 4GH", "Independent", "N", None, None, None, None),
-        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Name 3", "IJ5 6KL", "Independent", "N", None, date(2024, 1, 1), "4", 6),
-    ]
-    # fmt: on
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Name 1", "AB1 2CD", "Independent", "Y", 10, date(2024, 1, 1), "1", 1, date(2024, 1, 1), date(2024, 1, 1)),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Name 2", "EF3 4GH", "Independent", "N", None, None, None, None, None, None),
+        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Name 3", "IJ5 6KL", "Independent", "N", None, date(2024, 1, 1), "3", 2, date(2024, 1, 1), date(2024, 1, 1)),
+        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Name 1", "AB1 2CD", "Independent", "Y", 10, date(2024, 1, 1), "1", 4, date(2024, 1, 1), date(2024, 1, 1)),
+        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Name 2", "EF3 4GH", "Independent", "N", None, None, None, None, None, None),
+        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Name 3", "IJ5 6KL", "Independent", "N", None, date(2024, 1, 1), "3", 5, date(2024, 1, 1), date(2024, 1, 1)),
+        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Name 1", "AB1 2CD", "Independent", "Y", 10, None, None, None, None, None),
+        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Name 2", "EF3 4GH", "Independent", "N", None, None, None, None, None, None),
+        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Name 3", "IJ5 6KL", "Independent", "N", None, date(2024, 1, 1), "4", 6, date(2024, 1, 1), date(2024, 1, 1)),
+    ] # fmt: skip
 
     sample_in_ascwds_rows = [
-        (None,),
-        ("1",),
+        ("1", False),
+        ("2", True),
+        ("3", None),
+        (None, True),
+        (None, False),
+        (None, None),
     ]
 
     expected_in_ascwds_rows = [
-        (None, 0),
-        ("1", 1),
+        ("1", False, 1),
+        ("2", True, 0),
+        ("3", None, 0),
+        (None, True, 0),
+        (None, False, 0),
+        (None, None, 0),
     ]
 
     sample_cqc_locations_rows = [("1-000000001",), ("1-000000002",)]

@@ -13,5 +13,6 @@ class AscwdsWorkplaceCleanedColumns(AWP):
     workplace_last_active_date: str = "workplace_last_active_date"
     master_update_date_org: str = "master_update_date_org"
     purge_date: str = "purge_date"
+    removed_by_purge_date_filter: str = "removed_by_purge_date_filter"
     total_staff_bounded: str = AWP.total_staff + "_bounded"
     worker_records_bounded: str = AWP.worker_records + "_bounded"
