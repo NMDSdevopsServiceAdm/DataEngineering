@@ -112,18 +112,23 @@ jobs:
             python scripts/select_bake_targets.py > /tmp/bake/targets
             echo "Targets to build: $(cat /tmp/bake/targets)"
       - run:
-          name: Decide whether to seed the raw bucket
+          name: Decide whether to seed the raw bucket, per domain
           command: |
             mkdir -p /tmp/bake
-            python scripts/select_raw_bucket_seed.py > /tmp/bake/seed-raw-bucket
-            echo "Seed raw bucket: $(cat /tmp/bake/seed-raw-bucket)"
+            for domain in ascwds capacity_tracker cqc_pir ons_pd; do
+              python scripts/select_raw_bucket_seed.py --domain "$domain" > "/tmp/bake/seed-$domain"
+              echo "Seed $domain: $(cat /tmp/bake/seed-$domain)"
+            done
       - persist_to_workspace:
           # Namespaced, because later jobs attach this same workspace at the
           # repo root and a bare "targets" file there reads as repo content.
           root: /tmp
           paths:
             - bake/targets
-            - bake/seed-raw-bucket
+            - bake/seed-ascwds
+            - bake/seed-capacity_tracker
+            - bake/seed-cqc_pir
+            - bake/seed-ons_pd
 
   task-containerisation:
     parameters:
@@ -465,26 +470,47 @@ jobs:
           command: |
             aws s3 sync "s3://sfc-main-pipeline-resources/models/" "s3://$BRANCH_RESOURCES_BUCKET/models/"
       - run:
-          name: Seed non-prod raw bucket from sample bucket
+          name: Seed non-prod raw bucket from sample bucket, per domain
           command: |
-            # Defaults to seeding when the flag file is missing/unreadable --
-            # same defensive direction as decide-bake-and-seed's own missing-file
-            # fallback (build everything rather than silently building
-            # nothing): here, seed anyway rather than silently never testing
-            # a real ingest change.
-            if [ "$(cat bake/seed-raw-bucket 2>/dev/null)" = "false" ]; then
-              echo "No ingest-related changes detected. Skipping raw bucket seed."
+            # Wiped before resync since aws s3 sync no-ops on unchanged
+            # content, which would skip re-firing that domain's S3 event.
+            # `|| failures=1` keeps one domain's failure from skipping the
+            # rest, while still failing the step overall.
+            failures=0
+
+            if [ "$(cat bake/seed-ascwds 2>/dev/null)" = "false" ]; then
+              echo "No ASCWDS ingest-related changes detected. Skipping seed."
             else
               # ASCWDS writes with Spark's error-if-exists mode to a fixed sentinel
               # path, so a redeploy's rerun collides with the previous output.
-              aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/version=0.0.0/" --recursive
-              aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/version=0.0.0/" --recursive
-              # sync skips unchanged files, so it'd never re-fire the ingest
-              # trigger on a redeploy without this. Safe to wipe -- nothing
-              # else writes to this bucket.
-              aws s3 rm "s3://$BRANCH_RAW_BUCKET/" --recursive
-              aws s3 sync "s3://sfc-main-sample-raw-data/" "s3://$BRANCH_RAW_BUCKET/" --delete
+              aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/version=0.0.0/" --recursive && \
+                aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/version=0.0.0/" --recursive && \
+                aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=ASCWDS/" "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" || failures=1
             fi
+
+            if [ "$(cat bake/seed-capacity_tracker 2>/dev/null)" = "false" ]; then
+              echo "No Capacity Tracker ingest-related changes detected. Skipping seed."
+            else
+              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=capacity_tracker/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=capacity_tracker/" "s3://$BRANCH_RAW_BUCKET/domain=capacity_tracker/" || failures=1
+            fi
+
+            if [ "$(cat bake/seed-cqc_pir 2>/dev/null)" = "false" ]; then
+              echo "No CQC PIR ingest-related changes detected. Skipping seed."
+            else
+              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=CQC/dataset=pir/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=CQC/dataset=pir/" "s3://$BRANCH_RAW_BUCKET/domain=CQC/dataset=pir/" || failures=1
+            fi
+
+            if [ "$(cat bake/seed-ons_pd 2>/dev/null)" = "false" ]; then
+              echo "No ONS PD ingest-related changes detected. Skipping seed."
+            else
+              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ONS/dataset=postcode_directory/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=ONS/dataset=postcode_directory/" "s3://$BRANCH_RAW_BUCKET/domain=ONS/dataset=postcode_directory/" || failures=1
+            fi
+
+            exit $failures
 
   terraform-destroy:
     working_directory: /tmp/project

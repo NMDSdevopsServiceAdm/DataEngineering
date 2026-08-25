@@ -20,11 +20,17 @@ All notable changes to this project will be documented in this file.
 
 - Added a git union merge driver for `CHANGELOG.md` so concurrent branches appending changelog entries no longer conflict on merge.
 
+- Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the standalone job role step function (`Ind-CQC-Filled-Post-Estimates-By-Role`) after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet), deliberately kept out of the main pipeline until partitioning is in place, ahead of a future rework of the job-role dataset shape.
+
 ### Changed
+- Split the non-prod raw bucket's seed-gating decision from one bucket-wide flag into one per ingest domain (ASCWDS, Capacity Tracker, CQC PIR, ONS PD), so a push touching only one domain's ingest code reseeds and re-triggers only that domain's Step Function instead of all five.
+- Consolidated the `ascwds` Fargate task onto the generic `_01_ingest` image/task (introduced for CQC PIR), removing the `ascwds`-specific ECR repo, Dockerfile, and `docker-bake` target.
 - Migrated the CQC PIR ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on a new shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Reads the raw CSV with `utf8-lossy` encoding, since supplier PIR files are frequently not valid UTF-8.
 - Replaced `docker login` with the AWS ECR credential helper (checksum-verified before use) in the `task-containerisation` CircleCI job, so the ECR auth token is no longer written to the job container's disk unencrypted.
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
 - Re-enabled the rolling-average imputation calls in the Polars impute job (disabled since an earlier OOM investigation traced the real cause elsewhere), and added the corresponding `posts_rolling_average_model` range validation to match the PySpark job.
+
+- Limited how long the ASC-WDS job role rolling ratio carries a workplace's known job role split: up to 2 years past their last submission (extrapolation), with gaps of up to 5 years filled in between (interpolation), instead of repeating it forever. Each workplace also now counts once towards the ratio regardless of size. Job role estimates for workplaces with submitted data are unaffected.
 
 - Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
 
@@ -41,9 +47,12 @@ All notable changes to this project will be documented in this file.
 
 - Fixed the ascwds_job_role_ratios_merged validation check to cover all three coalesce source branches, instead of relying on incidental equality for one of them.
 
+- Fixed the ascwds_for_sfc_internal validation job failing schema match after `workplace_last_active_date` and `purge_date` were added to its output columns without updating the expected schema.
+
 - Removed pycache files accidentally committed to the repo, and added `__pycache__/` to `.gitignore` to stop it happening again.
 
 - Narrowed the non-prod raw bucket seed gate to the specific files that actually read, write, or validate raw data, instead of whole ingest project directories, so unrelated changes elsewhere in an ingest domain (tests, downstream clean jobs) no longer trigger an unnecessary reseed. Also fixed a redeploy failure where the ASCWDS ingest job's fixed sample-data output partition collided with its own previous run's output, by clearing that partition before each reseed.
+- Fixed the job role estimates pipeline crashing in prod with a `FileNotFoundError`: the merge, validation, and archive steps hardcoded a non-prod-only comparison dataset name for the estimated filled posts source, which CI only ever populates on branches other than `main`. The dataset name is now workspace-aware, matching the pattern already used for the sibling job-role datasets.
 
 ## [v2026.07.0] - 17/08/2026
 
