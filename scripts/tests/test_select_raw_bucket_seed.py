@@ -18,7 +18,7 @@ UNRELATED_PATHS = [
 domain_trigger_cases = [
     pytest.param(
         "ascwds",
-        "projects/_01_ingest/ascwds/jobs/ingest_ascwds_worker.py",
+        "projects/_01_ingest/ascwds/fargate/ingest_ascwds_worker.py",
         id="returns_true_when_ascwds_dir_changed",
     ),
     pytest.param(
@@ -28,12 +28,12 @@ domain_trigger_cases = [
     ),
     pytest.param(
         "cqc_pir",
-        "projects/_01_ingest/cqc_pir/jobs/ingest_cqc_pir.py",
+        "projects/_01_ingest/cqc_pir/fargate/ingest_cqc_pir.py",
         id="returns_true_when_cqc_pir_dir_changed",
     ),
     pytest.param(
         "ons_pd",
-        "projects/_01_ingest/ons_pd/jobs/ingest_ons_pd.py",
+        "projects/_01_ingest/ons_pd/fargate/ingest_ons_pd.py",
         id="returns_true_when_ons_pd_dir_changed",
     ),
 ]
