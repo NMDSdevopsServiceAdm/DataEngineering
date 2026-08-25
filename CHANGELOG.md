@@ -45,6 +45,8 @@ All notable changes to this project will be documented in this file.
 
 - Fixed the ascwds_job_role_ratios_merged validation check to cover all three coalesce source branches, instead of relying on incidental equality for one of them.
 
+- Fixed the ascwds_for_sfc_internal validation job failing schema match after `workplace_last_active_date` and `purge_date` were added to its output columns without updating the expected schema.
+
 - Removed pycache files accidentally committed to the repo, and added `__pycache__/` to `.gitignore` to stop it happening again.
 
 ## [v2026.07.0] - 17/08/2026
