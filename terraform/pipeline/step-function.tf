@@ -112,8 +112,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     ingest_ascwds_job_name                            = module.ingest_ascwds_dataset_job.job_name
     ingest_cqc_pir_job_name                           = module.ingest_cqc_pir_data_job.job_name
     validate_pir_raw_data_job_name                    = module.validate_pir_raw_data_job.job_name
-    clean_cqc_pir_data_job_name                       = module.clean_cqc_pir_data_job.job_name
-    validate_pir_cleaned_data_job_name                = module.validate_pir_cleaned_data_job.job_name
     ingest_ct_care_home_job_name                      = module.ingest_capacity_tracker_data_job.job_name
     clean_ct_care_home_data_job_name                  = module.clean_capacity_tracker_care_home_job.job_name
     validate_ct_care_home_cleaned_data_job_name       = module.validate_cleaned_capacity_tracker_care_home_data_job.job_name
