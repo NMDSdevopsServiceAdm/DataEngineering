@@ -106,11 +106,10 @@ def main(
         #     ),
         # )
         # numerical
-        .col_vals_gt(
+        .col_vals_ge(
             columns=IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
             value=0,
-            na_pass=True,
-            brief="estimate_filled_posts_by_job_role_historically_reallocated should be > 0 where present",
+            brief="estimate_filled_posts_by_job_role_historically_reallocated should be >= 0 where present",
         )
         # categorical
         # .col_vals_in_set(
