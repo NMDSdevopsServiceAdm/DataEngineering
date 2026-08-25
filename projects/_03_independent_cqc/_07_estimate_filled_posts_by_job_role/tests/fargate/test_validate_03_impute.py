@@ -32,11 +32,12 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.imputed_ascwds_job_role_ratios: pl.Float32,
             IndCqcColumns.imputed_ascwds_job_role_counts: pl.Float32,
             IndCqcColumns.estimate_filled_posts_size_group: pl.String,
+            IndCqcColumns.imputed_job_role_ratios_for_trendline: pl.Float32,
             IndCqcColumns.ascwds_job_role_rolling_ratio: pl.Float32,
         }
         source_rows = [
-            (1, 1, "1-001", date(2026, 1, 1), "care_worker", "non-residential", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5),
-            (2, 1, "1-002", date(2026, 1, 1), "care_worker", "non-residential", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5),
+            (1, 1, "1-001", date(2026, 1, 1), "care_worker", "non-residential", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5, 0.5),
+            (2, 1, "1-002", date(2026, 1, 1), "care_worker", "non-residential", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5, 0.5),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
