@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Removed the archived PySpark CQC bulk-download scripts (`archived_bulk_download_cqc_locations.py`, `archived_bulk_download_cqc_providers.py`), superseded by the active Polars/Fargate CQC ingest jobs, along with the orphaned `PROVIDER_SCHEMA` (`schemas/cqc_provider_schema.py`) that only the providers script used.
+- Split the non-prod raw bucket's seed-gating decision from one bucket-wide flag into one per ingest domain (ASCWDS, Capacity Tracker, CQC PIR, ONS PD), so a push touching only one domain's ingest code reseeds and re-triggers only that domain's Step Function instead of all five.
 - Consolidated the `ascwds` Fargate task onto the generic `_01_ingest` image/task (introduced for CQC PIR), removing the `ascwds`-specific ECR repo, Dockerfile, and `docker-bake` target.
 - Migrated the CQC PIR ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on a new shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Reads the raw CSV with `utf8-lossy` encoding, since supplier PIR files are frequently not valid UTF-8.
 - Replaced `docker login` with the AWS ECR credential helper (checksum-verified before use) in the `task-containerisation` CircleCI job, so the ECR auth token is no longer written to the job container's disk unencrypted.
