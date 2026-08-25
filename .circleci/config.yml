@@ -472,15 +472,10 @@ jobs:
       - run:
           name: Seed non-prod raw bucket from sample bucket, per domain
           command: |
-            # Missing flag file seeds anyway, matching decide-bake-and-seed's
-            # own missing-file fallback direction. Each domain is wiped
-            # before resync since aws s3 sync no-ops on unchanged content,
-            # which would otherwise skip re-firing that domain's S3 event.
-            #
-            # Each rm+sync pair is `|| failures=1` rather than left to the
-            # step's default set -e: a mid-sync failure must not also skip
-            # the remaining domains' seeds, since their flags are independent.
-            # The step still exits non-zero overall so CI shows the failure.
+            # Wiped before resync since aws s3 sync no-ops on unchanged
+            # content, which would skip re-firing that domain's S3 event.
+            # `|| failures=1` keeps one domain's failure from skipping the
+            # rest, while still failing the step overall.
             failures=0
 
             if [ "$(cat bake/seed-ascwds 2>/dev/null)" = "false" ]; then
