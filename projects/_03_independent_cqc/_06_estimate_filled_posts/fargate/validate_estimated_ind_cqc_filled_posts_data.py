@@ -29,9 +29,12 @@ EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.current_cssr: str(CatColType.OnsCssrCatType),
         IndCqcColumns.current_region: str(CatColType.OnsRegionCatType),
-        IndCqcColumns.ascwds_filled_posts_source: str(
-            CatColType.AscwdsFilledPostsSourceEnumType
-        ),
+        # Stays String, not the Enum cast in clean_ind_cqc_filled_posts.py: this
+        # job's input is currently wired to the PySpark impute output (Spark
+        # writes categoricals back out as plain strings), not the Polars one -
+        # see terraform/pipeline/step-functions/dynamic/Ind-CQC-Filled-Post-Estimates.json.
+        # Revisit once the Polars estimates pipeline is signed off and rewired.
+        IndCqcColumns.ascwds_filled_posts_source: "String",
         IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
         IndCqcColumns.ascwds_pir_merged: "Float32",
         IndCqcColumns.estimate_filled_posts: "Float32",
