@@ -4,6 +4,17 @@ import scripts.select_raw_bucket_seed as job
 
 ALL_DOMAINS = list(job.DOMAIN_TRIGGER_PATHS)
 
+# Includes paths that were trigger paths before this ticket's trigger list was
+# trimmed, so a re-add wouldn't silently pass unnoticed.
+UNRELATED_PATHS = [
+    "README.md",
+    "projects/_07_workforce_characteristics/foo.py",
+    "terraform/pipeline/iam.tf",
+    "terraform/pipeline/s3.tf",
+    "terraform/modules/fargate-task/iam.tf",
+    ".circleci/config.yml",
+]
+
 domain_trigger_cases = [
     pytest.param(
         "ascwds",
@@ -65,6 +76,10 @@ class TestShouldSeedDomain:
     @pytest.mark.parametrize("domain", ALL_DOMAINS)
     def test_returns_false_for_empty_changed_paths(self, domain):
         assert job.should_seed_domain(domain, []) is False
+
+    @pytest.mark.parametrize("domain", ALL_DOMAINS)
+    def test_returns_false_when_only_unrelated_paths_changed(self, domain):
+        assert job.should_seed_domain(domain, UNRELATED_PATHS) is False
 
 
 class TestMain:

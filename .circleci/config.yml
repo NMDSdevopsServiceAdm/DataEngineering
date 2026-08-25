@@ -476,33 +476,42 @@ jobs:
             # own missing-file fallback direction. Each domain is wiped
             # before resync since aws s3 sync no-ops on unchanged content,
             # which would otherwise skip re-firing that domain's S3 event.
+            #
+            # Each rm+sync pair is `|| failures=1` rather than left to the
+            # step's default set -e: a mid-sync failure must not also skip
+            # the remaining domains' seeds, since their flags are independent.
+            # The step still exits non-zero overall so CI shows the failure.
+            failures=0
+
             if [ "$(cat bake/seed-ascwds 2>/dev/null)" = "false" ]; then
               echo "No ASCWDS ingest-related changes detected. Skipping seed."
             else
-              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" --recursive
-              aws s3 sync "s3://sfc-main-sample-raw-data/domain=ASCWDS/" "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/"
+              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=ASCWDS/" "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" || failures=1
             fi
 
             if [ "$(cat bake/seed-capacity_tracker 2>/dev/null)" = "false" ]; then
               echo "No Capacity Tracker ingest-related changes detected. Skipping seed."
             else
-              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=capacity_tracker/" --recursive
-              aws s3 sync "s3://sfc-main-sample-raw-data/domain=capacity_tracker/" "s3://$BRANCH_RAW_BUCKET/domain=capacity_tracker/"
+              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=capacity_tracker/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=capacity_tracker/" "s3://$BRANCH_RAW_BUCKET/domain=capacity_tracker/" || failures=1
             fi
 
             if [ "$(cat bake/seed-cqc_pir 2>/dev/null)" = "false" ]; then
               echo "No CQC PIR ingest-related changes detected. Skipping seed."
             else
-              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=CQC/dataset=pir/" --recursive
-              aws s3 sync "s3://sfc-main-sample-raw-data/domain=CQC/dataset=pir/" "s3://$BRANCH_RAW_BUCKET/domain=CQC/dataset=pir/"
+              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=CQC/dataset=pir/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=CQC/dataset=pir/" "s3://$BRANCH_RAW_BUCKET/domain=CQC/dataset=pir/" || failures=1
             fi
 
             if [ "$(cat bake/seed-ons_pd 2>/dev/null)" = "false" ]; then
               echo "No ONS PD ingest-related changes detected. Skipping seed."
             else
-              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ONS/dataset=postcode_directory/" --recursive
-              aws s3 sync "s3://sfc-main-sample-raw-data/domain=ONS/dataset=postcode_directory/" "s3://$BRANCH_RAW_BUCKET/domain=ONS/dataset=postcode_directory/"
+              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ONS/dataset=postcode_directory/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=ONS/dataset=postcode_directory/" "s3://$BRANCH_RAW_BUCKET/domain=ONS/dataset=postcode_directory/" || failures=1
             fi
+
+            exit $failures
 
   terraform-destroy:
     working_directory: /tmp/project
