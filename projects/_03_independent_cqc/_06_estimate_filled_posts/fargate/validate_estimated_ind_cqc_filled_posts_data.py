@@ -25,15 +25,19 @@ imputed_ind_cqc_cols_to_import = [
 # Only the columns narrowed to Categorical/Enum/Float32 as part of ticket 1920 -
 # not an exhaustive schema for the dataset, so col_schema_match runs with
 # complete=False, in_order=False below.
+#
+# current_cssr, current_region, and ascwds_filled_posts_source are already
+# Categorical/Enum upstream (cqc_locations_4_full_clean.py / clean_ind_cqc_filled_posts.py)
+# but stay String here: this job's input is currently wired to the PySpark
+# impute output, not the parallel Polars one - Spark's parquet writer has no
+# Categorical/Enum concept and flattens them back to plain strings on the way
+# through. See terraform/pipeline/step-functions/dynamic/Ind-CQC-Filled-Post-Estimates.json
+# and the project_polars_estimate_reads_pyspark_impute memory. Revisit once the
+# Polars estimates pipeline is signed off and rewired.
 EXPECTED_SCHEMA = pb.Schema(
     columns={
-        IndCqcColumns.current_cssr: str(CatColType.OnsCssrCatType),
-        IndCqcColumns.current_region: str(CatColType.OnsRegionCatType),
-        # Stays String, not the Enum cast in clean_ind_cqc_filled_posts.py: this
-        # job's input is currently wired to the PySpark impute output (Spark
-        # writes categoricals back out as plain strings), not the Polars one -
-        # see terraform/pipeline/step-functions/dynamic/Ind-CQC-Filled-Post-Estimates.json.
-        # Revisit once the Polars estimates pipeline is signed off and rewired.
+        IndCqcColumns.current_cssr: "String",
+        IndCqcColumns.current_region: "String",
         IndCqcColumns.ascwds_filled_posts_source: "String",
         IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
         IndCqcColumns.ascwds_pir_merged: "Float32",
