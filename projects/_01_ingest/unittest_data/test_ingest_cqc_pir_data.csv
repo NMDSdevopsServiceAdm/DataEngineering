@@ -1,0 +1,4 @@
+Location_ID,Location_name,PIR_type,PIR_submission_date,How_many_people_are_directly_employed_and_deliver_regulated_activities_at_your_service_as_part_of_their_daily_duties,How_many_staff_have_left_your_service_in_the_past_12_months,How_many_staff_vacancies_do_you_have,How_many_Shared_Lives_workers_have_left_your_service_in_the_past_12_months,How_many_Shared_Lives_worker_vacancies_do_you_have,Location_primary_inspection_category,Location_region,Location_local_authority,Location_beds,Service_type_Domiciliary_care_service,Location_status
+1-1000000001,Location A,Residential,01-Jan-26,10,1,2,,,Residential social care,South East,Kent,5,No,Active
+1-1000000002,Location B,Community,15-Jan-26,20,3,0,,,Community based adult social care services,East Midlands,Derby,0,Yes,Active
+1-1000000003,Location C,Shared Lives,30-Jan-26,30,,,4,0,Community based adult social care services,West Midlands,Stoke-on-Trent,0,No,Active

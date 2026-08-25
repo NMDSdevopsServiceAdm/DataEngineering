@@ -796,6 +796,9 @@ class MainServiceID(ColumnValues):
     )
     nurses_agency: str = "Nurses Agency"
     any_childrens_young_peoples_service: str = "Any childrens/young peoples service"
+    any_other_part_of_nhs_hospital_community_health_services: str = (
+        "Any other part of NHS Hospital & Community Health Services"
+    )
 
 
 @dataclass

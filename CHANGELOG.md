@@ -21,8 +21,10 @@ All notable changes to this project will be documented in this file.
 - Added a git union merge driver for `CHANGELOG.md` so concurrent branches appending changelog entries no longer conflict on merge.
 
 - Added a new `_10_publication` stage to the independent CQC pipeline, with placeholder `_01_merge`, `_02_clean` Polars scripts, their tests and validation scripts and a standalone Step Function to run them, ready for the real publication logic to land into.
+- Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the standalone job role step function (`Ind-CQC-Filled-Post-Estimates-By-Role`) after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet), deliberately kept out of the main pipeline until partitioning is in place, ahead of a future rework of the job-role dataset shape.
 
 ### Changed
+- Migrated the CQC PIR ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on a new shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Reads the raw CSV with `utf8-lossy` encoding, since supplier PIR files are frequently not valid UTF-8.
 - Replaced `docker login` with the AWS ECR credential helper (checksum-verified before use) in the `task-containerisation` CircleCI job, so the ECR auth token is no longer written to the job container's disk unencrypted.
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
 - Re-enabled the rolling-average imputation calls in the Polars impute job (disabled since an earlier OOM investigation traced the real cause elsewhere), and added the corresponding `posts_rolling_average_model` range validation to match the PySpark job.
@@ -39,7 +41,10 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed Step Functions executions not actually stopping their underlying ECS task on manual stop, due to a missing IAM permission, and added a safety net to force-stop orphaned ECS tasks and Glue crawlers before a branch's infrastructure is destroyed in CI.
 - Fixed the CQC API integration tests failing the whole CI pipeline during a CQC API outage: the tests now skip instead of fail on a recognised outage signature, and were split into their own non-blocking CircleCI job.
+
 - Fixed the ascwds_job_role_ratios_merged validation check to cover all three coalesce source branches, instead of relying on incidental equality for one of them.
+
+- Removed pycache files accidentally committed to the repo, and added `__pycache__/` to `.gitignore` to stop it happening again.
 
 ## [v2026.07.0] - 17/08/2026
 

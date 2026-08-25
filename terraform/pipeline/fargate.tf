@@ -40,6 +40,18 @@ module "ascwds" {
   ]
 }
 
+module "_01_ingest" {
+  source         = "../modules/fargate-task"
+  task_name      = "_01_ingest"
+  ecr_repo_name  = "fargate/01_ingest"
+  cluster_arn    = aws_ecs_cluster.polars_cluster.arn
+  tag_name       = terraform.workspace
+  raw_bucket_arn = "arn:aws:s3:::${local.raw_bucket_name}"
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" },
+  ]
+}
+
 module "_02_sfc_internal" {
   source        = "../modules/fargate-task"
   task_name     = "_02_sfc_internal"
