@@ -82,7 +82,7 @@ def main(
         ctUtils.bound_columns(COLUMNS_TO_BOUND, upper_limit=MAX_BOUND_DIRECTLY_EMPLOYED)
     )
 
-    care_home_lf = add_total_employed_columns(care_home_lf)
+    care_home_lf = ctUtils.add_total_employed_columns(care_home_lf)
 
     # Cast to Categorical/Enum here so it's saved in the output parquet file.
     care_home_lf = care_home_lf.with_columns(
@@ -90,37 +90,6 @@ def main(
     )
 
     utils.sink_to_parquet(care_home_lf, cleaned_capacity_tracker_care_home_destination)
-
-
-def add_total_employed_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Add columns totalling agency staff, non-agency staff, and combined staff employed.
-
-    Args:
-        lf (pl.LazyFrame): A LazyFrame with capacity tracker care home data.
-
-    Returns:
-        pl.LazyFrame: The input LazyFrame with three additional total columns.
-    """
-    lf = lf.with_columns(
-        (
-            pl.col(CTCH.nurses_employed)
-            + pl.col(CTCH.care_workers_employed)
-            + pl.col(CTCH.non_care_workers_employed)
-        ).alias(CTCHClean.non_agency_total_employed),
-        (
-            pl.col(CTCH.agency_nurses_employed)
-            + pl.col(CTCH.agency_care_workers_employed)
-            + pl.col(CTCH.agency_non_care_workers_employed)
-        ).alias(CTCHClean.agency_total_employed),
-    )
-    lf = lf.with_columns(
-        (
-            pl.col(CTCHClean.agency_total_employed)
-            + pl.col(CTCHClean.non_agency_total_employed)
-        ).alias(CTCHClean.ct_care_home_total_employed)
-    )
-    return lf
 
 
 if __name__ == "__main__":

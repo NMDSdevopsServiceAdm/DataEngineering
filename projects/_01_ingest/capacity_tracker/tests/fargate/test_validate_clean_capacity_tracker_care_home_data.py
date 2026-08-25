@@ -4,41 +4,15 @@ from unittest.mock import ANY, Mock, call, patch
 import polars as pl
 
 import projects._01_ingest.capacity_tracker.fargate.validate_clean_capacity_tracker_care_home_data as job
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeCleanColumns as CTCHClean,
-)
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeColumns as CTCH,
+from projects._01_ingest.capacity_tracker.unittest_data.capacity_tracker_test_file_data import (
+    VALIDATE_CARE_HOME_CLEANED_DATA,
+    VALIDATE_CARE_HOME_RAW_DATA,
 )
 
 PATCH_PATH = "projects._01_ingest.capacity_tracker.fargate.validate_clean_capacity_tracker_care_home_data"
 
-RAW_DF = pl.DataFrame(
-    {
-        CTCH.nurses_employed: [1, 2],
-        CTCH.agency_nurses_employed: [1, 9],  # row 0 matches -> excluded from expected
-        CTCH.care_workers_employed: [1, 1],
-        CTCH.agency_care_workers_employed: [1, 1],
-        CTCH.non_care_workers_employed: [1, 1],
-        CTCH.agency_non_care_workers_employed: [1, 1],
-    }
-)
-
-CLEANED_DF = pl.DataFrame(
-    {
-        CTCHClean.cqc_id: ["1-001"],
-        CTCHClean.ct_care_home_import_date: ["20240101"],
-        CTCHClean.nurses_employed: [2],
-        CTCHClean.care_workers_employed: [1],
-        CTCHClean.non_care_workers_employed: [1],
-        CTCHClean.agency_nurses_employed: [9],
-        CTCHClean.agency_care_workers_employed: [1],
-        CTCHClean.agency_non_care_workers_employed: [1],
-        CTCHClean.non_agency_total_employed: [4],
-        CTCHClean.agency_total_employed: [11],
-        CTCHClean.ct_care_home_total_employed: [15],
-    }
-)
+RAW_DF = pl.DataFrame(VALIDATE_CARE_HOME_RAW_DATA)
+CLEANED_DF = pl.DataFrame(VALIDATE_CARE_HOME_CLEANED_DATA)
 
 
 class TestMain:

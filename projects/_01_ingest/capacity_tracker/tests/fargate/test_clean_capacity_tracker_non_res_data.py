@@ -3,6 +3,10 @@ from unittest.mock import Mock, patch
 import polars as pl
 
 import projects._01_ingest.capacity_tracker.fargate.clean_capacity_tracker_non_res_data as job
+from projects._01_ingest.capacity_tracker.unittest_data.capacity_tracker_test_file_data import (
+    CLEAN_NON_RES_MAIN_INPUT_DATA,
+    CLEAN_NON_RES_OUT_OF_RANGE_INPUT_DATA,
+)
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
@@ -21,14 +25,7 @@ class TestMain:
     def test_main_cleans_and_sinks_non_res_data(
         self, scan_parquet_mock: Mock, sink_to_parquet_mock: Mock
     ):
-        scan_parquet_mock.return_value = pl.LazyFrame(
-            {
-                CTNR.cqc_id: ["1-001"],
-                CTNR.cqc_care_workers_employed: ["5"],
-                CTNR.service_user_count: ["10"],
-                "import_date": ["20240101"],
-            }
-        )
+        scan_parquet_mock.return_value = pl.LazyFrame(CLEAN_NON_RES_MAIN_INPUT_DATA)
 
         job.main("source", "destination")
 
@@ -47,12 +44,7 @@ class TestMain:
         self, scan_parquet_mock: Mock, sink_to_parquet_mock: Mock
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
-            {
-                CTNR.cqc_id: ["1-001"],
-                CTNR.cqc_care_workers_employed: ["0"],
-                CTNR.service_user_count: ["3001"],
-                "import_date": ["20240101"],
-            }
+            CLEAN_NON_RES_OUT_OF_RANGE_INPUT_DATA
         )
 
         job.main("source", "destination")

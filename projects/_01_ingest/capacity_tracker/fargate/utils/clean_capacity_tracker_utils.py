@@ -1,6 +1,9 @@
 import polars as pl
 
 from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
+)
+from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
 )
 
@@ -53,3 +56,34 @@ def bound_columns(
         within_bounds &= pl.col(columns) <= upper_limit
 
     return pl.when(within_bounds).then(pl.col(columns)).otherwise(None).name.keep()
+
+
+def add_total_employed_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Add columns totalling agency staff, non-agency staff, and combined staff employed.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with capacity tracker care home data.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with three additional total columns.
+    """
+    lf = lf.with_columns(
+        (
+            pl.col(CTCH.nurses_employed)
+            + pl.col(CTCH.care_workers_employed)
+            + pl.col(CTCH.non_care_workers_employed)
+        ).alias(CTCHClean.non_agency_total_employed),
+        (
+            pl.col(CTCH.agency_nurses_employed)
+            + pl.col(CTCH.agency_care_workers_employed)
+            + pl.col(CTCH.agency_non_care_workers_employed)
+        ).alias(CTCHClean.agency_total_employed),
+    )
+    lf = lf.with_columns(
+        (
+            pl.col(CTCHClean.agency_total_employed)
+            + pl.col(CTCHClean.non_agency_total_employed)
+        ).alias(CTCHClean.ct_care_home_total_employed)
+    )
+    return lf

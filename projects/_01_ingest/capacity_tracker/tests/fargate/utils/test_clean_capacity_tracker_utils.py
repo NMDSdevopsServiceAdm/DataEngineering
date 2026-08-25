@@ -1,34 +1,20 @@
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import projects._01_ingest.capacity_tracker.fargate.utils.clean_capacity_tracker_utils as job
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeColumns as CTCH,
+from projects._01_ingest.capacity_tracker.unittest_data.capacity_tracker_test_file_data import (
+    ADD_TOTAL_EMPLOYED_COLUMNS_TEST_CASES,
+    AGENCY_AND_NON_AGENCY_DIFFER_EXPECTED_DATA,
+    AGENCY_AND_NON_AGENCY_DIFFER_INPUT_DATA,
+    BOUND_COLUMNS_TEST_CASES,
 )
 
 
 class TestAgencyAndNonAgencyValuesDifferFilter:
     def test_removes_rows_where_all_three_pairs_match(self):
-        test_lf = pl.LazyFrame(
-            {
-                CTCH.nurses_employed: [1, 1, 1],
-                CTCH.agency_nurses_employed: [1, 1, 2],
-                CTCH.care_workers_employed: [2, 2, 2],
-                CTCH.agency_care_workers_employed: [2, 2, 2],
-                CTCH.non_care_workers_employed: [3, 3, 3],
-                CTCH.agency_non_care_workers_employed: [3, 4, 3],
-            }
-        )
-        expected_lf = pl.LazyFrame(
-            {
-                CTCH.nurses_employed: [1, 1],
-                CTCH.agency_nurses_employed: [1, 2],
-                CTCH.care_workers_employed: [2, 2],
-                CTCH.agency_care_workers_employed: [2, 2],
-                CTCH.non_care_workers_employed: [3, 3],
-                CTCH.agency_non_care_workers_employed: [4, 3],
-            }
-        )
+        test_lf = pl.LazyFrame(AGENCY_AND_NON_AGENCY_DIFFER_INPUT_DATA)
+        expected_lf = pl.LazyFrame(AGENCY_AND_NON_AGENCY_DIFFER_EXPECTED_DATA)
 
         returned_lf = test_lf.filter(job.agency_and_non_agency_values_differ_filter())
 
@@ -36,35 +22,34 @@ class TestAgencyAndNonAgencyValuesDifferFilter:
 
 
 class TestBoundColumns:
-    def test_nulls_values_below_lower_limit(self):
-        test_lf = pl.LazyFrame({"a": [0, 1, 2], "b": [1, 0, 1]})
-        expected_lf = pl.LazyFrame({"a": [None, 1, 2], "b": [1, None, 1]})
-
-        returned_lf = test_lf.with_columns(job.bound_columns(["a", "b"], lower_limit=1))
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_nulls_values_above_upper_limit(self):
-        test_lf = pl.LazyFrame({"a": [1, 2, 3]})
-        expected_lf = pl.LazyFrame({"a": [1, 2, None]})
-
-        returned_lf = test_lf.with_columns(job.bound_columns(["a"], upper_limit=2))
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_nulls_values_outside_lower_and_upper_limit(self):
-        test_lf = pl.LazyFrame({"a": [0, 1, 2, 3]})
-        expected_lf = pl.LazyFrame({"a": [None, 1, 2, None]})
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in BOUND_COLUMNS_TEST_CASES]
+    )
+    def test_function_returns_expected_values(self, case):
+        test_lf = pl.LazyFrame(case.data)
+        expected_lf = pl.LazyFrame(case.expected_data)
 
         returned_lf = test_lf.with_columns(
-            job.bound_columns(["a"], lower_limit=1, upper_limit=2)
+            job.bound_columns(
+                list(case.data.keys()),
+                lower_limit=case.lower_limit,
+                upper_limit=case.upper_limit,
+            )
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_returns_unchanged_column_when_no_limits_given(self):
-        test_lf = pl.LazyFrame({"a": [0, 1, None]})
 
-        returned_lf = test_lf.with_columns(job.bound_columns(["a"]))
+class TestAddTotalEmployedColumns:
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in ADD_TOTAL_EMPLOYED_COLUMNS_TEST_CASES]
+    )
+    def test_function_returns_expected_values(self, case):
+        test_lf = pl.LazyFrame(case.data)
+        expected_lf = test_lf.with_columns(
+            [pl.Series(name, values) for name, values in case.expected_totals.items()]
+        )
 
-        pl_testing.assert_frame_equal(returned_lf, test_lf)
+        returned_lf = job.add_total_employed_columns(test_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

@@ -4,22 +4,18 @@ from unittest.mock import ANY, Mock, call, patch
 import polars as pl
 
 import projects._01_ingest.capacity_tracker.fargate.validate_clean_capacity_tracker_non_res_data as job
+from projects._01_ingest.capacity_tracker.unittest_data.capacity_tracker_test_file_data import (
+    VALIDATE_NON_RES_CLEANED_DATA,
+    VALIDATE_NON_RES_RAW_DATA,
+)
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 
 PATCH_PATH = "projects._01_ingest.capacity_tracker.fargate.validate_clean_capacity_tracker_non_res_data"
 
-RAW_DF = pl.DataFrame({CTNRClean.cqc_id: ["1-001", "1-002"]})
-
-CLEANED_DF = pl.DataFrame(
-    {
-        CTNRClean.cqc_id: ["1-001", "1-002"],
-        CTNRClean.ct_non_res_import_date: ["20240101", "20240101"],
-        CTNRClean.cqc_care_workers_employed: [5, 10],
-        CTNRClean.service_user_count: [10, 20],
-    }
-)
+RAW_DF = pl.DataFrame(VALIDATE_NON_RES_RAW_DATA)
+CLEANED_DF = pl.DataFrame(VALIDATE_NON_RES_CLEANED_DATA)
 
 
 class TestMain:
