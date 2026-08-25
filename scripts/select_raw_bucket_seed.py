@@ -2,17 +2,13 @@
 Decide, per ingest domain, whether a push needs to seed that domain's slice of
 the branch's non-prod raw data bucket.
 
-`copy-main-data` syncs `sfc-main-sample-raw-data` into every branch's own raw
-bucket on its first deploy, which fires S3 "Object Created" events and
-triggers the matching ingest Step Function (`terraform/pipeline/eventbridge.tf`)
-for whichever domain's raw prefix changed. Deciding per domain -- rather than
-one bucket-wide flag -- means a push that only touches one domain's ingest
-code doesn't reseed (and re-trigger) the other domains' Step
-Functions/Glue/Fargate runs.
+Deciding per domain -- rather than one bucket-wide flag -- means a push that
+only touches one domain's ingest code doesn't reseed (and re-trigger) the
+other domains' Step Functions.
 
 Trigger paths are a fixed list rather than derived, unlike
-`select_bake_targets`'s Dockerfile-driven approach -- there's no single
-manifest that already enumerates "everything that reads the raw bucket".
+`select_bake_targets`'s Dockerfile-driven approach -- there's no manifest that
+already enumerates "everything that reads the raw bucket".
 """
 
 import argparse
@@ -33,12 +29,8 @@ from scripts.select_bake_targets import (  # noqa: E402
     path_triggers_rebuild,
 )
 
-# Ingest domains that actually read from the raw bucket, keyed by the name
-# passed to --domain. `cqc_api` is a sibling ingest domain that reads from the
-# CQC API directly, not the raw bucket, so it's deliberately excluded.
-#
-# To add a new domain: add it here, plus a `returns_true_when_<name>_dir_changed`
-# case in scripts/tests/test_select_raw_bucket_seed.py's `domain_trigger_cases`.
+# Ingest domains that read from the raw bucket, keyed by the --domain value.
+# `cqc_api` reads the CQC API directly, not the raw bucket, so it's excluded.
 DOMAIN_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
     "ascwds": ("projects/_01_ingest/ascwds",),
     "capacity_tracker": ("projects/_01_ingest/capacity_tracker",),
@@ -46,9 +38,7 @@ DOMAIN_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
     "ons_pd": ("projects/_01_ingest/ons_pd",),
 }
 
-# Trigger paths that aren't specific to one domain -- a change here seeds
-# every domain, since it affects how all of them get routed to their Step
-# Functions.
+# Cross-cutting trigger -- a change here seeds every domain.
 SHARED_TRIGGER_PATHS: tuple[str, ...] = ("terraform/pipeline/eventbridge.tf",)
 
 
