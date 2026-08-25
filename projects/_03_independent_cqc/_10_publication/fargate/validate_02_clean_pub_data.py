@@ -11,6 +11,7 @@ from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
 
+# current_region commented out until merge_pub_data joins current geographies.
 VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.cqc_location_import_date,
     # IndCqcColumns.current_region,
@@ -27,7 +28,7 @@ COMPARE_COLS_TO_IMPORT = [
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.cqc_location_import_date: "Date",
-        # IndCqcColumns.current_region: "String",
+        # IndCqcColumns.current_region: "String", # current_region commented out until merge_pub_data joins current geographies.
         IndCqcColumns.primary_service_type: str(
             CategoricalColumnTypes.PrimaryServiceEnumType
         ),
@@ -61,15 +62,6 @@ def main(
         selected_columns=VALIDATION_COLS_TO_IMPORT,
     )
 
-    # compare_df = utils.read_parquet(
-    #     source=f"s3://{bucket_name}/{compare_path}",
-    #     selected_columns=COMPARE_COLS_TO_IMPORT,
-    # )
-
-    # compare_estimate_filled_posts_sum = compare_df[
-    #     IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
-    # ].sum()
-
     validation = (
         pb.Validate(
             data=source_df,
@@ -88,29 +80,18 @@ def main(
         .col_vals_not_null(
             [
                 IndCqcColumns.cqc_location_import_date,
-                # IndCqcColumns.current_region,
+                # IndCqcColumns.current_region, # current_region commented out until merge_pub_data joins current geographies.
                 IndCqcColumns.primary_service_type,
                 IndCqcColumns.main_job_role_clean_labelled,
             ]
         )
-        # Cross-dataset aggregate check
-        # .col_vals_expr(
-        #     expr=(
-        #         pl.col(
-        #             IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
-        #         ).sum()
-        #         < compare_estimate_filled_posts_sum
-        #     ),
-        #     brief=(
-        #         f"Total sum of estimate_filled_posts_by_job_role_historically_reallocated in clean job should be less than the total sum of estimate_filled_posts_by_job_role_historically_reallocated in the merge job dataset"
-        #     ),
-        # )
         # numerical
         .col_vals_ge(
             columns=IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
             value=0,
             brief="estimate_filled_posts_by_job_role_historically_reallocated should be >= 0 where present",
         )
+        # current_region commented out until merge_pub_data joins current geographies.
         # categorical
         # .col_vals_in_set(
         #     IndCqcColumns.current_region,
@@ -124,6 +105,7 @@ def main(
             IndCqcColumns.main_job_role_clean_labelled,
             CatValues.main_job_role_labels_column_values.categorical_values,
         )
+        # current_region commented out until merge_pub_data joins current geographies.
         # .specially(
         #     vl.is_unique_count_equal(
         #         IndCqcColumns.current_region,
