@@ -7,17 +7,12 @@ import projects._01_ingest.capacity_tracker.fargate.ingest_capacity_tracker_data
 
 PATCH_PATH = "projects._01_ingest.capacity_tracker.fargate.ingest_capacity_tracker_data"
 
-SOURCE_KEY = (
-    "domain=capacity_tracker/dataset=capacity_tracker_care_home/"
-    "year=2026/month=08/day=01/import_date=20260801/file.csv"
-)
-
 
 class TestMain:
     @patch(f"{PATCH_PATH}.ingest_dataset")
     @patch(f"{PATCH_PATH}.file_utils.identify_csv_delimiter")
     @patch(f"{PATCH_PATH}.file_utils.read_partial_csv_content")
-    def test_main_detects_delimiter_and_ingests_with_partition_path_preserved(
+    def test_main_ingests_to_a_path_derived_from_source_key_and_destination(
         self,
         read_partial_csv_content_mock: Mock,
         identify_csv_delimiter_mock: Mock,
@@ -25,43 +20,31 @@ class TestMain:
     ):
         read_partial_csv_content_mock.return_value = "col1,col2\n1,2"
         identify_csv_delimiter_mock.return_value = ","
-        source = f"s3://bucket/{SOURCE_KEY}"
 
-        job.main(
-            source,
-            "s3://bucket/domain=capacity_tracker/dataset=capacity_tracker_care_home_polars",
+        job.main("s3://bucket/some/path/file.csv", "s3://bucket/destination")
+
+        read_partial_csv_content_mock.assert_called_once_with(
+            "bucket", "some/path/file.csv"
         )
-
-        read_partial_csv_content_mock.assert_called_once_with("bucket", SOURCE_KEY)
         ingest_dataset_mock.assert_called_once_with(
-            source,
-            "s3://bucket/domain=capacity_tracker/dataset=capacity_tracker_care_home_polars/"
-            "year=2026/month=08/day=01/import_date=20260801/",
-            ",",
-        )
-
-
-class TestPartitionPathFromKey:
-    def test_returns_path_after_dataset_segment_with_trailing_slash(self):
-        assert (
-            job.partition_path_from_key(SOURCE_KEY)
-            == "year=2026/month=08/day=01/import_date=20260801/"
+            "s3://bucket/some/path/file.csv", "s3://bucket/some/path/", ","
         )
 
 
 class TestIngestDataset:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
-    def test_ingest_dataset_sinks_sanitised_columns_with_trailing_slash(
+    def test_ingest_dataset_sinks_sanitised_columns(
         self, scan_csv_mock: Mock, sink_to_parquet_mock: Mock
     ):
         scan_csv_mock.return_value = pl.LazyFrame({"col (1)": [1], "col 2": [2]})
 
-        job.ingest_dataset("s3://bucket/file.csv", "s3://bucket/dest", ",")
+        job.ingest_dataset("s3://bucket/file.csv", "s3://bucket/dest/", ",")
 
         scan_csv_mock.assert_called_once_with(
             "s3://bucket/file.csv", separator=",", infer_schema=False
         )
+        sink_to_parquet_mock.assert_called_once()
         sunk_lf = sink_to_parquet_mock.call_args[0][0]
         pl_testing.assert_frame_equal(
             sunk_lf, pl.LazyFrame({"col_1": [1], "col_2": [2]})
