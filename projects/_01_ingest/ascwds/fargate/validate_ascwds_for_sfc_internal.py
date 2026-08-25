@@ -37,6 +37,8 @@ EXPECTED_SCHEMA = pb.Schema(
         AWPClean.worker_records: "String",
         AWPClean.last_logged_in_date: "Date",
         AWPClean.la_permission: str(CategoricalColumnTypes.LaPermissionCatType),
+        AWPClean.workplace_last_active_date: "Date",
+        AWPClean.purge_date: "Date",
     }
 )
 
