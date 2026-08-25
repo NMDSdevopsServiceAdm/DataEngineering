@@ -1,7 +1,14 @@
 import unittest
 from unittest.mock import ANY, Mock, call, patch
 
+import polars as pl
+
 import projects._03_independent_cqc._02_clean.fargate.clean_ind_cqc_filled_posts as job
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import (
+    AscwdsFilteringRule,
+)
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.fargate.clean_ind_cqc_filled_posts"
 
@@ -89,6 +96,130 @@ class MainTests(CleanIndFilledPostsTests):
                 ),
             ]
         )
+
+
+class MainDtypeCastTests(CleanIndFilledPostsTests):
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
+    @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
+    @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
+    @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
+    @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
+    @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
+    @patch(f"{PATCH_PATH}.cUtils.remove_repeated_values_over_time")
+    @patch(f"{PATCH_PATH}.calculate_ascwds_filled_posts")
+    @patch(f"{PATCH_PATH}.populate_missing_care_home_number_of_beds")
+    @patch(f"{PATCH_PATH}.replace_zero_beds_with_null")
+    @patch(f"{PATCH_PATH}.remove_dual_registration_cqc_care_homes")
+    @patch(f"{PATCH_PATH}.calculate_time_registered_for")
+    @patch(f"{PATCH_PATH}.calculate_time_since_dormant")
+    @patch(f"{PATCH_PATH}.earliest_file_per_month_filter_expr")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_main_casts_ascwds_filled_posts_source_and_filtering_rule_to_enum(
+        self,
+        scan_parquet_mock: Mock,
+        earliest_file_per_month_filter_expr_mock: Mock,
+        calculate_time_since_dormant_mock: Mock,
+        calculate_time_registered_for_mock: Mock,
+        remove_dual_registration_cqc_care_homes_mock: Mock,
+        replace_zero_beds_with_null_mock: Mock,
+        populate_missing_care_home_number_of_beds_mock: Mock,
+        calculate_ascwds_filled_posts_mock: Mock,
+        remove_repeated_values_over_time_mock: Mock,
+        calculate_filled_posts_per_bed_ratio_mock: Mock,
+        create_banded_bed_count_column_mock: Mock,
+        clean_ascwds_filled_post_outliers_mock: Mock,
+        clean_capacity_tracker_care_home_outliers_mock: Mock,
+        clean_capacity_tracker_non_res_outliers_mock: Mock,
+        calculate_care_home_status_count_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
+        scan_parquet_mock.return_value = Mock(name="merge_ind_cqc_data")
+        clean_ascwds_filled_post_outliers_mock.return_value = [
+            Mock(name="clean_ind_cqc_data"),
+            Mock(name="grouped_providers"),
+        ]
+        calculate_care_home_status_count_mock.return_value = pl.LazyFrame(
+            {
+                IndCQC.ascwds_filled_posts_source: ["worker_records_and_total_staff"],
+                IndCQC.ascwds_filtering_rule: [AscwdsFilteringRule.populated],
+            }
+        )
+
+        job.main(
+            self.MERGE_IND_CQC_SOURCE,
+            self.CLEANED_IND_CQC_DESTINATION,
+            self.GROUPED_PROVIDERS_DESTINATION,
+        )
+
+        cleaned_lf = sink_to_parquet_mock.call_args_list[0].args[0]
+        cleaned_schema = cleaned_lf.collect_schema()
+
+        self.assertEqual(
+            cleaned_schema[IndCQC.ascwds_filled_posts_source],
+            CatColType.AscwdsFilledPostsSourceEnumType,
+        )
+        self.assertEqual(
+            cleaned_schema[IndCQC.ascwds_filtering_rule],
+            CatColType.AscwdsFilteringRuleEnumType,
+        )
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
+    @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
+    @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
+    @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
+    @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
+    @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
+    @patch(f"{PATCH_PATH}.cUtils.remove_repeated_values_over_time")
+    @patch(f"{PATCH_PATH}.calculate_ascwds_filled_posts")
+    @patch(f"{PATCH_PATH}.populate_missing_care_home_number_of_beds")
+    @patch(f"{PATCH_PATH}.replace_zero_beds_with_null")
+    @patch(f"{PATCH_PATH}.remove_dual_registration_cqc_care_homes")
+    @patch(f"{PATCH_PATH}.calculate_time_registered_for")
+    @patch(f"{PATCH_PATH}.calculate_time_since_dormant")
+    @patch(f"{PATCH_PATH}.earliest_file_per_month_filter_expr")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_main_raises_on_unrecognised_ascwds_filtering_rule_value(
+        self,
+        scan_parquet_mock: Mock,
+        earliest_file_per_month_filter_expr_mock: Mock,
+        calculate_time_since_dormant_mock: Mock,
+        calculate_time_registered_for_mock: Mock,
+        remove_dual_registration_cqc_care_homes_mock: Mock,
+        replace_zero_beds_with_null_mock: Mock,
+        populate_missing_care_home_number_of_beds_mock: Mock,
+        calculate_ascwds_filled_posts_mock: Mock,
+        remove_repeated_values_over_time_mock: Mock,
+        calculate_filled_posts_per_bed_ratio_mock: Mock,
+        create_banded_bed_count_column_mock: Mock,
+        clean_ascwds_filled_post_outliers_mock: Mock,
+        clean_capacity_tracker_care_home_outliers_mock: Mock,
+        clean_capacity_tracker_non_res_outliers_mock: Mock,
+        calculate_care_home_status_count_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
+        scan_parquet_mock.return_value = Mock(name="merge_ind_cqc_data")
+        clean_ascwds_filled_post_outliers_mock.return_value = [
+            Mock(name="clean_ind_cqc_data"),
+            Mock(name="grouped_providers"),
+        ]
+        calculate_care_home_status_count_mock.return_value = pl.LazyFrame(
+            {
+                IndCQC.ascwds_filled_posts_source: ["worker_records_and_total_staff"],
+                IndCQC.ascwds_filtering_rule: ["not_a_real_filtering_rule"],
+            }
+        )
+
+        job.main(
+            self.MERGE_IND_CQC_SOURCE,
+            self.CLEANED_IND_CQC_DESTINATION,
+            self.GROUPED_PROVIDERS_DESTINATION,
+        )
+
+        cleaned_lf = sink_to_parquet_mock.call_args_list[0].args[0]
+        with self.assertRaises(pl.exceptions.InvalidOperationError):
+            cleaned_lf.collect()
 
 
 if __name__ == "__main__":

@@ -233,5 +233,34 @@ class TestAscwdsJobRoleRatiosMergedMatchesCoalesceSource:
         pl_testing.assert_frame_equal(result, self.expected_lf)
 
 
+class TestDifferenceWithinDriftTolerance:
+    expected_lf = pl.LazyFrame(
+        schema={
+            IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: pl.Float32,
+            IndCqcColumns.estimate_filled_posts_from_all_job_roles: pl.Float32,
+            "expression": pl.Boolean,
+        },
+        data=[
+            # ticket 1864's measured float32 drift case: -0.0003 on a 987.004-post
+            # location, ~3.04e-7 relative - well within tolerance
+            (-0.0003, 987.004, True),
+            # a deliberately broken reallocation (ratios not summing to 1): 5% of
+            # total missing, orders of magnitude past drift - should still fail
+            (-50.0, 1000.0, False),
+            # registered-manager adjustment can add up to a whole post - allowed
+            (0.9, 500.0, True),
+            (1.5, 500.0, False),
+            (None, 500.0, True),
+        ],
+        orient="row",
+    )  # fmt: skip
+    test_lf = expected_lf.drop("expression")
+
+    def test_difference_within_drift_tolerance(self):
+        expr = job.difference_within_drift_tolerance_expr()
+        result = self.test_lf.with_columns(expr.alias("expression"))
+        pl_testing.assert_frame_equal(result, self.expected_lf)
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

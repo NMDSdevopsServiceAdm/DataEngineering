@@ -33,6 +33,8 @@ All notable changes to this project will be documented in this file.
 ### Improved
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
 
+- Narrowed dtypes (Categorical/Enum/Float32) for the columns feeding the independent CQC estimate archive jobs, to reduce long-term storage and read cost: ASCWDS source/filtering-rule labels and the job-role ratio merge source are now Enum, and several model/estimate columns (including `estimate_filled_posts` and the job-role reallocation/reconciliation columns) are now Float32 instead of Float64. Fixed a real dtype bug found along the way, where an unsigned-int registered-manager count was silently promoting `estimate_filled_posts_by_job_role_manager_adjusted` to Float64 via Polars' type coercion rules. Replaced the job-role reconciliation check's fixed absolute tolerance with a relative one, since float32 drift scales with magnitude rather than row count.
+
 - Removed a dead `lf.sort()` call (its result was never reassigned) in model_interpolation. Converted the module's remaining sorts to `over(..., order_by=...)`, measured as using much less peak memory than sorting.
 
 ### Fixed

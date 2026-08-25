@@ -80,12 +80,14 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.estimate_filled_posts_size_group: "String",
         IndCqcColumns.ascwds_job_role_rolling_ratio: "Float32",
         IndCqcColumns.ascwds_job_role_ratios_merged: "Float32",
-        IndCqcColumns.ascwds_job_role_ratios_merged_source: "String",
+        IndCqcColumns.ascwds_job_role_ratios_merged_source: str(
+            CategoricalColumnTypes.AscwdsJobRoleRatiosMergedSourceEnumType
+        ),
         IndCqcColumns.estimate_filled_posts_by_job_role: "Float32",
-        IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: "Float64",
-        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: "Float64",
-        IndCqcColumns.estimate_filled_posts_from_all_job_roles: "Float64",
-        IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: "Float64",
+        IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: "Float32",
+        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: "Float32",
+        IndCqcColumns.estimate_filled_posts_from_all_job_roles: "Float32",
+        IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: "Float32",
         IndCqcColumns.main_job_group_labelled: str(
             CategoricalColumnTypes.JobGroupCatType
         ),
@@ -94,6 +96,12 @@ EXPECTED_SCHEMA = pb.Schema(
 )
 
 CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
+
+# ~100x float32 eps (1.19e-7); the measured drift in ticket 1864 was ~2.6x eps.
+# See reference_float32_drift_vs_absolute_tolerance memory - a fixed absolute
+# bound fails on the largest locations first as data grows, since float32 drift
+# is relative to magnitude, not row count.
+RELATIVE_DRIFT_TOLERANCE = 1e-5
 
 req_pcts = {
     JobGroupLabels.direct_care: (0.71, 0.81),
@@ -306,12 +314,14 @@ def other_validation(
             na_pass=True,
             brief="Ratios should be between 0 and 1 where present. Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between 0 and 1 where present",
         )
-        .col_vals_between(
-            columns=IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
-            left=-0.002,
-            right=1,
-            na_pass=True,
-            brief="Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between -0.002 and 1 where present",
+        .col_vals_expr(
+            difference_within_drift_tolerance_expr(),
+            brief=(
+                f"Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles "
+                f"should be within a relative tolerance of {RELATIVE_DRIFT_TOLERANCE:.0e} on the downside "
+                "(float32 accumulation drift) and up to 1 on the upside (registered manager adjustment) "
+                "where present"
+            ),
         )
         # Date plausibility
         .col_vals_ge(
@@ -427,6 +437,34 @@ def other_validation(
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, f"{reports_path}other_validation/")
+
+
+def difference_within_drift_tolerance_expr() -> pl.Expr:
+    """
+    Constructs an expression checking that
+        difference_estimate_filled_posts_and_from_all_job_roles is within tolerance
+        of zero, relative to estimate_filled_posts_from_all_job_roles rather than a
+        fixed absolute bound.
+
+    The downside is bounded by RELATIVE_DRIFT_TOLERANCE, since both
+        estimate_filled_posts_by_job_role and its sum are float32 and their
+        difference is expected to carry float32 accumulation drift (proportional
+        to magnitude, not a fixed absolute amount). The upside is bounded by a
+        flat 1, unrelated to drift - it accounts for the registered manager
+        adjustment, which can add at most one whole post system-wide.
+
+    Returns:
+        pl.Expr: the expression for validating the difference is within tolerance
+    """
+    difference_col = pl.col(
+        IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles
+    )
+    total_col = pl.col(IndCqcColumns.estimate_filled_posts_from_all_job_roles)
+
+    return difference_col.is_null() | (
+        (difference_col >= -RELATIVE_DRIFT_TOLERANCE * total_col)
+        & (difference_col <= 1)
+    )
 
 
 def ascwds_job_role_ratios_merged_matches_coalesce_source() -> pl.Expr:

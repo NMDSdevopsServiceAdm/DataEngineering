@@ -474,10 +474,10 @@ class ValidateEstimatedIndCQCFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
     ] # fmt: skip
 
 
@@ -2235,24 +2235,24 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
         EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="calculates_difference_between_rm_estimate_and_cqc_count",
             expected_data=[
-                (0, MainJobRoleLabels.registered_manager, 5.0, 1.0, 4.0),
-                (1, MainJobRoleLabels.registered_manager, 0.0, 5.0, -5.0),
+                (0, MainJobRoleLabels.registered_manager, 5.0, 1, 4.0),
+                (1, MainJobRoleLabels.registered_manager, 0.0, 5, -5.0),
             ],
         ),
         EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="rm_difference_is_copied_to_all_rows_in_group",
             expected_data=[
-                (0, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
-                (0, MainJobRoleLabels.registered_manager, 1.0, 0.0, 1.0),
+                (0, MainJobRoleLabels.supervisor, 20.0, 0, 1.0),
+                (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0),
             ],
         ),
         EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="rm_difference_is_calculated_per_group",
             expected_data=[
-                (0, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
-                (0, MainJobRoleLabels.registered_manager, 1.0, 0.0, 1.0),
-                (1, MainJobRoleLabels.supervisor, 20.0, 0.0, 5.0),
-                (1, MainJobRoleLabels.registered_manager, 5.0, 0.0, 5.0),
+                (0, MainJobRoleLabels.supervisor, 20.0, 0, 1.0),
+                (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0),
+                (1, MainJobRoleLabels.supervisor, 20.0, 0, 5.0),
+                (1, MainJobRoleLabels.registered_manager, 5.0, 0, 5.0),
             ],
         ),
     ]

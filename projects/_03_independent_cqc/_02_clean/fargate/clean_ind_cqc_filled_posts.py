@@ -2,6 +2,7 @@ import polars as pl
 
 import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
@@ -104,6 +105,15 @@ def main(
     locations_lf = clean_capacity_tracker_non_res_outliers(locations_lf)
 
     locations_lf = calculate_care_home_status_count(locations_lf)
+
+    locations_lf = locations_lf.with_columns(
+        pl.col(IndCQC.ascwds_filled_posts_source).cast(
+            CatColType.AscwdsFilledPostsSourceEnumType
+        ),
+        pl.col(IndCQC.ascwds_filtering_rule).cast(
+            CatColType.AscwdsFilteringRuleEnumType
+        ),
+    )
 
     print(f"Exporting cleaned data to {cleaned_ind_cqc_destination}")
     print(f"Exporting grouped providers data to {grouped_providers_destination}")
