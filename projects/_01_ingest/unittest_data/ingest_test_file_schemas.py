@@ -40,40 +40,6 @@ from utils.column_names.raw_data_files.ons_columns import (
 
 
 @dataclass
-class IngestASCWDSData:
-    raise_mainjrid_error_when_mainjrid_not_in_df_schema = StructType(
-        [
-            StructField(AWK.establishment_id, StringType(), False),
-            StructField(AWK.location_id, StringType(), True),
-        ]
-    )
-    raise_mainjrid_error_when_mainjrid_in_df_schema = StructType(
-        [
-            *raise_mainjrid_error_when_mainjrid_not_in_df_schema,
-            StructField(AWK.main_job_role_id, StringType(), True),
-        ]
-    )
-
-    fix_nmdssc_dates_schema = StructType(
-        [
-            StructField(AWK.establishment_id, StringType(), False),
-            StructField(AWK.created_date, StringType(), True),
-            StructField(AWK.main_job_role_id, StringType(), True),
-            StructField(AWK.updated_date, StringType(), True),
-        ]
-    )
-
-    fix_nmdssc_dates_with_last_logged_in_schema = StructType(
-        [
-            StructField(AWP.establishment_id, StringType(), False),
-            StructField(AWP.master_update_date, StringType(), True),
-            StructField(AWP.organisation_id, StringType(), True),
-            StructField(AWP.last_logged_in, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class ASCWDSWorkerSchemas:
     workplace_schema = StructType(
         [
@@ -432,28 +398,6 @@ class ValidatePostcodeDirectoryCleanedData:
             StructField(ONSClean.current_cssr, StringType(), True),
             StructField(ONSClean.current_region, StringType(), True),
             StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidateASCWDSWorkplaceRawData:
-    raw_ascwds_workplace_schema = StructType(
-        [
-            StructField(AWP.establishment_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidateASCWDSWorkerRawData:
-    raw_ascwds_worker_schema = StructType(
-        [
-            StructField(AWKClean.establishment_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.main_job_role_id, StringType(), True),
         ]
     )
 
