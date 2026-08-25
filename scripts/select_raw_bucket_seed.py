@@ -1,17 +1,14 @@
 """
-Decide whether a push needs to seed the branch's non-prod raw data bucket.
+Decide, per ingest domain, whether a push needs to seed that domain's slice of
+the branch's non-prod raw data bucket.
 
-`copy-main-data` syncs `sfc-main-sample-raw-data` into every branch's own raw
-bucket on its first deploy, which fires S3 "Object Created" events and
-triggers all five ingest Step Functions (`terraform/pipeline/eventbridge.tf`)
-regardless of what the branch is actually about. This narrows that to pushes
-that genuinely touch ingest-related code or the raw bucket's own
-infrastructure, so an unrelated branch's first build doesn't burn Step
-Functions/Glue/Fargate runs on data it never asked for.
+Deciding per domain -- rather than one bucket-wide flag -- means a push that
+only touches one domain's ingest code doesn't reseed (and re-trigger) the
+other domains' Step Functions.
 
 Trigger paths are a fixed list rather than derived, unlike
-`select_bake_targets`'s Dockerfile-driven approach -- there's no single
-manifest that already enumerates "everything that reads the raw bucket".
+`select_bake_targets`'s Dockerfile-driven approach -- there's no manifest that
+already enumerates "everything that reads the raw bucket".
 """
 
 import argparse
@@ -32,45 +29,45 @@ from scripts.select_bake_targets import (  # noqa: E402
     path_triggers_rebuild,
 )
 
-# Ingest domains that actually read from the raw bucket. `cqc_api` is a
-# sibling ingest domain that reads from the CQC API directly, not the raw
-# bucket, so it's deliberately excluded.
-#
-# To add a new trigger path: add it here, plus a
-# `returns_true_when_changed_path_is_under_<name>` case in
-# scripts/tests/test_select_raw_bucket_seed.py's `trigger_path_cases`.
-INGEST_TRIGGER_PATHS: tuple[str, ...] = (
-    "projects/_01_ingest/ascwds",
-    "projects/_01_ingest/capacity_tracker",
-    "projects/_01_ingest/cqc_pir",
-    "projects/_01_ingest/ons_pd",
-    "terraform/pipeline/eventbridge.tf",
-)
+# Ingest domains that read from the raw bucket, keyed by the --domain value.
+# `cqc_api` reads the CQC API directly, not the raw bucket, so it's excluded.
+DOMAIN_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
+    "ascwds": ("projects/_01_ingest/ascwds",),
+    "capacity_tracker": ("projects/_01_ingest/capacity_tracker",),
+    "cqc_pir": ("projects/_01_ingest/cqc_pir",),
+    "ons_pd": ("projects/_01_ingest/ons_pd",),
+}
+
+# Cross-cutting trigger -- a change here seeds every domain.
+SHARED_TRIGGER_PATHS: tuple[str, ...] = ("terraform/pipeline/eventbridge.tf",)
 
 
-def should_seed_raw_bucket(changed_paths: Iterable[str]) -> bool:
+def should_seed_domain(domain: str, changed_paths: Iterable[str]) -> bool:
     """
-    Decide whether any changed path warrants seeding the raw bucket.
+    Decide whether any changed path warrants seeding one domain's raw data.
 
     Args:
+        domain (str): Domain name, a key of DOMAIN_TRIGGER_PATHS.
         changed_paths (Iterable[str]): Repo-relative paths of changed files.
 
     Returns:
-        bool: True if at least one changed path falls under a trigger path.
+        bool: True if at least one changed path falls under that domain's
+            trigger paths or a shared trigger path.
     """
     normalised_paths = [_normalise_path(path) for path in changed_paths]
+    trigger_paths = DOMAIN_TRIGGER_PATHS[domain] + SHARED_TRIGGER_PATHS
 
     return any(
         path_triggers_rebuild(changed_path, trigger_path)
         for changed_path in normalised_paths
-        for trigger_path in INGEST_TRIGGER_PATHS
+        for trigger_path in trigger_paths
     )
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     """
     Print "true" or "false" depending on whether this push should seed the
-    raw bucket.
+    given domain's raw data.
 
     Args:
         argv (Optional[Sequence[str]]): Argument list, or None to read sys.argv.
@@ -85,7 +82,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         else changed_paths_since(arguments.diff_base, arguments.repo_root)
     )
 
-    print("true" if should_seed_raw_bucket(changed_paths) else "false")
+    print("true" if should_seed_domain(arguments.domain, changed_paths) else "false")
     return 0
 
 
@@ -100,7 +97,13 @@ def _parse_arguments(argv: Optional[Sequence[str]]) -> argparse.Namespace:
         argparse.Namespace: The parsed arguments.
     """
     parser = argparse.ArgumentParser(
-        description="Decide whether this push should seed the non-prod raw bucket."
+        description="Decide whether this push should seed one domain's non-prod raw data."
+    )
+    parser.add_argument(
+        "--domain",
+        required=True,
+        choices=list(DOMAIN_TRIGGER_PATHS),
+        help="Ingest domain to decide the seed flag for.",
     )
     parser.add_argument(
         "--diff-base",
