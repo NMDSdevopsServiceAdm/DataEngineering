@@ -249,6 +249,10 @@ class TestDifferenceWithinDriftTolerance:
             (-50.0, 1000.0, False),
             # registered-manager adjustment can add up to a whole post - allowed
             (0.9, 500.0, True),
+            # ticket 1920's measured production case: a single location/date at
+            # 1.0001 - the registered-manager allowance plus ~1e-4 float32 drift
+            # on the upside, same order as the downside drift - allowed
+            (1.0001, 561.4564, True),
             (1.5, 500.0, False),
             (None, 500.0, True),
         ],
