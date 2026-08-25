@@ -185,7 +185,7 @@
                         "--source_path",
                         "domain=ASCWDS/dataset=workplace/",
                         "--reports_path",
-                        "domain=data_validation_reports/dataset=validation_pdq_workplace_raw/"
+                        "domain=data_validation_reports/dataset=validation_ascwds_workplace_raw/"
                       ]
                     }
                   ]
@@ -223,7 +223,7 @@
                         "--source_path",
                         "domain=ASCWDS/dataset=worker/",
                         "--reports_path",
-                        "domain=data_validation_reports/dataset=validation_pdq_worker_raw/"
+                        "domain=data_validation_reports/dataset=validation_ascwds_worker_raw/"
                       ]
                     }
                   ]

@@ -27,7 +27,17 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         source_path (str): the source dataset path to be validated.
         reports_path (str): the output path to write reports to.
     """
-    source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
+    # Raw worker files run to ~700 columns; only select what these checks use,
+    # since selecting late here would otherwise pull every column into memory.
+    validated_columns = [
+        AWK.establishment_id,
+        AWK.worker_id,
+        AWK.main_job_role_id,
+        AWK.import_date,
+    ]
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}", selected_columns=validated_columns
+    )
 
     known_values = CatValues.main_job_role_id_column_values.categorical_values
     count_of_known_values = (
@@ -44,12 +54,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         )
         # complete columns
         .col_vals_not_null(
-            columns=[
-                AWK.establishment_id,
-                AWK.worker_id,
-                AWK.main_job_role_id,
-                AWK.import_date,
-            ],
+            columns=validated_columns,
             brief="Key columns should contain no null values",
         )
         # categorical values

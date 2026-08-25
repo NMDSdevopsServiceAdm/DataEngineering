@@ -20,7 +20,12 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         source_path (str): the source dataset path to be validated.
         reports_path (str): the output path to write reports to.
     """
-    source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
+    # Raw workplace files run to ~600 columns; only select what these checks use,
+    # since selecting late here would otherwise pull every column into memory.
+    validated_columns = [AWP.establishment_id, AWP.import_date]
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}", selected_columns=validated_columns
+    )
 
     validation = (
         pb.Validate(
@@ -32,12 +37,12 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         )
         # complete columns
         .col_vals_not_null(
-            columns=[AWP.establishment_id, AWP.import_date],
+            columns=validated_columns,
             brief="Key columns should contain no null values",
         )
         # index columns
         .rows_distinct(
-            [AWP.establishment_id, AWP.import_date],
+            validated_columns,
             brief=f"{AWP.establishment_id} and {AWP.import_date} together should be unique",
         ).interrogate()
     )
