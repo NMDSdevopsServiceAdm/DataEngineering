@@ -11,7 +11,6 @@ from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
     PrimaryServiceType,
-    Region,
 )
 
 PATCH_PATH = (
@@ -27,7 +26,6 @@ source_lf = pl.DataFrame(
     [
         (
             date(2026, 1, 1),
-            Region.london,
             PrimaryServiceType.non_residential,
             MainJobRoleLabels.care_worker,
             JobGroupLabels.direct_care,
@@ -35,7 +33,6 @@ source_lf = pl.DataFrame(
         ),
         (
             date(2026, 1, 1),
-            Region.london,
             PrimaryServiceType.non_residential,
             MainJobRoleLabels.support_worker,
             JobGroupLabels.direct_care,
@@ -44,7 +41,6 @@ source_lf = pl.DataFrame(
     ],  # fmt: skip
     schema={
         IndCqcColumns.cqc_location_import_date: pl.Date,
-        IndCqcColumns.current_region: pl.String,
         IndCqcColumns.primary_service_type: CategoricalColumnTypes.PrimaryServiceEnumType,
         IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleCatType,
         IndCqcColumns.main_job_group_labelled: CategoricalColumnTypes.JobGroupCatType,
@@ -81,7 +77,7 @@ class TestMain:
         expected_assertions = {
             "col_schema_match",
             "col_vals_not_null",
-            "col_vals_gt",
+            "col_vals_ge",
             "col_vals_in_set",
             "specially",
         }
