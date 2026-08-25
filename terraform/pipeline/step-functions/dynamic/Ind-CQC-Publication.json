@@ -20,7 +20,7 @@
             {
               "Name": "_03_independent_cqc-container",
               "Command": [
-                "_01_merge.py",
+                "_01_merge_pub_data.py",
                 "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
                 "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
                 "--jr_archive_geography_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
@@ -58,7 +58,7 @@
                     {
                       "Name": "_03_independent_cqc-container",
                       "Command": [
-                        "_02_clean.py",
+                        "_02_clean_pub_data.py",
                         "--merge_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/",
                         "--filter_aggregate_select_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_10_02_cleaned_data/"
                       ]
@@ -92,7 +92,7 @@
                     {
                       "Name": "_03_independent_cqc-container",
                       "Command": [
-                        "validate_01_merge.py",
+                        "validate_01_merge_pub_data.py",
                         "--bucket_name", "${dataset_bucket_name}",
                         "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/",
                         "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
@@ -127,7 +127,7 @@
             {
               "Name": "_03_independent_cqc-container",
               "Command": [
-                "validate_02_clean.py",
+                "validate_02_clean_pub_data.py",
                 "--bucket_name", "${dataset_bucket_name}",
                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_10_02_cleaned_data/",
                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/",
