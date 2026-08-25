@@ -16,9 +16,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
-EDGE_FILL_PERIOD: str = "2y"
-INTERPOLATION_CAP_PERIOD: str = "5y"
-
 JOB_ROLE_GROUPS: list[str] = [
     IndCQC.location_id,
     IndCQC.main_job_role_clean_labelled,
@@ -157,16 +154,22 @@ def add_fill_boundaries(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFra
 
 def add_imputed_job_role_ratios_for_trendline(
     estimated_job_role_posts_lf: pl.LazyFrame,
+    extrapolation_period: str,
+    interpolation_cap_period: str,
 ) -> pl.LazyFrame:
     """
     Impute job role ratios within time limits, for use by the trendline only.
 
-    Gaps are interpolated by date if they span no more than `INTERPOLATION_CAP_PERIOD`, and the
+    Gaps are interpolated by date if they span no more than `interpolation_cap_period`, and the
     first and last known values are carried outside the known range for no more than
-    `EDGE_FILL_PERIOD`.
+    `extrapolation_period`.
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset containing job role ratios
+        extrapolation_period(str): how far to carry the first/last known value outside the known
+            range, as a Polars offset string (e.g. "2y")
+        interpolation_cap_period(str): the widest gap to interpolate across, as a Polars offset
+            string (e.g. "5y")
 
     Returns:
         pl.LazyFrame: dataset with an additional column of ratios for the trendline
@@ -177,7 +180,7 @@ def add_imputed_job_role_ratios_for_trendline(
 
     within_interpolation_cap = pl.col(TempCols.next_known_date) <= pl.col(
         TempCols.previous_known_date
-    ).dt.offset_by(INTERPOLATION_CAP_PERIOD)
+    ).dt.offset_by(interpolation_cap_period)
 
     interpolated = (
         pl.col(IndCQC.ascwds_job_role_ratios)
@@ -187,11 +190,11 @@ def add_imputed_job_role_ratios_for_trendline(
 
     within_forward_fill = (pl.col(order_key) > pl.col(TempCols.last_known_date)) & (
         pl.col(order_key)
-        <= pl.col(TempCols.last_known_date).dt.offset_by(EDGE_FILL_PERIOD)
+        <= pl.col(TempCols.last_known_date).dt.offset_by(extrapolation_period)
     )
     within_backward_fill = (pl.col(order_key) < pl.col(TempCols.first_known_date)) & (
         pl.col(order_key)
-        >= pl.col(TempCols.first_known_date).dt.offset_by(f"-{EDGE_FILL_PERIOD}")
+        >= pl.col(TempCols.first_known_date).dt.offset_by(f"-{extrapolation_period}")
     )
 
     return estimated_job_role_posts_lf.with_columns(
@@ -210,6 +213,8 @@ def add_imputed_job_role_ratios_for_trendline(
 
 def create_ascwds_job_role_rolling_ratio(
     estimated_job_role_posts_lf: pl.LazyFrame,
+    extrapolation_period: str,
+    interpolation_cap_period: str,
 ) -> pl.LazyFrame:
     """
     Create rolling ASC-WDS job role ratios over a 6-month period.
@@ -230,6 +235,9 @@ def create_ascwds_job_role_rolling_ratio(
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset to calculate ratio on
+        extrapolation_period(str): passed through to `add_imputed_job_role_ratios_for_trendline`
+        interpolation_cap_period(str): passed through to
+            `add_imputed_job_role_ratios_for_trendline`
 
     Returns:
         pl.LazyFrame: dataset with an additional column containing the rolling
@@ -241,7 +249,9 @@ def create_ascwds_job_role_rolling_ratio(
     )
 
     estimated_job_role_posts_lf = add_imputed_job_role_ratios_for_trendline(
-        estimated_job_role_posts_lf
+        estimated_job_role_posts_lf,
+        extrapolation_period=extrapolation_period,
+        interpolation_cap_period=interpolation_cap_period,
     )
 
     rolling_groups = [
@@ -283,10 +293,6 @@ def create_ascwds_job_role_rolling_ratio(
         .forward_fill()
         .backward_fill()
         .over(rolling_groups, order_by=order_key)
-    )
-
-    rolling_agg_lf = rolling_agg_lf.drop(
-        TempCols.ratio_total, TempCols.contributing_rows
     )
 
     columns_to_drop = [field.default for field in fields(TempCols)]

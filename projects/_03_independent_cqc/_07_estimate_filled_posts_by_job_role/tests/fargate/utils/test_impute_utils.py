@@ -105,7 +105,9 @@ class TestAddImputedJobRoleRatiosForTrendline:
             orient="row",
         )
         input_lf = expected_lf.drop(IndCQC.imputed_job_role_ratios_for_trendline)
-        returned_lf = job.add_imputed_job_role_ratios_for_trendline(input_lf).select(
+        returned_lf = job.add_imputed_job_role_ratios_for_trendline(
+            input_lf, extrapolation_period="2y", interpolation_cap_period="5y"
+        ).select(
             Schemas.add_imputed_job_role_ratios_for_trendline_expected_schema.keys()
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
@@ -230,9 +232,9 @@ class TestCreateASCWDSJobRoleRollingRatio:
             IndCQC.estimate_filled_posts_size_group,
         )
         # The trendline ratios are also returned, but have their own test class.
-        returned_lf = job.create_ascwds_job_role_rolling_ratio(input_lf).select(
-            Schemas.create_ascwds_job_role_rolling_ratio_expected_schema.keys()
-        )
+        returned_lf = job.create_ascwds_job_role_rolling_ratio(
+            input_lf, extrapolation_period="2y", interpolation_cap_period="5y"
+        ).select(Schemas.create_ascwds_job_role_rolling_ratio_expected_schema.keys())
         pl_testing.assert_frame_equal(
             returned_lf, expected_lf, check_column_order=False, rel_tol=0.0001
         )

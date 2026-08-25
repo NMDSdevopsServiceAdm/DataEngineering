@@ -73,3 +73,11 @@ class TestMain:
             lazy_df=add_imputed_ascwds_job_role_counts_mock.return_value,
             output_path=IMPUTED_DATA_DESTINATION,
         )
+
+
+class TestNumericalValues:
+    def test_extrapolation_period_value(self):
+        assert job.NumericalValues.extrapolation_period == "2y"
+
+    def test_interpolation_cap_period_value(self):
+        assert job.NumericalValues.interpolation_cap_period == "5y"
