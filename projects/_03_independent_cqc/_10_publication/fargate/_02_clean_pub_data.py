@@ -27,8 +27,8 @@ if __name__ == "__main__":
             "Source s3 directory for merged data",
         ),
         (
-            "--filter_aggregate_select_destination",
-            "Destination s3 directory for the filtered, aggregated and selected data",
+            "--clean_destination",
+            "Destination s3 directory for the cleaned data",
         ),
     )
     main(

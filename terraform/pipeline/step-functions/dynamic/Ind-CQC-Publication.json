@@ -60,7 +60,7 @@
                       "Command": [
                         "_02_clean_pub_data.py",
                         "--merge_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/",
-                        "--filter_aggregate_select_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_10_02_cleaned_data/"
+                        "--clean_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_10_02_cleaned_data/"
                       ]
                     }
                   ]
