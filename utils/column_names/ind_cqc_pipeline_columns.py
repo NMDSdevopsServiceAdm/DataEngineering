@@ -208,6 +208,7 @@ class IndCqcColumns:
     )
     imputed_ascwds_job_role_counts: str = "imputed_ascwds_job_role_counts"
     imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
+    imputed_job_role_ratios_for_trendline: str = "imputed_job_role_ratios_for_trendline"
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
     imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
@@ -345,6 +346,20 @@ class IndCqcColumns:
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"
     worker_records_bounded: str = AWPClean.worker_records_bounded
+
+
+@dataclass
+class JobRoleImputeTempColumns:
+    """The names of the temporary columns used while imputing ASC-WDS job role ratios."""
+
+    first_known_date: str = "jr_impute_first_known_date"
+    last_known_date: str = "jr_impute_last_known_date"
+    first_known_value: str = "jr_impute_first_known_value"
+    last_known_value: str = "jr_impute_last_known_value"
+    previous_known_date: str = "jr_impute_previous_known_date"
+    next_known_date: str = "jr_impute_next_known_date"
+    ratio_total: str = "jr_impute_ratio_total"
+    contributing_rows: str = "jr_impute_contributing_rows"
 
 
 @dataclass
