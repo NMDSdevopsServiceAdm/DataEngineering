@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file.
 - Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the standalone job role step function (`Ind-CQC-Filled-Post-Estimates-By-Role`) after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet), deliberately kept out of the main pipeline until partitioning is in place, ahead of a future rework of the job-role dataset shape.
 
 ### Changed
+- Split the non-prod raw bucket's seed-gating decision from one bucket-wide flag into one per ingest domain (ASCWDS, Capacity Tracker, CQC PIR, ONS PD), so a push touching only one domain's ingest code reseeds and re-triggers only that domain's Step Function instead of all five.
+- Consolidated the `ascwds` Fargate task onto the generic `_01_ingest` image/task (introduced for CQC PIR), removing the `ascwds`-specific ECR repo, Dockerfile, and `docker-bake` target.
 - Migrated the CQC PIR ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on a new shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Reads the raw CSV with `utf8-lossy` encoding, since supplier PIR files are frequently not valid UTF-8.
 - Replaced `docker login` with the AWS ECR credential helper (checksum-verified before use) in the `task-containerisation` CircleCI job, so the ECR auth token is no longer written to the job container's disk unencrypted.
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
@@ -48,7 +50,11 @@ All notable changes to this project will be documented in this file.
 
 - Fixed the ascwds_job_role_ratios_merged validation check to cover all three coalesce source branches, instead of relying on incidental equality for one of them.
 
+- Fixed the ascwds_for_sfc_internal validation job failing schema match after `workplace_last_active_date` and `purge_date` were added to its output columns without updating the expected schema.
+
 - Removed pycache files accidentally committed to the repo, and added `__pycache__/` to `.gitignore` to stop it happening again.
+
+- Fixed the job role estimates pipeline crashing in prod with a `FileNotFoundError`: the merge, validation, and archive steps hardcoded a non-prod-only comparison dataset name for the estimated filled posts source, which CI only ever populates on branches other than `main`. The dataset name is now workspace-aware, matching the pattern already used for the sibling job-role datasets.
 
 ## [v2026.07.0] - 17/08/2026
 
