@@ -1486,7 +1486,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
                 CatVals.main_job_role_labels_column_values.categorical_values
             ),
             IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
-            IndCQC.registered_manager_count: pl.Float32,
+            IndCQC.registered_manager_count: pl.UInt32,
         }
     )
     expected_adjust_managerial_roles_schema = pl.Schema(

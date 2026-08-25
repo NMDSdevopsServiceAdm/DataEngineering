@@ -2221,9 +2221,9 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
     ]
 
     adjust_managerial_roles_rows = [
-        (0, MainJobRoleLabels.care_worker, 10.0, 1.0),
-        (0, MainJobRoleLabels.supervisor, 20.0, 1.0),
-        (0, MainJobRoleLabels.registered_manager, 0.0, 1.0),
+        (0, MainJobRoleLabels.care_worker, 10.0, 1),
+        (0, MainJobRoleLabels.supervisor, 20.0, 1),
+        (0, MainJobRoleLabels.registered_manager, 0.0, 1),
     ]
     expected_adjust_managerial_roles_rows = [
         (0, MainJobRoleLabels.care_worker, 10.0, 10.0),
