@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import polars as pl
 
-import projects._03_independent_cqc._10_publication.fargate.validate_01_merge_pub_data as job
+import projects._08_publication._01_job_role_estimates.fargate.validate_01_merge_pub_data as job
 from polars_utils.column_types import CategoricalColumnTypes
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns, PartitionKeys
 from utils.column_values.categorical_column_values import (
@@ -14,7 +14,7 @@ from utils.column_values.categorical_column_values import (
 )
 
 PATCH_PATH = (
-    "projects._03_independent_cqc._10_publication.fargate.validate_01_merge_pub_data"
+    "projects._08_publication._01_job_role_estimates.fargate.validate_01_merge_pub_data"
 )
 
 TEST_BUCKET = "bucket"

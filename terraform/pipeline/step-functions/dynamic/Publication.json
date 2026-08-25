@@ -20,25 +20,25 @@
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
                 "Cluster": "${polars_cluster_arn}",
-                "TaskDefinition": "${independent_cqc_task_arn}",
+                "TaskDefinition": "${publication_task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
                     "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                    "SecurityGroups": ["${publication_security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
                 },
                 "Overrides": {
                   "ContainerOverrides": [
                     {
-                      "Name": "_03_independent_cqc-container",
+                      "Name": "_08_publication-container",
                       "Command": [
                         "_01_merge_pub_data.py",
                         "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
                         "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
                         "--jr_archive_geography_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
-                        "--merge_data_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/"
+                        "--merge_data_destination", "${dataset_bucket_uri}/domain=publication/dataset=publication_01_merged_data/"
                       ]
                     }
                   ]
@@ -58,23 +58,23 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "TaskDefinition": "${publication_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "SecurityGroups": ["${publication_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_03_independent_cqc-container",
+                              "Name": "_08_publication-container",
                               "Command": [
                                 "_02_clean_pub_data.py",
-                                "--merge_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/",
-                                "--clean_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_10_02_cleaned_data/"
+                                "--merge_data_source", "${dataset_bucket_uri}/domain=publication/dataset=publication_01_merged_data/",
+                                "--clean_destination", "${dataset_bucket_uri}/domain=publication/dataset=publication_02_cleaned_data/"
                               ]
                             }
                           ]
@@ -92,25 +92,25 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "TaskDefinition": "${publication_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "SecurityGroups": ["${publication_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_03_independent_cqc-container",
+                              "Name": "_08_publication-container",
                               "Command": [
                                 "validate_01_merge_pub_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/",
+                                "--source_path", "domain=publication/dataset=publication_01_merged_data/",
                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_10_01_merged_data/"
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_publication_01_merged_data/"
                               ]
                             }
                           ]
@@ -127,25 +127,25 @@
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
                 "Cluster": "${polars_cluster_arn}",
-                "TaskDefinition": "${independent_cqc_task_arn}",
+                "TaskDefinition": "${publication_task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
                     "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                    "SecurityGroups": ["${publication_security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
                 },
                 "Overrides": {
                   "ContainerOverrides": [
                     {
-                      "Name": "_03_independent_cqc-container",
+                      "Name": "_08_publication-container",
                       "Command": [
                         "validate_02_clean_pub_data.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_10_02_cleaned_data/",
-                        "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_10_01_merged_data/",
-                        "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_10_02_cleaned_data/"
+                        "--source_path", "domain=publication/dataset=publication_02_cleaned_data/",
+                        "--compare_path", "domain=publication/dataset=publication_01_merged_data/",
+                        "--reports_path", "domain=data_validation_reports/dataset=validation_publication_02_cleaned_data/"
                       ]
                     }
                   ]
@@ -200,13 +200,13 @@
           }
         },
         {
-          "StartAt": "Run IND CQC Crawler",
+          "StartAt": "Run Publication Crawler",
           "States": {
-            "Run IND CQC Crawler": {
+            "Run Publication Crawler": {
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
-                "Name": "${ind_cqc_filled_posts_crawler_name}"
+                "Name": "${publication_crawler_name}"
               },
               "End": true
             }

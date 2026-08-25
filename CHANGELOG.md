@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
 
 - Added a git union merge driver for `CHANGELOG.md` so concurrent branches appending changelog entries no longer conflict on merge.
 
-- Added a new `_10_publication` stage to the independent CQC pipeline, with placeholder `_01_merge`, `_02_clean` Polars scripts, their tests and validation scripts and a standalone Step Function to run them, ready for the real publication logic to land into.
+- Added a new `_08_publication` project, with placeholder merge/clean Polars scripts, their tests and validation scripts, its own Docker image and ECR repo, a dedicated Glue crawler, and a standalone Step Function (with error handling and crawler running) to run them, ready for the real publication logic to land into.
 - Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the standalone job role step function (`Ind-CQC-Filled-Post-Estimates-By-Role`) after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet), deliberately kept out of the main pipeline until partitioning is in place, ahead of a future rework of the job-role dataset shape.
 
 ### Changed
