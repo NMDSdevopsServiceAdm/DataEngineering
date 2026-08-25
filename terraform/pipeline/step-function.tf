@@ -5,8 +5,9 @@ locals {
     substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
   })
 
-  ind_cqc_job_role_estimates_dataset_name = terraform.workspace == "main" ? "ind_cqc_07_04_estimate_job_roles" : "main_ind_cqc_07_04_estimate_job_roles"
-  ind_cqc_job_role_metadata_dataset_name  = terraform.workspace == "main" ? "ind_cqc_07_01_merge_metadata_job_roles" : "main_ind_cqc_07_01_merge_metadata_job_roles"
+  ind_cqc_job_role_estimates_dataset_name     = terraform.workspace == "main" ? "ind_cqc_07_04_estimate_job_roles" : "main_ind_cqc_07_04_estimate_job_roles"
+  ind_cqc_job_role_metadata_dataset_name      = terraform.workspace == "main" ? "ind_cqc_07_01_merge_metadata_job_roles" : "main_ind_cqc_07_01_merge_metadata_job_roles"
+  ind_cqc_estimated_filled_posts_dataset_name = terraform.workspace == "main" ? "ind_cqc_06_estimated_filled_posts" : "main_ind_cqc_06_estimated_filled_posts"
 
   # Max polling attempts and per-attempt wait (seconds) for the "Wait For Worker"/
   # "Wait For Workplace" states in CQC-And-ASCWDS-Orchestrator.json, before the
@@ -88,8 +89,9 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     pipeline_resources_bucket_uri = module.pipeline_resources.bucket_uri
 
     # compare paths
-    ind_cqc_job_role_estimates = local.ind_cqc_job_role_estimates_dataset_name
-    ind_cqc_job_role_metadata  = local.ind_cqc_job_role_metadata_dataset_name
+    ind_cqc_job_role_estimates     = local.ind_cqc_job_role_estimates_dataset_name
+    ind_cqc_job_role_metadata      = local.ind_cqc_job_role_metadata_dataset_name
+    ind_cqc_estimated_filled_posts = local.ind_cqc_estimated_filled_posts_dataset_name
 
     # lambdas
     pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
@@ -154,7 +156,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
 
     # ecs tasks
     cqc_api_task_arn                   = module.cqc-api.task_arn
-    ascwds_task_arn                    = module.ascwds.task_arn
     ingest_task_arn                    = module._01_ingest.task_arn
     sfc_internal_task_arn              = module._02_sfc_internal.task_arn
     independent_cqc_task_arn           = module._03_independent_cqc.task_arn
@@ -164,7 +165,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
 
     # ecs task security groups
     cqc_api_security_group_id                   = module.cqc-api.security_group_id
-    ascwds_security_group_id                    = module.ascwds.security_group_id
     ingest_security_group_id                    = module._01_ingest.security_group_id
     sfc_internal_security_group_id              = module._02_sfc_internal.security_group_id
     independent_cqc_security_group_id           = module._03_independent_cqc.security_group_id
@@ -324,7 +324,6 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         ],
         "Resource" : [
           module.cqc-api.task_arn,
-          module.ascwds.task_arn,
           module._01_ingest.task_arn,
           module._02_sfc_internal.task_arn,
           module._03_independent_cqc.task_arn,
@@ -350,8 +349,6 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         Resource = [
           module.cqc-api.task_exc_role_arn,
           module.cqc-api.task_role_arn,
-          module.ascwds.task_exc_role_arn,
-          module.ascwds.task_role_arn,
           module._01_ingest.task_exc_role_arn,
           module._01_ingest.task_role_arn,
           module._02_sfc_internal.task_exc_role_arn,
