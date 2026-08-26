@@ -101,8 +101,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     run_crawler_state_machine_arn = aws_sfn_state_machine.run_crawler.arn
 
     # jobs
-    validate_ascwds_workplace_raw_data_job_name       = module.validate_ascwds_workplace_raw_data_job.job_name
-    validate_ascwds_worker_raw_data_job_name          = module.validate_ascwds_worker_raw_data_job.job_name
     clean_ascwds_worker_job_name                      = module.clean_ascwds_worker_job.job_name
     validate_ascwds_worker_cleaned_data_job_name      = module.validate_ascwds_worker_cleaned_data_job.job_name
     diagnostics_on_known_filled_posts_job_name        = module.diagnostics_on_known_filled_posts_job.job_name
@@ -111,7 +109,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     prepare_dpr_survey_job_name                       = module.prepare_dpr_survey_data_job.job_name
     merge_dpr_data_job_name                           = module.merge_dpr_data_job.job_name
     split_pa_filled_posts_into_icb_areas_job_name     = module.split_pa_filled_posts_into_icb_areas_job.job_name
-    ingest_ascwds_job_name                            = module.ingest_ascwds_dataset_job.job_name
     clean_cqc_pir_data_job_name                       = module.clean_cqc_pir_data_job.job_name
     validate_pir_cleaned_data_job_name                = module.validate_pir_cleaned_data_job.job_name
     ingest_ct_care_home_job_name                      = module.ingest_capacity_tracker_data_job.job_name
@@ -120,8 +117,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     ingest_ct_non_res_job_name                        = module.ingest_capacity_tracker_data_job.job_name
     clean_ct_non_res_data_job_name                    = module.clean_capacity_tracker_non_res_job.job_name
     validate_ct_non_res_cleaned_data_job_name         = module.validate_cleaned_capacity_tracker_non_res_data_job.job_name
-    ingest_ons_data_job_name                          = module.ingest_ons_data_job.job_name
-    validate_postcode_directory_raw_data_job_name     = module.validate_postcode_directory_raw_data_job.job_name
     clean_ons_data_job_name                           = module.clean_ons_data_job.job_name
     validate_postcode_directory_cleaned_data_job_name = module.validate_postcode_directory_cleaned_data_job.job_name
     flatten_cqc_ratings_job_name                      = module.flatten_cqc_ratings_job.job_name

@@ -4,13 +4,25 @@
     "States": {
         "Ingest ASCWDS": {
             "Type": "Task",
-            "Resource": "arn:aws:states:::glue:startJobRun.sync",
+            "Resource": "arn:aws:states:::ecs:runTask.sync",
             "Parameters": {
-                "JobName": "${ingest_ascwds_job_name}",
-                "Arguments": {
-                    "--source.$": "$.jobs.ingest_ascwds_dataset.source",
-                    "--destination": "s3://${dataset_bucket_name}/domain=ASCWDS/",
-                    "--dataset": "ascwds"
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                    "AwsvpcConfiguration": {
+                        "Subnets": ${public_subnet_ids},
+                        "SecurityGroups": ["${ingest_security_group_id}"],
+                        "AssignPublicIp": "ENABLED"
+                    }
+                },
+                "Overrides": {
+                    "ContainerOverrides": [
+                        {
+                            "Name": "_01_ingest-container",
+                            "Command.$": "States.Array('ingest_ascwds_dataset.py', '--source', $.jobs.ingest_ascwds_dataset.source, '--destination_prefix', 's3://${dataset_bucket_name}/domain=ASCWDS/')"
+                        }
+                    ]
                 }
             },
             "Catch": [
