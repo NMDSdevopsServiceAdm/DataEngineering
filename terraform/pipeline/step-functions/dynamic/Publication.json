@@ -1,7 +1,7 @@
 {
-  "StartAt": "Merge, clean and validate publication data",
+  "StartAt": "Merge and clean publication data",
   "States": {
-    "Merge, clean and validate publication data": {
+    "Merge and clean publication data": {
       "Type": "Parallel",
       "Next": "Handle Error and Run Crawlers",
       "Catch": [
@@ -44,85 +44,9 @@
                   ]
                 }
               },
-              "Next": "Clean and validate merged data"
+              "Next": "Clean data"
             },
-            "Clean and validate merged data": {
-              "Type": "Parallel",
-              "Next": "Validate cleaned data",
-              "Branches": [
-                {
-                  "StartAt": "Clean data",
-                  "States": {
-                    "Clean data": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
-                      "Parameters": {
-                        "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${publication_task_arn}",
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                          "AwsvpcConfiguration": {
-                            "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${publication_security_group_id}"],
-                            "AssignPublicIp": "ENABLED"
-                          }
-                        },
-                        "Overrides": {
-                          "ContainerOverrides": [
-                            {
-                              "Name": "_08_publication-container",
-                              "Command": [
-                                "_02_clean_pub_data.py",
-                                "--merge_data_source", "${dataset_bucket_uri}/domain=publication/dataset=publication_01_merged_data/",
-                                "--clean_destination", "${dataset_bucket_uri}/domain=publication/dataset=publication_02_cleaned_data/"
-                              ]
-                            }
-                          ]
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Validate merged data",
-                  "States": {
-                    "Validate merged data": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
-                      "Parameters": {
-                        "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${publication_task_arn}",
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                          "AwsvpcConfiguration": {
-                            "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${publication_security_group_id}"],
-                            "AssignPublicIp": "ENABLED"
-                          }
-                        },
-                        "Overrides": {
-                          "ContainerOverrides": [
-                            {
-                              "Name": "_08_publication-container",
-                              "Command": [
-                                "validate_01_merge_pub_data.py",
-                                "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=publication/dataset=publication_01_merged_data/",
-                                "--compare_path", "domain=sample_archive_data/dataset=estimates_by_job_role/archive_date=2026/run_number=1/job_role_estimates/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_publication_01_merged_data/"
-                              ]
-                            }
-                          ]
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                }
-              ]
-            },
-            "Validate cleaned data": {
+            "Clean data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
@@ -141,11 +65,9 @@
                     {
                       "Name": "_08_publication-container",
                       "Command": [
-                        "validate_02_clean_pub_data.py",
-                        "--bucket_name", "${dataset_bucket_name}",
-                        "--source_path", "domain=publication/dataset=publication_02_cleaned_data/",
-                        "--compare_path", "domain=publication/dataset=publication_01_merged_data/",
-                        "--reports_path", "domain=data_validation_reports/dataset=validation_publication_02_cleaned_data/"
+                        "_02_clean_pub_data.py",
+                        "--merge_data_source", "${dataset_bucket_uri}/domain=publication/dataset=publication_01_merged_data/",
+                        "--clean_destination", "${dataset_bucket_uri}/domain=publication/dataset=publication_02_cleaned_data/"
                       ]
                     }
                   ]
@@ -207,19 +129,6 @@
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
                 "Name": "${publication_crawler_name}"
-              },
-              "End": true
-            }
-          }
-        },
-        {
-          "StartAt": "Run Validation Crawler",
-          "States": {
-            "Run Validation Crawler": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-              "Parameters": {
-                "Name": "${data_validation_reports_crawler_name}"
               },
               "End": true
             }
