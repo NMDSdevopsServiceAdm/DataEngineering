@@ -3,37 +3,6 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
   description = "Database for all datasets belonging to the ${local.workspace_prefix} environment."
 }
 
-module "csv_to_parquet_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/csv_files/jobs"
-  script_name     = "csv_to_parquet.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = ""
-    "--delimiter"   = ","
-  }
-}
-
-module "spss_csv_to_parquet_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/csv_files/jobs"
-  script_name     = "spss_csv_to_parquet.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = ""
-  }
-}
-
 module "ingest_capacity_tracker_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
