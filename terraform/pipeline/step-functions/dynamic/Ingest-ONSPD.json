@@ -11,12 +11,25 @@
           "States": {
             "Ingest ONS data": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${ingest_ons_data_job_name}",
-                "Arguments": {
-                  "--source.$": "$.jobs.ingest_ons_data.source",
-                  "--destination": "${dataset_bucket_uri}/domain=ONS/"
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command.$": "States.Array('ingest_ons_data.py', '--source', $.jobs.ingest_ons_data.source, '--destination_prefix', '${dataset_bucket_uri}/domain=ONS/')"
+                    }
+                  ]
                 }
               },
               "Next": "Clean and validate ingested ONS data"
@@ -47,12 +60,33 @@
                   "States": {
                     "Validate ingested ONS data": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
-                        "JobName": "${validate_postcode_directory_raw_data_job_name}",
-                        "Arguments": {
-                          "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_postcode_directory_raw/"
+                        "LaunchType": "FARGATE",
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${ingest_task_arn}",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${ingest_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_01_ingest-container",
+                              "Command": [
+                                "validate_postcode_directory_raw_data.py",
+                                "--bucket_name",
+                                "${dataset_bucket_name}",
+                                "--source_path",
+                                "domain=ONS/dataset=postcode_directory/",
+                                "--reports_path",
+                                "domain=data_validation_reports/dataset=validation_ons_postcode_directory_raw/"
+                              ]
+                            }
+                          ]
                         }
                       },
                       "End": true

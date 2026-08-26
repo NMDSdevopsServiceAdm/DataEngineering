@@ -14,18 +14,18 @@
               "Parameters": {
                 "LaunchType": "FARGATE",
                 "Cluster": "${polars_cluster_arn}",
-                "TaskDefinition": "${ascwds_task_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
                     "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${ascwds_security_group_id}"],
+                    "SecurityGroups": ["${ingest_security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
                 },
                 "Overrides": {
                   "ContainerOverrides": [
                     {
-                      "Name": "ascwds-container",
+                      "Name": "_01_ingest-container",
                       "Command": [
                         "clean_ascwds_workplace.py",
                         "--workplace_source",
@@ -86,18 +86,18 @@
                       "Parameters": {
                         "LaunchType": "FARGATE",
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${ascwds_task_arn}",
+                        "TaskDefinition": "${ingest_task_arn}",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${ascwds_security_group_id}"],
+                            "SecurityGroups": ["${ingest_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "ascwds-container",
+                              "Name": "_01_ingest-container",
                               "Command": [
                                 "validate_clean_ascwds_workplace.py",
                                 "--bucket_name",
@@ -124,18 +124,18 @@
                       "Parameters": {
                         "LaunchType": "FARGATE",
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${ascwds_task_arn}",
+                        "TaskDefinition": "${ingest_task_arn}",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${ascwds_security_group_id}"],
+                            "SecurityGroups": ["${ingest_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "ascwds-container",
+                              "Name": "_01_ingest-container",
                               "Command": [
                                 "validate_ascwds_for_sfc_internal.py",
                                 "--bucket_name",
@@ -162,12 +162,33 @@
           "States": {
             "Validate Workplace Raw": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${validate_ascwds_workplace_raw_data_job_name}",
-                "Arguments": {
-                  "--raw_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_workplace_raw/"
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command": [
+                        "validate_ascwds_workplace_raw_data.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=ASCWDS/dataset=workplace/",
+                        "--reports_path",
+                        "domain=data_validation_reports/dataset=validation_ascwds_workplace_raw/"
+                      ]
+                    }
+                  ]
                 }
               },
               "End": true
@@ -179,12 +200,33 @@
           "States": {
             "Validate Worker Raw": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${validate_ascwds_worker_raw_data_job_name}",
-                "Arguments": {
-                  "--raw_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_worker_raw/"
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command": [
+                        "validate_ascwds_worker_raw_data.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=ASCWDS/dataset=worker/",
+                        "--reports_path",
+                        "domain=data_validation_reports/dataset=validation_ascwds_worker_raw/"
+                      ]
+                    }
+                  ]
                 }
               },
               "End": true

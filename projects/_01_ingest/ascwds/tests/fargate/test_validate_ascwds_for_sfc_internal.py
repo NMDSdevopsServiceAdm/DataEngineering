@@ -38,6 +38,8 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 AWPClean.worker_records: " ",
                 AWPClean.last_logged_in_date: date(2026, 1, 1),
                 AWPClean.la_permission: " ",
+                AWPClean.workplace_last_active_date: date(2026, 1, 1),
+                AWPClean.purge_date: date(2026, 1, 1),
             },
             schema={
                 AWPClean.ascwds_workplace_import_date: pl.Date,
@@ -60,6 +62,8 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 AWPClean.worker_records: pl.String,
                 AWPClean.last_logged_in_date: pl.Date,
                 AWPClean.la_permission: CategoricalColumnTypes.LaPermissionCatType,
+                AWPClean.workplace_last_active_date: pl.Date,
+                AWPClean.purge_date: pl.Date,
             },
         )
 

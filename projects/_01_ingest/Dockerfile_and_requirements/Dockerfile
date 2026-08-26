@@ -15,8 +15,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY polars_utils polars_utils
 COPY utils/file_utils.py utils/file_utils.py
 COPY utils/column_names utils/column_names
+COPY utils/column_values utils/column_values
+COPY projects/_01_ingest/ascwds/fargate/utils projects/_01_ingest/ascwds/fargate/utils
 
-# Copy all python jobs to WORKDIR
+# Copy python jobs to WORKDIR
 COPY projects/_01_ingest/cqc_pir/fargate/*.py .
+COPY projects/_01_ingest/ascwds/fargate/*.py .
+COPY projects/_01_ingest/ons_pd/fargate/*.py .
 
 ENTRYPOINT ["python"]
