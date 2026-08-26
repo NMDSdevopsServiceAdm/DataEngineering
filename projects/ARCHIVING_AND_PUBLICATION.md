@@ -1,8 +1,8 @@
 # Archiving and publication
 
-# WORK IN PROGRESS
+**WORK IN PROGRESS
 
-# THIS IS A TEMPLATE TO BE UPDATED OVER TIME.
+**THIS IS A TEMPLATE TO BE UPDATED OVER TIME.
 
 ## Archiving
 
@@ -13,7 +13,7 @@ Each run calculates estimates across all time.
 
 ### Holding
 Each of these runs is archived into a holding bucket.
-Each archive is partioned on run date and a run number. Run number always increases over time.
+Each archive is partitioned on run date and a run number. Run number always increases over time.
 A single archive consists of three datasets; job role estimates, metadata and current geographies.
 We only archive specific columns in each dataset.
 
@@ -29,9 +29,9 @@ Each of those datasets requires aggregating into high level groupings by region,
 ### Assessment of readiness
 We look at the cumulative percentage change in filled posts per month over time.
 We benchmark our trend against external data.
-We investigate and resolve irregularties until we are satisfied the outputs are accurate.
-We must publish an output on the 15th of each month at 09:30, unless it's outside working time.
+We investigate and resolve irregularities until we are satisfied the outputs are accurate.
+We must publish an output on the 15th of each month at 09:30, unless that is outside working time, upon which we will publish as soon as possible afterwards.
 
 ### Long term storage
-When the data for publication is signed-off then the archived output it used is copied into a long-term storage bucket.
+When the data for publication is signed-off then the archived output used to make it is copied into a long-term storage bucket.
 Archived data in the holding bucket that is more than two months old is removed.
