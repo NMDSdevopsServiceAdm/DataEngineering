@@ -50,6 +50,8 @@ All notable changes to this project will be documented in this file.
 - Fixed Step Functions executions not actually stopping their underlying ECS task on manual stop, due to a missing IAM permission, and added a safety net to force-stop orphaned ECS tasks and Glue crawlers before a branch's infrastructure is destroyed in CI.
 - Fixed the CQC API integration tests failing the whole CI pipeline during a CQC API outage: the tests now skip instead of fail on a recognised outage signature, and were split into their own non-blocking CircleCI job.
 
+- Fixed the CQC API integration test suite printing the real CQC API key into CircleCI logs on any failure (pytest's default traceback includes each frame's local variables). The key is now wrapped so its repr is redacted, while still working as a normal string for the live API calls.
+
 - Fixed the ascwds_job_role_ratios_merged validation check to cover all three coalesce source branches, instead of relying on incidental equality for one of them.
 
 - Fixed the ascwds_for_sfc_internal validation job failing schema match after `workplace_last_active_date` and `purge_date` were added to its output columns without updating the expected schema.

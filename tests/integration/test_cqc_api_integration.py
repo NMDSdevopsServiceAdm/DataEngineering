@@ -109,11 +109,27 @@ class TestIsCqcApiOutage:
         assert _is_cqc_api_outage(exception) == expected_is_outage
 
 
+class RedactedSecret(str):
+    """String subclass whose repr is redacted.
+
+    Behaves as a normal string everywhere (HTTP headers, formatting), but
+    pytest's default traceback prints each frame's locals via repr() -- this
+    stops a real API key from ending up in CI logs when a call using it fails.
+    """
+
+    def __repr__(self) -> str:
+        return "'<redacted>'"
+
+
 class CqcApiIntegrationTests(unittest.TestCase):
     def setUp(self):
-        self.cqc_api_primary_key = json.loads(
-            ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
-        )["Ocp-Apim-Subscription-Key"]
+        self.cqc_api_primary_key = RedactedSecret(
+            json.loads(
+                ars.get_secret(
+                    secret_name="cqc_api_primary_key", region_name="eu-west-2"
+                )
+            )["Ocp-Apim-Subscription-Key"]
+        )
         self.page = 1
 
     @contextmanager
