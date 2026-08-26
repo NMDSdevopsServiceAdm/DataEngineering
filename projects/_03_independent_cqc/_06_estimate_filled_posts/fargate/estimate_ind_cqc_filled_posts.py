@@ -144,28 +144,16 @@ def main(
         name=IndCQC.estimate_filled_posts,
     )
     lf = lf.with_columns([value_expr, source_expr])
+    lf = lf.with_columns(
+        pl.col(IndCQC.estimate_filled_posts).cast(pl.Float32),
+        pl.col(IndCQC.estimate_filled_posts_source).cast(
+            CatColType.EstimatesFilledPostSourceEnumType
+        ),
+    )
 
     lf = set_min_value(lf, IndCQC.estimate_filled_posts, 1.0)
 
     lf = estimate_non_res_capacity_tracker_filled_posts(lf)
-
-    lf = lf.with_columns(
-        pl.col(IndCQC.estimate_filled_posts_source).cast(
-            CatColType.EstimatesFilledPostSourceEnumType
-        ),
-        pl.col(
-            [
-                IndCQC.ascwds_filled_posts_dedup_clean,
-                IndCQC.ascwds_pir_merged,
-                IndCQC.care_home_model,
-                IndCQC.non_res_combined_model,
-                IndCQC.non_res_with_dormancy_model,
-                IndCQC.non_res_without_dormancy_model,
-                IndCQC.posts_rolling_average_model,
-                IndCQC.estimate_filled_posts,
-            ]
-        ).cast(pl.Float32),
-    )
 
     utils.sink_to_parquet(
         lf,

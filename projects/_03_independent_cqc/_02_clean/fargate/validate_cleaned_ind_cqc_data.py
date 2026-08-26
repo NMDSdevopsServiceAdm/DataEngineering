@@ -30,11 +30,9 @@ merged_locations_columns_to_import = [
     IndCqcColumns.worker_records_bounded,
 ]
 
-# Only the columns narrowed to Enum in clean_ind_cqc_filled_posts.py as part of
-# ticket 1920 - not an exhaustive schema for the dataset, so col_schema_match
-# runs with complete=False, in_order=False below. Checked here, right after
-# this stage produces them, so a regression is caught at its source rather
-# than several stages downstream.
+# Not an exhaustive schema for the dataset - just the columns cast to Enum in
+# clean_ind_cqc_filled_posts.py - so col_schema_match runs with
+# complete=False, in_order=False below.
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.ascwds_filled_posts_source: str(

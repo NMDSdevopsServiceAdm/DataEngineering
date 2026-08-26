@@ -34,6 +34,7 @@ def enrich_with_model_predictions(
         predictions_lf = predictions_lf.with_columns(
             pl.col(IndCqc.prediction)
             .mul(pl.col(IndCqc.number_of_beds))
+            .cast(pl.Float32)
             .alias(IndCqc.prediction)
         )
 

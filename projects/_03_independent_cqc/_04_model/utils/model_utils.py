@@ -123,6 +123,6 @@ def add_predictions_into_df(
     run_id_value = f"v{model_version}_r{run_number}"
 
     return df.with_columns(
-        pl.Series(IndCQC.prediction, predictions),
+        pl.Series(IndCQC.prediction, predictions, dtype=pl.Float32),
         pl.lit(run_id_value).alias(IndCQC.prediction_run_id),
     )

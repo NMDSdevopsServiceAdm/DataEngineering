@@ -97,19 +97,6 @@ EXPECTED_SCHEMA = pb.Schema(
 
 CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 
-# ~100x float32 eps (1.19e-7); the measured drift in ticket 1864 was ~2.6x eps.
-# See reference_float32_drift_vs_absolute_tolerance memory - a fixed absolute
-# bound fails on the largest locations first as data grows, since float32 drift
-# is relative to magnitude, not row count.
-RELATIVE_DRIFT_TOLERANCE = 1e-5
-
-# The registered-manager adjustment allowance itself ("+1") is a flat business
-# constant, not proportional to location size, so its tolerance is absolute
-# rather than relative. Observed in production (ticket 1920): one location/date
-# landed at 1.0001, ~1e-4 over the allowance, from the same float32
-# accumulation drift as the downside case.
-MANAGER_ADJUSTMENT_UPPER_BOUND_TOLERANCE = 1e-3
-
 req_pcts = {
     JobGroupLabels.direct_care: (0.71, 0.81),
     JobGroupLabels.managers: (0.03, 0.1),
@@ -324,10 +311,9 @@ def other_validation(
         .col_vals_expr(
             difference_within_drift_tolerance_expr(),
             brief=(
-                f"Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles "
-                f"should be within a relative tolerance of {RELATIVE_DRIFT_TOLERANCE:.0e} on the downside "
-                f"(float32 accumulation drift) and up to 1 + {MANAGER_ADJUSTMENT_UPPER_BOUND_TOLERANCE:.0e} "
-                "on the upside (registered manager adjustment, plus the same drift) where present"
+                "Difference between estimate_filled_posts and "
+                "estimate_filled_posts_from_all_job_roles, rounded to 2dp, should be "
+                "between 0 and 1 where present"
             ),
         )
         # Date plausibility
@@ -449,18 +435,12 @@ def other_validation(
 def difference_within_drift_tolerance_expr() -> pl.Expr:
     """
     Constructs an expression checking that
-        difference_estimate_filled_posts_and_from_all_job_roles is within tolerance
-        of zero, relative to estimate_filled_posts_from_all_job_roles rather than a
-        fixed absolute bound.
+        difference_estimate_filled_posts_and_from_all_job_roles, rounded to 2dp,
+        falls between 0 and 1 inclusive.
 
-    The downside is bounded by RELATIVE_DRIFT_TOLERANCE, since both
-        estimate_filled_posts_by_job_role and its sum are float32 and their
-        difference is expected to carry float32 accumulation drift (proportional
-        to magnitude, not a fixed absolute amount). The upside is bounded by 1
-        plus MANAGER_ADJUSTMENT_UPPER_BOUND_TOLERANCE - the flat 1 accounts for
-        the registered manager adjustment, which can add at most one whole post
-        system-wide, and the small addition on top of it tolerates the same
-        float32 drift affecting that fixed allowance.
+    Rounding to 2dp absorbs float32 accumulation drift on both sides: a small
+        negative drift below zero, and a small overshoot above the flat 1
+        allowance for the registered manager adjustment.
 
     Returns:
         pl.Expr: the expression for validating the difference is within tolerance
@@ -468,12 +448,8 @@ def difference_within_drift_tolerance_expr() -> pl.Expr:
     difference_col = pl.col(
         IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles
     )
-    total_col = pl.col(IndCqcColumns.estimate_filled_posts_from_all_job_roles)
 
-    return difference_col.is_null() | (
-        (difference_col >= -RELATIVE_DRIFT_TOLERANCE * total_col)
-        & (difference_col <= 1 + MANAGER_ADJUSTMENT_UPPER_BOUND_TOLERANCE)
-    )
+    return difference_col.is_null() | difference_col.round(2).is_between(0, 1)
 
 
 def ascwds_job_role_ratios_merged_matches_coalesce_source() -> pl.Expr:

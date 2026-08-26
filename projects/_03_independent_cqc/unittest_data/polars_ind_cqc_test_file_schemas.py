@@ -227,7 +227,7 @@ class ModelUtilsSchemas:
     expected_predictions_dataframe_schema = pl.Schema(
         list(features_schema.items())
         + [
-            (IndCQC.prediction, pl.Float64()),
+            (IndCQC.prediction, pl.Float32()),
             (IndCQC.prediction_run_id, pl.String()),
         ]
     )
@@ -1304,7 +1304,7 @@ class EstimateFilledPostsModelsUtils:
     expected_enrich_model_ind_cqc_care_home_schema = pl.Schema(
         {
             **enrich_model_ind_cqc_schema,
-            test_care_home_model_name: pl.Float64,
+            test_care_home_model_name: pl.Float32,
             f"{test_care_home_model_name}_run_id": pl.String,
         }
     )
@@ -1351,9 +1351,9 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             IndCQC.care_home: pl.String,
             IndCQC.related_location: pl.String,
             IndCQC.time_registered: pl.Int64,
-            IndCQC.non_res_without_dormancy_model: pl.Float64,
-            IndCQC.non_res_with_dormancy_model: pl.Float64,
-            IndCQC.non_res_combined_model: pl.Float64,
+            IndCQC.non_res_without_dormancy_model: pl.Float32,
+            IndCQC.non_res_with_dormancy_model: pl.Float32,
+            IndCQC.non_res_combined_model: pl.Float32,
         }
     )
 
@@ -1369,12 +1369,12 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         {
             IndCQC.related_location: pl.String,
             NRModel_TempCol.time_registered_banded_and_capped: pl.Int64,
-            IndCQC.non_res_without_dormancy_model: pl.Float64,
-            IndCQC.non_res_with_dormancy_model: pl.Float64,
-            NRModel_TempCol.avg_with_dormancy: pl.Float64,
-            NRModel_TempCol.avg_without_dormancy: pl.Float64,
-            NRModel_TempCol.adjustment_ratio: pl.Float64,
-            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
+            IndCQC.non_res_without_dormancy_model: pl.Float32,
+            IndCQC.non_res_with_dormancy_model: pl.Float32,
+            NRModel_TempCol.avg_with_dormancy: pl.Float32,
+            NRModel_TempCol.avg_without_dormancy: pl.Float32,
+            NRModel_TempCol.adjustment_ratio: pl.Float32,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float32,
         }
     )
 
@@ -1382,10 +1382,10 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         {
             IndCQC.location_id: pl.String,
             IndCQC.cqc_location_import_date: pl.Date,
-            IndCQC.non_res_with_dormancy_model: pl.Float64,
-            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
-            NRModel_TempCol.residual_at_overlap: pl.Float64,
-            NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float64,
+            IndCQC.non_res_with_dormancy_model: pl.Float32,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float32,
+            NRModel_TempCol.residual_at_overlap: pl.Float32,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float32,
         }
     )
 
