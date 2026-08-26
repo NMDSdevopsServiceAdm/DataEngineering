@@ -1,3 +1,5 @@
+import re
+import time
 from typing import Generator, Iterable, List
 
 import polars as pl
@@ -13,11 +15,17 @@ ONE_MINUTE = 60
 DEFAULT_PAGE_SIZE = 500
 CQC_API_BASE_URL = "https://api.service.cqc.org.uk"
 USER_AGENT = "SkillsForCare"
+SOFT_RATE_LIMIT_MAX_RETRIES = 5
+SOFT_RATE_LIMIT_DEFAULT_WAIT_SECONDS = 2.0
 
 days_to_rollback_start_timestamp = 30
 
 
 class NoProviderOrLocationException(Exception):
+    pass
+
+
+class CqcApiRateLimitedException(Exception):
     pass
 
 
@@ -27,6 +35,28 @@ RETRY_STRATEGY = Retry(
     status_forcelist=[429, 500, 502, 503, 504],
 )
 CQC_ADAPTER = HTTPAdapter(max_retries=RETRY_STRATEGY)
+
+
+def _soft_rate_limit_wait_seconds(body: dict) -> float | None:
+    """
+    Detects CQC's soft rate limit response.
+
+    CQC sometimes signals it's rate limiting a key inside the JSON body of
+    an HTTP 200 response (`{"statusCode": 429, "message": "..."}`), rather
+    than returning an actual HTTP 429 -- so the transport-level retry never
+    sees it and it must be checked for explicitly.
+
+    Args:
+        body (dict): the parsed JSON body of a 200 CQC API response
+
+    Returns:
+        float | None: seconds to wait before retrying, or None if the body
+            isn't a soft rate limit response
+    """
+    if not isinstance(body, dict) or body.get("statusCode") != 429:
+        return None
+    match = re.search(r"(\d+(?:\.\d+)?)", body.get("message", ""))
+    return float(match.group(1)) if match else SOFT_RATE_LIMIT_DEFAULT_WAIT_SECONDS
 
 
 @sleep_and_retry
@@ -50,48 +80,66 @@ def call_api(
 
     Raises:
         NoProviderOrLocationException: if the api is unavailable
+        CqcApiRateLimitedException: if CQC's soft rate limit response
+            persists after `SOFT_RATE_LIMIT_MAX_RETRIES` retries
         Exception: if the api returns an unexpected code
     """
-    with requests.Session() as session:
-        try:
-            session.mount(CQC_API_BASE_URL, CQC_ADAPTER)
-            if id:
-                full_url = url + id
-            else:
-                full_url = url
-            response = session.get(full_url, params=query_params, headers=headers_dict)
-        except (MaxRetryError, ResponseError) as e:
-            raise Exception("Max retries exceeded: {}".format(e))
+    for attempt in range(SOFT_RATE_LIMIT_MAX_RETRIES + 1):
+        with requests.Session() as session:
+            try:
+                session.mount(CQC_API_BASE_URL, CQC_ADAPTER)
+                if id:
+                    full_url = url + id
+                else:
+                    full_url = url
+                response = session.get(
+                    full_url, params=query_params, headers=headers_dict
+                )
+            except (MaxRetryError, ResponseError) as e:
+                raise Exception("Max retries exceeded: {}".format(e))
 
-    if (response.status_code == 403) & (headers_dict is None):
-        raise Exception(
-            "API response: {}, ensure you have set a User-Agent header".format(
-                response.status_code
+        if (response.status_code == 403) & (headers_dict is None):
+            raise Exception(
+                "API response: {}, ensure you have set a User-Agent header".format(
+                    response.status_code
+                )
             )
-        )
-    if response.status_code == 404:
-        raise NoProviderOrLocationException(
-            f"API response: {response.status_code} - {response.json().get('message')}"
-        )
+        if response.status_code == 404:
+            raise NoProviderOrLocationException(
+                f"API response: {response.status_code} - {response.json().get('message')}"
+            )
 
-    if (response.status_code == 400) and (id is not None) and (id != id.upper()):
-        try:
-            if id:
-                full_url = url + id.upper()
-            else:
-                full_url = url
-            response = session.get(full_url, params=query_params, headers=headers_dict)
-        except:
+        if (response.status_code == 400) and (id is not None) and (id != id.upper()):
+            try:
+                if id:
+                    full_url = url + id.upper()
+                else:
+                    full_url = url
+                response = session.get(
+                    full_url, params=query_params, headers=headers_dict
+                )
+            except:
+                raise Exception(
+                    "API response: {} - {}".format(response.status_code, response.text)
+                )
+
+        if response.status_code != 200:
             raise Exception(
                 "API response: {} - {}".format(response.status_code, response.text)
             )
 
-    if response.status_code != 200:
-        raise Exception(
-            "API response: {} - {}".format(response.status_code, response.text)
-        )
+        body = response.json()
+        wait_seconds = _soft_rate_limit_wait_seconds(body)
+        if wait_seconds is None:
+            return body
 
-    return response.json()
+        if attempt == SOFT_RATE_LIMIT_MAX_RETRIES:
+            raise CqcApiRateLimitedException(
+                f"CQC API soft rate limit not resolved after "
+                f"{SOFT_RATE_LIMIT_MAX_RETRIES} retries: {body}"
+            )
+
+        time.sleep(wait_seconds)
 
 
 def get_all_objects(

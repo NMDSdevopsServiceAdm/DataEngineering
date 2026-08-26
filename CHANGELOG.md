@@ -46,13 +46,13 @@ All notable changes to this project will be documented in this file.
 
 - Removed a dead `lf.sort()` call (its result was never reassigned) in model_interpolation. Converted the module's remaining sorts to `over(..., order_by=...)`, measured as using much less peak memory than sorting.
 
-- `get_page_objects` now raises a descriptive error (including the actual response body) instead of a bare `KeyError` when a CQC API page response is missing the expected object-type key, to diagnose the CQC API integration tests' intermittent failures on this call.
-
 ### Fixed
 - Fixed Step Functions executions not actually stopping their underlying ECS task on manual stop, due to a missing IAM permission, and added a safety net to force-stop orphaned ECS tasks and Glue crawlers before a branch's infrastructure is destroyed in CI.
 - Fixed the CQC API integration tests failing the whole CI pipeline during a CQC API outage: the tests now skip instead of fail on a recognised outage signature, and were split into their own non-blocking CircleCI job.
 
 - Fixed the CQC API integration test suite printing the real CQC API key into CircleCI logs on any failure (pytest's default traceback includes each frame's local variables). The key is now wrapped so its repr is redacted, while still working as a normal string for the live API calls.
+
+- Fixed `call_api` treating CQC's soft rate limit response (an HTTP 200 whose body reports `statusCode: 429`, invisible to the transport-level retry) as a malformed/successful response instead of a retryable error. It now detects this shape and retries with the wait CQC itself reports, raising a clear `CqcApiRateLimitedException` if it persists — fixing both the CQC API integration tests' intermittent failures and the same exposure in the real ingest pipeline.
 
 - Fixed the ascwds_job_role_ratios_merged validation check to cover all three coalesce source branches, instead of relying on incidental equality for one of them.
 

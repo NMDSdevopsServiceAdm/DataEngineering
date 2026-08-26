@@ -24,7 +24,9 @@ CQC_GATEWAY_SIGNATURE = "Microsoft-Azure-Application-Gateway"
 
 
 def _is_cqc_api_outage(exc: Exception) -> bool:
-    if isinstance(exc, requests.exceptions.RequestException):
+    if isinstance(
+        exc, (requests.exceptions.RequestException, cqc.CqcApiRateLimitedException)
+    ):
         return True
     message = str(exc)
     if message.startswith("Max retries exceeded"):
@@ -76,6 +78,14 @@ cqc_api_outage_test_cases = [
     CqcApiOutageTestCase(
         id="raw_timeout_is_outage",
         exception=requests.exceptions.Timeout("boom"),
+        expected_is_outage=True,
+    ),
+    CqcApiOutageTestCase(
+        id="exhausted_soft_rate_limit_is_outage",
+        exception=cqc.CqcApiRateLimitedException(
+            "CQC API soft rate limit not resolved after 5 retries: "
+            "{'statusCode': 429, 'message': 'Rate limit is exceeded.'}"
+        ),
         expected_is_outage=True,
     ),
     CqcApiOutageTestCase(

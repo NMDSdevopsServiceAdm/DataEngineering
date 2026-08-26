@@ -329,6 +329,77 @@ class CallApiTests(CqcApiTests):
             getconn_mock.call_count == 4
         )  # only 4 successful calls as 5th should fail
 
+    @patch(f"{PATCH_PATH}.time.sleep")
+    @patch("requests.Session.get")
+    def test_call_api_retries_and_succeeds_after_soft_rate_limit(
+        self, get_mock: Mock, sleep_mock: Mock
+    ):
+        rate_limited_response = TestResponse(
+            200,
+            {
+                "statusCode": 429,
+                "message": "Rate limit is exceeded. Try again in 1 seconds.",
+            },
+        )
+        success_response = TestResponse(200, {"data": "success"})
+        get_mock.side_effect = [rate_limited_response, success_response]
+
+        response_json = cqc.call_api(
+            self.test_url,
+            self.test_location_id,
+            {"test": "body"},
+            headers_dict={"some": "header"},
+        )
+
+        self.assertEqual(response_json, {"data": "success"})
+        sleep_mock.assert_called_once_with(1.0)
+
+    @patch(f"{PATCH_PATH}.time.sleep")
+    @patch("requests.Session.get")
+    def test_call_api_raises_when_soft_rate_limit_persists(
+        self, get_mock: Mock, sleep_mock: Mock
+    ):
+        rate_limited_response = TestResponse(
+            200,
+            {
+                "statusCode": 429,
+                "message": "Rate limit is exceeded. Try again in 1 seconds.",
+            },
+        )
+        get_mock.return_value = rate_limited_response
+
+        with self.assertRaises(cqc.CqcApiRateLimitedException):
+            cqc.call_api(
+                self.test_url,
+                self.test_location_id,
+                {"test": "body"},
+                headers_dict={"some": "header"},
+            )
+
+        self.assertEqual(get_mock.call_count, cqc.SOFT_RATE_LIMIT_MAX_RETRIES + 1)
+
+
+class SoftRateLimitWaitSecondsTests(CqcApiTests):
+    def test_returns_none_when_status_code_is_not_429(self):
+        self.assertIsNone(cqc._soft_rate_limit_wait_seconds({"totalPages": 1}))
+
+    def test_returns_none_when_body_is_not_a_dict(self):
+        self.assertIsNone(cqc._soft_rate_limit_wait_seconds(["not", "a", "dict"]))
+
+    def test_parses_wait_seconds_from_message(self):
+        body = {
+            "statusCode": 429,
+            "message": "Rate limit is exceeded. Try again in 3 seconds.",
+        }
+        self.assertEqual(cqc._soft_rate_limit_wait_seconds(body), 3.0)
+
+    def test_falls_back_to_default_wait_when_message_has_no_number(self):
+        body = {"statusCode": 429, "message": "Rate limit is exceeded."}
+        self.assertEqual(
+            cqc._soft_rate_limit_wait_seconds(body),
+            cqc.SOFT_RATE_LIMIT_DEFAULT_WAIT_SECONDS,
+        )
+
 
 class GetAllObjectsTests(CqcApiTests):
     @patch(f"{PATCH_PATH}.get_page_objects")
