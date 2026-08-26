@@ -22,18 +22,14 @@ imputed_ind_cqc_cols_to_import = [
     IndCqcColumns.location_id,
 ]
 
-# Partial schema (col_schema_match complete=False) - just the narrowed
-# columns. current_cssr, current_region, and ascwds_filled_posts_source are
-# Categorical/Enum upstream but arrive here as String: this job currently
-# reads the PySpark impute output, not the parallel Polars one, and Spark's
-# writer flattens those dtypes. See
-# terraform/pipeline/step-functions/dynamic/Ind-CQC-Filled-Post-Estimates.json;
-# revisit once the Polars estimates pipeline is signed off and rewired.
+# Partial schema (col_schema_match complete=False) - just the narrowed columns.
 EXPECTED_SCHEMA = pb.Schema(
     columns={
-        IndCqcColumns.current_cssr: "String",
-        IndCqcColumns.current_region: "String",
-        IndCqcColumns.ascwds_filled_posts_source: "String",
+        IndCqcColumns.current_cssr: str(CatColType.OnsCssrCatType),
+        IndCqcColumns.current_region: str(CatColType.OnsRegionCatType),
+        IndCqcColumns.ascwds_filled_posts_source: str(
+            CatColType.AscwdsFilledPostsSourceEnumType
+        ),
         IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
         IndCqcColumns.ascwds_pir_merged: "Float32",
         IndCqcColumns.estimate_filled_posts: "Float32",
