@@ -17,7 +17,7 @@ UNRELATED_PATHS = [
     "projects/_01_ingest/ascwds/tests/jobs/test_ingest_ascwds_dataset.py",
     "projects/_01_ingest/capacity_tracker/jobs/clean_capacity_tracker_care_home_data.py",
     "projects/_01_ingest/cqc_pir/utils/null_people_directly_employed_outliers.py",
-    "projects/_01_ingest/ons_pd/jobs/clean_ons_data.py",
+    "projects/_01_ingest/ons_pd/fargate/clean_ons_data.py",
 ]
 
 domain_trigger_cases = [

@@ -5,6 +5,10 @@ from typing import Any, Optional
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -2036,4 +2040,77 @@ class IngestOnsDataTest:
         ONS.rural_urban_indicator_2011: ["3", "3", "1"],
         ONS.month: ["05", "05", "09"],  # leading zeros preserved: no type inference
         ONS.import_date: ["20260101", "20260115", "20260101"],
+    }  # fmt: skip
+
+
+@dataclass
+class CleanOnsDataTest:
+    labels_dict_for_build_labels_lf = {
+        "cssr": {"104": "Cumbria", "999": "Cheshire West and Chester"},
+        "region": {"1": "North East"},
+    }
+    expected_build_labels_lf = {
+        DLC.column_name: ["cssr", "cssr", "region"],
+        DLC.code: ["104", "999", "1"],
+        DLC.label: ["Cumbria", "Cheshire West and Chester", "North East"],
+    }
+
+    # Non-distinguishing geography columns share a placeholder value.
+    prepare_ons_data_rows = {
+        ONSClean.postcode: ["AB10AA", "AB10AB", "AB10AA", "AB10AB", "AB10AC"],
+        ONSClean.contemporary_ons_import_date: [date(2022, 1, 1)] * 2 + [date(2023, 1, 1)] * 3,
+        ONSClean.cssr: ["value"] * 5,
+        ONSClean.region: ["value"] * 5,
+        ONSClean.sub_icb: ["value"] * 5,
+        ONSClean.icb: ["value"] * 5,
+        ONSClean.icb_region: ["value"] * 5,
+        ONSClean.latitude: ["value"] * 5,
+        ONSClean.longitude: ["value"] * 5,
+        ONSClean.imd_score: ["value"] * 5,
+        ONSClean.lower_super_output_area_2011: ["value"] * 5,
+        ONSClean.middle_super_output_area_2011: ["value"] * 5,
+        ONSClean.rural_urban_indicator_2011: ["value"] * 5,
+        ONSClean.rural_urban_indicator_2021: [None, None, "6", "6", "6"],
+        ONSClean.lower_super_output_area_2021: ["value"] * 5,
+        ONSClean.middle_super_output_area_2021: ["value"] * 5,
+        ONSClean.parliamentary_constituency: ["value"] * 5,
+    }  # fmt: skip
+
+    expected_prepare_contemporary_ons_data = {
+        ONSClean.postcode: ["AB10AA", "AB10AB", "AB10AA", "AB10AB", "AB10AC"],
+        ONSClean.contemporary_ons_import_date: [date(2022, 1, 1)] * 2 + [date(2023, 1, 1)] * 3,
+        ONSClean.contemporary_cssr: ["value"] * 5,
+        ONSClean.contemporary_region: ["value"] * 5,
+        ONSClean.contemporary_sub_icb: ["value"] * 5,
+        ONSClean.contemporary_icb: ["value"] * 5,
+        ONSClean.contemporary_icb_region: ["value"] * 5,
+        ONSClean.contemporary_latitude: ["value"] * 5,
+        ONSClean.contemporary_longitude: ["value"] * 5,
+        ONSClean.contemporary_imd_score: ["value"] * 5,
+        ONSClean.contemporary_lsoa11: ["value"] * 5,
+        ONSClean.contemporary_msoa11: ["value"] * 5,
+        ONSClean.contemporary_rural_urban_ind_11: ["value"] * 5,
+        ONSClean.contemporary_lsoa21: ["value"] * 5,
+        ONSClean.contemporary_msoa21: ["value"] * 5,
+        ONSClean.contemporary_constituency: ["value"] * 5,
+    }  # fmt: skip
+
+    expected_prepare_current_ons_data = {
+        ONSClean.postcode: ["AB10AA", "AB10AB", "AB10AC"],
+        ONSClean.current_ons_import_date: [date(2023, 1, 1)] * 3,
+        ONSClean.current_cssr: ["value"] * 3,
+        ONSClean.current_region: ["value"] * 3,
+        ONSClean.current_sub_icb: ["value"] * 3,
+        ONSClean.current_icb: ["value"] * 3,
+        ONSClean.current_icb_region: ["value"] * 3,
+        ONSClean.current_latitude: ["value"] * 3,
+        ONSClean.current_longitude: ["value"] * 3,
+        ONSClean.current_imd_score: ["value"] * 3,
+        ONSClean.current_lsoa11: ["value"] * 3,
+        ONSClean.current_msoa11: ["value"] * 3,
+        ONSClean.current_rural_urban_ind_11: ["value"] * 3,
+        ONSClean.current_rural_urban_ind_21: ["6"] * 3,
+        ONSClean.current_lsoa21: ["value"] * 3,
+        ONSClean.current_msoa21: ["value"] * 3,
+        ONSClean.current_constituency: ["value"] * 3,
     }  # fmt: skip

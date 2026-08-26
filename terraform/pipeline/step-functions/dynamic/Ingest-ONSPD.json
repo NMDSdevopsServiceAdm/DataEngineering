@@ -43,12 +43,31 @@
                   "States": {
                     "Clean ONS data": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
-                        "JobName": "${clean_ons_data_job_name}",
-                        "Arguments": {
-                          "--ons_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
-                          "--cleaned_ons_destination": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
+                        "LaunchType": "FARGATE",
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${ingest_task_arn}",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${ingest_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_01_ingest-container",
+                              "Command": [
+                                "clean_ons_data.py",
+                                "--ons_source",
+                                "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
+                                "--cleaned_ons_destination",
+                                "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
+                              ]
+                            }
+                          ]
                         }
                       },
                       "End": true
@@ -97,13 +116,35 @@
             },
             "Validate cleaned ONS data": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${validate_postcode_directory_cleaned_data_job_name}",
-                "Arguments": {
-                  "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
-                  "--cleaned_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_postcode_directory_cleaned/"
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command": [
+                        "validate_postcode_directory_cleaned_data.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=ONS/dataset=postcode_directory_cleaned/",
+                        "--reports_path",
+                        "domain=data_validation_reports/dataset=validation_pdq_postcode_directory_cleaned/",
+                        "--compare_path",
+                        "domain=ONS/dataset=postcode_directory/"
+                      ]
+                    }
+                  ]
                 }
               },
               "End": true

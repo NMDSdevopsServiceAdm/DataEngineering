@@ -424,34 +424,6 @@ class ValidateCleanedCapacityTrackerNonResData:
 
 
 @dataclass
-class CleanONSData:
-    ons_sample_rows_full = [
-        ("AB10AA", "104", "1", "38000006", "54000005", "1",        "51.23456", "-.12345", "123", "10123", "20123", "1", None, "1000001", "2000001", "14000530", date(2022, 1, 1)),
-        ("AB10AB", "104", "1", "38000006", "54000005", "1",        "51.23456", "-.12345", "123", "10123", "20123", "1", None, "1000001", "2000001", "14000530", date(2022, 1, 1)),
-        ("AB10AA", "999", "9", "38000265", "54000064", "40000012", "51.23456", "-.12345", "123", "10123", "20123", "9", "6",  "1035762", "2007116", "14001605", date(2023, 1, 1)),
-        ("AB10AB", "999", "9", "38000265", "54000064", "40000012", "51.23456", "-.12345", "123", "10123", "20123", "9", "6",  "1035762", "2007116", "14001605", date(2023, 1, 1)),
-        ("AB10AC", "999", "9", "38000265", "54000064", "40000012", "51.23456", "-.12345", "123", "10123", "20123", "9", "6",  "1035762", "2007116", "14001605", date(2023, 1, 1)),
-    ] # fmt: skip
-
-
-@dataclass
-class ValidatePostcodeDirectoryCleanedData:
-    raw_postcode_directory_rows = [
-        ("AB1 2CD",),
-        ("AB2 2CD",),
-        ("AB1 2CD",),
-        ("AB2 2CD",),
-    ]
-
-    cleaned_postcode_directory_rows = [
-        ("AB1 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-        ("AB2 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-        ("AB1 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-        ("AB2 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-    ] # fmt: skip
-
-
-@dataclass
 class ValidateASCWDSWorkerCleanedData:
     cleaned_ascwds_worker_rows = [
         ("estab_1", date(2024, 1, 1), "worker_1", "8", "Care Worker"),

@@ -23,9 +23,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from utils.column_names.cleaned_data_files.ons_cleaned import (
-    OnsCleanedColumns as ONSClean,
-)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
@@ -34,9 +31,6 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as CQCPIR
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ONS,
-)
 
 
 @dataclass
@@ -289,93 +283,6 @@ class ValidateCleanedCapacityTrackerNonResData:
         ]
     )
     calculate_expected_size_schema = ct_non_res_schema
-
-
-@dataclass
-class CleanONSData:
-    full_schema = StructType(
-        [
-            StructField(ONS.postcode, StringType(), True),
-            StructField(ONS.cssr, StringType(), True),
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.sub_icb, StringType(), True),
-            StructField(ONS.icb, StringType(), True),
-            StructField(ONS.icb_region, StringType(), True),
-            StructField(ONS.latitude, StringType(), True),
-            StructField(ONS.longitude, StringType(), True),
-            StructField(ONS.imd_score, StringType(), True),
-            StructField(ONS.lower_super_output_area_2011, StringType(), True),
-            StructField(ONS.middle_super_output_area_2011, StringType(), True),
-            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
-            StructField(ONS.rural_urban_indicator_2021, StringType(), True),
-            StructField(ONS.lower_super_output_area_2021, StringType(), True),
-            StructField(ONS.middle_super_output_area_2021, StringType(), True),
-            StructField(ONS.parliamentary_constituency, StringType(), True),
-            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
-        ]
-    )
-
-    expected_refactored_contemporary_schema = StructType(
-        [
-            StructField(ONSClean.postcode, StringType(), True),
-            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
-            StructField(ONSClean.contemporary_cssr, StringType(), True),
-            StructField(ONSClean.contemporary_region, StringType(), True),
-            StructField(ONSClean.contemporary_sub_icb, StringType(), True),
-            StructField(ONSClean.contemporary_icb, StringType(), True),
-            StructField(ONSClean.contemporary_icb_region, StringType(), True),
-            StructField(ONSClean.contemporary_latitude, StringType(), True),
-            StructField(ONSClean.contemporary_longitude, StringType(), True),
-            StructField(ONSClean.contemporary_imd_score, StringType(), True),
-            StructField(ONSClean.contemporary_lsoa11, StringType(), True),
-            StructField(ONSClean.contemporary_msoa11, StringType(), True),
-            StructField(ONSClean.contemporary_rural_urban_ind_11, StringType(), True),
-            StructField(ONSClean.contemporary_lsoa21, StringType(), True),
-            StructField(ONSClean.contemporary_msoa21, StringType(), True),
-            StructField(ONSClean.contemporary_constituency, StringType(), True),
-        ]
-    )
-
-    expected_refactored_current_schema = StructType(
-        [
-            StructField(ONSClean.postcode, StringType(), True),
-            StructField(ONSClean.current_ons_import_date, DateType(), True),
-            StructField(ONSClean.current_cssr, StringType(), True),
-            StructField(ONSClean.current_region, StringType(), True),
-            StructField(ONSClean.current_sub_icb, StringType(), True),
-            StructField(ONSClean.current_icb, StringType(), True),
-            StructField(ONSClean.current_icb_region, StringType(), True),
-            StructField(ONSClean.current_latitude, StringType(), True),
-            StructField(ONSClean.current_longitude, StringType(), True),
-            StructField(ONSClean.current_imd_score, StringType(), True),
-            StructField(ONSClean.current_lsoa11, StringType(), True),
-            StructField(ONSClean.current_msoa11, StringType(), True),
-            StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
-            StructField(ONSClean.current_rural_urban_ind_21, StringType(), True),
-            StructField(ONSClean.current_lsoa21, StringType(), True),
-            StructField(ONSClean.current_msoa21, StringType(), True),
-            StructField(ONSClean.current_constituency, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidatePostcodeDirectoryCleanedData:
-    raw_postcode_directory_schema = StructType(
-        [StructField(ONS.postcode, StringType(), True)]
-    )
-    cleaned_postcode_directory_schema = StructType(
-        [
-            StructField(ONSClean.postcode, StringType(), True),
-            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
-            StructField(ONSClean.contemporary_cssr, StringType(), True),
-            StructField(ONSClean.contemporary_region, StringType(), True),
-            StructField(ONSClean.current_ons_import_date, DateType(), True),
-            StructField(ONSClean.current_cssr, StringType(), True),
-            StructField(ONSClean.current_region, StringType(), True),
-            StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
-        ]
-    )
 
 
 @dataclass

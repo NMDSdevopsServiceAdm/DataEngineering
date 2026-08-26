@@ -82,21 +82,6 @@ module "clean_capacity_tracker_non_res_job" {
 }
 
 
-module "clean_ons_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ons_pd/jobs"
-  script_name     = "clean_ons_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--ons_source"              = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
-    "--cleaned_ons_destination" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
-  }
-}
-
 module "ingest_dpr_external_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/direct_payment_recipients/jobs"
@@ -267,22 +252,6 @@ module "validate_ascwds_worker_cleaned_data_job" {
   job_parameters = {
     "--cleaned_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
     "--report_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_worker_cleaned/"
-  }
-}
-
-module "validate_postcode_directory_cleaned_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ons_pd/jobs"
-  script_name     = "validate_postcode_directory_cleaned_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_postcode_directory_source"     = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
-    "--cleaned_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
-    "--report_destination"                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_postcode_directory_cleaned/"
   }
 }
 
