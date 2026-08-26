@@ -4,11 +4,8 @@ import scripts.select_raw_bucket_seed as job
 
 ALL_DOMAINS = list(job.DOMAIN_TRIGGER_PATHS)
 
-# Includes paths that were trigger paths before this ticket's trigger list was
-# trimmed, so a re-add wouldn't silently pass unnoticed. Also includes one
-# non-trigger file per ingest domain (a downstream clean/validate-cleaned job,
-# a test file, or a utils module) to guard against the trigger list widening
-# back out to a directory prefix.
+# Old trigger paths plus one non-trigger file per domain, guarding against
+# the trigger list silently widening back to a directory prefix.
 UNRELATED_PATHS = [
     "README.md",
     "projects/_07_workforce_characteristics/foo.py",

@@ -472,17 +472,16 @@ jobs:
       - run:
           name: Seed non-prod raw bucket from sample bucket, per domain
           command: |
-            # Wiped before resync since aws s3 sync no-ops on unchanged
-            # content, which would skip re-firing that domain's S3 event.
-            # `|| failures=1` keeps one domain's failure from skipping the
-            # rest, while still failing the step overall.
+            # Wiped before resync since sync no-ops (and skips re-firing the
+            # S3 event) on unchanged content. `|| failures=1` per domain so
+            # one failure doesn't skip the rest.
             failures=0
 
             if [ "$(cat bake/seed-ascwds 2>/dev/null)" = "false" ]; then
               echo "No ASCWDS ingest-related changes detected. Skipping seed."
             else
-              # ASCWDS writes with Spark's error-if-exists mode to a fixed sentinel
-              # path, so a redeploy's rerun collides with the previous output.
+              # ASCWDS's error-if-exists write mode collides with a rerun's
+              # own previous output at this fixed sentinel path.
               aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/version=0.0.0/" --recursive && \
                 aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/version=0.0.0/" --recursive && \
                 aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" --recursive && \

@@ -1,14 +1,7 @@
 """
 Decide, per ingest domain, whether a push needs to seed that domain's slice of
-the branch's non-prod raw data bucket.
-
-Deciding per domain -- rather than one bucket-wide flag -- means a push that
-only touches one domain's ingest code doesn't reseed (and re-trigger) the
-other domains' Step Functions.
-
-Trigger paths are a fixed list rather than derived, unlike
-`select_bake_targets`'s Dockerfile-driven approach -- there's no manifest that
-already enumerates "everything that reads the raw bucket".
+the branch's non-prod raw data bucket -- so a push touching one domain doesn't
+reseed and re-trigger the others' Step Functions.
 """
 
 import argparse
@@ -16,10 +9,8 @@ import sys
 from pathlib import Path
 from typing import Iterable, Optional, Sequence
 
-# Run directly (as CI does: `python scripts/select_raw_bucket_seed.py`), only
-# this script's own directory lands on sys.path, not the repo root -- so the
-# package-style import below would fail. Adding the repo root explicitly
-# makes the script runnable both that way and under pytest.
+# Makes the repo root importable whether run directly (as CI does) or under
+# pytest, where only this script's own directory would otherwise be on the path.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts.select_bake_targets import (  # noqa: E402
@@ -29,15 +20,10 @@ from scripts.select_bake_targets import (  # noqa: E402
     path_triggers_rebuild,
 )
 
-# Specific files that read/write/validate each domain's raw data -- not whole
-# domain directories, which also matched tests and downstream
-# clean/validate-cleaned jobs. `cqc_api` reads the CQC API directly, so it's
-# excluded; `capacity_tracker` has no raw-validate job here, so it only gets
-# its ingest entrypoint. Paths use `fargate/` uniformly (matching each
-# domain's migration target) rather than each domain's current location.
-#
-# To add a new trigger path: add it here, plus a matching case in
-# scripts/tests/test_select_raw_bucket_seed.py's `domain_trigger_cases`.
+# Files that actually read/write/validate each domain's raw data. `cqc_api`
+# is excluded (reads the CQC API, not the raw bucket); `capacity_tracker` has
+# no raw-validate job. Uses `fargate/` uniformly, ahead of each domain's
+# migration there.
 DOMAIN_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
     "ascwds": (
         "projects/_01_ingest/ascwds/fargate/ingest_ascwds_dataset.py",
