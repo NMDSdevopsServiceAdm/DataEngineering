@@ -64,23 +64,53 @@ DUPLICATE_ESTABLISHMENT_IDS: set[str] = {
 }
 
 
-def valid_workplace_filter() -> pl.Expr:
+def exclude_test_accounts_filter() -> pl.Expr:
     """
-    Return a filter expression that excludes known invalid workplace records.
-
-    Removes:
-        - Internal Skills for Care test organisations.
-        - Known duplicate workplace submissions.
+    Return a filter expression that excludes internal Skills for Care test organisations.
 
     Returns:
         pl.Expr: A Polars expression that can be used to filter a LazyFrame.
     """
-    return (
-        # exclude test accounts
-        ~pl.col(AWPClean.organisation_id).is_in(TEST_ACCOUNTS)
-        &
-        # exclude duplicate establishments
-        ~pl.col(AWPClean.establishment_id).is_in(DUPLICATE_ESTABLISHMENT_IDS)
+    return ~pl.col(AWPClean.organisation_id).is_in(TEST_ACCOUNTS)
+
+
+NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES: list[str] = [
+    AWPClean.total_staff,
+    AWPClean.worker_records,
+    AWPClean.total_starters,
+    AWPClean.total_leavers,
+    AWPClean.total_vacancies,
+]
+
+
+def null_duplicate_establishment_numeric_data(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Null numeric submission data for known duplicate establishment submissions.
+
+    Known duplicate establishments (DUPLICATE_ESTABLISHMENT_IDS) submitted the exact
+    same ASC-WDS data under multiple accounts. Rather than dropping these rows, their
+    staff/starter/leaver/vacancy totals and job role figures are nulled so they no
+    longer inflate downstream aggregates, while the row and its non-numeric metadata
+    are retained. Tolerates being called on a frame that doesn't yet have job role
+    columns (require_all=False), since this is called both before and after those
+    columns are joined on in clean_ascwds_workplace.py.
+
+    Args:
+        lf (pl.LazyFrame): Workplace LazyFrame containing establishment_id.
+
+    Returns:
+        pl.LazyFrame: Input LazyFrame with target numeric columns nulled for rows
+            whose establishment_id is a known duplicate.
+    """
+    columns_to_null = (
+        cs.by_name(*NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES, require_all=False)
+        | expr.is_slv_job_role_column()
+    )
+    return lf.with_columns(
+        pl.when(pl.col(AWPClean.establishment_id).is_in(DUPLICATE_ESTABLISHMENT_IDS))
+        .then(None)
+        .otherwise(columns_to_null)
+        .name.keep()
     )
 
 
