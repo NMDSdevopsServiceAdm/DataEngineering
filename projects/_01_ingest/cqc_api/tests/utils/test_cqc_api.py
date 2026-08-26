@@ -128,6 +128,24 @@ class GetPageObjectsTests(CqcApiTests):
             ]
         )
 
+    @patch(f"{PATCH_PATH}.call_api")
+    def test_get_page_objects_raises_when_response_missing_object_type_key(
+        self, mock_call_api: Mock
+    ):
+        mock_call_api.return_value = {"totalPages": 1}
+
+        with self.assertRaises(Exception) as raised:
+            cqc.get_page_objects(
+                self.test_url,
+                1,
+                self.location_object_type,
+                self.test_column,
+                self.cqc_api_primary_key_stub,
+            )
+
+        self.assertIn(self.location_object_type, str(raised.exception))
+        self.assertIn("{'totalPages': 1}", str(raised.exception))
+
 
 class CallApiTests(CqcApiTests):
     @patch("requests.Session.get")

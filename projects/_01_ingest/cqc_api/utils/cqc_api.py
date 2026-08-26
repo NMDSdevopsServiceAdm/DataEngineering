@@ -126,13 +126,30 @@ def get_all_objects(
 
 
 def get_page_objects(
-    url,
-    page_number,
-    object_type,
-    object_identifier,
-    cqc_api_primary_key,
-    per_page=DEFAULT_PAGE_SIZE,
+    url: str,
+    page_number: int,
+    object_type: str,
+    object_identifier: str,
+    cqc_api_primary_key: str,
+    per_page: int = DEFAULT_PAGE_SIZE,
 ) -> List[dict]:
+    """
+    Fetches one page of objects and their full details from the CQC API.
+
+    Args:
+        url (str): the api url for the object type's collection endpoint
+        page_number (int): the page number to fetch
+        object_type (str): the type of object to retrieve: one of 'providers', 'locations'
+        object_identifier (str): the key identifying each object within a page, e.g. 'locationId'
+        cqc_api_primary_key (str): the CQC API key
+        per_page (int): the number of objects to fetch per page, defaults to `DEFAULT_PAGE_SIZE`
+
+    Returns:
+        List[dict]: full details for each object on the page
+
+    Raises:
+        Exception: if the page response is missing the expected `object_type` key
+    """
     page_objects = []
     response_body = call_api(
         url,
@@ -142,6 +159,12 @@ def get_page_objects(
             "Ocp-Apim-Subscription-Key": cqc_api_primary_key,
         },
     )
+
+    if object_type not in response_body:
+        raise Exception(
+            f"CQC API response for {object_type} page {page_number} is missing "
+            f"the '{object_type}' key. Full response: {response_body}"
+        )
 
     for resource in response_body[object_type]:
         returned_object = get_object(
