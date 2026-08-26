@@ -139,6 +139,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     sfc_crawler_name                       = module.sfc_crawler.crawler_name
     ct_crawler_name                        = module.capacity_tracker_crawler.crawler_name
     workforce_characteristics_crawler_name = module.workforce_characteristics_crawler.crawler_name
+    sample_archive_data_crawler_name       = module.sample_archive_data_crawler.crawler_name
 
     # parameter store
     last_providers_run_param_name = aws_ssm_parameter.providers_last_run.name

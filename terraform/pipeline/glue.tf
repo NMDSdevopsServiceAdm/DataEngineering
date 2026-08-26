@@ -514,3 +514,10 @@ module "workforce_characteristics_crawler" {
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
   exclusions                   = ["dataset=empstat_rates/**"]
 }
+
+module "sample_archive_data_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "sample_archive_data"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
