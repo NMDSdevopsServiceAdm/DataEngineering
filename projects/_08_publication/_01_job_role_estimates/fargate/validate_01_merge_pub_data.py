@@ -19,10 +19,11 @@ INDEX_VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.main_job_role_clean_labelled,
 ]
 
+# Uncomment primary_service_type when it is available in sample data.
 OTHER_VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
-    IndCqcColumns.primary_service_type,
+    # IndCqcColumns.primary_service_type,
     IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.main_job_role_clean_labelled,
     IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
@@ -35,13 +36,14 @@ COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.cqc_location_import_date,
 ]
 
+# Uncomment primary_service_type when it is available in sample data.
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.location_id: str(CategoricalColumnTypes.LocationCatType),
         IndCqcColumns.cqc_location_import_date: "Date",
-        IndCqcColumns.primary_service_type: str(
-            CategoricalColumnTypes.PrimaryServiceEnumType
-        ),
+        # IndCqcColumns.primary_service_type: str(
+        #     CategoricalColumnTypes.PrimaryServiceEnumType
+        # ),
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
         IndCqcColumns.main_job_role_clean_labelled: str(
             CategoricalColumnTypes.JobRoleCatType
@@ -147,11 +149,12 @@ def other_validation(
             brief=f"Expects {expected_row_count} rows",
         )
         # complete columns
+        # Uncomment primary_service_type when it is available in sample data.
         .col_vals_not_null(
             columns=[
                 IndCqcColumns.location_id,
                 IndCqcColumns.cqc_location_import_date,
-                IndCqcColumns.primary_service_type,
+                # IndCqcColumns.primary_service_type,
                 IndCqcColumns.id_per_locationid_import_date,
                 IndCqcColumns.main_job_role_clean_labelled,
                 IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
@@ -160,21 +163,23 @@ def other_validation(
             brief="Key columns should contain no null values",
         )
         # categorical
-        .col_vals_in_set(
-            IndCqcColumns.primary_service_type,
-            CatValues.primary_service_type_column_values.categorical_values,
-        )
+        # Uncomment primary_service_type when it is available in sample data.
+        # .col_vals_in_set(
+        #     IndCqcColumns.primary_service_type,
+        #     CatValues.primary_service_type_column_values.categorical_values,
+        # )
         .col_vals_in_set(
             IndCqcColumns.main_job_role_clean_labelled,
             CatValues.main_job_role_labels_column_values.categorical_values,
         )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.primary_service_type,
-                CatValues.primary_service_type_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.primary_service_type} should have exactly {CatValues.primary_service_type_column_values.count_of_categorical_values} distinct values",
-        )
+        # Uncomment primary_service_type when it is available in sample data.
+        # .specially(
+        #     vl.is_unique_count_equal(
+        #         IndCqcColumns.primary_service_type,
+        #         CatValues.primary_service_type_column_values.count_of_categorical_values,
+        #     ),
+        #     brief=f"{IndCqcColumns.primary_service_type} should have exactly {CatValues.primary_service_type_column_values.count_of_categorical_values} distinct values",
+        # )
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.main_job_role_clean_labelled,
