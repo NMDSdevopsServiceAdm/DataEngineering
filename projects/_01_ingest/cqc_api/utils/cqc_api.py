@@ -139,6 +139,10 @@ def call_api(
                 f"{SOFT_RATE_LIMIT_MAX_RETRIES} retries: {body}"
             )
 
+        print(
+            f"CQC API soft rate limited (attempt {attempt + 1}/"
+            f"{SOFT_RATE_LIMIT_MAX_RETRIES + 1}), retrying in {wait_seconds}s: {body}"
+        )
         time.sleep(wait_seconds)
 
 

@@ -52,7 +52,7 @@ All notable changes to this project will be documented in this file.
 
 - Fixed the CQC API integration test suite printing the real CQC API key into CircleCI logs on any failure (pytest's default traceback includes each frame's local variables). The key is now wrapped so its repr is redacted, while still working as a normal string for the live API calls.
 
-- Fixed `call_api` treating CQC's soft rate limit response (an HTTP 200 whose body reports `statusCode: 429`, invisible to the transport-level retry) as a malformed/successful response instead of a retryable error. It now detects this shape and retries with the wait CQC itself reports, raising a clear `CqcApiRateLimitedException` if it persists — fixing both the CQC API integration tests' intermittent failures and the same exposure in the real ingest pipeline.
+- Fixed `call_api` treating CQC's soft rate limit response (an HTTP 200 whose body reports `statusCode: 429`, invisible to the transport-level retry) as a malformed/successful response instead of a retryable error. It now detects this shape, logs and retries with the wait CQC itself reports, and raises a clear `CqcApiRateLimitedException` if it persists — fixing both the CQC API integration tests' intermittent failures and the same exposure in the real ingest pipeline.
 
 - Fixed the ascwds_job_role_ratios_merged validation check to cover all three coalesce source branches, instead of relying on incidental equality for one of them.
 
