@@ -21,5 +21,6 @@ COPY projects/_01_ingest/ascwds/fargate/utils projects/_01_ingest/ascwds/fargate
 # Copy python jobs to WORKDIR
 COPY projects/_01_ingest/cqc_pir/fargate/*.py .
 COPY projects/_01_ingest/ascwds/fargate/*.py .
+COPY projects/_01_ingest/ons_pd/fargate/*.py .
 
 ENTRYPOINT ["python"]

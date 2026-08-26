@@ -115,7 +115,9 @@ def main(
 
     lf = wUtils.apply_data_corrections(lf)
 
-    lf = lf.filter(wUtils.valid_workplace_filter())
+    lf = lf.filter(wUtils.exclude_test_accounts_filter())
+
+    lf = wUtils.null_duplicate_establishment_numeric_data(lf)
 
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
@@ -193,6 +195,8 @@ def main(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
         expr.is_slv_job_role_column().cast(pl.Int32, strict=False),
     )
+
+    workplace_lf = wUtils.null_duplicate_establishment_numeric_data(workplace_lf)
 
     workplace_lf = workplace_lf.with_columns(
         bounds.filled_posts_expr,
