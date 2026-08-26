@@ -3,37 +3,6 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
   description = "Database for all datasets belonging to the ${local.workspace_prefix} environment."
 }
 
-module "csv_to_parquet_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/csv_files/jobs"
-  script_name     = "csv_to_parquet.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = ""
-    "--delimiter"   = ","
-  }
-}
-
-module "spss_csv_to_parquet_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/csv_files/jobs"
-  script_name     = "spss_csv_to_parquet.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = ""
-  }
-}
-
 module "ingest_capacity_tracker_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
@@ -350,39 +319,6 @@ module "validate_merge_coverage_data_job" {
 }
 
 
-module "validate_imputed_ind_cqc_ascwds_and_pir_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_03_independent_cqc/_03_impute/jobs"
-  script_name     = "validate_imputed_ind_cqc_ascwds_and_pir_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--cleaned_ind_cqc_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
-    "--imputed_ind_cqc_ascwds_and_pir_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
-    "--report_destination"                    = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_ind_cqc_03_imputed_ascwds_and_pir/"
-  }
-}
-
-
-module "validate_estimated_ind_cqc_filled_posts_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_03_independent_cqc/_06_estimate_filled_posts/jobs"
-  script_name     = "validate_estimated_ind_cqc_filled_posts_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--cleaned_ind_cqc_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
-    "--estimated_ind_cqc_filled_posts_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
-    "--report_destination"                    = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_ind_cqc_06_estimated_filled_posts/"
-  }
-}
-
 module "validate_ascwds_workplace_raw_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/ascwds/jobs"
@@ -413,38 +349,6 @@ module "validate_ascwds_worker_raw_data_job" {
   }
 }
 
-module "impute_ind_cqc_ascwds_and_pir_job" {
-  source            = "../modules/glue-job"
-  script_dir        = "projects/_03_independent_cqc/_03_impute/jobs"
-  script_name       = "impute_ind_cqc_ascwds_and_pir.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  worker_type       = "G.1X"
-  number_of_workers = 6
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-
-  job_parameters = {
-    "--cleaned_ind_cqc_source"                     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
-    "--imputed_ind_cqc_ascwds_and_pir_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
-  }
-}
-
-module "estimate_ind_cqc_filled_posts_job" {
-  source            = "../modules/glue-job"
-  script_dir        = "projects/_03_independent_cqc/_06_estimate_filled_posts/jobs"
-  script_name       = "estimate_ind_cqc_filled_posts.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  worker_type       = "G.1X"
-  number_of_workers = 4
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-
-  job_parameters = {
-    "--bucket_name"                   = "${module.datasets_bucket.bucket_name}"
-    "--imputed_ind_cqc_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
-    "--estimated_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
-  }
-}
 
 module "diagnostics_on_known_filled_posts_job" {
   source          = "../modules/glue-job"

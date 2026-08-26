@@ -119,6 +119,12 @@ jobs:
               python scripts/select_raw_bucket_seed.py --domain "$domain" > "/tmp/bake/seed-$domain"
               echo "Seed $domain: $(cat /tmp/bake/seed-$domain)"
             done
+      - run:
+          name: Decide whether to seed archive sample data
+          command: |
+            mkdir -p /tmp/bake
+            python scripts/select_archive_sample_seed.py > /tmp/bake/seed-archive-sample
+            echo "Seed archive sample: $(cat /tmp/bake/seed-archive-sample)"
       - persist_to_workspace:
           # Namespaced, because later jobs attach this same workspace at the
           # repo root and a bare "targets" file there reads as repo content.
@@ -129,6 +135,7 @@ jobs:
             - bake/seed-capacity_tracker
             - bake/seed-cqc_pir
             - bake/seed-ons_pd
+            - bake/seed-archive-sample
 
   task-containerisation:
     parameters:
@@ -507,6 +514,16 @@ jobs:
             fi
 
             exit $failures
+      - run:
+          name: Seed non-prod dataset bucket with archive sample data
+          command: |
+            # Defaults to seeding when the flag file is missing/unreadable --
+            # same defensive direction as the raw bucket seed above.
+            if [ "$(cat bake/seed-archive-sample 2>/dev/null)" = "false" ]; then
+              echo "No archive-related changes detected. Skipping archive sample seed."
+            else
+              aws s3 sync "s3://sfc-main-datasets/domain=sample_archive_data/" "s3://$BRANCH_DATASET_BUCKET/domain=sample_archive_data/" --delete
+            fi
 
   terraform-destroy:
     working_directory: /tmp/project
