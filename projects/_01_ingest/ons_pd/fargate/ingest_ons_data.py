@@ -2,7 +2,7 @@ import sys
 
 import polars as pl
 
-from polars_utils import cleaning_utils, utils
+from polars_utils import utils
 from utils import file_utils
 
 DELIMITER = ","
@@ -26,9 +26,6 @@ def main(source: str, destination_prefix: str) -> None:
 
     print(f"Reading comma-delimited CSV from {source} with all columns as strings")
     ons_lf = pl.scan_csv(source, separator=DELIMITER, infer_schema=False)
-    # No column in the current raw schema matches "date" (excl. import_date), so this
-    # is a no-op today; kept for parity with the old job and in case that changes.
-    ons_lf = cleaning_utils.cast_date_strings_to_dates(ons_lf)
 
     print(f"Sinking parquet to {output_path}")
     utils.sink_to_parquet(lazy_df=ons_lf, output_path=output_path)

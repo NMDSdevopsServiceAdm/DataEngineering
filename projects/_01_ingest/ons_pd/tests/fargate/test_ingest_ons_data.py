@@ -75,18 +75,12 @@ class TestMain:
     destination_prefix = "s3://dest-bucket/"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.cleaning_utils.cast_date_strings_to_dates")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
     def test_sinks_to_a_path_derived_from_the_source_key_and_destination_prefix(
-        self,
-        mock_scan_csv: Mock,
-        mock_cast_date_strings_to_dates: Mock,
-        mock_sink_to_parquet: Mock,
+        self, mock_scan_csv: Mock, mock_sink_to_parquet: Mock
     ):
         mock_lf = Mock(spec=pl.LazyFrame)
-        mock_cast_lf = Mock(spec=pl.LazyFrame)
         mock_scan_csv.return_value = mock_lf
-        mock_cast_date_strings_to_dates.return_value = mock_cast_lf
 
         job.main(self.source, self.destination_prefix)
 
@@ -95,8 +89,7 @@ class TestMain:
             separator=",",
             infer_schema=False,
         )
-        mock_cast_date_strings_to_dates.assert_called_once_with(mock_lf)
         mock_sink_to_parquet.assert_called_once_with(
-            lazy_df=mock_cast_lf,
+            lazy_df=mock_lf,
             output_path=f"{self.destination_prefix}domain=ONS/dataset=postcode_directory/",
         )
