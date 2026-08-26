@@ -14,14 +14,12 @@ from utils.column_values.categorical_columns_by_dataset import (
 
 INDEX_VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,
-    IndCqcColumns.id_per_locationid_import_date_job_role,
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
     IndCqcColumns.main_job_role_clean_labelled,
 ]
 
 OTHER_VALIDATION_COLS_TO_IMPORT = [
-    IndCqcColumns.id_per_locationid_import_date_job_role,
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
     IndCqcColumns.primary_service_type,
@@ -39,7 +37,6 @@ COMPARE_COLS_TO_IMPORT = [
 
 EXPECTED_SCHEMA = pb.Schema(
     columns={
-        IndCqcColumns.id_per_locationid_import_date_job_role: "UInt32",
         IndCqcColumns.location_id: str(CategoricalColumnTypes.LocationCatType),
         IndCqcColumns.cqc_location_import_date: "Date",
         IndCqcColumns.primary_service_type: str(
@@ -89,10 +86,6 @@ def index_validation(bucket_name: str, source_path: str, reports_path: str) -> N
             thresholds=GLOBAL_THRESHOLDS,
             brief=True,
             actions=GLOBAL_ACTIONS,
-        )
-        .rows_distinct(
-            columns_subset=IndCqcColumns.id_per_locationid_import_date_job_role,
-            brief="id_per_locationid_import_date_job_role should be unique",
         )
         .rows_distinct(
             columns_subset=[
@@ -157,7 +150,6 @@ def other_validation(
         .col_vals_not_null(
             columns=[
                 IndCqcColumns.location_id,
-                IndCqcColumns.id_per_locationid_import_date_job_role,
                 IndCqcColumns.cqc_location_import_date,
                 IndCqcColumns.primary_service_type,
                 IndCqcColumns.id_per_locationid_import_date,
