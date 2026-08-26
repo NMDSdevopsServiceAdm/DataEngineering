@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the standalone job role step function (`Ind-CQC-Filled-Post-Estimates-By-Role`) after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet), deliberately kept out of the main pipeline until partitioning is in place, ahead of a future rework of the job-role dataset shape.
 
+- Added syncing of dummy sample job-role archive data (`domain=sample_archive_data` in the main datasets bucket) into a branch's own dataset bucket via `copy-main-data`, gated so it only runs for branches that touch the archive stage.
+
 ### Changed
 - Removed the unused generic CSV/SPSS-to-parquet ingest Glue jobs, their Terraform module definitions, and the now-unused SPSS job estimates schema and its test.
 - Removed the archived PySpark CQC bulk-download scripts (`archived_bulk_download_cqc_locations.py`, `archived_bulk_download_cqc_providers.py`), superseded by the active Polars/Fargate CQC ingest jobs, along with the orphaned `PROVIDER_SCHEMA` (`schemas/cqc_provider_schema.py`) that only the providers script used.
