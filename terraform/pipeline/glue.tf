@@ -129,22 +129,6 @@ module "clean_capacity_tracker_non_res_job" {
 }
 
 
-module "ingest_ons_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ons_pd/jobs"
-  script_name     = "ingest_ons_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=ONS/"
-  }
-}
-
-
 module "clean_ons_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/ons_pd/jobs"
@@ -426,21 +410,6 @@ module "validate_ascwds_worker_raw_data_job" {
   job_parameters = {
     "--raw_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
     "--report_destination"       = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_worker_raw/"
-  }
-}
-
-module "validate_postcode_directory_raw_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ons_pd/jobs"
-  script_name     = "validate_postcode_directory_raw_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
-    "--report_destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_postcode_directory_raw/"
   }
 }
 
