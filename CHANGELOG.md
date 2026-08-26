@@ -25,6 +25,9 @@ All notable changes to this project will be documented in this file.
 - Added syncing of dummy sample job-role archive data (`domain=sample_archive_data` in the main datasets bucket) into a branch's own dataset bucket via `copy-main-data`, gated so it only runs for branches that touch the archive stage.
 
 ### Changed
+- Removed the unused generic CSV/SPSS-to-parquet ingest Glue jobs, their Terraform module definitions, and the now-unused SPSS job estimates schema and its test.
+- Removed the archived PySpark CQC bulk-download scripts (`archived_bulk_download_cqc_locations.py`, `archived_bulk_download_cqc_providers.py`), superseded by the active Polars/Fargate CQC ingest jobs, along with the orphaned `PROVIDER_SCHEMA` (`schemas/cqc_provider_schema.py`) that only the providers script used.
+- Split the non-prod raw bucket's seed-gating decision from one bucket-wide flag into one per ingest domain (ASCWDS, Capacity Tracker, CQC PIR, ONS PD), so a push touching only one domain's ingest code reseeds and re-triggers only that domain's Step Function instead of all five.
 - Consolidated the `ascwds` Fargate task onto the generic `_01_ingest` image/task (introduced for CQC PIR), removing the `ascwds`-specific ECR repo, Dockerfile, and `docker-bake` target.
 - Migrated the CQC PIR ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on a new shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Reads the raw CSV with `utf8-lossy` encoding, since supplier PIR files are frequently not valid UTF-8.
 - Replaced `docker login` with the AWS ECR credential helper (checksum-verified before use) in the `task-containerisation` CircleCI job, so the ECR auth token is no longer written to the job container's disk unencrypted.
@@ -35,6 +38,7 @@ All notable changes to this project will be documented in this file.
 
 - Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
 
+- Removed the legacy PySpark impute and estimate-filled-posts jobs now that their Polars replacements are signed off, and dropped the `polars` suffix from their S3 paths and step-function state names now that only one implementation remains.
 - sfc_internal data now includes workplaces exceeding their *active* purge date. The merge coverage job adds a boolean column removed_by_purge_date_filter. The in_ascwds column now takes that filter into account. The reconciliation job also creates removed_by_purge_date_filter then filters upon it to remove purged workplaces.
 
 ### Improved
@@ -51,6 +55,8 @@ All notable changes to this project will be documented in this file.
 - Fixed the ascwds_for_sfc_internal validation job failing schema match after `workplace_last_active_date` and `purge_date` were added to its output columns without updating the expected schema.
 
 - Removed pycache files accidentally committed to the repo, and added `__pycache__/` to `.gitignore` to stop it happening again.
+
+- Fixed the job role estimates pipeline crashing in prod with a `FileNotFoundError`: the merge, validation, and archive steps hardcoded a non-prod-only comparison dataset name for the estimated filled posts source, which CI only ever populates on branches other than `main`. The dataset name is now workspace-aware, matching the pattern already used for the sibling job-role datasets.
 
 ## [v2026.07.0] - 17/08/2026
 
