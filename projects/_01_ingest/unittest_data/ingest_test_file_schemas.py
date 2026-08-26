@@ -292,30 +292,6 @@ class ValidateCleanedCapacityTrackerNonResData:
 
 
 @dataclass
-class IngestONSData:
-    sample_schema = StructType(
-        [
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.icb, StringType(), True),
-            StructField(ONS.longitude, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidatePostcodeDirectoryRawData:
-    raw_postcode_directory_schema = StructType(
-        [
-            StructField(Keys.import_date, StringType(), True),
-            StructField(ONS.postcode, StringType(), True),
-            StructField(ONS.cssr, StringType(), True),
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class CleanONSData:
     full_schema = StructType(
         [

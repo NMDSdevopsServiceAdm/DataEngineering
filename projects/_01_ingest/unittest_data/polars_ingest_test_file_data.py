@@ -8,6 +8,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
 from utils.column_values.categorical_column_values import (
     RUI,
     CareHome,
@@ -1913,3 +1916,20 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
     ]
+
+
+@dataclass
+class IngestOnsDataTest:
+    expected_reads_source_csv_with_no_type_inference = {
+        ONS.postcode: ["SW1A 1AA", "SW1A 1AA", "CT1 2AB"],
+        ONS.cssr: ["Westminster", "Westminster", "Kent"],
+        ONS.region: ["London", "London", "South East"],
+        ONS.sub_icb: ["North West London Sub ICB", "North West London Sub ICB", "Kent and Medway Sub ICB"],
+        ONS.icb: ["NHS North West London ICB", "NHS North West London ICB", "NHS Kent and Medway ICB"],
+        ONS.icb_region: ["London", "London", "South East"],
+        ONS.lower_super_output_area_2021: ["E01000001", "E01000001", "E01008678"],
+        ONS.middle_super_output_area_2021: ["E02000001", "E02000001", "E02001938"],
+        ONS.rural_urban_indicator_2011: ["3", "3", "1"],
+        ONS.month: ["05", "05", "09"],  # leading zeros preserved: no type inference
+        ONS.import_date: ["20260101", "20260115", "20260101"],
+    }  # fmt: skip

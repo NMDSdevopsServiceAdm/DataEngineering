@@ -424,31 +424,6 @@ class ValidateCleanedCapacityTrackerNonResData:
 
 
 @dataclass
-class IngestONSData:
-    sample_rows = [
-        ("Yorkshire & Humber", "Leeds", "50.10101"),
-        ("Yorkshire & Humber", "York", "52.10101"),
-        ("Yorkshire & Humber", "Hull", "53.10101"),
-    ]
-
-    expected_rows = [
-        ("Yorkshire & Humber", "Leeds", "50.10101"),
-        ("Yorkshire & Humber", "York", "52.10101"),
-        ("Yorkshire & Humber", "Hull", "53.10101"),
-    ]
-
-
-@dataclass
-class ValidatePostcodeDirectoryRawData:
-    raw_postcode_directory_rows = [
-        ("AB1 2CD", "20240101", "cssr", "region", "rui"),
-        ("AB2 2CD", "20240101", "cssr", "region", "rui"),
-        ("AB1 2CD", "20240201", "cssr", "region", "rui"),
-        ("AB2 2CD", "20240201", "cssr", "region", "rui"),
-    ]
-
-
-@dataclass
 class CleanONSData:
     ons_sample_rows_full = [
         ("AB10AA", "104", "1", "38000006", "54000005", "1",        "51.23456", "-.12345", "123", "10123", "20123", "1", None, "1000001", "2000001", "14000530", date(2022, 1, 1)),
