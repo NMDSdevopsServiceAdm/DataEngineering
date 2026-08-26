@@ -89,10 +89,7 @@ class MainDtypeCastTests(unittest.TestCase):
         estimate_non_res_capacity_tracker_filled_posts_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        # estimate_filled_posts and its source label are genuinely created here
-        # via coalesce_with_source_labels - give it real expressions so the
-        # cast right after can run for real, on a real (if otherwise empty)
-        # LazyFrame threaded through the rest of the mocked chain.
+        # Real expressions, not Mocks, so the cast right after actually runs.
         model_imputation_mock.return_value = pl.LazyFrame()
         coalesce_with_source_labels_mock.return_value = (
             pl.lit(1.0).cast(pl.Float64).alias(IndCQC.estimate_filled_posts),

@@ -240,14 +240,13 @@ class TestDifferenceWithinDriftTolerance:
             "expression": pl.Boolean,
         },
         data=[
-            # float32 accumulation drift just below zero - rounds to 0.0, allowed
+            # float32 drift just below zero - allowed
             (-0.0003, True),
-            # a deliberately broken reallocation - well outside [0, 1], should fail
+            # broken reallocation, well outside [0, 1] - fails
             (-50.0, False),
-            # registered-manager adjustment can add up to a whole post - allowed
+            # registered-manager adjustment can add a whole post - allowed
             (0.9, True),
-            # measured production case: registered-manager allowance plus float32
-            # drift on the upside - rounds to 1.0, allowed
+            # measured production case: allowance plus float32 drift - allowed
             (1.0001, True),
             (1.5, False),
             (None, True),

@@ -30,9 +30,8 @@ merged_locations_columns_to_import = [
     IndCqcColumns.worker_records_bounded,
 ]
 
-# Not an exhaustive schema for the dataset - just the columns cast to Enum in
-# clean_ind_cqc_filled_posts.py - so col_schema_match runs with
-# complete=False, in_order=False below.
+# Partial schema (col_schema_match complete=False) - just the columns cast to
+# Enum in clean_ind_cqc_filled_posts.py.
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.ascwds_filled_posts_source: str(
