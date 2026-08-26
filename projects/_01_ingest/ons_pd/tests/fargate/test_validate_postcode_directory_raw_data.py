@@ -15,15 +15,17 @@ PATCH_PATH = "projects._01_ingest.ons_pd.fargate.validate_postcode_directory_raw
 class TestMain:
     source_df = pl.DataFrame(
         {
-            ONS.postcode: ["AB1 2CD", "AB1 2CD", "EF3 4GH", "EF3 4GH"],
+            ONS.postcode: ["SW1A 1AA", "SW1A 1AA", "CT1 2AB", "CT1 2AB"],
             Keys.import_date: ["20260101", "20260115", "20260101", "20260115"],
-            ONS.cssr: ["Aberdeen City"] * 2 + ["Edinburgh"] * 2,
-            ONS.region: ["Scotland"] * 4,
-            ONS.sub_icb: ["Grampian Sub ICB"] * 2 + ["Lothian Sub ICB"] * 2,
-            ONS.icb: ["NHS Grampian"] * 2 + ["NHS Lothian"] * 2,
-            ONS.icb_region: ["North of Scotland"] * 2 + ["South East Scotland"] * 2,
-            ONS.lower_super_output_area_2021: ["S01006646"] * 2 + ["S01008678"] * 2,
-            ONS.middle_super_output_area_2021: ["S02001237"] * 2 + ["S02001938"] * 2,
+            ONS.cssr: ["Westminster"] * 2 + ["Kent"] * 2,
+            ONS.region: ["London"] * 4,
+            ONS.sub_icb: ["North West London Sub ICB"] * 2
+            + ["Kent and Medway Sub ICB"] * 2,
+            ONS.icb: ["NHS North West London ICB"] * 2
+            + ["NHS Kent and Medway ICB"] * 2,
+            ONS.icb_region: ["London"] * 2 + ["South East"] * 2,
+            ONS.lower_super_output_area_2021: ["E01000001"] * 2 + ["E01008678"] * 2,
+            ONS.middle_super_output_area_2021: ["E02000001"] * 2 + ["E02001938"] * 2,
             ONS.rural_urban_indicator_2011: ["3"] * 2 + ["1"] * 2,
         }
     )
@@ -67,15 +69,15 @@ class TestMain:
     ):
         duplicate_rows_df = pl.DataFrame(
             {
-                ONS.postcode: ["AB1 2CD", "AB1 2CD"],
+                ONS.postcode: ["SW1A 1AA", "SW1A 1AA"],
                 Keys.import_date: ["20260101", "20260101"],
-                ONS.cssr: ["Aberdeen City", "Aberdeen City"],
-                ONS.region: ["Scotland", "Scotland"],
-                ONS.sub_icb: ["Grampian Sub ICB", "Grampian Sub ICB"],
-                ONS.icb: ["NHS Grampian", "NHS Grampian"],
-                ONS.icb_region: ["North of Scotland", "North of Scotland"],
-                ONS.lower_super_output_area_2021: ["S01006646", "S01006646"],
-                ONS.middle_super_output_area_2021: ["S02001237", "S02001237"],
+                ONS.cssr: ["Westminster", "Westminster"],
+                ONS.region: ["London", "London"],
+                ONS.sub_icb: ["North West London Sub ICB", "North West London Sub ICB"],
+                ONS.icb: ["NHS North West London ICB", "NHS North West London ICB"],
+                ONS.icb_region: ["London", "London"],
+                ONS.lower_super_output_area_2021: ["E01000001", "E01000001"],
+                ONS.middle_super_output_area_2021: ["E02000001", "E02000001"],
                 ONS.rural_urban_indicator_2011: ["3", "3"],
             }
         )

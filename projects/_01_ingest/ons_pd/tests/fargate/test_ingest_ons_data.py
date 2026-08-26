@@ -4,6 +4,9 @@ import polars as pl
 import polars.testing as pl_testing
 
 import projects._01_ingest.ons_pd.fargate.ingest_ons_data as job
+from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
+    IngestOnsDataTest,
+)
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
 )
@@ -32,39 +35,7 @@ class TestMain:
             ONS.import_date,
         ]
         expected_lf = pl.LazyFrame(
-            {
-                ONS.postcode: ["AB1 2CD", "AB1 2CD", "EF3 4GH"],
-                ONS.cssr: ["Aberdeen City", "Aberdeen City", "Edinburgh"],
-                ONS.region: ["Scotland", "Scotland", "Scotland"],
-                ONS.sub_icb: [
-                    "Grampian Sub ICB",
-                    "Grampian Sub ICB",
-                    "Lothian Sub ICB",
-                ],
-                ONS.icb: ["NHS Grampian", "NHS Grampian", "NHS Lothian"],
-                ONS.icb_region: [
-                    "North of Scotland",
-                    "North of Scotland",
-                    "South East Scotland",
-                ],
-                ONS.lower_super_output_area_2021: [
-                    "S01006646",
-                    "S01006646",
-                    "S01008678",
-                ],
-                ONS.middle_super_output_area_2021: [
-                    "S02001237",
-                    "S02001237",
-                    "S02001938",
-                ],
-                ONS.rural_urban_indicator_2011: ["3", "3", "1"],
-                ONS.month: [
-                    "05",
-                    "05",
-                    "09",
-                ],  # leading zeros preserved: no type inference
-                ONS.import_date: ["20260101", "20260115", "20260101"],
-            },
+            IngestOnsDataTest.expected_reads_source_csv_with_no_type_inference,
             schema={column: pl.String for column in expected_columns},
         )
 
