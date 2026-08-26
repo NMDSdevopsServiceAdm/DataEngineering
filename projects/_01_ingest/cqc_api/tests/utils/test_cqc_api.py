@@ -400,6 +400,16 @@ class SoftRateLimitWaitSecondsTests(CqcApiTests):
             cqc.SOFT_RATE_LIMIT_DEFAULT_WAIT_SECONDS,
         )
 
+    def test_caps_wait_seconds_at_maximum(self):
+        body = {
+            "statusCode": 429,
+            "message": "Rate limit is exceeded. Try again in 999 seconds.",
+        }
+        self.assertEqual(
+            cqc._soft_rate_limit_wait_seconds(body),
+            cqc.SOFT_RATE_LIMIT_MAX_WAIT_SECONDS,
+        )
+
 
 class GetAllObjectsTests(CqcApiTests):
     @patch(f"{PATCH_PATH}.get_page_objects")

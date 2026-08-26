@@ -17,6 +17,7 @@ CQC_API_BASE_URL = "https://api.service.cqc.org.uk"
 USER_AGENT = "SkillsForCare"
 SOFT_RATE_LIMIT_MAX_RETRIES = 5
 SOFT_RATE_LIMIT_DEFAULT_WAIT_SECONDS = 2.0
+SOFT_RATE_LIMIT_MAX_WAIT_SECONDS = 10.0
 
 days_to_rollback_start_timestamp = 30
 
@@ -50,17 +51,23 @@ def _soft_rate_limit_wait_seconds(body: dict) -> float | None:
         body (dict): the parsed JSON body of a 200 CQC API response
 
     Returns:
-        float | None: seconds to wait before retrying, or None if the body
-            isn't a soft rate limit response
+        float | None: seconds to wait before retrying, capped at
+            `SOFT_RATE_LIMIT_MAX_WAIT_SECONDS`, or None if the body isn't a
+            soft rate limit response
     """
     if not isinstance(body, dict) or body.get("statusCode") != 429:
         return None
     match = re.search(r"(\d+(?:\.\d+)?)", body.get("message", ""))
-    return float(match.group(1)) if match else SOFT_RATE_LIMIT_DEFAULT_WAIT_SECONDS
+    wait_seconds = (
+        float(match.group(1)) if match else SOFT_RATE_LIMIT_DEFAULT_WAIT_SECONDS
+    )
+    return min(wait_seconds, SOFT_RATE_LIMIT_MAX_WAIT_SECONDS)
 
 
 @sleep_and_retry
 @limits(calls=RATE_LIMIT, period=ONE_MINUTE)
+# Soft-rate-limit retries happen inside the function body, so each one is an
+# extra real HTTP request that only counts once against RATE_LIMIT here.
 def call_api(
     url: str,
     id: str | None = None,
