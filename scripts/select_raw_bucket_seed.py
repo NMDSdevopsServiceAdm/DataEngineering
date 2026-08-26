@@ -1,14 +1,7 @@
 """
 Decide, per ingest domain, whether a push needs to seed that domain's slice of
-the branch's non-prod raw data bucket.
-
-Deciding per domain -- rather than one bucket-wide flag -- means a push that
-only touches one domain's ingest code doesn't reseed (and re-trigger) the
-other domains' Step Functions.
-
-Trigger paths are a fixed list rather than derived, unlike
-`select_bake_targets`'s Dockerfile-driven approach -- there's no manifest that
-already enumerates "everything that reads the raw bucket".
+the branch's non-prod raw data bucket -- so a push touching one domain doesn't
+reseed and re-trigger the others' Step Functions.
 """
 
 import argparse
@@ -16,10 +9,8 @@ import sys
 from pathlib import Path
 from typing import Iterable, Optional, Sequence
 
-# Run directly (as CI does: `python scripts/select_raw_bucket_seed.py`), only
-# this script's own directory lands on sys.path, not the repo root -- so the
-# package-style import below would fail. Adding the repo root explicitly
-# makes the script runnable both that way and under pytest.
+# Makes the repo root importable whether run directly (as CI does) or under
+# pytest, where only this script's own directory would otherwise be on the path.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts.select_bake_targets import (  # noqa: E402
@@ -29,13 +20,27 @@ from scripts.select_bake_targets import (  # noqa: E402
     path_triggers_rebuild,
 )
 
-# Ingest domains that read from the raw bucket, keyed by the --domain value.
-# `cqc_api` reads the CQC API directly, not the raw bucket, so it's excluded.
+# Files that actually read/write/validate each domain's raw data. `cqc_api`
+# is excluded (reads the CQC API, not the raw bucket); `capacity_tracker` has
+# no raw-validate job. Uses `fargate/` uniformly, ahead of each domain's
+# migration there.
 DOMAIN_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
-    "ascwds": ("projects/_01_ingest/ascwds",),
-    "capacity_tracker": ("projects/_01_ingest/capacity_tracker",),
-    "cqc_pir": ("projects/_01_ingest/cqc_pir",),
-    "ons_pd": ("projects/_01_ingest/ons_pd",),
+    "ascwds": (
+        "projects/_01_ingest/ascwds/fargate/ingest_ascwds_dataset.py",
+        "projects/_01_ingest/ascwds/fargate/validate_ascwds_worker_raw_data.py",
+        "projects/_01_ingest/ascwds/fargate/validate_ascwds_workplace_raw_data.py",
+    ),
+    "capacity_tracker": (
+        "projects/_01_ingest/capacity_tracker/fargate/ingest_capacity_tracker_data.py",
+    ),
+    "cqc_pir": (
+        "projects/_01_ingest/cqc_pir/fargate/ingest_cqc_pir_data.py",
+        "projects/_01_ingest/cqc_pir/fargate/validate_cqc_pir_raw_data.py",
+    ),
+    "ons_pd": (
+        "projects/_01_ingest/ons_pd/fargate/ingest_ons_data.py",
+        "projects/_01_ingest/ons_pd/fargate/validate_postcode_directory_raw_data.py",
+    ),
 }
 
 # Cross-cutting trigger -- a change here seeds every domain.
