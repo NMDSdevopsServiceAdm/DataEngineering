@@ -18,23 +18,8 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 
 class TestExcludeTestAccountsFilter:
     def test_returns_rows_that_are_not_test_accounts(self):
-        input_lf = pl.LazyFrame(
-            {
-                AWPClean.organisation_id: [
-                    "305",
-                    "123",
-                    "1234",
-                    "28470",
-                ],  # 305, 28470 are test accounts
-                AWPClean.establishment_id: ["1", "2", "3", "4"],
-            }
-        )
-        expected_lf = pl.LazyFrame(
-            {
-                AWPClean.organisation_id: ["123", "1234"],
-                AWPClean.establishment_id: ["2", "3"],
-            }
-        )
+        input_lf = pl.LazyFrame(Data.exclude_test_accounts_filter_input_data)
+        expected_lf = pl.LazyFrame(Data.expected_exclude_test_accounts_filter_data)
 
         returned_lf = input_lf.filter(job.exclude_test_accounts_filter())
 
@@ -42,107 +27,16 @@ class TestExcludeTestAccountsFilter:
 
 
 class TestNullDuplicateEstablishmentNumericData:
-    def test_nulls_numeric_columns_when_establishment_id_is_a_known_duplicate(self):
-        input_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: ["48904", "1"],  # 48904 is a known duplicate
-                AWPClean.total_staff: [10, 10],
-                AWPClean.worker_records: [8, 8],
-                AWPClean.total_starters: ["1", "1"],
-                AWPClean.total_leavers: ["2", "2"],
-                AWPClean.total_vacancies: ["3", "3"],
-            }
-        )
-        expected_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: ["48904", "1"],
-                AWPClean.total_staff: [None, 10],
-                AWPClean.worker_records: [None, 8],
-                AWPClean.total_starters: [None, "1"],
-                AWPClean.total_leavers: [None, "2"],
-                AWPClean.total_vacancies: [None, "3"],
-            },
-            schema=input_lf.collect_schema(),
-        )
-
-        returned_lf = job.null_duplicate_establishment_numeric_data(input_lf)
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_does_not_null_numeric_columns_when_establishment_id_is_not_a_known_duplicate(
-        self,
-    ):
-        input_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: ["1", "2"],
-                AWPClean.total_staff: [10, 5],
-                AWPClean.worker_records: [8, 4],
-                AWPClean.total_starters: ["1", "0"],
-                AWPClean.total_leavers: ["2", "1"],
-                AWPClean.total_vacancies: ["3", "2"],
-            }
-        )
-
-        returned_lf = job.null_duplicate_establishment_numeric_data(input_lf)
-
-        pl_testing.assert_frame_equal(returned_lf, input_lf)
-
-    def test_retains_non_numeric_columns_for_duplicate_establishment_rows(self):
-        input_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: ["48904"],  # known duplicate
-                AWPClean.establishment_name: ["Some Care Home"],
-                AWPClean.total_staff: [10],
-            }
-        )
-        expected_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: ["48904"],
-                AWPClean.establishment_name: ["Some Care Home"],
-                AWPClean.total_staff: [None],
-            },
-            schema=input_lf.collect_schema(),
-        )
-
-        returned_lf = job.null_duplicate_establishment_numeric_data(input_lf)
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_nulls_job_role_columns_for_duplicate_establishments(self):
-        input_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: ["48904", "1"],  # 48904 is a known duplicate
-                "jr01emp": [5, 5],
-                "jr01strt": [1, 1],
-            }
-        )
-        expected_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: ["48904", "1"],
-                "jr01emp": [None, 5],
-                "jr01strt": [None, 1],
-            },
-            schema=input_lf.collect_schema(),
-        )
-
-        returned_lf = job.null_duplicate_establishment_numeric_data(input_lf)
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_does_not_error_when_job_role_columns_are_not_present_in_the_frame(self):
-        input_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: ["48904"],
-                AWPClean.total_staff: [10],
-            }
-        )
-        expected_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: ["48904"],
-                AWPClean.total_staff: [None],
-            },
-            schema=input_lf.collect_schema(),
-        )
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.null_duplicate_establishment_numeric_data_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        input_lf = pl.LazyFrame(case.input_data)
+        expected_lf = pl.LazyFrame(case.expected_data, schema=input_lf.collect_schema())
 
         returned_lf = job.null_duplicate_establishment_numeric_data(input_lf)
 
@@ -150,14 +44,7 @@ class TestNullDuplicateEstablishmentNumericData:
 
     def test_does_not_remove_any_rows(self):
         input_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: [
-                    "48904",
-                    "1",
-                    "50640",
-                ],  # 2 known duplicates
-                AWPClean.total_staff: [10, 5, 20],
-            }
+            Data.null_duplicate_establishment_numeric_data_row_count_input_data
         )
 
         returned_lf = job.null_duplicate_establishment_numeric_data(input_lf)
