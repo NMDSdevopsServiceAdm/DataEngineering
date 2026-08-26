@@ -97,13 +97,17 @@ EXPECTED_SCHEMA = pb.Schema(
 
 CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 
-# Float32 drift is relative to magnitude, not row count, so a fixed absolute
-# bound fails on the largest locations first as data grows.
+# ~100x float32 eps (1.19e-7); the measured drift in ticket 1864 was ~2.6x eps.
+# See reference_float32_drift_vs_absolute_tolerance memory - a fixed absolute
+# bound fails on the largest locations first as data grows, since float32 drift
+# is relative to magnitude, not row count.
 RELATIVE_DRIFT_TOLERANCE = 1e-5
 
-# The registered-manager "+1" allowance is a flat business constant, not
-# proportional to location size, so its tolerance is absolute rather than
-# relative.
+# The registered-manager adjustment allowance itself ("+1") is a flat business
+# constant, not proportional to location size, so its tolerance is absolute
+# rather than relative. Observed in production (ticket 1920): one location/date
+# landed at 1.0001, ~1e-4 over the allowance, from the same float32
+# accumulation drift as the downside case.
 MANAGER_ADJUSTMENT_UPPER_BOUND_TOLERANCE = 1e-3
 
 req_pcts = {

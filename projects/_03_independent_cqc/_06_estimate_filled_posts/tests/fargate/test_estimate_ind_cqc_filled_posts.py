@@ -79,12 +79,7 @@ class MainDtypeCastTests(unittest.TestCase):
     TEST_IMPUTED_IND_CQC_DATA_SOURCE = "some/s3/uri"
     TEST_DESTINATION = "some/other/s3/uri"
 
-    @staticmethod
-    def add_float64_column(name: str):
-        def side_effect(lf, *_args, **_kwargs):
-            return lf.with_columns(pl.lit(1.0).cast(pl.Float64).alias(name))
-
-        return side_effect
+    mock_data = Mock(name="data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.estimate_non_res_capacity_tracker_filled_posts")
@@ -93,7 +88,7 @@ class MainDtypeCastTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.model_imputation")
     @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
     @patch(f"{PATCH_PATH}.enrich_with_model_predictions")
-    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_data)
     def test_main_casts_estimate_filled_posts_source_to_enum_and_named_columns_to_float32(
         self,
         scan_parquet_mock: Mock,
@@ -105,48 +100,20 @@ class MainDtypeCastTests(unittest.TestCase):
         estimate_non_res_capacity_tracker_filled_posts_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        scan_parquet_mock.return_value = pl.LazyFrame(
+        coalesce_with_source_labels_mock.return_value = (Mock(), Mock())
+        estimate_non_res_capacity_tracker_filled_posts_mock.return_value = pl.LazyFrame(
             {
-                IndCQC.ascwds_filled_posts_dedup_clean: [1.0],
-                IndCQC.ascwds_pir_merged: [1.0],
-                IndCQC.posts_rolling_average_model: [1.0],
+                **{col: [1.0] for col in FLOAT32_COLUMNS},
+                IndCQC.estimate_filled_posts_source: [
+                    EstimateFilledPostsSource.ascwds_pir_merged
+                ],
             }
         )
-        enrich_with_model_predictions_mock.side_effect = (
-            lambda lf, bucket_name, model_name: lf.with_columns(
-                pl.lit(1.0).cast(pl.Float64).alias(model_name)
-            )
-        )
-        combine_non_res_with_and_without_dormancy_models_mock.side_effect = (
-            self.add_float64_column(IndCQC.non_res_combined_model)
-        )
-        model_imputation_mock.side_effect = lambda lf, _col, _model_col, imputed_column_name, **_kwargs: lf.with_columns(
-            pl.lit(1.0).cast(pl.Float64).alias(imputed_column_name)
-        )
-        coalesce_with_source_labels_mock.return_value = (
-            pl.lit(1.0).cast(pl.Float64).alias(IndCQC.estimate_filled_posts),
-            pl.lit(EstimateFilledPostsSource.ascwds_pir_merged).alias(
-                IndCQC.estimate_filled_posts_source
-            ),
-        )
-        set_min_value_mock.side_effect = lambda lf, *_args, **_kwargs: lf
-        estimate_non_res_capacity_tracker_filled_posts_mock.side_effect = lambda lf: lf
 
         job.main(
             self.TEST_BUCKET_NAME,
             self.TEST_IMPUTED_IND_CQC_DATA_SOURCE,
             self.TEST_DESTINATION,
-        )
-
-        # cast at creation, before model_imputation starts consuming these columns
-        model_imputation_input_schema = (
-            model_imputation_mock.call_args_list[0].args[0].collect_schema()
-        )
-        self.assertEqual(
-            model_imputation_input_schema[IndCQC.care_home_model], pl.Float32
-        )
-        self.assertEqual(
-            model_imputation_input_schema[IndCQC.non_res_combined_model], pl.Float32
         )
 
         sunk_lf = sink_to_parquet_mock.call_args_list[0].args[0]

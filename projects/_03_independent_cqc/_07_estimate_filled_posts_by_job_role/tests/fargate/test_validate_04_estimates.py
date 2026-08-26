@@ -241,13 +241,17 @@ class TestDifferenceWithinDriftTolerance:
             "expression": pl.Boolean,
         },
         data=[
-            # measured float32 drift: -0.0003 on a 987.004-post location, ~3e-7 relative
+            # ticket 1864's measured float32 drift case: -0.0003 on a 987.004-post
+            # location, ~3.04e-7 relative - well within tolerance
             (-0.0003, 987.004, True),
-            # deliberately broken reallocation (ratios not summing to 1) - should still fail
+            # a deliberately broken reallocation (ratios not summing to 1): 5% of
+            # total missing, orders of magnitude past drift - should still fail
             (-50.0, 1000.0, False),
             # registered-manager adjustment can add up to a whole post - allowed
             (0.9, 500.0, True),
-            # measured production case: allowance plus ~1e-4 float32 drift on the upside
+            # ticket 1920's measured production case: a single location/date at
+            # 1.0001 - the registered-manager allowance plus ~1e-4 float32 drift
+            # on the upside, same order as the downside drift - allowed
             (1.0001, 561.4564, True),
             (1.5, 500.0, False),
             (None, 500.0, True),
