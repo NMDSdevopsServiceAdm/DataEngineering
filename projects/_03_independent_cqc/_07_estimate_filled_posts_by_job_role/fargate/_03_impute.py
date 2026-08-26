@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.impute_utils as iUtils
@@ -6,6 +8,12 @@ from polars_utils import utils
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
+
+
+@dataclass
+class NumericalValues:
+    extrapolation_period: str = "2y"
+    interpolation_cap_period: str = "5y"
 
 
 def main(
@@ -30,7 +38,9 @@ def main(
     )
 
     estimated_job_role_posts_lf = iUtils.create_ascwds_job_role_rolling_ratio(
-        estimated_job_role_posts_lf
+        estimated_job_role_posts_lf,
+        extrapolation_period=NumericalValues.extrapolation_period,
+        interpolation_cap_period=NumericalValues.interpolation_cap_period,
     )
 
     utils.sink_to_parquet(

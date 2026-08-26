@@ -45,3 +45,11 @@ class MainTests(unittest.TestCase):
             lazy_df=ANY,
             output_path=self.IMPUTED_DATA_DESTINATION,
         )
+
+
+class NumericalValuesTests(unittest.TestCase):
+    def test_extrapolation_period_value(self):
+        self.assertEqual(job.NumericalValues.extrapolation_period, "2y")
+
+    def test_interpolation_cap_period_value(self):
+        self.assertEqual(job.NumericalValues.interpolation_cap_period, "5y")
