@@ -26,22 +26,22 @@ UNRELATED_PATHS = [
 domain_trigger_cases = [
     pytest.param(
         "ascwds",
-        "projects/_01_ingest/ascwds/jobs/ingest_ascwds_dataset.py",
+        "projects/_01_ingest/ascwds/fargate/ingest_ascwds_dataset.py",
         id="returns_true_when_ascwds_ingest_job_changed",
     ),
     pytest.param(
         "ascwds",
-        "projects/_01_ingest/ascwds/jobs/validate_ascwds_worker_raw_data.py",
+        "projects/_01_ingest/ascwds/fargate/validate_ascwds_worker_raw_data.py",
         id="returns_true_when_ascwds_worker_raw_validate_changed",
     ),
     pytest.param(
         "ascwds",
-        "projects/_01_ingest/ascwds/jobs/validate_ascwds_workplace_raw_data.py",
+        "projects/_01_ingest/ascwds/fargate/validate_ascwds_workplace_raw_data.py",
         id="returns_true_when_ascwds_workplace_raw_validate_changed",
     ),
     pytest.param(
         "capacity_tracker",
-        "projects/_01_ingest/capacity_tracker/jobs/ingest_capacity_tracker_data.py",
+        "projects/_01_ingest/capacity_tracker/fargate/ingest_capacity_tracker_data.py",
         id="returns_true_when_capacity_tracker_ingest_job_changed",
     ),
     pytest.param(
@@ -56,12 +56,12 @@ domain_trigger_cases = [
     ),
     pytest.param(
         "ons_pd",
-        "projects/_01_ingest/ons_pd/jobs/ingest_ons_data.py",
+        "projects/_01_ingest/ons_pd/fargate/ingest_ons_data.py",
         id="returns_true_when_ons_pd_ingest_job_changed",
     ),
     pytest.param(
         "ons_pd",
-        "projects/_01_ingest/ons_pd/jobs/validate_postcode_directory_raw_data.py",
+        "projects/_01_ingest/ons_pd/fargate/validate_postcode_directory_raw_data.py",
         id="returns_true_when_ons_pd_raw_validate_changed",
     ),
 ]
@@ -119,7 +119,7 @@ class TestMain:
                 "--domain",
                 "ascwds",
                 "--changed-path",
-                "projects/_01_ingest/ascwds/jobs/ingest_ascwds_dataset.py",
+                "projects/_01_ingest/ascwds/fargate/ingest_ascwds_dataset.py",
             ]
         )
 

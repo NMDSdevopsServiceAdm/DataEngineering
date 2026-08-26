@@ -33,26 +33,27 @@ from scripts.select_bake_targets import (  # noqa: E402
 # domain directories, which also matched tests and downstream
 # clean/validate-cleaned jobs. `cqc_api` reads the CQC API directly, so it's
 # excluded; `capacity_tracker` has no raw-validate job here, so it only gets
-# its ingest entrypoint.
+# its ingest entrypoint. Paths use `fargate/` uniformly (matching each
+# domain's migration target) rather than each domain's current location.
 #
 # To add a new trigger path: add it here, plus a matching case in
 # scripts/tests/test_select_raw_bucket_seed.py's `domain_trigger_cases`.
 DOMAIN_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
     "ascwds": (
-        "projects/_01_ingest/ascwds/jobs/ingest_ascwds_dataset.py",
-        "projects/_01_ingest/ascwds/jobs/validate_ascwds_worker_raw_data.py",
-        "projects/_01_ingest/ascwds/jobs/validate_ascwds_workplace_raw_data.py",
+        "projects/_01_ingest/ascwds/fargate/ingest_ascwds_dataset.py",
+        "projects/_01_ingest/ascwds/fargate/validate_ascwds_worker_raw_data.py",
+        "projects/_01_ingest/ascwds/fargate/validate_ascwds_workplace_raw_data.py",
     ),
     "capacity_tracker": (
-        "projects/_01_ingest/capacity_tracker/jobs/ingest_capacity_tracker_data.py",
+        "projects/_01_ingest/capacity_tracker/fargate/ingest_capacity_tracker_data.py",
     ),
     "cqc_pir": (
         "projects/_01_ingest/cqc_pir/fargate/ingest_cqc_pir_data.py",
         "projects/_01_ingest/cqc_pir/fargate/validate_cqc_pir_raw_data.py",
     ),
     "ons_pd": (
-        "projects/_01_ingest/ons_pd/jobs/ingest_ons_data.py",
-        "projects/_01_ingest/ons_pd/jobs/validate_postcode_directory_raw_data.py",
+        "projects/_01_ingest/ons_pd/fargate/ingest_ons_data.py",
+        "projects/_01_ingest/ons_pd/fargate/validate_postcode_directory_raw_data.py",
     ),
 }
 
