@@ -516,13 +516,16 @@ class ValidateCleanIndCQCSchemas:
             (IndCQC.total_staff_bounded, pl.Int64()),
             (IndCQC.worker_records_bounded, pl.Int64()),
             (IndCQC.related_location, pl.String()),
-            (IndCQC.ascwds_filtering_rule, pl.String()),
+            (IndCQC.ascwds_filtering_rule, CatColType.AscwdsFilteringRuleEnumType),
             (IndCQC.specialism_dementia, pl.String()),
             (IndCQC.specialism_learning_disabilities, pl.String()),
             (IndCQC.specialism_mental_health, pl.String()),
             (IndCQC.time_registered, pl.Int32()),
             (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
-            (IndCQC.ascwds_filled_posts_source, pl.String()),
+            (
+                IndCQC.ascwds_filled_posts_source,
+                CatColType.AscwdsFilledPostsSourceEnumType,
+            ),
         ]
     )
 

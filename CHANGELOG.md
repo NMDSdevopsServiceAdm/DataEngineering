@@ -35,6 +35,8 @@ All notable changes to this project will be documented in this file.
 
 - Narrowed dtypes (Categorical/Enum/Float32) for the columns feeding the independent CQC estimate archive jobs, to reduce long-term storage and read cost: ASCWDS source/filtering-rule labels and the job-role ratio merge source are now Enum, and several model/estimate columns (including `estimate_filled_posts` and the job-role reallocation/reconciliation columns) are now Float32 instead of Float64. Fixed a real dtype bug found along the way, where an unsigned-int registered-manager count was silently promoting `estimate_filled_posts_by_job_role_manager_adjusted` to Float64 via Polars' type coercion rules. Replaced the job-role reconciliation check's fixed absolute tolerance with a relative one, since float32 drift scales with magnitude rather than row count.
 
+- Added a `col_schema_match` check to the independent CQC clean and estimate validation jobs (`validate_cleaned_ind_cqc_data.py`, `validate_estimated_ind_cqc_filled_posts_data.py`), which previously had no schema assertion at all, so a future dtype regression on those narrowed columns is caught at the earliest validation step rather than downstream.
+
 - Removed a dead `lf.sort()` call (its result was never reassigned) in model_interpolation. Converted the module's remaining sorts to `over(..., order_by=...)`, measured as using much less peak memory than sorting.
 
 ### Fixed
