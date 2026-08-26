@@ -1,8 +1,8 @@
 # Archiving and publication
 
-**WORK IN PROGRESS
+**WORK IN PROGRESS**
 
-**THIS IS A TEMPLATE TO BE UPDATED OVER TIME.
+**THIS IS A TEMPLATE TO BE UPDATED OVER TIME.**
 
 ## Archiving
 
