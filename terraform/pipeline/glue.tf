@@ -33,22 +33,6 @@ module "clean_cqc_pir_data_job" {
   }
 }
 
-module "ingest_ascwds_dataset_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ascwds/jobs"
-  script_name     = "ingest_ascwds_dataset.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = ""
-    "--dataset"     = "ascwds"
-  }
-}
-
 module "clean_ascwds_worker_job" {
   source            = "../modules/glue-job"
   script_dir        = "projects/_01_ingest/ascwds/jobs"
@@ -334,36 +318,6 @@ module "validate_merge_coverage_data_job" {
   }
 }
 
-
-module "validate_ascwds_workplace_raw_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ascwds/jobs"
-  script_name     = "validate_ascwds_workplace_raw_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_workplace_raw/"
-  }
-}
-
-module "validate_ascwds_worker_raw_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ascwds/jobs"
-  script_name     = "validate_ascwds_worker_raw_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
-    "--report_destination"       = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_worker_raw/"
-  }
-}
 
 module "validate_postcode_directory_raw_data_job" {
   source          = "../modules/glue-job"
