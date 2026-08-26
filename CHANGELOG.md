@@ -34,6 +34,7 @@ All notable changes to this project will be documented in this file.
 
 - Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
 
+- Removed the legacy PySpark impute and estimate-filled-posts jobs now that their Polars replacements are signed off, and dropped the `polars` suffix from their S3 paths and step-function state names now that only one implementation remains.
 - sfc_internal data now includes workplaces exceeding their *active* purge date. The merge coverage job adds a boolean column removed_by_purge_date_filter. The in_ascwds column now takes that filter into account. The reconciliation job also creates removed_by_purge_date_filter then filters upon it to remove purged workplaces.
 
 ### Improved
