@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file.
 - Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the standalone job role step function (`Ind-CQC-Filled-Post-Estimates-By-Role`) after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet), deliberately kept out of the main pipeline until partitioning is in place, ahead of a future rework of the job-role dataset shape.
 
 ### Changed
+- Removed the unused generic CSV/SPSS-to-parquet ingest Glue jobs, their Terraform module definitions, and the now-unused SPSS job estimates schema and its test.
+- Removed the archived PySpark CQC bulk-download scripts (`archived_bulk_download_cqc_locations.py`, `archived_bulk_download_cqc_providers.py`), superseded by the active Polars/Fargate CQC ingest jobs, along with the orphaned `PROVIDER_SCHEMA` (`schemas/cqc_provider_schema.py`) that only the providers script used.
 - Split the non-prod raw bucket's seed-gating decision from one bucket-wide flag into one per ingest domain (ASCWDS, Capacity Tracker, CQC PIR, ONS PD), so a push touching only one domain's ingest code reseeds and re-triggers only that domain's Step Function instead of all five.
 - Consolidated the `ascwds` Fargate task onto the generic `_01_ingest` image/task (introduced for CQC PIR), removing the `ascwds`-specific ECR repo, Dockerfile, and `docker-bake` target.
 - Migrated the CQC PIR ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on a new shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Reads the raw CSV with `utf8-lossy` encoding, since supplier PIR files are frequently not valid UTF-8.
@@ -35,6 +37,7 @@ All notable changes to this project will be documented in this file.
 
 - Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
 
+- Removed the legacy PySpark impute and estimate-filled-posts jobs now that their Polars replacements are signed off, and dropped the `polars` suffix from their S3 paths and step-function state names now that only one implementation remains.
 - sfc_internal data now includes workplaces exceeding their *active* purge date. The merge coverage job adds a boolean column removed_by_purge_date_filter. The in_ascwds column now takes that filter into account. The reconciliation job also creates removed_by_purge_date_filter then filters upon it to remove purged workplaces.
 
 ### Improved
