@@ -22,7 +22,7 @@ We only archive specific columns in each dataset.
 ### Preparation
 The archived output from the 1st run of each month is assessed for publication readiness.
 Assessing the data for publication requires merging the three archived datasets, creating filters for external benchmarking and splitting the data into two sets; one for publication and one for assessment.
-We filter the data to import dates from April 2020 onwards, then each quarter from several years ago up to the start of the previous financial year, then each month for within the previous and current financial years.
+We filter the data to import dates from April 2020 onwards, then each quarter up to the start of the previous financial year, then each month for within the previous and current financial years.
 The assessment dataset is going to be benchmarked against external data, therefore we only want to include rows that have a value in the external data (all rows receive a filled posts estimate from our pipeline).
 Each of those datasets requires aggregating into high level groupings by region, service and job role.
 
