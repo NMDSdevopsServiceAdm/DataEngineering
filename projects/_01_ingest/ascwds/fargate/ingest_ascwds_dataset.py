@@ -31,13 +31,13 @@ def main(source: str, destination_prefix: str) -> None:
     print(f"Reading pipe-delimited CSV from {source} with all columns as strings")
     ascwds_lf = pl.scan_csv(source, separator=DELIMITER, infer_schema=False)
 
-    ascwds_lf = raise_error_if_mainjrid_includes_unknown_values(ascwds_lf)
+    raise_error_if_mainjrid_includes_unknown_values(ascwds_lf)
 
     print(f"Sinking parquet to {output_path}")
     utils.sink_to_parquet(lazy_df=ascwds_lf, output_path=output_path)
 
 
-def raise_error_if_mainjrid_includes_unknown_values(lf: pl.LazyFrame) -> pl.LazyFrame:
+def raise_error_if_mainjrid_includes_unknown_values(lf: pl.LazyFrame) -> None:
     """Raises an error if a worker file's main job role column contains unknown values.
 
     This job handles both workplace and worker files, so it first checks
@@ -49,15 +49,11 @@ def raise_error_if_mainjrid_includes_unknown_values(lf: pl.LazyFrame) -> pl.Lazy
     Args:
         lf (pl.LazyFrame): the scanned CSV data to check.
 
-    Returns:
-        pl.LazyFrame: the original LazyFrame, unchanged, if no unknown values
-            are found (or the column is absent).
-
     Raises:
         ValueError: if the LazyFrame contains unknown main job role IDs.
     """
     if AWK.main_job_role_id not in lf.collect_schema().names():
-        return lf
+        return
 
     # A small aggregation collect (a single count), not a full materialisation
     # of the LazyFrame - the source CSV is still read a second time here since
@@ -71,8 +67,6 @@ def raise_error_if_mainjrid_includes_unknown_values(lf: pl.LazyFrame) -> pl.Lazy
         raise ValueError(
             f"Error: this file contains {count_unknown} unknown mainjrid record(s)"
         )
-
-    return lf
 
 
 if __name__ == "__main__":

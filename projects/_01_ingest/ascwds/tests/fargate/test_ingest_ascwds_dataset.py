@@ -72,21 +72,15 @@ class TestMain:
 
 
 class TestRaiseErrorIfMainjridIncludesUnknownValues:
-    def test_returns_original_lf_unchanged_if_mainjrid_column_not_present(self):
+    def test_does_not_raise_if_mainjrid_column_not_present(self):
         lf = pl.LazyFrame({AWK.establishment_id: ["estab_1"]})
 
-        returned_lf = job.raise_error_if_mainjrid_includes_unknown_values(lf)
+        job.raise_error_if_mainjrid_includes_unknown_values(lf)
 
-        pl_testing.assert_frame_equal(returned_lf, lf)
-
-    def test_returns_original_lf_unchanged_if_mainjrid_present_and_all_values_known(
-        self,
-    ):
+    def test_does_not_raise_if_mainjrid_present_and_all_values_known(self):
         lf = pl.LazyFrame({AWK.main_job_role_id: ["1", "8"]})
 
-        returned_lf = job.raise_error_if_mainjrid_includes_unknown_values(lf)
-
-        pl_testing.assert_frame_equal(returned_lf, lf)
+        job.raise_error_if_mainjrid_includes_unknown_values(lf)
 
     def test_raises_error_if_mainjrid_includes_unknown_values(self):
         lf = pl.LazyFrame({AWK.main_job_role_id: ["1", "-1"]})
