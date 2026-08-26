@@ -282,7 +282,7 @@ jobs:
           command: uv sync --locked
       - run:
           name: Run CQC API integration tests
-          command: uv run pytest tests/integration/test_cqc_api_integration.py -v
+          command: uv run pytest tests/integration/test_cqc_api_integration.py -v -s
 
   lint-python:
     docker:
