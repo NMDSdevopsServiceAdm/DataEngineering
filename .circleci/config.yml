@@ -273,8 +273,10 @@ jobs:
             command: uv run coverage report
 
   # Hits the live CQC API directly (no mocking), so it can fail purely from a
-  # CQC-side outage. Split out from `test` and not `requires:`-gated by
-  # anything, so an unhandled failure here can't block terraform-plan/apply.
+  # CQC-side outage. Split out from `test`, and no job `requires:` this job's
+  # success -- it may itself `requires: decide-bake-and-seed` (dev only, same
+  # as task-containerisation), but an unhandled failure here still can't
+  # block terraform-plan/apply.
   test-cqc-integration:
     parameters:
       skip_if_unrelated:
