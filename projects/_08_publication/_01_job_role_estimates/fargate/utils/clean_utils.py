@@ -31,20 +31,3 @@ def add_ct_filter_dispersion_filter() -> pl.Expr:
         pl.Expr: a literal True, aliased to PublicationColumns.ct_dispersion_filter.
     """
     return pl.lit(True).alias(Pub.ct_dispersion_filter)
-
-
-def split_into_assessment_and_publication_data(
-    lf: pl.LazyFrame,
-) -> tuple[pl.LazyFrame, pl.LazyFrame]:
-    """
-    Placeholder: splits cleaned data into assessment and publication datasets.
-
-    Args:
-        lf (pl.LazyFrame): The cleaned job role data.
-
-    Returns:
-        tuple[pl.LazyFrame, pl.LazyFrame]: lf, returned unchanged as both the
-            assessment and publication LazyFrame.
-    """
-    # Commented out to prevent duplicating the execution plan once other functions are written.
-    # return lf, lf
