@@ -60,6 +60,8 @@ All notable changes to this project will be documented in this file.
 
 - Fixed the job role estimates pipeline crashing in prod with a `FileNotFoundError`: the merge, validation, and archive steps hardcoded a non-prod-only comparison dataset name for the estimated filled posts source, which CI only ever populates on branches other than `main`. The dataset name is now workspace-aware, matching the pattern already used for the sibling job-role datasets.
 
+- Fixed the job role archive job trying to select 10 columns from the job-role merge metadata dataset that it never actually produced. The job role merge step now selects those columns (which it already had available from its own source scan) into its metadata output, and its validation now checks for them too.
+
 ## [v2026.07.0] - 17/08/2026
 
 ### Added

@@ -14,7 +14,9 @@ class MainTests(unittest.TestCase):
     MERGED_DATA_DESTINATION = "some/destination"
     METADATA_DESTINATION = "some/other/destination"
 
-    mock_estimate_lf = pl.LazyFrame(schema=job.transformation_columns)
+    mock_estimate_lf = pl.LazyFrame(
+        schema=job.transformation_columns | job.metadata_columns
+    )
     mock_prepared_job_role_counts_lf = pl.LazyFrame(schema=job.ascwds_columns_to_import)
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
@@ -60,3 +62,18 @@ class MainTests(unittest.TestCase):
                 ),
             ]
         )
+
+        expected_metadata_columns = {
+            job.IndCQC.ascwds_filled_posts_source: str,
+            job.IndCQC.care_home_model: pl.Float64,
+            job.IndCQC.imputed_pir_filled_posts_model: pl.Float32,
+            job.IndCQC.imputed_posts_care_home_model: pl.Float32,
+            job.IndCQC.imputed_posts_non_res_combined_model: pl.Float32,
+            job.IndCQC.non_res_combined_model: pl.Float64,
+            job.IndCQC.pir_people_directly_employed_dedup: pl.Int64,
+            job.IndCQC.posts_rolling_average_model: pl.Float64,
+            job.IndCQC.ct_care_home_total_employed_imputed: pl.Float32,
+            job.IndCQC.ct_non_res_care_workers_employed_imputed: pl.Float32,
+        }
+        for column, dtype in expected_metadata_columns.items():
+            self.assertEqual(job.metadata_columns[column], dtype)

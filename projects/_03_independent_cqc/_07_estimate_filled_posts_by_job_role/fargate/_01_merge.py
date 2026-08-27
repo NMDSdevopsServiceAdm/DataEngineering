@@ -37,6 +37,16 @@ metadata_columns = {
     IndCQC.current_lsoa21: pl.Categorical,
     IndCQC.current_msoa21: pl.Categorical,
     IndCQC.estimate_filled_posts_source: CatColType.EstimatesFilledPostSourceEnumType,
+    IndCQC.ascwds_filled_posts_source: str,
+    IndCQC.care_home_model: pl.Float64,
+    IndCQC.imputed_pir_filled_posts_model: pl.Float32,
+    IndCQC.imputed_posts_care_home_model: pl.Float32,
+    IndCQC.imputed_posts_non_res_combined_model: pl.Float32,
+    IndCQC.non_res_combined_model: pl.Float64,
+    IndCQC.pir_people_directly_employed_dedup: pl.Int64,
+    IndCQC.posts_rolling_average_model: pl.Float64,
+    IndCQC.ct_care_home_total_employed_imputed: pl.Float32,
+    IndCQC.ct_non_res_care_workers_employed_imputed: pl.Float32,
 }
 ascwds_columns_to_import = {
     IndCQC.ascwds_worker_import_date: pl.Date,
