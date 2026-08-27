@@ -38,7 +38,7 @@
                         "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=estimates_by_job_role/archive_date=2026/run_number=1/job_role_estimates/",
                         "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=estimates_by_job_role/archive_date=2026/run_number=1/metadata/",
                         "--jr_archive_geography_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=estimates_by_job_role/archive_date=2026/run_number=1/geography/",
-                        "--merge_data_destination", "${dataset_bucket_uri}/domain=publication/dataset=publication_01_merged_data/"
+                        "--merge_data_destination", "${dataset_bucket_uri}/domain=publication/dataset=filled_posts_tracker_01_merged_data/"
                       ]
                     }
                   ]
@@ -66,8 +66,8 @@
                       "Name": "_08_publication-container",
                       "Command": [
                         "_02_clean_pub_data.py",
-                        "--merge_data_source", "${dataset_bucket_uri}/domain=publication/dataset=publication_01_merged_data/",
-                        "--clean_destination", "${dataset_bucket_uri}/domain=publication/dataset=publication_02_cleaned_data/"
+                        "--merge_data_source", "${dataset_bucket_uri}/domain=publication/dataset=filled_posts_tracker_01_merged_data/",
+                        "--clean_destination", "${dataset_bucket_uri}/domain=publication/dataset=filled_posts_tracker_02_cleaned_data/"
                       ]
                     }
                   ]

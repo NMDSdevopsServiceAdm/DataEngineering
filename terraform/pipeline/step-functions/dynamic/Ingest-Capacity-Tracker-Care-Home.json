@@ -10,37 +10,91 @@
           "States": {
             "Ingest Capacity Tracker Care Home": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${ingest_ct_care_home_job_name}",
-                "Arguments": {
-                  "--source.$": "$.jobs.ingest_capacity_tracker_data.source",
-                  "--destination": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/"
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command.$": "States.Array('ingest_capacity_tracker_data.py', '--source', $.jobs.ingest_capacity_tracker_data.source, '--destination', '${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/')"
+                    }
+                  ]
                 }
               },
               "Next": "Clean Capacity Tracker Care Home data"
             },
             "Clean Capacity Tracker Care Home data": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${clean_ct_care_home_data_job_name}",
-                "Arguments": {
-                  "--capacity_tracker_care_home_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/",
-                  "--cleaned_capacity_tracker_care_home_destination": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command": [
+                        "clean_capacity_tracker_care_home_data.py",
+                        "--capacity_tracker_care_home_source",
+                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/",
+                        "--cleaned_capacity_tracker_care_home_destination",
+                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
+                      ]
+                    }
+                  ]
                 }
               },
               "Next": "Validate cleaned CT Care Home data"
             },
             "Validate cleaned CT Care Home data": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${validate_ct_care_home_cleaned_data_job_name}",
-                "Arguments": {
-                  "--capacity_tracker_care_home_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/",
-                  "--capacity_tracker_care_home_cleaned_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_capacity_tracker_care_home_cleaned_data/"
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command": [
+                        "validate_clean_capacity_tracker_care_home_data.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/",
+                        "--reports_path",
+                        "domain=data_validation_reports/dataset=validation_capacity_tracker_care_home_cleaned/",
+                        "--compare_path",
+                        "domain=capacity_tracker/dataset=capacity_tracker_care_home/"
+                      ]
+                    }
+                  ]
                 }
               },
               "End": true
