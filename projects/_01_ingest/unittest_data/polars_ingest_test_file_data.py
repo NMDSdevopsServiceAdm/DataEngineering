@@ -1614,6 +1614,13 @@ class MergeLegacyJobRoleColumnsTestCase:
 
 
 @dataclass
+class NullDuplicateEstablishmentNumericDataTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
 class TestCleanAscwdsWorkplaceUtilsData:
     purge_date_test_cases = [
         CleanWorkplaceUtilsTestCase(
@@ -1916,6 +1923,103 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
     ]
+
+    exclude_test_accounts_filter_input_data = {
+        AWPClean.organisation_id: [
+            "305",  # test account
+            "123",
+            "1234",
+            "28470",  # test account
+        ],
+        AWPClean.establishment_id: ["1", "2", "3", "4"],
+    }
+    expected_exclude_test_accounts_filter_data = {
+        AWPClean.organisation_id: ["123", "1234"],
+        AWPClean.establishment_id: ["2", "3"],
+    }
+
+    null_duplicate_establishment_numeric_data_test_cases = [
+        NullDuplicateEstablishmentNumericDataTestCase(
+            id="nulls_numeric_columns_when_establishment_id_is_a_known_duplicate",
+            input_data={
+                AWPClean.establishment_id: ["48904", "1"],  # 48904 is a known duplicate
+                AWPClean.total_staff: [10, 10],
+                AWPClean.worker_records: [8, 8],
+                AWPClean.total_starters: ["1", "1"],
+                AWPClean.total_leavers: ["2", "2"],
+                AWPClean.total_vacancies: ["3", "3"],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["48904", "1"],
+                AWPClean.total_staff: [None, 10],
+                AWPClean.worker_records: [None, 8],
+                AWPClean.total_starters: [None, "1"],
+                AWPClean.total_leavers: [None, "2"],
+                AWPClean.total_vacancies: [None, "3"],
+            },
+        ),
+        NullDuplicateEstablishmentNumericDataTestCase(
+            id="does_not_null_numeric_columns_when_establishment_id_is_not_a_known_duplicate",
+            input_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.total_staff: [10, 5],
+                AWPClean.worker_records: [8, 4],
+                AWPClean.total_starters: ["1", "0"],
+                AWPClean.total_leavers: ["2", "1"],
+                AWPClean.total_vacancies: ["3", "2"],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.total_staff: [10, 5],
+                AWPClean.worker_records: [8, 4],
+                AWPClean.total_starters: ["1", "0"],
+                AWPClean.total_leavers: ["2", "1"],
+                AWPClean.total_vacancies: ["3", "2"],
+            },
+        ),
+        NullDuplicateEstablishmentNumericDataTestCase(
+            id="retains_non_numeric_columns_for_duplicate_establishment_rows",
+            input_data={
+                AWPClean.establishment_id: ["48904"],  # known duplicate
+                AWPClean.establishment_name: ["Some Care Home"],
+                AWPClean.total_staff: [10],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["48904"],
+                AWPClean.establishment_name: ["Some Care Home"],
+                AWPClean.total_staff: [None],
+            },
+        ),
+        NullDuplicateEstablishmentNumericDataTestCase(
+            id="nulls_job_role_columns_for_duplicate_establishments",
+            input_data={
+                AWPClean.establishment_id: ["48904", "1"],  # 48904 is a known duplicate
+                "jr01emp": [5, 5],
+                "jr01strt": [1, 1],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["48904", "1"],
+                "jr01emp": [None, 5],
+                "jr01strt": [None, 1],
+            },
+        ),
+        NullDuplicateEstablishmentNumericDataTestCase(
+            id="does_not_error_when_job_role_columns_are_not_present_in_the_frame",
+            input_data={
+                AWPClean.establishment_id: ["48904"],
+                AWPClean.total_staff: [10],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["48904"],
+                AWPClean.total_staff: [None],
+            },
+        ),
+    ]
+
+    null_duplicate_establishment_numeric_data_row_count_input_data = {
+        AWPClean.establishment_id: ["48904", "1", "50640"],  # 2 known duplicates
+        AWPClean.total_staff: [10, 5, 20],
+    }
 
 
 @dataclass

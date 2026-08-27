@@ -3,21 +3,6 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
   description = "Database for all datasets belonging to the ${local.workspace_prefix} environment."
 }
 
-module "ingest_capacity_tracker_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
-  script_name     = "ingest_capacity_tracker_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = ""
-  }
-}
-
 module "clean_cqc_pir_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/cqc_pir/jobs"
@@ -48,36 +33,6 @@ module "clean_ascwds_worker_job" {
     "--ascwds_worker_source"            = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
     "--ascwds_workplace_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
     "--ascwds_worker_destination"       = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
-  }
-}
-
-module "clean_capacity_tracker_care_home_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
-  script_name     = "clean_capacity_tracker_care_home_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--capacity_tracker_care_home_source"              = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/"
-    "--cleaned_capacity_tracker_care_home_destination" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
-  }
-}
-
-module "clean_capacity_tracker_non_res_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
-  script_name     = "clean_capacity_tracker_non_res_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--capacity_tracker_non_res_source"              = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/"
-    "--cleaned_capacity_tracker_non_res_destination" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
   }
 }
 
@@ -338,40 +293,6 @@ module "diagnostics_on_capacity_tracker_job" {
   }
 }
 
-module "validate_cleaned_capacity_tracker_care_home_data_job" {
-  source            = "../modules/glue-job"
-  script_dir        = "projects/_01_ingest/capacity_tracker/jobs"
-  script_name       = "validate_cleaned_capacity_tracker_care_home_data.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  glue_version      = "5.0"
-  worker_type       = "G.1X"
-  number_of_workers = 4
-
-  job_parameters = {
-    "--capacity_tracker_care_home_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/"
-    "--capacity_tracker_care_home_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
-    "--report_destination"                        = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_capacity_tracker_care_home_cleaned_data/"
-  }
-}
-
-module "validate_cleaned_capacity_tracker_non_res_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
-  script_name     = "validate_cleaned_capacity_tracker_non_res_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--capacity_tracker_non_res_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/"
-    "--capacity_tracker_non_res_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
-    "--report_destination"                      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_capacity_tracker_non_residential_cleaned_data/"
-  }
-}
-
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
@@ -389,6 +310,13 @@ module "ind_cqc_filled_posts_crawler" {
 module "data_validation_reports_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "data_validation_reports"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
+
+module "publication_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "publication"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
@@ -435,4 +363,11 @@ module "workforce_characteristics_crawler" {
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
   exclusions                   = ["dataset=empstat_rates/**"]
+}
+
+module "sample_archive_data_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "sample_archive_data"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }

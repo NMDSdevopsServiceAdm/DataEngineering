@@ -111,12 +111,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     split_pa_filled_posts_into_icb_areas_job_name     = module.split_pa_filled_posts_into_icb_areas_job.job_name
     clean_cqc_pir_data_job_name                       = module.clean_cqc_pir_data_job.job_name
     validate_pir_cleaned_data_job_name                = module.validate_pir_cleaned_data_job.job_name
-    ingest_ct_care_home_job_name                      = module.ingest_capacity_tracker_data_job.job_name
-    clean_ct_care_home_data_job_name                  = module.clean_capacity_tracker_care_home_job.job_name
-    validate_ct_care_home_cleaned_data_job_name       = module.validate_cleaned_capacity_tracker_care_home_data_job.job_name
-    ingest_ct_non_res_job_name                        = module.ingest_capacity_tracker_data_job.job_name
-    clean_ct_non_res_data_job_name                    = module.clean_capacity_tracker_non_res_job.job_name
-    validate_ct_non_res_cleaned_data_job_name         = module.validate_cleaned_capacity_tracker_non_res_data_job.job_name
     clean_ons_data_job_name                           = module.clean_ons_data_job.job_name
     validate_postcode_directory_cleaned_data_job_name = module.validate_postcode_directory_cleaned_data_job.job_name
     flatten_cqc_ratings_job_name                      = module.flatten_cqc_ratings_job.job_name
@@ -134,6 +128,8 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     sfc_crawler_name                       = module.sfc_crawler.crawler_name
     ct_crawler_name                        = module.capacity_tracker_crawler.crawler_name
     workforce_characteristics_crawler_name = module.workforce_characteristics_crawler.crawler_name
+    sample_archive_data_crawler_name       = module.sample_archive_data_crawler.crawler_name
+    publication_crawler_name               = module.publication_crawler.crawler_name
 
     # parameter store
     last_providers_run_param_name = aws_ssm_parameter.providers_last_run.name
@@ -153,6 +149,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     independent_cqc_model_task_arn     = module._03_independent_cqc_model.task_arn
     direct_payments_task_arn           = module._04_direct_payments.task_arn
     workforce_characteristics_task_arn = module._07_workforce_characteristics.task_arn
+    publication_task_arn               = module._08_publication.task_arn
 
     # ecs task security groups
     cqc_api_security_group_id                   = module.cqc-api.security_group_id
@@ -162,6 +159,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     independent_cqc_model_security_group_id     = module._03_independent_cqc_model.security_group_id
     direct_payments_security_group_id           = module._04_direct_payments.security_group_id
     workforce_characteristics_security_group_id = module._07_workforce_characteristics.security_group_id
+    publication_security_group_id               = module._08_publication.security_group_id
 
     # models
     preprocessor_name = "preprocess_non_res_pir"
@@ -321,6 +319,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._03_independent_cqc_model.task_arn,
           module._04_direct_payments.task_arn,
           module._07_workforce_characteristics.task_arn,
+          module._08_publication.task_arn,
           aws_ecs_cluster.polars_cluster.arn
         ]
       },
@@ -351,7 +350,9 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._04_direct_payments.task_exc_role_arn,
           module._04_direct_payments.task_role_arn,
           module._07_workforce_characteristics.task_exc_role_arn,
-          module._07_workforce_characteristics.task_role_arn
+          module._07_workforce_characteristics.task_role_arn,
+          module._08_publication.task_exc_role_arn,
+          module._08_publication.task_role_arn
         ],
         Condition = {
           StringLike = {
