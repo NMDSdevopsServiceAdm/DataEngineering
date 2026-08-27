@@ -16,7 +16,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.cUtils.add_ct_filter_consistent_service")
     @patch(f"{PATCH_PATH}.cUtils.add_ct_filter_has_ct_data")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_runs_all_steps_and_sinks_both_outputs(
+    def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         add_ct_filter_has_ct_data_mock: Mock,

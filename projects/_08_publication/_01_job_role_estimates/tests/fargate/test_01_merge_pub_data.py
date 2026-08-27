@@ -14,14 +14,14 @@ TEST_DESTINATION = "some/other/directory"
 
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.mUtils.join_geography")
-    @patch(f"{PATCH_PATH}.mUtils.join_estimates_and_metadata")
+    # @patch(f"{PATCH_PATH}.mUtils.join_geography")
+    # @patch(f"{PATCH_PATH}.mUtils.join_estimates_and_metadata")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_runs_all_steps_in_order(
+    def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        join_estimates_and_metadata_mock: Mock,
-        join_geography_mock: Mock,
+        # join_estimates_and_metadata_mock: Mock,
+        # join_geography_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         archived_jr_estimate_lf = Mock(name="archived_jr_estimate_lf")
@@ -32,10 +32,10 @@ class TestMain:
             archived_jr_metadata_lf,
             archived_geography_lf,
         ]
-        estimates_and_metadata_lf = Mock(name="estimates_and_metadata_lf")
-        join_estimates_and_metadata_mock.return_value = estimates_and_metadata_lf
-        merged_lf = Mock(name="merged_lf")
-        join_geography_mock.return_value = merged_lf
+        # estimates_and_metadata_lf = Mock(name="estimates_and_metadata_lf")
+        # join_estimates_and_metadata_mock.return_value = estimates_and_metadata_lf
+        # merged_lf = Mock(name="merged_lf")
+        # join_geography_mock.return_value = merged_lf
 
         job.main(
             TEST_ESTIMATES_SOURCE,
@@ -49,14 +49,14 @@ class TestMain:
         scan_parquet_mock.assert_any_call(TEST_METADATA_SOURCE)
         scan_parquet_mock.assert_any_call(TEST_GEOGRAPHY_SOURCE)
 
-        join_estimates_and_metadata_mock.assert_called_once_with(
-            archived_jr_estimate_lf, archived_jr_metadata_lf
-        )
-        join_geography_mock.assert_called_once_with(
-            estimates_and_metadata_lf, archived_geography_lf
-        )
+        # join_estimates_and_metadata_mock.assert_called_once_with(
+        #     archived_jr_estimate_lf, archived_jr_metadata_lf
+        # )
+        # join_geography_mock.assert_called_once_with(
+        #     estimates_and_metadata_lf, archived_geography_lf
+        # )
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=merged_lf,
+            lazy_df=archived_jr_estimate_lf,
             output_path=TEST_DESTINATION,
         )

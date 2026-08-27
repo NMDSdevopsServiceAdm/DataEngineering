@@ -25,11 +25,11 @@ def main(
     metadata_lf = utils.scan_parquet(jr_archive_metadata_source)
     geography_lf = utils.scan_parquet(jr_archive_geography_source)
 
-    merged_lf = mUtils.join_estimates_and_metadata(jr_estimates_lf, metadata_lf)
-    merged_lf = mUtils.join_geography(merged_lf, geography_lf)
+    # TODO: mUtils.join_estimates_and_metadata(jr_estimates_lf, metadata_lf)
+    # TODO: mUtils.join_geography(merged_lf, geography_lf)
 
     utils.sink_to_parquet(
-        lazy_df=merged_lf,
+        lazy_df=jr_estimates_lf,
         output_path=merge_data_destination,
     )
 
