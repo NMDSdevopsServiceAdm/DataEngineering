@@ -119,6 +119,12 @@ jobs:
               python scripts/select_raw_bucket_seed.py --domain "$domain" > "/tmp/bake/seed-$domain"
               echo "Seed $domain: $(cat /tmp/bake/seed-$domain)"
             done
+      - run:
+          name: Decide whether to seed archive sample data
+          command: |
+            mkdir -p /tmp/bake
+            python scripts/select_archive_sample_seed.py > /tmp/bake/seed-archive-sample
+            echo "Seed archive sample: $(cat /tmp/bake/seed-archive-sample)"
       - persist_to_workspace:
           # Namespaced, because later jobs attach this same workspace at the
           # repo root and a bare "targets" file there reads as repo content.
@@ -129,6 +135,7 @@ jobs:
             - bake/seed-capacity_tracker
             - bake/seed-cqc_pir
             - bake/seed-ons_pd
+            - bake/seed-archive-sample
 
   task-containerisation:
     parameters:
@@ -472,16 +479,19 @@ jobs:
       - run:
           name: Seed non-prod raw bucket from sample bucket, per domain
           command: |
-            # Wiped before resync since aws s3 sync no-ops on unchanged
-            # content, which would skip re-firing that domain's S3 event.
-            # `|| failures=1` keeps one domain's failure from skipping the
-            # rest, while still failing the step overall.
+            # Wiped before resync since sync no-ops (and skips re-firing the
+            # S3 event) on unchanged content. `|| failures=1` per domain so
+            # one failure doesn't skip the rest.
             failures=0
 
             if [ "$(cat bake/seed-ascwds 2>/dev/null)" = "false" ]; then
               echo "No ASCWDS ingest-related changes detected. Skipping seed."
             else
-              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" --recursive && \
+              # ASCWDS's error-if-exists write mode collides with a rerun's
+              # own previous output at this fixed sentinel path.
+              aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/version=0.0.0/" --recursive && \
+                aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/version=0.0.0/" --recursive && \
+                aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" --recursive && \
                 aws s3 sync "s3://sfc-main-sample-raw-data/domain=ASCWDS/" "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" || failures=1
             fi
 
@@ -507,6 +517,16 @@ jobs:
             fi
 
             exit $failures
+      - run:
+          name: Seed non-prod dataset bucket with archive sample data
+          command: |
+            # Defaults to seeding when the flag file is missing/unreadable --
+            # same defensive direction as the raw bucket seed above.
+            if [ "$(cat bake/seed-archive-sample 2>/dev/null)" = "false" ]; then
+              echo "No archive-related changes detected. Skipping archive sample seed."
+            else
+              aws s3 sync "s3://sfc-main-datasets/domain=sample_archive_data/" "s3://$BRANCH_DATASET_BUCKET/domain=sample_archive_data/" --delete
+            fi
 
   terraform-destroy:
     working_directory: /tmp/project

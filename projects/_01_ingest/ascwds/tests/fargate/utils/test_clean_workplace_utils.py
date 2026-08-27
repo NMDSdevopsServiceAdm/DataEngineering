@@ -16,34 +16,43 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 
 
-class TestValidWorkplaceFilter:
-    def test_valid_workplace_filter_returns_correct_rows(self):
-        input_lf = pl.LazyFrame(
-            {
-                AWPClean.organisation_id: [
-                    "305",  # test account
-                    "123",
-                    "1234",
-                    "28470",  # test account
-                ],
-                AWPClean.establishment_id: [
-                    "1",
-                    "48904",  # duplicate
-                    "12",
-                    "50640",  # duplicate
-                ],
-            }
-        )
-        expected_lf = pl.LazyFrame(
-            {
-                AWPClean.organisation_id: ["1234"],
-                AWPClean.establishment_id: ["12"],
-            }
-        )
+class TestExcludeTestAccountsFilter:
+    def test_returns_rows_that_are_not_test_accounts(self):
+        input_lf = pl.LazyFrame(Data.exclude_test_accounts_filter_input_data)
+        expected_lf = pl.LazyFrame(Data.expected_exclude_test_accounts_filter_data)
 
-        returned_lf = input_lf.filter(job.valid_workplace_filter())
+        returned_lf = input_lf.filter(job.exclude_test_accounts_filter())
 
         pl_testing.assert_frame_equal(expected_lf, returned_lf)
+
+
+class TestNullDuplicateEstablishmentNumericData:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.null_duplicate_establishment_numeric_data_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        input_lf = pl.LazyFrame(case.input_data)
+        expected_lf = pl.LazyFrame(case.expected_data, schema=input_lf.collect_schema())
+
+        returned_lf = job.null_duplicate_establishment_numeric_data(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_does_not_remove_any_rows(self):
+        input_lf = pl.LazyFrame(
+            Data.null_duplicate_establishment_numeric_data_row_count_input_data
+        )
+
+        returned_lf = job.null_duplicate_establishment_numeric_data(input_lf)
+
+        assert (
+            returned_lf.select(pl.len()).collect().item()
+            == input_lf.select(pl.len()).collect().item()
+        )
 
 
 class TestRemoveRowsWithDuplicateLocationIds:

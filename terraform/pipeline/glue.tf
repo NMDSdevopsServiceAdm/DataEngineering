@@ -3,37 +3,6 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
   description = "Database for all datasets belonging to the ${local.workspace_prefix} environment."
 }
 
-module "csv_to_parquet_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/csv_files/jobs"
-  script_name     = "csv_to_parquet.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = ""
-    "--delimiter"   = ","
-  }
-}
-
-module "spss_csv_to_parquet_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/csv_files/jobs"
-  script_name     = "spss_csv_to_parquet.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = ""
-  }
-}
-
 module "clean_cqc_pir_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/cqc_pir/jobs"
@@ -46,22 +15,6 @@ module "clean_cqc_pir_data_job" {
   job_parameters = {
     "--cqc_pir_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
     "--cleaned_cqc_pir_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
-  }
-}
-
-module "ingest_ascwds_dataset_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ascwds/jobs"
-  script_name     = "ingest_ascwds_dataset.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = ""
-    "--dataset"     = "ascwds"
   }
 }
 
@@ -80,21 +33,6 @@ module "clean_ascwds_worker_job" {
     "--ascwds_worker_source"            = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
     "--ascwds_workplace_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
     "--ascwds_worker_destination"       = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
-  }
-}
-
-module "ingest_ons_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ons_pd/jobs"
-  script_name     = "ingest_ons_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=ONS/"
   }
 }
 
@@ -320,52 +258,6 @@ module "validate_merge_coverage_data_job" {
 }
 
 
-module "validate_ascwds_workplace_raw_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ascwds/jobs"
-  script_name     = "validate_ascwds_workplace_raw_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_workplace_raw/"
-  }
-}
-
-module "validate_ascwds_worker_raw_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ascwds/jobs"
-  script_name     = "validate_ascwds_worker_raw_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
-    "--report_destination"       = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_worker_raw/"
-  }
-}
-
-module "validate_postcode_directory_raw_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ons_pd/jobs"
-  script_name     = "validate_postcode_directory_raw_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
-    "--report_destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_postcode_directory_raw/"
-  }
-}
-
-
 module "diagnostics_on_known_filled_posts_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_03_independent_cqc/_08_diagnostics/jobs"
@@ -464,4 +356,11 @@ module "workforce_characteristics_crawler" {
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
   exclusions                   = ["dataset=empstat_rates/**"]
+}
+
+module "sample_archive_data_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "sample_archive_data"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
