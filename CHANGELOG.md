@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
 
 - Added syncing of dummy sample job-role archive data (`domain=sample_archive_data` in the main datasets bucket) into a branch's own dataset bucket via `copy-main-data`, gated so it only runs for branches that touch the archive stage.
 
+- Gated `test-cqc-integration` on dev branches so it only runs when a push touches CQC-ingestion-related code, instead of hitting the live CQC API on every branch push. `main` always runs it, matching the existing bake-target/raw-bucket-seed gating pattern (`decide-bake-and-seed`).
 - Updated select_archive_sample_seed.py to trigger sample archive sync on changes inside _08_publication. Added a crawler for the sample_archive_data domain.
 
 ### Changed
