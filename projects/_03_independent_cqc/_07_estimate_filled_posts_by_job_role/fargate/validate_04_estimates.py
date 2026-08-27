@@ -306,7 +306,7 @@ def other_validation(
             left=0,
             right=1,
             na_pass=True,
-            brief="Ratios should be between 0 and 1 where present. Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between 0 and 1 where present",
+            brief="Ratios should be between 0 and 1 where present",
         )
         .col_vals_expr(
             difference_within_drift_tolerance_expr(),
