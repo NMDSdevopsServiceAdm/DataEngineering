@@ -67,7 +67,8 @@
                       "Command": [
                         "_02_clean_pub_data.py",
                         "--merge_data_source", "${dataset_bucket_uri}/domain=publication/dataset=publication_01_merged_data/",
-                        "--clean_destination", "${dataset_bucket_uri}/domain=publication/dataset=publication_02_cleaned_data/"
+                        "--assessment_destination", "${dataset_bucket_uri}/domain=publication/dataset=publication_02_assessment_data/",
+                        "--publication_destination", "${dataset_bucket_uri}/domain=publication/dataset=publication_02_publication_data/"
                       ]
                     }
                   ]

@@ -46,4 +46,5 @@ def split_into_assessment_and_publication_data(
         tuple[pl.LazyFrame, pl.LazyFrame]: lf, returned unchanged as both the
             assessment and publication LazyFrame.
     """
-    return lf, lf
+    # Commented out to prevent duplicating the execution plan once other functions are written.
+    # return lf, lf
