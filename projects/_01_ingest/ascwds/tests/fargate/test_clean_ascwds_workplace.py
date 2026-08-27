@@ -28,12 +28,14 @@ class TestMain:
     @patch(f"{PATCH_PATH}.cUtils.cast_date_strings_to_dates")
     @patch(f"{PATCH_PATH}.wUtils.null_duplicate_establishment_numeric_data")
     @patch(f"{PATCH_PATH}.wUtils.exclude_test_accounts_filter")
+    @patch(f"{PATCH_PATH}.wUtils.find_still_matching_duplicate_establishments")
     @patch(f"{PATCH_PATH}.wUtils.apply_data_corrections")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         apply_data_corrections_mock: Mock,
+        find_still_matching_duplicate_establishments_mock: Mock,
         exclude_test_accounts_filter_mock: Mock,
         null_duplicate_establishment_numeric_data_mock: Mock,
         cast_date_strings_to_dates_mock: Mock,
@@ -71,8 +73,12 @@ class TestMain:
         )
 
         apply_data_corrections_mock.assert_called_once()
+        find_still_matching_duplicate_establishments_mock.assert_called_once()
         exclude_test_accounts_filter_mock.assert_called_once()
-        assert null_duplicate_establishment_numeric_data_mock.call_count == 2
+        assert null_duplicate_establishment_numeric_data_mock.call_args_list == [
+            call(ANY, find_still_matching_duplicate_establishments_mock.return_value),
+            call(ANY, find_still_matching_duplicate_establishments_mock.return_value),
+        ]
         cast_date_strings_to_dates_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
         scan_csv_mock.assert_called_once_with(

@@ -26,6 +26,31 @@ class TestExcludeTestAccountsFilter:
         pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
 
+class TestFindStillMatchingDuplicateEstablishments:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.find_still_matching_duplicate_establishments_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        input_lf = pl.LazyFrame(case.input_data)
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            schema={
+                AWPClean.establishment_id: pl.String,
+                AWPClean.import_date: pl.String,
+            },
+        )
+
+        returned_lf = job.find_still_matching_duplicate_establishments(input_lf)
+
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_row_order=False
+        )
+
+
 class TestNullDuplicateEstablishmentNumericData:
     @pytest.mark.parametrize(
         "case",
@@ -36,9 +61,18 @@ class TestNullDuplicateEstablishmentNumericData:
     )
     def test_function_returns_expected_values(self, case):
         input_lf = pl.LazyFrame(case.input_data)
+        still_matching_lf = pl.LazyFrame(
+            case.still_matching_data,
+            schema={
+                AWPClean.establishment_id: pl.String,
+                AWPClean.import_date: pl.String,
+            },
+        )
         expected_lf = pl.LazyFrame(case.expected_data, schema=input_lf.collect_schema())
 
-        returned_lf = job.null_duplicate_establishment_numeric_data(input_lf)
+        returned_lf = job.null_duplicate_establishment_numeric_data(
+            input_lf, still_matching_lf
+        )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
@@ -46,8 +80,13 @@ class TestNullDuplicateEstablishmentNumericData:
         input_lf = pl.LazyFrame(
             Data.null_duplicate_establishment_numeric_data_row_count_input_data
         )
+        still_matching_lf = pl.LazyFrame(
+            Data.null_duplicate_establishment_numeric_data_row_count_still_matching_data
+        )
 
-        returned_lf = job.null_duplicate_establishment_numeric_data(input_lf)
+        returned_lf = job.null_duplicate_establishment_numeric_data(
+            input_lf, still_matching_lf
+        )
 
         assert (
             returned_lf.select(pl.len()).collect().item()
