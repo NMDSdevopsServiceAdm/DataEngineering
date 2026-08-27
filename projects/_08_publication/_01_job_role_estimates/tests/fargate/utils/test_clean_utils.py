@@ -17,8 +17,3 @@ class TestAddCtFilterConsistentService:
 class TestAddCtFilterDispersionFilter:
     def test_adds_true_for_every_row(self):
         pass
-
-
-class TestSplitIntoAssessmentAndPublicationData:
-    def test_returns_the_same_lazyframe_for_both_outputs(self):
-        pass

@@ -9,10 +9,10 @@ def main(
     clean_destination: str,
 ) -> None:
     """
-    Cleans merged job role data and splits it into assessment and publication data.
+    Cleans merged job role data.
 
-    The capacity tracker filters and the assessment/publication split are
-    currently placeholders and don't yet apply any real filtering or splitting.
+    The capacity tracker filters, the aggregation and percentage change columns
+    are currently placeholders and don't yet apply any real filtering.
 
     Args:
         merge_data_source (str): source s3 directory for merged data
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         ),
         (
             "--clean_destination",
-            "Destination s3 directory for the assessment data",
+            "Destination s3 directory for the cleaned data",
         ),
     )
     main(args.merge_data_source, args.clean_destination)
