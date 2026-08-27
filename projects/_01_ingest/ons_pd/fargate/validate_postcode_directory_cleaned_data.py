@@ -1,6 +1,7 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
@@ -52,7 +53,7 @@ def main(
     compare_lf = utils.scan_parquet(
         f"s3://{bucket_name}/{compare_path}", selected_columns=[ONS.postcode]
     )
-    expected_row_count = compare_lf.collect().height
+    expected_row_count = compare_lf.select(pl.len()).collect().item()
 
     validation = (
         pb.Validate(

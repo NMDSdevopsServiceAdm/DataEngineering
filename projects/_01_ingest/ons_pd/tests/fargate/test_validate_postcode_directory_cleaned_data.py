@@ -22,8 +22,10 @@ def build_cleaned_df(
     cssr: list[str] = ["Barnet", "Bristol"],
     region: list[str] = ["London", "South West"],
     import_dates: list[date] | None = None,
+    rui21: list[str] | None = None,
 ) -> pl.DataFrame:
     import_dates = import_dates or [date(2026, 1, 1)] * len(postcodes)
+    rui21 = rui21 or ["Urban - Nearer to a major town or city"] * len(postcodes)
     return pl.DataFrame(
         {
             ONSClean.postcode: postcodes,
@@ -40,12 +42,20 @@ def build_cleaned_df(
             ONSClean.current_msoa21: ["E02000001"] * len(postcodes),
             ONSClean.current_rural_urban_ind_11: ["Urban major conurbation"]
             * len(postcodes),
-            ONSClean.current_rural_urban_ind_21: [
-                "Urban - Nearer to a major town or city"
-            ]
-            * len(postcodes),
+            ONSClean.current_rural_urban_ind_21: rui21,
         }
     )
+
+
+ALL_SIX_RUI21_VALUES = [
+    "Rural - Larger: Further from a major town or city",
+    "Rural - Larger: Nearer to a major town or city",
+    "Rural - Smaller: Further from a major town or city",
+    "Rural - Smaller: Nearer to a major town or city",
+    "Urban - Further from a major town or city",
+    "Urban - Nearer to a major town or city",
+]
+SIX_POSTCODES = ["PC1", "PC2", "PC3", "PC4", "PC5", "PC6"]
 
 
 class TestMain:
@@ -182,3 +192,59 @@ class TestMain:
         ]
 
         assert any(not step["all_passed"] for step in in_set_steps)
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_distinct_values_check_passes_when_every_canonical_rui21_value_is_present(
+        self, mock_read_parquet: Mock, mock_scan_parquet: Mock, mock_write_reports: Mock
+    ):
+        all_values_df = build_cleaned_df(
+            postcodes=SIX_POSTCODES,
+            cssr=["Barnet"] * 6,
+            region=["London"] * 6,
+            rui21=ALL_SIX_RUI21_VALUES,
+        )
+        mock_read_parquet.return_value = all_values_df
+        mock_scan_parquet.return_value = pl.LazyFrame({ONS.postcode: SIX_POSTCODES})
+
+        job.main("bucket", "my/source/", "my/reports/", "my/compare/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        rui21_distinct_step = next(
+            item
+            for item in report_json
+            if item["assertion_type"] == "specially"
+            and ONSClean.current_rural_urban_ind_21 in (item["brief"] or "")
+        )
+
+        assert rui21_distinct_step["all_passed"] is True
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_distinct_values_check_fails_when_a_canonical_rui21_value_is_missing(
+        self, mock_read_parquet: Mock, mock_scan_parquet: Mock, mock_write_reports: Mock
+    ):
+        missing_value_df = build_cleaned_df(
+            postcodes=SIX_POSTCODES,
+            cssr=["Barnet"] * 6,
+            region=["London"] * 6,
+            rui21=ALL_SIX_RUI21_VALUES[:5] + [ALL_SIX_RUI21_VALUES[0]],
+        )
+        mock_read_parquet.return_value = missing_value_df
+        mock_scan_parquet.return_value = pl.LazyFrame({ONS.postcode: SIX_POSTCODES})
+
+        job.main("bucket", "my/source/", "my/reports/", "my/compare/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        rui21_distinct_step = next(
+            item
+            for item in report_json
+            if item["assertion_type"] == "specially"
+            and ONSClean.current_rural_urban_ind_21 in (item["brief"] or "")
+        )
+
+        assert rui21_distinct_step["all_passed"] is False
