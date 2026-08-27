@@ -5,9 +5,6 @@ from pyspark.sql.types import DateType, IntegerType, StringType, StructField, St
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
@@ -19,6 +16,9 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as CQCPIR
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
 
 
 @dataclass
