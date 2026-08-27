@@ -8,23 +8,6 @@ from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass
-class IngestASCWDSData:
-    raise_mainjrid_error_col_not_present_rows = [("123", "1-001")]
-    raise_mainjrid_error_with_known_value_rows = [("123", "1-001", "1")]
-    raise_mainjrid_error_with_unknown_value_rows = [("123", "1-001", "-1")]
-
-    fix_nmdssc_dates_rows = [("100", "07/31/2021", "8", "10/01/2024")]
-    expected_fix_nmdssc_dates_rows = [("100", "31/07/2021", "8", "01/10/2024")]
-
-    fix_nmdssc_dates_with_last_logged_in_rows = [
-        ("100", "07/31/2021", "8", "10/01/2024")
-    ]
-    expected_fix_nmdssc_dates_with_last_logged_in_rows = [
-        ("100", "31/07/2021", "8", "01/10/2024")
-    ]
-
-
-@dataclass
 class ASCWDSWorkerData:
     workplace_rows = [
         ("1-000000001", "101", "20200101"),
@@ -441,31 +424,6 @@ class ValidateCleanedCapacityTrackerNonResData:
 
 
 @dataclass
-class IngestONSData:
-    sample_rows = [
-        ("Yorkshire & Humber", "Leeds", "50.10101"),
-        ("Yorkshire & Humber", "York", "52.10101"),
-        ("Yorkshire & Humber", "Hull", "53.10101"),
-    ]
-
-    expected_rows = [
-        ("Yorkshire & Humber", "Leeds", "50.10101"),
-        ("Yorkshire & Humber", "York", "52.10101"),
-        ("Yorkshire & Humber", "Hull", "53.10101"),
-    ]
-
-
-@dataclass
-class ValidatePostcodeDirectoryRawData:
-    raw_postcode_directory_rows = [
-        ("AB1 2CD", "20240101", "cssr", "region", "rui"),
-        ("AB2 2CD", "20240101", "cssr", "region", "rui"),
-        ("AB1 2CD", "20240201", "cssr", "region", "rui"),
-        ("AB2 2CD", "20240201", "cssr", "region", "rui"),
-    ]
-
-
-@dataclass
 class CleanONSData:
     ons_sample_rows_full = [
         ("AB10AA", "104", "1", "38000006", "54000005", "1",        "51.23456", "-.12345", "123", "10123", "20123", "1", None, "1000001", "2000001", "14000530", date(2022, 1, 1)),
@@ -491,26 +449,6 @@ class ValidatePostcodeDirectoryCleanedData:
         ("AB1 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
         ("AB2 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
     ] # fmt: skip
-
-
-@dataclass
-class ValidateASCWDSWorkplaceRawData:
-    raw_ascwds_workplace_rows = [
-        ("estab_1", "20240101"),
-        ("estab_2", "20240101"),
-        ("estab_1", "20240109"),
-        ("estab_2", "20240109"),
-    ]
-
-
-@dataclass
-class ValidateASCWDSWorkerRawData:
-    raw_ascwds_worker_rows = [
-        ("estab_1", "20240101", "worker_1", "8"),
-        ("estab_2", "20240101", "worker_2", "8"),
-        ("estab_1", "20240109", "worker_3", "8"),
-        ("estab_2", "20240109", "worker_4", "8"),
-    ]
 
 
 @dataclass
