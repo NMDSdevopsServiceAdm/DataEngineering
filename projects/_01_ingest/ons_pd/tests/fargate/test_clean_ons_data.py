@@ -77,15 +77,3 @@ class TestPrepareCurrentOnsData:
         returned_df = job.prepare_current_ons_data(input_lf).collect()
 
         assert returned_df[ONSClean.current_ons_import_date].n_unique() == 1
-
-
-class TestBuildLabelsLf:
-    def test_flattens_column_to_code_to_label_dict_into_rows(self):
-        returned_lf = job.build_labels_lf(
-            CleanOnsDataTest.labels_dict_for_build_labels_lf
-        )
-
-        expected_lf = pl.LazyFrame(CleanOnsDataTest.expected_build_labels_lf)
-        pl_testing.assert_frame_equal(
-            returned_lf, expected_lf, check_column_order=False, check_row_order=False
-        )

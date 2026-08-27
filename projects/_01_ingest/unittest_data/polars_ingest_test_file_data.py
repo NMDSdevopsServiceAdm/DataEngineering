@@ -8,7 +8,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -2045,16 +2044,6 @@ class IngestOnsDataTest:
 
 @dataclass
 class CleanOnsDataTest:
-    labels_dict_for_build_labels_lf = {
-        "cssr": {"104": "Cumbria", "999": "Cheshire West and Chester"},
-        "region": {"1": "North East"},
-    }
-    expected_build_labels_lf = {
-        DLC.column_name: ["cssr", "cssr", "region"],
-        DLC.code: ["104", "999", "1"],
-        DLC.label: ["Cumbria", "Cheshire West and Chester", "North East"],
-    }
-
     # Non-distinguishing geography columns share a placeholder value.
     prepare_ons_data_rows = {
         ONSClean.postcode: ["AB10AA", "AB10AB", "AB10AA", "AB10AB", "AB10AC"],

@@ -9,7 +9,6 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     contemporary_geography_columns,
     current_geography_columns,
 )
-from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.value_labels.ons_pd.label_dictionaries import onspd_labels_dict
 
@@ -94,7 +93,7 @@ def main(ons_source: str, cleaned_ons_destination: str) -> None:
         ons_lf, Keys.import_date, ONSClean.contemporary_ons_import_date
     )
 
-    labels_lf = build_labels_lf(onspd_labels_dict)
+    labels_lf = cUtils.build_labels_lf(onspd_labels_dict)
     ons_lf = cUtils.apply_categorical_labels(
         ons_lf,
         labels_lf,
@@ -143,31 +142,6 @@ def prepare_current_ons_data(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
     return current_lf.rename(CURRENT_RENAME).select(
         ONSClean.postcode, *current_geography_columns
-    )
-
-
-def build_labels_lf(labels_dict: dict[str, dict[str, str]]) -> pl.LazyFrame:
-    """Flattens a column-to-code-to-label dict into a labels LazyFrame.
-
-    `apply_categorical_labels` expects a `(column_name, code, label)`
-    LazyFrame; the ONS geography labels are defined as a static Python dict
-    of dicts (`onspd_labels_dict`) rather than a file, so there's nothing to
-    `pl.scan_csv` directly.
-
-    Args:
-        labels_dict (dict[str, dict[str, str]]): mapping of column name to a
-            `{code: label}` dict for that column.
-
-    Returns:
-        pl.LazyFrame: one row per (column_name, code, label) triple.
-    """
-    rows = [
-        (column, code, label)
-        for column, mapping in labels_dict.items()
-        for code, label in mapping.items()
-    ]
-    return pl.LazyFrame(
-        rows, schema=[DLC.column_name, DLC.code, DLC.label], orient="row"
     )
 
 
