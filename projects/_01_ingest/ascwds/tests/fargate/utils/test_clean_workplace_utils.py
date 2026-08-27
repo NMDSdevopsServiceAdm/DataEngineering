@@ -46,9 +46,7 @@ class TestFindStillMatchingDuplicateEstablishments:
 
         returned_lf = job.find_still_matching_duplicate_establishments(input_lf)
 
-        pl_testing.assert_frame_equal(
-            returned_lf, expected_lf, check_row_order=False
-        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 class TestNullDuplicateEstablishmentNumericData:
