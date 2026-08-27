@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
 
 - Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the standalone job role step function (`Ind-CQC-Filled-Post-Estimates-By-Role`) after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet), deliberately kept out of the main pipeline until partitioning is in place, ahead of a future rework of the job-role dataset shape.
 
-- Added a `sprint-review` Claude Code skill that drafts a "what did we ship" summary for sprint review, gathering merged PRs and matching CHANGELOG entries under roadmap-item subheadings.
+- Added a `sprint-review` Claude Code skill that drafts a "what did we ship" executive summary for sprint review, one headline per roadmap item, gathered from merged PRs and matching CHANGELOG entries (full detail available on request).
 
 ### Changed
 - Split the non-prod raw bucket's seed-gating decision from one bucket-wide flag into one per ingest domain (ASCWDS, Capacity Tracker, CQC PIR, ONS PD), so a push touching only one domain's ingest code reseeds and re-triggers only that domain's Step Function instead of all five.

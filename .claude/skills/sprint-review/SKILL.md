@@ -1,19 +1,22 @@
 ---
 name: sprint-review
-description: Use when preparing a "what did we ship" summary for sprint review — phrases like "sprint review summary", "what did we achieve this sprint", "prep sprint review", "/sprint-review". Gathers merged PRs to main in a date range, cross-references matching CHANGELOG.md entries, and drafts a summary organised under roadmap-item subheadings.
+description: Use when preparing a "what did we ship" summary for sprint review — phrases like "sprint review summary", "what did we achieve this sprint", "prep sprint review", "/sprint-review". Gathers merged PRs to main in a date range, cross-references matching CHANGELOG.md entries, and drafts a one-bullet-per-roadmap-item executive summary (full per-item detail available on request).
 ---
 
 # Summarising a sprint for sprint review
 
-Turns merged PRs + `CHANGELOG.md` into a sprint-review narrative under roadmap-item subheadings
-(named and ordered up front), built in three passes: round 1 clusters same-feature tickets, round
-2 turns clusters into a stakeholder-facing narrative per roadmap item, round 3 compresses that
-into one executive bullet per item. **Only round 3 is returned by default** — rounds 1-2 stay in
-working memory for follow-up detail requests, not re-derived.
+Turns merged PRs + `CHANGELOG.md` into a sprint-review narrative for user-named, user-ordered
+roadmap items, built in three passes: round 1 clusters same-feature tickets, round 2 turns
+clusters into a stakeholder-facing narrative per roadmap item (with its own subheadings), round 3
+compresses that into one executive bullet per item. **The default output is round 3 only** — a
+flat `## Summary` list, one bullet per item, no subheadings — not round 2's subheaded detail.
+Rounds 1-2 stay in working memory for follow-up requests, not re-derived.
 
 ## 1. Sprint date range
 
-Ask for the start date in chat. End date defaults to today.
+Ask for the start date in chat. End date defaults to today. Canonicalize both to `YYYY-MM-DD`
+before building the `gh --search` query in step 2 — that's the format `merged:<start>..<end>`
+needs.
 
 ## 2. Gather merged PRs
 
@@ -24,6 +27,10 @@ gh pr list --state merged --base main --search "merged:<start>..<end>" --json nu
 Ticket number comes from `headRefName` (`<ticket>-<slug>`) — trust the branch over the title if
 they disagree (titles are free-form and can be stale). Two PRs sharing a ticket (revert/redo):
 keep both, let round 1 merge them into one cluster.
+
+If `headRefName` doesn't match the `<ticket>-<slug>` pattern at all, don't drop the PR — carry it
+through as its own single-PR cluster, keyed by PR number instead of ticket number, and let rounds
+2-3 treat it like any other cluster. Flag it in step 9 as having no parseable ticket number.
 
 Drop pure housekeeping PRs (changelog/tag-cut, no functional change) entirely — not even Other.
 
