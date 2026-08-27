@@ -1,3 +1,4 @@
+# TEMPORARY: verifying test-cqc-integration's gating runs on a relevant change (1940). Revert once confirmed.
 from typing import Generator, Iterable, List
 
 import polars as pl
