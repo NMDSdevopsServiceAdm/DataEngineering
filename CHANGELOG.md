@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Migrated the Capacity Tracker ingest stage (ingest, clean, and validate jobs) from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their Step Function wiring entirely. Outputs were compared against the previous PySpark version's in Athena and matched exactly before cutover.
 - Added a per-branch raw data landing bucket (mirroring prod's `sfc-data-engineering-raw`), seeded at deploy time from a new curated sample bucket in main (`sfc-main-sample-raw-data`), so raw ingest steps and their EventBridge triggers can be tested end-to-end on a branch. The seed step now only runs (and only triggers the ingest Step Functions) when a push actually touches ingest-related paths, so unrelated branches skip it on their first deploy.
 
 - Added a Terraform-managed sample raw-data bucket (`sfc-main-sample-raw-data`) in `main`, with cross-account read access, as a curated source for non-prod branches to seed their own raw buckets from.
@@ -20,13 +21,20 @@ All notable changes to this project will be documented in this file.
 
 - Added a git union merge driver for `CHANGELOG.md` so concurrent branches appending changelog entries no longer conflict on merge.
 
+- Added a new `_08_publication` project, with placeholder merge/clean Polars scripts and their tests, its own Docker image and ECR repo, a dedicated Glue crawler, and a standalone Step Function (with error handling and crawler running) to run them, ready for the real publication logic to land into.
 - Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the standalone job role step function (`Ind-CQC-Filled-Post-Estimates-By-Role`) after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet), deliberately kept out of the main pipeline until partitioning is in place, ahead of a future rework of the job-role dataset shape.
 
+- Added projects/ARCHIVING_AND_PUBLICATION.md. A work-in-progress template documenting the archiving and publication process for job role estimates. Document will be amended as that process is built out.
+
 - Added syncing of dummy sample job-role archive data (`domain=sample_archive_data` in the main datasets bucket) into a branch's own dataset bucket via `copy-main-data`, gated so it only runs for branches that touch the archive stage.
+
+- Gated `test-cqc-integration` on dev branches so it only runs when a push touches CQC-ingestion-related code, instead of hitting the live CQC API on every branch push. `main` always runs it, matching the existing bake-target/raw-bucket-seed gating pattern (`decide-bake-and-seed`).
+- Updated select_archive_sample_seed.py to trigger sample archive sync on changes inside _08_publication. Added a crawler for the sample_archive_data domain.
 
 ### Changed
 - Duplicate-establishment nulling in the ASCWDS workplace clean job now checks whether a known duplicate group is still submitting identical data for a given import date before nulling it, instead of nulling unconditionally for every establishment on the list.
 - Migrated the ONS Postcode Directory ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Drops runtime delimiter-sniffing and multi-file directory ingestion in favour of a fixed comma delimiter and single-file-per-run, matching the source format and the existing per-object EventBridge trigger.
+- Migrated the ONS Postcode Directory clean and cleaned-data validation jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring.
 - Removed the unused generic CSV/SPSS-to-parquet ingest Glue jobs, their Terraform module definitions, and the now-unused SPSS job estimates schema and its test.
 - Removed the archived PySpark CQC bulk-download scripts (`archived_bulk_download_cqc_locations.py`, `archived_bulk_download_cqc_providers.py`), superseded by the active Polars/Fargate CQC ingest jobs, along with the orphaned `PROVIDER_SCHEMA` (`schemas/cqc_provider_schema.py`) that only the providers script used.
 - Split the non-prod raw bucket's seed-gating decision from one bucket-wide flag into one per ingest domain (ASCWDS, Capacity Tracker, CQC PIR, ONS PD), so a push touching only one domain's ingest code reseeds and re-triggers only that domain's Step Function instead of all five.

@@ -1,16 +1,7 @@
 """
-Decide whether a push needs to seed the branch's non-prod dataset bucket with
-sample archive data.
-
-`copy-main-data` syncs `sfc-main-datasets`' `domain=sample_archive_data` prefix
-into every branch's own dataset bucket on its first deploy. This narrows that
-to pushes that genuinely touch the archive stage, so an unrelated branch's
-first build doesn't pay for a sync it never asked for.
-
-Trigger paths are a fixed list rather than derived, matching
-`select_raw_bucket_seed`'s approach for the same reason: there's no single
-manifest that already enumerates "everything that reads the archive sample
-data".
+Decide whether a push touches CQC ingestion code closely enough to warrant
+running the live CQC API integration tests on a dev branch. Main always runs
+them, since a merge-base diff against main is empty by definition there.
 """
 
 import argparse
@@ -18,10 +9,8 @@ import sys
 from pathlib import Path
 from typing import Iterable, Optional, Sequence
 
-# Run directly (as CI does: `python scripts/select_archive_sample_seed.py`),
-# only this script's own directory lands on sys.path, not the repo root -- so
-# the package-style import below would fail. Adding the repo root explicitly
-# makes the script runnable both that way and under pytest.
+# Makes the repo root importable whether run directly (as CI does) or under
+# pytest, where only this script's own directory would otherwise be on the path.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts.select_bake_targets import (  # noqa: E402
@@ -31,18 +20,21 @@ from scripts.select_bake_targets import (  # noqa: E402
     path_triggers_rebuild,
 )
 
-# To add a new trigger path: add it here, plus a
-# `returns_true_when_changed_path_is_under_<name>` case in
-# scripts/tests/test_select_archive_sample_seed.py's `trigger_path_cases`.
-ARCHIVE_TRIGGER_PATHS: tuple[str, ...] = (
-    "projects/_03_independent_cqc/_09_archive_estimates",
-    "projects/_08_publication",
+# Anything that could plausibly change the CQC integration tests' behaviour:
+# the client itself, the test file, its column-name dependencies, and the
+# shared secrets helper it uses to fetch the API key.
+TRIGGER_PATHS: tuple[str, ...] = (
+    "projects/_01_ingest/cqc_api",
+    "tests/integration/test_cqc_api_integration.py",
+    "utils/column_names/raw_data_files/cqc_location_api_columns.py",
+    "utils/column_names/raw_data_files/cqc_provider_api_columns.py",
+    "utils/aws_secrets_manager_utilities.py",
 )
 
 
-def should_seed_archive_sample(changed_paths: Iterable[str]) -> bool:
+def should_run_cqc_integration_tests(changed_paths: Iterable[str]) -> bool:
     """
-    Decide whether any changed path warrants seeding the archive sample data.
+    Decide whether any changed path warrants running the CQC integration tests.
 
     Args:
         changed_paths (Iterable[str]): Repo-relative paths of changed files.
@@ -55,14 +47,14 @@ def should_seed_archive_sample(changed_paths: Iterable[str]) -> bool:
     return any(
         path_triggers_rebuild(changed_path, trigger_path)
         for changed_path in normalised_paths
-        for trigger_path in ARCHIVE_TRIGGER_PATHS
+        for trigger_path in TRIGGER_PATHS
     )
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     """
-    Print "true" or "false" depending on whether this push should seed the
-    archive sample data.
+    Print "true" or "false" depending on whether this push should run the
+    CQC API integration tests.
 
     Args:
         argv (Optional[Sequence[str]]): Argument list, or None to read sys.argv.
@@ -77,7 +69,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         else changed_paths_since(arguments.diff_base, arguments.repo_root)
     )
 
-    print("true" if should_seed_archive_sample(changed_paths) else "false")
+    print("true" if should_run_cqc_integration_tests(changed_paths) else "false")
     return 0
 
 
@@ -92,7 +84,7 @@ def _parse_arguments(argv: Optional[Sequence[str]]) -> argparse.Namespace:
         argparse.Namespace: The parsed arguments.
     """
     parser = argparse.ArgumentParser(
-        description="Decide whether this push should seed the archive sample data."
+        description="Decide whether this push should run the CQC API integration tests."
     )
     parser.add_argument(
         "--diff-base",

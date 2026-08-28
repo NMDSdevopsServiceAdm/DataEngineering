@@ -1,0 +1,140 @@
+{
+  "StartAt": "Merge and clean publication data",
+  "States": {
+    "Merge and clean publication data": {
+      "Type": "Parallel",
+      "Next": "Handle Error and Run Crawlers",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Handle Error and Run Crawlers",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Branches": [
+        {
+          "StartAt": "Merge data",
+          "States": {
+            "Merge data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${publication_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${publication_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_08_publication-container",
+                      "Command": [
+                        "_01_merge_pub_data.py",
+                        "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=estimates_by_job_role/archive_date=2026/run_number=1/job_role_estimates/",
+                        "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=estimates_by_job_role/archive_date=2026/run_number=1/metadata/",
+                        "--jr_archive_geography_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=estimates_by_job_role/archive_date=2026/run_number=1/geography/",
+                        "--merge_data_destination", "${dataset_bucket_uri}/domain=publication/dataset=filled_posts_tracker_01_merged_data/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Clean data"
+            },
+            "Clean data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${publication_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${publication_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_08_publication-container",
+                      "Command": [
+                        "_02_clean_pub_data.py",
+                        "--merge_data_source", "${dataset_bucket_uri}/domain=publication/dataset=filled_posts_tracker_01_merged_data/",
+                        "--clean_destination", "${dataset_bucket_uri}/domain=publication/dataset=filled_posts_tracker_02_cleaned_data/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "Handle Error and Run Crawlers": {
+      "Type": "Parallel",
+      "End": true,
+      "Branches": [
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
+        },
+        {
+          "StartAt": "Run Publication Crawler",
+          "States": {
+            "Run Publication Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${publication_crawler_name}"
+              },
+              "End": true
+            }
+          }
+        }
+      ]
+    }
+  }
+}
