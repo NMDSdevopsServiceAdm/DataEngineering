@@ -33,8 +33,7 @@ All notable changes to this project will be documented in this file.
 - Limited how long the ASC-WDS job role rolling ratio carries a workplace's known job role split: up to 2 years past their last submission (extrapolation), with gaps of up to 5 years filled in between (interpolation), instead of repeating it forever. Each workplace also now counts once towards the ratio regardless of size. Job role estimates for workplaces with submitted data are unaffected.
 
 - Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
-
-- Job role estimates for the dates between and beyond a workplace's own submissions now follow the trend of similar workplaces, instead of repeating that workplace's last submitted job role split unchanged. Each workplace keeps its own mix of roles but moves with its group over time, and the mix still adds up to all of its estimated filled posts. Dates where a workplace actually submitted are unchanged, and workplaces that have never submitted still use their group's ratio.
+- Job role estimates for the dates between and beyond a workplace's own submissions now follow the trend of similar workplaces, instead of repeating the last submitted job role split unchanged.
 - sfc_internal data now includes workplaces exceeding their *active* purge date. The merge coverage job adds a boolean column removed_by_purge_date_filter. The in_ascwds column now takes that filter into account. The reconciliation job also creates removed_by_purge_date_filter then filters upon it to remove purged workplaces.
 
 ### Improved

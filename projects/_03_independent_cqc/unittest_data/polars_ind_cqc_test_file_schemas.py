@@ -1455,7 +1455,7 @@ class ImputeJobRoleSchemas:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_job_role_ratios: pl.Float32,
         IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
-        IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,  # extra col
+        IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,
     }
 
 

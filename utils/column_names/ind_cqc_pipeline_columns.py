@@ -435,8 +435,8 @@ class ExtrapolationColumns:
 class InterpolationColumns:
     """The names of the temporary columns created during the interpolation process."""
 
-    previous_submission_date: str = "_previous_submission_date"
-    next_submission_date: str = "_next_submission_date"
+    previous_submission_date: str = "_interp_previous_submission_date"
+    next_submission_date: str = "_interp_next_submission_date"
 
 
 @dataclass

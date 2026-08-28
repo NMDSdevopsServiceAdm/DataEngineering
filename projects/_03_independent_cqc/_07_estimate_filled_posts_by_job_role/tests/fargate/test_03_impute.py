@@ -27,8 +27,6 @@ class TestMain:
     ):
         job.main(CLEANED_DATA_SOURCE, IMPUTED_DATA_DESTINATION)
 
-        # The rolling ratio trendline is what the impute extrapolates along, so it has to be
-        # built first. Threading each step's output into the next is what pins that order.
         assert (
             get_percent_share_ratios_mock.call_args.args[0]
             is scan_parquet_mock.return_value

@@ -2205,9 +2205,7 @@ class ImputeJobRoleData:
                 ("1", MainJobRoleLabels.registered_nurse, date(2024, 2, 1), None, 0.8, 1.0),
             ],
         ),
-        # Workplace 2 has never submitted, so it stays null on every date and falls through to
-        # the rolling ratio in the estimate step. Workplace 1 alongside it has nothing carried
-        # into it, and every job role of a workplace-date is populated or null together.
+        # Workplace 2 has never submitted, so it stays null on every date.
         ImputeJobRoleTestCase(
             id="when_a_workplace_has_never_submitted",
             data=[

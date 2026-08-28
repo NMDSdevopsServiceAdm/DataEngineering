@@ -40,7 +40,6 @@ def main(
         output_col=IndCQC.ascwds_job_role_ratios,
     )
 
-    # The trendline has to exist before the impute that extrapolates along it.
     estimated_job_role_posts_lf = iUtils.create_ascwds_job_role_rolling_ratio(
         estimated_job_role_posts_lf,
         extrapolation_period=NumericalValues.extrapolation_period,

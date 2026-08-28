@@ -160,8 +160,6 @@ def build_extrapolation_aggregates(
         observed_date.max().over(group_columns).alias(TEMP.final_submission_time),
     )
 
-    # Reads the first submission date back as a column. Repeating the expression that built it
-    # would make Polars compute that window again for each of the two values below.
     is_first_observed_row = is_observed & (
         pl.col(IMPORT_DATE) == pl.col(TEMP.first_submission_time)
     )

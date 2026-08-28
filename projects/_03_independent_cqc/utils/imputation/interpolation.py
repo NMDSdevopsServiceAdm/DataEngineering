@@ -173,8 +173,6 @@ def calculate_proportion_of_days_between_submissions(
         pl.col(IndCqc.cqc_location_import_date)
     )
 
-    # Materialised before anything derives from them: the expressions are referenced several
-    # times below, and repeating them would make Polars recompute each window every time.
     lf = lf.with_columns(
         val_not_null_date.forward_fill()
         .over(group_columns, order_by=IndCqc.cqc_location_import_date)
