@@ -111,6 +111,16 @@ class CleaningUtilsData:
         (IndCQC.contemporary_cssr, "407", ContemporaryCSSR.coventry),
     ] # fmt: skip
 
+    labels_dict_for_build_labels_lf = {
+        "cssr": {"104": "Cumbria", "999": "Cheshire West and Chester"},
+        "region": {"1": "North East"},
+    }
+    expected_build_labels_lf = {
+        DLC.column_name: ["cssr", "cssr", "region"],
+        DLC.code: ["104", "999", "1"],
+        DLC.label: ["Cumbria", "Cheshire West and Chester", "North East"],
+    }
+
     gender_labels = AWK.gender + f"_{DLC.label}s"
     gender_codes = AWK.gender + f"_{DLC.code}s"
     nationality_labels = AWK.nationality + f"_{DLC.label}s"

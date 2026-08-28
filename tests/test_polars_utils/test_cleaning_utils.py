@@ -217,6 +217,16 @@ class TestApplyCategoricalLabels:
             )
 
 
+class TestBuildLabelsLf:
+    def test_flattens_column_to_code_to_label_dict_into_rows(self):
+        returned_lf = job.build_labels_lf(Data.labels_dict_for_build_labels_lf)
+
+        expected_lf = pl.LazyFrame(Data.expected_build_labels_lf)
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_column_order=False, check_row_order=False
+        )
+
+
 class TestRemoveRepeatedValuesOverTime:
     @pytest.mark.parametrize(
         "case",

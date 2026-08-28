@@ -85,6 +85,31 @@ def apply_categorical_labels(
     return lf
 
 
+def build_labels_lf(labels_dict: dict[str, dict[str, str]]) -> pl.LazyFrame:
+    """
+    Flattens a column-to-code-to-label dict into a labels LazyFrame.
+
+    `apply_categorical_labels` expects a `(column_name, code, label)` LazyFrame; use this
+    to build one from a static Python dict of dicts rather than a labels file, e.g. when
+    there's nothing to `pl.scan_csv` directly.
+
+    Args:
+        labels_dict (dict[str, dict[str, str]]): mapping of column name to a `{code: label}`
+            dict for that column.
+
+    Returns:
+        pl.LazyFrame: one row per (column_name, code, label) triple.
+    """
+    rows = [
+        (column, code, label)
+        for column, mapping in labels_dict.items()
+        for code, label in mapping.items()
+    ]
+    return pl.LazyFrame(
+        rows, schema=[DLC.column_name, DLC.code, DLC.label], orient="row"
+    )
+
+
 def labels_generator(
     labels_lf: pl.LazyFrame,
     column_names: list,

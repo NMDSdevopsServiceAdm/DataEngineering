@@ -5,8 +5,14 @@ from typing import Any, Optional
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
 )
 from utils.column_values.categorical_column_values import (
     RUI,
@@ -1611,6 +1617,13 @@ class MergeLegacyJobRoleColumnsTestCase:
 
 
 @dataclass
+class NullDuplicateEstablishmentNumericDataTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
 class TestCleanAscwdsWorkplaceUtilsData:
     purge_date_test_cases = [
         CleanWorkplaceUtilsTestCase(
@@ -1913,3 +1926,180 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
     ]
+
+    exclude_test_accounts_filter_input_data = {
+        AWPClean.organisation_id: [
+            "305",  # test account
+            "123",
+            "1234",
+            "28470",  # test account
+        ],
+        AWPClean.establishment_id: ["1", "2", "3", "4"],
+    }
+    expected_exclude_test_accounts_filter_data = {
+        AWPClean.organisation_id: ["123", "1234"],
+        AWPClean.establishment_id: ["2", "3"],
+    }
+
+    null_duplicate_establishment_numeric_data_test_cases = [
+        NullDuplicateEstablishmentNumericDataTestCase(
+            id="nulls_numeric_columns_when_establishment_id_is_a_known_duplicate",
+            input_data={
+                AWPClean.establishment_id: ["48904", "1"],  # 48904 is a known duplicate
+                AWPClean.total_staff: [10, 10],
+                AWPClean.worker_records: [8, 8],
+                AWPClean.total_starters: ["1", "1"],
+                AWPClean.total_leavers: ["2", "2"],
+                AWPClean.total_vacancies: ["3", "3"],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["48904", "1"],
+                AWPClean.total_staff: [None, 10],
+                AWPClean.worker_records: [None, 8],
+                AWPClean.total_starters: [None, "1"],
+                AWPClean.total_leavers: [None, "2"],
+                AWPClean.total_vacancies: [None, "3"],
+            },
+        ),
+        NullDuplicateEstablishmentNumericDataTestCase(
+            id="does_not_null_numeric_columns_when_establishment_id_is_not_a_known_duplicate",
+            input_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.total_staff: [10, 5],
+                AWPClean.worker_records: [8, 4],
+                AWPClean.total_starters: ["1", "0"],
+                AWPClean.total_leavers: ["2", "1"],
+                AWPClean.total_vacancies: ["3", "2"],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["1", "2"],
+                AWPClean.total_staff: [10, 5],
+                AWPClean.worker_records: [8, 4],
+                AWPClean.total_starters: ["1", "0"],
+                AWPClean.total_leavers: ["2", "1"],
+                AWPClean.total_vacancies: ["3", "2"],
+            },
+        ),
+        NullDuplicateEstablishmentNumericDataTestCase(
+            id="retains_non_numeric_columns_for_duplicate_establishment_rows",
+            input_data={
+                AWPClean.establishment_id: ["48904"],  # known duplicate
+                AWPClean.establishment_name: ["Some Care Home"],
+                AWPClean.total_staff: [10],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["48904"],
+                AWPClean.establishment_name: ["Some Care Home"],
+                AWPClean.total_staff: [None],
+            },
+        ),
+        NullDuplicateEstablishmentNumericDataTestCase(
+            id="nulls_job_role_columns_for_duplicate_establishments",
+            input_data={
+                AWPClean.establishment_id: ["48904", "1"],  # 48904 is a known duplicate
+                "jr01emp": [5, 5],
+                "jr01strt": [1, 1],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["48904", "1"],
+                "jr01emp": [None, 5],
+                "jr01strt": [None, 1],
+            },
+        ),
+        NullDuplicateEstablishmentNumericDataTestCase(
+            id="does_not_error_when_job_role_columns_are_not_present_in_the_frame",
+            input_data={
+                AWPClean.establishment_id: ["48904"],
+                AWPClean.total_staff: [10],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["48904"],
+                AWPClean.total_staff: [None],
+            },
+        ),
+    ]
+
+    null_duplicate_establishment_numeric_data_row_count_input_data = {
+        AWPClean.establishment_id: ["48904", "1", "50640"],  # 2 known duplicates
+        AWPClean.total_staff: [10, 5, 20],
+    }
+
+
+@dataclass
+class IngestOnsDataTest:
+    expected_reads_source_csv_with_no_type_inference = {
+        ONS.postcode: ["SW1A 1AA", "SW1A 1AA", "CT1 2AB"],
+        ONS.cssr: ["Westminster", "Westminster", "Kent"],
+        ONS.region: ["London", "London", "South East"],
+        ONS.sub_icb: ["North West London Sub ICB", "North West London Sub ICB", "Kent and Medway Sub ICB"],
+        ONS.icb: ["NHS North West London ICB", "NHS North West London ICB", "NHS Kent and Medway ICB"],
+        ONS.icb_region: ["London", "London", "South East"],
+        ONS.lower_super_output_area_2021: ["E01000001", "E01000001", "E01008678"],
+        ONS.middle_super_output_area_2021: ["E02000001", "E02000001", "E02001938"],
+        ONS.rural_urban_indicator_2011: ["3", "3", "1"],
+        ONS.month: ["05", "05", "09"],  # leading zeros preserved: no type inference
+        ONS.import_date: ["20260101", "20260115", "20260101"],
+    }  # fmt: skip
+
+
+@dataclass
+class CleanOnsDataTest:
+    # Non-distinguishing geography columns share a placeholder value.
+    prepare_ons_data_rows = {
+        ONSClean.postcode: ["AB10AA", "AB10AB", "AB10AA", "AB10AB", "AB10AC"],
+        ONSClean.contemporary_ons_import_date: [date(2022, 1, 1)] * 2 + [date(2023, 1, 1)] * 3,
+        ONSClean.cssr: ["value"] * 5,
+        ONSClean.region: ["value"] * 5,
+        ONSClean.sub_icb: ["value"] * 5,
+        ONSClean.icb: ["value"] * 5,
+        ONSClean.icb_region: ["value"] * 5,
+        ONSClean.latitude: ["value"] * 5,
+        ONSClean.longitude: ["value"] * 5,
+        ONSClean.imd_score: ["value"] * 5,
+        ONSClean.lower_super_output_area_2011: ["value"] * 5,
+        ONSClean.middle_super_output_area_2011: ["value"] * 5,
+        ONSClean.rural_urban_indicator_2011: ["value"] * 5,
+        ONSClean.rural_urban_indicator_2021: [None, None, "6", "6", "6"],
+        ONSClean.lower_super_output_area_2021: ["value"] * 5,
+        ONSClean.middle_super_output_area_2021: ["value"] * 5,
+        ONSClean.parliamentary_constituency: ["value"] * 5,
+    }  # fmt: skip
+
+    expected_prepare_contemporary_ons_data = {
+        ONSClean.postcode: ["AB10AA", "AB10AB", "AB10AA", "AB10AB", "AB10AC"],
+        ONSClean.contemporary_ons_import_date: [date(2022, 1, 1)] * 2 + [date(2023, 1, 1)] * 3,
+        ONSClean.contemporary_cssr: ["value"] * 5,
+        ONSClean.contemporary_region: ["value"] * 5,
+        ONSClean.contemporary_sub_icb: ["value"] * 5,
+        ONSClean.contemporary_icb: ["value"] * 5,
+        ONSClean.contemporary_icb_region: ["value"] * 5,
+        ONSClean.contemporary_latitude: ["value"] * 5,
+        ONSClean.contemporary_longitude: ["value"] * 5,
+        ONSClean.contemporary_imd_score: ["value"] * 5,
+        ONSClean.contemporary_lsoa11: ["value"] * 5,
+        ONSClean.contemporary_msoa11: ["value"] * 5,
+        ONSClean.contemporary_rural_urban_ind_11: ["value"] * 5,
+        ONSClean.contemporary_lsoa21: ["value"] * 5,
+        ONSClean.contemporary_msoa21: ["value"] * 5,
+        ONSClean.contemporary_constituency: ["value"] * 5,
+    }  # fmt: skip
+
+    expected_prepare_current_ons_data = {
+        ONSClean.postcode: ["AB10AA", "AB10AB", "AB10AC"],
+        ONSClean.current_ons_import_date: [date(2023, 1, 1)] * 3,
+        ONSClean.current_cssr: ["value"] * 3,
+        ONSClean.current_region: ["value"] * 3,
+        ONSClean.current_sub_icb: ["value"] * 3,
+        ONSClean.current_icb: ["value"] * 3,
+        ONSClean.current_icb_region: ["value"] * 3,
+        ONSClean.current_latitude: ["value"] * 3,
+        ONSClean.current_longitude: ["value"] * 3,
+        ONSClean.current_imd_score: ["value"] * 3,
+        ONSClean.current_lsoa11: ["value"] * 3,
+        ONSClean.current_msoa11: ["value"] * 3,
+        ONSClean.current_rural_urban_ind_11: ["value"] * 3,
+        ONSClean.current_rural_urban_ind_21: ["6"] * 3,
+        ONSClean.current_lsoa21: ["value"] * 3,
+        ONSClean.current_msoa21: ["value"] * 3,
+        ONSClean.current_constituency: ["value"] * 3,
+    }  # fmt: skip
