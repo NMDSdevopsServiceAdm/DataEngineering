@@ -17,3 +17,23 @@ class TestAddCtFilterConsistentService:
 class TestAddCtFilterDispersionFilter:
     def test_identifies_locations_within_ct_posts_dispersion_boundaries(self):
         pass
+
+
+class TestAggregateToPublicationRows:
+    def test_returns_expected_data(self):
+        pass
+
+
+class TestAddRowsForPublicationGroups:
+    def test_returns_expected_data(self):
+        pass
+
+
+class TestCalcPercChangeBetweenRows:
+    def test_returns_expected_data(self):
+        pass
+
+
+class TestCalcPercChangeCumulativeFromGivenPeriodOnwards:
+    def test_returns_expected_data(self):
+        pass

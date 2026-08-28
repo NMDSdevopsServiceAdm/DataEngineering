@@ -20,11 +20,17 @@ def main(
     """
     lf = utils.scan_parquet(merge_data_source)
 
-    # TODO: add capacity tracker filters. See clean_utils.
+    # See clean_utils/test_clean_utils for placeholders.
 
-    # TODO: Aggregate on job role, primary_service_type and current_region
+    # TODO: Add capacity tracker filters. Call one at a time as three are developed.
 
-    # TODO: Make percentage change columns.
+    # TODO: Aggregate on job role, primary_service_type and current_region.
+
+    # TODO: Add rows for 'England', 'All CQC locations' and 'All CQC care homes'.
+
+    # TODO: Add percentage change between rows.
+
+    # TODO: Add cumulative percentage change from given start period.
 
     utils.sink_to_parquet(
         lazy_df=lf,
