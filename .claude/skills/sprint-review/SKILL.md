@@ -24,6 +24,10 @@ needs.
 gh pr list --state merged --base main --search "merged:<start>..<end>" --json number,title,mergedAt,headRefName,url --limit 200
 ```
 
+If the result count equals the `--limit`, don't treat it as the complete list — there may be more
+merged PRs in range that weren't fetched. Flag this in step 9 rather than silently summarising a
+partial set.
+
 Ticket number comes from `headRefName` (`<ticket>-<slug>`) — trust the branch over the title if
 they disagree (titles are free-form and can be stale). Two PRs sharing a ticket (revert/redo):
 keep both, let round 1 merge them into one cluster.
@@ -122,9 +126,10 @@ Only add round 2 detail to that file if specifically asked.
 Present round 3's `## Summary` only. Mention that full detail is available per roadmap item on
 request — already synthesised in round 2, no need to re-gather or re-cluster.
 
-Flag explicitly rather than silently dropping: anything under "Other" that seems surprising, a
-merged PR with no parseable ticket number, a PR title that contradicted or was too thin to
-confirm its matched CHANGELOG bullet (step 3), or an Other-vs-named-item scope gap (step 6).
+Flag explicitly rather than silently dropping: a possibly-incomplete PR list (step 2), anything
+under "Other" that seems surprising, a merged PR with no parseable ticket number, a PR title that
+contradicted or was too thin to confirm its matched CHANGELOG bullet (step 3), or an
+Other-vs-named-item scope gap (step 6).
 
 Treat the first draft as a draft: revise and re-show on pushback about clustering, assignment,
 ordering, the executive summary, or wording — don't treat one pass as final.
