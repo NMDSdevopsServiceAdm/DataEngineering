@@ -4,7 +4,6 @@
   "States": {
     "ONS Postcode Directory pipeline": {
       "Type": "Parallel",
-      "Next": "Run validation crawler when success",
       "Branches": [
         {
           "StartAt": "Ingest ONS data",
@@ -43,12 +42,31 @@
                   "States": {
                     "Clean ONS data": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
-                        "JobName": "${clean_ons_data_job_name}",
-                        "Arguments": {
-                          "--ons_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
-                          "--cleaned_ons_destination": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
+                        "LaunchType": "FARGATE",
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${ingest_task_arn}",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${ingest_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_01_ingest-container",
+                              "Command": [
+                                "clean_ons_data.py",
+                                "--ons_source",
+                                "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
+                                "--cleaned_ons_destination",
+                                "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
+                              ]
+                            }
+                          ]
                         }
                       },
                       "End": true
@@ -97,13 +115,35 @@
             },
             "Validate cleaned ONS data": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${validate_postcode_directory_cleaned_data_job_name}",
-                "Arguments": {
-                  "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
-                  "--cleaned_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_postcode_directory_cleaned/"
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command": [
+                        "validate_postcode_directory_cleaned_data.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=ONS/dataset=postcode_directory_cleaned/",
+                        "--reports_path",
+                        "domain=data_validation_reports/dataset=validation_pdq_postcode_directory_cleaned/",
+                        "--compare_path",
+                        "domain=ONS/dataset=postcode_directory/"
+                      ]
+                    }
+                  ]
                 }
               },
               "End": true
@@ -111,69 +151,73 @@
           }
         }
       ],
+      "Next": "Handle Error and Run Crawler",
       "Catch": [
         {
           "ErrorEquals": [
             "States.ALL"
           ],
-          "Next": "Publish error notification",
-          "ResultPath": "$.error"
+          "ResultPath": "$.error",
+          "Next": "Handle Error and Run Crawler"
         }
       ]
     },
-    "Run validation crawler when success": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${data_validation_reports_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Run ONS crawler when success"
-    },
-    "Run ONS crawler when success": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${ons_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Success"
-    },
-    "Publish error notification": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
-      "Parameters": {
-        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
-        "Payload": {
-          "Error.$": "$.error.Cause",
-          "ExecutionId.$": "$$.Execution.Id",
-          "StateMachineName.$": "$$.StateMachine.Name",
-          "StateMachineId.$": "$$.StateMachine.Id",
-          "ExecutionStartTime.$": "$$.Execution.StartTime",
-          "CallbackToken.$": "$$.Task.Token"
+    "Handle Error and Run Crawler": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
+        },
+        {
+          "StartAt": "Run ONS Crawler",
+          "States": {
+            "Run ONS Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${ons_crawler_name}"
+              },
+              "End": true
+            }
+          }
         }
-      },
-      "Next": "Run validation crawler when failed"
-    },
-    "Run validation crawler when failed": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${data_validation_reports_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Run ONS crawler when failed"
-    },
-    "Run ONS crawler when failed": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${ons_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Fail"
-    },
-    "Fail": {
-      "Type": "Fail"
-    },
-    "Success": {
-      "Type": "Succeed"
+      ],
+      "End": true
     }
   }
 }
