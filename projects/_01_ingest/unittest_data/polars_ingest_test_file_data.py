@@ -1998,7 +1998,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
         NullDuplicateEstablishmentNumericDataTestCase(
-            id="does_not_null_a_known_duplicate_establishment_when_its_group_has_diverged_for_this_import_date",
+            id="does_not_null_known_duplicate_when_its_group_has_diverged",
             input_data={
                 AWPClean.establishment_id: [
                     "48904"

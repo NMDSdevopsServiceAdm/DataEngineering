@@ -28,13 +28,9 @@ TEST_ACCOUNTS: set[str] = {
     "51818",
 }
 
-# Groups of establishment IDs known to have submitted duplicated ASC-WDS data.
-#
-# Each group represents the same workplace data uploaded against multiple
-# accounts. The issue was raised with the support team but there is no way of
-# automatically blocking this going forwards, so whether a group is still
-# submitting identical data is re-checked at runtime (see
-# find_still_matching_duplicate_establishments) rather than assumed forever.
+# Groups of establishment IDs known to have submitted identical ASC-WDS data
+# under different accounts. Whether a group is still identical is re-checked
+# at runtime (find_still_matching_duplicate_establishments), not assumed.
 DUPLICATE_ESTABLISHMENT_GROUPS: list[frozenset[str]] = [
     frozenset({"48904", "49966", "49967", "49968"}),
     frozenset(
@@ -85,33 +81,21 @@ NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES: list[str] = [
 
 def find_still_matching_duplicate_establishments(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Find rows in DUPLICATE_ESTABLISHMENT_GROUPS that are still identical to the
-    rest of their group.
+    Find establishment_id/import_date pairs still identical to the rest of
+    their DUPLICATE_ESTABLISHMENT_GROUPS group.
 
-    Each known group was identical at the time it was flagged, but there's no
-    way to automatically stop a group's accounts from diverging again later
-    (e.g. support deleting all of a workplace's data, then the workplace
-    submitting fresh, genuinely different figures). This re-checks, per group
-    and ascwds_workplace_import_date, whether every establishment_id present
-    that day still holds identical NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES
-    values - including a group that's identical because every member is
-    null/0, which is still a genuine match within a known small group (unlike
-    comparing unrelated establishments across the whole dataset, where a
-    shared absence of data is coincidental, not a real duplicate).
-
-    A group with only one establishment_id present for a given import_date is
-    treated as still matching, since there's nothing to disagree with -
-    nulling is only stopped once there's actual evidence of divergence.
-
-    Only compares NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES (not job role/SLV
-    columns, which aren't available on the raw frame this runs against) -
-    those totals diverging is already sufficient evidence a group has stopped
-    duplicating.
+    Groups were identical when first flagged, but can diverge later (e.g.
+    support wipes a workplace's data, then it resubmits different figures),
+    so this re-checks per group and import_date on
+    NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES (job role/SLV columns aren't
+    available on this raw frame). An all-null/0 match still counts as
+    identical, and a group with only one establishment_id present for a date
+    counts as matching by default.
 
     polars_streaming:
-    Each group is filtered down to at most a few dozen rows before comparison,
-    so looping over DUPLICATE_ESTABLISHMENT_GROUPS in Python and concatenating
-    the small per-group results is negligible regardless of streaming support.
+    Each group filters down to a handful of rows before comparison, so
+    looping over the groups and concatenating is negligible regardless of
+    streaming support.
 
     Args:
         lf (pl.LazyFrame): Raw ASC-WDS workplace LazyFrame containing
@@ -119,9 +103,8 @@ def find_still_matching_duplicate_establishments(lf: pl.LazyFrame) -> pl.LazyFra
             NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES.
 
     Returns:
-        pl.LazyFrame: establishment_id and import_date pairs whose group is
-            still identical and should continue to be nulled. Unique on
-            (establishment_id, import_date).
+        pl.LazyFrame: establishment_id/import_date pairs still identical and
+            due to be nulled. Unique on (establishment_id, import_date).
     """
     still_matching_lfs = []
     for group in DUPLICATE_ESTABLISHMENT_GROUPS:
@@ -152,26 +135,22 @@ def null_duplicate_establishment_numeric_data(
     lf: pl.LazyFrame, still_matching_lf: pl.LazyFrame
 ) -> pl.LazyFrame:
     """
-    Null numeric submission data for establishment rows still matching a
-    known duplicate group.
+    Null numeric submission data for rows matching still_matching_lf.
 
-    Rather than dropping these rows, their staff/starter/leaver/vacancy
-    totals and job role figures are nulled so they no longer inflate
-    downstream aggregates, while the row and its non-numeric metadata are
-    retained. Tolerates being called on a frame that doesn't yet have job
-    role columns (require_all=False), since this is called both before and
-    after those columns are joined on in clean_ascwds_workplace.py.
+    Rows aren't dropped - staff/starter/leaver/vacancy totals and job role
+    figures are nulled so they don't inflate downstream aggregates, while the
+    row and its non-numeric metadata are retained. Tolerates a frame without
+    job role columns yet (require_all=False), since this runs both before and
+    after they're joined on in clean_ascwds_workplace.py.
 
     Args:
         lf (pl.LazyFrame): Workplace LazyFrame containing establishment_id
             and import_date.
         still_matching_lf (pl.LazyFrame): Output of
-            find_still_matching_duplicate_establishments - establishment_id
-            and import_date pairs to null.
+            find_still_matching_duplicate_establishments.
 
     Returns:
-        pl.LazyFrame: Input LazyFrame with target numeric columns nulled for
-            rows matching still_matching_lf.
+        pl.LazyFrame: lf with target numeric columns nulled for matching rows.
     """
     should_null_col = "should_null_duplicate"
     lf = lf.join(
