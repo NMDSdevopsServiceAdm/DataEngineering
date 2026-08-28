@@ -20,11 +20,7 @@ def main(
     """
     lf = utils.scan_parquet(merge_data_source)
 
-    lf = lf.with_columns(
-        cUtils.add_ct_filter_has_ct_data(),
-        cUtils.add_ct_filter_consistent_service(),
-        cUtils.add_ct_filter_dispersion_filter(),
-    )
+    # TODO: add capacity tracker filters. See clean_utils.
 
     # TODO: Aggregate on job role, primary_service_type and current_region
 

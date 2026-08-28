@@ -5,15 +5,15 @@ from utils.column_names.publication_columns import PublicationColumns as Pub
 
 
 class TestAddCtFilterHasCtData:
-    def test_adds_true_for_every_row(self):
+    def test_identifies_rows_with_ct_data(self):
         pass
 
 
 class TestAddCtFilterConsistentService:
-    def test_adds_true_for_every_row(self):
+    def test_identifies_locations_that_are_always_care_home_or_always_non_res(self):
         pass
 
 
 class TestAddCtFilterDispersionFilter:
-    def test_adds_true_for_every_row(self):
+    def test_identifies_locations_within_ct_posts_dispersion_boundaries(self):
         pass
