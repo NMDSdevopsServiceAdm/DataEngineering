@@ -2,7 +2,6 @@ import polars as pl
 
 import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
-from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
@@ -20,6 +19,8 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clea
     clean_capacity_tracker_non_res_outliers,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils import (
+    ascwds_filled_posts_source_cast_expr,
+    ascwds_filtering_rule_cast_expr,
     calculate_care_home_status_count,
     calculate_time_registered_for,
     calculate_time_since_dormant,
@@ -122,20 +123,6 @@ def main(
     utils.sink_to_parquet(
         grouped_providers_lf,
         grouped_providers_destination,
-    )
-
-
-def ascwds_filled_posts_source_cast_expr() -> pl.Expr:
-    """Expression casting ascwds_filled_posts_source to its Enum type."""
-    return pl.col(IndCQC.ascwds_filled_posts_source).cast(
-        CatColType.AscwdsFilledPostsSourceEnumType
-    )
-
-
-def ascwds_filtering_rule_cast_expr() -> pl.Expr:
-    """Expression casting ascwds_filtering_rule to its Enum type."""
-    return pl.col(IndCQC.ascwds_filtering_rule).cast(
-        CatColType.AscwdsFilteringRuleEnumType
     )
 
 
