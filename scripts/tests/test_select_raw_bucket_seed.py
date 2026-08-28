@@ -4,8 +4,8 @@ import scripts.select_raw_bucket_seed as job
 
 ALL_DOMAINS = list(job.DOMAIN_TRIGGER_PATHS)
 
-# Includes paths that were trigger paths before this ticket's trigger list was
-# trimmed, so a re-add wouldn't silently pass unnoticed.
+# Old trigger paths plus one non-trigger file per domain, guarding against
+# the trigger list silently widening back to a directory prefix.
 UNRELATED_PATHS = [
     "README.md",
     "projects/_07_workforce_characteristics/foo.py",
@@ -13,28 +13,53 @@ UNRELATED_PATHS = [
     "terraform/pipeline/s3.tf",
     "terraform/modules/fargate-task/iam.tf",
     ".circleci/config.yml",
+    "projects/_01_ingest/ascwds/fargate/clean_ascwds_workplace.py",
+    "projects/_01_ingest/ascwds/tests/jobs/test_ingest_ascwds_dataset.py",
+    "projects/_01_ingest/capacity_tracker/jobs/clean_capacity_tracker_care_home_data.py",
+    "projects/_01_ingest/cqc_pir/utils/null_people_directly_employed_outliers.py",
+    "projects/_01_ingest/ons_pd/fargate/clean_ons_data.py",
 ]
 
 domain_trigger_cases = [
     pytest.param(
         "ascwds",
-        "projects/_01_ingest/ascwds/fargate/ingest_ascwds_worker.py",
-        id="returns_true_when_ascwds_dir_changed",
+        "projects/_01_ingest/ascwds/fargate/ingest_ascwds_dataset.py",
+        id="returns_true_when_ascwds_ingest_job_changed",
+    ),
+    pytest.param(
+        "ascwds",
+        "projects/_01_ingest/ascwds/fargate/validate_ascwds_worker_raw_data.py",
+        id="returns_true_when_ascwds_worker_raw_validate_changed",
+    ),
+    pytest.param(
+        "ascwds",
+        "projects/_01_ingest/ascwds/fargate/validate_ascwds_workplace_raw_data.py",
+        id="returns_true_when_ascwds_workplace_raw_validate_changed",
     ),
     pytest.param(
         "capacity_tracker",
-        "projects/_01_ingest/capacity_tracker/fargate/ingest.py",
-        id="returns_true_when_capacity_tracker_dir_changed",
+        "projects/_01_ingest/capacity_tracker/fargate/ingest_capacity_tracker_data.py",
+        id="returns_true_when_capacity_tracker_ingest_job_changed",
     ),
     pytest.param(
         "cqc_pir",
-        "projects/_01_ingest/cqc_pir/fargate/ingest_cqc_pir.py",
-        id="returns_true_when_cqc_pir_dir_changed",
+        "projects/_01_ingest/cqc_pir/fargate/ingest_cqc_pir_data.py",
+        id="returns_true_when_cqc_pir_ingest_job_changed",
+    ),
+    pytest.param(
+        "cqc_pir",
+        "projects/_01_ingest/cqc_pir/fargate/validate_cqc_pir_raw_data.py",
+        id="returns_true_when_cqc_pir_raw_validate_changed",
     ),
     pytest.param(
         "ons_pd",
-        "projects/_01_ingest/ons_pd/fargate/ingest_ons_pd.py",
-        id="returns_true_when_ons_pd_dir_changed",
+        "projects/_01_ingest/ons_pd/fargate/ingest_ons_data.py",
+        id="returns_true_when_ons_pd_ingest_job_changed",
+    ),
+    pytest.param(
+        "ons_pd",
+        "projects/_01_ingest/ons_pd/fargate/validate_postcode_directory_raw_data.py",
+        id="returns_true_when_ons_pd_raw_validate_changed",
     ),
 ]
 
@@ -91,7 +116,7 @@ class TestMain:
                 "--domain",
                 "ascwds",
                 "--changed-path",
-                "projects/_01_ingest/ascwds/jobs/ingest.py",
+                "projects/_01_ingest/ascwds/fargate/ingest_ascwds_dataset.py",
             ]
         )
 
