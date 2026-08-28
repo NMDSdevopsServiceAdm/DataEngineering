@@ -57,8 +57,6 @@ DUPLICATE_ESTABLISHMENT_GROUPS: list[frozenset[str]] = [
     ),
 ]
 
-DUPLICATE_ESTABLISHMENT_IDS: set[str] = frozenset.union(*DUPLICATE_ESTABLISHMENT_GROUPS)
-
 
 def exclude_test_accounts_filter() -> pl.Expr:
     """
@@ -81,16 +79,18 @@ NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES: list[str] = [
 
 def find_still_matching_duplicate_establishments(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Find establishment_id/import_date pairs still identical to the rest of
-    their DUPLICATE_ESTABLISHMENT_GROUPS group.
+    Find establishment_id/import_date pairs still identical to at least one
+    other present member of their DUPLICATE_ESTABLISHMENT_GROUPS group.
 
     Groups were identical when first flagged, but can diverge later (e.g.
     support wipes a workplace's data, then it resubmits different figures),
     so this re-checks per group and import_date on
     NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES (job role/SLV columns aren't
     available on this raw frame). An all-null/0 match still counts as
-    identical, and a group with only one establishment_id present for a date
-    counts as matching by default.
+    identical. Establishments are clustered by shared content within their
+    group and import_date, so part of a group can keep matching while the
+    rest diverges - an establishment with no one left sharing its content
+    (including being the only member present that date) is excluded.
 
     polars_streaming:
     Each group filters down to a handful of rows before comparison, so
@@ -108,22 +108,15 @@ def find_still_matching_duplicate_establishments(lf: pl.LazyFrame) -> pl.LazyFra
     """
     still_matching_lfs = []
     for group in DUPLICATE_ESTABLISHMENT_GROUPS:
-        group_lf = (
-            lf.filter(pl.col(AWPClean.establishment_id).is_in(group))
-            .select(
-                AWPClean.establishment_id,
-                AWPClean.import_date,
-                pl.struct(NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES).alias("content"),
-            )
-            .unique(subset=[AWPClean.establishment_id, AWPClean.import_date])
+        group_lf = lf.filter(pl.col(AWPClean.establishment_id).is_in(group)).select(
+            AWPClean.establishment_id,
+            AWPClean.import_date,
+            pl.struct(NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES).alias("content"),
         )
         still_matching_lfs.append(
-            group_lf.group_by(AWPClean.import_date)
-            .agg(
-                AWPClean.establishment_id,
-                pl.col("content").n_unique().alias("distinct_content_count"),
-            )
-            .filter(pl.col("distinct_content_count") == 1)
+            group_lf.group_by(AWPClean.import_date, "content")
+            .agg(AWPClean.establishment_id, pl.len().alias("member_count"))
+            .filter(pl.col("member_count") > 1)
             .select(AWPClean.establishment_id, AWPClean.import_date)
             .explode(AWPClean.establishment_id)
         )

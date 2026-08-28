@@ -115,12 +115,11 @@ def main(
 
     lf = wUtils.apply_data_corrections(lf)
 
+    lf = lf.filter(wUtils.exclude_test_accounts_filter())
+
     still_matching_duplicates_lf = wUtils.find_still_matching_duplicate_establishments(
         lf
     )
-
-    lf = lf.filter(wUtils.exclude_test_accounts_filter())
-
     lf = wUtils.null_duplicate_establishment_numeric_data(
         lf, still_matching_duplicates_lf
     )

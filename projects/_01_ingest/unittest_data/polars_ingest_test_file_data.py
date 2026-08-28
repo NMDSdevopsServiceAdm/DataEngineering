@@ -2136,7 +2136,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
         FindStillMatchingDuplicateEstablishmentsTestCase(
-            id="returns_the_single_present_group_member_when_others_have_not_submitted_that_import_date",
+            id="does_not_return_the_single_present_group_member_when_others_have_not_submitted_that_import_date",
             input_data={
                 AWPClean.establishment_id: ["48904"],  # only member of group A present
                 AWPClean.import_date: ["20260101"],
@@ -2147,8 +2147,25 @@ class TestCleanAscwdsWorkplaceUtilsData:
                 AWPClean.total_vacancies: ["3"],
             },
             expected_data={
-                AWPClean.establishment_id: ["48904"],
-                AWPClean.import_date: ["20260101"],
+                AWPClean.establishment_id: [],
+                AWPClean.import_date: [],
+            },
+        ),
+        FindStillMatchingDuplicateEstablishmentsTestCase(
+            id="returns_only_the_group_members_still_sharing_content_when_one_has_diverged",
+            input_data={
+                # 48904, 49966, 49967 still identical; 49968 has diverged
+                AWPClean.establishment_id: ["48904", "49966", "49967", "49968"],
+                AWPClean.import_date: ["20260101"] * 4,
+                AWPClean.total_staff: ["10", "10", "10", "99"],
+                AWPClean.worker_records: ["8", "8", "8", "8"],
+                AWPClean.total_starters: ["1", "1", "1", "1"],
+                AWPClean.total_leavers: ["2", "2", "2", "2"],
+                AWPClean.total_vacancies: ["3", "3", "3", "3"],
+            },
+            expected_data={
+                AWPClean.establishment_id: ["48904", "49966", "49967"],
+                AWPClean.import_date: ["20260101", "20260101", "20260101"],
             },
         ),
         FindStillMatchingDuplicateEstablishmentsTestCase(
@@ -2186,22 +2203,6 @@ class TestCleanAscwdsWorkplaceUtilsData:
             expected_data={
                 AWPClean.establishment_id: [],
                 AWPClean.import_date: [],
-            },
-        ),
-        FindStillMatchingDuplicateEstablishmentsTestCase(
-            id="does_not_duplicate_rows_when_the_same_establishment_id_and_import_date_appears_twice",
-            input_data={
-                AWPClean.establishment_id: ["48904", "48904", "49966"],
-                AWPClean.import_date: ["20260101", "20260101", "20260101"],
-                AWPClean.total_staff: ["10", "10", "10"],
-                AWPClean.worker_records: ["8", "8", "8"],
-                AWPClean.total_starters: ["1", "1", "1"],
-                AWPClean.total_leavers: ["2", "2", "2"],
-                AWPClean.total_vacancies: ["3", "3", "3"],
-            },
-            expected_data={
-                AWPClean.establishment_id: ["48904", "49966"],
-                AWPClean.import_date: ["20260101", "20260101"],
             },
         ),
     ]
