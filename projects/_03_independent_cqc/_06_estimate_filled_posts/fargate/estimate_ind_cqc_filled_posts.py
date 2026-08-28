@@ -145,10 +145,8 @@ def main(
     )
     lf = lf.with_columns([value_expr, source_expr])
     lf = lf.with_columns(
-        pl.col(IndCQC.estimate_filled_posts).cast(pl.Float32),
-        pl.col(IndCQC.estimate_filled_posts_source).cast(
-            CatColType.EstimatesFilledPostSourceEnumType
-        ),
+        estimate_filled_posts_cast_expr(),
+        estimate_filled_posts_source_cast_expr(),
     )
 
     lf = set_min_value(lf, IndCQC.estimate_filled_posts, 1.0)
@@ -158,6 +156,18 @@ def main(
     utils.sink_to_parquet(
         lf,
         destination,
+    )
+
+
+def estimate_filled_posts_cast_expr() -> pl.Expr:
+    """Expression casting estimate_filled_posts to Float32."""
+    return pl.col(IndCQC.estimate_filled_posts).cast(pl.Float32)
+
+
+def estimate_filled_posts_source_cast_expr() -> pl.Expr:
+    """Expression casting estimate_filled_posts_source to its Enum type."""
+    return pl.col(IndCQC.estimate_filled_posts_source).cast(
+        CatColType.EstimatesFilledPostSourceEnumType
     )
 
 

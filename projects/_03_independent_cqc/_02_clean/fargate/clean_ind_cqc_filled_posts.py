@@ -107,12 +107,8 @@ def main(
     locations_lf = calculate_care_home_status_count(locations_lf)
 
     locations_lf = locations_lf.with_columns(
-        pl.col(IndCQC.ascwds_filled_posts_source).cast(
-            CatColType.AscwdsFilledPostsSourceEnumType
-        ),
-        pl.col(IndCQC.ascwds_filtering_rule).cast(
-            CatColType.AscwdsFilteringRuleEnumType
-        ),
+        ascwds_filled_posts_source_cast_expr(),
+        ascwds_filtering_rule_cast_expr(),
     )
 
     print(f"Exporting cleaned data to {cleaned_ind_cqc_destination}")
@@ -126,6 +122,20 @@ def main(
     utils.sink_to_parquet(
         grouped_providers_lf,
         grouped_providers_destination,
+    )
+
+
+def ascwds_filled_posts_source_cast_expr() -> pl.Expr:
+    """Expression casting ascwds_filled_posts_source to its Enum type."""
+    return pl.col(IndCQC.ascwds_filled_posts_source).cast(
+        CatColType.AscwdsFilledPostsSourceEnumType
+    )
+
+
+def ascwds_filtering_rule_cast_expr() -> pl.Expr:
+    """Expression casting ascwds_filtering_rule to its Enum type."""
+    return pl.col(IndCQC.ascwds_filtering_rule).cast(
+        CatColType.AscwdsFilteringRuleEnumType
     )
 
 
