@@ -58,4 +58,8 @@ def clean_ascwds_filled_post_outliers(
     lf = winsorize_care_home_filled_posts_per_bed_ratio_outliers(lf)
     lf = non_res_brand_id_filter(lf)
 
+    lf = lf.with_columns(
+        pl.col(IndCQC.ascwds_filled_posts_dedup_clean).cast(pl.Float32)
+    )
+
     return lf, grouped_providers

@@ -1,5 +1,6 @@
 import polars as pl
 
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from polars_utils.expressions import is_care_home, is_dormant, is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -282,4 +283,18 @@ def calculate_care_home_status_count(lf: pl.LazyFrame) -> pl.LazyFrame:
         .len()
         .over(IndCQC.location_id)
         .alias(IndCQC.care_home_status_count)
+    )
+
+
+def ascwds_filled_posts_source_cast_expr() -> pl.Expr:
+    """Expression casting ascwds_filled_posts_source to its Enum type."""
+    return pl.col(IndCQC.ascwds_filled_posts_source).cast(
+        CatColType.AscwdsFilledPostsSourceEnumType
+    )
+
+
+def ascwds_filtering_rule_cast_expr() -> pl.Expr:
+    """Expression casting ascwds_filtering_rule to its Enum type."""
+    return pl.col(IndCQC.ascwds_filtering_rule).cast(
+        CatColType.AscwdsFilteringRuleEnumType
     )

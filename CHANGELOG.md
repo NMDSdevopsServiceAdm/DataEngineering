@@ -57,6 +57,10 @@ All notable changes to this project will be documented in this file.
 ### Improved
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
 
+- Narrowed dtypes (Categorical/Enum/Float32) for columns feeding the independent CQC estimate archive jobs, casting each at its true point of creation to reduce long-term storage cost, and simplified the job-role reconciliation check to a 2dp-rounded range check.
+
+- Added a `col_schema_match` check to the independent CQC clean and estimate validation jobs, catching future dtype regressions on the narrowed columns at the earliest validation step.
+
 - Removed a dead `lf.sort()` call (its result was never reassigned) in model_interpolation. Converted the module's remaining sorts to `over(..., order_by=...)`, measured as using much less peak memory than sorting.
 
 ### Fixed

@@ -32,6 +32,7 @@ def merge_ascwds_and_pir_filled_post_submissions(lf: pl.LazyFrame) -> pl.LazyFra
     lf = create_last_submission_columns(lf)
     lf = create_ascwds_pir_merged_column(lf)
     lf = include_pir_if_never_submitted_ascwds(lf)
+    lf = lf.with_columns(pl.col(IndCQC.ascwds_pir_merged).cast(pl.Float32))
 
     return lf.drop(
         [
