@@ -52,8 +52,8 @@ All notable changes to this project will be documented in this file.
 - Removed the legacy PySpark impute and estimate-filled-posts jobs now that their Polars replacements are signed off, and dropped the `polars` suffix from their S3 paths and step-function state names now that only one implementation remains.
 - sfc_internal data now includes workplaces exceeding their *active* purge date. The merge coverage job adds a boolean column removed_by_purge_date_filter. The in_ascwds column now takes that filter into account. The reconciliation job also creates removed_by_purge_date_filter then filters upon it to remove purged workplaces.
 
-- Reduced the job role archive job to only the columns actually needed, and split its single output into three column-scoped archives (estimates, metadata, geography), each independently validated in parallel. Dropped the unused overall filled-posts estimates source it was scanning for no purpose, and renamed the estimates output dataset from `ind_cqc_09_archived_monthly_filled_posts_by_job_role` to `ind_cqc_09_archived_monthly_job_role_estimates`.
 - Known duplicate ASC-WDS establishment submissions now have their numeric data (staff counts, starters, leavers, vacancies, job role figures) nulled instead of the whole row being removed, so the workplace and its non-numeric metadata are retained. Also removed an orphaned, never-called duplicate implementation of this exclusion logic and its backing config entry.
+- Reduced the job role archive job to only the columns actually needed, and split its single output into three column-scoped archives (estimates, metadata, geography), each independently validated in parallel.
 
 ### Improved
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
@@ -76,8 +76,6 @@ All notable changes to this project will be documented in this file.
 
 - Narrowed the non-prod raw bucket seed gate to the specific files that actually read, write, or validate raw data, instead of whole ingest project directories, so unrelated changes elsewhere in an ingest domain (tests, downstream clean jobs) no longer trigger an unnecessary reseed. Also fixed a redeploy failure where the ASCWDS ingest job's fixed sample-data output partition collided with its own previous run's output, by clearing that partition before each reseed.
 - Fixed the job role estimates pipeline crashing in prod with a `FileNotFoundError`: the merge, validation, and archive steps hardcoded a non-prod-only comparison dataset name for the estimated filled posts source, which CI only ever populates on branches other than `main`. The dataset name is now workspace-aware, matching the pattern already used for the sibling job-role datasets.
-
-- Fixed the job role archive job trying to select 10 columns from the job-role merge metadata dataset that it never actually produced. The job role merge step now selects those columns (which it already had available from its own source scan) into its metadata output, and its validation now checks for them too.
 
 ## [v2026.07.0] - 17/08/2026
 

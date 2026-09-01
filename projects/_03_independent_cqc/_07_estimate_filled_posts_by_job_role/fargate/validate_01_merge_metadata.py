@@ -98,14 +98,16 @@ EXPECTED_SCHEMA = pb.Schema(
             CategoricalColumnTypes.EstimatesFilledPostSourceEnumType
         ),
         IndCqcColumns.worker_records_bounded: "Int16",
-        IndCqcColumns.ascwds_filled_posts_source: "String",
-        IndCqcColumns.care_home_model: "Float64",
+        IndCqcColumns.ascwds_filled_posts_source: str(
+            CategoricalColumnTypes.AscwdsFilledPostsSourceEnumType
+        ),
+        IndCqcColumns.care_home_model: "Float32",
         IndCqcColumns.imputed_pir_filled_posts_model: "Float32",
         IndCqcColumns.imputed_posts_care_home_model: "Float32",
         IndCqcColumns.imputed_posts_non_res_combined_model: "Float32",
-        IndCqcColumns.non_res_combined_model: "Float64",
+        IndCqcColumns.non_res_combined_model: "Float32",
         IndCqcColumns.pir_people_directly_employed_dedup: "Int64",
-        IndCqcColumns.posts_rolling_average_model: "Float64",
+        IndCqcColumns.posts_rolling_average_model: "Float32",
         IndCqcColumns.ct_care_home_total_employed_imputed: "Float32",
         IndCqcColumns.ct_non_res_care_workers_employed_imputed: "Float32",
         CQCLVal.services_offered_has_no_empty_or_null: "Int64",
