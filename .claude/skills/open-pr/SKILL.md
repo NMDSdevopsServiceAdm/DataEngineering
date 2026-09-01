@@ -7,10 +7,10 @@ description: Use when a ticket's work is ready for review — "/open-pr", "open 
 
 1. Confirm the branch is pushed and up to date with remote — run `commit-push` first if not.
 2. Clean up code comments in the diff against `main`: for each comment on a touched line, trim,
-   rewrite, or remove it if it doesn't meet CLAUDE.md's bar — not brief, restates *what* instead
-   of the non-obvious *why*, or references something that'll go stale (a ticket number, a PR
-   number, a caller). Leave comments outside the diff alone. If this changes any files, commit and
-   push the fix (`commit-push` skill) before continuing.
+   rewrite, or remove it if it isn't brief, restates *what* instead of the non-obvious *why*, or
+   references something that'll go stale (a ticket number, a PR number, a caller). Leave comments
+   outside the diff alone. If this changes any files, commit and push the fix (`commit-push`
+   skill) before continuing.
 3. Run a sub-agent review of the diff against `main`, following the `review-checklist` skill. This is what satisfies the "Code reviewed by AI" checklist item on the PR template — don't tick it without actually running this.
    - Any **Critical** finding: stop and resolve or discuss with the user before continuing.
    - Important/Optional findings: show them, then continue regardless.
