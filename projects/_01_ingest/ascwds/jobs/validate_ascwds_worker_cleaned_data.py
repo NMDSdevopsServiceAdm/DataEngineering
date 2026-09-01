@@ -15,6 +15,7 @@ from utils.validation.validation_utils import (
 )
 
 
+# converted to polars -> projects\_01_ingest\ascwds\fargate\validate_clean_ascwds_worker_data.py
 def main(cleaned_ascwds_worker_source: str, report_destination: str):
     cleaned_ascwds_worker_df = utils.read_from_parquet(cleaned_ascwds_worker_source)
 

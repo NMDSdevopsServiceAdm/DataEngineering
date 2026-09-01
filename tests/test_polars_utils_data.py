@@ -25,6 +25,9 @@ from utils.column_values.categorical_column_values import (
     JobRoleFilteringRule,
 )
 from utils.column_values.categorical_columns_by_dataset import (
+    ASCWDSWorkerCleanedCategoricalValues as ASCWDSWorkerCleanedCatVals,
+)
+from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
 )
 
@@ -597,6 +600,20 @@ class ColumnTypesData:
             actual=CatColType.JobGroupCatType,
             expected=pl.Categorical(
                 pl.Categories("job_group", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="main_job_role_id_enum_type",
+            actual=CatColType.MainJobRoleIdEnumType,
+            expected=pl.Enum(
+                ASCWDSWorkerCleanedCatVals.main_job_role_id_column_values.categorical_values
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="main_job_role_label_enum_type",
+            actual=CatColType.MainJobRoleLabelEnumType,
+            expected=pl.Enum(
+                ASCWDSWorkerCleanedCatVals.main_job_role_labels_column_values.categorical_values
             ),
         ),
         CategoricalColumnTypeCase(

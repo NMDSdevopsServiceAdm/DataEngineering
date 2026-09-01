@@ -34,6 +34,8 @@ All notable changes to this project will be documented in this file.
 
 - Decomposed the `_08_publication` merge and clean jobs' placeholder `main()` functions into named placeholder sub-functions (join, capacity-tracker filter, and TODO's for aggregation and percentage change columns), scaffolding the shape of the future real logic ahead of implementation.
 
+- Added Polars/pointblank clean and cleaned-data validation jobs for ASCWDS worker data (`clean_ascwds_worker_data.py`, `validate_clean_ascwds_worker_data.py`) on the shared `_01_ingest` Fargate task, mirroring the existing workplace pair. Job-role labels are now sourced from the shared `data_labels_lookup.csv` lookup instead of a static Python dict. The old PySpark jobs are tagged as converted but left running until Step Function cutover in a follow-up ticket.
+
 ### Changed
 - Migrated the ONS Postcode Directory ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Drops runtime delimiter-sniffing and multi-file directory ingestion in favour of a fixed comma delimiter and single-file-per-run, matching the source format and the existing per-object EventBridge trigger.
 - Migrated the ONS Postcode Directory clean and cleaned-data validation jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring.

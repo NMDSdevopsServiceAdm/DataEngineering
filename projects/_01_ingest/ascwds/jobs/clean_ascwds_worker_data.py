@@ -33,6 +33,7 @@ WORKPLACE_COLUMNS = [
 ]
 
 
+# converted to polars -> projects\_01_ingest\ascwds\fargate\clean_ascwds_worker_data.py
 def main(
     worker_source: str, cleaned_workplace_source: str, cleaned_worker_destination: str
 ):

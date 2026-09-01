@@ -6,6 +6,9 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
 )
 from utils.column_values.categorical_columns_by_dataset import (
+    ASCWDSWorkerCleanedCategoricalValues as ASCWDSWorkerCleanedCatVals,
+)
+from utils.column_values.categorical_columns_by_dataset import (
     CleanedIndCQCCategoricalValues as CleanedIndCQCCatVals,
 )
 from utils.column_values.categorical_columns_by_dataset import (
@@ -76,6 +79,12 @@ class CategoricalColumnTypes:
     )
     LocationCatType = pl.Categorical(
         pl.Categories("location", namespace="filled_posts")
+    )
+    MainJobRoleIdEnumType = pl.Enum(
+        ASCWDSWorkerCleanedCatVals.main_job_role_id_column_values.categorical_values
+    )
+    MainJobRoleLabelEnumType = pl.Enum(
+        ASCWDSWorkerCleanedCatVals.main_job_role_labels_column_values.categorical_values
     )
     MainServiceIdCatType = pl.Categorical(
         pl.Categories("main_service_id", namespace="filled_posts")
