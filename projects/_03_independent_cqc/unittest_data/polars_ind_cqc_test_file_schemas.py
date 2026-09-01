@@ -227,7 +227,7 @@ class ModelUtilsSchemas:
     expected_predictions_dataframe_schema = pl.Schema(
         list(features_schema.items())
         + [
-            (IndCQC.prediction, pl.Float64()),
+            (IndCQC.prediction, pl.Float32()),
             (IndCQC.prediction_run_id, pl.String()),
         ]
     )
@@ -516,13 +516,16 @@ class ValidateCleanIndCQCSchemas:
             (IndCQC.total_staff_bounded, pl.Int64()),
             (IndCQC.worker_records_bounded, pl.Int64()),
             (IndCQC.related_location, pl.String()),
-            (IndCQC.ascwds_filtering_rule, pl.String()),
+            (IndCQC.ascwds_filtering_rule, CatColType.AscwdsFilteringRuleEnumType),
             (IndCQC.specialism_dementia, pl.String()),
             (IndCQC.specialism_learning_disabilities, pl.String()),
             (IndCQC.specialism_mental_health, pl.String()),
             (IndCQC.time_registered, pl.Int32()),
             (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
-            (IndCQC.ascwds_filled_posts_source, pl.String()),
+            (
+                IndCQC.ascwds_filled_posts_source,
+                CatColType.AscwdsFilledPostsSourceEnumType,
+            ),
         ]
     )
 
@@ -627,24 +630,30 @@ class ValidateEstimatedIndCQCFilledPostsSchemas:
             (IndCQC.primary_service_type, pl.String()),
             (IndCQC.primary_service_type_second_level, pl.String()),
             (IndCQC.current_ons_import_date, pl.Date()),
-            (IndCQC.current_cssr, pl.String()),
-            (IndCQC.current_region, pl.String()),
+            (IndCQC.current_cssr, CatColType.OnsCssrCatType),
+            (IndCQC.current_region, CatColType.OnsRegionCatType),
             (IndCQC.pir_people_directly_employed_cleaned, pl.Int64()),
             (IndCQC.total_staff_bounded, pl.Int64()),
             (IndCQC.worker_records_bounded, pl.Int64()),
-            (IndCQC.ascwds_filled_posts_source, pl.String()),
+            (
+                IndCQC.ascwds_filled_posts_source,
+                CatColType.AscwdsFilledPostsSourceEnumType,
+            ),
             (IndCQC.ascwds_filled_posts, pl.Float64()),
-            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float32()),
             (IndCQC.pir_people_directly_employed_dedup, pl.Int64()),
-            (IndCQC.ascwds_pir_merged, pl.Float64()),
-            (IndCQC.estimate_filled_posts, pl.Float64()),
-            (IndCQC.estimate_filled_posts_source, pl.String()),
-            (IndCQC.posts_rolling_average_model, pl.Float64()),
-            (IndCQC.care_home_model, pl.Float64()),
-            (IndCQC.imputed_posts_non_res_combined_model, pl.Float64()),
-            (IndCQC.non_res_with_dormancy_model, pl.Float64()),
-            (IndCQC.non_res_without_dormancy_model, pl.Float64()),
-            (IndCQC.imputed_pir_filled_posts_model, pl.Float64()),
+            (IndCQC.ascwds_pir_merged, pl.Float32()),
+            (IndCQC.estimate_filled_posts, pl.Float32()),
+            (
+                IndCQC.estimate_filled_posts_source,
+                CatColType.EstimatesFilledPostSourceEnumType,
+            ),
+            (IndCQC.posts_rolling_average_model, pl.Float32()),
+            (IndCQC.care_home_model, pl.Float32()),
+            (IndCQC.imputed_posts_non_res_combined_model, pl.Float32()),
+            (IndCQC.non_res_with_dormancy_model, pl.Float32()),
+            (IndCQC.non_res_without_dormancy_model, pl.Float32()),
+            (IndCQC.imputed_pir_filled_posts_model, pl.Float32()),
             (IndCQC.services_offered, pl.List(pl.String())),
         ]
     )
@@ -1298,7 +1307,7 @@ class EstimateFilledPostsModelsUtils:
     expected_enrich_model_ind_cqc_care_home_schema = pl.Schema(
         {
             **enrich_model_ind_cqc_schema,
-            test_care_home_model_name: pl.Float64,
+            test_care_home_model_name: pl.Float32,
             f"{test_care_home_model_name}_run_id": pl.String,
         }
     )
@@ -1345,9 +1354,9 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             IndCQC.care_home: pl.String,
             IndCQC.related_location: pl.String,
             IndCQC.time_registered: pl.Int64,
-            IndCQC.non_res_without_dormancy_model: pl.Float64,
-            IndCQC.non_res_with_dormancy_model: pl.Float64,
-            IndCQC.non_res_combined_model: pl.Float64,
+            IndCQC.non_res_without_dormancy_model: pl.Float32,
+            IndCQC.non_res_with_dormancy_model: pl.Float32,
+            IndCQC.non_res_combined_model: pl.Float32,
         }
     )
 
@@ -1363,12 +1372,12 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         {
             IndCQC.related_location: pl.String,
             NRModel_TempCol.time_registered_banded_and_capped: pl.Int64,
-            IndCQC.non_res_without_dormancy_model: pl.Float64,
-            IndCQC.non_res_with_dormancy_model: pl.Float64,
-            NRModel_TempCol.avg_with_dormancy: pl.Float64,
-            NRModel_TempCol.avg_without_dormancy: pl.Float64,
-            NRModel_TempCol.adjustment_ratio: pl.Float64,
-            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
+            IndCQC.non_res_without_dormancy_model: pl.Float32,
+            IndCQC.non_res_with_dormancy_model: pl.Float32,
+            NRModel_TempCol.avg_with_dormancy: pl.Float32,
+            NRModel_TempCol.avg_without_dormancy: pl.Float32,
+            NRModel_TempCol.adjustment_ratio: pl.Float32,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float32,
         }
     )
 
@@ -1376,10 +1385,10 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         {
             IndCQC.location_id: pl.String,
             IndCQC.cqc_location_import_date: pl.Date,
-            IndCQC.non_res_with_dormancy_model: pl.Float64,
-            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
-            NRModel_TempCol.residual_at_overlap: pl.Float64,
-            NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float64,
+            IndCQC.non_res_with_dormancy_model: pl.Float32,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float32,
+            NRModel_TempCol.residual_at_overlap: pl.Float32,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float32,
         }
     )
 
@@ -1471,7 +1480,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.ascwds_job_role_ratios: pl.Float32,
             IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,
             IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
-            IndCQC.ascwds_job_role_ratios_merged_source: pl.String,
+            IndCQC.ascwds_job_role_ratios_merged_source: CatColType.AscwdsJobRoleRatiosMergedSourceEnumType,
             IndCQC.ascwds_job_role_ratios_merged: pl.Float32,
             IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
         }
@@ -1491,7 +1500,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
                 CatVals.main_job_role_labels_column_values.categorical_values
             ),
             IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
-            IndCQC.registered_manager_count: pl.Float32,
+            IndCQC.registered_manager_count: pl.UInt32,
         }
     )
     expected_adjust_managerial_roles_schema = pl.Schema(
@@ -1512,7 +1521,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
                 CatVals.main_job_role_labels_column_values.categorical_values
             ),
             IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
-            IndCQC.registered_manager_count: pl.Float32,
+            IndCQC.registered_manager_count: pl.UInt32,
             IndCQC.difference_between_estimate_and_cqc_registered_managers: pl.Float32,
         }
     )

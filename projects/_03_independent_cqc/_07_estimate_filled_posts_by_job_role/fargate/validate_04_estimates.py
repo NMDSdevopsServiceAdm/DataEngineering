@@ -80,12 +80,14 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.estimate_filled_posts_size_group: "String",
         IndCqcColumns.ascwds_job_role_rolling_ratio: "Float32",
         IndCqcColumns.ascwds_job_role_ratios_merged: "Float32",
-        IndCqcColumns.ascwds_job_role_ratios_merged_source: "String",
+        IndCqcColumns.ascwds_job_role_ratios_merged_source: str(
+            CategoricalColumnTypes.AscwdsJobRoleRatiosMergedSourceEnumType
+        ),
         IndCqcColumns.estimate_filled_posts_by_job_role: "Float32",
-        IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: "Float64",
-        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: "Float64",
-        IndCqcColumns.estimate_filled_posts_from_all_job_roles: "Float64",
-        IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: "Float64",
+        IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: "Float32",
+        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: "Float32",
+        IndCqcColumns.estimate_filled_posts_from_all_job_roles: "Float32",
+        IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: "Float32",
         IndCqcColumns.main_job_group_labelled: str(
             CategoricalColumnTypes.JobGroupCatType
         ),
@@ -304,14 +306,15 @@ def other_validation(
             left=0,
             right=1,
             na_pass=True,
-            brief="Ratios should be between 0 and 1 where present. Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between 0 and 1 where present",
+            brief="Ratios should be between 0 and 1 where present",
         )
-        .col_vals_between(
-            columns=IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
-            left=-0.002,
-            right=1,
-            na_pass=True,
-            brief="Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between -0.002 and 1 where present",
+        .col_vals_expr(
+            difference_within_drift_tolerance_expr(),
+            brief=(
+                "Difference between estimate_filled_posts and "
+                "estimate_filled_posts_from_all_job_roles, rounded to 2dp, should be "
+                "between 0 and 1 where present"
+            ),
         )
         # Date plausibility
         .col_vals_ge(
@@ -427,6 +430,26 @@ def other_validation(
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, f"{reports_path}other_validation/")
+
+
+def difference_within_drift_tolerance_expr() -> pl.Expr:
+    """
+    Constructs an expression checking that
+        difference_estimate_filled_posts_and_from_all_job_roles, rounded to 2dp,
+        falls between 0 and 1 inclusive.
+
+    Rounding to 2dp absorbs float32 accumulation drift on both sides: a small
+        negative drift below zero, and a small overshoot above the flat 1
+        allowance for the registered manager adjustment.
+
+    Returns:
+        pl.Expr: the expression for validating the difference is within tolerance
+    """
+    difference_col = pl.col(
+        IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles
+    )
+
+    return difference_col.is_null() | difference_col.round(2).is_between(0, 1)
 
 
 def ascwds_job_role_ratios_merged_matches_coalesce_source() -> pl.Expr:

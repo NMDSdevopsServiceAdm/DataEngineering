@@ -125,6 +125,12 @@ jobs:
             mkdir -p /tmp/bake
             python scripts/select_archive_sample_seed.py > /tmp/bake/seed-archive-sample
             echo "Seed archive sample: $(cat /tmp/bake/seed-archive-sample)"
+      - run:
+          name: Decide whether to run CQC integration tests
+          command: |
+            mkdir -p /tmp/bake
+            python scripts/select_cqc_integration_test_seed.py > /tmp/bake/run-cqc-integration-tests
+            echo "Run CQC integration tests: $(cat /tmp/bake/run-cqc-integration-tests)"
       - persist_to_workspace:
           # Namespaced, because later jobs attach this same workspace at the
           # repo root and a bare "targets" file there reads as repo content.
@@ -136,6 +142,7 @@ jobs:
             - bake/seed-cqc_pir
             - bake/seed-ons_pd
             - bake/seed-archive-sample
+            - bake/run-cqc-integration-tests
 
   task-containerisation:
     parameters:
@@ -265,15 +272,40 @@ jobs:
             name: Output Coverage Report
             command: uv run coverage report
 
-  # Hits the live CQC API directly (no mocking), so it can fail purely from a
-  # CQC-side outage. Split out from `test` and not `requires:`-gated by
-  # anything, so an unhandled failure here can't block terraform-plan/apply.
+  # Hits the live CQC API directly (no mocking), split out from `test` so a
+  # failure here can't block deploy. `requires: decide-bake-and-seed` on dev
+  # branches only gates when it starts, not whether anything waits on it.
   test-cqc-integration:
+    parameters:
+      skip_if_unrelated:
+        type: boolean
+        default: false
+        description: >
+          Dev only. Use decide-bake-and-seed's decision, skipping this job when
+          nothing CQC-ingestion-related changed. Main always runs it, because a
+          merge-base diff against main is empty by definition there.
     docker:
       - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
     resource_class: small
     steps:
       - checkout
+      - when:
+          condition: << parameters.skip_if_unrelated >>
+          steps:
+            - attach_workspace:
+                at: /tmp
+            - run:
+                name: Skip if no CQC ingestion changes
+                command: |
+                  # Missing-file case can't fire today (decide-bake-and-seed is a hard
+                  # requirement here) -- kept as a defensive fallback that runs the
+                  # tests rather than silently skipping them.
+                  if [ ! -f /tmp/bake/run-cqc-integration-tests ]; then
+                    echo "No decision file found. Running the integration tests."
+                  elif [ "$(cat /tmp/bake/run-cqc-integration-tests)" != "true" ]; then
+                    echo "No CQC ingestion changes detected. Skipping."
+                    circleci-agent step halt
+                  fi
       - restore_cache:
           keys:
             - v1-test-deps-{{ checksum "uv.lock" }}
@@ -479,16 +511,19 @@ jobs:
       - run:
           name: Seed non-prod raw bucket from sample bucket, per domain
           command: |
-            # Wiped before resync since aws s3 sync no-ops on unchanged
-            # content, which would skip re-firing that domain's S3 event.
-            # `|| failures=1` keeps one domain's failure from skipping the
-            # rest, while still failing the step overall.
+            # Wiped before resync since sync no-ops (and skips re-firing the
+            # S3 event) on unchanged content. `|| failures=1` per domain so
+            # one failure doesn't skip the rest.
             failures=0
 
             if [ "$(cat bake/seed-ascwds 2>/dev/null)" = "false" ]; then
               echo "No ASCWDS ingest-related changes detected. Skipping seed."
             else
-              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" --recursive && \
+              # ASCWDS's error-if-exists write mode collides with a rerun's
+              # own previous output at this fixed sentinel path.
+              aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/version=0.0.0/" --recursive && \
+                aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/version=0.0.0/" --recursive && \
+                aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" --recursive && \
                 aws s3 sync "s3://sfc-main-sample-raw-data/domain=ASCWDS/" "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" || failures=1
             fi
 
@@ -707,6 +742,9 @@ workflows:
             branches:
               ignore: main
       - test-cqc-integration:
+          skip_if_unrelated: true
+          requires:
+            - decide-bake-and-seed
           filters:
             branches:
               ignore: main

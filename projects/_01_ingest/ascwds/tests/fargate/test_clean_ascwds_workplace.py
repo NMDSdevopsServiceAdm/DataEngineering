@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
@@ -11,7 +10,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 PATCH_PATH = "projects._01_ingest.ascwds.fargate.clean_ascwds_workplace"
 
 
-class MainTests(unittest.TestCase):
+class TestMain:
     WORKPLACE_SOURCE = "some/source"
     DATA_LABELS_SOURCE = "some/labels/source"
     CLEANED_WORKPLACE_DESTINATION = "some/destination"
@@ -27,14 +26,16 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.pl.scan_csv")
     @patch(f"{PATCH_PATH}.cUtils.column_to_date")
     @patch(f"{PATCH_PATH}.cUtils.cast_date_strings_to_dates")
-    @patch(f"{PATCH_PATH}.wUtils.valid_workplace_filter")
+    @patch(f"{PATCH_PATH}.wUtils.null_duplicate_establishment_numeric_data")
+    @patch(f"{PATCH_PATH}.wUtils.exclude_test_accounts_filter")
     @patch(f"{PATCH_PATH}.wUtils.apply_data_corrections")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         apply_data_corrections_mock: Mock,
-        valid_filter_mock: Mock,
+        exclude_test_accounts_filter_mock: Mock,
+        null_duplicate_establishment_numeric_data_mock: Mock,
         cast_date_strings_to_dates_mock: Mock,
         column_to_date_mock: Mock,
         scan_csv_mock: Mock,
@@ -70,7 +71,8 @@ class MainTests(unittest.TestCase):
         )
 
         apply_data_corrections_mock.assert_called_once()
-        valid_filter_mock.assert_called_once()
+        exclude_test_accounts_filter_mock.assert_called_once()
+        assert null_duplicate_establishment_numeric_data_mock.call_count == 2
         cast_date_strings_to_dates_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
         scan_csv_mock.assert_called_once_with(

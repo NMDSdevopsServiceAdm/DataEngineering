@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Migrated the Capacity Tracker ingest stage (ingest, clean, and validate jobs) from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their Step Function wiring entirely. Outputs were compared against the previous PySpark version's in Athena and matched exactly before cutover.
 - Added a per-branch raw data landing bucket (mirroring prod's `sfc-data-engineering-raw`), seeded at deploy time from a new curated sample bucket in main (`sfc-main-sample-raw-data`), so raw ingest steps and their EventBridge triggers can be tested end-to-end on a branch. The seed step now only runs (and only triggers the ingest Step Functions) when a push actually touches ingest-related paths, so unrelated branches skip it on their first deploy.
 
 - Added a Terraform-managed sample raw-data bucket (`sfc-main-sample-raw-data`) in `main`, with cross-account read access, as a curated source for non-prod branches to seed their own raw buckets from.
@@ -20,16 +21,26 @@ All notable changes to this project will be documented in this file.
 
 - Added a git union merge driver for `CHANGELOG.md` so concurrent branches appending changelog entries no longer conflict on merge.
 
+- Added a new `_08_publication` project, with placeholder merge/clean Polars scripts and their tests, its own Docker image and ECR repo, a dedicated Glue crawler, and a standalone Step Function (with error handling and crawler running) to run them, ready for the real publication logic to land into.
 - Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the standalone job role step function (`Ind-CQC-Filled-Post-Estimates-By-Role`) after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet), deliberately kept out of the main pipeline until partitioning is in place, ahead of a future rework of the job-role dataset shape.
+
+- Added a `sprint-review` Claude Code skill that drafts a "what did we ship" executive summary for sprint review, one headline per roadmap item, gathered from merged PRs and matching CHANGELOG entries (full detail available on request).
+- Added projects/ARCHIVING_AND_PUBLICATION.md. A work-in-progress template documenting the archiving and publication process for job role estimates. Document will be amended as that process is built out.
 
 - Added syncing of dummy sample job-role archive data (`domain=sample_archive_data` in the main datasets bucket) into a branch's own dataset bucket via `copy-main-data`, gated so it only runs for branches that touch the archive stage.
 
+- Gated `test-cqc-integration` on dev branches so it only runs when a push touches CQC-ingestion-related code, instead of hitting the live CQC API on every branch push. `main` always runs it, matching the existing bake-target/raw-bucket-seed gating pattern (`decide-bake-and-seed`).
+- Updated select_archive_sample_seed.py to trigger sample archive sync on changes inside _08_publication. Added a crawler for the sample_archive_data domain.
+
 ### Changed
+- Migrated the ONS Postcode Directory ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Drops runtime delimiter-sniffing and multi-file directory ingestion in favour of a fixed comma delimiter and single-file-per-run, matching the source format and the existing per-object EventBridge trigger.
+- Migrated the ONS Postcode Directory clean and cleaned-data validation jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring.
 - Removed the unused generic CSV/SPSS-to-parquet ingest Glue jobs, their Terraform module definitions, and the now-unused SPSS job estimates schema and its test.
 - Removed the archived PySpark CQC bulk-download scripts (`archived_bulk_download_cqc_locations.py`, `archived_bulk_download_cqc_providers.py`), superseded by the active Polars/Fargate CQC ingest jobs, along with the orphaned `PROVIDER_SCHEMA` (`schemas/cqc_provider_schema.py`) that only the providers script used.
 - Split the non-prod raw bucket's seed-gating decision from one bucket-wide flag into one per ingest domain (ASCWDS, Capacity Tracker, CQC PIR, ONS PD), so a push touching only one domain's ingest code reseeds and re-triggers only that domain's Step Function instead of all five.
 - Consolidated the `ascwds` Fargate task onto the generic `_01_ingest` image/task (introduced for CQC PIR), removing the `ascwds`-specific ECR repo, Dockerfile, and `docker-bake` target.
 - Migrated the CQC PIR ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on a new shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Reads the raw CSV with `utf8-lossy` encoding, since supplier PIR files are frequently not valid UTF-8.
+- Migrated the ASCWDS raw ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring.
 - Replaced `docker login` with the AWS ECR credential helper (checksum-verified before use) in the `task-containerisation` CircleCI job, so the ECR auth token is no longer written to the job container's disk unencrypted.
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
 - Re-enabled the rolling-average imputation calls in the Polars impute job (disabled since an earlier OOM investigation traced the real cause elsewhere), and added the corresponding `posts_rolling_average_model` range validation to match the PySpark job.
@@ -42,9 +53,14 @@ All notable changes to this project will be documented in this file.
 - sfc_internal data now includes workplaces exceeding their *active* purge date. The merge coverage job adds a boolean column removed_by_purge_date_filter. The in_ascwds column now takes that filter into account. The reconciliation job also creates removed_by_purge_date_filter then filters upon it to remove purged workplaces.
 
 - Reduced the job role archive job to only the columns actually needed, and split its single output into three column-scoped archives (estimates, metadata, geography), each independently validated in parallel. Dropped the unused overall filled-posts estimates source it was scanning for no purpose, and renamed the estimates output dataset from `ind_cqc_09_archived_monthly_filled_posts_by_job_role` to `ind_cqc_09_archived_monthly_job_role_estimates`.
+- Known duplicate ASC-WDS establishment submissions now have their numeric data (staff counts, starters, leavers, vacancies, job role figures) nulled instead of the whole row being removed, so the workplace and its non-numeric metadata are retained. Also removed an orphaned, never-called duplicate implementation of this exclusion logic and its backing config entry.
 
 ### Improved
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
+
+- Narrowed dtypes (Categorical/Enum/Float32) for columns feeding the independent CQC estimate archive jobs, casting each at its true point of creation to reduce long-term storage cost, and simplified the job-role reconciliation check to a 2dp-rounded range check.
+
+- Added a `col_schema_match` check to the independent CQC clean and estimate validation jobs, catching future dtype regressions on the narrowed columns at the earliest validation step.
 
 - Removed a dead `lf.sort()` call (its result was never reassigned) in model_interpolation. Converted the module's remaining sorts to `over(..., order_by=...)`, measured as using much less peak memory than sorting.
 
@@ -58,6 +74,7 @@ All notable changes to this project will be documented in this file.
 
 - Removed pycache files accidentally committed to the repo, and added `__pycache__/` to `.gitignore` to stop it happening again.
 
+- Narrowed the non-prod raw bucket seed gate to the specific files that actually read, write, or validate raw data, instead of whole ingest project directories, so unrelated changes elsewhere in an ingest domain (tests, downstream clean jobs) no longer trigger an unnecessary reseed. Also fixed a redeploy failure where the ASCWDS ingest job's fixed sample-data output partition collided with its own previous run's output, by clearing that partition before each reseed.
 - Fixed the job role estimates pipeline crashing in prod with a `FileNotFoundError`: the merge, validation, and archive steps hardcoded a non-prod-only comparison dataset name for the estimated filled posts source, which CI only ever populates on branches other than `main`. The dataset name is now workspace-aware, matching the pattern already used for the sibling job-role datasets.
 
 - Fixed the job role archive job trying to select 10 columns from the job-role merge metadata dataset that it never actually produced. The job role merge step now selects those columns (which it already had available from its own source scan) into its metadata output, and its validation now checks for them too.

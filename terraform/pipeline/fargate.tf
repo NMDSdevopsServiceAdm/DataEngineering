@@ -96,3 +96,14 @@ module "_07_workforce_characteristics" {
   ]
   tag_name = terraform.workspace
 }
+
+module "_08_publication" {
+  source        = "../modules/fargate-task"
+  task_name     = "_08_publication"
+  ecr_repo_name = "fargate/08_publication"
+  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" }
+  ]
+  tag_name = terraform.workspace
+}

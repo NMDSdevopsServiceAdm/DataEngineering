@@ -52,6 +52,32 @@ class TestCombineASCWDSAndPIR:
         assert job.ThresholdValues.max_absolute_difference == 100
         assert job.ThresholdValues.max_percentage_difference == 0.5
 
+    @patch(f"{PATCH_PATH}.include_pir_if_never_submitted_ascwds")
+    @patch(f"{PATCH_PATH}.create_ascwds_pir_merged_column")
+    @patch(f"{PATCH_PATH}.create_last_submission_columns")
+    @patch(f"{PATCH_PATH}.create_repeated_ascwds_clean_column")
+    def test_casts_ascwds_pir_merged_to_float32(
+        self,
+        create_repeated_ascwds_clean_column_mock: Mock,
+        create_last_submission_columns_mock: Mock,
+        create_ascwds_pir_merged_column_mock: Mock,
+        include_pir_if_never_submitted_ascwds_mock: Mock,
+    ):
+        include_pir_if_never_submitted_ascwds_mock.return_value = pl.LazyFrame(
+            {
+                IndCQC.ascwds_pir_merged: pl.Series([1.0], dtype=pl.Float64),
+                IndCQC.last_ascwds_submission: pl.Series([None], dtype=pl.Date),
+                IndCQC.last_pir_submission: pl.Series([None], dtype=pl.Date),
+                IndCQC.ascwds_filled_posts_dedup_clean_repeated: pl.Series(
+                    [1.0], dtype=pl.Float64
+                ),
+            }
+        )
+
+        returned_lf = job.merge_ascwds_and_pir_filled_post_submissions(self.test_lf)
+
+        assert returned_lf.collect_schema()[IndCQC.ascwds_pir_merged] == pl.Float32
+
 
 class TestCreateRepeatedAscwdsCleanColumn:
     @pytest.mark.parametrize(
