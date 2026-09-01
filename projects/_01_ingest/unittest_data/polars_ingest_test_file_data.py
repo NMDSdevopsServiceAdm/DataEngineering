@@ -2003,9 +2003,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
         NullDuplicateEstablishmentNumericDataTestCase(
             id="does_not_null_known_duplicate_when_its_group_has_diverged",
             input_data={
-                AWPClean.establishment_id: [
-                    "48904"
-                ],  # known duplicate, but not flagged below
+                AWPClean.establishment_id: ["48904"],  # 48904 is a known duplicate
                 AWPClean.import_date: ["20260101"],
                 AWPClean.total_staff: [10],
             },
@@ -2022,7 +2020,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
         NullDuplicateEstablishmentNumericDataTestCase(
             id="retains_non_numeric_columns_for_nulled_rows",
             input_data={
-                AWPClean.establishment_id: ["48904"],  # known duplicate
+                AWPClean.establishment_id: ["48904"],  # 48904 is a known duplicate
                 AWPClean.import_date: ["20260101"],
                 AWPClean.establishment_name: ["Some Care Home"],
                 AWPClean.total_staff: [10],
@@ -2136,7 +2134,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
         FindStillMatchingDuplicateEstablishmentsTestCase(
-            id="does_not_return_the_single_present_group_member_when_others_have_not_submitted_that_import_date",
+            id="does_not_return_the_single_present_group_member_when_others_are_not_in_the_import",
             input_data={
                 AWPClean.establishment_id: ["48904"],  # only member of group A present
                 AWPClean.import_date: ["20260101"],
