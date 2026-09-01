@@ -131,11 +131,10 @@ def null_duplicate_establishment_numeric_data(
     """
     Null numeric submission data for rows matching still_matching_lf.
 
-    Rows aren't dropped - staff/starter/leaver/vacancy totals and job role
-    figures are nulled so they don't inflate downstream aggregates, while the
-    row and its non-numeric metadata are retained. Tolerates a frame without
-    job role columns yet (require_all=False), since this runs both before and
-    after they're joined on in clean_ascwds_workplace.py.
+    Columns in NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES and columns selected
+    by is_slv_job_role_column() are nulled for rows matched to still_matching_lf.
+    Tolerates a frame without job role columns yet (require_all=False),
+    since this runs both before and after they're joined on in clean_ascwds_workplace.py.
 
     Args:
         lf (pl.LazyFrame): Workplace LazyFrame containing establishment_id
