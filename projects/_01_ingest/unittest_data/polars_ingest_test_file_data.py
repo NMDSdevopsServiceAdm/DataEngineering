@@ -2086,7 +2086,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
         AWPClean.import_date: ["20260101", "20260101"],
     }
 
-    find_still_matching_duplicate_establishments_test_cases = [
+    recheck_duplicate_establishments_test_cases = [
         FindStillMatchingDuplicateEstablishmentsTestCase(
             id="returns_group_members_when_content_is_identical_for_the_import_date",
             input_data={

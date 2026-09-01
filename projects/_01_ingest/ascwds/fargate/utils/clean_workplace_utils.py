@@ -30,7 +30,7 @@ TEST_ACCOUNTS: set[str] = {
 
 # Groups of establishment IDs known to have submitted identical ASC-WDS data
 # under different accounts. Whether a group is still identical is re-checked
-# at runtime (find_still_matching_duplicate_establishments), not assumed.
+# at runtime (recheck_duplicate_establishments), not assumed.
 DUPLICATE_ESTABLISHMENT_GROUPS: list[frozenset[str]] = [
     frozenset({"48904", "49966", "49967", "49968"}),
     frozenset(
@@ -77,20 +77,19 @@ NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES: list[str] = [
 ]
 
 
-def find_still_matching_duplicate_establishments(lf: pl.LazyFrame) -> pl.LazyFrame:
+def recheck_duplicate_establishments(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Find establishment_id/import_date pairs still identical to at least one
-    other present member of their DUPLICATE_ESTABLISHMENT_GROUPS group.
+    Recheck the known duplicate establishment groups and null their numeric
+    data if still matching each other.
 
-    Groups were identical when first flagged, but can diverge later (e.g.
-    support wipes a workplace's data, then it resubmits different figures),
-    so this re-checks per group and import_date on
-    NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES (job role/SLV columns aren't
-    available on this raw frame). An all-null/0 match still counts as
-    identical. Establishments are clustered by shared content within their
-    group and import_date, so part of a group can keep matching while the
-    rest diverges - an establishment with no one left sharing its content
-    (including being the only member present that date) is excluded.
+    DUPLICATE_ESTABLISHMENT_GROUPS are groups proven to have unreliable
+    numeric data at certain import dates. Since identifying them by
+    observing NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES, we
+    have wiped their data, but they may have re-submitted since then.
+
+    Establishments within a group that still have the same values for all
+    NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES per import data are returned.
+    An all-null/0 match still counts as identical.
 
     polars_streaming:
     Each group filters down to a handful of rows before comparison, so
@@ -103,20 +102,22 @@ def find_still_matching_duplicate_establishments(lf: pl.LazyFrame) -> pl.LazyFra
             NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES.
 
     Returns:
-        pl.LazyFrame: establishment_id/import_date pairs still identical and
-            due to be nulled. Unique on (establishment_id, import_date).
+        pl.LazyFrame: establishment_id and import_date of establishments
+            with duplicate numeric data.
     """
+    numeric_data = "numeric_data"
+    duplicate_count = "duplicate_count"
     still_matching_lfs = []
     for group in DUPLICATE_ESTABLISHMENT_GROUPS:
         group_lf = lf.filter(pl.col(AWPClean.establishment_id).is_in(group)).select(
             AWPClean.establishment_id,
             AWPClean.import_date,
-            pl.struct(NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES).alias("content"),
+            pl.struct(NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES).alias(numeric_data),
         )
         still_matching_lfs.append(
-            group_lf.group_by(AWPClean.import_date, "content")
-            .agg(AWPClean.establishment_id, pl.len().alias("member_count"))
-            .filter(pl.col("member_count") > 1)
+            group_lf.group_by(AWPClean.import_date, numeric_data)
+            .agg(AWPClean.establishment_id, pl.len().alias(duplicate_count))
+            .filter(pl.col(duplicate_count) > 1)
             .select(AWPClean.establishment_id, AWPClean.import_date)
             .explode(AWPClean.establishment_id)
         )
@@ -140,7 +141,7 @@ def null_duplicate_establishment_numeric_data(
         lf (pl.LazyFrame): Workplace LazyFrame containing establishment_id
             and import_date.
         still_matching_lf (pl.LazyFrame): Output of
-            find_still_matching_duplicate_establishments.
+            recheck_duplicate_establishments.
 
     Returns:
         pl.LazyFrame: lf with target numeric columns nulled for matching rows.

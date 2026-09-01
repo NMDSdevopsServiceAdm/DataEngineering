@@ -31,7 +31,7 @@ class TestFindStillMatchingDuplicateEstablishments:
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.find_still_matching_duplicate_establishments_test_cases
+            for case in Data.recheck_duplicate_establishments_test_cases
         ],
     )
     def test_function_returns_expected_values(self, case):
@@ -44,7 +44,7 @@ class TestFindStillMatchingDuplicateEstablishments:
             },
         )
 
-        returned_lf = job.find_still_matching_duplicate_establishments(input_lf)
+        returned_lf = job.recheck_duplicate_establishments(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
