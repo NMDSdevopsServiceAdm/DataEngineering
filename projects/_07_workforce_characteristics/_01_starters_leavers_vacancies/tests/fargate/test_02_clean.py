@@ -1,4 +1,4 @@
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._02_clean as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
