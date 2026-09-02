@@ -71,11 +71,10 @@ def impute_not_known_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     value.
 
     Performance note: the two `.over()` calls below are not yet covered by
-    Polars' streaming engine (plain `.over()` falls back to the in-memory
-    engine per the `polars-streaming-check` skill) — this is inferred from
-    Polars' own streaming-coverage tracking issue, not something measured or
-    logged on this job specifically. No OOM has been observed on this clean
-    step; a real memory measurement is a separate, ongoing investigation.
+    Polars' streaming engine and fall back to the in-memory engine (confirmed
+    via a `POLARS_VERBOSE=1` run against production-scale data, not just
+    inferred from the `polars-streaming-check` skill's tracking-issue list).
+    This hasn't caused an OOM on this clean step.
 
     Args:
         lf (pl.LazyFrame): LazyFrame containing `worker_id`,
