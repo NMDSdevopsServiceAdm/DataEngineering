@@ -38,6 +38,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Migrated the ONS Postcode Directory ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Drops runtime delimiter-sniffing and multi-file directory ingestion in favour of a fixed comma delimiter and single-file-per-run, matching the source format and the existing per-object EventBridge trigger.
+- Updated polars (1.41.2 -> 1.44.1) and pointblank (0.24.0 -> 0.26.0), fixing a `.pivot()` performance regression and an 8-11x slowdown on per-row LazyFrame validation that were present at the old pins.
 - Migrated the ONS Postcode Directory clean and cleaned-data validation jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring.
 - Removed the unused generic CSV/SPSS-to-parquet ingest Glue jobs, their Terraform module definitions, and the now-unused SPSS job estimates schema and its test.
 - Removed the archived PySpark CQC bulk-download scripts (`archived_bulk_download_cqc_locations.py`, `archived_bulk_download_cqc_providers.py`), superseded by the active Polars/Fargate CQC ingest jobs, along with the orphaned `PROVIDER_SCHEMA` (`schemas/cqc_provider_schema.py`) that only the providers script used.
