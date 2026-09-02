@@ -14,67 +14,7 @@ GEOGRAPHY_DESTINATION = "some/geography/destination"
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_scans_job_role_estimates_source_with_reduced_columns(
-        self,
-        scan_parquet_mock: Mock,
-        sink_to_parquet_mock: Mock,
-    ):
-        job.main(
-            ESTIMATES_SOURCE,
-            METADATA_SOURCE,
-            ESTIMATES_DESTINATION,
-            METADATA_DESTINATION,
-            GEOGRAPHY_DESTINATION,
-        )
-
-        scan_parquet_mock.assert_any_call(
-            ESTIMATES_SOURCE,
-            selected_columns=job.JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
-        )
-
-    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_scans_metadata_source_for_metadata_columns(
-        self,
-        scan_parquet_mock: Mock,
-        sink_to_parquet_mock: Mock,
-    ):
-        job.main(
-            ESTIMATES_SOURCE,
-            METADATA_SOURCE,
-            ESTIMATES_DESTINATION,
-            METADATA_DESTINATION,
-            GEOGRAPHY_DESTINATION,
-        )
-
-        scan_parquet_mock.assert_any_call(
-            METADATA_SOURCE,
-            selected_columns=job.JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
-        )
-
-    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_scans_metadata_source_for_geography_columns(
-        self,
-        scan_parquet_mock: Mock,
-        sink_to_parquet_mock: Mock,
-    ):
-        job.main(
-            ESTIMATES_SOURCE,
-            METADATA_SOURCE,
-            ESTIMATES_DESTINATION,
-            METADATA_DESTINATION,
-            GEOGRAPHY_DESTINATION,
-        )
-
-        scan_parquet_mock.assert_any_call(
-            METADATA_SOURCE,
-            selected_columns=job.JOB_ROLE_GEOGRAPHY_ARCHIVE_COLUMNS,
-        )
-
-    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_sinks_each_lazyframe_to_its_own_destination(
+    def test_main_scans_expected_sources(
         self,
         scan_parquet_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -90,6 +30,24 @@ class TestMain:
             ESTIMATES_DESTINATION,
             METADATA_DESTINATION,
             GEOGRAPHY_DESTINATION,
+        )
+
+        assert scan_parquet_mock.call_count == 3
+        scan_parquet_mock.assert_has_calls(
+            [
+                call(
+                    ESTIMATES_SOURCE,
+                    selected_columns=job.JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
+                ),
+                call(
+                    METADATA_SOURCE,
+                    selected_columns=job.JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
+                ),
+                call(
+                    METADATA_SOURCE,
+                    selected_columns=job.JOB_ROLE_GEOGRAPHY_ARCHIVE_COLUMNS,
+                ),
+            ]
         )
 
         assert sink_to_parquet_mock.call_count == 3
