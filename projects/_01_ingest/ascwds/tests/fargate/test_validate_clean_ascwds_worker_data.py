@@ -71,7 +71,9 @@ class ValidateCleanASCWDSWorkerTests(unittest.TestCase):
             "col_vals_not_null",
             "rows_distinct",
             "col_vals_in_set",
-            "specially",
+            # "specially" temporarily dropped (ticket 1951) - the .specially() checks
+            # are commented out in the job while diagnosing an OOM; restore both when
+            # they're reinstated.
         }
 
         for assertion in expected_assertions:

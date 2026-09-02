@@ -73,26 +73,29 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         .col_vals_in_set(
             AWKClean.main_job_role_clean,
             CatValues.main_job_role_id_column_values.categorical_values,
-        )
-        .col_vals_in_set(
+        ).col_vals_in_set(
             AWKClean.main_job_role_clean_labelled,
             CatValues.main_job_role_labels_column_values.categorical_values,
         )
         # distinct values
-        .specially(
-            vl.is_unique_count_equal(
-                AWKClean.main_job_role_clean,
-                CatValues.main_job_role_id_column_values.count_of_categorical_values,
-            ),
-            brief=f"{AWKClean.main_job_role_clean} should have exactly {CatValues.main_job_role_id_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                AWKClean.main_job_role_clean_labelled,
-                CatValues.main_job_role_labels_column_values.count_of_categorical_values,
-            ),
-            brief=f"{AWKClean.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
-        )
+        # Temporarily disabled (ticket 1951) - `.specially()` forces pointblank to
+        # collect the entire table eagerly, which OOM'd the Fargate task at this
+        # dataset's scale. Diagnostic: confirming whether removing these two checks
+        # alone clears the OOM before restructuring the validation properly.
+        # .specially(
+        #     vl.is_unique_count_equal(
+        #         AWKClean.main_job_role_clean,
+        #         CatValues.main_job_role_id_column_values.count_of_categorical_values,
+        #     ),
+        #     brief=f"{AWKClean.main_job_role_clean} should have exactly {CatValues.main_job_role_id_column_values.count_of_categorical_values} distinct values",
+        # )
+        # .specially(
+        #     vl.is_unique_count_equal(
+        #         AWKClean.main_job_role_clean_labelled,
+        #         CatValues.main_job_role_labels_column_values.count_of_categorical_values,
+        #     ),
+        #     brief=f"{AWKClean.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
+        # )
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
