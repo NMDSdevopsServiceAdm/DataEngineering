@@ -79,13 +79,13 @@ NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES: list[str] = [
 
 def recheck_duplicate_establishments(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Recheck the known duplicate establishment groups and null their numeric
-    data if still matching each other.
+    Recheck the known duplicate establishment groups for duplicated
+    numeric data.
 
     DUPLICATE_ESTABLISHMENT_GROUPS are groups proven to have unreliable
-    numeric data at certain import dates. Since identifying them by
-    observing NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES, we
-    have wiped their data, but they may have re-submitted since then.
+    numeric data at certain import dates. Originally identified by observing
+    matching values in NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES and having
+    their data wiped, groups may have re-submitted independently since then.
 
     Establishments within a group that still have the same values for all
     NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES per import data are returned.
