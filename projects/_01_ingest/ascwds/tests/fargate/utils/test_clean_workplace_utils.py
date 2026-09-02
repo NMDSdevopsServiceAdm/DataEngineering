@@ -26,7 +26,7 @@ class TestExcludeTestAccountsFilter:
         pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
 
-class TestFindStillMatchingDuplicateEstablishments:
+class TestRecheckDuplicateEstablishments:
     @pytest.mark.parametrize(
         "case",
         [

@@ -2002,19 +2002,20 @@ class TestCleanAscwdsWorkplaceUtilsData:
         ),
         NullDuplicateEstablishmentNumericDataTestCase(
             id="does_not_null_known_duplicate_when_its_group_has_diverged",
+            # 48904 has diverged. Others still duplicates.
             input_data={
-                AWPClean.establishment_id: ["48904"],  # 48904 is a known duplicate
-                AWPClean.import_date: ["20260101"],
-                AWPClean.total_staff: [10],
+                AWPClean.establishment_id: ["48904", "49966", "49967"],
+                AWPClean.import_date: ["20260101"] * 3,
+                AWPClean.total_staff: [10, 11, 11],
             },
             still_matching_data={
-                AWPClean.establishment_id: [],
-                AWPClean.import_date: [],
+                AWPClean.establishment_id: ["49966", "49967"],
+                AWPClean.import_date: ["20260101"] * 2,
             },
             expected_data={
-                AWPClean.establishment_id: ["48904"],
-                AWPClean.import_date: ["20260101"],
-                AWPClean.total_staff: [10],
+                AWPClean.establishment_id: ["48904", "49966", "49967"],
+                AWPClean.import_date: ["20260101"] * 3,
+                AWPClean.total_staff: [10, None, None],
             },
         ),
         NullDuplicateEstablishmentNumericDataTestCase(
