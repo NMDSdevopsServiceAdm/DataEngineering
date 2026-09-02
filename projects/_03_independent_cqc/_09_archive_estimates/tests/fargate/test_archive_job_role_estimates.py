@@ -14,7 +14,7 @@ GEOGRAPHY_DESTINATION = "some/geography/destination"
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_scans_expected_sources(
+    def test_main_scans_and_sinks(
         self,
         scan_parquet_mock: Mock,
         sink_to_parquet_mock: Mock,
