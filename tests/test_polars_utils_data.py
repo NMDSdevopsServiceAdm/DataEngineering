@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Optional
 
@@ -420,6 +420,21 @@ class RawDataAdjustmentsData:
     ]
 
     expected_locations_data = locations_data_without_rows_to_remove
+
+    known_duplicate_worker_rows = [
+        (
+            row["workerid"],
+            datetime.strptime(row["ascwds_worker_import_date"], "%Y%m%d").date(),
+            row["establishmentid"],
+        )
+        for row in EXCLUSIONS["worker"]
+    ]
+    unique_worker_row = ("9999999", date(2024, 1, 1), "1")
+
+    worker_data_with_known_duplicates = known_duplicate_worker_rows + [
+        unique_worker_row
+    ]
+    expected_worker_data_without_duplicates = [unique_worker_row]
 
 
 @dataclass

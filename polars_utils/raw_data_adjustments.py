@@ -1,14 +1,20 @@
 import json
+from datetime import datetime
 from pathlib import Path
 
 import polars as pl
 
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     NewCqcLocationApiColumns as CQCL,
 )
 
 CONFIG = Path(__file__).parent / "exclusions.json"
 EXCLUSIONS = json.loads(CONFIG.read_text())
+
+DATE_FORMAT = "%Y%m%d"
 
 
 def is_unique_worker_data() -> pl.Expr:
@@ -17,18 +23,27 @@ def is_unique_worker_data() -> pl.Expr:
     There are no required args but the expression should be used on a DataFrame
     which include columns:
             - workerid
-            - ascwds_worker_import_date
+            - ascwds_worker_import_date (a Date column)
             - establishmentid
 
     Returns:
         pl.Expr: an expression that shows which records are marked not as exclusions
     """
-    duplicate_workers = EXCLUSIONS["worker"]
+    duplicate_workers = [
+        {
+            AWKClean.worker_id: row["workerid"],
+            AWKClean.ascwds_worker_import_date: datetime.strptime(
+                row["ascwds_worker_import_date"], DATE_FORMAT
+            ).date(),
+            AWKClean.establishment_id: row["establishmentid"],
+        }
+        for row in EXCLUSIONS["worker"]
+    ]
     return (
         pl.struct(
-            pl.col("workerid"),
-            pl.col("ascwds_worker_import_date"),
-            pl.col("establishmentid"),
+            pl.col(AWKClean.worker_id),
+            pl.col(AWKClean.ascwds_worker_import_date),
+            pl.col(AWKClean.establishment_id),
         )
         .is_in(duplicate_workers)
         .not_()
