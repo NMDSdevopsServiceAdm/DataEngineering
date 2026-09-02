@@ -57,6 +57,7 @@ All notable changes to this project will be documented in this file.
 - sfc_internal data now includes workplaces exceeding their *active* purge date. The merge coverage job adds a boolean column removed_by_purge_date_filter. The in_ascwds column now takes that filter into account. The reconciliation job also creates removed_by_purge_date_filter then filters upon it to remove purged workplaces.
 
 - Known duplicate ASC-WDS establishment submissions now have their numeric data (staff counts, starters, leavers, vacancies, job role figures) nulled instead of the whole row being removed, so the workplace and its non-numeric metadata are retained. Also removed an orphaned, never-called duplicate implementation of this exclusion logic and its backing config entry.
+- Reduced the job role archive job to only the columns actually needed, and split its single output into three column-scoped archives (estimates, metadata, geography), each independently validated in parallel.
 
 ### Improved
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.

@@ -14,7 +14,9 @@ class MainTests(unittest.TestCase):
     MERGED_DATA_DESTINATION = "some/destination"
     METADATA_DESTINATION = "some/other/destination"
 
-    mock_estimate_lf = pl.LazyFrame(schema=job.transformation_columns)
+    mock_estimate_lf = pl.LazyFrame(
+        schema=job.transformation_columns | job.metadata_columns
+    )
     mock_prepared_job_role_counts_lf = pl.LazyFrame(schema=job.ascwds_columns_to_import)
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
