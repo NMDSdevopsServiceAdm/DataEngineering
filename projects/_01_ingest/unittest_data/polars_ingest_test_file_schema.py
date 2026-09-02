@@ -564,6 +564,8 @@ class TestCleanAscwdsWorkerUtilsSchemas:
         AWKClean.main_job_role_clean: pl.String,
         AWKClean.main_job_role_clean_labelled: pl.String,
     }
-    data_labels_schema = pl.Schema(
-        [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
-    )
+    data_labels_schema = {
+        DLC.column_name: pl.String,
+        DLC.code: pl.String,
+        DLC.label: pl.String,
+    }

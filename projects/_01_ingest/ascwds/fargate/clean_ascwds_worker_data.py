@@ -26,9 +26,11 @@ WORKPLACE_SCHEMA = {
     AWPClean.establishment_id: pl.String,
 }
 
-data_labels_schema = pl.Schema(
-    [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
-)
+data_labels_schema = {
+    DLC.column_name: pl.String,
+    DLC.code: pl.String,
+    DLC.label: pl.String,
+}
 
 
 def main(
@@ -70,13 +72,13 @@ def main(
 
     worker_lf = wUtils.create_clean_main_job_role_column(worker_lf, data_labels_lf)
 
-    # Cast to Enum here so it's saved in the output parquet file.
+    # Cast to Categorical here so it's saved in the output parquet file.
     worker_lf = worker_lf.with_columns(
         pl.col(AWKClean.main_job_role_clean).cast(
-            CategoricalColumnTypes.MainJobRoleIdEnumType
+            CategoricalColumnTypes.MainJobRoleIdCatType
         ),
         pl.col(AWKClean.main_job_role_clean_labelled).cast(
-            CategoricalColumnTypes.MainJobRoleLabelEnumType
+            CategoricalColumnTypes.MainJobRoleLabelCatType
         ),
     )
 
