@@ -28,20 +28,27 @@ class TestMain:
         )
 
         scan_parquet_mock.assert_called_once_with(self.MERGED_DATA_SOURCE)
+        create_slv_rate_columns_mock.assert_called_once_with(
+            scan_parquet_mock.return_value
+        )
         remove_repeated_values_over_time_mock.assert_called_once_with(
-            scan_parquet_mock.return_value,
-            columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
+            create_slv_rate_columns_mock.return_value,
+            columns_to_clean=[
+                SLVCols.starters,
+                SLVCols.leavers,
+                SLVCols.vacancies,
+                SLVCols.turnover_rate,
+                SLVCols.starter_rate,
+                SLVCols.vacancy_rate,
+            ],
             partition_by_columns=[
                 IndCQC.location_id,
                 SLVCols.published_job_role_label,
             ],
             date_column=IndCQC.cqc_location_import_date,
         )
-        create_slv_rate_columns_mock.assert_called_once_with(
-            remove_repeated_values_over_time_mock.return_value
-        )
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=create_slv_rate_columns_mock.return_value,
+            lazy_df=remove_repeated_values_over_time_mock.return_value,
             output_path=self.CLEANED_DATA_DESTINATION,
         )

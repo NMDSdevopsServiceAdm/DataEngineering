@@ -18,14 +18,21 @@ def main(
     """
     lf = utils.scan_parquet(merged_data_source)
 
+    lf = cleanUtils.create_slv_rate_columns(lf)
+
     lf = cUtils.remove_repeated_values_over_time(
         lf,
-        columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
+        columns_to_clean=[
+            SLVCols.starters,
+            SLVCols.leavers,
+            SLVCols.vacancies,
+            SLVCols.turnover_rate,
+            SLVCols.starter_rate,
+            SLVCols.vacancy_rate,
+        ],
         partition_by_columns=[IndCQC.location_id, SLVCols.published_job_role_label],
         date_column=IndCQC.cqc_location_import_date,
     )
-
-    lf = cleanUtils.create_slv_rate_columns(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,

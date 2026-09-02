@@ -36,7 +36,7 @@ All notable changes to this project will be documented in this file.
 
 - Added a comment-cleanup step to the `open-pr` Claude Code skill, so verbose or stale code comments in the diff are trimmed before the correctness review and PR creation.
 
-- Added turnover, starter, and vacancy rate columns to the SLV clean job, derived from the deduplicated employees, starters, leavers, and vacancies counts.
+- Added turnover, starter, and vacancy rate columns to the SLV clean job, derived from the employees, starters, leavers, and vacancies counts; the new rate columns are deduplicated over time alongside the existing counts.
 
 ### Changed
 - Migrated the ONS Postcode Directory ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Drops runtime delimiter-sniffing and multi-file directory ingestion in favour of a fixed comma delimiter and single-file-per-run, matching the source format and the existing per-object EventBridge trigger.
