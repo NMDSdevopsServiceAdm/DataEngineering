@@ -4,6 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
+from polars_utils.cleaning_utils import DATE_FORMAT
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -13,8 +14,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 
 CONFIG = Path(__file__).parent / "exclusions.json"
 EXCLUSIONS = json.loads(CONFIG.read_text())
-
-DATE_FORMAT = "%Y%m%d"
 
 
 def is_unique_worker_data() -> pl.Expr:

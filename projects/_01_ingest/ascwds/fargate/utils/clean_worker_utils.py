@@ -35,7 +35,7 @@ def remove_workers_without_workplaces(
         workplace_lf,
         left_on=[AWKClean.import_date, AWKClean.establishment_id],
         right_on=[AWPClean.import_date, AWPClean.establishment_id],
-        how="inner",
+        how="semi",
     )
 
 
@@ -64,10 +64,18 @@ def remap_mainjrid_codes(lf: pl.LazyFrame) -> pl.LazyFrame:
 def impute_not_known_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     """Imputes not known job roles by filling with known values from other import dates.
 
-    Replaces 'not known' (`"-1"`) job roles with the nearest known value for
-    that worker: the next known value going forward, or, when there is none,
-    the most recent known value going backward. Rows where a worker's job
-    role is never known keep the 'not known' value.
+    Replaces 'not known' (`"-1"`) job roles with the most recent past known
+    value for that worker, or, where none exists (the role was never known
+    before that point), the nearest future known value instead. Rows where a
+    worker's job role is never known on any import date keep the 'not known'
+    value.
+
+    Performance note: the two `.over()` calls below are not yet covered by
+    Polars' streaming engine (plain `.over()` falls back to the in-memory
+    engine per the `polars-streaming-check` skill) — this is inferred from
+    Polars' own streaming-coverage tracking issue, not something measured or
+    logged on this job specifically. No OOM has been observed on this clean
+    step; a real memory measurement is a separate, ongoing investigation.
 
     Args:
         lf (pl.LazyFrame): LazyFrame containing `worker_id`,
