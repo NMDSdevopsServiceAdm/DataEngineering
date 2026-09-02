@@ -1,23 +1,28 @@
 import json
-import unittest
 from unittest.mock import Mock, call, patch
 
 import polars as pl
+import pytest
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_02_clean as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_02_clean"
 
 
-class ValidateCleanedSLVDataTests(unittest.TestCase):
-    def setUp(self) -> None:
+class TestMain:
+    @pytest.fixture(autouse=True)
+    def setup(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
+            SLVCols.turnover_rate: pl.Float32,
+            SLVCols.starter_rate: pl.Float32,
+            SLVCols.vacancy_rate: pl.Float32,
         }
         source_rows = [
-            ("1-001"),
-        ]  # fmt: skip
+            ("1-001", 0.1, 0.2, 0.3),
+        ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
 
@@ -31,7 +36,7 @@ class ValidateCleanedSLVDataTests(unittest.TestCase):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
         job.main("bucket", "my/source/", "my/compare/", "my/reports/")
 
-        self.assertEqual(mock_read_parquet.call_count, 2)
+        assert mock_read_parquet.call_count == 2
         mock_read_parquet.assert_has_calls(
             [
                 call(source="s3://bucket/my/source/"),
@@ -61,15 +66,11 @@ class ValidateCleanedSLVDataTests(unittest.TestCase):
 
         expected_assertions = {
             "row_count_match",
+            "col_vals_ge",
+            "col_vals_between",
         }
 
         for assertion in expected_assertions:
-            self.assertIn(
-                assertion,
-                assertion_types_present,
-                f"{assertion} not found in validation report",
-            )
-
-
-if __name__ == "__main__":
-    unittest.main(warnings="ignore")
+            assert (
+                assertion in assertion_types_present
+            ), f"{assertion} not found in validation report"

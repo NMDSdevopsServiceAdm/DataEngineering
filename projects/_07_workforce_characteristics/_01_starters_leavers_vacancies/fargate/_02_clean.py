@@ -1,4 +1,5 @@
 import polars_utils.cleaning_utils as cUtils
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.clean_utils as cleanUtils
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
@@ -23,6 +24,8 @@ def main(
         partition_by_columns=[IndCQC.location_id, SLVCols.published_job_role_label],
         date_column=IndCQC.cqc_location_import_date,
     )
+
+    lf = cleanUtils.create_slv_rate_columns(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,
