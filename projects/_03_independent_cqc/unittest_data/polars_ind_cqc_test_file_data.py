@@ -2322,6 +2322,24 @@ class SumImputedRatiosAcrossJobRolesData:
             ],
             expected_totals=[1.0],
         ),
+        # A workplace with just one submitted job role still totals 1.0 on its own.
+        SumRatiosTestCase(
+            id="workplace_with_a_single_job_role",
+            rows=[
+                ("1-001", date(2026, 1, 1), MainJobRoleLabels.care_worker, 1.0),
+            ],
+            expected_totals=[1.0],
+        ),
+        # A ratio floored to exactly 0.0 is not null, so it must still count towards the
+        # total rather than being filtered out.
+        SumRatiosTestCase(
+            id="a_ratio_floored_to_zero_still_counts",
+            rows=[
+                ("1-001", date(2026, 1, 1), MainJobRoleLabels.care_worker,      0.0),
+                ("1-001", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, 1.0),
+            ],
+            expected_totals=[1.0],
+        ),
     ]  # fmt: skip
 
 

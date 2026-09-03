@@ -311,18 +311,25 @@ def add_imputed_ascwds_job_role_ratios(
     Impute job role ratios by carrying each workplace's own known split along the rolling
     ratio trendline.
 
+    The trendline is `ascwds_job_role_rolling_ratio`: the mean ratio across workplaces
+    sharing a primary service type, size band and job role, rolled over a 6-month window. A
+    workplace's own known ratio is carried along the trendline's nominal *change*, not its
+    absolute value — e.g. if the rolling average for "non-res, 1 to 24 employees, care
+    worker" rises by 0.1 percentage points from month 1 to month 2, a workplace with a known
+    ratio of 0.3 in month 1 is imputed at 0.4 in month 2.
+
     Ratios follow the nominal change in the trendline, uncapped in both directions, with
     interior gaps apportioned by days rather than by rows. Imputed values are floored at zero
     and re-shared across job roles, since flooring is what breaks their total of 1. A
     workplace's own submitted ratios are left alone: they already total 1, so re-sharing them
     would only move them by a float rounding step.
 
-    Requires a non-null trendline: a null would leave a workplace that did submit with no
-    imputed split at all.
+    Requires `ascwds_job_role_rolling_ratio` to be non-null wherever `ascwds_job_role_ratios`
+    is null: a null there would leave a workplace needing imputation with no split at all.
 
     Args:
-        estimated_job_role_posts_lf(pl.LazyFrame): dataset containing job role ratios and the
-            rolling ratio trendline
+        estimated_job_role_posts_lf(pl.LazyFrame): dataset containing `ascwds_job_role_ratios`
+            and the `ascwds_job_role_rolling_ratio` trendline
 
     Returns:
         pl.LazyFrame: dataset with an additional column of imputed job role ratios
