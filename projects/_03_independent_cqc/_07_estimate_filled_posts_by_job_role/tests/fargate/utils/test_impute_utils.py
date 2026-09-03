@@ -160,7 +160,8 @@ class TestAddImputedASCWDSJobRoleRatios:
             IndCQC.main_job_role_clean_labelled,
             IndCQC.cqc_location_import_date,
         ]
-        # February is 31 of the 60 days to March, hence 0.696667 not 0.70.
+        # The Jan 1 to Feb 1 gap is 31 of the 60 days spanning Jan 1 to Mar 1, hence
+        # 0.696667, not the midpoint 0.70.
         expected_lf = pl.LazyFrame(
             data=[
                 ("1", MainJobRoleLabels.care_worker,      date(2024, 1, 1), 0.8,  0.5, 0.8),
