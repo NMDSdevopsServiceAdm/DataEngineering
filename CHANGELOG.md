@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+
+### Changed
+- Duplicate-establishment nulling in the ASCWDS workplace clean job now checks whether a known duplicate group is still submitting identical data for a given import date before nulling it, instead of nulling unconditionally for every establishment on the list.
+
+- Updated publication step function merge job data sources to match sample archive data folder structure.
+
+
+### Improved
+
+
+## [v2026.08.0] - 03/09/2026
+
+### Added
 - Migrated the Capacity Tracker ingest stage (ingest, clean, and validate jobs) from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their Step Function wiring entirely. Outputs were compared against the previous PySpark version's in Athena and matched exactly before cutover.
 - Added a per-branch raw data landing bucket (mirroring prod's `sfc-data-engineering-raw`), seeded at deploy time from a new curated sample bucket in main (`sfc-main-sample-raw-data`), so raw ingest steps and their EventBridge triggers can be tested end-to-end on a branch. The seed step now only runs (and only triggers the ingest Step Functions) when a push actually touches ingest-related paths, so unrelated branches skip it on their first deploy.
 

@@ -28,40 +28,34 @@ TEST_ACCOUNTS: set[str] = {
     "51818",
 }
 
-# Establishment IDs known to contain duplicated ASC-WDS submissions.
-#
-# These records represent the same workplace data uploaded against multiple
-# accounts. The issue was raised with the support team but there is no way of
-# automatically blocking this going forwards.
-#
-# There are two sets of workplaces here who submitted the exact same ASCWDS
-# files on the same day.
-# - Four locations ("48904" to "49968")
-# - 18 locations ("50538" to "50870").
-DUPLICATE_ESTABLISHMENT_IDS: set[str] = {
-    "48904",
-    "49966",
-    "49967",
-    "49968",
-    "50538",
-    "50561",
-    "50590",
-    "50596",
-    "50598",
-    "50621",
-    "50623",
-    "50624",
-    "50627",
-    "50629",
-    "50639",
-    "50640",
-    "50767",
-    "50769",
-    "50770",
-    "50771",
-    "50869",
-    "50870",
-}
+# Groups of establishment IDs known to have submitted identical ASC-WDS data
+# under different accounts. Whether a group is still identical is re-checked
+# at runtime (recheck_duplicate_establishments), not assumed.
+DUPLICATE_ESTABLISHMENT_GROUPS: list[frozenset[str]] = [
+    frozenset({"48904", "49966", "49967", "49968"}),
+    frozenset(
+        {
+            "50538",
+            "50561",
+            "50590",
+            "50596",
+            "50598",
+            "50621",
+            "50623",
+            "50624",
+            "50627",
+            "50629",
+            "50639",
+            "50640",
+            "50767",
+            "50769",
+            "50770",
+            "50771",
+            "50869",
+            "50870",
+        }
+    ),
+]
 
 
 def exclude_test_accounts_filter() -> pl.Expr:
@@ -83,35 +77,91 @@ NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES: list[str] = [
 ]
 
 
-def null_duplicate_establishment_numeric_data(lf: pl.LazyFrame) -> pl.LazyFrame:
+def recheck_duplicate_establishments(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Null numeric submission data for known duplicate establishment submissions.
+    Recheck the known duplicate establishment groups for duplicated
+    numeric data.
 
-    Known duplicate establishments (DUPLICATE_ESTABLISHMENT_IDS) submitted the exact
-    same ASC-WDS data under multiple accounts. Rather than dropping these rows, their
-    staff/starter/leaver/vacancy totals and job role figures are nulled so they no
-    longer inflate downstream aggregates, while the row and its non-numeric metadata
-    are retained. Tolerates being called on a frame that doesn't yet have job role
-    columns (require_all=False), since this is called both before and after those
-    columns are joined on in clean_ascwds_workplace.py.
+    DUPLICATE_ESTABLISHMENT_GROUPS are groups proven to have unreliable
+    numeric data at certain import dates. Originally identified by observing
+    matching values in NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES and having
+    their data wiped, groups may have re-submitted independently since then.
+
+    Establishments within a group that still have the same values for all
+    NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES per import data are returned.
+    An all-null/0 match still counts as identical.
+
+    polars_streaming:
+    Each group filters down to a handful of rows before comparison, so
+    looping over the groups and concatenating is negligible regardless of
+    streaming support.
 
     Args:
-        lf (pl.LazyFrame): Workplace LazyFrame containing establishment_id.
+        lf (pl.LazyFrame): Raw ASC-WDS workplace LazyFrame containing
+            establishment_id, import_date and
+            NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES.
 
     Returns:
-        pl.LazyFrame: Input LazyFrame with target numeric columns nulled for rows
-            whose establishment_id is a known duplicate.
+        pl.LazyFrame: establishment_id and import_date of establishments
+            with duplicate numeric data.
     """
+    numeric_data = "numeric_data"
+    duplicate_count = "duplicate_count"
+    still_matching_lfs = []
+    for group in DUPLICATE_ESTABLISHMENT_GROUPS:
+        group_lf = lf.filter(pl.col(AWPClean.establishment_id).is_in(group)).select(
+            AWPClean.establishment_id,
+            AWPClean.import_date,
+            pl.struct(NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES).alias(numeric_data),
+        )
+        still_matching_lfs.append(
+            group_lf.group_by(AWPClean.import_date, numeric_data)
+            .agg(AWPClean.establishment_id, pl.len().alias(duplicate_count))
+            .filter(pl.col(duplicate_count) > 1)
+            .select(AWPClean.establishment_id, AWPClean.import_date)
+            .explode(AWPClean.establishment_id)
+        )
+
+    return pl.concat(still_matching_lfs)
+
+
+def null_duplicate_establishment_numeric_data(
+    lf: pl.LazyFrame, still_matching_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """
+    Null numeric submission data for rows matching still_matching_lf.
+
+    Columns in NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES and columns selected
+    by is_slv_job_role_column() are nulled for rows matched to still_matching_lf.
+    Tolerates a frame without job role columns yet (require_all=False),
+    since this runs both before and after they're joined on in clean_ascwds_workplace.py.
+
+    Args:
+        lf (pl.LazyFrame): Workplace LazyFrame containing establishment_id
+            and import_date.
+        still_matching_lf (pl.LazyFrame): Output of
+            recheck_duplicate_establishments.
+
+    Returns:
+        pl.LazyFrame: lf with target numeric columns nulled for matching rows.
+    """
+    should_null_col = "should_null_duplicate"
+    lf = lf.join(
+        still_matching_lf.with_columns(pl.lit(True).alias(should_null_col)),
+        on=[AWPClean.establishment_id, AWPClean.import_date],
+        how="left",
+    )
+
     columns_to_null = (
         cs.by_name(*NUMERIC_COLUMNS_TO_NULL_FOR_DUPLICATES, require_all=False)
         | expr.is_slv_job_role_column()
     )
     return lf.with_columns(
-        pl.when(pl.col(AWPClean.establishment_id).is_in(DUPLICATE_ESTABLISHMENT_IDS))
+        pl.when(pl.col(should_null_col).is_not_null())
         .then(None)
         .otherwise(columns_to_null)
         .name.keep()
-    )
+    ).drop(should_null_col)
 
 
 def remove_rows_with_duplicate_location_ids(lf: pl.LazyFrame) -> pl.LazyFrame:
