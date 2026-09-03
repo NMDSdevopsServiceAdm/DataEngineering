@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-
+- Added a Polars clean job for ASCWDS worker data (`clean_ascwds_worker_data.py`) on the shared `_01_ingest` Fargate task, mirroring the existing workplace clean job, with job-role labels now sourced from the shared `data_labels_lookup.csv` lookup instead of a static Python dict. Wired into the Transform ASCWDS Step Function as a new parallel branch alongside the existing Glue jobs, writing to a `_polars`-suffixed dataset for comparison ahead of a future cutover.
 
 ### Changed
 - Duplicate-establishment nulling in the ASCWDS workplace clean job now checks whether a known duplicate group is still submitting identical data for a given import date before nulling it, instead of nulling unconditionally for every establishment on the list.
@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file.
 
 
 ### Improved
+
+
+### Fixed
+- Fixed `is_unique_worker_data` comparing a `Date` column against string dates from `exclusions.json`, meaning known duplicate worker rows were never actually excluded.
 
 
 ## [v2026.08.0] - 03/09/2026
@@ -48,7 +52,6 @@ All notable changes to this project will be documented in this file.
 
 - Decomposed the `_08_publication` merge and clean jobs' placeholder `main()` functions into named placeholder sub-functions (join, capacity-tracker filter, and TODO's for aggregation and percentage change columns), scaffolding the shape of the future real logic ahead of implementation.
 
-- Added a Polars clean job for ASCWDS worker data (`clean_ascwds_worker_data.py`) on the shared `_01_ingest` Fargate task, mirroring the existing workplace clean job, with job-role labels now sourced from the shared `data_labels_lookup.csv` lookup instead of a static Python dict. Wired into the Transform ASCWDS Step Function as a new parallel branch alongside the existing Glue jobs, writing to a `_polars`-suffixed dataset for comparison ahead of a future cutover.
 - Added a comment-cleanup step to the `open-pr` Claude Code skill, so verbose or stale code comments in the diff are trimmed before the correctness review and PR creation.
 
 ### Changed
@@ -95,8 +98,6 @@ All notable changes to this project will be documented in this file.
 
 - Narrowed the non-prod raw bucket seed gate to the specific files that actually read, write, or validate raw data, instead of whole ingest project directories, so unrelated changes elsewhere in an ingest domain (tests, downstream clean jobs) no longer trigger an unnecessary reseed. Also fixed a redeploy failure where the ASCWDS ingest job's fixed sample-data output partition collided with its own previous run's output, by clearing that partition before each reseed.
 - Fixed the job role estimates pipeline crashing in prod with a `FileNotFoundError`: the merge, validation, and archive steps hardcoded a non-prod-only comparison dataset name for the estimated filled posts source, which CI only ever populates on branches other than `main`. The dataset name is now workspace-aware, matching the pattern already used for the sibling job-role datasets.
-
-- Fixed `is_unique_worker_data` comparing a `Date` column against string dates from `exclusions.json`, meaning known duplicate worker rows were never actually excluded.
 
 ## [v2026.07.0] - 17/08/2026
 
