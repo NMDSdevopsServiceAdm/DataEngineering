@@ -10,6 +10,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     CleanAscwdsFilledPostOutliersSchema as Schemas,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers"
@@ -53,3 +54,35 @@ class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
         null_filled_posts_where_locations_use_invalid_missing_data_code_mock.assert_called_once()
         add_filtering_rule_column_mock.assert_called_once()
         non_res_brand_id_filter_mock.assert_called_once()
+
+    @patch(f"{PATCH_PATH}.add_filtering_rule_column")
+    @patch(
+        f"{PATCH_PATH}.null_filled_posts_where_locations_use_invalid_missing_data_code"
+    )
+    @patch(f"{PATCH_PATH}.null_grouped_providers")
+    @patch(f"{PATCH_PATH}.winsorize_care_home_filled_posts_per_bed_ratio_outliers")
+    @patch(f"{PATCH_PATH}.non_res_brand_id_filter")
+    def test_casts_ascwds_filled_posts_dedup_clean_to_float32(
+        self,
+        non_res_brand_id_filter_mock: Mock,
+        winsorize_care_home_filled_posts_per_bed_ratio_outliers_mock: Mock,
+        null_grouped_provders_mock: Mock,
+        null_filled_posts_where_locations_use_invalid_missing_data_code_mock: Mock,
+        add_filtering_rule_column_mock: Mock,
+    ):
+        null_grouped_provders_mock.return_value = [
+            Mock(name="clean_ind_cqc_data"),
+            Mock(name="grouped_providers"),
+        ]
+        non_res_brand_id_filter_mock.return_value = pl.LazyFrame(
+            {IndCQC.ascwds_filled_posts_dedup_clean: pl.Series([1.0], dtype=pl.Float64)}
+        )
+
+        returned_lf, _ = job.clean_ascwds_filled_post_outliers(
+            self.unfiltered_ind_cqc_lf, self.grouped_providers_lf
+        )
+
+        self.assertEqual(
+            returned_lf.collect_schema()[IndCQC.ascwds_filled_posts_dedup_clean],
+            pl.Float32,
+        )

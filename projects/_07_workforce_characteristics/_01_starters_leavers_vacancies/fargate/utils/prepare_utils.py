@@ -177,7 +177,7 @@ def reshape_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
             AWPClean.ascwds_workplace_import_date,
             pl.concat_list(label_structs).alias("_job_role_struct_list"),
         )
-        .explode("_job_role_struct_list")
+        .explode("_job_role_struct_list", empty_as_null=True)
         .unnest("_job_role_struct_list")
         .with_columns(
             pl.col(AWPClean.establishment_id).cast(CatColType.EstablishmentCatType),

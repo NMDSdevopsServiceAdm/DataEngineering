@@ -11,6 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY polars_utils /app/polars_utils
 COPY utils/file_utils.py /app/utils/file_utils.py
 COPY utils/column_names /app/utils/column_names/
+COPY projects/_08_publication/_01_job_role_estimates/fargate/utils /app/projects/_08_publication/_01_job_role_estimates/fargate/utils
 
 # Copy python jobs to WORKDIR
 COPY projects/_08_publication/_01_job_role_estimates/fargate/_01_merge_pub_data.py /app/_01_merge_pub_data.py

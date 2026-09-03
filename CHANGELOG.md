@@ -6,6 +6,22 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+
+### Changed
+- Duplicate-establishment nulling in the ASCWDS workplace clean job now checks whether a known duplicate group is still submitting identical data for a given import date before nulling it, instead of nulling unconditionally for every establishment on the list.
+
+- Updated publication step function merge job data sources to match sample archive data folder structure.
+
+- Updated polars (1.41.2 -> 1.44.1) and pointblank (0.24.0 -> 0.26.0), fixing a `.pivot()` performance regression and an 8-11x slowdown on per-row LazyFrame validation that were present at the old pins.
+
+
+### Improved
+
+
+## [v2026.08.0] - 03/09/2026
+
+### Added
 - Migrated the Capacity Tracker ingest stage (ingest, clean, and validate jobs) from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their Step Function wiring entirely. Outputs were compared against the previous PySpark version's in Athena and matched exactly before cutover.
 - Added a per-branch raw data landing bucket (mirroring prod's `sfc-data-engineering-raw`), seeded at deploy time from a new curated sample bucket in main (`sfc-main-sample-raw-data`), so raw ingest steps and their EventBridge triggers can be tested end-to-end on a branch. The seed step now only runs (and only triggers the ingest Step Functions) when a push actually touches ingest-related paths, so unrelated branches skip it on their first deploy.
 
@@ -24,12 +40,17 @@ All notable changes to this project will be documented in this file.
 - Added a new `_08_publication` project, with placeholder merge/clean Polars scripts and their tests, its own Docker image and ECR repo, a dedicated Glue crawler, and a standalone Step Function (with error handling and crawler running) to run them, ready for the real publication logic to land into.
 - Added an archive job and validation for the independent CQC filled posts by job role estimates, wired into the standalone job role step function (`Ind-CQC-Filled-Post-Estimates-By-Role`) after the existing job role estimate validation. This is a minimal starting template (straight load-and-save, no filtering/partitioning yet), deliberately kept out of the main pipeline until partitioning is in place, ahead of a future rework of the job-role dataset shape.
 
+- Added a `sprint-review` Claude Code skill that drafts a "what did we ship" executive summary for sprint review, one headline per roadmap item, gathered from merged PRs and matching CHANGELOG entries (full detail available on request).
 - Added projects/ARCHIVING_AND_PUBLICATION.md. A work-in-progress template documenting the archiving and publication process for job role estimates. Document will be amended as that process is built out.
 
 - Added syncing of dummy sample job-role archive data (`domain=sample_archive_data` in the main datasets bucket) into a branch's own dataset bucket via `copy-main-data`, gated so it only runs for branches that touch the archive stage.
 
 - Gated `test-cqc-integration` on dev branches so it only runs when a push touches CQC-ingestion-related code, instead of hitting the live CQC API on every branch push. `main` always runs it, matching the existing bake-target/raw-bucket-seed gating pattern (`decide-bake-and-seed`).
 - Updated select_archive_sample_seed.py to trigger sample archive sync on changes inside _08_publication. Added a crawler for the sample_archive_data domain.
+
+- Decomposed the `_08_publication` merge and clean jobs' placeholder `main()` functions into named placeholder sub-functions (join, capacity-tracker filter, and TODO's for aggregation and percentage change columns), scaffolding the shape of the future real logic ahead of implementation.
+
+- Added a comment-cleanup step to the `open-pr` Claude Code skill, so verbose or stale code comments in the diff are trimmed before the correctness review and PR creation.
 
 ### Changed
 - Migrated the ONS Postcode Directory ingest and raw-data validation jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their step function wiring. Drops runtime delimiter-sniffing and multi-file directory ingestion in favour of a fixed comma delimiter and single-file-per-run, matching the source format and the existing per-object EventBridge trigger.
@@ -53,9 +74,14 @@ All notable changes to this project will be documented in this file.
 - sfc_internal data now includes workplaces exceeding their *active* purge date. The merge coverage job adds a boolean column removed_by_purge_date_filter. The in_ascwds column now takes that filter into account. The reconciliation job also creates removed_by_purge_date_filter then filters upon it to remove purged workplaces.
 
 - Known duplicate ASC-WDS establishment submissions now have their numeric data (staff counts, starters, leavers, vacancies, job role figures) nulled instead of the whole row being removed, so the workplace and its non-numeric metadata are retained. Also removed an orphaned, never-called duplicate implementation of this exclusion logic and its backing config entry.
+- Reduced the job role archive job to only the columns actually needed, and split its single output into three column-scoped archives (estimates, metadata, geography), each independently validated in parallel.
 
 ### Improved
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
+
+- Narrowed dtypes (Categorical/Enum/Float32) for columns feeding the independent CQC estimate archive jobs, casting each at its true point of creation to reduce long-term storage cost, and simplified the job-role reconciliation check to a 2dp-rounded range check.
+
+- Added a `col_schema_match` check to the independent CQC clean and estimate validation jobs, catching future dtype regressions on the narrowed columns at the earliest validation step.
 
 - Removed a dead `lf.sort()` call (its result was never reassigned) in model_interpolation. Converted the module's remaining sorts to `over(..., order_by=...)`, measured as using much less peak memory than sorting.
 

@@ -1,4 +1,8 @@
 from polars_utils import utils
+from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.estimate_ind_cqc_filled_posts_utils import (
+    estimate_filled_posts_cast_expr,
+    estimate_filled_posts_source_cast_expr,
+)
 from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.estimate_non_res_ct_filled_posts import (
     estimate_non_res_capacity_tracker_filled_posts,
 )
@@ -141,6 +145,10 @@ def main(
         name=IndCQC.estimate_filled_posts,
     )
     lf = lf.with_columns([value_expr, source_expr])
+    lf = lf.with_columns(
+        estimate_filled_posts_cast_expr(),
+        estimate_filled_posts_source_cast_expr(),
+    )
 
     lf = set_min_value(lf, IndCQC.estimate_filled_posts, 1.0)
 
