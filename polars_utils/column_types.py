@@ -6,6 +6,12 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
 )
 from utils.column_values.categorical_columns_by_dataset import (
+    CleanedIndCQCCategoricalValues as CleanedIndCQCCatVals,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as JobRoleEstimatesCatVals,
+)
+from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
 )
 
@@ -14,6 +20,15 @@ from utils.column_values.categorical_columns_by_dataset import (
 class CategoricalColumnTypes:
     """Reusable polars Categorical and Enum dtype constants."""
 
+    AscwdsFilledPostsSourceEnumType = pl.Enum(
+        CleanedIndCQCCatVals.ascwds_filled_posts_source_column_values.categorical_values
+    )
+    AscwdsFilteringRuleEnumType = pl.Enum(
+        CleanedIndCQCCatVals.ascwds_filtering_rule_column_values.categorical_values
+    )
+    AscwdsJobRoleRatiosMergedSourceEnumType = pl.Enum(
+        JobRoleEstimatesCatVals.ascwds_job_role_ratios_merged_source_column_values.categorical_values
+    )
     BrandCatType = pl.Categorical(pl.Categories("brand", namespace="filled_posts"))
     CareHomeEnumType = pl.Enum(
         CQCLocationCatVals.care_home_column_values.categorical_values

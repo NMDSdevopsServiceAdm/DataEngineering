@@ -19,6 +19,8 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clea
     clean_capacity_tracker_non_res_outliers,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils import (
+    ascwds_filled_posts_source_cast_expr,
+    ascwds_filtering_rule_cast_expr,
     calculate_care_home_status_count,
     calculate_time_registered_for,
     calculate_time_since_dormant,
@@ -104,6 +106,11 @@ def main(
     locations_lf = clean_capacity_tracker_non_res_outliers(locations_lf)
 
     locations_lf = calculate_care_home_status_count(locations_lf)
+
+    locations_lf = locations_lf.with_columns(
+        ascwds_filled_posts_source_cast_expr(),
+        ascwds_filtering_rule_cast_expr(),
+    )
 
     print(f"Exporting cleaned data to {cleaned_ind_cqc_destination}")
     print(f"Exporting grouped providers data to {grouped_providers_destination}")

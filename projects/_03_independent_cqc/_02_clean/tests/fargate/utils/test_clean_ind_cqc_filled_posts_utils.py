@@ -4,6 +4,7 @@ import polars as pl
 import polars.testing as pl_testing
 
 import projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils as job
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     CleanIndCQCData as Data,
 )
@@ -11,6 +12,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     CleanIndCQCSchema as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 
 class ReplaceZeroBedsWithNullTests(unittest.TestCase):
@@ -269,3 +271,33 @@ class CalculateCareHomeStatusCountTests(unittest.TestCase):
             expected_lf.drop(IndCQC.care_home_status_count)
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class AscwdsFilledPostsSourceCastExprTests(unittest.TestCase):
+    def test_casts_ascwds_filled_posts_source_to_enum(self):
+        lf = pl.LazyFrame(
+            {IndCQC.ascwds_filled_posts_source: ["worker_records_and_total_staff"]}
+        )
+        result_lf = lf.with_columns(job.ascwds_filled_posts_source_cast_expr())
+        self.assertEqual(
+            result_lf.collect_schema()[IndCQC.ascwds_filled_posts_source],
+            CatColType.AscwdsFilledPostsSourceEnumType,
+        )
+
+
+class AscwdsFilteringRuleCastExprTests(unittest.TestCase):
+    def test_casts_ascwds_filtering_rule_to_enum(self):
+        lf = pl.LazyFrame(
+            {IndCQC.ascwds_filtering_rule: [AscwdsFilteringRule.populated]}
+        )
+        result_lf = lf.with_columns(job.ascwds_filtering_rule_cast_expr())
+        self.assertEqual(
+            result_lf.collect_schema()[IndCQC.ascwds_filtering_rule],
+            CatColType.AscwdsFilteringRuleEnumType,
+        )
+
+    def test_raises_on_unrecognised_filtering_rule_value(self):
+        lf = pl.LazyFrame({IndCQC.ascwds_filtering_rule: ["not_a_real_filtering_rule"]})
+        result_lf = lf.with_columns(job.ascwds_filtering_rule_cast_expr())
+        with self.assertRaises(pl.exceptions.InvalidOperationError):
+            result_lf.collect()
