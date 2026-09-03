@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Duplicate-establishment nulling in the ASCWDS workplace clean job now checks whether a known duplicate group is still submitting identical data for a given import date before nulling it, instead of nulling unconditionally for every establishment on the list.
 
+- Updated publication step function merge job data sources to match sample archive data folder structure.
+
 
 ### Improved
 
