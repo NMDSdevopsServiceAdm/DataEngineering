@@ -62,6 +62,20 @@ module "_03_independent_cqc" {
   tag_name = terraform.workspace
 }
 
+# Throwaway, for one bias investigation into the job role imputation step's floor-at-
+# zero clip. Reuses the real job's image and default sizing, since it runs the same
+# computation plus one small aggregation. Remove with _03_impute_prototype.py.
+module "_03_independent_cqc_prototype" {
+  source        = "../modules/fargate-task"
+  task_name     = "_03_independent_cqc_prototype"
+  ecr_repo_name = "fargate/03_independent_cqc"
+  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" }
+  ]
+  tag_name = terraform.workspace
+}
+
 module "_03_independent_cqc_model" {
   source        = "../modules/fargate-task"
   task_name     = "_03_independent_cqc_model"
