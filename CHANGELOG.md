@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 
 - Updated publication step function merge job data sources to match sample archive data folder structure.
 
+- Updated polars (1.41.2 -> 1.44.1) and pointblank (0.24.0 -> 0.26.0), fixing a `.pivot()` performance regression and an 8-11x slowdown on per-row LazyFrame validation that were present at the old pins.
+
 
 ### Improved
 
