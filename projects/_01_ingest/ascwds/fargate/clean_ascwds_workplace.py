@@ -117,7 +117,10 @@ def main(
 
     lf = lf.filter(wUtils.exclude_test_accounts_filter())
 
-    lf = wUtils.null_duplicate_establishment_numeric_data(lf)
+    still_matching_duplicates_lf = wUtils.recheck_duplicate_establishments(lf)
+    lf = wUtils.null_duplicate_establishment_numeric_data(
+        lf, still_matching_duplicates_lf
+    )
 
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
@@ -196,7 +199,9 @@ def main(
         expr.is_slv_job_role_column().cast(pl.Int32, strict=False),
     )
 
-    workplace_lf = wUtils.null_duplicate_establishment_numeric_data(workplace_lf)
+    workplace_lf = wUtils.null_duplicate_establishment_numeric_data(
+        workplace_lf, still_matching_duplicates_lf
+    )
 
     workplace_lf = workplace_lf.with_columns(
         bounds.filled_posts_expr,
