@@ -489,20 +489,9 @@ jobs:
       - run:
           name: Copy main datasets to non-prod dataset bucket
           command: |
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_01_delta_api/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_01_delta_api/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_02_delta_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_02_delta_flattened/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_03_full_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_03_full_flattened/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_providers_01_delta_api/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_providers_01_delta_api/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_providers_02_delta_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_providers_02_delta_flattened/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_providers_03_full_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_providers_03_full_flattened/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_providers_04_full_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_providers_04_full_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=postcode_corrections/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ONS/dataset=postcode_directory_cleaned/" --delete
-            # TODO(1995): throwaway -- remove before merging. Seeds the raw ONS PD history (never
-            # otherwise synced) so a triggered Ingest-ONSPD run regenerates a complete cleaned
-            # dataset instead of overwriting the line above with a sample-collapsed one.
-            aws s3 sync "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory/" "s3://$BRANCH_DATASET_BUCKET/domain=ONS/dataset=postcode_directory/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace_cleaned/" --delete
@@ -515,10 +504,6 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_04_estimate_job_roles/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_07_04_estimate_job_roles/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_metadata_job_roles/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_07_01_merge_metadata_job_roles/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=workforce_characteristics/dataset=empstat_rates/" "s3://$BRANCH_DATASET_BUCKET/domain=workforce_characteristics/dataset=empstat_rates/" --delete
-            # TODO(1995): throwaway -- remove before merging. DPR's external/survey datasets are
-            # manually-ingested (no automated seed) -- optimistic sync, safe no-op if missing.
-            aws s3 sync "s3://sfc-main-datasets/domain=DPR/dataset=direct_payments_external/version=2026.02/" "s3://$BRANCH_DATASET_BUCKET/domain=DPR/dataset=direct_payments_external/version=2026.02/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=DPR/dataset=direct_payments_survey/version=2026.02/" "s3://$BRANCH_DATASET_BUCKET/domain=DPR/dataset=direct_payments_survey/version=2026.02/" --delete
       - run:
           name: Copy models to non-prod dataset
           command: |

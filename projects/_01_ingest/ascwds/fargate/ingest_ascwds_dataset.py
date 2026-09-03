@@ -1,5 +1,3 @@
-# TODO(1995): throwaway change to trigger this domain's raw-bucket reseed and verify
-# Ingest-ASCWDS against the polars/pointblank bump. Remove before merging.
 import sys
 
 import polars as pl
