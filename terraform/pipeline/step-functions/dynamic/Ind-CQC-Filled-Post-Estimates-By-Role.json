@@ -386,8 +386,9 @@
                         "archive_job_role_estimates.py",
                         "--job_role_estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_04_estimate_job_roles/",
                         "--job_role_metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_metadata_job_roles/",
-                        "--filled_posts_estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=${ind_cqc_estimated_filled_posts}/",
-                        "--archive_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/"
+                        "--job_role_estimates_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_estimates/",
+                        "--job_role_metadata_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_metadata/",
+                        "--job_role_geography_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_geography/"
                       ]
                     }
                   ]
@@ -396,33 +397,114 @@
               "Next": "Validate Job Role Archive"
             },
             "Validate Job Role Archive": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::ecs:runTask.sync",
-              "Parameters": {
-                "Cluster": "${polars_cluster_arn}",
-                "TaskDefinition": "${independent_cqc_task_arn}",
-                "LaunchType": "FARGATE",
-                "NetworkConfiguration": {
-                  "AwsvpcConfiguration": {
-                    "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
-                    "AssignPublicIp": "ENABLED"
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Validate Job Role Estimates Archive",
+                  "States": {
+                    "Validate Job Role Estimates Archive": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "validate_archive_job_role_estimates.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_estimates/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_09_archived_monthly_job_role_estimates/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
                   }
                 },
-                "Overrides": {
-                  "ContainerOverrides": [
-                    {
-                      "Name": "_03_independent_cqc-container",
-                      "Command": [
-                        "validate_archive_job_role_estimates.py",
-                        "--bucket_name", "${dataset_bucket_name}",
-                        "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts_by_job_role/",
-                        "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_09_archived_monthly_filled_posts_by_job_role/"
-                      ]
+                {
+                  "StartAt": "Validate Job Role Metadata Archive",
+                  "States": {
+                    "Validate Job Role Metadata Archive": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "validate_archive_job_role_estimates.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_metadata/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_09_archived_monthly_job_role_metadata/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
                     }
-                  ]
+                  }
+                },
+                {
+                  "StartAt": "Validate Job Role Geography Archive",
+                  "States": {
+                    "Validate Job Role Geography Archive": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "validate_archive_job_role_estimates.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_geography/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_09_archived_monthly_job_role_geography/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
                 }
-              },
+              ],
               "End": true
             }
           }

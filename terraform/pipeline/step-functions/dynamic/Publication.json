@@ -35,9 +35,9 @@
                       "Name": "_08_publication-container",
                       "Command": [
                         "_01_merge_pub_data.py",
-                        "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=estimates_by_job_role/archive_date=2026/run_number=1/job_role_estimates/",
-                        "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=estimates_by_job_role/archive_date=2026/run_number=1/metadata/",
-                        "--jr_archive_geography_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=estimates_by_job_role/archive_date=2026/run_number=1/geography/",
+                        "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=sample_archived_monthly_filled_posts_by_job_role/archive_date=2026/run_number=1/",
+                        "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=sample_archived_metadata/archive_date=2026/run_number=1/",
+                        "--jr_archive_geography_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=sample_archived_geography/archive_date=2026/run_number=1/",
                         "--merge_data_destination", "${dataset_bucket_uri}/domain=publication/dataset=filled_posts_tracker_01_merged_data/"
                       ]
                     }

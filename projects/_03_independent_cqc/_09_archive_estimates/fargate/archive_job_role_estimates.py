@@ -1,37 +1,100 @@
 from polars_utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
+JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
+    IndCQC.id_per_locationid_import_date,
+    IndCQC.location_id,
+    IndCQC.cqc_location_import_date,
+    IndCQC.estimate_filled_posts,
+    IndCQC.primary_service_type,
+    IndCQC.main_job_role_clean_labelled,
+    IndCQC.ascwds_job_role_ratios,
+    IndCQC.imputed_ascwds_job_role_ratios,
+    IndCQC.ascwds_job_role_rolling_ratio,
+    IndCQC.ascwds_job_role_ratios_merged,
+    IndCQC.ascwds_job_role_ratios_merged_source,
+    IndCQC.estimate_filled_posts_by_job_role_manager_adjusted,
+    IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
+    IndCQC.main_job_group_labelled,
+    IndCQC.job_role_filtering_rule,
+]
+
+JOB_ROLE_METADATA_ARCHIVE_COLUMNS = [
+    IndCQC.id_per_locationid_import_date,
+    IndCQC.imputed_registration_date,
+    IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.ascwds_pir_merged,
+    IndCQC.ascwds_filtering_rule,
+    IndCQC.estimate_filled_posts_source,
+    IndCQC.ascwds_filled_posts_source,
+    IndCQC.care_home_model,
+    IndCQC.imputed_pir_filled_posts_model,
+    IndCQC.imputed_posts_care_home_model,
+    IndCQC.imputed_posts_non_res_combined_model,
+    IndCQC.non_res_combined_model,
+    IndCQC.pir_people_directly_employed_dedup,
+    IndCQC.posts_rolling_average_model,
+    IndCQC.ct_care_home_total_employed_imputed,
+    IndCQC.ct_non_res_care_workers_employed_imputed,
+]
+
+JOB_ROLE_GEOGRAPHY_ARCHIVE_COLUMNS = [
+    IndCQC.id_per_locationid_import_date,
+    IndCQC.current_cssr,
+    IndCQC.current_region,
+    IndCQC.current_icb,
+    IndCQC.current_rural_urban_indicator_2011,
+    IndCQC.current_lsoa21,
+    IndCQC.current_msoa21,
+]
 
 
 def main(
     job_role_estimates_source: str,
     job_role_metadata_source: str,
-    filled_posts_estimates_source: str,
-    archive_destination: str,
+    job_role_estimates_destination: str,
+    job_role_metadata_destination: str,
+    job_role_geography_destination: str,
 ) -> None:
     """
-    Archives the independent CQC filled posts by job role estimates.
-
-    Also scans the job-role metadata and overall filled posts estimates datasets in
-    preparation for a future archive rework once the job-role dataset is restructured;
-    neither is used yet.
+    Archives the independent CQC filled posts by job role estimates, split into three
+    column-scoped outputs: estimates, metadata, and geography.
 
     Args:
         job_role_estimates_source (str): source s3 directory for the job role
             filled posts estimates
         job_role_metadata_source (str): source s3 directory for the job role merge
-            metadata (not yet used)
-        filled_posts_estimates_source (str): source s3 directory for the overall
-            filled posts estimates (not yet used)
-        archive_destination (str): s3 URI to write job role archive data to
+            metadata
+        job_role_estimates_destination (str): s3 URI to write the job role estimates
+            archive to
+        job_role_metadata_destination (str): s3 URI to write the job role metadata
+            archive to
+        job_role_geography_destination (str): s3 URI to write the job role geography
+            archive to
     """
     print("Archiving independent CQC filled posts by job role...")
 
-    job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
-    utils.scan_parquet(job_role_metadata_source)
-    utils.scan_parquet(filled_posts_estimates_source)
+    job_role_estimates_lf = utils.scan_parquet(
+        job_role_estimates_source,
+        selected_columns=JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
+    )
+    job_role_metadata_lf = utils.scan_parquet(
+        job_role_metadata_source,
+        selected_columns=JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
+    )
+    job_role_geography_lf = utils.scan_parquet(
+        job_role_metadata_source,
+        selected_columns=JOB_ROLE_GEOGRAPHY_ARCHIVE_COLUMNS,
+    )
 
-    print(f"Exporting as parquet to {archive_destination}")
+    print(f"Exporting as parquet to {job_role_estimates_destination}")
+    utils.sink_to_parquet(job_role_estimates_lf, job_role_estimates_destination)
 
-    utils.sink_to_parquet(job_role_estimates_lf, archive_destination)
+    print(f"Exporting as parquet to {job_role_metadata_destination}")
+    utils.sink_to_parquet(job_role_metadata_lf, job_role_metadata_destination)
+
+    print(f"Exporting as parquet to {job_role_geography_destination}")
+    utils.sink_to_parquet(job_role_geography_lf, job_role_geography_destination)
 
     print("Completed archive independent CQC filled posts by job role")
 
@@ -49,20 +112,25 @@ if __name__ == "__main__":
             "Source s3 directory for the job role merge metadata",
         ),
         (
-            "--filled_posts_estimates_source",
-            "Source s3 directory for the overall filled posts estimates",
+            "--job_role_estimates_destination",
+            "S3 URI to write the job role estimates archive to",
         ),
         (
-            "--archive_destination",
-            "S3 URI to write job role archive data to",
+            "--job_role_metadata_destination",
+            "S3 URI to write the job role metadata archive to",
+        ),
+        (
+            "--job_role_geography_destination",
+            "S3 URI to write the job role geography archive to",
         ),
     )
 
     main(
         job_role_estimates_source=args.job_role_estimates_source,
         job_role_metadata_source=args.job_role_metadata_source,
-        filled_posts_estimates_source=args.filled_posts_estimates_source,
-        archive_destination=args.archive_destination,
+        job_role_estimates_destination=args.job_role_estimates_destination,
+        job_role_metadata_destination=args.job_role_metadata_destination,
+        job_role_geography_destination=args.job_role_geography_destination,
     )
 
     print("Finished Archive Independent CQC Job Role Estimates job")
