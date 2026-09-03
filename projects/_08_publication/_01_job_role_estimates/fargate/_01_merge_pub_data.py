@@ -3,8 +3,6 @@ from projects._08_publication._01_job_role_estimates.fargate.utils import (
     merge_utils as mUtils,
 )
 
-# Comment to sync sample data to branch
-
 
 def main(
     jr_archive_estimates_source: str,
