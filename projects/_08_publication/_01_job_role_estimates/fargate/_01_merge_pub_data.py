@@ -4,11 +4,12 @@ from projects._08_publication._01_job_role_estimates.fargate.utils import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
+# primary_service_type doesn't exist in sample archive data. Uncomment when available.
 JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
     IndCQC.id_per_locationid_import_date,
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
-    IndCQC.primary_service_type,
+    # IndCQC.primary_service_type,
     IndCQC.main_job_role_clean_labelled,
     IndCQC.main_job_group_labelled,
     IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
