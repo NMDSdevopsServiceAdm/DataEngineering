@@ -802,3 +802,88 @@ class TestMergeUtilsData:
             },
         ),
     ]
+
+
+@dataclass
+class CreateSlvRateColumnsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
+class TestCleanUtilsData:
+    create_slv_rate_columns_test_cases = [
+        CreateSlvRateColumnsTestCase(
+            id="computes_rates_for_a_typical_row",
+            input_data={
+                SLVCols.employees: [8],
+                SLVCols.starters: [2],
+                SLVCols.leavers: [4],
+                SLVCols.vacancies: [2],
+            },
+            expected_data={
+                SLVCols.employees: [8],
+                SLVCols.starters: [2],
+                SLVCols.leavers: [4],
+                SLVCols.vacancies: [2],
+                SLVCols.turnover_rate: [0.5],
+                SLVCols.starter_rate: [0.25],
+                SLVCols.vacancy_rate: [0.2],
+            },
+        ),
+        CreateSlvRateColumnsTestCase(
+            id="returns_zero_rates_when_starters_leavers_vacancies_are_zero",
+            input_data={
+                SLVCols.employees: [5],
+                SLVCols.starters: [0],
+                SLVCols.leavers: [0],
+                SLVCols.vacancies: [0],
+            },
+            expected_data={
+                SLVCols.employees: [5],
+                SLVCols.starters: [0],
+                SLVCols.leavers: [0],
+                SLVCols.vacancies: [0],
+                SLVCols.turnover_rate: [0.0],
+                SLVCols.starter_rate: [0.0],
+                SLVCols.vacancy_rate: [0.0],
+            },
+        ),
+        CreateSlvRateColumnsTestCase(
+            id="returns_turnover_rate_above_one_when_leavers_exceed_employees",
+            input_data={
+                SLVCols.employees: [2],
+                SLVCols.starters: [0],
+                SLVCols.leavers: [3],
+                SLVCols.vacancies: [0],
+            },
+            expected_data={
+                SLVCols.employees: [2],
+                SLVCols.starters: [0],
+                SLVCols.leavers: [3],
+                SLVCols.vacancies: [0],
+                SLVCols.turnover_rate: [1.5],
+                SLVCols.starter_rate: [0.0],
+                SLVCols.vacancy_rate: [0.0],
+            },
+        ),
+        CreateSlvRateColumnsTestCase(
+            id="returns_null_rates_when_employees_is_null",
+            input_data={
+                SLVCols.employees: [None],
+                SLVCols.starters: [1],
+                SLVCols.leavers: [1],
+                SLVCols.vacancies: [1],
+            },
+            expected_data={
+                SLVCols.employees: [None],
+                SLVCols.starters: [1],
+                SLVCols.leavers: [1],
+                SLVCols.vacancies: [1],
+                SLVCols.turnover_rate: [None],
+                SLVCols.starter_rate: [None],
+                SLVCols.vacancy_rate: [None],
+            },
+        ),
+    ]

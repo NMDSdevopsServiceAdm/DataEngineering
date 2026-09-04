@@ -418,6 +418,21 @@ class RawDataAdjustmentsData:
 
     expected_locations_data = locations_data_without_rows_to_remove
 
+    known_duplicate_worker_rows = [
+        (
+            row["workerid"],
+            row["ascwds_worker_import_date"],
+            row["establishmentid"],
+        )
+        for row in EXCLUSIONS["worker"]
+    ]
+    unique_worker_row = ("9999999", "20240101", "1")
+
+    worker_data_with_known_duplicates = known_duplicate_worker_rows + [
+        unique_worker_row
+    ]
+    expected_worker_data_without_duplicates = [unique_worker_row]
+
 
 @dataclass
 class ReducedDataFilterCase:
@@ -597,6 +612,13 @@ class ColumnTypesData:
             actual=CatColType.JobGroupCatType,
             expected=pl.Categorical(
                 pl.Categories("job_group", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="main_job_role_id_cat_type",
+            actual=CatColType.MainJobRoleIdCatType,
+            expected=pl.Categorical(
+                pl.Categories("main_job_role_id", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(

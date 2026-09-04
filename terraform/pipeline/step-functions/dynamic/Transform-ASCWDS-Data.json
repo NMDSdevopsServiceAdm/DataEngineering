@@ -78,6 +78,46 @@
                   }
                 },
                 {
+                  "StartAt": "Clean Worker Data (Polars)",
+                  "States": {
+                    "Clean Worker Data (Polars)": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "LaunchType": "FARGATE",
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${ingest_task_arn}",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${ingest_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_01_ingest-container",
+                              "Command": [
+                                "clean_ascwds_worker_data.py",
+                                "--worker_source",
+                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                                "--cleaned_workplace_source",
+                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                                "--data_labels_source",
+                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=data_labels/data_labels_lookup.csv",
+                                "--cleaned_worker_destination",
+                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned_polars/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
                   "StartAt": "Validate Cleaned Workplace",
                   "States": {
                     "Validate Cleaned Workplace": {

@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any, Optional
 
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -32,6 +35,7 @@ from utils.column_values.categorical_column_values import (
 from utils.column_values.categorical_column_values import (
     SpecialistGeneralistOther as SpecGenOther,
 )
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass
@@ -2205,6 +2209,184 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
     ]
+
+
+@dataclass
+class RemoveWorkersWithoutWorkplacesTestCase:
+    id: str
+    worker_data: list[Any]
+    workplace_data: list[Any]
+    expected_data: list[Any]
+
+
+@dataclass
+class RemapMainjridCodesTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+
+@dataclass
+class ImputeNotKnownJobRolesTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+
+@dataclass
+class CreateCleanMainJobRoleColumnTestCase:
+    id: str
+    input_data: list[Any]
+    labels_data: list[Any]
+    expected_data: list[Any]
+
+
+@dataclass
+class TestCleanAscwdsWorkerUtilsData:
+    remove_workers_without_workplaces_test_cases = [
+        RemoveWorkersWithoutWorkplacesTestCase(
+            id="removes_workers_without_matching_workplace",
+            worker_data=[
+                ("1-000000001", "101", "100", "1", "20200101"),
+                ("1-000000002", "102", "101", "1", "20200101"),
+                ("1-000000004", "104", "103", "1", "20190101"),
+                ("1-000000005", "104", "104", "2", "19000101"),  # wrong import_date for establishment 104
+                ("1-000000006", "inv", "105", "3", "20200101"),  # establishment not in workplace data
+            ], # fmt: skip
+            workplace_data=[
+                ("1-000000001", "101", "20200101"),
+                ("1-000000002", "102", "20200101"),
+                ("1-000000004", "104", "20190101"),
+            ], # fmt: skip
+            expected_data=[
+                ("1-000000001", "101", "100", "1", "20200101"),
+                ("1-000000002", "102", "101", "1", "20200101"),
+                ("1-000000004", "104", "103", "1", "20190101"),
+            ], # fmt: skip
+        ),
+        RemoveWorkersWithoutWorkplacesTestCase(
+            id="keeps_workers_with_matching_workplace",
+            worker_data=[
+                ("1-000000001", "101", "100", "1", "20200101"),
+                ("1-000000002", "102", "101", "1", "20200101"),
+            ], # fmt: skip
+            workplace_data=[
+                ("1-000000001", "101", "20200101"),
+                ("1-000000002", "102", "20200101"),
+            ], # fmt: skip
+            expected_data=[
+                ("1-000000001", "101", "100", "1", "20200101"),
+                ("1-000000002", "102", "101", "1", "20200101"),
+            ], # fmt: skip
+        ),
+    ]
+
+    remap_mainjrid_codes_test_cases = [
+        RemapMainjridCodesTestCase(
+            id="maps_legacy_codes_to_current_codes",
+            input_data=[
+                ("1000", "41"),
+                ("1001", "22"),
+            ],
+            expected_data=[
+                ("1000", "40"),
+                ("1001", "27"),
+            ],
+        ),
+        RemapMainjridCodesTestCase(
+            id="does_not_change_unmapped_codes",
+            input_data=[
+                ("1002", "25"),
+                ("1003", "40"),
+            ],
+            expected_data=[
+                ("1002", "25"),
+                ("1003", "40"),
+            ],
+        ),
+    ]
+
+    impute_not_known_job_roles_test_cases = [
+        ImputeNotKnownJobRolesTestCase(
+            id="fills_with_next_known_value_when_before_first_known_value",
+            input_data=[
+                ("1001", date(2024, 1, 1), "-1"),
+                ("1001", date(2024, 3, 1), "8"),
+                ("1002", date(2024, 1, 1), "-1"),
+                ("1002", date(2024, 6, 1), "7"),
+            ],
+            expected_data=[
+                ("1001", date(2024, 1, 1), "8"),
+                ("1001", date(2024, 3, 1), "8"),
+                ("1002", date(2024, 1, 1), "7"),
+                ("1002", date(2024, 6, 1), "7"),
+            ],
+        ),
+        ImputeNotKnownJobRolesTestCase(
+            id="fills_with_previous_known_value_when_after_known_value",
+            input_data=[
+                ("1001", date(2024, 3, 1), "8"),
+                ("1001", date(2024, 4, 1), "-1"),
+                ("1002", date(2024, 3, 1), "7"),
+                ("1002", date(2024, 8, 1), "-1"),
+            ],
+            expected_data=[
+                ("1001", date(2024, 3, 1), "8"),
+                ("1001", date(2024, 4, 1), "8"),
+                ("1002", date(2024, 3, 1), "7"),
+                ("1002", date(2024, 8, 1), "7"),
+            ],
+        ),
+        ImputeNotKnownJobRolesTestCase(
+            id="fills_with_previous_known_value_when_between_known_values",
+            input_data=[
+                ("1001", date(2024, 3, 1), "8"),
+                ("1001", date(2024, 4, 1), "-1"),
+                ("1001", date(2024, 5, 1), "-1"),
+                ("1001", date(2024, 6, 1), "7"),
+            ],
+            expected_data=[
+                ("1001", date(2024, 3, 1), "8"),
+                ("1001", date(2024, 4, 1), "8"),
+                ("1001", date(2024, 5, 1), "8"),
+                ("1001", date(2024, 6, 1), "7"),
+            ],
+        ),
+        ImputeNotKnownJobRolesTestCase(
+            id="keeps_not_known_when_job_role_never_known",
+            input_data=[
+                ("1001", date(2024, 1, 1), "-1"),
+            ],
+            expected_data=[
+                ("1001", date(2024, 1, 1), "-1"),
+            ],
+        ),
+    ]
+
+    create_clean_main_job_role_column_case = CreateCleanMainJobRoleColumnTestCase(
+        id="remaps_imputes_filters_and_labels_job_roles",
+        input_data=[
+            ("101", date(2024, 1, 1), "-1"),
+            ("101", date(2025, 1, 1), "1"),
+            ("102", date(2025, 1, 1), "-1"),  # never known - filtered out
+            ("103", date(2024, 1, 1), "3"),
+            ("103", date(2025, 1, 1), "4"),
+            ("141", date(2025, 1, 1), "41"),  # legacy code, remapped to "40"
+        ],
+        labels_data=[
+            (AWKClean.main_job_role_clean, "1", MainJobRoleLabels.senior_management),
+            (AWKClean.main_job_role_clean, "3", MainJobRoleLabels.first_line_manager),
+            (AWKClean.main_job_role_clean, "4", MainJobRoleLabels.registered_manager),
+            (AWKClean.main_job_role_clean, "40", MainJobRoleLabels.care_coordinator),
+        ],
+        expected_data=[
+            ("101", date(2024, 1, 1), "-1", "1", MainJobRoleLabels.senior_management),
+            ("101", date(2025, 1, 1), "1", "1", MainJobRoleLabels.senior_management),
+            ("103", date(2024, 1, 1), "3", "3", MainJobRoleLabels.first_line_manager),
+            ("103", date(2025, 1, 1), "4", "4", MainJobRoleLabels.registered_manager),
+            ("141", date(2025, 1, 1), "41", "40", MainJobRoleLabels.care_coordinator),
+        ],
+    )
 
 
 @dataclass
