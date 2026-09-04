@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file.
 - Joined job role metadata to job role estimates in publication merge job. Also added select column lists
 but they're commented out due to sample archive data not representing real archive at this time.
 
+- Joined the geography data to the job role estimates in the publication merge job.
+
 
 ### Improved
 
