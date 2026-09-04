@@ -90,9 +90,8 @@ def main(
         job_role_geography_source,
         selected_columns=JOB_ROLE_GEOGRAPHY_ARCHIVE_COLUMNS,
     )
-    # Geography columns are fanned out per location earlier in the pipeline, so
-    # rows only differ by location_id's cqc_location_import_date - a plain
-    # .unique() collapses each location down to its single geography record.
+    # Geography values are fanned out per location earlier in the pipeline, so a
+    # plain .unique() safely collapses each location to a single record.
     job_role_geography_lf = job_role_geography_lf.unique()
 
     print(f"Exporting as parquet to {job_role_estimates_destination}")
