@@ -332,7 +332,7 @@ class BoundingExpressions:
     filled_posts_lower_bound: int = 1
 
     slv_bounding_cols: pl.selectors.Selector = expr.is_slv_job_role_column()
-    slv_lower_bound: int = 1
+    slv_lower_bound: int = 0
     slv_upper_bound: int = 998  # 999 has been used as code for not known
 
     filled_posts_expr: pl.Expr = (
@@ -343,14 +343,13 @@ class BoundingExpressions:
     )
 
     slv_expr: pl.Expr = (
-        (
-            pl.when(
-                (slv_bounding_cols.as_expr() < slv_lower_bound)
-                | (slv_bounding_cols.as_expr() > slv_upper_bound)
+        pl.when(
+            slv_bounding_cols.as_expr().is_between(
+                slv_lower_bound, slv_upper_bound, closed="both"
             )
         )
-        .then(None)
-        .otherwise(slv_bounding_cols)
+        .then(slv_bounding_cols)
+        .otherwise(None)
         .name.keep()
     )
 
