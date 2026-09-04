@@ -31,7 +31,7 @@ def main(
     """
     Merges archived job role estimates, metadata and geography data.
 
-    The joins are currently placeholders and don't yet combine the data.
+    The geography join is a placeholder.
 
     Args:
         jr_archive_estimates_source (str): source s3 directory for archived job role estimates data
