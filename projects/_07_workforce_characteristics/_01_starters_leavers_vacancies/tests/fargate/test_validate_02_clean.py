@@ -19,9 +19,12 @@ class TestMain:
             SLVCols.turnover_rate: pl.Float32,
             SLVCols.starter_rate: pl.Float32,
             SLVCols.vacancy_rate: pl.Float32,
+            SLVCols.turnover_rate_dedup: pl.Float32,
+            SLVCols.starter_rate_dedup: pl.Float32,
+            SLVCols.vacancy_rate_dedup: pl.Float32,
         }
         source_rows = [
-            ("1-001", 0.1, 0.2, 0.3),
+            ("1-001", 0.1, 0.2, 0.3, 0.1, 0.2, 0.3),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])

@@ -66,6 +66,25 @@ def main(
             na_pass=True,
             brief="vacancy_rate is between 0 and 1",
         )
+        .col_vals_ge(
+            SLVCols.turnover_rate_dedup,
+            0,
+            na_pass=True,
+            brief="turnover_rate_dedup is greater than or equal to 0",
+        )
+        .col_vals_ge(
+            SLVCols.starter_rate_dedup,
+            0,
+            na_pass=True,
+            brief="starter_rate_dedup is greater than or equal to 0",
+        )
+        .col_vals_between(
+            SLVCols.vacancy_rate_dedup,
+            0,
+            1,
+            na_pass=True,
+            brief="vacancy_rate_dedup is between 0 and 1",
+        )
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
