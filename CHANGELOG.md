@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added turnover, starter, and vacancy rate columns to the SLV clean job, derived from the employees, starters, leavers, and vacancies counts; the new rate columns are deduplicated over time alongside the existing counts.
 
 
 ### Changed
