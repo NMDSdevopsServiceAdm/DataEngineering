@@ -70,9 +70,8 @@ class TestMain:
         estimates_lf = Mock(name="estimates_lf")
         metadata_lf = Mock(name="metadata_lf")
         geography_lf = Mock(name="geography_lf")
-        deduped_geography_lf = Mock(name="deduped_geography_lf")
-        geography_lf.unique.return_value = deduped_geography_lf
         scan_parquet_mock.side_effect = [estimates_lf, metadata_lf, geography_lf]
+        deduped_geography_lf = geography_lf.unique.return_value
 
         job.main(
             ESTIMATES_SOURCE,
