@@ -1,11 +1,14 @@
+import re
 from datetime import datetime
 
+import boto3
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.file_utils import split_s3_uri
 
 most_recent_annual_estimate_date: str = "most_recent_annual_estimate_date"
 
@@ -90,3 +93,52 @@ def create_archive_date_partition_columns(
     )
 
     return lf
+
+
+def get_run_number(s3_roots: list[str]) -> int:
+    """
+    Finds the highest existing run_number already archived under each of the given
+    S3 roots, across all archive_dates, and confirms they agree.
+
+    Scans all objects under each s3_root and extracts the run_number values from
+    keys structured like:
+        bucket/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_estimates/
+
+    run_number is a single counter shared across every archive_date, not scoped
+    to a particular one, so this always looks at the full history under s3_root.
+
+    Args:
+        s3_roots (list[str]): S3 directories a set of related archive outputs are
+            written to (e.g. an archive job's estimates, metadata, and geography
+            destinations), which are expected to always share the same run_number.
+
+    Returns:
+        int: The highest existing run_number shared by all given s3_roots, or `0`
+            if none of them have any runs yet.
+
+    Raises:
+        ValueError: If the s3_roots disagree on the highest existing run_number.
+    """
+    s3_client = boto3.client("s3")
+    paginator = s3_client.get_paginator("list_objects_v2")
+
+    run_number_by_root: dict[str, int] = {}
+    for s3_root in s3_roots:
+        bucket, prefix = split_s3_uri(s3_root.rstrip("/") + "/")
+        pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
+
+        run_numbers = [
+            int(match.group(1))
+            for page in pages
+            for obj in page.get("Contents", [])
+            if (match := re.search(r"run_number=(\d+)", obj["Key"]))
+        ]
+        run_number_by_root[s3_root] = max(run_numbers, default=0)
+
+    distinct_run_numbers = set(run_number_by_root.values())
+    if len(distinct_run_numbers) > 1:
+        raise ValueError(
+            f"run_number has diverged between archive destinations: {run_number_by_root}"
+        )
+
+    return distinct_run_numbers.pop()
