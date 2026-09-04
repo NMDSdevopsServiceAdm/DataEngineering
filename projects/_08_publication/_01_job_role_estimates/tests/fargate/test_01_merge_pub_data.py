@@ -54,8 +54,9 @@ class TestMain:
         )
         joined_metadata_lf = archived_jr_estimate_lf.join.return_value
 
+        archived_geography_lf_unique = archived_geography_lf.unique.return_value
         joined_metadata_lf.join.assert_called_once_with(
-            archived_geography_lf,
+            archived_geography_lf_unique,
             on=job.IndCQC.id_per_locationid_import_date,
             how="left",
         )

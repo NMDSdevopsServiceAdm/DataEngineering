@@ -50,6 +50,7 @@ def main(
         metadata_lf, on=IndCQC.id_per_locationid_import_date, how="left"
     )
 
+    geography_lf = geography_lf.unique()
     jr_estimates_lf = jr_estimates_lf.join(
         geography_lf, on=IndCQC.id_per_locationid_import_date, how="left"
     )
