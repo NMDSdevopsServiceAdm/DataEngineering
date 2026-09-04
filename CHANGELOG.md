@@ -68,6 +68,7 @@ All notable changes to this project will be documented in this file.
 - Limited how long the ASC-WDS job role rolling ratio carries a workplace's known job role split: up to 2 years past their last submission (extrapolation), with gaps of up to 5 years filled in between (interpolation), instead of repeating it forever. Each workplace also now counts once towards the ratio regardless of size. Job role estimates for workplaces with submitted data are unaffected.
 
 - Removed split_dataset_for_imputation. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`). So all rows get sent to imputation, the calculations are applied over the group-columns, and then only specific rows (care home or not care home) get the coalesced results of imputation.
+- Job role estimates for the dates between and beyond a workplace's own submissions now follow the trend of similar workplaces, instead of repeating the last submitted job role split unchanged.
 
 - Removed the legacy PySpark impute and estimate-filled-posts jobs now that their Polars replacements are signed off, and dropped the `polars` suffix from their S3 paths and step-function state names now that only one implementation remains.
 - sfc_internal data now includes workplaces exceeding their *active* purge date. The merge coverage job adds a boolean column removed_by_purge_date_filter. The in_ascwds column now takes that filter into account. The reconciliation job also creates removed_by_purge_date_filter then filters upon it to remove purged workplaces.
@@ -83,6 +84,8 @@ All notable changes to this project will be documented in this file.
 - Added a `col_schema_match` check to the independent CQC clean and estimate validation jobs, catching future dtype regressions on the narrowed columns at the earliest validation step.
 
 - Removed a dead `lf.sort()` call (its result was never reassigned) in model_interpolation. Converted the module's remaining sorts to `over(..., order_by=...)`, measured as using much less peak memory than sorting.
+
+- Stopped the shared extrapolation and interpolation models recomputing the same window functions several times over. The first submission date and the previous and next submission dates are now read back as columns instead of having their expressions repeated, taking the job role imputation from 15 window evaluations to 10 with no change to its output.
 
 ### Fixed
 - Fixed Step Functions executions not actually stopping their underlying ECS task on manual stop, due to a missing IAM permission, and added a safety net to force-stop orphaned ECS tasks and Glue crawlers before a branch's infrastructure is destroyed in CI.
