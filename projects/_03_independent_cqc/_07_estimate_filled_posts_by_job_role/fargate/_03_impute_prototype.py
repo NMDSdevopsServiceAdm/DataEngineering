@@ -9,8 +9,10 @@ comparing the two aggregated trajectories puts a number on it.
 
 Writes a small, pre-aggregated comparison table (one row per primary service type, size
 group, job role and month) to its own dataset name, so it can never overwrite the real
-pipeline's output. Delete this file, its Dockerfile COPY line, its terraform module and
-its step function definition once the investigation concludes.
+pipeline's output. Runs as its own parallel branch alongside the real impute step in
+Ind-CQC-Filled-Post-Estimates-By-Role.json, reusing that task's existing image, IAM role
+and security group rather than standing up a separate task definition. Delete this file,
+its Dockerfile COPY line and that branch once the investigation concludes.
 """
 
 import polars as pl
