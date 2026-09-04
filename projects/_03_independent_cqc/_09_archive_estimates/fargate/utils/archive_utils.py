@@ -102,7 +102,7 @@ def get_run_number(s3_roots: list[str]) -> int:
 
     Scans all objects under each s3_root and extracts the run_number values from
     keys structured like:
-        s3_root/archive_date=<archive_date>/run_number=<run_number>/...
+        bucket/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_estimates/
 
     run_number is a single counter shared across every archive_date, not scoped
     to a particular one, so this always looks at the full history under s3_root.

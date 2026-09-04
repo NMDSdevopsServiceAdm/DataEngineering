@@ -68,11 +68,10 @@ def main(
     Archives the independent CQC filled posts by job role estimates, split into three
     column-scoped outputs: estimates, metadata, and geography.
 
-    Each output is partitioned by archive_date and run_number. run_number is a
-    single counter shared across all three outputs and every run, increasing by
-    1 each time (it never resets when archive_date changes), based on what
-    already exists across all three destinations. An error is raised if the
-    destinations disagree on the existing run_number.
+    Each output is partitioned by archive_date and run_number.
+    archive_date is a string formatted as yyyy-mm-dd.
+    run_number is an integer that is 1 + current run_number in s3.
+    An error is raised if the destinations disagree on the existing run_number.
 
     Args:
         job_role_estimates_source (str): source s3 directory for the job role
