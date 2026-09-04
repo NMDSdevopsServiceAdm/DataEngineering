@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a Polars clean job for ASCWDS worker data (`clean_ascwds_worker_data.py`) on the shared `_01_ingest` Fargate task, mirroring the existing workplace clean job, with job-role labels now sourced from the shared `data_labels_lookup.csv` lookup instead of a static Python dict. Wired into the Transform ASCWDS Step Function as a new parallel branch alongside the existing Glue jobs, writing to a `_polars`-suffixed dataset for comparison ahead of a future cutover.
 - Added turnover, starter, and vacancy rate columns to the SLV clean job, derived from the employees, starters, leavers, and vacancies counts; the new rate columns are deduplicated over time alongside the existing counts.
 
 
@@ -18,6 +19,10 @@ All notable changes to this project will be documented in this file.
 
 
 ### Improved
+
+
+### Fixed
+- Fixed `is_unique_worker_data` comparing a `Date` column against string dates from `exclusions.json`, meaning known duplicate worker rows were never actually excluded.
 
 
 ## [v2026.08.0] - 03/09/2026
