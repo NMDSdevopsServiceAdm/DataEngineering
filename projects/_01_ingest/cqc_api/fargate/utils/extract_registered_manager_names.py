@@ -43,14 +43,14 @@ def explode_contacts_information(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     # Explode regulated activities
-    lf = lf.explode(CQCLClean.regulated_activities)
+    lf = lf.explode(CQCLClean.regulated_activities, empty_as_null=True)
 
     # Explode contacts inside each regulated activity
     lf = lf.with_columns(
         pl.col(CQCLClean.regulated_activities)
         .struct.field(CQCLClean.contacts)
         .alias(CQCLClean.contacts_exploded)
-    ).explode(CQCLClean.contacts_exploded)
+    ).explode(CQCLClean.contacts_exploded, empty_as_null=True)
 
     lf = lf.filter(pl.col(CQCLClean.contacts_exploded).is_not_null())
 

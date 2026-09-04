@@ -7,11 +7,15 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added a Polars clean job for ASCWDS worker data (`clean_ascwds_worker_data.py`) on the shared `_01_ingest` Fargate task, mirroring the existing workplace clean job, with job-role labels now sourced from the shared `data_labels_lookup.csv` lookup instead of a static Python dict. Wired into the Transform ASCWDS Step Function as a new parallel branch alongside the existing Glue jobs, writing to a `_polars`-suffixed dataset for comparison ahead of a future cutover.
+- Added turnover, starter, and vacancy rate columns to the SLV clean job, derived from the employees, starters, leavers, and vacancies counts; the new rate columns are deduplicated over time alongside the existing counts.
+
 
 ### Changed
 - Duplicate-establishment nulling in the ASCWDS workplace clean job now checks whether a known duplicate group is still submitting identical data for a given import date before nulling it, instead of nulling unconditionally for every establishment on the list.
 
 - Updated publication step function merge job data sources to match sample archive data folder structure.
+
+- Updated polars (1.41.2 -> 1.44.1) and pointblank (0.24.0 -> 0.26.0), fixing a `.pivot()` performance regression and an 8-11x slowdown on per-row LazyFrame validation that were present at the old pins.
 
 
 ### Improved
