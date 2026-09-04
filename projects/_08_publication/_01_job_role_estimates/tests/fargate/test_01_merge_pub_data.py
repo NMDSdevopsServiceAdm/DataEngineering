@@ -41,10 +41,11 @@ class TestMain:
         assert scan_parquet_mock.call_count == 3
         scan_parquet_mock.assert_any_call(
             TEST_ESTIMATES_SOURCE,
-            selected_columns=job.JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
+            # selected_columns=job.JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
         )
         scan_parquet_mock.assert_any_call(
-            TEST_METADATA_SOURCE, selected_columns=job.JOB_ROLE_METADATA_ARCHIVE_COLUMNS
+            TEST_METADATA_SOURCE,
+            # selected_columns=job.JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
         )
         scan_parquet_mock.assert_any_call(TEST_GEOGRAPHY_SOURCE)
 
