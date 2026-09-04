@@ -19,9 +19,6 @@ import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.impute_utils as iUtils
 from polars_utils import utils
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._03_impute import (
-    NumericalValues,
-)
 from projects._03_independent_cqc.utils.imputation.extrapolation import (
     model_extrapolation,
 )
@@ -33,6 +30,12 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
+
+# Duplicated from _03_impute.py's NumericalValues rather than imported: the deployed
+# image copies pipeline entrypoint scripts flat into /app, so this file can't reach
+# _03_impute.py by its source package path at runtime. Keep in sync with that file.
+EXTRAPOLATION_PERIOD = "2y"
+INTERPOLATION_CAP_PERIOD = "5y"
 
 SHADOW_UNCLAMPED_RATIO = "shadow_unclamped_ratio"
 
@@ -140,8 +143,8 @@ def main(
 
     estimated_job_role_posts_lf = iUtils.create_ascwds_job_role_rolling_ratio(
         estimated_job_role_posts_lf,
-        extrapolation_period=NumericalValues.extrapolation_period,
-        interpolation_cap_period=NumericalValues.interpolation_cap_period,
+        extrapolation_period=EXTRAPOLATION_PERIOD,
+        interpolation_cap_period=INTERPOLATION_CAP_PERIOD,
     )
 
     # Real pipeline output, byte-for-byte: clamped at zero, then re-shared across job
