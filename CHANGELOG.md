@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
 
 - Joined job role metadata to job role estimates in publication merge job.
 
+- Changed the job-role geography archive to key on `location_id` instead of `id_per_locationid_import_date`, sourced directly from the independent CQC filled posts estimates dataset and deduplicated to one row per location.
+
 
 ### Improved
 
