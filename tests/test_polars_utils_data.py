@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
@@ -421,12 +421,12 @@ class RawDataAdjustmentsData:
     known_duplicate_worker_rows = [
         (
             row["workerid"],
-            datetime.strptime(row["ascwds_worker_import_date"], "%Y%m%d").date(),
+            row["ascwds_worker_import_date"],
             row["establishmentid"],
         )
         for row in EXCLUSIONS["worker"]
     ]
-    unique_worker_row = ("9999999", date(2024, 1, 1), "1")
+    unique_worker_row = ("9999999", "20240101", "1")
 
     worker_data_with_known_duplicates = known_duplicate_worker_rows + [
         unique_worker_row
@@ -619,13 +619,6 @@ class ColumnTypesData:
             actual=CatColType.MainJobRoleIdCatType,
             expected=pl.Categorical(
                 pl.Categories("main_job_role_id", namespace="filled_posts")
-            ),
-        ),
-        CategoricalColumnTypeCase(
-            id="main_job_role_label_cat_type",
-            actual=CatColType.MainJobRoleLabelCatType,
-            expected=pl.Categorical(
-                pl.Categories("main_job_role_label", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(

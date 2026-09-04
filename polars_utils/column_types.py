@@ -80,9 +80,6 @@ class CategoricalColumnTypes:
     MainJobRoleIdCatType = pl.Categorical(
         pl.Categories("main_job_role_id", namespace="filled_posts")
     )
-    MainJobRoleLabelCatType = pl.Categorical(
-        pl.Categories("main_job_role_label", namespace="filled_posts")
-    )
     MainServiceIdCatType = pl.Categorical(
         pl.Categories("main_service_id", namespace="filled_posts")
     )

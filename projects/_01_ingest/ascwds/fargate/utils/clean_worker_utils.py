@@ -10,8 +10,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 
 NOT_KNOWN_JOB_ROLE = "-1"
 
-LEGACY_JOB_ROLE_CODES = {"41": "40", "22": "27"}
-
 
 def remove_workers_without_workplaces(
     worker_lf: pl.LazyFrame, workplace_lf: pl.LazyFrame
@@ -56,8 +54,12 @@ def remap_mainjrid_codes(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: LazyFrame with the replaced value.
     """
+    legacy_job_role_codes = {
+        "41": "40",  # 'Care navigator' -> 'Care co-ordinator'
+        "22": "27",  # 'Technician' -> 'Other non-care related staff'
+    }
     return lf.with_columns(
-        pl.col(AWKClean.main_job_role_clean).replace(LEGACY_JOB_ROLE_CODES)
+        pl.col(AWKClean.main_job_role_clean).replace(legacy_job_role_codes)
     )
 
 
@@ -69,12 +71,6 @@ def impute_not_known_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     before that point), the nearest future known value instead. Rows where a
     worker's job role is never known on any import date keep the 'not known'
     value.
-
-    Performance note: the two `.over()` calls below are not yet covered by
-    Polars' streaming engine and fall back to the in-memory engine (confirmed
-    via a `POLARS_VERBOSE=1` run against production-scale data, not just
-    inferred from the `polars-streaming-check` skill's tracking-issue list).
-    This hasn't caused an OOM on this clean step.
 
     Args:
         lf (pl.LazyFrame): LazyFrame containing `worker_id`,
@@ -90,18 +86,12 @@ def impute_not_known_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
         .otherwise(pl.col(AWKClean.main_job_role_clean))
         .alias(AWKClean.main_job_role_clean)
     )
-    lf = lf.with_columns(
+    return lf.with_columns(
         pl.col(AWKClean.main_job_role_clean)
         .forward_fill()
-        .over(AWKClean.worker_id, order_by=AWKClean.ascwds_worker_import_date)
-    )
-    lf = lf.with_columns(
-        pl.col(AWKClean.main_job_role_clean)
         .backward_fill()
         .over(AWKClean.worker_id, order_by=AWKClean.ascwds_worker_import_date)
-    )
-    return lf.with_columns(
-        pl.col(AWKClean.main_job_role_clean).fill_null(NOT_KNOWN_JOB_ROLE)
+        .fill_null(NOT_KNOWN_JOB_ROLE)
     )
 
 

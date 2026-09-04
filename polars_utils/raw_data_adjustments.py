@@ -1,10 +1,8 @@
 import json
-from datetime import datetime
 from pathlib import Path
 
 import polars as pl
 
-from polars_utils.cleaning_utils import DATE_FORMAT
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -19,10 +17,13 @@ EXCLUSIONS = json.loads(CONFIG.read_text())
 def is_unique_worker_data() -> pl.Expr:
     """Identifies unique records by excluding known duplicates in the raw data.
 
+    Must be used before `import_date` is dropped or cast, as it matches
+    against the raw string value straight from `exclusions.json`.
+
     There are no required args but the expression should be used on a DataFrame
     which include columns:
             - workerid
-            - ascwds_worker_import_date (a Date column)
+            - import_date (the raw String column, not the cast Date column)
             - establishmentid
 
     Returns:
@@ -31,9 +32,7 @@ def is_unique_worker_data() -> pl.Expr:
     duplicate_workers = [
         {
             AWKClean.worker_id: row["workerid"],
-            AWKClean.ascwds_worker_import_date: datetime.strptime(
-                row["ascwds_worker_import_date"], DATE_FORMAT
-            ).date(),
+            AWKClean.import_date: row["ascwds_worker_import_date"],
             AWKClean.establishment_id: row["establishmentid"],
         }
         for row in EXCLUSIONS["worker"]
@@ -41,7 +40,7 @@ def is_unique_worker_data() -> pl.Expr:
     return (
         pl.struct(
             pl.col(AWKClean.worker_id),
-            pl.col(AWKClean.ascwds_worker_import_date),
+            pl.col(AWKClean.import_date),
             pl.col(AWKClean.establishment_id),
         )
         .is_in(duplicate_workers)

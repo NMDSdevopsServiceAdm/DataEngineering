@@ -78,7 +78,7 @@ def main(
             CategoricalColumnTypes.MainJobRoleIdCatType
         ),
         pl.col(AWKClean.main_job_role_clean_labelled).cast(
-            CategoricalColumnTypes.MainJobRoleLabelCatType
+            CategoricalColumnTypes.JobRoleCatType
         ),
     )
 

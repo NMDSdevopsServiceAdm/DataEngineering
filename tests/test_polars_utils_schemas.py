@@ -156,7 +156,7 @@ class RawDataAdjustmentsSchemas:
     worker_data_schema = pl.Schema(
         [
             (AWKClean.worker_id, pl.String()),
-            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.import_date, pl.String()),
             (AWKClean.establishment_id, pl.String()),
         ]
     )
