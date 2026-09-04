@@ -2276,6 +2276,11 @@ class TestCleanAscwdsWorkplaceUtilsData:
             input_data={AWPClean.job_role_01_starters: 0},
             expected_data={AWPClean.job_role_01_starters: 0},
         ),
+        SlvExpressionBoundsTestCase(
+            id="does_not_bound_temporary_column",
+            input_data={AWPClean.job_role_01_temporary: 0},
+            expected_data={AWPClean.job_role_01_temporary: 0},
+        ),
     ]
 
 

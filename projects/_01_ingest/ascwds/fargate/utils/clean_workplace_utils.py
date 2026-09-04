@@ -343,12 +343,12 @@ class BoundingExpressions:
     ]
     filled_posts_lower_bound: int = 1
 
-    slv_bounding_cols: pl.selectors.Selector = cs.starts_with("jr") & cs.ends_with(
-        "strt", "stop", "vacy"
+    slv_bounding_cols: pl.selectors.Selector = (
+        expr.is_slv_job_role_column() & ~cs.ends_with("emp")
     )
-    employees_bounding_cols: pl.selectors.Selector = cs.starts_with(
-        "jr"
-    ) & cs.ends_with("emp")
+    employees_bounding_cols: pl.selectors.Selector = (
+        expr.is_slv_job_role_column() & cs.ends_with("emp")
+    )
     slv_lower_bound: int = 0
     employees_lower_bound: int = 1
     slv_upper_bound: int = 998  # 999 has been used as code for not known
