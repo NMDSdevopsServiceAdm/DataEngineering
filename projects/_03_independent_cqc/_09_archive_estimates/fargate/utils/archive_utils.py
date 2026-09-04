@@ -95,36 +95,51 @@ def create_archive_date_partition_columns(
     return lf
 
 
-def get_run_number(s3_root: str, archive_date: str) -> int:
+def get_run_number(s3_roots: list[str], archive_date: str) -> int:
     """
-    Finds the highest existing run_number already archived under an S3 root for a given archive_date.
+    Finds the highest existing run_number already archived under each of the given
+    S3 roots for a given archive_date, and confirms they agree.
 
-    Scans all objects under s3_root/archive_date=<archive_date>/ and extracts the
-    run_number values from keys structured like:
+    Scans all objects under s3_root/archive_date=<archive_date>/ for each s3_root
+    and extracts the run_number values from keys structured like:
         s3_root/archive_date=<archive_date>/run_number=<run_number>/...
 
     Args:
-        s3_root (str): S3 directory an archive job writes to (e.g.
-            "s3://pipeline-resources/domain=x/dataset=y/").
+        s3_roots (list[str]): S3 directories a set of related archive outputs are
+            written to (e.g. an archive job's estimates, metadata, and geography
+            destinations), which are expected to always share the same run_number.
         archive_date (str): The archive_date partition value to scope the search
             to, formatted "YYYY-MM-DD".
 
     Returns:
-        int: The highest existing run_number for the given archive_date, or `0`
-            if none exist.
-    """
-    bucket, prefix = split_s3_uri(s3_root.rstrip("/") + "/")
-    date_prefix = f"{prefix}archive_date={archive_date}/"
+        int: The highest existing run_number shared by all given s3_roots for the
+            given archive_date, or `0` if none of them have any runs yet.
 
+    Raises:
+        ValueError: If the s3_roots disagree on the highest existing run_number.
+    """
     s3_client = boto3.client("s3")
     paginator = s3_client.get_paginator("list_objects_v2")
-    pages = paginator.paginate(Bucket=bucket, Prefix=date_prefix)
 
-    run_numbers = []
-    for page in pages:
-        for obj in page.get("Contents", []):
-            match = re.search(r"run_number=(\d+)", obj["Key"])
-            if match:
-                run_numbers.append(int(match.group(1)))
+    run_number_by_root: dict[str, int] = {}
+    for s3_root in s3_roots:
+        bucket, prefix = split_s3_uri(s3_root.rstrip("/") + "/")
+        date_prefix = f"{prefix}archive_date={archive_date}/"
+        pages = paginator.paginate(Bucket=bucket, Prefix=date_prefix)
 
-    return max(run_numbers, default=0)
+        run_numbers = [
+            int(match.group(1))
+            for page in pages
+            for obj in page.get("Contents", [])
+            if (match := re.search(r"run_number=(\d+)", obj["Key"]))
+        ]
+        run_number_by_root[s3_root] = max(run_numbers, default=0)
+
+    distinct_run_numbers = set(run_number_by_root.values())
+    if len(distinct_run_numbers) > 1:
+        raise ValueError(
+            "run_number has diverged between archive destinations for "
+            f"archive_date={archive_date}: {run_number_by_root}"
+        )
+
+    return distinct_run_numbers.pop()

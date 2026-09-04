@@ -24,7 +24,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.aUtils.get_run_number")
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_scans_each_source_with_its_expected_columns(
+    def test_main_scans_and_sinks(
         self,
         scan_parquet_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -32,11 +32,11 @@ class TestMain:
         datetime_mock: Mock,
     ):
         datetime_mock.now.return_value = datetime(2026, 9, 4)
-        get_run_number_mock.return_value = 0
+        get_run_number_mock.return_value = 2
         scan_parquet_mock.side_effect = [
             pl.LazyFrame({"dummy": [1]}),
-            pl.LazyFrame({"dummy": [1]}),
-            pl.LazyFrame({"dummy": [1]}),
+            pl.LazyFrame({"dummy": [2]}),
+            pl.LazyFrame({"dummy": [3]}),
         ]
 
         job.main(
@@ -65,33 +65,6 @@ class TestMain:
             ]
         )
 
-    @patch(f"{PATCH_PATH}.datetime")
-    @patch(f"{PATCH_PATH}.aUtils.get_run_number")
-    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_sinks_each_output_to_its_expected_destination_partitioned_by_archive_date_and_run_number(
-        self,
-        scan_parquet_mock: Mock,
-        sink_to_parquet_mock: Mock,
-        get_run_number_mock: Mock,
-        datetime_mock: Mock,
-    ):
-        datetime_mock.now.return_value = datetime(2026, 9, 4)
-        get_run_number_mock.return_value = 2
-        scan_parquet_mock.side_effect = [
-            pl.LazyFrame({"dummy": [1]}),
-            pl.LazyFrame({"dummy": [2]}),
-            pl.LazyFrame({"dummy": [3]}),
-        ]
-
-        job.main(
-            ESTIMATES_SOURCE,
-            METADATA_SOURCE,
-            ESTIMATES_DESTINATION,
-            METADATA_DESTINATION,
-            GEOGRAPHY_DESTINATION,
-        )
-
         assert sink_to_parquet_mock.call_count == 3
         expected_destinations = [
             ESTIMATES_DESTINATION,
@@ -113,7 +86,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.aUtils.get_run_number")
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_run_number_is_looked_up_once_from_the_estimates_destination_for_the_current_archive_date(
+    def test_run_number_is_looked_up_once_across_all_destinations_for_the_current_archive_date(
         self,
         scan_parquet_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -136,4 +109,7 @@ class TestMain:
             GEOGRAPHY_DESTINATION,
         )
 
-        get_run_number_mock.assert_called_once_with(ESTIMATES_DESTINATION, "2026-09-04")
+        get_run_number_mock.assert_called_once_with(
+            [ESTIMATES_DESTINATION, METADATA_DESTINATION, GEOGRAPHY_DESTINATION],
+            "2026-09-04",
+        )
