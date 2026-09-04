@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
 
 - Updated polars (1.41.2 -> 1.44.1) and pointblank (0.24.0 -> 0.26.0), fixing a `.pivot()` performance regression and an 8-11x slowdown on per-row LazyFrame validation that were present at the old pins.
 
+- Joined job role metadata to job role estimates in publication merge job.
+
 
 ### Improved
 
