@@ -95,25 +95,26 @@ def create_archive_date_partition_columns(
     return lf
 
 
-def get_run_number(s3_roots: list[str], archive_date: str) -> int:
+def get_run_number(s3_roots: list[str]) -> int:
     """
     Finds the highest existing run_number already archived under each of the given
-    S3 roots for a given archive_date, and confirms they agree.
+    S3 roots, across all archive_dates, and confirms they agree.
 
-    Scans all objects under s3_root/archive_date=<archive_date>/ for each s3_root
-    and extracts the run_number values from keys structured like:
+    Scans all objects under each s3_root and extracts the run_number values from
+    keys structured like:
         s3_root/archive_date=<archive_date>/run_number=<run_number>/...
+
+    run_number is a single counter shared across every archive_date, not scoped
+    to a particular one, so this always looks at the full history under s3_root.
 
     Args:
         s3_roots (list[str]): S3 directories a set of related archive outputs are
             written to (e.g. an archive job's estimates, metadata, and geography
             destinations), which are expected to always share the same run_number.
-        archive_date (str): The archive_date partition value to scope the search
-            to, formatted "YYYY-MM-DD".
 
     Returns:
-        int: The highest existing run_number shared by all given s3_roots for the
-            given archive_date, or `0` if none of them have any runs yet.
+        int: The highest existing run_number shared by all given s3_roots, or `0`
+            if none of them have any runs yet.
 
     Raises:
         ValueError: If the s3_roots disagree on the highest existing run_number.
@@ -124,8 +125,7 @@ def get_run_number(s3_roots: list[str], archive_date: str) -> int:
     run_number_by_root: dict[str, int] = {}
     for s3_root in s3_roots:
         bucket, prefix = split_s3_uri(s3_root.rstrip("/") + "/")
-        date_prefix = f"{prefix}archive_date={archive_date}/"
-        pages = paginator.paginate(Bucket=bucket, Prefix=date_prefix)
+        pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
 
         run_numbers = [
             int(match.group(1))
@@ -138,8 +138,7 @@ def get_run_number(s3_roots: list[str], archive_date: str) -> int:
     distinct_run_numbers = set(run_number_by_root.values())
     if len(distinct_run_numbers) > 1:
         raise ValueError(
-            "run_number has diverged between archive destinations for "
-            f"archive_date={archive_date}: {run_number_by_root}"
+            f"run_number has diverged between archive destinations: {run_number_by_root}"
         )
 
     return distinct_run_numbers.pop()

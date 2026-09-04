@@ -65,6 +65,10 @@ class TestMain:
             ]
         )
 
+        get_run_number_mock.assert_called_once_with(
+            [ESTIMATES_DESTINATION, METADATA_DESTINATION, GEOGRAPHY_DESTINATION]
+        )
+
         assert sink_to_parquet_mock.call_count == 3
         expected_destinations = [
             ESTIMATES_DESTINATION,
@@ -81,35 +85,3 @@ class TestMain:
             collected = sunk_lf.collect()
             assert collected[ArchiveKeys.archive_date].to_list() == ["2026-09-04"]
             assert collected[ArchiveKeys.run_number].to_list() == [3]
-
-    @patch(f"{PATCH_PATH}.datetime")
-    @patch(f"{PATCH_PATH}.aUtils.get_run_number")
-    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_run_number_is_looked_up_once_across_all_destinations_for_the_current_archive_date(
-        self,
-        scan_parquet_mock: Mock,
-        sink_to_parquet_mock: Mock,
-        get_run_number_mock: Mock,
-        datetime_mock: Mock,
-    ):
-        datetime_mock.now.return_value = datetime(2026, 9, 4)
-        get_run_number_mock.return_value = 0
-        scan_parquet_mock.side_effect = [
-            pl.LazyFrame({"dummy": [1]}),
-            pl.LazyFrame({"dummy": [1]}),
-            pl.LazyFrame({"dummy": [1]}),
-        ]
-
-        job.main(
-            ESTIMATES_SOURCE,
-            METADATA_SOURCE,
-            ESTIMATES_DESTINATION,
-            METADATA_DESTINATION,
-            GEOGRAPHY_DESTINATION,
-        )
-
-        get_run_number_mock.assert_called_once_with(
-            [ESTIMATES_DESTINATION, METADATA_DESTINATION, GEOGRAPHY_DESTINATION],
-            "2026-09-04",
-        )
