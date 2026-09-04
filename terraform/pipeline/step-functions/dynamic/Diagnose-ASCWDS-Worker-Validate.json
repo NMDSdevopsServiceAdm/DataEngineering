@@ -1,0 +1,45 @@
+{
+  "Comment": "THROWAWAY diagnostic for ticket 2005 - manual-start only, never auto-triggered. Re-runs the real validate_clean_ascwds_worker_data.py check chain instrumented with RunDiagnostics to re-measure where memory peaks occur against real worker_cleaned_polars data. Delete once the investigation concludes.",
+  "StartAt": "Diagnose Validate Cleaned Worker (Polars)",
+  "States": {
+    "Diagnose Validate Cleaned Worker (Polars)": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "LaunchType": "FARGATE",
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${ingest_task_arn}",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${ingest_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_01_ingest-container",
+              "Command": [
+                "validate_clean_ascwds_worker_data_prototype.py",
+                "--bucket_name",
+                "${dataset_bucket_name}",
+                "--source_path",
+                "domain=ASCWDS/dataset=worker_cleaned_polars/",
+                "--reports_path",
+                "domain=data_validation_reports/dataset=validation_ascwds_worker_cleaned_polars_diag/"
+              ],
+              "Environment": [
+                {
+                  "Name": "POLARS_VERBOSE",
+                  "Value": "1"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}
