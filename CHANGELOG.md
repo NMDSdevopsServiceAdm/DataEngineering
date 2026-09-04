@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Partitioned the job role archive job's outputs (estimates, metadata, geography) by `archive_date` and `run_number`, with `run_number` incrementing per archive_date and shared across all three outputs for a given run.
 
 
 ### Changed

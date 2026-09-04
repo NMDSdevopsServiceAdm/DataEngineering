@@ -1,11 +1,14 @@
+import re
 from datetime import datetime
 
+import boto3
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.file_utils import split_s3_uri
 
 most_recent_annual_estimate_date: str = "most_recent_annual_estimate_date"
 
@@ -90,3 +93,38 @@ def create_archive_date_partition_columns(
     )
 
     return lf
+
+
+def get_run_number(s3_root: str, archive_date: str) -> int:
+    """
+    Finds the highest existing run_number already archived under an S3 root for a given archive_date.
+
+    Scans all objects under s3_root/archive_date=<archive_date>/ and extracts the
+    run_number values from keys structured like:
+        s3_root/archive_date=<archive_date>/run_number=<run_number>/...
+
+    Args:
+        s3_root (str): S3 directory an archive job writes to (e.g.
+            "s3://pipeline-resources/domain=x/dataset=y/").
+        archive_date (str): The archive_date partition value to scope the search
+            to, formatted "YYYY-MM-DD".
+
+    Returns:
+        int: The highest existing run_number for the given archive_date, or `0`
+            if none exist.
+    """
+    bucket, prefix = split_s3_uri(s3_root.rstrip("/") + "/")
+    date_prefix = f"{prefix}archive_date={archive_date}/"
+
+    s3_client = boto3.client("s3")
+    paginator = s3_client.get_paginator("list_objects_v2")
+    pages = paginator.paginate(Bucket=bucket, Prefix=date_prefix)
+
+    run_numbers = []
+    for page in pages:
+        for obj in page.get("Contents", []):
+            match = re.search(r"run_number=(\d+)", obj["Key"])
+            if match:
+                run_numbers.append(int(match.group(1)))
+
+    return max(run_numbers, default=0)

@@ -1,4 +1,12 @@
+from datetime import datetime
+
+import polars as pl
+
+import projects._03_independent_cqc._09_archive_estimates.fargate.utils.archive_utils as aUtils
 from polars_utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
@@ -60,6 +68,11 @@ def main(
     Archives the independent CQC filled posts by job role estimates, split into three
     column-scoped outputs: estimates, metadata, and geography.
 
+    Each output is partitioned by archive_date and run_number. run_number is shared
+    across all three outputs for a given run, and increments per archive_date
+    (starting again at 1 once the date changes), based on what already exists under
+    the estimates destination.
+
     Args:
         job_role_estimates_source (str): source s3 directory for the job role
             filled posts estimates
@@ -74,6 +87,10 @@ def main(
     """
     print("Archiving independent CQC filled posts by job role...")
 
+    archive_date = datetime.now().strftime("%Y-%m-%d")
+    run_number = aUtils.get_run_number(job_role_estimates_destination, archive_date) + 1
+    partition_keys = [ArchiveKeys.archive_date, ArchiveKeys.run_number]
+
     job_role_estimates_lf = utils.scan_parquet(
         job_role_estimates_source,
         selected_columns=JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
@@ -87,14 +104,39 @@ def main(
         selected_columns=JOB_ROLE_GEOGRAPHY_ARCHIVE_COLUMNS,
     )
 
+    job_role_estimates_lf = job_role_estimates_lf.with_columns(
+        pl.lit(archive_date).alias(ArchiveKeys.archive_date),
+        pl.lit(run_number).alias(ArchiveKeys.run_number),
+    )
+    job_role_metadata_lf = job_role_metadata_lf.with_columns(
+        pl.lit(archive_date).alias(ArchiveKeys.archive_date),
+        pl.lit(run_number).alias(ArchiveKeys.run_number),
+    )
+    job_role_geography_lf = job_role_geography_lf.with_columns(
+        pl.lit(archive_date).alias(ArchiveKeys.archive_date),
+        pl.lit(run_number).alias(ArchiveKeys.run_number),
+    )
+
     print(f"Exporting as parquet to {job_role_estimates_destination}")
-    utils.sink_to_parquet(job_role_estimates_lf, job_role_estimates_destination)
+    utils.sink_to_parquet(
+        job_role_estimates_lf,
+        job_role_estimates_destination,
+        partition_cols=partition_keys,
+    )
 
     print(f"Exporting as parquet to {job_role_metadata_destination}")
-    utils.sink_to_parquet(job_role_metadata_lf, job_role_metadata_destination)
+    utils.sink_to_parquet(
+        job_role_metadata_lf,
+        job_role_metadata_destination,
+        partition_cols=partition_keys,
+    )
 
     print(f"Exporting as parquet to {job_role_geography_destination}")
-    utils.sink_to_parquet(job_role_geography_lf, job_role_geography_destination)
+    utils.sink_to_parquet(
+        job_role_geography_lf,
+        job_role_geography_destination,
+        partition_cols=partition_keys,
+    )
 
     print("Completed archive independent CQC filled posts by job role")
 

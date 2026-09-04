@@ -1,7 +1,7 @@
 import unittest
 from dataclasses import fields
 from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -131,4 +131,66 @@ class CreateArchiveDatePartitionColumns(unittest.TestCase):
         )
         pl_testing.assert_frame_equal(
             returned_lf, self.expected_partitions_when_date_has_double_digits_lf
+        )
+
+
+class TestGetRunNumber:
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_returns_zero_when_no_runs_exist_for_the_archive_date(
+        self, mock_boto_client: Mock
+    ):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [{"Contents": []}]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        run_number = job.get_run_number(
+            "s3://test-bucket/domain=test/dataset=archive/", "2026-09-04"
+        )
+
+        assert run_number == 0
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_returns_highest_existing_run_number_for_the_archive_date(
+        self, mock_boto_client: Mock
+    ):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [
+            {
+                "Contents": [
+                    {
+                        "Key": "domain=test/dataset=archive/archive_date=2026-09-04/run_number=1/file.parquet"
+                    },
+                    {
+                        "Key": "domain=test/dataset=archive/archive_date=2026-09-04/run_number=3/file.parquet"
+                    },
+                ]
+            }
+        ]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        run_number = job.get_run_number(
+            "s3://test-bucket/domain=test/dataset=archive/", "2026-09-04"
+        )
+
+        assert run_number == 3
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_scopes_the_search_to_the_given_archive_date(self, mock_boto_client: Mock):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [{"Contents": []}]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        job.get_run_number(
+            "s3://test-bucket/domain=test/dataset=archive/", "2026-09-04"
+        )
+
+        mock_paginator.paginate.assert_called_once_with(
+            Bucket="test-bucket",
+            Prefix="domain=test/dataset=archive/archive_date=2026-09-04/",
         )
