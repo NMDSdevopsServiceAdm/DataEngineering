@@ -1,7 +1,4 @@
 from polars_utils import utils
-from projects._08_publication._01_job_role_estimates.fargate.utils import (
-    merge_utils as mUtils,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 # Commented out because the sample archive does not reflect the actual archive.
@@ -31,8 +28,6 @@ def main(
     """
     Merges archived job role estimates, metadata and geography data.
 
-    The geography join is a placeholder.
-
     Args:
         jr_archive_estimates_source (str): source s3 directory for archived job role estimates data
         jr_archive_metadata_source (str): source s3 directory for archived job role metadata data
@@ -55,7 +50,9 @@ def main(
         metadata_lf, on=IndCQC.id_per_locationid_import_date, how="left"
     )
 
-    # TODO: mUtils.join_geography(merged_lf, geography_lf).
+    jr_estimates_lf = jr_estimates_lf.join(
+        geography_lf, on=IndCQC.id_per_locationid_import_date, how="left"
+    )
 
     utils.sink_to_parquet(
         lazy_df=jr_estimates_lf,

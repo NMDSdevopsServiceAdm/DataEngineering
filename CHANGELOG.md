@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
 
 - Joined job role metadata to job role estimates in publication merge job.
 
+- Joined the geography data to the job role estimates in the publication merge job.
+
 
 ### Improved
 

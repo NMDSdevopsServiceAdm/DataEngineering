@@ -14,12 +14,10 @@ TEST_DESTINATION = "some/other/directory"
 
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    # @patch(f"{PATCH_PATH}.mUtils.join_geography")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        # join_geography_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         archived_jr_estimate_lf = Mock(name="archived_jr_estimate_lf")
@@ -56,11 +54,14 @@ class TestMain:
         )
         joined_metadata_lf = archived_jr_estimate_lf.join.return_value
 
-        # join_geography_mock.assert_called_once_with(
-        #     estimates_and_metadata_lf, archived_geography_lf
-        # )
+        joined_metadata_lf.join.assert_called_once_with(
+            archived_geography_lf,
+            on=job.IndCQC.id_per_locationid_import_date,
+            how="left",
+        )
+        joined_geography_lf = joined_metadata_lf.join.return_value
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=joined_metadata_lf,
+            lazy_df=joined_geography_lf,
             output_path=TEST_DESTINATION,
         )
