@@ -71,10 +71,10 @@ class ASCWDSWorkerCleanedCategoricalValues:
         value_to_remove=[MainJobRoleID.technician, MainJobRoleID.care_navigator],
     )
     employment_status_id_column_values = EmploymentStatusID(
-        AWKClean.employment_status_clean
+        AWKClean.employment_status_clean, contains_null_values=True
     )
     employment_status_labels_column_values = EmploymentStatusLabels(
-        AWKClean.employment_status_clean_labelled
+        AWKClean.employment_status_clean_labelled, contains_null_values=True
     )
 
 
