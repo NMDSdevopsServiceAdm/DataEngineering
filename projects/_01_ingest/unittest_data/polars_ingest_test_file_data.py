@@ -35,7 +35,10 @@ from utils.column_values.categorical_column_values import (
 from utils.column_values.categorical_column_values import (
     SpecialistGeneralistOther as SpecGenOther,
 )
-from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_values.categorical_column_values import (
+    EmploymentStatusLabels,
+    MainJobRoleLabels,
+)
 
 
 @dataclass
@@ -2315,6 +2318,14 @@ class CreateCleanMainJobRoleColumnTestCase:
 
 
 @dataclass
+class CreateCleanEmploymentStatusColumnTestCase:
+    id: str
+    input_data: list[Any]
+    labels_data: list[Any]
+    expected_data: list[Any]
+
+
+@dataclass
 class TestCleanAscwdsWorkerUtilsData:
     remove_workers_without_workplaces_test_cases = [
         RemoveWorkersWithoutWorkplacesTestCase(
@@ -2459,6 +2470,58 @@ class TestCleanAscwdsWorkerUtilsData:
             ("103", date(2025, 1, 1), "4", "4", MainJobRoleLabels.registered_manager),
             ("141", date(2025, 1, 1), "41", "40", MainJobRoleLabels.care_coordinator),
         ],
+    )
+
+    create_clean_employment_status_column_case = (
+        CreateCleanEmploymentStatusColumnTestCase(
+            id="nulls_not_recorded_and_labels_known_codes",
+            input_data=[
+                ("101", "190"),
+                ("102", "191"),
+                ("103", "192"),
+                ("104", "193"),
+                ("105", "194"),
+                ("106", "196"),
+                ("107", "-1"),  # not recorded - nulled, not filtered
+            ],
+            labels_data=[
+                (
+                    AWKClean.employment_status_clean,
+                    "190",
+                    EmploymentStatusLabels.permanent,
+                ),
+                (
+                    AWKClean.employment_status_clean,
+                    "191",
+                    EmploymentStatusLabels.temporary,
+                ),
+                (
+                    AWKClean.employment_status_clean,
+                    "192",
+                    EmploymentStatusLabels.bank_or_pool,
+                ),
+                (
+                    AWKClean.employment_status_clean,
+                    "193",
+                    EmploymentStatusLabels.agency,
+                ),
+                (
+                    AWKClean.employment_status_clean,
+                    "194",
+                    EmploymentStatusLabels.student,
+                ),
+                (AWKClean.employment_status_clean, "196", EmploymentStatusLabels.other),
+            ],
+            expected_data=[
+                ("101", "190", "190", EmploymentStatusLabels.permanent),
+                ("102", "191", "191", EmploymentStatusLabels.temporary),
+                ("103", "192", "192", EmploymentStatusLabels.bank_or_pool),
+                ("104", "193", "193", EmploymentStatusLabels.agency),
+                ("105", "194", "194", EmploymentStatusLabels.student),
+                ("106", "196", "196", EmploymentStatusLabels.other),
+                ("107", "-1", None, None),
+            ],
+        )
     )
 
 

@@ -23,6 +23,8 @@ def build_source_df() -> pl.DataFrame:
             ASCWKClean.ascwds_worker_import_date: date(2000, 1, 1),
             ASCWKClean.main_job_role_clean: "8",
             ASCWKClean.main_job_role_clean_labelled: "care_worker",
+            ASCWKClean.employment_status_clean: "190",
+            ASCWKClean.employment_status_clean_labelled: "permanent",
         },
         schema={
             ASCWKClean.location_id: pl.String,
@@ -32,6 +34,8 @@ def build_source_df() -> pl.DataFrame:
             ASCWKClean.ascwds_worker_import_date: pl.Date,
             ASCWKClean.main_job_role_clean: CategoricalColumnTypes.MainJobRoleIdCatType,
             ASCWKClean.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleCatType,
+            ASCWKClean.employment_status_clean: CategoricalColumnTypes.EmploymentStatusIdCatType,
+            ASCWKClean.employment_status_clean_labelled: CategoricalColumnTypes.EmploymentStatusCatType,
         },
     )
 

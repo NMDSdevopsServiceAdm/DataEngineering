@@ -21,6 +21,12 @@ columns = {
     ASCWKClean.ascwds_worker_import_date: "Date",
     ASCWKClean.main_job_role_clean: str(CategoricalColumnTypes.MainJobRoleIdCatType),
     ASCWKClean.main_job_role_clean_labelled: str(CategoricalColumnTypes.JobRoleCatType),
+    ASCWKClean.employment_status_clean: str(
+        CategoricalColumnTypes.EmploymentStatusIdCatType
+    ),
+    ASCWKClean.employment_status_clean_labelled: str(
+        CategoricalColumnTypes.EmploymentStatusCatType
+    ),
 }
 EXPECTED_SCHEMA = pb.Schema(columns)
 
@@ -74,6 +80,17 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         .col_vals_in_set(
             ASCWKClean.main_job_role_clean_labelled,
             CatValues.main_job_role_labels_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            ASCWKClean.employment_status_clean,
+            [*CatValues.employment_status_id_column_values.categorical_values, None],
+        )
+        .col_vals_in_set(
+            ASCWKClean.employment_status_clean_labelled,
+            [
+                *CatValues.employment_status_labels_column_values.categorical_values,
+                None,
+            ],
         )
         # distinct values
         .specially(

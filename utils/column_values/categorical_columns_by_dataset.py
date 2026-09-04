@@ -28,6 +28,8 @@ from utils.column_values.categorical_column_values import (
     ContemporaryCSSR,
     CurrentCSSR,
     Dormancy,
+    EmploymentStatusID,
+    EmploymentStatusLabels,
     EstablishmentType,
     EstimateFilledPostsSource,
     InAscwds,
@@ -67,6 +69,12 @@ class ASCWDSWorkerCleanedCategoricalValues:
     main_job_role_id_column_values = MainJobRoleID(
         AWKClean.main_job_role_clean,
         value_to_remove=[MainJobRoleID.technician, MainJobRoleID.care_navigator],
+    )
+    employment_status_id_column_values = EmploymentStatusID(
+        AWKClean.employment_status_clean
+    )
+    employment_status_labels_column_values = EmploymentStatusLabels(
+        AWKClean.employment_status_clean_labelled
     )
 
 

@@ -150,3 +150,57 @@ class TestCreateCleanMainJobRoleColumn:
         )
 
         assert "102" not in returned_worker_ids
+
+
+class TestCreateCleanEmploymentStatusColumn:
+    case = Data.create_clean_employment_status_column_case
+    input_lf = pl.LazyFrame(
+        case.input_data,
+        schema=Schemas.create_clean_employment_status_column_schema,
+        orient="row",
+    )
+    labels_lf = pl.LazyFrame(
+        case.labels_data, schema=Schemas.data_labels_schema, orient="row"
+    )
+    expected_lf = pl.LazyFrame(
+        case.expected_data,
+        schema=Schemas.expected_create_clean_employment_status_column_schema,
+        orient="row",
+    )
+    returned_lf = job.create_clean_employment_status_column(input_lf, labels_lf)
+
+    def test_returns_expected_employment_status_clean_values(self):
+        pl_testing.assert_frame_equal(
+            self.returned_lf.sort(AWKClean.worker_id).select(
+                AWKClean.worker_id, AWKClean.employment_status_clean
+            ),
+            self.expected_lf.sort(AWKClean.worker_id).select(
+                AWKClean.worker_id, AWKClean.employment_status_clean
+            ),
+        )
+
+    def test_nulls_not_recorded_value(self):
+        returned_value = (
+            self.returned_lf.filter(pl.col(AWKClean.worker_id) == "107")
+            .select(AWKClean.employment_status_clean)
+            .collect()
+            .item()
+        )
+
+        assert returned_value is None
+
+    def test_returns_expected_employment_status_clean_labelled_values(self):
+        pl_testing.assert_frame_equal(
+            self.returned_lf.sort(AWKClean.worker_id).select(
+                AWKClean.worker_id, AWKClean.employment_status_clean_labelled
+            ),
+            self.expected_lf.sort(AWKClean.worker_id).select(
+                AWKClean.worker_id, AWKClean.employment_status_clean_labelled
+            ),
+        )
+
+    def test_does_not_change_row_count(self):
+        assert (
+            self.returned_lf.select(pl.len()).collect().item()
+            == self.input_lf.select(pl.len()).collect().item()
+        )

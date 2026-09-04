@@ -12,6 +12,7 @@ class TestMain:
     CLEANED_WORKER_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.create_clean_employment_status_column")
     @patch(f"{PATCH_PATH}.wUtils.create_clean_main_job_role_column")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
     @patch(f"{PATCH_PATH}.wUtils.remove_workers_without_workplaces")
@@ -26,6 +27,7 @@ class TestMain:
         remove_workers_without_workplaces_mock: Mock,
         scan_csv_mock: Mock,
         create_clean_main_job_role_column_mock: Mock,
+        create_clean_employment_status_column_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -51,6 +53,7 @@ class TestMain:
             self.DATA_LABELS_SOURCE, schema=job.data_labels_schema
         )
         create_clean_main_job_role_column_mock.assert_called_once()
+        create_clean_employment_status_column_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             ANY, output_path=self.CLEANED_WORKER_DESTINATION

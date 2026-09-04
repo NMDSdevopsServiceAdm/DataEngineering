@@ -9,6 +9,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 
 NOT_KNOWN_JOB_ROLE = "-1"
+NOT_RECORDED_EMPLOYMENT_STATUS = "-1"
 
 
 def remove_workers_without_workplaces(
@@ -120,5 +121,35 @@ def create_clean_main_job_role_column(
         lf,
         data_labels_lf,
         [AWKClean.main_job_role_clean],
+        add_as_new_column=True,
+    )
+
+
+def create_clean_employment_status_column(
+    lf: pl.LazyFrame, data_labels_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """Cleans the employment status column and adds its categorical labels as a new column.
+
+    Unlike job role, "not recorded" (`"-1"`) rows are kept and nulled rather than filtered
+    out or imputed, since not every worker's employment status is expected to be known.
+
+    Args:
+        lf (pl.LazyFrame): LazyFrame containing the original employment status column.
+        data_labels_lf (pl.LazyFrame): LazyFrame mapping employment status codes to labels.
+
+    Returns:
+        pl.LazyFrame: LazyFrame with the cleaned and labelled employment status columns.
+    """
+    lf = lf.with_columns(
+        pl.when(pl.col(AWKClean.employment_status) == NOT_RECORDED_EMPLOYMENT_STATUS)
+        .then(None)
+        .otherwise(pl.col(AWKClean.employment_status))
+        .alias(AWKClean.employment_status_clean)
+    )
+
+    return cUtils.apply_categorical_labels(
+        lf,
+        data_labels_lf,
+        [AWKClean.employment_status_clean],
         add_as_new_column=True,
     )

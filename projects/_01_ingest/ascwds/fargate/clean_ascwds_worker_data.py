@@ -18,6 +18,7 @@ WORKER_SCHEMA = {
     AWKClean.establishment_id: pl.String,
     AWKClean.worker_id: pl.String,
     AWKClean.main_job_role_id: pl.String,
+    AWKClean.employment_status: pl.String,
     AWKClean.import_date: pl.String,
 }
 
@@ -71,6 +72,7 @@ def main(
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
 
     worker_lf = wUtils.create_clean_main_job_role_column(worker_lf, data_labels_lf)
+    worker_lf = wUtils.create_clean_employment_status_column(worker_lf, data_labels_lf)
 
     # Cast to Categorical here so it's saved in the output parquet file.
     worker_lf = worker_lf.with_columns(
@@ -79,6 +81,12 @@ def main(
         ),
         pl.col(AWKClean.main_job_role_clean_labelled).cast(
             CategoricalColumnTypes.JobRoleCatType
+        ),
+        pl.col(AWKClean.employment_status_clean).cast(
+            CategoricalColumnTypes.EmploymentStatusIdCatType
+        ),
+        pl.col(AWKClean.employment_status_clean_labelled).cast(
+            CategoricalColumnTypes.EmploymentStatusCatType
         ),
     )
 
