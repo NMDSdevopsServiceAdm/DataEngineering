@@ -40,6 +40,12 @@ class ArchivePartitionKeys:
 
 
 @dataclass
+class ArchiveDateRunNumberPartitionKeys:
+    archive_date: str = "archive_date"
+    run_number: str = "run_number"
+
+
+@dataclass
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
     activity_count: str = "activity_count"
