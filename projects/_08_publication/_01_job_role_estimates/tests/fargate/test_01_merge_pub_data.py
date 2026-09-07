@@ -54,8 +54,9 @@ class TestMain:
         )
         joined_metadata_lf = archived_jr_estimate_lf.join.return_value
 
+        cast_locationid_lf = archived_geography_lf.with_columns.return_value
         joined_metadata_lf.join.assert_called_once_with(
-            archived_geography_lf,
+            cast_locationid_lf,
             on=job.IndCQC.location_id,
             how="left",
         )

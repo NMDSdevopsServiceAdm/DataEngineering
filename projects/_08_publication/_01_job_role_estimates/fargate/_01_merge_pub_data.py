@@ -1,4 +1,7 @@
+import polars as pl
+
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
@@ -41,7 +44,9 @@ def main(
         jr_archive_metadata_source,
         selected_columns=JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
     )
-    geography_lf = utils.scan_parquet(jr_archive_geography_source)
+    geography_lf = utils.scan_parquet(jr_archive_geography_source).with_columns(
+        pl.col(IndCQC.location_id).cast(CatColType.LocationCatType)
+    )
 
     jr_estimates_lf = jr_estimates_lf.join(
         metadata_lf, on=IndCQC.id_per_locationid_import_date, how="left"
