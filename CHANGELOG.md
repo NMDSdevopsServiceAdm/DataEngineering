@@ -23,8 +23,11 @@ All notable changes to this project will be documented in this file.
 
 - Changed the job-role geography archive to key on `location_id` instead of `id_per_locationid_import_date`, sourced directly from the independent CQC filled posts estimates dataset and deduplicated to one row per location.
 
+- Job role estimates for the dates between and beyond a workplace's own submissions now follow the trend of similar workplaces, instead of repeating the last submitted job role split unchanged.
+
 
 ### Improved
+- Stopped the shared extrapolation and interpolation models recomputing the same window functions several times over. The first submission date and the previous and next submission dates are now read back as columns instead of having their expressions repeated, taking the job role imputation from 15 window evaluations to 10 with no change to its output.
 
 
 ### Fixed
