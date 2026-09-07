@@ -56,7 +56,7 @@ class TestMain:
 
         joined_metadata_lf.join.assert_called_once_with(
             archived_geography_lf,
-            on=job.IndCQC.id_per_locationid_import_date,
+            on=job.IndCQC.location_id,
             how="left",
         )
         joined_geography_lf = joined_metadata_lf.join.return_value
