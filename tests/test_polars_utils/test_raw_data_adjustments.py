@@ -59,3 +59,21 @@ class IsValidLocationTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
+
+
+class TestIsUniqueWorkerData:
+    def test_excludes_known_duplicate_worker_rows(self):
+        input_lf = pl.LazyFrame(
+            Data.worker_data_with_known_duplicates,
+            schema=Schemas.worker_data_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            Data.expected_worker_data_without_duplicates,
+            schema=Schemas.worker_data_schema,
+            orient="row",
+        )
+
+        returned_lf = input_lf.filter(job.is_unique_worker_data())
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

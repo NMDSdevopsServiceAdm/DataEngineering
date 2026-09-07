@@ -1,10 +1,11 @@
 import unittest
 from dataclasses import fields
 from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import projects._03_independent_cqc._09_archive_estimates.fargate.utils.archive_utils as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
@@ -132,3 +133,151 @@ class CreateArchiveDatePartitionColumns(unittest.TestCase):
         pl_testing.assert_frame_equal(
             returned_lf, self.expected_partitions_when_date_has_double_digits_lf
         )
+
+
+class TestGetRunNumber:
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_returns_zero_when_no_runs_exist(self, mock_boto_client: Mock):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [{"Contents": []}]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        run_number = job.get_run_number(
+            ["s3://test-bucket/domain=test/dataset=archive/"]
+        )
+
+        assert run_number == 0
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_returns_highest_existing_run_number(self, mock_boto_client: Mock):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [
+            {
+                "Contents": [
+                    {
+                        "Key": "domain=test/dataset=archive/archive_date=2026-09-04/run_number=1/file.parquet"
+                    },
+                    {
+                        "Key": "domain=test/dataset=archive/archive_date=2026-09-04/run_number=3/file.parquet"
+                    },
+                ]
+            }
+        ]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        run_number = job.get_run_number(
+            ["s3://test-bucket/domain=test/dataset=archive/"]
+        )
+
+        assert run_number == 3
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_does_not_reset_the_count_when_archive_date_changes(
+        self, mock_boto_client: Mock
+    ):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [
+            {
+                "Contents": [
+                    {
+                        "Key": "domain=test/dataset=archive/archive_date=2026-09-03/run_number=5/file.parquet"
+                    },
+                    {
+                        "Key": "domain=test/dataset=archive/archive_date=2026-09-04/run_number=2/file.parquet"
+                    },
+                ]
+            }
+        ]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        run_number = job.get_run_number(
+            ["s3://test-bucket/domain=test/dataset=archive/"]
+        )
+
+        assert run_number == 5
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_scopes_the_search_to_the_given_s3_root(self, mock_boto_client: Mock):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [{"Contents": []}]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        job.get_run_number(["s3://test-bucket/domain=test/dataset=archive/"])
+
+        mock_paginator.paginate.assert_called_once_with(
+            Bucket="test-bucket",
+            Prefix="domain=test/dataset=archive/",
+        )
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_returns_the_shared_run_number_when_all_destinations_agree(
+        self, mock_boto_client: Mock
+    ):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [
+            {
+                "Contents": [
+                    {
+                        "Key": "domain=test/dataset=archive/archive_date=2026-09-04/run_number=2/file.parquet"
+                    },
+                ]
+            }
+        ]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        run_number = job.get_run_number(
+            [
+                "s3://test-bucket/domain=test/dataset=estimates/",
+                "s3://test-bucket/domain=test/dataset=metadata/",
+                "s3://test-bucket/domain=test/dataset=geography/",
+            ]
+        )
+
+        assert run_number == 2
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_raises_when_destinations_disagree_on_the_existing_run_number(
+        self, mock_boto_client: Mock
+    ):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.side_effect = [
+            [
+                {
+                    "Contents": [
+                        {
+                            "Key": "domain=test/dataset=estimates/archive_date=2026-09-04/run_number=3/file.parquet"
+                        },
+                    ]
+                }
+            ],
+            [
+                {
+                    "Contents": [
+                        {
+                            "Key": "domain=test/dataset=metadata/archive_date=2026-09-04/run_number=2/file.parquet"
+                        },
+                    ]
+                }
+            ],
+        ]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        with pytest.raises(ValueError, match="run_number has diverged"):
+            job.get_run_number(
+                [
+                    "s3://test-bucket/domain=test/dataset=estimates/",
+                    "s3://test-bucket/domain=test/dataset=metadata/",
+                ]
+            )

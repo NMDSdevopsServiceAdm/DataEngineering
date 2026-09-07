@@ -77,6 +77,9 @@ class CategoricalColumnTypes:
     LocationCatType = pl.Categorical(
         pl.Categories("location", namespace="filled_posts")
     )
+    MainJobRoleIdCatType = pl.Categorical(
+        pl.Categories("main_job_role_id", namespace="filled_posts")
+    )
     MainServiceIdCatType = pl.Categorical(
         pl.Categories("main_service_id", namespace="filled_posts")
     )
