@@ -20,7 +20,7 @@ def main(
     """
     lf = utils.scan_parquet(merge_data_source)
 
-    lf = lf.filter(cUtils.cqc_location_import_date_filter_expr())
+    lf = lf.filter(cUtils.published_data_filter_expr())
 
     # See clean_utils/test_clean_utils for placeholders.
 
