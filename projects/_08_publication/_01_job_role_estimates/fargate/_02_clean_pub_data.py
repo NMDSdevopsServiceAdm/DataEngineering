@@ -20,6 +20,8 @@ def main(
     """
     lf = utils.scan_parquet(merge_data_source)
 
+    lf = lf.filter(cUtils.cqc_location_import_date_filter_expr())
+
     # See clean_utils/test_clean_utils for placeholders.
 
     # TODO: Add capacity tracker filters. Call one at a time as three are developed.
