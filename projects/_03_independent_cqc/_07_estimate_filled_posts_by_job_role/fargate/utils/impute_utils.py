@@ -356,8 +356,6 @@ def add_imputed_ascwds_job_role_ratios(
                 lower_bound=0
             )
         )
-        # Trend interpolation returns Float64, so cast before this lands on the full frame.
-        .cast(pl.Float32)
         .alias(TempCols.unnormalised_ratios)
     ).drop(
         IndCQC.extrapolation_forwards,

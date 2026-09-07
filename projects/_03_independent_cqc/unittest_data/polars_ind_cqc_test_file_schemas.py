@@ -1592,7 +1592,7 @@ class InterpolationSchema:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_pir_merged: pl.Float64,
         IndCQC.extrapolation_forwards: pl.Float64,
-        IndCQC.interpolation_model: pl.Float64,
+        IndCQC.interpolation_model: pl.Float32,
     }
 
     calculate_residual_schema = {
@@ -1619,7 +1619,7 @@ class InterpolationSchema:
         IndCQC.residual: pl.Float64,
         IndCQC.days_between_submissions: pl.Int64,
         IndCQC.proportion_of_days_between_submissions: pl.Float64,
-        IndCQC.interpolation_model: pl.Float64,
+        IndCQC.interpolation_model: pl.Float32,
     }
 
 

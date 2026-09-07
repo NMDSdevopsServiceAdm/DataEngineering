@@ -242,9 +242,13 @@ def calculate_interpolated_values(
     else:
         condition_is_true = pl.lit(True)
 
-    interpolated_value = pl.col(column_to_interpolate_from) + (
-        pl.col(IndCqc.residual) * pl.col(IndCqc.proportion_of_days_between_submissions)
-    )
+    interpolated_value = (
+        pl.col(column_to_interpolate_from)
+        + (
+            pl.col(IndCqc.residual)
+            * pl.col(IndCqc.proportion_of_days_between_submissions)
+        )
+    ).cast(pl.Float32)
 
     lf = lf.with_columns(
         pl.when(condition_is_true).then(interpolated_value).alias(new_column_name)
