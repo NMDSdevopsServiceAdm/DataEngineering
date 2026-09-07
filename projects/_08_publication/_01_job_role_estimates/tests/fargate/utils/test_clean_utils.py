@@ -8,32 +8,31 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 
 TODAY = date(2026, 9, 1)
-CUTOFF_DATE = date(2020, 4, 1)
 
 
-class TestCqcLocationImportDateFilterExpr:
+class TestPublishedDataFilterExpr:
     @pytest.mark.parametrize(
         "import_date, is_kept",
         [
-            pytest.param(date(2020, 3, 31), False, id="just_before_cutoff_is_removed"),
+            pytest.param(date(2020, 3, 31), False, id="just_before_cutoff_is_removed"), # Cutoff is 2020, 4, 1
             pytest.param(date(2020, 4, 1), True, id="cutoff_date_is_kept"),
             pytest.param(date(2026, 8, 1), True, id="recent_date_is_kept"),
         ],
-    )
+    ) # fmt: skip
     def test_keeps_rows_on_or_after_six_financial_years_before_today(
         self, import_date, is_kept
     ):
         input_lf = pl.LazyFrame({IndCQC.cqc_location_import_date: [import_date]})
 
-        expr = job.cqc_location_import_date_filter_expr(today=TODAY)
+        expr = job.published_data_filter_expr(today=TODAY)
         returned_lf = input_lf.filter(expr)
 
         assert (returned_lf.collect().height == 1) == is_kept
 
     def test_defaults_today_to_current_date_when_not_passed(self):
-        input_lf = pl.LazyFrame({IndCQC.cqc_location_import_date: [CUTOFF_DATE]})
+        input_lf = pl.LazyFrame({IndCQC.cqc_location_import_date: [date.today()]})
 
-        expr = job.cqc_location_import_date_filter_expr()
+        expr = job.published_data_filter_expr()
         returned_lf = input_lf.filter(expr)
 
         assert returned_lf.collect().height == 1
