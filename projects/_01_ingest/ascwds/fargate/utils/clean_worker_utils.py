@@ -9,7 +9,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 
 NOT_KNOWN_JOB_ROLE = "-1"
-NOT_RECORDED_EMPLOYMENT_STATUS = "-1"
 
 
 def remove_workers_without_workplaces(
@@ -140,8 +139,9 @@ def create_clean_employment_status_column(
     Returns:
         pl.LazyFrame: LazyFrame with the cleaned and labelled employment status columns.
     """
+    not_recorded_employment_status = "-1"
     lf = lf.with_columns(
-        pl.when(pl.col(AWKClean.employment_status) == NOT_RECORDED_EMPLOYMENT_STATUS)
+        pl.when(pl.col(AWKClean.employment_status) == not_recorded_employment_status)
         .then(None)
         .otherwise(pl.col(AWKClean.employment_status))
         .alias(AWKClean.employment_status_clean)
