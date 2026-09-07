@@ -84,14 +84,11 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         )
         .col_vals_in_set(
             ASCWKClean.employment_status_clean,
-            [*CatValues.employment_status_id_column_values.categorical_values, None],
+            CatValues.employment_status_id_column_values.categorical_values,
         )
         .col_vals_in_set(
             ASCWKClean.employment_status_clean_labelled,
-            [
-                *CatValues.employment_status_labels_column_values.categorical_values,
-                None,
-            ],
+            CatValues.employment_status_labels_column_values.categorical_values,
         )
         # distinct values
         .specially(

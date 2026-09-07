@@ -179,16 +179,6 @@ class TestCreateCleanEmploymentStatusColumn:
             ),
         )
 
-    def test_nulls_not_recorded_value(self):
-        returned_value = (
-            self.returned_lf.filter(pl.col(AWKClean.worker_id) == "107")
-            .select(AWKClean.employment_status_clean)
-            .collect()
-            .item()
-        )
-
-        assert returned_value is None
-
     def test_returns_expected_employment_status_clean_labelled_values(self):
         pl_testing.assert_frame_equal(
             self.returned_lf.sort(AWKClean.worker_id).select(
