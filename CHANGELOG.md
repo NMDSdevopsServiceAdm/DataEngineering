@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed `is_unique_worker_data` comparing a `Date` column against string dates from `exclusions.json`, meaning known duplicate worker rows were never actually excluded.
 - Fixed ASCWDS SLV job role columns incorrectly nulling legitimate zero values during cleaning, while keeping employees counts bounded to at least 1 to avoid a divide-by-zero in downstream turnover/vacancy rate calculations.
+- Restored the publication merge job's archive column selection now that the sample archive data matches the current schema.
 
 
 ## [v2026.08.0] - 03/09/2026
