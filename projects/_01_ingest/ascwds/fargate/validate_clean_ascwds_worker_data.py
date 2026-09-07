@@ -18,6 +18,7 @@ columns = {
     ASCWKClean.establishment_id: "String",
     ASCWKClean.worker_id: "String",
     ASCWKClean.main_job_role_id: "String",
+    ASCWKClean.employment_status: "String",
     ASCWKClean.ascwds_worker_import_date: "Date",
     ASCWKClean.main_job_role_clean: str(CategoricalColumnTypes.MainJobRoleIdCatType),
     ASCWKClean.main_job_role_clean_labelled: str(CategoricalColumnTypes.JobRoleCatType),
