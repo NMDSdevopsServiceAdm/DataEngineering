@@ -21,16 +21,17 @@ PARTITION_KEYS = [ArchiveKeys.archive_date, ArchiveKeys.run_number]
 
 
 class TestMain:
-    @patch(f"{PATCH_PATH}.datetime")
-    @patch(f"{PATCH_PATH}.aUtils.get_run_number")
+
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.aUtils.get_run_number")
+    @patch(f"{PATCH_PATH}.datetime")
     def test_main_scans_all_three_sources_with_expected_columns(
         self,
+        datetime_mock: Mock,
+        get_run_number_mock: Mock,
         scan_parquet_mock: Mock,
         sink_to_parquet_mock: Mock,
-        get_run_number_mock: Mock,
-        datetime_mock: Mock,
     ):
         datetime_mock.now.return_value = datetime(2026, 9, 4)
         get_run_number_mock.return_value = 2
@@ -90,11 +91,17 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.aUtils.get_run_number")
+    @patch(f"{PATCH_PATH}.datetime")
     def test_main_sinks_deduplicated_geography_data(
         self,
+        datetime_mock: Mock,
+        get_run_number_mock: Mock,
         scan_parquet_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
+        datetime_mock.now.return_value = datetime(2026, 9, 4)
+        get_run_number_mock.return_value = 2
         estimates_lf = Mock(name="estimates_lf")
         metadata_lf = Mock(name="metadata_lf")
         geography_lf = Mock(name="geography_lf")
@@ -112,5 +119,7 @@ class TestMain:
 
         geography_lf.unique.assert_called_once_with()
         sink_to_parquet_mock.assert_any_call(
-            deduped_geography_lf, GEOGRAPHY_DESTINATION
+            deduped_geography_lf.with_columns.return_value,
+            GEOGRAPHY_DESTINATION,
+            partition_cols=PARTITION_KEYS,
         )
