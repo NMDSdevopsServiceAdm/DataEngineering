@@ -48,7 +48,7 @@ def main(
     )
 
     jr_estimates_lf = jr_estimates_lf.join(
-        geography_lf, on=IndCQC.id_per_locationid_import_date, how="left"
+        geography_lf, on=IndCQC.location_id, how="left"
     )
 
     utils.sink_to_parquet(
