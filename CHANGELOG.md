@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a Polars clean job for ASCWDS worker data (`clean_ascwds_worker_data.py`) on the shared `_01_ingest` Fargate task, mirroring the existing workplace clean job, with job-role labels now sourced from the shared `data_labels_lookup.csv` lookup instead of a static Python dict. Wired into the Transform ASCWDS Step Function as a new parallel branch alongside the existing Glue jobs, writing to a `_polars`-suffixed dataset for comparison ahead of a future cutover.
+- Added turnover, starter, and vacancy rate columns to the SLV clean job, derived from the employees, starters, leavers, and vacancies counts; the new rate columns are deduplicated over time alongside the existing counts.
+- Added a Polars/pointblank validate job for cleaned ASCWDS worker data (`validate_clean_ascwds_worker_data.py`) on the shared `_01_ingest` Fargate task, mirroring the existing workplace validate job. Wired into the Transform ASCWDS Step Function immediately after the Polars worker clean job, alongside the existing Glue-based worker validate job.
 
 
 ### Changed
@@ -15,8 +18,17 @@ All notable changes to this project will be documented in this file.
 
 - Updated polars (1.41.2 -> 1.44.1) and pointblank (0.24.0 -> 0.26.0), fixing a `.pivot()` performance regression and an 8-11x slowdown on per-row LazyFrame validation that were present at the old pins.
 
+- Joined job role metadata to job role estimates in publication merge job.
+
+- Changed the job-role geography archive to key on `location_id` instead of `id_per_locationid_import_date`, sourced directly from the independent CQC filled posts estimates dataset and deduplicated to one row per location.
+
 
 ### Improved
+
+
+### Fixed
+- Fixed `is_unique_worker_data` comparing a `Date` column against string dates from `exclusions.json`, meaning known duplicate worker rows were never actually excluded.
+- Fixed ASCWDS SLV job role columns incorrectly nulling legitimate zero values during cleaning, while keeping employees counts bounded to at least 1 to avoid a divide-by-zero in downstream turnover/vacancy rate calculations.
 
 
 ## [v2026.08.0] - 03/09/2026

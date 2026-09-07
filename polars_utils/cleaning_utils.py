@@ -7,6 +7,8 @@ from polars_utils.expressions import is_care_home, is_not_care_home
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
+DATE_FORMAT = "%Y%m%d"
+
 
 def add_aligned_date_column(
     primary_lf: pl.LazyFrame,
@@ -175,14 +177,13 @@ def column_to_date(
     Returns:
         pl.LazyFrame: LazyFrame with the converted date column.
     """
-    string_format = "%Y%m%d"
     target_col = new_column or column
 
     return lf.with_columns(
         pl.col(column)
         .cast(pl.Utf8)
         .str.replace_all("-", "")
-        .str.to_date(string_format)
+        .str.to_date(DATE_FORMAT)
         .alias(target_col)
     )
 

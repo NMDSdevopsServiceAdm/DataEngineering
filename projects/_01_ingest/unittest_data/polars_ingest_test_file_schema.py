@@ -2,6 +2,9 @@ from dataclasses import dataclass
 
 import polars as pl
 
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -11,6 +14,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -520,4 +524,48 @@ class TestCleanAscwdsWorkplaceUtilsSchemas:
         AWPClean.main_service_id: pl.String,
         AWPClean.version: pl.String,
         AWPClean.import_date: pl.Date,
+    }
+
+
+@dataclass
+class TestCleanAscwdsWorkerUtilsSchemas:
+    worker_schema = {
+        AWKClean.location_id: pl.String,
+        AWKClean.establishment_id: pl.String,
+        AWKClean.worker_id: pl.String,
+        AWKClean.main_job_role_id: pl.String,
+        AWKClean.import_date: pl.String,
+    }
+    workplace_schema = {
+        AWPClean.location_id: pl.String,
+        AWPClean.establishment_id: pl.String,
+        AWPClean.import_date: pl.String,
+    }
+    expected_remove_workers_without_workplaces_schema = worker_schema
+
+    remap_mainjrid_codes_schema = {
+        AWKClean.worker_id: pl.String,
+        AWKClean.main_job_role_clean: pl.String,
+    }
+
+    impute_not_known_job_roles_schema = {
+        AWKClean.worker_id: pl.String,
+        AWKClean.ascwds_worker_import_date: pl.Date,
+        AWKClean.main_job_role_clean: pl.String,
+    }
+
+    create_clean_main_job_role_column_schema = {
+        AWKClean.worker_id: pl.String,
+        AWKClean.ascwds_worker_import_date: pl.Date,
+        AWKClean.main_job_role_id: pl.String,
+    }
+    expected_create_clean_main_job_role_column_schema = {
+        **create_clean_main_job_role_column_schema,
+        AWKClean.main_job_role_clean: pl.String,
+        AWKClean.main_job_role_clean_labelled: pl.String,
+    }
+    data_labels_schema = {
+        DLC.column_name: pl.String,
+        DLC.code: pl.String,
+        DLC.label: pl.String,
     }

@@ -3,6 +3,9 @@ from dataclasses import dataclass
 import polars as pl
 
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -148,6 +151,13 @@ class RawDataAdjustmentsSchemas:
         [
             (CQCLClean.location_id, pl.String()),
             ("other_column", pl.String()),
+        ]
+    )
+    worker_data_schema = pl.Schema(
+        [
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.import_date, pl.String()),
+            (AWKClean.establishment_id, pl.String()),
         ]
     )
 

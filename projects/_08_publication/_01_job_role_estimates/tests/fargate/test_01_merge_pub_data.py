@@ -15,12 +15,10 @@ TEST_DESTINATION = "some/other/directory"
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     # @patch(f"{PATCH_PATH}.mUtils.join_geography")
-    # @patch(f"{PATCH_PATH}.mUtils.join_estimates_and_metadata")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        # join_estimates_and_metadata_mock: Mock,
         # join_geography_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -32,10 +30,6 @@ class TestMain:
             archived_jr_metadata_lf,
             archived_geography_lf,
         ]
-        # estimates_and_metadata_lf = Mock(name="estimates_and_metadata_lf")
-        # join_estimates_and_metadata_mock.return_value = estimates_and_metadata_lf
-        # merged_lf = Mock(name="merged_lf")
-        # join_geography_mock.return_value = merged_lf
 
         job.main(
             TEST_ESTIMATES_SOURCE,
@@ -45,18 +39,28 @@ class TestMain:
         )
 
         assert scan_parquet_mock.call_count == 3
-        scan_parquet_mock.assert_any_call(TEST_ESTIMATES_SOURCE)
-        scan_parquet_mock.assert_any_call(TEST_METADATA_SOURCE)
+        scan_parquet_mock.assert_any_call(
+            TEST_ESTIMATES_SOURCE,
+            # selected_columns=job.JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
+        )
+        scan_parquet_mock.assert_any_call(
+            TEST_METADATA_SOURCE,
+            # selected_columns=job.JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
+        )
         scan_parquet_mock.assert_any_call(TEST_GEOGRAPHY_SOURCE)
 
-        # join_estimates_and_metadata_mock.assert_called_once_with(
-        #     archived_jr_estimate_lf, archived_jr_metadata_lf
-        # )
+        archived_jr_estimate_lf.join.assert_called_once_with(
+            archived_jr_metadata_lf,
+            on=job.IndCQC.id_per_locationid_import_date,
+            how="left",
+        )
+        joined_metadata_lf = archived_jr_estimate_lf.join.return_value
+
         # join_geography_mock.assert_called_once_with(
         #     estimates_and_metadata_lf, archived_geography_lf
         # )
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=archived_jr_estimate_lf,
+            lazy_df=joined_metadata_lf,
             output_path=TEST_DESTINATION,
         )
