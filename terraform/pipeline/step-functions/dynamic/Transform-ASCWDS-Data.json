@@ -113,6 +113,39 @@
                           ]
                         }
                       },
+                      "Next": "Validate Cleaned Worker (Polars)"
+                    },
+                    "Validate Cleaned Worker (Polars)": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "LaunchType": "FARGATE",
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${ingest_task_arn}",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${ingest_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_01_ingest-container",
+                              "Command": [
+                                "validate_clean_ascwds_worker_data.py",
+                                "--bucket_name",
+                                "${dataset_bucket_name}",
+                                "--source_path",
+                                "domain=ASCWDS/dataset=worker_cleaned_polars/",
+                                "--reports_path",
+                                "domain=data_validation_reports/dataset=validation_ascwds_worker_cleaned_polars/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
                       "End": true
                     }
                   }

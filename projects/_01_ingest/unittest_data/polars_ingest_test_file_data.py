@@ -1557,6 +1557,13 @@ class CleanWorkplaceUtilsTestCase:
 
 
 @dataclass
+class SlvExpressionBoundsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
 class PurgedLfsTestCase:
     id: str
     test_data: list[Any]
@@ -2207,6 +2214,72 @@ class TestCleanAscwdsWorkplaceUtilsData:
                 AWPClean.establishment_id: [],
                 AWPClean.import_date: [],
             },
+        ),
+    ]
+
+    slv_expression_bounds_test_cases = [
+        SlvExpressionBoundsTestCase(
+            id="allows_zero_at_lower_bound",
+            input_data={AWPClean.job_role_01_starters: 0},
+            expected_data={AWPClean.job_role_01_starters: 0},
+        ),
+        SlvExpressionBoundsTestCase(
+            id="nulls_value_below_lower_bound",
+            input_data={AWPClean.job_role_01_starters: -1},
+            expected_data={AWPClean.job_role_01_starters: None},
+        ),
+        SlvExpressionBoundsTestCase(
+            id="keeps_value_at_upper_bound",
+            input_data={AWPClean.job_role_01_starters: 998},
+            expected_data={AWPClean.job_role_01_starters: 998},
+        ),
+        SlvExpressionBoundsTestCase(
+            id="nulls_value_above_upper_bound",
+            input_data={AWPClean.job_role_01_starters: 999},
+            expected_data={AWPClean.job_role_01_starters: None},
+        ),
+        SlvExpressionBoundsTestCase(
+            id="does_not_bound_non_slv_columns",
+            input_data={AWPClean.job_role_01_temporary: 9999},
+            expected_data={AWPClean.job_role_01_temporary: 9999},
+        ),
+        SlvExpressionBoundsTestCase(
+            id="does_not_bound_employees_column",
+            input_data={AWPClean.job_role_01_employees: 0},
+            expected_data={AWPClean.job_role_01_employees: 0},
+        ),
+    ]
+
+    employees_expression_bounds_test_cases = [
+        SlvExpressionBoundsTestCase(
+            id="nulls_employees_at_zero",
+            input_data={AWPClean.job_role_01_employees: 0},
+            expected_data={AWPClean.job_role_01_employees: None},
+        ),
+        SlvExpressionBoundsTestCase(
+            id="keeps_employees_at_lower_bound",
+            input_data={AWPClean.job_role_01_employees: 1},
+            expected_data={AWPClean.job_role_01_employees: 1},
+        ),
+        SlvExpressionBoundsTestCase(
+            id="keeps_employees_at_upper_bound",
+            input_data={AWPClean.job_role_01_employees: 998},
+            expected_data={AWPClean.job_role_01_employees: 998},
+        ),
+        SlvExpressionBoundsTestCase(
+            id="nulls_employees_above_upper_bound",
+            input_data={AWPClean.job_role_01_employees: 999},
+            expected_data={AWPClean.job_role_01_employees: None},
+        ),
+        SlvExpressionBoundsTestCase(
+            id="does_not_bound_non_employees_columns",
+            input_data={AWPClean.job_role_01_starters: 0},
+            expected_data={AWPClean.job_role_01_starters: 0},
+        ),
+        SlvExpressionBoundsTestCase(
+            id="does_not_bound_temporary_column",
+            input_data={AWPClean.job_role_01_temporary: 0},
+            expected_data={AWPClean.job_role_01_temporary: 0},
         ),
     ]
 
