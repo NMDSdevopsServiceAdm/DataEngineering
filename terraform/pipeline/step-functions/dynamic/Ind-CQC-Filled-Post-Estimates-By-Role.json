@@ -386,6 +386,7 @@
                         "archive_job_role_estimates.py",
                         "--job_role_estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_04_estimate_job_roles/",
                         "--job_role_metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_metadata_job_roles/",
+                        "--job_role_geography_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=${ind_cqc_estimated_filled_posts}/",
                         "--job_role_estimates_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_estimates/",
                         "--job_role_metadata_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_metadata/",
                         "--job_role_geography_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_geography/"
