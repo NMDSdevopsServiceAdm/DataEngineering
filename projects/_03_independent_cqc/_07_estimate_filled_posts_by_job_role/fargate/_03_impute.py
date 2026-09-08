@@ -4,6 +4,7 @@ import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.impute_utils as iUtils
 from polars_utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
@@ -33,14 +34,24 @@ def main(
     estimated_job_role_posts_lf = utils.scan_parquet(cleaned_data_source)
     print("Cleaned LazyFrame read in")
 
-    estimated_job_role_posts_lf = iUtils.create_imputed_ascwds_job_role_counts(
-        estimated_job_role_posts_lf
+    estimated_job_role_posts_lf = iUtils.get_percent_share_ratios(
+        estimated_job_role_posts_lf,
+        input_col=IndCQC.ascwds_job_role_counts,
+        output_col=IndCQC.ascwds_job_role_ratios,
     )
 
     estimated_job_role_posts_lf = iUtils.create_ascwds_job_role_rolling_ratio(
         estimated_job_role_posts_lf,
         extrapolation_period=NumericalValues.extrapolation_period,
         interpolation_cap_period=NumericalValues.interpolation_cap_period,
+    )
+
+    estimated_job_role_posts_lf = iUtils.add_imputed_ascwds_job_role_ratios(
+        estimated_job_role_posts_lf
+    )
+
+    estimated_job_role_posts_lf = iUtils.add_imputed_ascwds_job_role_counts(
+        estimated_job_role_posts_lf
     )
 
     utils.sink_to_parquet(
