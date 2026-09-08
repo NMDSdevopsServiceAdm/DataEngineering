@@ -542,7 +542,7 @@ class FilteringUtilsData:
             expected=[True, True, False],
         ),
         ReducedDataFilterCase(
-            id="cutoff_date_excludes_rows_even_if_quarterly_rule_matches",
+            id="cutoff_date_excludes_rows_before_given_date",
             today=date(2024, 6, 15),
             fy_start_month=4,
             lookback_fy_years=2,
@@ -550,12 +550,13 @@ class FilteringUtilsData:
             cutoff_date=date(2020, 4, 1),
             input_data=[
                 date(2019, 4, 1), # quarterly rule matches but before cutoff_date -> excluded
+                date(2020, 3, 31), # immediately before cutoff date -> excluded
                 date(2020, 4, 1), # at cutoff_date, quarterly rule matches -> included
                 date(2021, 4, 1), # before monthly_start but quarterly rule matches -> included
                 date(2022, 4, 1), # at boundary (monthly_start) -> included
                 date(2023, 6, 1), # within range -> included
             ],
-            expected=[False, True, True, True, True],
+            expected=[False, False, True, True, True, True],
         ),
     ]  # fmt: skip
 
