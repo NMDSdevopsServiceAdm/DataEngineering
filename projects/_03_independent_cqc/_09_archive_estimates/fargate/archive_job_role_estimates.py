@@ -52,7 +52,7 @@ JOB_ROLE_GEOGRAPHY_ARCHIVE_COLUMNS = [
     IndCQC.current_cssr,
     IndCQC.current_region,
     IndCQC.current_icb,
-    IndCQC.current_rural_urban_indicator_2011,
+    # IndCQC.current_rural_urban_indicator_2011,
     # IndCQC.current_lsoa21,
     # IndCQC.current_msoa21,
 ]
