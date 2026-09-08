@@ -20,12 +20,12 @@ def main(
     """
     lf = utils.scan_parquet(merge_data_source)
 
-    today = date.today()
     # Publication policy: full retention for 2 financial years, quarterly
     # sampling further back, nothing before 6 financial years ago.
+    today = date.today()
     fy_year = today.year if today.month >= 4 else today.year - 1
     cutoff_date = date(fy_year - 6, 4, 1)
-    lf = lf.filter(reduced_data_filter_expr(today=today, cutoff_date=cutoff_date))
+    lf = lf.filter(reduced_data_filter_expr(cutoff_date=cutoff_date))
 
     # See clean_utils/test_clean_utils for placeholders.
 
