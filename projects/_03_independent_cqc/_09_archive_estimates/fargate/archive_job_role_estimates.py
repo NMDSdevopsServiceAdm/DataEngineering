@@ -29,6 +29,7 @@ JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
 
 JOB_ROLE_METADATA_ARCHIVE_COLUMNS = [
     IndCQC.id_per_locationid_import_date,
+    IndCQC.postcode,
     IndCQC.imputed_registration_date,
     IndCQC.ascwds_filled_posts_dedup_clean,
     IndCQC.ascwds_pir_merged,
@@ -47,7 +48,7 @@ JOB_ROLE_METADATA_ARCHIVE_COLUMNS = [
 ]
 
 JOB_ROLE_GEOGRAPHY_ARCHIVE_COLUMNS = [
-    IndCQC.location_id,
+    IndCQC.postcode,
     IndCQC.current_cssr,
     IndCQC.current_region,
     IndCQC.current_icb,

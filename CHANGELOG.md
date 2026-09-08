@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed the job-role geography archive to key on `location_id` instead of `id_per_locationid_import_date`, sourced directly from the independent CQC filled posts estimates dataset and deduplicated to one row per location.
 
+- Changed the job-role geography archive to carry `postcode` instead of `location_id`, and added `postcode` to the job-role metadata archive, threading it through the estimate and job-role merge stages that feed both.
+
 - Job role estimates for the dates between and beyond a workplace's own submissions now follow the trend of similar workplaces, instead of repeating the last submitted job role split unchanged.
 
 
