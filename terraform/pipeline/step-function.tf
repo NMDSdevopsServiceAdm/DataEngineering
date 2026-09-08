@@ -101,8 +101,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     run_crawler_state_machine_arn = aws_sfn_state_machine.run_crawler.arn
 
     # jobs
-    clean_ascwds_worker_job_name                  = module.clean_ascwds_worker_job.job_name
-    validate_ascwds_worker_cleaned_data_job_name  = module.validate_ascwds_worker_cleaned_data_job.job_name
     diagnostics_on_known_filled_posts_job_name    = module.diagnostics_on_known_filled_posts_job.job_name
     diagnostics_on_capacity_tracker_job_name      = module.diagnostics_on_capacity_tracker_job.job_name
     prepare_dpr_external_job_name                 = module.prepare_dpr_external_data_job.job_name

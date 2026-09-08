@@ -9,6 +9,9 @@ import pytest
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_03_impute as job
 from polars_utils.column_types import CategoricalColumnTypes
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    SumImputedRatiosAcrossJobRolesData as ImputedRatiosData,
+)
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     SumRollingRatiosAcrossJobRolesData as Data,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
@@ -191,6 +194,33 @@ class TestSumRollingRatiosAcrossJobRoles:
         returned_totals = (
             job.sum_rolling_ratios_across_job_roles(df)
             .get_column(IndCqcColumns.ascwds_job_role_rolling_ratio)
+            .to_list()
+        )
+
+        assert sorted(returned_totals) == pytest.approx(sorted(expected_totals))
+
+
+class TestSumImputedRatiosAcrossJobRoles:
+    schema = {
+        IndCqcColumns.location_id: pl.String,
+        IndCqcColumns.cqc_location_import_date: pl.Date,
+        IndCqcColumns.main_job_role_clean_labelled: pl.String,
+        IndCqcColumns.imputed_ascwds_job_role_ratios: pl.Float32,
+    }
+
+    @pytest.mark.parametrize(
+        "rows,expected_totals",
+        [
+            case.as_pytest_param()
+            for case in ImputedRatiosData.sum_imputed_ratios_across_job_roles_test_cases
+        ],
+    )
+    def test_totals_match_expected(self, rows, expected_totals):
+        df = pl.DataFrame(rows, self.schema, orient="row")
+
+        returned_totals = (
+            job.sum_imputed_ratios_across_job_roles(df)
+            .get_column(IndCqcColumns.imputed_ascwds_job_role_ratios)
             .to_list()
         )
 
