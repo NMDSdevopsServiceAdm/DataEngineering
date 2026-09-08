@@ -35,7 +35,7 @@ class AscwdsWorkerValueLabelsMainjrid:
         "34": MainJobRoleLabels.activites_worker,
         "35": MainJobRoleLabels.safeguarding_officer,
         "36": MainJobRoleLabels.occupational_therapist_assistant,
-        "37": MainJobRoleLabels.Nursing_associate,
+        "37": MainJobRoleLabels.nursing_associate,
         "38": MainJobRoleLabels.nursing_assistant,
         "39": MainJobRoleLabels.assessment_officer,
         "40": MainJobRoleLabels.care_coordinator,
