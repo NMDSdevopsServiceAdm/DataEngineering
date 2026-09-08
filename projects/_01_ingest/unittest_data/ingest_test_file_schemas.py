@@ -7,33 +7,6 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as CQCPIR
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ONS,
-)
-
-
-@dataclass
-class IngestONSData:
-    sample_schema = StructType(
-        [
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.icb, StringType(), True),
-            StructField(ONS.longitude, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidatePostcodeDirectoryRawData:
-    raw_postcode_directory_schema = StructType(
-        [
-            StructField(Keys.import_date, StringType(), True),
-            StructField(ONS.postcode, StringType(), True),
-            StructField(ONS.cssr, StringType(), True),
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
-        ]
-    )
 
 
 @dataclass
