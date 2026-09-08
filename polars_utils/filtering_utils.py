@@ -102,6 +102,7 @@ def reduced_data_filter_expr(
     lookback_fy_years: int = 2,
     quarter_months: tuple[int, ...] = (1, 4, 7, 10),
     date_col: str = IndCQC.cqc_location_import_date,
+    cutoff_date: date | None = None,
 ) -> pl.Expr:
     """
     Build a Polars expression for filtering a reduced dataset using financial-year
@@ -141,6 +142,11 @@ def reduced_data_filter_expr(
             the CQC location import date; datasets keyed on a different date column
             (e.g. the SLV pipeline's ASCWDS workplace import date) pass their own.
 
+        cutoff_date (date | None, optional): If given, acts as a hard floor: rows
+            earlier than this date are always excluded, even if their month falls
+            within `quarter_months`. Defaults to None (the historical sampling
+            window is unbounded).
+
     Returns:
         pl.Expr: A Polars boolean expression that can be used inside `.filter()` or
             `.with_columns()` to select rows based on the reduced data strategy.
@@ -153,9 +159,14 @@ def reduced_data_filter_expr(
 
     dt = pl.col(date_col)
 
-    return (dt >= monthly_start) | (
+    expr = (dt >= monthly_start) | (
         (dt < monthly_start) & (dt.dt.month().is_in(quarter_months))
     )
+
+    if cutoff_date is not None:
+        expr = expr & (dt >= cutoff_date)
+
+    return expr
 
 
 def earliest_file_per_month_filter_expr(

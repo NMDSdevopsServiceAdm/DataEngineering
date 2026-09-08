@@ -246,6 +246,7 @@ class TestReducedDataFilterExpr:
             lookback_fy_years=case.lookback_fy_years,
             quarter_months=case.quarter_months,
             date_col=date_col,
+            cutoff_date=case.cutoff_date,
         )
 
         df = pl.DataFrame({date_col: case.input_data})
