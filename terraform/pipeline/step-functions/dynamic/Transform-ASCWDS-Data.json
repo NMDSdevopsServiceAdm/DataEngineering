@@ -52,36 +52,6 @@
                   "States": {
                     "Clean Worker Data": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${clean_ascwds_worker_job_name}",
-                        "Arguments": {
-                          "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                          "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                          "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
-                        }
-                      },
-                      "Next": "Validate Cleaned Worker"
-                    },
-                    "Validate Cleaned Worker": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${validate_ascwds_worker_cleaned_data_job_name}",
-                        "Arguments": {
-                          "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_worker_cleaned/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Clean Worker Data (Polars)",
-                  "States": {
-                    "Clean Worker Data (Polars)": {
-                      "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "LaunchType": "FARGATE",
@@ -107,15 +77,15 @@
                                 "--data_labels_source",
                                 "${dataset_bucket_uri}/domain=ASCWDS/dataset=data_labels/data_labels_lookup.csv",
                                 "--cleaned_worker_destination",
-                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned_polars/"
+                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
                               ]
                             }
                           ]
                         }
                       },
-                      "Next": "Validate Cleaned Worker (Polars)"
+                      "Next": "Validate Cleaned Worker"
                     },
-                    "Validate Cleaned Worker (Polars)": {
+                    "Validate Cleaned Worker": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
@@ -138,9 +108,9 @@
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
-                                "domain=ASCWDS/dataset=worker_cleaned_polars/",
+                                "domain=ASCWDS/dataset=worker_cleaned/",
                                 "--reports_path",
-                                "domain=data_validation_reports/dataset=validation_ascwds_worker_cleaned_polars/"
+                                "domain=data_validation_reports/dataset=validation_ascwds_worker_cleaned/"
                               ]
                             }
                           ]
