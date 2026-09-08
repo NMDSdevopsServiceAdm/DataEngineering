@@ -226,9 +226,9 @@ class MainJobRoleLabels(ColumnValues):
     team_leader: str = "Team leader"
     data_analyst: str = "Data analyst"
     data_governance_manager: str = "Data governance manager"
-    it_and_digital_support: str = "It and digital support"
-    it_manager: str = "It manager"
-    it_service_desk_manager: str = "It service desk manager"
+    it_and_digital_support: str = "IT and digital support"
+    it_manager: str = "IT manager"
+    it_service_desk_manager: str = "IT service desk manager"
     software_developer: str = "Software developer"
     support_worker: str = "Support worker"
 
