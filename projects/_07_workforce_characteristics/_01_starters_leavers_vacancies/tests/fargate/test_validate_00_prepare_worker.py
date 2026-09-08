@@ -5,6 +5,9 @@ import polars as pl
 import pytest
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_00_prepare_worker as job
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_00_prepare_worker"
 
@@ -13,7 +16,12 @@ class TestMain:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.source_df = pl.DataFrame({"worker_id": ["1", "2", "3"]})
-        self.compare_df = pl.DataFrame({"worker_id": ["1", "2", "3"]})
+        self.compare_df = pl.DataFrame(
+            {
+                AWKClean.establishment_id: ["1-001", "1-002", "1-003"],
+                AWKClean.ascwds_worker_import_date: ["2026-01-01"] * 3,
+            }
+        )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
@@ -30,7 +38,10 @@ class TestMain:
         mock_read_parquet.assert_has_calls(
             [
                 call(source="s3://bucket/my/source/"),
-                call(source="s3://bucket/my/compare/"),
+                call(
+                    source="s3://bucket/my/compare/",
+                    selected_columns=job.COMPARE_COLS_TO_IMPORT,
+                ),
             ]
         )
         mock_write_reports.assert_called_once()

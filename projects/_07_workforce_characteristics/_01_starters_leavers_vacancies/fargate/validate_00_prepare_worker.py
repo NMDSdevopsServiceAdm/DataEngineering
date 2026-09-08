@@ -5,6 +5,14 @@ import pointblank as pb
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
+
+COMPARE_COLS_TO_IMPORT = [
+    AWKClean.establishment_id,
+    AWKClean.ascwds_worker_import_date,
+]
 
 
 def main(
@@ -26,7 +34,10 @@ def main(
         reports_path (str): the output path to write reports to
     """
     source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
-    compare_df = utils.read_parquet(source=f"s3://{bucket_name}/{compare_path}")
+    compare_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{compare_path}",
+        selected_columns=COMPARE_COLS_TO_IMPORT,
+    )
 
     validation = (
         pb.Validate(
