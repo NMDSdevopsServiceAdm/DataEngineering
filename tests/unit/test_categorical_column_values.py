@@ -90,7 +90,7 @@ class TestPublishedJobRoleLabels:
             "Social worker",
             "Senior care worker",
             "Care worker",
-            "Community support and outreach",
+            "Community support and outreach work",
             "Occupational therapist",
             "Registered nurse",
             "Allied health professional",
