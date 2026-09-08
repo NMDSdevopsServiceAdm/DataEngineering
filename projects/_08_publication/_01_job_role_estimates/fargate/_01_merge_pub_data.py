@@ -48,19 +48,19 @@ def main(
         pl.col(IndCQC.location_id).cast(CatColType.LocationCatType)
     )
 
-    print(f"{jr_estimates_lf.collect().height}")
+    print(f"original:{jr_estimates_lf.collect().height}")
 
     jr_estimates_lf = jr_estimates_lf.join(
         metadata_lf, on=IndCQC.id_per_locationid_import_date, how="left"
     )
 
-    print(f"{jr_estimates_lf.collect().height}")
+    print(f"after joining metadata:{jr_estimates_lf.collect().height}")
 
     jr_estimates_lf = jr_estimates_lf.join(
         geography_lf, on=IndCQC.location_id, how="left"
     )
 
-    print(f"{jr_estimates_lf.collect().height}")
+    print(f"after joining geography:{jr_estimates_lf.collect().height}")
 
     utils.sink_to_parquet(
         lazy_df=jr_estimates_lf,
