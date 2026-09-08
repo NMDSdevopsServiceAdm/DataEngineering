@@ -5,7 +5,7 @@ from unittest.mock import Mock, call, patch
 import polars as pl
 import pytest
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_00_prepare as job
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_00_prepare_workplace as job
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -14,7 +14,7 @@ from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
 
-PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_00_prepare"
+PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_00_prepare_workplace"
 
 
 class TestMain:

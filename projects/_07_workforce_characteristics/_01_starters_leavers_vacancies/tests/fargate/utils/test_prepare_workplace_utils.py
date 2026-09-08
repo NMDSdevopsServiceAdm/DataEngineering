@@ -2,7 +2,7 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as job
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_workplace_utils as job
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._07_workforce_characteristics.unittest_data.polars_slv_test_data import (
     TestPrepareUtilsData as Data,
@@ -13,7 +13,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_column_values import PublishedJobRoleLabels
 
-PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils"
+PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_workplace_utils"
 
 
 class TestReduceToPublishedRoles:

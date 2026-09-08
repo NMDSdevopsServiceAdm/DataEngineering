@@ -2,22 +2,22 @@ from unittest.mock import Mock, patch
 
 import polars.selectors as cs
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare as job
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare_workplace as job
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
-PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare"
+PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare_workplace"
 
 
-class TestPrepare:
+class TestPrepareWorkplace:
     CLEANED_ASCWDS_WORKPLACE_SOURCE = "some/source"
     PREPARED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.pUtils.relabel_job_role_columns")
-    @patch(f"{PATCH_PATH}.pUtils.reshape_job_role_cols_to_rows")
-    @patch(f"{PATCH_PATH}.pUtils.reduce_to_published_roles")
+    @patch(f"{PATCH_PATH}.pWorkplaceUtils.relabel_job_role_columns")
+    @patch(f"{PATCH_PATH}.pWorkplaceUtils.reshape_job_role_cols_to_rows")
+    @patch(f"{PATCH_PATH}.pWorkplaceUtils.reduce_to_published_roles")
     @patch(f"{PATCH_PATH}.earliest_file_per_month_filter_expr")
     @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.not_null_filter_expr")

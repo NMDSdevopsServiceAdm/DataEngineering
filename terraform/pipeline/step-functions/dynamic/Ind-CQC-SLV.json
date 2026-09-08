@@ -6,35 +6,80 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "Prepare data",
+          "StartAt": "Prepare Workplace and Worker Data",
           "States": {
-            "Prepare data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::ecs:runTask.sync",
-              "Parameters": {
-                "Cluster": "${polars_cluster_arn}",
-                "TaskDefinition": "${workforce_characteristics_task_arn}",
-                "LaunchType": "FARGATE",
-                "NetworkConfiguration": {
-                  "AwsvpcConfiguration": {
-                    "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
-                    "AssignPublicIp": "ENABLED"
+            "Prepare Workplace and Worker Data": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Prepare workplace data",
+                  "States": {
+                    "Prepare workplace data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_07_workforce_characteristics-container",
+                              "Command": [
+                                "_01_starters_leavers_vacancies/fargate/_00_prepare_workplace.py",
+                                "--cleaned_ascwds_workplace_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                                "--prepared_data_destination", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare_workplace/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
                   }
                 },
-                "Overrides": {
-                  "ContainerOverrides": [
-                    {
-                      "Name": "_07_workforce_characteristics-container",
-                      "Command": [
-                        "_01_starters_leavers_vacancies/fargate/_00_prepare.py",
-                        "--cleaned_ascwds_workplace_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                        "--prepared_data_destination", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare/"
-                      ]
+                {
+                  "StartAt": "Prepare worker data",
+                  "States": {
+                    "Prepare worker data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_07_workforce_characteristics-container",
+                              "Command": [
+                                "_01_starters_leavers_vacancies/fargate/_00_prepare_worker.py",
+                                "--cleaned_ascwds_worker_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                                "--prepared_data_destination", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare_worker/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
                     }
-                  ]
+                  }
                 }
-              },
+              ],
               "Next": "Merge and Validate Prepared Data"
             },
             "Merge and Validate Prepared Data": {
@@ -66,7 +111,7 @@
                                 "_01_starters_leavers_vacancies/fargate/_01_merge.py",
                                 "--metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=${ind_cqc_job_role_metadata}/",
                                 "--job_role_estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=${ind_cqc_job_role_estimates}/",
-                                "--prepared_slv_dataset_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare/",
+                                "--prepared_slv_dataset_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare_workplace/",
                                 "--employment_status_rates_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=empstat_rates/employee_status_rates.csv",
                                 "--merged_data_destination","${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_01_merge/"
                               ]
@@ -79,9 +124,9 @@
                   }
                 },
                 {
-                  "StartAt": "Validate Prepared Data",
+                  "StartAt": "Validate Prepared Workplace Data",
                   "States": {
-                    "Validate Prepared Data": {
+                    "Validate Prepared Workplace Data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
@@ -100,11 +145,47 @@
                             {
                               "Name": "_07_workforce_characteristics-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/validate_00_prepare.py",
+                                "_01_starters_leavers_vacancies/fargate/validate_00_prepare_workplace.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare/",
+                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare_workplace/",
                                 "--compare_path", "domain=ASCWDS/dataset=workplace_cleaned/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_slv_00_prepare/"
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_slv_00_prepare_workplace/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate Prepared Worker Data",
+                  "States": {
+                    "Validate Prepared Worker Data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_07_workforce_characteristics-container",
+                              "Command": [
+                                "_01_starters_leavers_vacancies/fargate/validate_00_prepare_worker.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare_worker/",
+                                "--compare_path", "domain=ASCWDS/dataset=worker_cleaned/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_slv_00_prepare_worker/"
                               ]
                             }
                           ]
