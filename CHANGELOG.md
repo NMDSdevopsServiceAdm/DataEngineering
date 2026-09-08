@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added a Polars clean job for ASCWDS worker data (`clean_ascwds_worker_data.py`) on the shared `_01_ingest` Fargate task, mirroring the existing workplace clean job, with job-role labels now sourced from the shared `data_labels_lookup.csv` lookup instead of a static Python dict.
+- Partitioned the job role archive job's outputs (estimates, metadata, geography) by `archive_date` and `run_number`, with `run_number` a single counter that increases by 1 every run (never resetting) and is shared across all three outputs, raising an error if the outputs ever disagree on the existing run_number.
+- Added a Polars clean job for ASCWDS worker data (`clean_ascwds_worker_data.py`) on the shared `_01_ingest` Fargate task, mirroring the existing workplace clean job, with job-role labels now sourced from the shared `data_labels_lookup.csv` lookup instead of a static Python dict. Wired into the Transform ASCWDS Step Function as a new parallel branch alongside the existing Glue jobs, writing to a `_polars`-suffixed dataset for comparison ahead of a future cutover.
 - Added turnover, starter, and vacancy rate columns to the SLV clean job, derived from the employees, starters, leavers, and vacancies counts; the new rate columns are deduplicated over time alongside the existing counts.
 - Added a Polars/pointblank validate job for cleaned ASCWDS worker data (`validate_clean_ascwds_worker_data.py`) on the shared `_01_ingest` Fargate task, mirroring the existing workplace validate job.
 
@@ -23,8 +25,11 @@ All notable changes to this project will be documented in this file.
 
 - Changed the job-role geography archive to key on `location_id` instead of `id_per_locationid_import_date`, sourced directly from the independent CQC filled posts estimates dataset and deduplicated to one row per location.
 
+- Job role estimates for the dates between and beyond a workplace's own submissions now follow the trend of similar workplaces, instead of repeating the last submitted job role split unchanged.
+
 
 ### Improved
+- Stopped the shared extrapolation and interpolation models recomputing the same window functions several times over. The first submission date and the previous and next submission dates are now read back as columns instead of having their expressions repeated, taking the job role imputation from 15 window evaluations to 10 with no change to its output.
 
 
 ### Fixed

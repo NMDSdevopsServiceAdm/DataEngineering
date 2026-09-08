@@ -40,6 +40,12 @@ class ArchivePartitionKeys:
 
 
 @dataclass
+class ArchiveDateRunNumberPartitionKeys:
+    archive_date: str = "archive_date"
+    run_number: str = "run_number"
+
+
+@dataclass
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
     activity_count: str = "activity_count"
@@ -360,6 +366,7 @@ class JobRoleImputeTempColumns:
     next_known_date: str = "jr_impute_next_known_date"
     ratio_total: str = "jr_impute_ratio_total"
     contributing_rows: str = "jr_impute_contributing_rows"
+    unnormalised_ratios: str = "jr_impute_unnormalised_ratios"
 
 
 @dataclass
@@ -428,6 +435,14 @@ class ExtrapolationColumns:
     model_with_nulls: str = "_model_with_nulls"
     previous_model: str = "_previous_model"
     previous_value: str = "_previous_value"
+
+
+@dataclass
+class InterpolationColumns:
+    """The names of the temporary columns created during the interpolation process."""
+
+    previous_submission_date: str = "_interp_previous_submission_date"
+    next_submission_date: str = "_interp_next_submission_date"
 
 
 @dataclass
