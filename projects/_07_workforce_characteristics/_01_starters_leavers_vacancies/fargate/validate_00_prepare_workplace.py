@@ -32,7 +32,7 @@ def main(
         summary report as well as failure outputs.
 
     The compare dataset is the unreduced cleaned ASCWDS workplace data, so the same
-    reduction filters applied in _00_prepare are applied here before counting rows -
+    reduction filters applied in _00_prepare_workplace are applied here before counting rows -
     otherwise the expected count would include the historical rows and duplicate
     monthly files the prepare step deliberately drops.
 
