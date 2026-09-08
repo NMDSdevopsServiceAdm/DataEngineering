@@ -38,7 +38,7 @@ class AscwdsWorkerValueLabelsJobGroup:
         MainJobRoleLabels.allied_health_professional: JobGroupLabels.regulated_professions,
         MainJobRoleLabels.occupational_therapist: JobGroupLabels.regulated_professions,
         MainJobRoleLabels.registered_nurse: JobGroupLabels.regulated_professions,
-        MainJobRoleLabels.registered_nursing_associate: JobGroupLabels.regulated_professions,
+        MainJobRoleLabels.Nursing_associate: JobGroupLabels.regulated_professions,
         MainJobRoleLabels.safeguarding_officer: JobGroupLabels.regulated_professions,
         MainJobRoleLabels.social_worker: JobGroupLabels.regulated_professions,
         MainJobRoleLabels.activites_worker: JobGroupLabels.other,
