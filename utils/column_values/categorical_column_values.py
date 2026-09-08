@@ -279,6 +279,30 @@ class MainJobRoleID(ColumnValues):
 
 
 @dataclass
+class EmploymentStatusID(ColumnValues):
+    """The possible values of the employment status column in ASCWDS data"""
+
+    permanent: str = "190"
+    temporary: str = "191"
+    bank_or_pool: str = "192"
+    agency: str = "193"
+    student: str = "194"
+    other: str = "196"
+
+
+@dataclass
+class EmploymentStatusLabels(ColumnValues):
+    """The possible values of the employment status labelled column in ASCWDS data"""
+
+    permanent: str = "permanent"
+    temporary: str = "temporary"
+    bank_or_pool: str = "bank_or_pool"
+    agency: str = "agency"
+    student: str = "student"
+    other: str = "other"
+
+
+@dataclass
 class PublishedJobRoleLabels(ColumnValues):
     """The possible values of the published job role label column in the SLV job-role merge/reshape"""
 

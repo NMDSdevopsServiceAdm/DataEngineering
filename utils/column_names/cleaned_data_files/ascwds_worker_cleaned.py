@@ -8,3 +8,5 @@ class AscwdsWorkerCleanedColumns(AscwdsWorkerColumns):
     ascwds_worker_import_date: str = "ascwds_worker_import_date"
     main_job_role_clean: str = AscwdsWorkerColumns.main_job_role_id + "_clean"
     main_job_role_clean_labelled: str = main_job_role_clean + "_labels"
+    employment_status_clean: str = AscwdsWorkerColumns.employment_status + "_clean"
+    employment_status_clean_labelled: str = employment_status_clean + "_labels"

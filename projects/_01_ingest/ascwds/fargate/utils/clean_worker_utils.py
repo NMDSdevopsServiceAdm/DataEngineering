@@ -122,3 +122,27 @@ def create_clean_main_job_role_column(
         [AWKClean.main_job_role_clean],
         add_as_new_column=True,
     )
+
+
+def create_clean_employment_status_column(
+    lf: pl.LazyFrame, data_labels_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """Cleans the employment status column and adds its categorical labels as a new column.
+
+    Args:
+        lf (pl.LazyFrame): LazyFrame containing the original employment status column.
+        data_labels_lf (pl.LazyFrame): LazyFrame mapping employment status codes to labels.
+
+    Returns:
+        pl.LazyFrame: LazyFrame with the cleaned and labelled employment status columns.
+    """
+    lf = lf.with_columns(
+        pl.col(AWKClean.employment_status).alias(AWKClean.employment_status_clean)
+    )
+
+    return cUtils.apply_categorical_labels(
+        lf,
+        data_labels_lf,
+        [AWKClean.employment_status_clean],
+        add_as_new_column=True,
+    )

@@ -39,6 +39,12 @@ class CategoricalColumnTypes:
     DormancyEnumType = pl.Enum(
         CQCLocationCatVals.dormancy_column_values.categorical_values
     )
+    EmploymentStatusCatType = pl.Categorical(
+        pl.Categories("employment_status", namespace="filled_posts")
+    )
+    EmploymentStatusIdCatType = pl.Categorical(
+        pl.Categories("employment_status_id", namespace="filled_posts")
+    )
     EstablishmentCatType = pl.Categorical(
         pl.Categories("establishment", namespace="filled_posts")
     )
