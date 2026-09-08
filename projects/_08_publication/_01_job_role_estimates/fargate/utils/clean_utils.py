@@ -1,37 +1,6 @@
-from datetime import date
-
 import polars as pl
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-
-prev_years_to_publish: int = 6
-
-
-def published_data_filter_expr(today: date | None = None) -> pl.Expr:
-    """
-    Build a Polars expression selecting rows within the publication window.
-
-    The job role estimates were pre-filtered to quarters if cqc_location_import_date
-    was before two finacial years prior to today. See reduced_data_filter_expr().
-
-    We only publish the annual trend as at April for the previous 6 years, therefore
-    this filter keeps rows if their cqc_location_import_date falls on or after 1 April
-    of the year 6 financial years before today.
-
-    Args:
-        today (date | None): Reference date used to compute the retention window
-            cutoff. If None, defaults to the current system date.
-
-    Returns:
-        pl.Expr: A Polars boolean expression that can be used inside `.filter()`
-            to select rows within the publication retention window.
-    """
-    today = today or date.today()
-    fy_year = today.year if today.month >= 4 else today.year - 1
-    cutoff_date = date(fy_year - prev_years_to_publish, 4, 1)
-
-    return pl.col(IndCQC.cqc_location_import_date) >= cutoff_date
 
 
 def add_ct_filter_has_ct_data() -> pl.Expr:

@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import Mock, patch
 
 import projects._08_publication._01_job_role_estimates.fargate._02_clean_pub_data as job
@@ -11,24 +12,32 @@ TEST_DESTINATION = "some/other/directory"
 
 
 class TestMain:
-    @patch(f"{PATCH_PATH}.cUtils.published_data_filter_expr")
+    @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.date")
     def test_main_runs(
         self,
+        date_mock: Mock,
         scan_parquet_mock: Mock,
         sink_to_parquet_mock: Mock,
-        published_data_filter_expr_mock: Mock,
+        reduced_data_filter_expr_mock: Mock,
     ):
+        date_mock.today.return_value = date(2026, 9, 1)
+        date_mock.side_effect = lambda *args, **kwargs: date(*args, **kwargs)
+
         merged_lf = Mock(name="merged_lf")
         scan_parquet_mock.return_value = merged_lf
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
 
         scan_parquet_mock.assert_called_once_with(TEST_SOURCE)
-        published_data_filter_expr_mock.assert_called_once_with()
+        reduced_data_filter_expr_mock.assert_called_once_with(
+            today=date(2026, 9, 1),
+            cutoff_date=date(2020, 4, 1),
+        )
         merged_lf.filter.assert_called_once_with(
-            published_data_filter_expr_mock.return_value
+            reduced_data_filter_expr_mock.return_value
         )
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=merged_lf.filter.return_value,
