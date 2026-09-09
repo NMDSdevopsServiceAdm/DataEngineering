@@ -5,9 +5,9 @@ locals {
     substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
   })
 
-  ind_cqc_job_role_estimates_dataset_name     = terraform.workspace == "main" ? "ind_cqc_07_04_estimate_job_roles" : "main_ind_cqc_07_04_estimate_job_roles"
-  ind_cqc_job_role_metadata_dataset_name      = terraform.workspace == "main" ? "ind_cqc_07_01_merge_metadata_job_roles" : "main_ind_cqc_07_01_merge_metadata_job_roles"
-  ind_cqc_estimated_filled_posts_dataset_name = terraform.workspace == "main" ? "ind_cqc_06_estimated_filled_posts" : "main_ind_cqc_06_estimated_filled_posts"
+  ind_cqc_job_role_estimates_dataset_name     = terraform.workspace == "main" ? "01_filled_posts_06_04_estimate_job_roles" : "main_01_filled_posts_06_04_estimate_job_roles"
+  ind_cqc_job_role_metadata_dataset_name      = terraform.workspace == "main" ? "01_filled_posts_06_01_merge_metadata_job_roles" : "main_01_filled_posts_06_01_merge_metadata_job_roles"
+  ind_cqc_estimated_filled_posts_dataset_name = terraform.workspace == "main" ? "01_filled_posts_05_estimated_filled_posts" : "main_01_filled_posts_05_estimated_filled_posts"
 
   # Max polling attempts and per-attempt wait (seconds) for the "Wait For Worker"/
   # "Wait For Workplace" states in CQC-And-ASCWDS-Orchestrator.json, before the

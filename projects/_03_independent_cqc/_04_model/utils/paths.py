@@ -27,7 +27,7 @@ def generate_ind_cqc_path(data_bucket: str) -> str:
     Returns:
         str: The S3 path for the features dataset for the specified model.
     """
-    return f"s3://{data_bucket}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
+    return f"s3://{data_bucket}/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_ascwds_and_pir/"
 
 
 def generate_features_path(data_bucket: str, model: str) -> str:
@@ -41,7 +41,7 @@ def generate_features_path(data_bucket: str, model: str) -> str:
     Returns:
         str: The S3 path for the features dataset for the specified model.
     """
-    return f"s3://{data_bucket}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_{model}/"
+    return f"s3://{data_bucket}/domain=03_ind_cqc/dataset=01_filled_posts_04_features_{model}/"
 
 
 def generate_predictions_path(data_bucket: str, model: str) -> str:
@@ -55,4 +55,4 @@ def generate_predictions_path(data_bucket: str, model: str) -> str:
     Returns:
         str: The S3 path for the predictions dataset for the specified model.
     """
-    return f"s3://{data_bucket}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_predictions_{model}/"
+    return f"s3://{data_bucket}/domain=03_ind_cqc/dataset=01_filled_posts_04_predictions_{model}/"
