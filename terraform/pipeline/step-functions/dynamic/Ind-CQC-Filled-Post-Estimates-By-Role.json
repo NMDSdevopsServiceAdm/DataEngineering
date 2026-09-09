@@ -28,7 +28,7 @@
                       "Name": "_03_independent_cqc-container",
                       "Command": [
                         "prepare_job_role_counts.py",
-                        "--cleaned_ascwds_worker_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                        "--cleaned_ascwds_worker_source", "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/",
                         "--prepared_ascwds_job_role_counts_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/"
                       ]
                     }
@@ -133,7 +133,7 @@
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_job_roles/",
                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=${ind_cqc_estimated_filled_posts}/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_01_merge_job_roles/"
+                                "--reports_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_job_roles_validation/"
                               ]
                             }
                           ]
@@ -169,7 +169,7 @@
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_metadata_job_roles/",
                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=${ind_cqc_estimated_filled_posts}/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_01_merge_metadata_job_roles/"
+                                "--reports_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_metadata_job_roles_validation/"
                               ]
                             }
                           ]
@@ -245,7 +245,7 @@
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles/",
                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_job_roles/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_02_clean_job_roles/"
+                                "--reports_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles_validation/"
                               ]
                             }
                           ]
@@ -321,7 +321,7 @@
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_impute_job_roles/",
                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_03_impute_job_roles/"
+                                "--reports_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_impute_job_roles_validation/"
                               ]
                             }
                           ]
@@ -356,7 +356,7 @@
                         "--bucket_name", "${dataset_bucket_name}",
                         "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_04_estimate_job_roles/",
                         "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_impute_job_roles/",
-                        "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_04_estimate_job_roles/"
+                        "--reports_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_04_estimate_job_roles_validation/"
                       ]
                     }
                   ]
@@ -423,7 +423,7 @@
                                 "validate_archive_job_role_estimates.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_estimates/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_09_archived_monthly_job_role_estimates/"
+                                "--reports_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_estimates_validation/"
                               ]
                             }
                           ]
@@ -458,7 +458,7 @@
                                 "validate_archive_job_role_estimates.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_metadata/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_09_archived_monthly_job_role_metadata/"
+                                "--reports_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_metadata_validation/"
                               ]
                             }
                           ]
@@ -532,19 +532,6 @@
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
                 "Name": "${ind_cqc_crawler_name}"
-              },
-              "End": true
-            }
-          }
-        },
-        {
-          "StartAt": "Run Validation Crawler",
-          "States": {
-            "Run Validation Crawler": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-              "Parameters": {
-                "Name": "${data_validation_reports_crawler_name}"
               },
               "End": true
             }

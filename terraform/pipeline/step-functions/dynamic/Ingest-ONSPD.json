@@ -26,7 +26,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "_01_ingest-container",
-                      "Command.$": "States.Array('ingest_ons_data.py', '--source', $.jobs.ingest_ons_data.source, '--destination_prefix', '${dataset_bucket_uri}/domain=ONS/')"
+                      "Command.$": "States.Array('ingest_ons_data.py', '--source', $.jobs.ingest_ons_data.source, '--destination_prefix', '${dataset_bucket_uri}/domain=01_ons/')"
                     }
                   ]
                 }
@@ -61,9 +61,9 @@
                               "Command": [
                                 "clean_ons_data.py",
                                 "--ons_source",
-                                "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
+                                "${dataset_bucket_uri}/domain=01_ons/dataset=postcode_directory/",
                                 "--cleaned_ons_destination",
-                                "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
+                                "${dataset_bucket_uri}/domain=01_ons/dataset=postcode_directory_cleaned/"
                               ]
                             }
                           ]
@@ -99,9 +99,9 @@
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
-                                "domain=ONS/dataset=postcode_directory/",
+                                "domain=01_ons/dataset=postcode_directory/",
                                 "--reports_path",
-                                "domain=data_validation_reports/dataset=validation_ons_postcode_directory_raw/"
+                                "domain=01_ons/dataset=postcode_directory_validation/"
                               ]
                             }
                           ]
@@ -136,11 +136,11 @@
                         "--bucket_name",
                         "${dataset_bucket_name}",
                         "--source_path",
-                        "domain=ONS/dataset=postcode_directory_cleaned/",
+                        "domain=01_ons/dataset=postcode_directory_cleaned/",
                         "--reports_path",
-                        "domain=data_validation_reports/dataset=validation_pdq_postcode_directory_cleaned/",
+                        "domain=01_ons/dataset=postcode_directory_cleaned_validation/",
                         "--compare_path",
-                        "domain=ONS/dataset=postcode_directory/"
+                        "domain=01_ons/dataset=postcode_directory/"
                       ]
                     }
                   ]

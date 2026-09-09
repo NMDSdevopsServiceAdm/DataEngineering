@@ -29,13 +29,13 @@
                       "Command": [
                         "clean_ascwds_workplace.py",
                         "--workplace_source",
-                        "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                        "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace/",
                         "--data_labels_source",
-                        "${dataset_bucket_uri}/domain=ASCWDS/dataset=data_labels/data_labels_lookup.csv",
+                        "${dataset_bucket_uri}/domain=01_ascwds/dataset=data_labels/data_labels_lookup.csv",
                         "--cleaned_workplace_destination",
-                        "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                        "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
                         "--ascwds_for_sfc_internal_destination",
-                        "${dataset_bucket_uri}/domain=SfC/dataset=ascwds_for_sfc_internal/"
+                        "${dataset_bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/"
                       ]
                     }
                   ]
@@ -71,13 +71,13 @@
                               "Command": [
                                 "clean_ascwds_worker_data.py",
                                 "--worker_source",
-                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                                "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker/",
                                 "--cleaned_workplace_source",
-                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                                "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
                                 "--data_labels_source",
-                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=data_labels/data_labels_lookup.csv",
+                                "${dataset_bucket_uri}/domain=01_ascwds/dataset=data_labels/data_labels_lookup.csv",
                                 "--cleaned_worker_destination",
-                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+                                "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/"
                               ]
                             }
                           ]
@@ -108,9 +108,9 @@
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
-                                "domain=ASCWDS/dataset=worker_cleaned/",
+                                "domain=01_ascwds/dataset=worker_cleaned/",
                                 "--reports_path",
-                                "domain=data_validation_reports/dataset=validation_ascwds_worker_cleaned/"
+                                "domain=01_ascwds/dataset=worker_cleaned_validation/"
                               ]
                             }
                           ]
@@ -146,9 +146,9 @@
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
-                                "domain=ASCWDS/dataset=workplace_cleaned/",
+                                "domain=01_ascwds/dataset=workplace_cleaned/",
                                 "--reports_path",
-                                "domain=data_validation_reports/dataset=validation_ascwds_workplace_cleaned/"
+                                "domain=01_ascwds/dataset=workplace_cleaned_validation/"
                               ]
                             }
                           ]
@@ -184,9 +184,9 @@
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
-                                "domain=SfC/dataset=ascwds_for_sfc_internal/",
+                                "domain=02_sfc/dataset=ascwds_for_sfc_internal/",
                                 "--reports_path",
-                                "domain=data_validation_reports/dataset=validation_ascwds_for_sfc_internal/"
+                                "domain=02_sfc/dataset=ascwds_for_sfc_internal_validation/"
                               ]
                             }
                           ]
@@ -226,9 +226,9 @@
                         "--bucket_name",
                         "${dataset_bucket_name}",
                         "--source_path",
-                        "domain=ASCWDS/dataset=workplace/",
+                        "domain=01_ascwds/dataset=workplace/",
                         "--reports_path",
-                        "domain=data_validation_reports/dataset=validation_ascwds_workplace_raw/"
+                        "domain=01_ascwds/dataset=workplace_validation/"
                       ]
                     }
                   ]
@@ -264,9 +264,9 @@
                         "--bucket_name",
                         "${dataset_bucket_name}",
                         "--source_path",
-                        "domain=ASCWDS/dataset=worker/",
+                        "domain=01_ascwds/dataset=worker/",
                         "--reports_path",
-                        "domain=data_validation_reports/dataset=validation_ascwds_worker_raw/"
+                        "domain=01_ascwds/dataset=worker_validation/"
                       ]
                     }
                   ]
