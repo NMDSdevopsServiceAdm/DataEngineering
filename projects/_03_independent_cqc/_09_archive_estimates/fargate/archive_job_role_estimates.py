@@ -60,8 +60,8 @@ def main(
     job_role_metadata_destination: str,
 ) -> None:
     """
-    Archives the independent CQC filled posts by job role estimates, split into three
-    column-scoped outputs: estimates, metadata, and geography.
+    Archives the independent CQC filled posts by job role estimates, split into two
+    column-scoped outputs: estimates and metadata.
 
     Each output is partitioned by archive_date and run_number.
     archive_date is a string formatted as yyyy-mm-dd.
