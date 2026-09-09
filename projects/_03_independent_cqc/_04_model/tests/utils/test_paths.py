@@ -1,5 +1,3 @@
-import unittest
-
 from projects._03_independent_cqc._04_model.utils import paths as job
 
 DATASETS_BUCKET = "sfc-test-datasets"
@@ -7,11 +5,11 @@ MODEL = "model_a"
 VERSION = "1.0.0"
 
 
-class GenerateModelPathTests(unittest.TestCase):
+class TestGenerateModelPath:
     def test_returns_expected_path(self):
         returned_path = job.generate_model_path(DATASETS_BUCKET, MODEL, VERSION)
         expected_path = "s3://sfc-test-pipeline-resources/models/model_a/1.0.0/"
-        self.assertEqual(returned_path, expected_path)
+        assert returned_path == expected_path
 
 
 class TestGenerateIndCqcPath:
