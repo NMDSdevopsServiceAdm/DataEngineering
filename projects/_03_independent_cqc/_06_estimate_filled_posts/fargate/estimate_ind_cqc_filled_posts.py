@@ -20,7 +20,6 @@ ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
     IndCQC.location_id,
     IndCQC.name,
-    IndCQC.postcode,
     IndCQC.provider_id,
     IndCQC.brand_id,
     IndCQC.services_offered,
