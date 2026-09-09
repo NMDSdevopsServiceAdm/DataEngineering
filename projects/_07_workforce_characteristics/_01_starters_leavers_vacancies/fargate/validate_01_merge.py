@@ -74,6 +74,9 @@ def main(
         selected_columns=COMPARE_COLS_TO_IMPORT,
     )
     expected_row_count = calculate_expected_row_count(compare_df)
+    print(
+        f"Row count check: actual={source_df.height}, expected={expected_row_count}"
+    )
 
     validation = (
         pb.Validate(
