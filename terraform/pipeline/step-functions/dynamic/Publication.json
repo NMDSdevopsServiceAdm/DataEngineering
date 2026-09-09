@@ -37,7 +37,7 @@
                         "_01_merge_pub_data.py",
                         "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_sample_archive/archive_date=2025/run_number=1/",
                         "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_sample_archive_metadata/archive_date=2025/run_number=1/",
-                        "--merge_data_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=filled_posts_tracker_01_merged_data/"
+                        "--merge_data_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merged/"
                       ]
                     }
                   ]
@@ -65,8 +65,8 @@
                       "Name": "_08_publication-container",
                       "Command": [
                         "_02_clean_pub_data.py",
-                        "--merge_data_source", "${dataset_bucket_uri}/domain=99_publication/dataset=filled_posts_tracker_01_merged_data/",
-                        "--clean_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=filled_posts_tracker_02_cleaned_data/"
+                        "--merge_data_source", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merged/",
+                        "--clean_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_cleaned/"
                       ]
                     }
                   ]
