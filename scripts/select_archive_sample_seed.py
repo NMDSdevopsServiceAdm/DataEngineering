@@ -2,8 +2,9 @@
 Decide whether a push needs to seed the branch's non-prod dataset bucket with
 sample archive data.
 
-`copy-main-data` syncs `sfc-main-datasets`' `domain=sample_archive_data` prefix
-into every branch's own dataset bucket on its first deploy. This narrows that
+`copy-main-data` syncs `sfc-main-datasets`' `domain=sample_archive_data` job
+role archive datasets into every branch's own dataset bucket (under the
+renamed `domain=03_ind_cqc` path) on its first deploy. This narrows that
 to pushes that genuinely touch the archive stage, so an unrelated branch's
 first build doesn't pay for a sync it never asked for.
 

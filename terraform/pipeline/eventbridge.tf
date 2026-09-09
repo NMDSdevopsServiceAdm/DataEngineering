@@ -75,7 +75,7 @@ resource "aws_cloudwatch_event_rule" "ct_care_home_csv_added" {
       "name": ["${local.raw_bucket_name}"]
     },
     "object": {
-      "key": [ {"prefix": "domain=01_capacity_tracker/dataset=capacity_tracker_care_home" }  ]
+      "key": [ {"prefix": "domain=01_capacity_tracker/dataset=care_home" }  ]
     }
   }
 }
@@ -96,7 +96,7 @@ resource "aws_cloudwatch_event_rule" "ct_non_res_csv_added" {
       "name": ["${local.raw_bucket_name}"]
     },
     "object": {
-      "key": [ {"prefix": "domain=01_capacity_tracker/dataset=capacity_tracker_non_res" }  ]
+      "key": [ {"prefix": "domain=01_capacity_tracker/dataset=non_res" }  ]
     }
   }
 }
