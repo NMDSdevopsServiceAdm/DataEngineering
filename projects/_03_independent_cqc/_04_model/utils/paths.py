@@ -27,7 +27,7 @@ def generate_ind_cqc_path(data_bucket: str) -> str:
     Returns:
         str: The S3 path for the features dataset for the specified model.
     """
-    return f"s3://{data_bucket}/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_ascwds_and_pir/"
+    return f"s3://{data_bucket}/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/"
 
 
 def generate_features_path(data_bucket: str, model: str) -> str:

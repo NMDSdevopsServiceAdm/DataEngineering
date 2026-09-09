@@ -39,7 +39,7 @@
                         "--cleaned_ct_care_home_source",
                         "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=care_home_cleaned/",
                         "--destination",
-                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_01_merged_data/"
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_01_merged/"
                       ]
                     }
                   ]
@@ -75,9 +75,9 @@
                               "Command": [
                                 "clean_ind_cqc_filled_posts.py",
                                 "--merged_ind_cqc_source",
-                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_01_merged_data/",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_01_merged/",
                                 "--cleaned_ind_cqc_destination",
-                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned_data/",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned/",
                                 "--grouped_providers_destination",
                                 "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_grouped_providers/"
                               ]
@@ -113,8 +113,8 @@
                               "Command": [
                                 "validate_merged_ind_cqc_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_01_merged_data/",
-                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_01_merged_data_validation/",
+                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_01_merged/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_01_merged_validation/",
                                 "--compare_path", "domain=01_cqc/dataset=locations_04_full_cleaned_registered/"
                               ]
                             }
@@ -155,9 +155,9 @@
                               "Command": [
                                 "impute_ind_cqc_ascwds_and_pir.py",
                                 "--cleaned_ind_cqc_source",
-                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned_data/",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned/",
                                 "--destination",
-                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_ascwds_and_pir/"
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/"
                               ]
                             }
                           ]
@@ -191,9 +191,9 @@
                               "Command": [
                                 "validate_cleaned_ind_cqc_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned_data/",
-                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned_data_validation/",
-                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_01_merged_data/"
+                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned_validation/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_01_merged/"
                               ]
                             }
                           ]
@@ -339,7 +339,7 @@
                                                 "--bucket_name", "${dataset_bucket_name}",
                                                 "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_care_home_model/",
                                                 "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_care_home_model_validation/",
-                                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_ascwds_and_pir/",
+                                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/",
                                                 "--model", "care_home_model"
                                               ]
                                             }
@@ -479,7 +479,7 @@
                                                 "--bucket_name", "${dataset_bucket_name}",
                                                 "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_non_res_without_dormancy_model/",
                                                 "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_non_res_without_dormancy_model_validation/",
-                                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_ascwds_and_pir/",
+                                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/",
                                                 "--model", "non_res_without_dormancy_model"
                                               ]
                                             }
@@ -619,7 +619,7 @@
                                                 "--bucket_name", "${dataset_bucket_name}",
                                                 "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_non_res_with_dormancy_model/",
                                                 "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_non_res_with_dormancy_model_validation/",
-                                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_ascwds_and_pir/",
+                                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/",
                                                 "--model", "non_res_with_dormancy_model"
                                               ]
                                             }
@@ -664,9 +664,9 @@
                               "Command": [
                                 "validate_imputed_ind_cqc_ascwds_and_pir_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_ascwds_and_pir/",
-                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_ascwds_and_pir_validation/",
-                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned_data/"
+                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_validation/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned/"
                               ]
                             }
                           ]
@@ -699,8 +699,8 @@
                       "Command": [
                         "estimate_ind_cqc_filled_posts.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--imputed_ind_cqc_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_ascwds_and_pir/",
-                        "--destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_filled_posts/"
+                        "--imputed_ind_cqc_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/",
+                        "--destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/"
                       ]
                     }
                   ]
@@ -720,9 +720,9 @@
                       "Parameters": {
                         "JobName": "${diagnostics_on_known_filled_posts_job_name}",
                         "Arguments": {
-                          "--estimate_filled_posts_source": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_filled_posts/",
-                          "--diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_estimated_filled_posts_diagnostics/",
-                          "--summary_diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_estimated_filled_posts_diagnostics_summary/",
+                          "--estimate_filled_posts_source": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
+                          "--diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_estimated_diagnostics/",
+                          "--summary_diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_estimated_diagnostics_summary/",
                           "--charts_destination": "${dataset_bucket_name}"
                         }
                       },
@@ -739,7 +739,7 @@
                       "Parameters": {
                         "JobName": "${diagnostics_on_capacity_tracker_job_name}",
                         "Arguments": {
-                          "--estimate_filled_posts_source": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_filled_posts/",
+                          "--estimate_filled_posts_source": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
                           "--care_home_diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_capacity_tracker_care_home_diagnostics/",
                           "--care_home_summary_diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_capacity_tracker_care_home_diagnostics_summary/",
                           "--non_res_diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_capacity_tracker_non_residential_diagnostics/",
@@ -774,9 +774,9 @@
                               "Command": [
                                 "validate_estimated_ind_cqc_filled_posts_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_filled_posts/",
-                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_filled_posts_validation/",
-                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_ascwds_and_pir/"
+                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_validation/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/"
                               ]
                             }
                           ]
@@ -809,7 +809,7 @@
                       "Name": "_03_independent_cqc-container",
                       "Command": [
                         "archive_filled_posts_estimates.py",
-                        "--estimate_ind_cqc_filled_posts_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_filled_posts/",
+                        "--estimate_ind_cqc_filled_posts_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
                         "--archive_ind_cqc_filled_posts_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_monthly/"
                       ]
                     }
@@ -844,7 +844,7 @@
                               "Name": "_03_independent_cqc-container",
                               "Command": [
                                 "_01_merge.py",
-                                "--estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_filled_posts/",
+                                "--estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
                                 "--ascwds_job_role_counts_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_00_ascwds_prepared_job_role_counts/",
                                 "--merged_data_destination","${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_01_merge_job_roles/",
                                 "--metadata_destination","${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_01_merge_metadata_job_roles/"
@@ -919,7 +919,7 @@
                                       "validate_01_merge.py",
                                       "--bucket_name", "${dataset_bucket_name}",
                                       "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_01_merge_job_roles/",
-                                      "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_filled_posts/",
+                                      "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
                                       "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_01_merge_job_roles_validation/"
                                     ]
                                   }
@@ -955,7 +955,7 @@
                                       "validate_01_merge_metadata.py",
                                       "--bucket_name", "${dataset_bucket_name}",
                                       "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_01_merge_metadata_job_roles/",
-                                      "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_filled_posts/",
+                                      "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
                                       "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_01_merge_metadata_job_roles_validation/"
                                     ]
                                   }

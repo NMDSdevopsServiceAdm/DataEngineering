@@ -17,7 +17,7 @@ class GenerateModelPathTests(unittest.TestCase):
 class TestGenerateIndCqcPath:
     def test_returns_expected_path(self):
         returned_path = job.generate_ind_cqc_path(DATASETS_BUCKET)
-        expected_path = "s3://sfc-test-datasets/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_ascwds_and_pir/"
+        expected_path = "s3://sfc-test-datasets/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/"
         assert returned_path == expected_path
 
 

@@ -116,8 +116,8 @@ Examples:
     `domain=01_cqc/dataset=providers_01_delta_api`
     `domain=01_cqc/dataset=locations_01_delta_api`
     `domain=01_cqc/dataset=locations_02_delta_flattened`
-    `domain=03_ind_cqc/dataset=01_filled_posts_01_merged_data`
-    `domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned_data`
+    `domain=03_ind_cqc/dataset=01_filled_posts_01_merged`
+    `domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned`
 
 ### Validation report datasets
 A validation report lives in the same domain as the dataset it validates, with `_validation` appended to that dataset's name — not in a separate domain. This means it's picked up automatically by that domain's own Glue crawler, without needing a dedicated one.
