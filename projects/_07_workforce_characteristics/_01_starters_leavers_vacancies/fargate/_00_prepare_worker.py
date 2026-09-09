@@ -9,9 +9,8 @@ def main(
     """Load the cleaned ASCWDS worker dataset and prepare it for employment
     status estimation.
 
-    Currently a pass-through - aggregate_employment_status_data and
-    reshape_employment_status_data are placeholders, with real logic to
-    follow in a later ticket.
+    reshape_employment_status_data is still a placeholder pass-through, with
+    real logic to follow in a later ticket.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ascwds worker data

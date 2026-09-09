@@ -21,10 +21,6 @@ PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacanc
 class TestMain:
     @pytest.fixture(autouse=True)
     def setup(self):
-        # 2 rows share the same group (two workers at the same establishment,
-        # same job role/employment status), so the expected row count is 2
-        # unique groups, not 3 rows - proving the check counts unique groups
-        # rather than compare_df's raw row count.
         self.source_df = pl.DataFrame({"worker_id": ["1", "2"]})
         self.compare_df = pl.DataFrame(
             {
