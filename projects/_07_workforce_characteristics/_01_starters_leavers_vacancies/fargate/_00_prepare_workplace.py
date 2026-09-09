@@ -1,6 +1,6 @@
 import polars.selectors as cs
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_workplace_utils as pWorkplaceUtils
 from polars_utils import utils
 from polars_utils.filtering_utils import (
     earliest_file_per_month_filter_expr,
@@ -46,9 +46,9 @@ def main(
     # dropped before reduce_to_published_roles runs.
     workplace_lf = workplace_lf.drop(cs.matches(r"^jr(28|29|30|31|32)"))
 
-    workplace_lf = pUtils.reduce_to_published_roles(workplace_lf)
-    workplace_lf = pUtils.relabel_job_role_columns(workplace_lf)
-    workplace_job_role_lf = pUtils.reshape_job_role_cols_to_rows(workplace_lf)
+    workplace_lf = pWorkplaceUtils.reduce_to_published_roles(workplace_lf)
+    workplace_lf = pWorkplaceUtils.relabel_job_role_columns(workplace_lf)
+    workplace_job_role_lf = pWorkplaceUtils.reshape_job_role_cols_to_rows(workplace_lf)
 
     utils.sink_to_parquet(
         lazy_df=workplace_job_role_lf,

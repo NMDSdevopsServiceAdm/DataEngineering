@@ -2,111 +2,11 @@ from dataclasses import dataclass
 
 from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
 
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
-    AscwdsWorkerCleanedColumns as AWKClean,
-)
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns as AWK,
-)
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    AscwdsWorkplaceColumns as AWP,
-)
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as CQCPIR
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ONS,
-)
-
-
-@dataclass
-class ASCWDSWorkerSchemas:
-    workplace_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.establishment_id, StringType(), True),
-            StructField(AWP.import_date, StringType(), True),
-        ]
-    )
-
-    worker_schema = StructType(
-        [
-            StructField(AWK.location_id, StringType(), True),
-            StructField(AWK.establishment_id, StringType(), True),
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(AWK.main_job_role_id, StringType(), True),
-            StructField(AWK.import_date, StringType(), True),
-        ]
-    )
-
-    create_clean_main_job_role_column_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_id, StringType(), True),
-        ]
-    )
-    expected_create_clean_main_job_role_column_schema = StructType(
-        [
-            *create_clean_main_job_role_column_schema,
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
-        ]
-    )
-
-    remap_mainjrid_codes_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-        ]
-    )
-
-    impute_not_known_job_roles_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class IngestONSData:
-    sample_schema = StructType(
-        [
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.icb, StringType(), True),
-            StructField(ONS.longitude, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidatePostcodeDirectoryRawData:
-    raw_postcode_directory_schema = StructType(
-        [
-            StructField(Keys.import_date, StringType(), True),
-            StructField(ONS.postcode, StringType(), True),
-            StructField(ONS.cssr, StringType(), True),
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidateASCWDSWorkerCleanedData:
-    cleaned_ascwds_worker_schema = StructType(
-        [
-            StructField(AWKClean.establishment_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
-        ]
-    )
 
 
 @dataclass

@@ -1438,18 +1438,6 @@ class TestJoinEstimatesToAscwds:
 @dataclass
 class ImputeJobRoleSchemas:
 
-    create_imputed_ascwds_job_role_counts_expected_schema = {
-        IndCQC.id_per_locationid_import_date_job_role: pl.UInt32,
-        IndCQC.location_id: pl.String,
-        IndCQC.main_job_role_clean_labelled: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.estimate_filled_posts: pl.Float32,
-        IndCQC.ascwds_job_role_ratios: pl.Float32,  # extra col
-        IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,  # extra col
-        IndCQC.imputed_ascwds_job_role_counts: pl.Float32,  # extra col
-    }
-
     create_ascwds_job_role_rolling_ratio_expected_schema = {
         IndCQC.id_per_locationid_import_date_job_role: pl.UInt16,
         IndCQC.location_id: pl.String,
@@ -1468,6 +1456,15 @@ class ImputeJobRoleSchemas:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_job_role_ratios: pl.Float32,
         IndCQC.imputed_job_role_ratios_for_trendline: pl.Float32,  # extra col
+    }
+
+    add_imputed_ascwds_job_role_ratios_expected_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_job_role_ratios: pl.Float32,
+        IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
+        IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,
     }
 
 
@@ -1595,7 +1592,7 @@ class InterpolationSchema:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_pir_merged: pl.Float64,
         IndCQC.extrapolation_forwards: pl.Float64,
-        IndCQC.interpolation_model: pl.Float64,
+        IndCQC.interpolation_model: pl.Float32,
     }
 
     calculate_residual_schema = {
@@ -1622,7 +1619,7 @@ class InterpolationSchema:
         IndCQC.residual: pl.Float64,
         IndCQC.days_between_submissions: pl.Int64,
         IndCQC.proportion_of_days_between_submissions: pl.Float64,
-        IndCQC.interpolation_model: pl.Float64,
+        IndCQC.interpolation_model: pl.Float32,
     }
 
 

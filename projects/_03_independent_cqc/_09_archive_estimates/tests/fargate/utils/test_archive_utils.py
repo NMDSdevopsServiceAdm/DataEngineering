@@ -239,7 +239,6 @@ class TestGetRunNumber:
             [
                 "s3://test-bucket/domain=test/dataset=estimates/",
                 "s3://test-bucket/domain=test/dataset=metadata/",
-                "s3://test-bucket/domain=test/dataset=geography/",
             ]
         )
 

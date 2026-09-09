@@ -564,6 +564,16 @@ class TestCleanAscwdsWorkerUtilsSchemas:
         AWKClean.main_job_role_clean: pl.String,
         AWKClean.main_job_role_clean_labelled: pl.String,
     }
+
+    create_clean_employment_status_column_schema = {
+        AWKClean.worker_id: pl.String,
+        AWKClean.employment_status: pl.String,
+    }
+    expected_create_clean_employment_status_column_schema = {
+        **create_clean_employment_status_column_schema,
+        AWKClean.employment_status_clean: pl.String,
+        AWKClean.employment_status_clean_labelled: pl.String,
+    }
     data_labels_schema = {
         DLC.column_name: pl.String,
         DLC.code: pl.String,

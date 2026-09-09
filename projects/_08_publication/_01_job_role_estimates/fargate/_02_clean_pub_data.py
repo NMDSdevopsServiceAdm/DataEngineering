@@ -1,7 +1,7 @@
+from datetime import date
+
 from polars_utils import utils
-from projects._08_publication._01_job_role_estimates.fargate.utils import (
-    clean_utils as cUtils,
-)
+from polars_utils.filtering_utils import reduced_data_filter_expr
 
 
 def main(
@@ -19,6 +19,13 @@ def main(
         clean_destination (str): destination s3 directory for the cleaned data
     """
     lf = utils.scan_parquet(merge_data_source)
+
+    # Publication policy: full retention for 2 financial years, quarterly
+    # sampling further back, nothing before 6 financial years ago.
+    today = date.today()
+    fy_year = today.year if today.month >= 4 else today.year - 1
+    cutoff_date = date(fy_year - 6, 4, 1)
+    lf = lf.filter(reduced_data_filter_expr(cutoff_date=cutoff_date))
 
     # See clean_utils/test_clean_utils for placeholders.
 

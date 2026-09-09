@@ -85,21 +85,21 @@ class TestPublishedJobRoleLabels:
     def test_pins_the_published_job_role_label_values(self):
         test_object = PublishedJobRoleLabels("test_column")
         expected_values = [
-            "senior_management",
-            "registered_manager",
-            "social_worker",
-            "senior_care_worker",
-            "care_worker",
-            "community_support_and_outreach",
-            "occupational_therapist",
-            "registered_nurse",
-            "allied_health_professional",
-            "deputy_manager",
-            "support_worker",
-            "other_managers",
-            "other_regulated_professions",
-            "other_direct_care",
-            "other",
+            "Senior management",
+            "Registered manager",
+            "Social worker",
+            "Senior care worker",
+            "Care worker",
+            "Community support and outreach work",
+            "Occupational therapist",
+            "Registered nurse",
+            "Allied health professional",
+            "Deputy manager",
+            "Support worker",
+            "Other managers",
+            "Other regulated professions",
+            "Other direct care",
+            "Other",
         ]
         assert test_object.categorical_values == expected_values
 

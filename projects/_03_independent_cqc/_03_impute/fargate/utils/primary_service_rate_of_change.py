@@ -100,9 +100,7 @@ def model_primary_service_rate_of_change_trendline(
         pl.coalesce(
             pl.col(TempCol.current_period),
             pl.col(TempCol.current_period_interpolated),
-        )
-        .cast(pl.Float32)
-        .alias(TempCol.current_period_interpolated)
+        ).alias(TempCol.current_period_interpolated)
     )
 
     lf = lf.with_columns(
