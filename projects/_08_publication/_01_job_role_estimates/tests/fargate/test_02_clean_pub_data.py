@@ -1,7 +1,9 @@
 from datetime import date
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 import projects._08_publication._01_job_role_estimates.fargate._02_clean_pub_data as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.publication_columns import PublicationColumns as Pub
 
 PATCH_PATH = (
     "projects._08_publication._01_job_role_estimates.fargate._02_clean_pub_data"
@@ -13,6 +15,7 @@ TEST_DESTINATION = "some/other/directory"
 
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.clean_utils.has_column_data_since_date")
     @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
@@ -21,6 +24,7 @@ class TestMain:
         scan_parquet_mock: Mock,
         date_mock: Mock,
         reduced_data_filter_expr_mock: Mock,
+        has_column_data_since_date_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         merged_lf = Mock(name="merged_lf")
@@ -38,7 +42,50 @@ class TestMain:
         merged_lf.filter.assert_called_once_with(
             reduced_data_filter_expr_mock.return_value
         )
+
+        has_column_data_since_date_mock.assert_has_calls(
+            [
+                call(
+                    IndCQC.ct_care_home_total_employed_imputed,
+                    date(2021, 4, 1),
+                    Pub.ct_care_home_has_data_2021,
+                ),
+                call(
+                    IndCQC.ct_care_home_total_employed_imputed,
+                    date(2025, 4, 1),
+                    Pub.ct_care_home_has_data_2025,
+                ),
+                call(
+                    IndCQC.ct_care_home_total_employed_imputed,
+                    date(2026, 4, 1),
+                    Pub.ct_care_home_has_data_2026,
+                ),
+                call(
+                    IndCQC.ct_non_res_care_workers_employed_imputed,
+                    date(2021, 4, 1),
+                    Pub.ct_non_res_has_data_2021,
+                ),
+                call(
+                    IndCQC.ct_non_res_care_workers_employed_imputed,
+                    date(2025, 4, 1),
+                    Pub.ct_non_res_has_data_2025,
+                ),
+                call(
+                    IndCQC.ct_non_res_care_workers_employed_imputed,
+                    date(2026, 4, 1),
+                    Pub.ct_non_res_has_data_2026,
+                ),
+            ]
+        )
+        merged_lf.filter.return_value.with_columns.assert_called_once_with(
+            has_column_data_since_date_mock.return_value,
+            has_column_data_since_date_mock.return_value,
+            has_column_data_since_date_mock.return_value,
+            has_column_data_since_date_mock.return_value,
+            has_column_data_since_date_mock.return_value,
+            has_column_data_since_date_mock.return_value,
+        )
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=merged_lf.filter.return_value,
+            lazy_df=merged_lf.filter.return_value.with_columns.return_value,
             output_path=TEST_DESTINATION,
         )

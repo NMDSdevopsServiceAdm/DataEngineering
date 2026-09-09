@@ -2,6 +2,11 @@ from datetime import date
 
 from polars_utils import utils
 from polars_utils.filtering_utils import reduced_data_filter_expr
+from projects._08_publication._01_job_role_estimates.fargate.utils import (
+    clean_utils,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.publication_columns import PublicationColumns as Pub
 
 
 def main(
@@ -11,8 +16,9 @@ def main(
     """
     Cleans merged job role data.
 
-    The capacity tracker filters, the aggregation and percentage change columns
-    are currently placeholders and don't yet apply any real filtering.
+    The remaining capacity tracker filters, the aggregation and percentage
+    change columns are currently placeholders and don't yet apply any real
+    filtering.
 
     Args:
         merge_data_source (str): source s3 directory for merged data
@@ -29,7 +35,40 @@ def main(
 
     # See clean_utils/test_clean_utils for placeholders.
 
-    # TODO: Add capacity tracker filters. Call one at a time as three are developed.
+    lf = lf.with_columns(
+        clean_utils.has_column_data_since_date(
+            IndCQC.ct_care_home_total_employed_imputed,
+            date(2021, 4, 1),
+            Pub.ct_care_home_has_data_2021,
+        ),
+        clean_utils.has_column_data_since_date(
+            IndCQC.ct_care_home_total_employed_imputed,
+            date(2025, 4, 1),
+            Pub.ct_care_home_has_data_2025,
+        ),
+        clean_utils.has_column_data_since_date(
+            IndCQC.ct_care_home_total_employed_imputed,
+            date(2026, 4, 1),
+            Pub.ct_care_home_has_data_2026,
+        ),
+        clean_utils.has_column_data_since_date(
+            IndCQC.ct_non_res_care_workers_employed_imputed,
+            date(2021, 4, 1),
+            Pub.ct_non_res_has_data_2021,
+        ),
+        clean_utils.has_column_data_since_date(
+            IndCQC.ct_non_res_care_workers_employed_imputed,
+            date(2025, 4, 1),
+            Pub.ct_non_res_has_data_2025,
+        ),
+        clean_utils.has_column_data_since_date(
+            IndCQC.ct_non_res_care_workers_employed_imputed,
+            date(2026, 4, 1),
+            Pub.ct_non_res_has_data_2026,
+        ),
+    )
+
+    # TODO: Add remaining capacity tracker filters (consistent service, dispersion).
 
     # TODO: Aggregate on job role, primary_service_type and current_region.
 

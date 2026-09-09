@@ -1,13 +1,35 @@
+from datetime import date
+
 import polars as pl
 
-from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-def add_ct_filter_has_ct_data() -> pl.Expr:
+def has_column_data_since_date(
+    column_name: str, from_date: date, column_alias: str
+) -> pl.Expr:
     """
-    Placeholder: flags whether a location has capacity tracker data.
+    Builds a per-location flag: does column_name have data since from_date?
+
+    True for a location when it has at least one row on or after from_date,
+    and column_name is not null on every one of those rows. A location with
+    no rows at all on or after from_date is False, not vacuously True.
+
+    Args:
+        column_name (str): the column to check for nulls.
+        from_date (date): the earliest import date to check from.
+        column_alias (str): name to alias the resulting column to.
+
+    Returns:
+        pl.Expr: boolean expression aliased to column_alias, constant across
+            all rows of a location.
     """
-    pass
+    in_window = pl.col(IndCQC.cqc_location_import_date) >= from_date
+    has_row_in_window = in_window.any().over(IndCQC.location_id)
+    no_nulls_in_window = ~(
+        (in_window & pl.col(column_name).is_null()).any().over(IndCQC.location_id)
+    )
+    return (has_row_in_window & no_nulls_in_window).alias(column_alias)
 
 
 def add_ct_filter_consistent_service() -> pl.Expr:
