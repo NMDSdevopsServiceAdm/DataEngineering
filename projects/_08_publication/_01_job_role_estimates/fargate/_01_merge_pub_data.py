@@ -25,7 +25,7 @@ def main(
     merge_data_destination: str,
 ) -> None:
     """
-    Merges archived job role estimates and metadata data.
+    Merges archived job role estimates and metadata.
 
     Args:
         jr_archive_estimates_source (str): source s3 directory for archived job role estimates data
