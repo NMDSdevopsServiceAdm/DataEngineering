@@ -29,15 +29,15 @@
                       "Command": [
                         "merge_ind_cqc_data.py",
                         "--cleaned_cqc_location_source",
-                        "${dataset_bucket_uri}/domain=01_cqc/dataset=cqc_locations_04_full_cleaned_registered/",
+                        "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_04_full_cleaned_registered/",
                         "--cleaned_cqc_pir_source",
                         "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned/",
                         "--cleaned_ascwds_workplace_source",
                         "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
                         "--cleaned_ct_non_res_source",
-                        "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/",
+                        "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=non_residential_cleaned/",
                         "--cleaned_ct_care_home_source",
-                        "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=capacity_tracker_care_home_cleaned/",
+                        "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=care_home_cleaned/",
                         "--destination",
                         "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_01_merged_data/"
                       ]
@@ -115,7 +115,7 @@
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_01_merged_data/",
                                 "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_01_merged_data_validation/",
-                                "--compare_path", "domain=01_cqc/dataset=cqc_locations_04_full_cleaned_registered/"
+                                "--compare_path", "domain=01_cqc/dataset=locations_04_full_cleaned_registered/"
                               ]
                             }
                           ]

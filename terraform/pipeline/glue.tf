@@ -115,8 +115,8 @@ module "flatten_cqc_ratings_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_full_snapshot_source"       = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=cqc_locations_04_latest_snapshot/"
-    "--cqc_locations_api_delta_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=cqc_locations_01_delta_api/version=3.1.7/"
+    "--cqc_full_snapshot_source"       = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=locations_04_latest_snapshot/"
+    "--cqc_locations_api_delta_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/"
     "--ascwds_workplace_source"        = "${module.datasets_bucket.bucket_uri}/domain=01_ascwds/dataset=workplace/"
     "--cqc_ratings_destination"        = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_data_requests/"
     "--benchmark_ratings_destination"  = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
@@ -132,7 +132,7 @@ module "reconciliation_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_locations_snapshot_source"              = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=cqc_locations_04_latest_snapshot/"
+    "--cqc_locations_snapshot_source"              = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=locations_04_latest_snapshot/"
     "--ascwds_workplace_source"                    = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/"
     "--reconciliation_single_and_subs_destination" = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_singles_and_subs"
     "--reconciliation_parents_destination"         = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_parents"
@@ -152,10 +152,10 @@ module "merge_coverage_data_job" {
   number_of_workers = 5
 
   job_parameters = {
-    "--cleaned_cqc_location_source"  = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=cqc_locations_04_full_cleaned_registered/"
+    "--cleaned_cqc_location_source"  = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=locations_04_full_cleaned_registered/"
     "--ascwds_workplace_source"      = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/"
     "--cqc_ratings_source"           = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_data_requests/"
-    "--cleaned_cqc_providers_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=cqc_providers_04_full_cleaned/"
+    "--cleaned_cqc_providers_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=providers_04_full_cleaned/"
     "--merged_coverage_destination"  = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data/"
     "--reduced_coverage_destination" = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_monthly_coverage_data/"
   }
@@ -186,7 +186,7 @@ module "validate_merge_coverage_data_job" {
   glue_version    = "5.0"
 
   job_parameters = {
-    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=cqc_locations_04_full_cleaned_registered/"
+    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=locations_04_full_cleaned_registered/"
     "--merged_coverage_data_source" = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data/"
     "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data_validation/"
   }

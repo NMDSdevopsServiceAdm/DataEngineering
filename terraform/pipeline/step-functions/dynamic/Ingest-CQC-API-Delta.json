@@ -60,8 +60,8 @@
                       "Command": [
                         "validate_cqc_providers_1_delta_api_download.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--source_path", "domain=01_cqc/dataset=cqc_providers_01_delta_api/version=3.0.0/",
-                        "--reports_path", "domain=01_cqc/dataset=cqc_providers_01_delta_api_validation/"
+                        "--source_path", "domain=01_cqc/dataset=providers_01_delta_api/version=3.0.0/",
+                        "--reports_path", "domain=01_cqc/dataset=providers_01_delta_api_validation/"
                       ]
                     }
                   ]
@@ -127,8 +127,8 @@
                       "Command": [
                         "validate_cqc_locations_1_delta_api_download.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--source_path", "domain=01_cqc/dataset=cqc_locations_01_delta_api/version=3.1.7/",
-                        "--reports_path", "domain=01_cqc/dataset=cqc_locations_01_delta_api_validation/"
+                        "--source_path", "domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/",
+                        "--reports_path", "domain=01_cqc/dataset=locations_01_delta_api_validation/"
                       ]
                     }
                   ]
