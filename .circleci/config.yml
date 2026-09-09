@@ -557,8 +557,8 @@ jobs:
             if [ "$(cat bake/seed-archive-sample 2>/dev/null)" = "false" ]; then
               echo "No archive-related changes detected. Skipping archive sample seed."
             else
-              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archive/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archive/" --delete && \
-                aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archive_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archive_metadata/" --delete
+              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_sample_archive/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_sample_archive/" --delete && \
+                aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_sample_archive_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_sample_archive_metadata/" --delete
             fi
 
   terraform-destroy:

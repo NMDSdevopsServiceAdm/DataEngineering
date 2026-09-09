@@ -35,11 +35,11 @@ class TestMain:
         assert scan_parquet_mock.call_count == 2
         scan_parquet_mock.assert_any_call(
             TEST_ESTIMATES_SOURCE,
-            # selected_columns=job.JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
+            selected_columns=job.JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
         )
         scan_parquet_mock.assert_any_call(
             TEST_METADATA_SOURCE,
-            # selected_columns=job.JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
+            selected_columns=job.JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
         )
 
         archived_jr_estimate_lf.join.assert_called_once_with(

@@ -1,22 +1,27 @@
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
-# Commented out because the sample archive does not reflect the actual archive.
-# JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
-#     IndCQC.id_per_locationid_import_date,
-#     IndCQC.location_id,
-#     IndCQC.cqc_location_import_date,
-#     IndCQC.primary_service_type,
-#     IndCQC.main_job_role_clean_labelled,
-#     IndCQC.main_job_group_labelled,
-#     IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
-# ]
+JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
+    IndCQC.id_per_locationid_import_date,
+    IndCQC.location_id,
+    IndCQC.cqc_location_import_date,
+    IndCQC.primary_service_type,
+    IndCQC.main_job_role_clean_labelled,
+    IndCQC.main_job_group_labelled,
+    IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
+]
 
-# JOB_ROLE_METADATA_ARCHIVE_COLUMNS = [
-#     IndCQC.id_per_locationid_import_date,
-#     IndCQC.ct_care_home_total_employed_imputed,
-#     IndCQC.ct_non_res_care_workers_employed_imputed,
-# ]
+JOB_ROLE_METADATA_ARCHIVE_COLUMNS = [
+    IndCQC.id_per_locationid_import_date,
+    IndCQC.current_cssr,
+    IndCQC.current_region,
+    IndCQC.current_icb,
+    IndCQC.current_rural_urban_indicator_2011,
+    IndCQC.current_lsoa21,
+    IndCQC.current_msoa21,
+    IndCQC.ct_care_home_total_employed_imputed,
+    IndCQC.ct_non_res_care_workers_employed_imputed,
+]
 
 
 def main(
@@ -34,14 +39,12 @@ def main(
     """
     jr_estimates_lf = utils.scan_parquet(
         jr_archive_estimates_source,
-        # selected_columns=JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
+        selected_columns=JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
     )
     metadata_lf = utils.scan_parquet(
         jr_archive_metadata_source,
-        # selected_columns=JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
+        selected_columns=JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
     )
-
-    # See merge_utils/test_merge_utils for placeholders.
 
     jr_estimates_lf = jr_estimates_lf.join(
         metadata_lf, on=IndCQC.id_per_locationid_import_date, how="left"
