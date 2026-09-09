@@ -41,7 +41,7 @@ def main(
     cleaned_worker_destination: str,
 ) -> None:
     """
-    Clean raw ASC-WDS worker data.
+    Clean raw ASC-WDS worker data
 
     Args:
         worker_source (str): path to the raw ASC-WDS worker data
