@@ -489,36 +489,21 @@ jobs:
       - run:
           name: Copy main datasets to non-prod dataset bucket
           command: |
-            # Copy over raw data for checking downstream work.
-            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=data_labels/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=data_labels/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=worker/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=workplace/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=pir/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=pir/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=postcode_corrections/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.7/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_providers_01_delta_api/version=3.0.0/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=providers_01_delta_api/version=3.0.0/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ons/dataset=postcode_directory/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_care_home/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=care_home/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_non_residential/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=non_residential/" --delete
-            aws s3 sync "s3://sfc-main-sample-raw-data/domain=ASCWDS/" "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/"
-            aws s3 sync "s3://sfc-main-sample-raw-data/domain=capacity_tracker/" "s3://$BRANCH_RAW_BUCKET/domain=capacity_tracker/"
-            aws s3 sync "s3://sfc-main-sample-raw-data/domain=CQC/dataset=pir/" "s3://$BRANCH_RAW_BUCKET/domain=CQC/dataset=pir/"
-            aws s3 sync "s3://sfc-main-sample-raw-data/domain=ONS/dataset=postcode_directory/" "s3://$BRANCH_RAW_BUCKET/domain=ONS/dataset=postcode_directory/"
-            # aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_04_full_cleaned_registered/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_04_full_cleaned_registered/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=postcode_corrections/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=01_ons/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ons/dataset=postcode_directory_cleaned/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=workplace/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=worker/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=worker/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=workplace_cleaned/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=worker_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=worker_cleaned/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=data_labels/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=data_labels/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=care_home_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=care_home_cleaned/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=non_residential_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=non_residential_cleaned/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=pir_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=pir_cleaned/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_05_estimated/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_04_estimate_job_roles/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_04_estimate_job_roles/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_01_merge_metadata_job_roles/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_01_merge_metadata_job_roles/" --delete
-            # aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_empstat_rates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_empstat_rates/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_04_full_cleaned_registered/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_04_full_cleaned_registered/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=postcode_corrections/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_ons/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ons/dataset=postcode_directory_cleaned/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=workplace/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=worker/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=worker/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=workplace_cleaned/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=worker_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=worker_cleaned/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=data_labels/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=data_labels/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=care_home_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=care_home_cleaned/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=non_residential_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=non_residential_cleaned/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=pir_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=pir_cleaned/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_05_estimated/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_04_estimate_job_roles/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_04_estimate_job_roles/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_01_merge_metadata_job_roles/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_01_merge_metadata_job_roles/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_empstat_rates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_empstat_rates/" --delete
       - run:
           name: Copy models to non-prod dataset
           command: |
