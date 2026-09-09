@@ -90,17 +90,54 @@ class TestGetFileDirectory:
         assert file_utils.get_file_directory(filepath) == expected_directory
 
 
+@dataclass
+class ConstructDestinationPathTestCase:
+    id: str
+    key: str
+    expected_path: str
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.key, self.expected_path, id=self.id)
+
+
+construct_destination_path_test_cases = [
+    ConstructDestinationPathTestCase(
+        id="renames_ascwds_raw_domain_to_numbered_datasets_domain",
+        key="domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/workers.csv",
+        expected_path="s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331",
+    ),
+    ConstructDestinationPathTestCase(
+        id="renames_cqc_raw_domain_to_numbered_datasets_domain",
+        key="domain=CQC/dataset=pir/file.csv",
+        expected_path="s3://sfc-main-datasets/domain=01_cqc/dataset=pir",
+    ),
+    ConstructDestinationPathTestCase(
+        id="renames_ons_raw_domain_to_numbered_datasets_domain",
+        key="domain=ONS/dataset=postcode_directory/file.csv",
+        expected_path="s3://sfc-main-datasets/domain=01_ons/dataset=postcode_directory",
+    ),
+    ConstructDestinationPathTestCase(
+        id="renames_capacity_tracker_raw_domain_to_numbered_datasets_domain",
+        key="domain=capacity_tracker/dataset=capacity_tracker_care_home/file.csv",
+        expected_path="s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=capacity_tracker_care_home",
+    ),
+]
+
+
 class TestConstructDestinationPath:
-    def test_combines_destination_bucket_with_directory_of_key(self):
+    @pytest.mark.parametrize(
+        "key,expected_path",
+        [case.as_pytest_param() for case in construct_destination_path_test_cases],
+    )
+    def test_combines_destination_bucket_with_renamed_directory_of_key(
+        self, key, expected_path
+    ):
         destination = "s3://sfc-main-datasets/"
-        key = "domain=01_ascwds/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/workers.csv"
 
         destination_path = file_utils.construct_destination_path(destination, key)
 
-        assert destination_path == (
-            "s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace/version=0.0.1/"
-            "year=2013/month=03/day=31/import_date=20130331"
-        )
+        assert destination_path == expected_path
 
 
 @dataclass

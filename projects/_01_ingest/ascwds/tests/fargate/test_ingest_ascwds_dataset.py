@@ -44,7 +44,7 @@ class TestMain:
         returned_lf = mock_sink_to_parquet.call_args.kwargs["lazy_df"]
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    source = "s3://source-bucket/domain=01_ascwds/dataset=worker/file.csv"
+    source = "s3://source-bucket/domain=ASCWDS/dataset=worker/file.csv"
     destination_prefix = "s3://dest-bucket/"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
