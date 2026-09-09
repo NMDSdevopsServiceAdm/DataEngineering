@@ -240,6 +240,7 @@ module "ind_cqc_crawler" {
   dataset_for_crawler          = "03_ind_cqc"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+  exclusions                   = ["dataset=03_starters_leavers_vacancies_empstat_rates/**"]
 }
 
 module "publication_crawler" {
