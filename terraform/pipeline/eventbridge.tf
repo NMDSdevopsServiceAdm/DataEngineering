@@ -12,7 +12,7 @@ resource "aws_cloudwatch_event_rule" "ascwds_csv_added" {
       "name": ["${local.raw_bucket_name}"]
     },
     "object": {
-      "key": [ {"prefix": "domain=01_ascwds/dataset=worker" }, {"prefix": "domain=01_ascwds/dataset=workplace" }  ]
+      "key": [ {"prefix": "domain=ASCWDS/dataset=worker" }, {"prefix": "domain=ASCWDS/dataset=workplace" }  ]
     }
   }
 }
@@ -33,7 +33,7 @@ resource "aws_cloudwatch_event_rule" "cqc_pir_csv_added" {
       "name": ["${local.raw_bucket_name}"]
     },
     "object": {
-      "key": [ {"prefix": "domain=01_cqc/dataset=pir" }  ]
+      "key": [ {"prefix": "domain=CQC/dataset=pir" }  ]
     }
   }
 }
@@ -54,7 +54,7 @@ resource "aws_cloudwatch_event_rule" "ons_pd_csv_added" {
       "name": ["${local.raw_bucket_name}"]
     },
     "object": {
-      "key": [ {"prefix": "domain=01_ons/dataset=postcode_directory" }  ]
+      "key": [ {"prefix": "domain=ONS/dataset=postcode_directory" }  ]
     }
   }
 }
@@ -75,7 +75,7 @@ resource "aws_cloudwatch_event_rule" "ct_care_home_csv_added" {
       "name": ["${local.raw_bucket_name}"]
     },
     "object": {
-      "key": [ {"prefix": "domain=01_capacity_tracker/dataset=care_home" }  ]
+      "key": [ {"prefix": "domain=capacity_tracker/dataset=capacity_tracker_care_home" }  ]
     }
   }
 }
@@ -96,7 +96,7 @@ resource "aws_cloudwatch_event_rule" "ct_non_res_csv_added" {
       "name": ["${local.raw_bucket_name}"]
     },
     "object": {
-      "key": [ {"prefix": "domain=01_capacity_tracker/dataset=non_res" }  ]
+      "key": [ {"prefix": "domain=capacity_tracker/dataset=capacity_tracker_non_res" }  ]
     }
   }
 }

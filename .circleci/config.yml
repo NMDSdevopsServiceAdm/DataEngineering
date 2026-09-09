@@ -562,29 +562,29 @@ jobs:
               # own previous output at this fixed sentinel path.
               aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=workplace/version=0.0.0/" --recursive && \
                 aws s3 rm "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=worker/version=0.0.0/" --recursive && \
-                aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=01_ascwds/" --recursive && \
-                aws s3 sync "s3://sfc-main-sample-raw-data/domain=ASCWDS/" "s3://$BRANCH_RAW_BUCKET/domain=01_ascwds/" || failures=1
+                aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=ASCWDS/" "s3://$BRANCH_RAW_BUCKET/domain=ASCWDS/" || failures=1
             fi
 
             if [ "$(cat bake/seed-capacity_tracker 2>/dev/null)" = "false" ]; then
               echo "No Capacity Tracker ingest-related changes detected. Skipping seed."
             else
-              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=01_capacity_tracker/" --recursive && \
-                aws s3 sync "s3://sfc-main-sample-raw-data/domain=capacity_tracker/" "s3://$BRANCH_RAW_BUCKET/domain=01_capacity_tracker/" || failures=1
+              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=capacity_tracker/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=capacity_tracker/" "s3://$BRANCH_RAW_BUCKET/domain=capacity_tracker/" || failures=1
             fi
 
             if [ "$(cat bake/seed-cqc_pir 2>/dev/null)" = "false" ]; then
               echo "No CQC PIR ingest-related changes detected. Skipping seed."
             else
-              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=01_cqc/dataset=pir/" --recursive && \
-                aws s3 sync "s3://sfc-main-sample-raw-data/domain=CQC/dataset=pir/" "s3://$BRANCH_RAW_BUCKET/domain=01_cqc/dataset=pir/" || failures=1
+              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=CQC/dataset=pir/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=CQC/dataset=pir/" "s3://$BRANCH_RAW_BUCKET/domain=CQC/dataset=pir/" || failures=1
             fi
 
             if [ "$(cat bake/seed-ons_pd 2>/dev/null)" = "false" ]; then
               echo "No ONS PD ingest-related changes detected. Skipping seed."
             else
-              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=01_ons/dataset=postcode_directory/" --recursive && \
-                aws s3 sync "s3://sfc-main-sample-raw-data/domain=ONS/dataset=postcode_directory/" "s3://$BRANCH_RAW_BUCKET/domain=01_ons/dataset=postcode_directory/" || failures=1
+              aws s3 rm "s3://$BRANCH_RAW_BUCKET/domain=ONS/dataset=postcode_directory/" --recursive && \
+                aws s3 sync "s3://sfc-main-sample-raw-data/domain=ONS/dataset=postcode_directory/" "s3://$BRANCH_RAW_BUCKET/domain=ONS/dataset=postcode_directory/" || failures=1
             fi
 
             exit $failures
