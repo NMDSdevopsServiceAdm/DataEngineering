@@ -18,11 +18,15 @@ def main(
     """
     worker_lf = utils.scan_parquet(cleaned_ascwds_worker_source)
 
-    worker_lf = pWorkerUtils.aggregate_employment_status_data(worker_lf)
-    worker_lf = pWorkerUtils.reshape_employment_status_data(worker_lf)
+    employment_status_summary_lf = pWorkerUtils.aggregate_employment_status_data(
+        worker_lf
+    )
+    employment_status_summary_lf = pWorkerUtils.reshape_employment_status_data(
+        employment_status_summary_lf
+    )
 
     utils.sink_to_parquet(
-        lazy_df=worker_lf,
+        lazy_df=employment_status_summary_lf,
         output_path=prepared_data_destination,
     )
 

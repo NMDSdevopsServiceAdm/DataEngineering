@@ -34,7 +34,7 @@ def main(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,
     )
-    expected_row_count = compare_df.select(COMPARE_COLS_TO_IMPORT).unique().height
+    expected_row_count = compare_df.unique().height
 
     validation = (
         pb.Validate(
