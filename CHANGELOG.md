@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Renumbered the publication stage from `_08_publication` to `_99_publication` so it always sorts and runs last, and renamed its `_01_job_role_estimates` product folder to `monthly_tracker_filled_posts` to match the published product; job scripts, Docker image, ECR repo, Terraform resources and S3 dataset paths (`monthly_tracker_filled_posts_01_merge`/`_02_clean`) were updated to match.
 - Duplicate-establishment nulling in the ASCWDS workplace clean job now checks whether a known duplicate group is still submitting identical data for a given import date before nulling it, instead of nulling unconditionally for every establishment on the list.
 - Cut over the ASCWDS worker clean and validate jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their Step Function wiring entirely. Outputs were compared against the previous PySpark version's output in Athena and matched exactly before cutover.
 

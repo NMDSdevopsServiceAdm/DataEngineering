@@ -32,12 +32,12 @@
                 "Overrides": {
                   "ContainerOverrides": [
                     {
-                      "Name": "_08_publication-container",
+                      "Name": "_99_publication-container",
                       "Command": [
-                        "_01_merge_pub_data.py",
+                        "_01_merge.py",
                         "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=sample_archived_monthly_filled_posts_by_job_role/archive_date=2025/run_number=1/",
                         "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=sample_archive_data/dataset=sample_archived_metadata/archive_date=2025/run_number=1/",
-                        "--merge_data_destination", "${dataset_bucket_uri}/domain=publication/dataset=filled_posts_tracker_01_merged_data/"
+                        "--merge_data_destination", "${dataset_bucket_uri}/domain=publication/dataset=monthly_tracker_filled_posts_01_merge/"
                       ]
                     }
                   ]
@@ -62,11 +62,11 @@
                 "Overrides": {
                   "ContainerOverrides": [
                     {
-                      "Name": "_08_publication-container",
+                      "Name": "_99_publication-container",
                       "Command": [
-                        "_02_clean_pub_data.py",
-                        "--merge_data_source", "${dataset_bucket_uri}/domain=publication/dataset=filled_posts_tracker_01_merged_data/",
-                        "--clean_destination", "${dataset_bucket_uri}/domain=publication/dataset=filled_posts_tracker_02_cleaned_data/"
+                        "_02_clean.py",
+                        "--merge_data_source", "${dataset_bucket_uri}/domain=publication/dataset=monthly_tracker_filled_posts_01_merge/",
+                        "--clean_destination", "${dataset_bucket_uri}/domain=publication/dataset=monthly_tracker_filled_posts_02_clean/"
                       ]
                     }
                   ]

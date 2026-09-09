@@ -1,10 +1,8 @@
 from unittest.mock import Mock, patch
 
-import projects._08_publication._01_job_role_estimates.fargate._01_merge_pub_data as job
+import projects._99_publication.monthly_tracker_filled_posts.fargate._01_merge as job
 
-PATCH_PATH = (
-    "projects._08_publication._01_job_role_estimates.fargate._01_merge_pub_data"
-)
+PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._01_merge"
 
 TEST_ESTIMATES_SOURCE = "some/directory"
 TEST_METADATA_SOURCE = "some/metadata/directory"
