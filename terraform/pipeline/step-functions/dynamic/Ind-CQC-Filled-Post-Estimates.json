@@ -1250,7 +1250,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
-                "Name": "${ind_cqc_filled_posts_crawler_name}"
+                "Name": "${ind_cqc_crawler_name}"
               },
               "End": true
             }

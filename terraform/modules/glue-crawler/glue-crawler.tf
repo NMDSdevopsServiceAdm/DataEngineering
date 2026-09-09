@@ -3,6 +3,7 @@ resource "aws_glue_crawler" "crawler" {
   name          = "${local.workspace_prefix}-data_engineering_${var.dataset_for_crawler}${var.name_postfix}"
   role          = var.glue_role.arn
   schedule      = var.schedule
+  table_prefix  = "${var.dataset_for_crawler}_"
 
   recrawl_policy {
     recrawl_behavior = "CRAWL_EVERYTHING"

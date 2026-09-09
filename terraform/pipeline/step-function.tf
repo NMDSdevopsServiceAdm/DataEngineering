@@ -117,14 +117,14 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     # crawlers
     data_validation_reports_crawler_name   = module.data_validation_reports_crawler.crawler_name
     ascwds_crawler_name                    = module.ascwds_crawler.crawler_name
-    ind_cqc_filled_posts_crawler_name      = module.ind_cqc_filled_posts_crawler.crawler_name
+    ind_cqc_crawler_name                   = module.ind_cqc_crawler.crawler_name
     cqc_crawler_name                       = module.cqc_crawler.crawler_name
     dpr_crawler_name                       = module.dpr_crawler.crawler_name
     ons_crawler_name                       = module.ons_crawler.crawler_name
     sfc_crawler_name                       = module.sfc_crawler.crawler_name
     ct_crawler_name                        = module.capacity_tracker_crawler.crawler_name
-    workforce_characteristics_crawler_name = module.workforce_characteristics_crawler.crawler_name
-    sample_archive_data_crawler_name       = module.sample_archive_data_crawler.crawler_name
+    workforce_characteristics_crawler_name = module.ind_cqc_crawler.crawler_name
+    sample_archive_data_crawler_name       = module.ind_cqc_crawler.crawler_name
     publication_crawler_name               = module.publication_crawler.crawler_name
 
     # parameter store

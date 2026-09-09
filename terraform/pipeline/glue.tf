@@ -230,14 +230,21 @@ module "diagnostics_on_capacity_tracker_job" {
 
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "ASCWDS"
+  dataset_for_crawler          = "01_ascwds"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
-module "ind_cqc_filled_posts_crawler" {
+module "ind_cqc_crawler" {
   source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "ind_cqc_filled_posts"
+  dataset_for_crawler          = "03_ind_cqc"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
+
+module "publication_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "99_publication"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
@@ -249,30 +256,23 @@ module "data_validation_reports_crawler" {
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
-module "publication_crawler" {
-  source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "publication"
-  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
-}
-
 module "cqc_crawler" {
   source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "CQC"
+  dataset_for_crawler          = "01_cqc"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "sfc_crawler" {
   source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "SfC"
+  dataset_for_crawler          = "02_sfc"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "ons_crawler" {
   source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "ONS"
+  dataset_for_crawler          = "01_ons"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
   exclusions                   = ["dataset=postcode-directory-field-lookups/**"]
@@ -280,29 +280,14 @@ module "ons_crawler" {
 
 module "dpr_crawler" {
   source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "DPR"
+  dataset_for_crawler          = "04_dpr"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "capacity_tracker_crawler" {
   source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "capacity_tracker"
-  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
-}
-
-module "workforce_characteristics_crawler" {
-  source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "workforce_characteristics"
-  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
-  exclusions                   = ["dataset=empstat_rates/**"]
-}
-
-module "sample_archive_data_crawler" {
-  source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "sample_archive_data"
+  dataset_for_crawler          = "01_capacity_tracker"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
