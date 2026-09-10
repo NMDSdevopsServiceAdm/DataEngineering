@@ -2,7 +2,7 @@ from datetime import date
 
 from polars_utils import utils
 from polars_utils.filtering_utils import reduced_data_filter_expr
-from projects._08_publication._01_job_role_estimates.fargate.utils import (
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     clean_utils,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC

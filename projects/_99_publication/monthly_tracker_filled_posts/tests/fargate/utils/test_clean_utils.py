@@ -3,7 +3,7 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.clean_utils as job
-from projects._08_publication.unittest_data.polars_pub_test_data import (
+from projects._99_publication.unittest_data.polars_pub_test_data import (
     HAS_COLUMN_DATA_SINCE_DATE_TEST_CASES,
     HasColumnDataSinceDateTestCase,
 )
