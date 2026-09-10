@@ -11,9 +11,13 @@ def has_column_data_since_date(
     """
     Builds a per-location flag: does column_name have data since from_date?
 
-    True for a location when it has at least one row on or after from_date,
-    and column_name is not null on every one of those rows. A location with
-    no rows at all on or after from_date is False, not vacuously True.
+    True for a location when column_name is not null at every distinct
+    import date from from_date to the latest import date present in the
+    data. A location missing a row entirely for one of those dates, or with
+    a null value at one, is False — as is every location when there are no
+    import dates on or after from_date at all. Counts distinct dates rather
+    than rows, since a location can have multiple rows per import date (one
+    per job role) with the same repeated column_name value.
 
     Args:
         column_name (str): the column to check for nulls.
@@ -25,11 +29,18 @@ def has_column_data_since_date(
             all rows of a location.
     """
     in_window = pl.col(IndCQC.cqc_location_import_date) >= from_date
-    has_row_in_window = in_window.any().over(IndCQC.location_id)
-    no_nulls_in_window = ~(
-        (in_window & pl.col(column_name).is_null()).any().over(IndCQC.location_id)
+    dates_in_window = (
+        pl.col(IndCQC.cqc_location_import_date).filter(in_window).n_unique()
     )
-    return (has_row_in_window & no_nulls_in_window).alias(column_alias)
+    non_null_dates_in_window = (
+        pl.col(IndCQC.cqc_location_import_date)
+        .filter(in_window & pl.col(column_name).is_not_null())
+        .n_unique()
+        .over(IndCQC.location_id)
+    )
+    return (
+        (dates_in_window > 0) & (non_null_dates_in_window == dates_in_window)
+    ).alias(column_alias)
 
 
 def add_ct_filter_consistent_service() -> pl.Expr:

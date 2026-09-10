@@ -88,4 +88,40 @@ HAS_COLUMN_DATA_SINCE_DATE_TEST_CASES = [
             ("1-005", date(2025, 5, 1), 5.0, None, True),
         ],
     ),
+    HasColumnDataSinceDateTestCase(
+        id="false_for_location_missing_a_period_another_location_has",
+        test_data=[
+            ("1-006", date(2021, 5, 1), 5.0, None),
+            ("1-006", date(2022, 5, 1), 5.0, None),
+            ("1-007", date(2021, 5, 1), 5.0, None),
+            ("1-007", date(2022, 5, 1), 5.0, None),
+            ("1-007", date(2023, 5, 1), 5.0, None),
+        ],
+        column_name=IndCQC.ct_care_home_total_employed_imputed,
+        from_date=date(2021, 5, 1),
+        column_alias=Pub.ct_care_home_has_data_2021,
+        expected_data=[
+            ("1-006", date(2021, 5, 1), 5.0, None, False),
+            ("1-006", date(2022, 5, 1), 5.0, None, False),
+            ("1-007", date(2021, 5, 1), 5.0, None, True),
+            ("1-007", date(2022, 5, 1), 5.0, None, True),
+            ("1-007", date(2023, 5, 1), 5.0, None, True),
+        ],
+    ),
+    HasColumnDataSinceDateTestCase(
+        id="duplicate_rows_at_the_same_date_do_not_inflate_the_count",
+        test_data=[
+            ("1-008", date(2021, 5, 1), 5.0, None),
+            ("1-008", date(2021, 5, 1), 5.0, None),
+            ("1-008", date(2022, 5, 1), 6.0, None),
+        ],
+        column_name=IndCQC.ct_care_home_total_employed_imputed,
+        from_date=date(2021, 5, 1),
+        column_alias=Pub.ct_care_home_has_data_2021,
+        expected_data=[
+            ("1-008", date(2021, 5, 1), 5.0, None, True),
+            ("1-008", date(2021, 5, 1), 5.0, None, True),
+            ("1-008", date(2022, 5, 1), 6.0, None, True),
+        ],
+    ),
 ]
