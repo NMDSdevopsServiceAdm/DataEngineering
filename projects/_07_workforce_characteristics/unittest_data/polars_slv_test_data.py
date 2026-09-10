@@ -12,8 +12,10 @@ from utils.column_names.employment_status_rates_columns import (
     EmploymentStatusRatesColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.slv_job_role_columns import (
+    SLVEmploymentStatusColumns as SLVEmpStatus,
+)
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
-from utils.column_names.slv_worker_columns import SLVWorkerColumns as SLVWorker
 from utils.column_values.categorical_column_values import (
     EmploymentStatusID,
     EmploymentStatusLabels,
@@ -284,13 +286,11 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc1"],
                 AWKClean.establishment_id: ["1-001"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
-                AWKClean.main_job_role_clean: [MainJobRoleID.care_worker],
                 AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
-                AWKClean.employment_status_clean: [EmploymentStatusID.permanent],
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ],
-                SLVWorker.employment_status_count: [2],
+                SLVEmpStatus.employment_status_count: [2],
             },
         ),
         AggregateEmploymentStatusDataTestCase(
@@ -316,18 +316,13 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc2", "loc2"],
                 AWKClean.establishment_id: ["1-002", "1-002"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)] * 2,
-                AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 2,
                 AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
                 * 2,
-                AWKClean.employment_status_clean: [
-                    EmploymentStatusID.permanent,
-                    EmploymentStatusID.temporary,
-                ],
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.temporary,
                 ],
-                SLVWorker.employment_status_count: [1, 1],
+                SLVEmpStatus.employment_status_count: [1, 1],
             },
         ),
         AggregateEmploymentStatusDataTestCase(
@@ -350,15 +345,13 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc3", "loc3"],
                 AWKClean.establishment_id: ["1-003", "1-004"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
-                AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 2,
                 AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
                 * 2,
-                AWKClean.employment_status_clean: [EmploymentStatusID.permanent] * 2,
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ]
                 * 2,
-                SLVWorker.employment_status_count: [1, 1],
+                SLVEmpStatus.employment_status_count: [1, 1],
             },
         ),
     ]

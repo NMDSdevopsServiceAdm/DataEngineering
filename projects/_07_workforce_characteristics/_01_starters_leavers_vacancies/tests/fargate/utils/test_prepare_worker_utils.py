@@ -6,7 +6,9 @@ import projects._07_workforce_characteristics._01_starters_leavers_vacancies.far
 from projects._07_workforce_characteristics.unittest_data.polars_slv_test_data import (
     TestPrepareUtilsData as Data,
 )
-from utils.column_names.slv_worker_columns import SLVWorkerColumns as SLVWorker
+from utils.column_names.slv_job_role_columns import (
+    SLVEmploymentStatusColumns as SLVEmpStatus,
+)
 
 
 class TestAggregateEmploymentStatusData:
@@ -21,7 +23,7 @@ class TestAggregateEmploymentStatusData:
         test_lf = pl.LazyFrame(case.input_data)
         expected_lf = pl.LazyFrame(
             case.expected_data,
-            schema_overrides={SLVWorker.employment_status_count: pl.UInt32},
+            schema_overrides={SLVEmpStatus.employment_status_count: pl.UInt32},
         )
 
         returned_lf = job.aggregate_employment_status_data(test_lf)

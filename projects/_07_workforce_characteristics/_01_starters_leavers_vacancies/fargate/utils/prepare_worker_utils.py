@@ -3,15 +3,15 @@ import polars as pl
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.slv_worker_columns import SLVWorkerColumns as SLVWorker
+from utils.column_names.slv_job_role_columns import (
+    SLVEmploymentStatusColumns as SLVEmpStatus,
+)
 
 GROUP_COLUMNS = [
     AWKClean.location_id,
     AWKClean.establishment_id,
     AWKClean.ascwds_worker_import_date,
-    AWKClean.main_job_role_clean,
     AWKClean.main_job_role_clean_labelled,
-    AWKClean.employment_status_clean,
     AWKClean.employment_status_clean_labelled,
 ]
 
@@ -32,7 +32,7 @@ def aggregate_employment_status_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
             emplstat_count column counting workers in that group.
     """
     return worker_lf.group_by(GROUP_COLUMNS).agg(
-        pl.len().alias(SLVWorker.employment_status_count)
+        pl.len().alias(SLVEmpStatus.employment_status_count)
     )
 
 

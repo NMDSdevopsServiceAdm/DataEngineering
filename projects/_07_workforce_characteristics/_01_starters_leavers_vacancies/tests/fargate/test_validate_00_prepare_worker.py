@@ -9,9 +9,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_values.categorical_column_values import (
-    EmploymentStatusID,
     EmploymentStatusLabels,
-    MainJobRoleID,
     MainJobRoleLabels,
 )
 
@@ -27,10 +25,8 @@ class TestMain:
                 AWKClean.location_id: ["loc1", "loc1", "loc2"],
                 AWKClean.establishment_id: ["1-001", "1-001", "1-002"],
                 AWKClean.ascwds_worker_import_date: ["2026-01-01"] * 3,
-                AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 3,
                 AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
                 * 3,
-                AWKClean.employment_status_clean: [EmploymentStatusID.permanent] * 3,
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ]
