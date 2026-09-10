@@ -192,42 +192,6 @@ module "validate_merge_coverage_data_job" {
   }
 }
 
-
-module "diagnostics_on_known_filled_posts_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_03_independent_cqc/_08_diagnostics/jobs"
-  script_name     = "diagnostics_on_known_filled_posts.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-
-  job_parameters = {
-    "--estimate_filled_posts_source"    = "${module.datasets_bucket.bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/"
-    "--diagnostics_destination"         = "${module.datasets_bucket.bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_estimated_diagnostics/"
-    "--summary_diagnostics_destination" = "${module.datasets_bucket.bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_estimated_diagnostics_summary/"
-    "--charts_destination"              = "${module.datasets_bucket.bucket_name}"
-  }
-}
-
-module "diagnostics_on_capacity_tracker_job" {
-  source            = "../modules/glue-job"
-  script_dir        = "projects/_03_independent_cqc/_08_diagnostics/jobs"
-  script_name       = "diagnostics_on_capacity_tracker.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  worker_type       = "G.1X"
-  number_of_workers = 4
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-
-  job_parameters = {
-    "--estimate_filled_posts_source"              = "${module.datasets_bucket.bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/"
-    "--care_home_diagnostics_destination"         = "${module.datasets_bucket.bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_capacity_tracker_care_home_diagnostics/"
-    "--care_home_summary_diagnostics_destination" = "${module.datasets_bucket.bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_capacity_tracker_care_home_diagnostics_summary/"
-    "--non_res_diagnostics_destination"           = "${module.datasets_bucket.bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_capacity_tracker_non_residential_diagnostics/"
-    "--non_res_summary_diagnostics_destination"   = "${module.datasets_bucket.bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_capacity_tracker_non_residential_diagnostics_summary/"
-  }
-}
-
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "01_ascwds"
