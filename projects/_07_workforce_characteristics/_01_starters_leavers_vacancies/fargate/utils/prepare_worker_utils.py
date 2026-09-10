@@ -6,6 +6,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.slv_job_role_columns import (
     SLVEmploymentStatusColumns as SLVEmpStatus,
 )
+from utils.column_values.categorical_column_values import EmploymentStatusLabels
 
 GROUP_COLUMNS = [
     AWKClean.location_id,
@@ -14,6 +15,14 @@ GROUP_COLUMNS = [
     AWKClean.main_job_role_clean_labelled,
     AWKClean.employment_status_clean_labelled,
 ]
+
+EMPLOYMENT_STATUS_LABEL_TO_COLUMN = {
+    EmploymentStatusLabels.permanent: SLVEmpStatus.emplstat_perm_count,
+    EmploymentStatusLabels.temporary: SLVEmpStatus.emplstat_temp_count,
+    EmploymentStatusLabels.bank_or_pool: SLVEmpStatus.emplstat_bank_or_pool_count,
+    EmploymentStatusLabels.agency: SLVEmpStatus.emplstat_agency_count,
+    EmploymentStatusLabels.other: SLVEmpStatus.emplstat_other_count,
+}
 
 
 def aggregate_employment_status_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -36,14 +45,32 @@ def aggregate_employment_status_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def reshape_employment_status_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Placeholder - will reshape employment status data. Currently a
-    pass-through; real logic to follow in a later ticket.
+def reshape_employment_status_data(
+    employment_status_summary_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """Pivots employment status counts from one row per status to one row
+    per group, with a count column per status.
 
     Args:
-        worker_lf (pl.LazyFrame): cleaned ASC-WDS worker LazyFrame.
+        employment_status_summary_lf (pl.LazyFrame): output of
+            aggregate_employment_status_data, one row per group in
+            GROUP_COLUMNS with an emplstat_count column.
 
     Returns:
-        pl.LazyFrame: worker_lf, unchanged.
+        pl.LazyFrame: one row per group in GROUP_COLUMNS minus
+            employment_status_clean_labelled, with 5 emplstat_*_count
+            columns (one per employment status label). Groups with no
+            workers of a given status are 0 in that column.
     """
-    return worker_lf
+    index_columns = [
+        column
+        for column in GROUP_COLUMNS
+        if column != AWKClean.employment_status_clean_labelled
+    ]
+    return employment_status_summary_lf.pivot(
+        on=AWKClean.employment_status_clean_labelled,
+        on_columns=list(EMPLOYMENT_STATUS_LABEL_TO_COLUMN.keys()),
+        index=index_columns,
+        values=SLVEmpStatus.employment_status_count,
+        aggregate_function="sum",
+    ).rename(EMPLOYMENT_STATUS_LABEL_TO_COLUMN)

@@ -55,6 +55,13 @@ class AggregateEmploymentStatusDataTestCase:
     expected_data: dict[str, Any]
 
 
+@dataclass
+class ReshapeEmploymentStatusDataTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
 # The reshape unconditionally references every one of the 15 published labels' 4
 # metric columns (trusting that the raw ASC-WDS schema always declares them), so
 # every case below carries the full set - `other`'s columns are all-null in the
@@ -352,6 +359,90 @@ class TestPrepareUtilsData:
                 ]
                 * 2,
                 SLVEmpStatus.employment_status_count: [1, 1],
+            },
+        ),
+    ]
+
+    reshape_employment_status_data_test_cases = [
+        ReshapeEmploymentStatusDataTestCase(
+            id="pivots_single_status_into_its_column_and_zeros_the_rest",
+            input_data={
+                AWKClean.location_id: ["loc1"],
+                AWKClean.establishment_id: ["1-001"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
+                AWKClean.employment_status_clean_labelled: [
+                    EmploymentStatusLabels.permanent
+                ],
+                SLVEmpStatus.employment_status_count: [3],
+            },
+            expected_data={
+                AWKClean.location_id: ["loc1"],
+                AWKClean.establishment_id: ["1-001"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
+                SLVEmpStatus.emplstat_perm_count: [3],
+                SLVEmpStatus.emplstat_temp_count: [0],
+                SLVEmpStatus.emplstat_bank_or_pool_count: [0],
+                SLVEmpStatus.emplstat_agency_count: [0],
+                SLVEmpStatus.emplstat_other_count: [0],
+            },
+        ),
+        ReshapeEmploymentStatusDataTestCase(
+            id="pivots_multiple_statuses_for_the_same_group_into_one_row",
+            input_data={
+                AWKClean.location_id: ["loc2", "loc2"],
+                AWKClean.establishment_id: ["1-002", "1-002"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)] * 2,
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
+                * 2,
+                AWKClean.employment_status_clean_labelled: [
+                    EmploymentStatusLabels.permanent,
+                    EmploymentStatusLabels.temporary,
+                ],
+                SLVEmpStatus.employment_status_count: [2, 1],
+            },
+            expected_data={
+                AWKClean.location_id: ["loc2"],
+                AWKClean.establishment_id: ["1-002"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)],
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
+                SLVEmpStatus.emplstat_perm_count: [2],
+                SLVEmpStatus.emplstat_temp_count: [1],
+                SLVEmpStatus.emplstat_bank_or_pool_count: [0],
+                SLVEmpStatus.emplstat_agency_count: [0],
+                SLVEmpStatus.emplstat_other_count: [0],
+            },
+        ),
+        ReshapeEmploymentStatusDataTestCase(
+            id="keeps_distinct_groups_as_separate_rows",
+            input_data={
+                AWKClean.location_id: ["loc3", "loc3"],
+                AWKClean.establishment_id: ["1-003", "1-003"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
+                AWKClean.main_job_role_clean_labelled: [
+                    MainJobRoleLabels.care_worker,
+                    MainJobRoleLabels.registered_nurse,
+                ],
+                AWKClean.employment_status_clean_labelled: [
+                    EmploymentStatusLabels.permanent,
+                    EmploymentStatusLabels.agency,
+                ],
+                SLVEmpStatus.employment_status_count: [1, 4],
+            },
+            expected_data={
+                AWKClean.location_id: ["loc3", "loc3"],
+                AWKClean.establishment_id: ["1-003", "1-003"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
+                AWKClean.main_job_role_clean_labelled: [
+                    MainJobRoleLabels.care_worker,
+                    MainJobRoleLabels.registered_nurse,
+                ],
+                SLVEmpStatus.emplstat_perm_count: [1, 0],
+                SLVEmpStatus.emplstat_temp_count: [0, 0],
+                SLVEmpStatus.emplstat_bank_or_pool_count: [0, 0],
+                SLVEmpStatus.emplstat_agency_count: [0, 4],
+                SLVEmpStatus.emplstat_other_count: [0, 0],
             },
         ),
     ]

@@ -28,3 +28,8 @@ class SLVJobRoleColumns:
 @dataclass
 class SLVEmploymentStatusColumns:
     employment_status_count: str = "emplstat_count"
+    emplstat_perm_count: str = "emplstat_perm_count"
+    emplstat_temp_count: str = "emplstat_temp_count"
+    emplstat_bank_or_pool_count: str = "emplstat_bank_or_pool_count"
+    emplstat_agency_count: str = "emplstat_agency_count"
+    emplstat_other_count: str = "emplstat_other_count"
