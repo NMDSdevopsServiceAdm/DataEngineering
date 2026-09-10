@@ -1,7 +1,12 @@
 from datetime import date
 from unittest.mock import Mock, patch
 
+import polars as pl
+from polars.testing import assert_frame_equal
+
 import projects._99_publication.monthly_tracker_filled_posts.fargate._02_clean as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.publication_columns import PublicationColumns as Pub
 
 PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._02_clean"
 
@@ -21,10 +26,12 @@ class TestMain:
         reduced_data_filter_expr_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        merged_lf = Mock(name="merged_lf")
-        scan_parquet_mock.return_value = merged_lf
+        scan_parquet_mock.return_value = pl.LazyFrame(
+            {IndCQC.care_home_status_count: [1, 2]}
+        )
         date_mock.today.return_value = date(2026, 9, 1)
         date_mock.side_effect = lambda *args, **kwargs: date(*args, **kwargs)
+        reduced_data_filter_expr_mock.return_value = pl.lit(True)
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
 
@@ -33,10 +40,13 @@ class TestMain:
         reduced_data_filter_expr_mock.assert_called_once_with(
             cutoff_date=date(2020, 4, 1),
         )
-        merged_lf.filter.assert_called_once_with(
-            reduced_data_filter_expr_mock.return_value
+
+        sink_call_kwargs = sink_to_parquet_mock.call_args.kwargs
+        assert sink_call_kwargs["output_path"] == TEST_DESTINATION
+        expected_lf = pl.LazyFrame(
+            {
+                IndCQC.care_home_status_count: [1, 2],
+                Pub.consistent_service: [True, False],
+            }
         )
-        sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=merged_lf.filter.return_value,
-            output_path=TEST_DESTINATION,
-        )
+        assert_frame_equal(sink_call_kwargs["lazy_df"], expected_lf)
