@@ -1,11 +1,9 @@
 from datetime import date
 from unittest.mock import Mock, patch
 
-import projects._08_publication._01_job_role_estimates.fargate._02_clean_pub_data as job
+import projects._99_publication.monthly_tracker_filled_posts.fargate._02_clean as job
 
-PATCH_PATH = (
-    "projects._08_publication._01_job_role_estimates.fargate._02_clean_pub_data"
-)
+PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._02_clean"
 
 TEST_SOURCE = "some/directory"
 TEST_DESTINATION = "some/other/directory"

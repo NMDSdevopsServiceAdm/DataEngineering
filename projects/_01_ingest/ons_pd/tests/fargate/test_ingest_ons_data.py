@@ -62,5 +62,5 @@ class TestMain:
         )
         mock_sink_to_parquet.assert_called_once_with(
             lazy_df=mock_lf,
-            output_path=f"{self.destination_prefix}domain=ONS/dataset=postcode_directory/",
+            output_path=f"{self.destination_prefix}domain=01_ons/dataset=postcode_directory/",
         )

@@ -102,15 +102,15 @@ def get_run_number(s3_roots: list[str]) -> int:
 
     Scans all objects under each s3_root and extracts the run_number values from
     keys structured like:
-        bucket/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_job_role_estimates/
+        bucket/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/
 
     run_number is a single counter shared across every archive_date, not scoped
     to a particular one, so this always looks at the full history under s3_root.
 
     Args:
         s3_roots (list[str]): S3 directories a set of related archive outputs are
-            written to (e.g. an archive job's estimates, metadata, and geography
-            destinations), which are expected to always share the same run_number.
+            written to (e.g. an archive job's estimates and metadata), which
+            are expected to always share the same run_number.
 
     Returns:
         int: The highest existing run_number shared by all given s3_roots, or `0`

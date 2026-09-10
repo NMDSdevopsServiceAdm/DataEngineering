@@ -136,8 +136,8 @@ if __name__ == "__main__":
     todays_date = date.today()
     destination = file_utils.generate_s3_dir(
         destination_prefix=args.destination_prefix,
-        domain="CQC",
-        dataset="cqc_providers_01_delta_api",
+        domain="01_cqc",
+        dataset="providers_01_delta_api",
         date=todays_date,
         version="3.0.0",
     )
