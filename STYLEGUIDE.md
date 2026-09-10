@@ -50,7 +50,7 @@ Each folder should contain:
 |---------------------------------------------------|----------------------------------------------------------|
 | Used **only** in one job/dataset                  | `projects/<project>/<stage>/utils/*.py`                 |
 | Used by **multiple** jobs/datasets in a project   | `projects/<project>/utils/*.py`                         |
-| Used by **multiple projects**                     | `projects/utils/utils.py`                               |
+| Used by **multiple projects**                     | `polars_utils/utils.py`                                 |
 
 ## Imports
 Note: The VS Code extension 'isort' will do this automatically whenever a file is saved.
@@ -205,7 +205,7 @@ class TestMain:
 |---------------------------------------------------|----------------------------------------------------------|
 | Used **only** in one job/dataset                  | `projects/<project>/<stage>/unittest_data/*.py`         |
 | Used by **multiple** jobs/datasets in a project   | `projects/<project>/unittest_data/*.py`                 |
-| Used by **multiple projects**                     | `projects/utils/unittest_data.py`                       |
+| Used by **multiple projects**                     | `tests/test_polars_utils_data.py` / `tests/test_polars_utils_schemas.py` |
 
 
 
