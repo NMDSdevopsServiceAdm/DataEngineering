@@ -16,6 +16,12 @@ GROUP_COLUMNS = [
     AWKClean.employment_status_clean_labelled,
 ]
 
+RESHAPED_GROUP_COLUMNS = [
+    column
+    for column in GROUP_COLUMNS
+    if column != AWKClean.employment_status_clean_labelled
+]
+
 EMPLOYMENT_STATUS_LABEL_TO_COLUMN = {
     EmploymentStatusLabels.permanent: SLVEmpStatus.emplstat_perm_count,
     EmploymentStatusLabels.temporary: SLVEmpStatus.emplstat_temp_count,
@@ -57,20 +63,14 @@ def reshape_employment_status_data(
             GROUP_COLUMNS with an emplstat_count column.
 
     Returns:
-        pl.LazyFrame: one row per group in GROUP_COLUMNS minus
-            employment_status_clean_labelled, with 5 emplstat_*_count
-            columns (one per employment status label). Groups with no
-            workers of a given status are 0 in that column.
+        pl.LazyFrame: one row per group in RESHAPED_GROUP_COLUMNS, with 5
+            emplstat_*_count columns (one per employment status label).
+            Groups with no workers of a given status are 0 in that column.
     """
-    index_columns = [
-        column
-        for column in GROUP_COLUMNS
-        if column != AWKClean.employment_status_clean_labelled
-    ]
     return employment_status_summary_lf.pivot(
         on=AWKClean.employment_status_clean_labelled,
         on_columns=list(EMPLOYMENT_STATUS_LABEL_TO_COLUMN.keys()),
-        index=index_columns,
+        index=RESHAPED_GROUP_COLUMNS,
         values=SLVEmpStatus.employment_status_count,
         aggregate_function="sum",
     ).rename(EMPLOYMENT_STATUS_LABEL_TO_COLUMN)

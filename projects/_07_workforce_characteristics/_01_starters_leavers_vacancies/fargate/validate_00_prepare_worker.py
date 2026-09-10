@@ -6,7 +6,7 @@ from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_worker_utils import (
-    GROUP_COLUMNS as COMPARE_COLS_TO_IMPORT,
+    RESHAPED_GROUP_COLUMNS as COMPARE_COLS_TO_IMPORT,
 )
 
 
@@ -16,10 +16,12 @@ def main(
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
 
-    _00_prepare_worker aggregates the cleaned ASCWDS worker data down to one
-    row per group in GROUP_COLUMNS, so the prepared dataset is expected to
-    have exactly as many rows as there are unique combinations of those
-    columns in the cleaned ASCWDS worker data it was built from.
+    _00_prepare_worker aggregates and pivots the cleaned ASCWDS worker data
+    down to one row per group in RESHAPED_GROUP_COLUMNS (location,
+    establishment, import date and job role, with a count column per
+    employment status), so the prepared dataset is expected to have exactly
+    as many rows as there are unique combinations of those columns in the
+    cleaned ASCWDS worker data it was built from.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset

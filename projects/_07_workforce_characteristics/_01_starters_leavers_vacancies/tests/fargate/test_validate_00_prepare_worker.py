@@ -8,10 +8,7 @@ import projects._07_workforce_characteristics._01_starters_leavers_vacancies.far
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_values.categorical_column_values import (
-    EmploymentStatusLabels,
-    MainJobRoleLabels,
-)
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_00_prepare_worker"
 
@@ -20,16 +17,16 @@ class TestMain:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.source_df = pl.DataFrame({"worker_id": ["1", "2"]})
+        # Two raw rows for loc1/1-001 share every RESHAPED_GROUP_COLUMNS value
+        # (they'd only have differed by employment status, which is no longer
+        # part of the compare columns since it's pivoted to columns, not rows,
+        # in the prepared output), so they count as one group, not two.
         self.compare_df = pl.DataFrame(
             {
                 AWKClean.location_id: ["loc1", "loc1", "loc2"],
                 AWKClean.establishment_id: ["1-001", "1-001", "1-002"],
                 AWKClean.ascwds_worker_import_date: ["2026-01-01"] * 3,
                 AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
-                * 3,
-                AWKClean.employment_status_clean_labelled: [
-                    EmploymentStatusLabels.permanent
-                ]
                 * 3,
             }
         )
