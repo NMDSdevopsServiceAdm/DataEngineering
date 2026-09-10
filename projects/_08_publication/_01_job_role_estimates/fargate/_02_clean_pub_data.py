@@ -38,7 +38,7 @@ def main(
     lf = lf.with_columns(
         clean_utils.has_column_data_since_date(
             IndCQC.ct_care_home_total_employed_imputed,
-            date(2021, 4, 1),
+            date(2021, 5, 1),
             Pub.ct_care_home_has_data_2021,
         ),
         clean_utils.has_column_data_since_date(
@@ -53,7 +53,7 @@ def main(
         ),
         clean_utils.has_column_data_since_date(
             IndCQC.ct_non_res_care_workers_employed_imputed,
-            date(2021, 4, 1),
+            date(2021, 5, 1),
             Pub.ct_non_res_has_data_2021,
         ),
         clean_utils.has_column_data_since_date(
