@@ -706,87 +706,37 @@
                   ]
                 }
               },
-              "Next": "Validate estimated filled posts and run diagnostics"
+              "Next": "Validate estimated filled posts"
             },
-            "Validate estimated filled posts and run diagnostics": {
-              "Type": "Parallel",
-              "Branches": [
-                {
-                  "StartAt": "Run diagnostics on known filled posts job",
-                  "States": {
-                    "Run diagnostics on known filled posts job": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${diagnostics_on_known_filled_posts_job_name}",
-                        "Arguments": {
-                          "--estimate_filled_posts_source": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
-                          "--diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_estimated_diagnostics/",
-                          "--summary_diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_estimated_diagnostics_summary/",
-                          "--charts_destination": "${dataset_bucket_name}"
-                        }
-                      },
-                      "End": true
-                    }
+            "Validate estimated filled posts": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
                   }
                 },
-                {
-                  "StartAt": "Run diagnostics on capacity tracker job",
-                  "States": {
-                    "Run diagnostics on capacity tracker job": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${diagnostics_on_capacity_tracker_job_name}",
-                        "Arguments": {
-                          "--estimate_filled_posts_source": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
-                          "--care_home_diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_capacity_tracker_care_home_diagnostics/",
-                          "--care_home_summary_diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_capacity_tracker_care_home_diagnostics_summary/",
-                          "--non_res_diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_capacity_tracker_non_residential_diagnostics/",
-                          "--non_res_summary_diagnostics_destination": "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_capacity_tracker_non_residential_diagnostics_summary/"
-                        }
-                      },
-                      "End": true
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "validate_estimated_ind_cqc_filled_posts_data.py",
+                        "--bucket_name", "${dataset_bucket_name}",
+                        "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
+                        "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_validation/",
+                        "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/"
+                      ]
                     }
-                  }
-                },
-                {
-                  "StartAt": "Validate estimated filled posts",
-                  "States": {
-                    "Validate estimated filled posts": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
-                      "Parameters": {
-                        "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${independent_cqc_task_arn}",
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                          "AwsvpcConfiguration": {
-                            "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
-                            "AssignPublicIp": "ENABLED"
-                          }
-                        },
-                        "Overrides": {
-                          "ContainerOverrides": [
-                            {
-                              "Name": "_03_independent_cqc-container",
-                              "Command": [
-                                "validate_estimated_ind_cqc_filled_posts_data.py",
-                                "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
-                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_validation/",
-                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/"
-                              ]
-                            }
-                          ]
-                        }
-                      },
-                      "End": true
-                    }
-                  }
+                  ]
                 }
-              ],
+              },
               "Next": "Archive estimates"
             },
             "Archive estimates": {
@@ -810,7 +760,7 @@
                       "Command": [
                         "archive_filled_posts_estimates.py",
                         "--estimate_ind_cqc_filled_posts_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
-                        "--archive_ind_cqc_filled_posts_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_sample_archived_monthly/"
+                        "--archive_ind_cqc_filled_posts_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_sample_archived_monthly/"
                       ]
                     }
                   ]
