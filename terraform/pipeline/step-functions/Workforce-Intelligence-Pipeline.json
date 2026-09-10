@@ -90,19 +90,6 @@
               "Type": "Fail"
             }
           }
-        },
-        {
-          "StartAt": "Run Validation Crawler",
-          "States": {
-            "Run Validation Crawler": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-              "Parameters": {
-                "Name": "${data_validation_reports_crawler_name}"
-              },
-              "End": true
-            }
-          }
         }
       ],
       "Next": "Downstream Pipelines"
@@ -144,7 +131,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution",
               "Parameters": {
-                "StateMachineArn": "${workforce_characteristics_task_arn}",
+                "StateMachineArn": "${ind_cqc_slv_state_machine_arn}",
                 "Input": {
                   "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                 }

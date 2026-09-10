@@ -2,8 +2,9 @@
 Decide whether a push needs to seed the branch's non-prod dataset bucket with
 sample archive data.
 
-`copy-main-data` syncs `sfc-main-datasets`' `domain=sample_archive_data` prefix
-into every branch's own dataset bucket on its first deploy. This narrows that
+`copy-main-data` syncs `sfc-main-datasets`' `domain=03_ind_cqc` job role
+archive datasets into every branch's own dataset bucket on its first
+deploy. This narrows that
 to pushes that genuinely touch the archive stage, so an unrelated branch's
 first build doesn't pay for a sync it never asked for.
 
@@ -36,7 +37,7 @@ from scripts.select_bake_targets import (  # noqa: E402
 # scripts/tests/test_select_archive_sample_seed.py's `trigger_path_cases`.
 ARCHIVE_TRIGGER_PATHS: tuple[str, ...] = (
     "projects/_03_independent_cqc/_09_archive_estimates",
-    "projects/_08_publication",
+    "projects/_99_publication",
 )
 
 

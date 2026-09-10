@@ -11,10 +11,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY polars_utils /app/polars_utils
 COPY utils/file_utils.py /app/utils/file_utils.py
 COPY utils/column_names /app/utils/column_names/
-COPY projects/_08_publication/_01_job_role_estimates/fargate/utils /app/projects/_08_publication/_01_job_role_estimates/fargate/utils
+COPY projects/_99_publication/monthly_tracker_filled_posts/fargate/utils /app/projects/_99_publication/monthly_tracker_filled_posts/fargate/utils
 
 # Copy python jobs to WORKDIR
-COPY projects/_08_publication/_01_job_role_estimates/fargate/_01_merge_pub_data.py /app/_01_merge_pub_data.py
-COPY projects/_08_publication/_01_job_role_estimates/fargate/_02_clean_pub_data.py /app/_02_clean_pub_data.py
+COPY projects/_99_publication/monthly_tracker_filled_posts/fargate/_01_merge.py /app/_01_merge.py
+COPY projects/_99_publication/monthly_tracker_filled_posts/fargate/_02_clean.py /app/_02_clean.py
 
 ENTRYPOINT ["python"]

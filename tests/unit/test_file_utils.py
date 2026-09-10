@@ -11,12 +11,12 @@ PATCH_PATH = "utils.file_utils"
 
 class TestSplitS3Uri:
     def test_splits_bucket_and_key_from_uri(self):
-        s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
+        s3_uri = "s3://sfc-data-engineering-raw/domain=01_ascwds/dataset=workplace/"
 
         bucket_name, key_name = file_utils.split_s3_uri(s3_uri)
 
         assert bucket_name == "sfc-data-engineering-raw"
-        assert key_name == "domain=ASCWDS/dataset=workplace/"
+        assert key_name == "domain=01_ascwds/dataset=workplace/"
 
 
 @dataclass
@@ -35,8 +35,8 @@ construct_s3_uri_test_cases = [
     ConstructS3UriTestCase(
         id="constructs_uri_from_bucket_and_key",
         bucket_name="sfc-data-engineering-raw",
-        key="domain=ASCWDS/dataset=workplace/file.csv",
-        expected_uri="s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/file.csv",
+        key="domain=01_ascwds/dataset=workplace/file.csv",
+        expected_uri="s3://sfc-data-engineering-raw/domain=01_ascwds/dataset=workplace/file.csv",
     ),
     ConstructS3UriTestCase(
         id="strips_whitespace_from_bucket_name",
@@ -70,8 +70,8 @@ class GetFileDirectoryTestCase:
 get_file_directory_test_cases = [
     GetFileDirectoryTestCase(
         id="returns_directory_for_nested_path",
-        filepath="domain=ASCWDS/dataset=workplace/version=0.0.1/workers.csv",
-        expected_directory="domain=ASCWDS/dataset=workplace/version=0.0.1",
+        filepath="domain=01_ascwds/dataset=workplace/version=0.0.1/workers.csv",
+        expected_directory="domain=01_ascwds/dataset=workplace/version=0.0.1",
     ),
     GetFileDirectoryTestCase(
         id="returns_empty_string_for_bare_filename_with_no_slash",
@@ -90,17 +90,54 @@ class TestGetFileDirectory:
         assert file_utils.get_file_directory(filepath) == expected_directory
 
 
+@dataclass
+class ConstructDestinationPathTestCase:
+    id: str
+    key: str
+    expected_path: str
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.key, self.expected_path, id=self.id)
+
+
+construct_destination_path_test_cases = [
+    ConstructDestinationPathTestCase(
+        id="renames_ascwds_raw_domain_to_numbered_datasets_domain",
+        key="domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/workers.csv",
+        expected_path="s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331",
+    ),
+    ConstructDestinationPathTestCase(
+        id="renames_cqc_raw_domain_to_numbered_datasets_domain",
+        key="domain=CQC/dataset=pir/file.csv",
+        expected_path="s3://sfc-main-datasets/domain=01_cqc/dataset=pir",
+    ),
+    ConstructDestinationPathTestCase(
+        id="renames_ons_raw_domain_to_numbered_datasets_domain",
+        key="domain=ONS/dataset=postcode_directory/file.csv",
+        expected_path="s3://sfc-main-datasets/domain=01_ons/dataset=postcode_directory",
+    ),
+    ConstructDestinationPathTestCase(
+        id="renames_capacity_tracker_raw_domain_to_numbered_datasets_domain",
+        key="domain=capacity_tracker/dataset=capacity_tracker_care_home/file.csv",
+        expected_path="s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=capacity_tracker_care_home",
+    ),
+]
+
+
 class TestConstructDestinationPath:
-    def test_combines_destination_bucket_with_directory_of_key(self):
+    @pytest.mark.parametrize(
+        "key,expected_path",
+        [case.as_pytest_param() for case in construct_destination_path_test_cases],
+    )
+    def test_combines_destination_bucket_with_renamed_directory_of_key(
+        self, key, expected_path
+    ):
         destination = "s3://sfc-main-datasets/"
-        key = "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/workers.csv"
 
         destination_path = file_utils.construct_destination_path(destination, key)
 
-        assert destination_path == (
-            "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=0.0.1/"
-            "year=2013/month=03/day=31/import_date=20130331"
-        )
+        assert destination_path == expected_path
 
 
 @dataclass

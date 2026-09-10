@@ -26,7 +26,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "_01_ingest-container",
-                      "Command.$": "States.Array('ingest_capacity_tracker_data.py', '--source', $.jobs.ingest_capacity_tracker_data.source, '--destination', '${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/')"
+                      "Command.$": "States.Array('ingest_capacity_tracker_data.py', '--source', $.jobs.ingest_capacity_tracker_data.source, '--destination', '${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=non_residential/')"
                     }
                   ]
                 }
@@ -54,9 +54,9 @@
                       "Command": [
                         "clean_capacity_tracker_non_res_data.py",
                         "--capacity_tracker_non_res_source",
-                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/",
+                        "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=non_residential/",
                         "--cleaned_capacity_tracker_non_res_destination",
-                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
+                        "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=non_residential_cleaned/"
                       ]
                     }
                   ]
@@ -87,11 +87,11 @@
                         "--bucket_name",
                         "${dataset_bucket_name}",
                         "--source_path",
-                        "domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/",
+                        "domain=01_capacity_tracker/dataset=non_residential_cleaned/",
                         "--reports_path",
-                        "domain=data_validation_reports/dataset=validation_capacity_tracker_non_residential_cleaned/",
+                        "domain=01_capacity_tracker/dataset=non_residential_cleaned_validation/",
                         "--compare_path",
-                        "domain=capacity_tracker/dataset=capacity_tracker_non_residential/"
+                        "domain=01_capacity_tracker/dataset=non_residential/"
                       ]
                     }
                   ]

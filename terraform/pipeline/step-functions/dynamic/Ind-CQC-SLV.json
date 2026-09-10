@@ -34,8 +34,8 @@
                               "Name": "_07_workforce_characteristics-container",
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/_00_prepare_workplace.py",
-                                "--cleaned_ascwds_workplace_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                                "--prepared_data_destination", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare_workplace/"
+                                "--cleaned_ascwds_workplace_source", "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
+                                "--prepared_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_workplace/"
                               ]
                             }
                           ]
@@ -68,8 +68,8 @@
                               "Name": "_07_workforce_characteristics-container",
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/_00_prepare_worker.py",
-                                "--cleaned_ascwds_worker_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                                "--prepared_data_destination", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare_worker/"
+                                "--cleaned_ascwds_worker_source", "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/",
+                                "--prepared_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_worker/"
                               ]
                             }
                           ]
@@ -109,11 +109,11 @@
                               "Name": "_07_workforce_characteristics-container",
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/_01_merge.py",
-                                "--metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=${ind_cqc_job_role_metadata}/",
-                                "--job_role_estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=${ind_cqc_job_role_estimates}/",
-                                "--prepared_slv_dataset_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare_workplace/",
-                                "--employment_status_rates_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=empstat_rates/employee_status_rates.csv",
-                                "--merged_data_destination","${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_01_merge/"
+                                "--metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
+                                "--job_role_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
+                                "--prepared_slv_dataset_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_workplace/",
+                                "--employment_status_rates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/employee_status_rates.csv",
+                                "--merged_data_destination","${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge/"
                               ]
                             }
                           ]
@@ -147,9 +147,9 @@
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/validate_00_prepare_workplace.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare_workplace/",
-                                "--compare_path", "domain=ASCWDS/dataset=workplace_cleaned/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_slv_00_prepare_workplace/"
+                                "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_workplace/",
+                                "--compare_path", "domain=01_ascwds/dataset=workplace_cleaned/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_workplace_validation/"
                               ]
                             }
                           ]
@@ -183,9 +183,9 @@
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/validate_00_prepare_worker.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare_worker/",
-                                "--compare_path", "domain=ASCWDS/dataset=worker_cleaned/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_slv_00_prepare_worker/"
+                                "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_worker/",
+                                "--compare_path", "domain=01_ascwds/dataset=worker_cleaned/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_worker_validation/"
                               ]
                             }
                           ]
@@ -224,8 +224,8 @@
                               "Name": "_07_workforce_characteristics-container",
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/_02_clean.py",
-                                "--merged_data_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_01_merge/",
-                                "--cleaned_data_destination", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_02_clean/"
+                                "--merged_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge/",
+                                "--cleaned_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/"
                               ]
                             }
                           ]
@@ -259,9 +259,9 @@
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/validate_01_merge.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_01_merge/",
-                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=${ind_cqc_job_role_estimates}/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_slv_01_merge/"
+                                "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge_validation/"
                               ]
                             }
                           ]
@@ -300,8 +300,8 @@
                               "Name": "_07_workforce_characteristics-container",
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/_03_impute.py",
-                                "--cleaned_data_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_02_clean/",
-                                "--imputed_data_destination", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_03_impute/"
+                                "--cleaned_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/",
+                                "--imputed_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute/"
                               ]
                             }
                           ]
@@ -335,9 +335,9 @@
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/validate_02_clean.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_02_clean/",
-                                "--compare_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_01_merge/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_slv_02_clean/"
+                                "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean_validation/"
                               ]
                             }
                           ]
@@ -376,8 +376,8 @@
                               "Name": "_07_workforce_characteristics-container",
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/_04_estimate.py",
-                                "--imputed_data_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_03_impute/",
-                                "--estimated_data_destination", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_slv_04_estimate/"
+                                "--imputed_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute/",
+                                "--estimated_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_04_estimate/"
                               ]
                             }
                           ]
@@ -411,9 +411,9 @@
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/validate_03_impute.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_03_impute/",
-                                "--compare_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_02_clean/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_slv_03_impute/"
+                                "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute_validation/"
                               ]
                             }
                           ]
@@ -446,9 +446,9 @@
                               "Command": [
                                 "_01_starters_leavers_vacancies/fargate/validate_04_estimate.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_04_estimate/",
-                                "--compare_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_03_impute/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_slv_04_estimate/"
+                                "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_04_estimate/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_04_estimate_validation/"
                               ]
                             }
                           ]
@@ -516,20 +516,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
-                "Name": "${workforce_characteristics_crawler_name}"
-              },
-              "End": true
-            }
-          }
-        },
-        {
-          "StartAt": "Run Validation Crawler",
-          "States": {
-            "Run Validation Crawler": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-              "Parameters": {
-                "Name": "${data_validation_reports_crawler_name}"
+                "Name": "${ind_cqc_crawler_name}"
               },
               "End": true
             }

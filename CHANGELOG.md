@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Renamed S3 dataset domains to a project-numbered scheme (e.g. `01_cqc`, `03_ind_cqc`), consolidating related Glue crawlers and moving validation reports to live alongside the dataset they validate instead of a separate domain; removed the filled posts step function's diagnostics stage ahead of its codebase removal elsewhere, renumbering the archive stage from `08` to `07`, and renamed the job role sub-stage datasets to a `06_job_roles_0N_<task>` format. The externally-managed raw bucket upload prefixes are unaffected.
+- Renumbered the publication stage from `_08_publication` to `_99_publication` so it always sorts and runs last, and renamed its `_01_job_role_estimates` product folder to `monthly_tracker_filled_posts` to match the published product; job scripts, Docker image, ECR repo, Terraform resources and S3 dataset paths (`monthly_tracker_filled_posts_01_merge`/`_02_clean`) were updated to match.
 - Duplicate-establishment nulling in the ASCWDS workplace clean job now checks whether a known duplicate group is still submitting identical data for a given import date before nulling it, instead of nulling unconditionally for every establishment on the list.
 - Cut over the ASCWDS worker clean and validate jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their Step Function wiring entirely. Outputs were compared against the previous PySpark version's output in Athena and matched exactly before cutover.
 
@@ -34,6 +36,8 @@ All notable changes to this project will be documented in this file.
 - Job role estimates for the dates between and beyond a workplace's own submissions now follow the trend of similar workplaces, instead of repeating the last submitted job role split unchanged.
 
 - Changed `MainJobRoleLabels` and `PublishedJobRoleLabels` values from snake_case codes (e.g. `senior_management`) to human-readable text (e.g. `Senior management`).
+
+- Removed the independent CQC diagnostics stage (`_08_diagnostics`) along with its Glue jobs and Step Function wiring.
 
 
 ### Improved

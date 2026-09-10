@@ -20,7 +20,7 @@
                     "ContainerOverrides": [
                         {
                             "Name": "_01_ingest-container",
-                            "Command.$": "States.Array('ingest_ascwds_dataset.py', '--source', $.jobs.ingest_ascwds_dataset.source, '--destination_prefix', 's3://${dataset_bucket_name}/domain=ASCWDS/')"
+                            "Command.$": "States.Array('ingest_ascwds_dataset.py', '--source', $.jobs.ingest_ascwds_dataset.source, '--destination_prefix', 's3://${dataset_bucket_name}/domain=01_ascwds/')"
                         }
                     ]
                 }

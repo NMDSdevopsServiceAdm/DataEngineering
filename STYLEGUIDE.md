@@ -108,15 +108,24 @@ def your_function(df: DataFrame) -> DataFrame:
 - Import under a short alias, e.g. `from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC`
 
 ## Dataset Names in AWS S3
-- Athena uses the dataset partition to name the tables so we will use this structure when saving files to S3
-- `{dataset}_{sub_dataset_if_relevant}_{order_of_process_if_relevant}_{very_brief_description}`
+- Domains are numbered to mirror their owning project's folder number, e.g. `domain=01_cqc` (from `projects/_01_ingest`), `domain=03_ind_cqc` (from `projects/_03_independent_cqc`). A domain shared across multiple projects' outputs (e.g. `99_publication`) is numbered to sort in its logical position instead — `99_` for a terminal layer that draws from several upstream domains.
+- Athena uses the dataset partition to name the tables, and the Glue crawler module's `table_prefix` prepends the domain to every discovered table name — so a dataset's own name doesn't need to repeat its domain. Within the domain, dataset names follow `{dataset}_{sub_dataset_if_relevant}_{order_of_process_if_relevant}_{very_brief_description}`
+- Multi-stage pipelines within a domain (e.g. `03_ind_cqc`) prefix their dataset names with a numbered product token (`01_filled_posts`, `03_starters_leavers_vacancies`), reserving unused numbers for products that don't exist yet, then a numbered stage within that product
 
 Examples:
-    `dataset=cqc_providers_01_delta_api`
-    `dataset=cqc_locations_01_delta_api`
-    `dataset=cqc_locations_02_delta_flattened`
-    `dataset=ind_cqc_01_merged`
-    `dataset=ind_cqc_02_cleaned`
+    `domain=01_cqc/dataset=providers_01_delta_api`
+    `domain=01_cqc/dataset=locations_01_delta_api`
+    `domain=01_cqc/dataset=locations_02_delta_flattened`
+    `domain=03_ind_cqc/dataset=01_filled_posts_01_merged`
+    `domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned`
+
+### Validation report datasets
+A validation report lives in the same domain as the dataset it validates, with `_validation` appended to that dataset's name — not in a separate domain. This means it's picked up automatically by that domain's own Glue crawler, without needing a dedicated one.
+
+Example: a report on `domain=01_cqc/dataset=pir_cleaned/` is written to `domain=01_cqc/dataset=pir_cleaned_validation/`.
+
+### Raw bucket upload prefixes are the exception
+The raw bucket's own domain prefixes (`domain=ASCWDS`, `domain=CQC`, `domain=ONS`, `domain=capacity_tracker` — where external CSV uploads actually land) are hand-managed outside this repo and can't be renamed to match the schemes above. Only the converted-to-parquet output written to the datasets bucket picks up the numbered domain naming.
 
 ## Naming Conventions
 - Use `snake_case` for variables and functions

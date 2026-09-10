@@ -11,7 +11,7 @@ variable "SANITISED_CIRCLE_BRANCH" {
 }
 
 group "all" {
-  targets = ["delta_cqc", "_01_ingest", "_02_sfc_internal", "_03_independent_cqc", "_03_independent_cqc_model", "_04_direct_payments", "_07_workforce_characteristics", "_08_publication"]
+  targets = ["delta_cqc", "_01_ingest", "_02_sfc_internal", "_03_independent_cqc", "_03_independent_cqc_model", "_04_direct_payments", "_07_workforce_characteristics", "_99_publication"]
 }
 
 # group "ingest" {
@@ -67,9 +67,9 @@ target "_07_workforce_characteristics" {
   platforms = ["linux/amd64"]
 }
 
-target "_08_publication" {
+target "_99_publication" {
   context = "."
-  dockerfile = "./projects/_08_publication/Dockerfile_and_requirements/Dockerfile"
-  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/08_publication:${SANITISED_CIRCLE_BRANCH}"]
+  dockerfile = "./projects/_99_publication/Dockerfile_and_requirements/Dockerfile"
+  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/99_publication:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
 }
