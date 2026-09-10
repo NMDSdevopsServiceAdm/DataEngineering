@@ -88,7 +88,7 @@ has_column_data_since_date_test_cases = [
         from_date=date(2021, 7, 1),
         column_alias=Pub.ct_care_home_has_data_short_term,
         expected_data=[
-            ("1-008", date(2021, 7, 1), 5.0, None, True),
+            ("1-008", date(2021, 7, 1), None, None, True),
             ("1-008", date(2021, 7, 1), 5.0, None, True),
             ("1-008", date(2022, 7, 1), 6.0, None, True),
         ],
