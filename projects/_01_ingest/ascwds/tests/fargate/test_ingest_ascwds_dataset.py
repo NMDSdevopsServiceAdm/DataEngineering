@@ -67,7 +67,7 @@ class TestMain:
         )
         mock_sink_to_parquet.assert_called_once_with(
             lazy_df=mock_lf,
-            output_path=f"{self.destination_prefix}domain=ASCWDS/dataset=worker/",
+            output_path=f"{self.destination_prefix}domain=01_ascwds/dataset=worker/",
         )
 
 

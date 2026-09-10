@@ -4,7 +4,7 @@
   "States": {
     "CQC PIR pipeline": {
       "Type": "Parallel",
-      "Next": "Run validation crawler when success",
+      "Next": "Run CQC crawler when success",
       "Branches": [
         {
           "StartAt": "Ingest CQC PIR",
@@ -47,8 +47,8 @@
                       "Parameters": {
                         "JobName": "${clean_cqc_pir_data_job_name}",
                         "Arguments": {
-                          "--cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
-                          "--cleaned_cqc_pir_destination": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/"
+                          "--cqc_pir_source": "${dataset_bucket_uri}/domain=01_cqc/dataset=pir/",
+                          "--cleaned_cqc_pir_destination": "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned/"
                         }
                       },
                       "End": true
@@ -81,9 +81,9 @@
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
-                                "domain=CQC/dataset=pir/",
+                                "domain=01_cqc/dataset=pir/",
                                 "--reports_path",
-                                "domain=data_validation_reports/dataset=validation_cqc_pir_raw/"
+                                "domain=01_cqc/dataset=pir_validation/"
                               ]
                             }
                           ]
@@ -101,8 +101,8 @@
               "Parameters": {
                 "JobName": "${validate_pir_cleaned_data_job_name}",
                 "Arguments": {
-                  "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_pir_cleaned/"
+                  "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned_validation/"
                 }
               },
               "End": true
@@ -119,14 +119,6 @@
           "ResultPath": "$.error"
         }
       ]
-    },
-    "Run validation crawler when success": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${data_validation_reports_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Run CQC crawler when success"
     },
     "Run CQC crawler when success": {
       "Type": "Task",
@@ -150,14 +142,6 @@
           "CallbackToken.$": "$$.Task.Token"
         }
       },
-      "Next": "Run validation crawler when failed"
-    },
-    "Run validation crawler when failed": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${data_validation_reports_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Next": "Run CQC crawler when failed"
     },
     "Run CQC crawler when failed": {

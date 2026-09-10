@@ -58,6 +58,11 @@ def construct_destination_path(destination: str, key: str) -> str:
     Constructs a destination s3 uri, combining the destination bucket with the
     directory of the given key.
 
+    The raw bucket's domain names (e.g. domain=ASCWDS) are fixed externally
+    and can't be renamed, but the datasets bucket uses the "01_" numbered
+    scheme (e.g. domain=01_ascwds) -- so the key's domain segment is renamed
+    on the way through.
+
     Args:
         destination (str): An s3 uri identifying the destination bucket.
         key (str): The source key, whose directory is used in the destination
@@ -68,6 +73,9 @@ def construct_destination_path(destination: str, key: str) -> str:
     """
     destination_bucket = split_s3_uri(destination)[0]
     dir_path = get_file_directory(key)
+    dir_path = re.sub(
+        r"^domain=(\w+)", lambda match: f"domain=01_{match.group(1).lower()}", dir_path
+    )
     return construct_s3_uri(destination_bucket, dir_path)
 
 

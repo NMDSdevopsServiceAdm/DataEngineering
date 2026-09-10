@@ -29,17 +29,17 @@
                       "Command": [
                         "merge_ind_cqc_data.py",
                         "--cleaned_cqc_location_source",
-                        "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/",
+                        "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_04_full_cleaned_registered/",
                         "--cleaned_cqc_pir_source",
-                        "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
+                        "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned/",
                         "--cleaned_ascwds_workplace_source",
-                        "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                        "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
                         "--cleaned_ct_non_res_source",
-                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/",
+                        "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=non_residential_cleaned/",
                         "--cleaned_ct_care_home_source",
-                        "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/",
+                        "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=care_home_cleaned/",
                         "--destination",
-                        "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/"
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_01_merged/"
                       ]
                     }
                   ]
@@ -75,11 +75,11 @@
                               "Command": [
                                 "clean_ind_cqc_filled_posts.py",
                                 "--merged_ind_cqc_source",
-                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_01_merged/",
                                 "--cleaned_ind_cqc_destination",
-                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned/",
                                 "--grouped_providers_destination",
-                                "${dataset_bucket_uri}/domain=SfC/dataset=sfc_grouped_providers/"
+                                "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_grouped_providers/"
                               ]
                             }
                           ]
@@ -113,9 +113,9 @@
                               "Command": [
                                 "validate_merged_ind_cqc_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_01_merged_ind_cqc_data/",
-                                "--compare_path", "domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
+                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_01_merged/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_01_merged_validation/",
+                                "--compare_path", "domain=01_cqc/dataset=locations_04_full_cleaned_registered/"
                               ]
                             }
                           ]
@@ -155,9 +155,9 @@
                               "Command": [
                                 "impute_ind_cqc_ascwds_and_pir.py",
                                 "--cleaned_ind_cqc_source",
-                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned/",
                                 "--destination",
-                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/"
                               ]
                             }
                           ]
@@ -191,9 +191,9 @@
                               "Command": [
                                 "validate_cleaned_ind_cqc_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_02_cleaned_data/",
-                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/"
+                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned_validation/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_01_merged/"
                               ]
                             }
                           ]
@@ -337,9 +337,9 @@
                                               "Command": [
                                                 "validate_model_01_features.py",
                                                 "--bucket_name", "${dataset_bucket_name}",
-                                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home_model/",
-                                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_04_features_care_home_model/",
-                                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_care_home_model/",
+                                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_care_home_model_validation/",
+                                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/",
                                                 "--model", "care_home_model"
                                               ]
                                             }
@@ -477,9 +477,9 @@
                                               "Command": [
                                                 "validate_model_01_features.py",
                                                 "--bucket_name", "${dataset_bucket_name}",
-                                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_without_dormancy_model/",
-                                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_04_features_non_res_without_dormancy_model/",
-                                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_non_res_without_dormancy_model/",
+                                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_non_res_without_dormancy_model_validation/",
+                                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/",
                                                 "--model", "non_res_without_dormancy_model"
                                               ]
                                             }
@@ -617,9 +617,9 @@
                                               "Command": [
                                                 "validate_model_01_features.py",
                                                 "--bucket_name", "${dataset_bucket_name}",
-                                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_with_dormancy_model/",
-                                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_04_features_non_res_with_dormancy_model/",
-                                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_non_res_with_dormancy_model/",
+                                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_04_features_non_res_with_dormancy_model_validation/",
+                                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/",
                                                 "--model", "non_res_with_dormancy_model"
                                               ]
                                             }
@@ -664,9 +664,9 @@
                               "Command": [
                                 "validate_imputed_ind_cqc_ascwds_and_pir_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_03_imputed_ascwds_and_pir/",
-                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
+                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed_validation/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned/"
                               ]
                             }
                           ]
@@ -699,8 +699,8 @@
                       "Command": [
                         "estimate_ind_cqc_filled_posts.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--imputed_ind_cqc_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                        "--destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
+                        "--imputed_ind_cqc_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/",
+                        "--destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/"
                       ]
                     }
                   ]
@@ -729,9 +729,9 @@
                       "Command": [
                         "validate_estimated_ind_cqc_filled_posts_data.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
-                        "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_06_estimated_filled_posts/",
-                        "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
+                        "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
+                        "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated_validation/",
+                        "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/"
                       ]
                     }
                   ]
@@ -759,8 +759,8 @@
                       "Name": "_03_independent_cqc-container",
                       "Command": [
                         "archive_filled_posts_estimates.py",
-                        "--estimate_ind_cqc_filled_posts_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
-                        "--archive_ind_cqc_filled_posts_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts/"
+                        "--estimate_ind_cqc_filled_posts_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
+                        "--archive_ind_cqc_filled_posts_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_archived_workplace_estimates/"
                       ]
                     }
                   ]
@@ -794,10 +794,10 @@
                               "Name": "_03_independent_cqc-container",
                               "Command": [
                                 "_01_merge.py",
-                                "--estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
-                                "--ascwds_job_role_counts_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/",
-                                "--merged_data_destination","${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_job_roles/",
-                                "--metadata_destination","${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_metadata_job_roles/"
+                                "--estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
+                                "--ascwds_job_role_counts_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_00_ascwds_prepared_counts/",
+                                "--merged_data_destination","${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge/",
+                                "--metadata_destination","${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/"
                               ]
                             }
                           ]
@@ -832,9 +832,9 @@
                                     "Name": "_03_independent_cqc-container",
                                     "Command": [
                                       "_02_clean.py",
-                                      "--merged_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_job_roles/",
-                                      "--merged_metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_metadata_job_roles/",
-                                      "--cleaned_data_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles/"
+                                      "--merged_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge/",
+                                      "--merged_metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/",
+                                      "--cleaned_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_02_clean/"
                                     ]
                                   }
                                 ]
@@ -868,9 +868,9 @@
                                     "Command": [
                                       "validate_01_merge.py",
                                       "--bucket_name", "${dataset_bucket_name}",
-                                      "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_job_roles/",
-                                      "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
-                                      "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_01_merge_job_roles/"
+                                      "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge/",
+                                      "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
+                                      "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_validation/"
                                     ]
                                   }
                                 ]
@@ -904,9 +904,9 @@
                                     "Command": [
                                       "validate_01_merge_metadata.py",
                                       "--bucket_name", "${dataset_bucket_name}",
-                                      "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_metadata_job_roles/",
-                                      "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
-                                      "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_01_merge_metadata_job_roles/"
+                                      "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/",
+                                      "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
+                                      "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata_validation/"
                                     ]
                                   }
                                 ]
@@ -945,8 +945,8 @@
                                     "Name": "_03_independent_cqc-container",
                                     "Command": [
                                       "_03_impute.py",
-                                      "--cleaned_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles/",
-                                      "--imputed_data_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_impute_job_roles/"
+                                      "--cleaned_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_02_clean/",
+                                      "--imputed_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_03_impute/"
                                     ]
                                   }
                                 ]
@@ -980,9 +980,9 @@
                                     "Command": [
                                       "validate_02_clean.py",
                                       "--bucket_name", "${dataset_bucket_name}",
-                                      "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles/",
-                                      "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_job_roles/",
-                                      "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_02_clean_job_roles/"
+                                      "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_02_clean/",
+                                      "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge/",
+                                      "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_02_clean_validation/"
                                     ]
                                   }
                                 ]
@@ -1021,8 +1021,8 @@
                                     "Name": "_03_independent_cqc-container",
                                     "Command": [
                                       "_04_estimate.py",
-                                      "--imputed_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_impute_job_roles/",
-                                      "--estimated_data_destination","${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_04_estimate_job_roles/"
+                                      "--imputed_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_03_impute/",
+                                      "--estimated_data_destination","${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate/"
                                     ]
                                   }
                                 ]
@@ -1056,9 +1056,9 @@
                                     "Command": [
                                       "validate_03_impute.py",
                                       "--bucket_name", "${dataset_bucket_name}",
-                                      "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_impute_job_roles/",
-                                      "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles/",
-                                      "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_03_impute_job_roles/"
+                                      "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_03_impute/",
+                                      "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_02_clean/",
+                                      "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_03_impute_validation/"
                                     ]
                                   }
                                 ]
@@ -1091,9 +1091,9 @@
                               "Command": [
                                 "validate_04_estimates.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_04_estimate_job_roles/",
-                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_impute_job_roles/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_04_estimate_job_roles/"
+                                "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_03_impute/",
+                                "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate_validation/"
                               ]
                             }
                           ]
@@ -1131,8 +1131,8 @@
                       "Name": "_03_independent_cqc-container",
                       "Command": [
                         "prepare_job_role_counts.py",
-                        "--cleaned_ascwds_worker_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                        "--prepared_ascwds_job_role_counts_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/"
+                        "--cleaned_ascwds_worker_source", "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/",
+                        "--prepared_ascwds_job_role_counts_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_00_ascwds_prepared_counts/"
                       ]
                     }
                   ]
@@ -1200,7 +1200,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
-                "Name": "${ind_cqc_filled_posts_crawler_name}"
+                "Name": "${ind_cqc_crawler_name}"
               },
               "End": true
             }
@@ -1214,19 +1214,6 @@
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
                 "Name": "${sfc_crawler_name}"
-              },
-              "End": true
-            }
-          }
-        },
-        {
-          "StartAt": "Run Validation Crawler",
-          "States": {
-            "Run Validation Crawler": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-              "Parameters": {
-                "Name": "${data_validation_reports_crawler_name}"
               },
               "End": true
             }
