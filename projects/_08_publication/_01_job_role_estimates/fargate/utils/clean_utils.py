@@ -9,10 +9,11 @@ def has_column_data_since_date(
     column_name: str, from_date: date, column_alias: str
 ) -> pl.Expr:
     """
-    Builds a per-location flag: does column_name have data since from_date?
+    Builds a polars expression for flagging locations with data in
+    column_name in all periods from from_date to latest import.
 
-    True for a location when column_name is not null at every distinct
-    import date from from_date to the latest import date present in the
+    True for a location when column_name is not null at every surviving
+    sample date from from_date to the latest import date present in the
     data. A location missing a row entirely for one of those dates, or with
     a null value at one, is False — as is every location when there are no
     import dates on or after from_date at all. Counts distinct dates rather

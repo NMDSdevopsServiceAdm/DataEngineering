@@ -47,33 +47,33 @@ class TestMain:
             [
                 call(
                     IndCQC.ct_care_home_total_employed_imputed,
-                    date(2021, 5, 1),
-                    Pub.ct_care_home_has_data_2021,
+                    date(2021, 7, 1),
+                    Pub.ct_care_home_has_data_long_term,
                 ),
                 call(
                     IndCQC.ct_care_home_total_employed_imputed,
                     date(2025, 4, 1),
-                    Pub.ct_care_home_has_data_2025,
+                    Pub.ct_care_home_has_data_medium_term,
                 ),
                 call(
                     IndCQC.ct_care_home_total_employed_imputed,
                     date(2026, 4, 1),
-                    Pub.ct_care_home_has_data_2026,
+                    Pub.ct_care_home_has_data_short_term,
                 ),
                 call(
                     IndCQC.ct_non_res_care_workers_employed_imputed,
-                    date(2021, 5, 1),
-                    Pub.ct_non_res_has_data_2021,
+                    date(2021, 7, 1),
+                    Pub.ct_non_res_has_data_long_term,
                 ),
                 call(
                     IndCQC.ct_non_res_care_workers_employed_imputed,
                     date(2025, 4, 1),
-                    Pub.ct_non_res_has_data_2025,
+                    Pub.ct_non_res_has_data_medium_term,
                 ),
                 call(
                     IndCQC.ct_non_res_care_workers_employed_imputed,
                     date(2026, 4, 1),
-                    Pub.ct_non_res_has_data_2026,
+                    Pub.ct_non_res_has_data_short_term,
                 ),
             ]
         )

@@ -35,36 +35,39 @@ def main(
 
     # See clean_utils/test_clean_utils for placeholders.
 
+    long_term_from_date = date(2021, 7, 1)
+    medium_term_from_date = date(2025, 4, 1)
+    short_term_from_date = date(2026, 4, 1)
     lf = lf.with_columns(
         clean_utils.has_column_data_since_date(
             IndCQC.ct_care_home_total_employed_imputed,
-            date(2021, 5, 1),
-            Pub.ct_care_home_has_data_2021,
+            long_term_from_date,
+            Pub.ct_care_home_has_data_long_term,
         ),
         clean_utils.has_column_data_since_date(
             IndCQC.ct_care_home_total_employed_imputed,
-            date(2025, 4, 1),
-            Pub.ct_care_home_has_data_2025,
+            medium_term_from_date,
+            Pub.ct_care_home_has_data_medium_term,
         ),
         clean_utils.has_column_data_since_date(
             IndCQC.ct_care_home_total_employed_imputed,
-            date(2026, 4, 1),
-            Pub.ct_care_home_has_data_2026,
+            short_term_from_date,
+            Pub.ct_care_home_has_data_short_term,
         ),
         clean_utils.has_column_data_since_date(
             IndCQC.ct_non_res_care_workers_employed_imputed,
-            date(2021, 5, 1),
-            Pub.ct_non_res_has_data_2021,
+            long_term_from_date,
+            Pub.ct_non_res_has_data_long_term,
         ),
         clean_utils.has_column_data_since_date(
             IndCQC.ct_non_res_care_workers_employed_imputed,
-            date(2025, 4, 1),
-            Pub.ct_non_res_has_data_2025,
+            medium_term_from_date,
+            Pub.ct_non_res_has_data_medium_term,
         ),
         clean_utils.has_column_data_since_date(
             IndCQC.ct_non_res_care_workers_employed_imputed,
-            date(2026, 4, 1),
-            Pub.ct_non_res_has_data_2026,
+            short_term_from_date,
+            Pub.ct_non_res_has_data_short_term,
         ),
     )
 
