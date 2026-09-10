@@ -12,7 +12,7 @@ trigger_path_cases = [
         id="returns_true_when_changed_path_is_under_archive_estimates_utils_dir",
     ),
     pytest.param(
-        "projects/_08_publication/_01_job_role_estimates/fargate/_01_merge_pub_data.py",
+        "projects/_99_publication/monthly_tracker_filled_posts/fargate/_01_merge.py",
         id="returns_true_when_changed_path_is_under_publication_dir",
     ),
 ]
