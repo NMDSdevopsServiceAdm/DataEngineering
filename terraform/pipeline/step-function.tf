@@ -5,9 +5,9 @@ locals {
     substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
   })
 
-  ind_cqc_job_role_estimates_dataset_name     = terraform.workspace == "main" ? "ind_cqc_07_04_estimate_job_roles" : "main_ind_cqc_07_04_estimate_job_roles"
-  ind_cqc_job_role_metadata_dataset_name      = terraform.workspace == "main" ? "ind_cqc_07_01_merge_metadata_job_roles" : "main_ind_cqc_07_01_merge_metadata_job_roles"
-  ind_cqc_estimated_filled_posts_dataset_name = terraform.workspace == "main" ? "ind_cqc_06_estimated_filled_posts" : "main_ind_cqc_06_estimated_filled_posts"
+  ind_cqc_job_role_estimates_dataset_name     = terraform.workspace == "main" ? "01_filled_posts_06_job_roles_04_estimate" : "main_01_filled_posts_06_job_roles_04_estimate"
+  ind_cqc_job_role_metadata_dataset_name      = terraform.workspace == "main" ? "01_filled_posts_06_job_roles_01_merge_metadata" : "main_01_filled_posts_06_job_roles_01_merge_metadata"
+  ind_cqc_estimated_filled_posts_dataset_name = terraform.workspace == "main" ? "01_filled_posts_05_estimated" : "main_01_filled_posts_05_estimated"
 
   # Max polling attempts and per-attempt wait (seconds) for the "Wait For Worker"/
   # "Wait For Workplace" states in CQC-And-ASCWDS-Orchestrator.json, before the
@@ -38,13 +38,12 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
   definition = templatefile("step-functions/Workforce-Intelligence-Pipeline.json", {
     dataset_bucket_uri                      = module.datasets_bucket.bucket_uri
     dataset_bucket_name                     = module.datasets_bucket.bucket_name
-    data_validation_reports_crawler_name    = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn    = aws_lambda_function.error_notification_lambda.arn
     transform_ascwds_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Transform-ASCWDS-Data"].arn
     transform_cqc_data_state_machine_arn    = aws_sfn_state_machine.sf_pipelines["Transform-CQC-Data"].arn
     ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
     sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
-    workforce_characteristics_task_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-SLV"].arn
+    ind_cqc_slv_state_machine_arn           = aws_sfn_state_machine.sf_pipelines["Ind-CQC-SLV"].arn
   })
 
   depends_on = [
@@ -113,17 +112,14 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     reconciliation_job_name                       = module.reconciliation_job.job_name
 
     # crawlers
-    data_validation_reports_crawler_name   = module.data_validation_reports_crawler.crawler_name
-    ascwds_crawler_name                    = module.ascwds_crawler.crawler_name
-    ind_cqc_filled_posts_crawler_name      = module.ind_cqc_filled_posts_crawler.crawler_name
-    cqc_crawler_name                       = module.cqc_crawler.crawler_name
-    dpr_crawler_name                       = module.dpr_crawler.crawler_name
-    ons_crawler_name                       = module.ons_crawler.crawler_name
-    sfc_crawler_name                       = module.sfc_crawler.crawler_name
-    ct_crawler_name                        = module.capacity_tracker_crawler.crawler_name
-    workforce_characteristics_crawler_name = module.workforce_characteristics_crawler.crawler_name
-    sample_archive_data_crawler_name       = module.sample_archive_data_crawler.crawler_name
-    publication_crawler_name               = module.publication_crawler.crawler_name
+    ascwds_crawler_name      = module.ascwds_crawler.crawler_name
+    ind_cqc_crawler_name     = module.ind_cqc_crawler.crawler_name
+    cqc_crawler_name         = module.cqc_crawler.crawler_name
+    dpr_crawler_name         = module.dpr_crawler.crawler_name
+    ons_crawler_name         = module.ons_crawler.crawler_name
+    sfc_crawler_name         = module.sfc_crawler.crawler_name
+    ct_crawler_name          = module.capacity_tracker_crawler.crawler_name
+    publication_crawler_name = module.publication_crawler.crawler_name
 
     # parameter store
     last_providers_run_param_name = aws_ssm_parameter.providers_last_run.name
