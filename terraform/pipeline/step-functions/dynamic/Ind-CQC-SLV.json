@@ -112,7 +112,7 @@
                                 "--metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
                                 "--job_role_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
                                 "--prepared_slv_dataset_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_workplace/",
-                                "--employment_status_rates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_empstat_rates/employee_status_rates.csv",
+                                "--employment_status_rates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/employee_status_rates.csv",
                                 "--merged_data_destination","${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge/"
                               ]
                             }

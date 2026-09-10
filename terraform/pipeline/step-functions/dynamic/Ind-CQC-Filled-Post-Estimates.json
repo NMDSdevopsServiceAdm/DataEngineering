@@ -760,7 +760,7 @@
                       "Command": [
                         "archive_filled_posts_estimates.py",
                         "--estimate_ind_cqc_filled_posts_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
-                        "--archive_ind_cqc_filled_posts_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_sample_archived_monthly/"
+                        "--archive_ind_cqc_filled_posts_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_07_archived_workplace_estimates/"
                       ]
                     }
                   ]

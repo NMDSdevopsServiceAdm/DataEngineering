@@ -35,8 +35,8 @@
                       "Name": "_99_publication-container",
                       "Command": [
                         "_01_merge.py",
-                        "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_sample_archive/archive_date=2025/run_number=1/",
-                        "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_sample_archive_metadata/archive_date=2025/run_number=1/",
+                        "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2025/run_number=1/",
+                        "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2025/run_number=1/",
                         "--merge_data_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge/"
                       ]
                     }
