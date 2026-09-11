@@ -9,11 +9,6 @@ class TestAddCtFilterHasCtData:
         pass
 
 
-class TestAddCtFilterConsistentService:
-    def test_identifies_locations_that_are_always_care_home_or_always_non_res(self):
-        pass
-
-
 class TestAddCtFilterDispersionFilter:
     def test_identifies_locations_within_ct_posts_dispersion_boundaries(self):
         pass
