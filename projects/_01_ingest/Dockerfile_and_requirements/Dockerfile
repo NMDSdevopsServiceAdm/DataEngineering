@@ -25,5 +25,6 @@ COPY projects/_01_ingest/cqc_pir/fargate/*.py .
 COPY projects/_01_ingest/ascwds/fargate/*.py .
 COPY projects/_01_ingest/capacity_tracker/fargate/*.py .
 COPY projects/_01_ingest/ons_pd/fargate/*.py .
+COPY projects/_01_ingest/direct_payment_recipients/fargate/*.py .
 
 ENTRYPOINT ["python"]

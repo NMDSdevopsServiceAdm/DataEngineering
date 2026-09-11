@@ -18,36 +18,6 @@ module "clean_cqc_pir_data_job" {
   }
 }
 
-module "ingest_dpr_external_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/direct_payment_recipients/jobs"
-  script_name     = "ingest_dpr_external_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--external_data_source"      = ""
-    "--external_data_destination" = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_external/version=2026.02/"
-  }
-}
-
-module "ingest_dpr_survey_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/direct_payment_recipients/jobs"
-  script_name     = "ingest_dpr_survey_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--survey_data_source"      = ""
-    "--survey_data_destination" = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_survey/version=2026.02/"
-  }
-}
-
 module "prepare_dpr_external_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_04_direct_payment_recipients/jobs"
