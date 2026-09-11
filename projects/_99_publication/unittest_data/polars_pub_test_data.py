@@ -9,7 +9,7 @@ from utils.column_names.publication_columns import PublicationColumns as Pub
 
 
 @dataclass
-class HasColumnDataSinceDateTestCase:
+class HasContinuousDataSinceDateTestCase:
     id: str
     column_name: str
     from_date: date
@@ -21,7 +21,7 @@ class HasColumnDataSinceDateTestCase:
 
 
 has_continuous_data_since_date_test_cases = [
-    HasColumnDataSinceDateTestCase(
+    HasContinuousDataSinceDateTestCase(
         id="true_when_no_nulls_in_the_checked_column_since_cutoff",
         column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2021, 7, 1),
@@ -31,7 +31,7 @@ has_continuous_data_since_date_test_cases = [
             ("1-001", date(2022, 7, 1), 6.0, None, True),
         ],
     ),
-    HasColumnDataSinceDateTestCase(
+    HasContinuousDataSinceDateTestCase(
         id="false_when_the_checked_column_has_a_null_since_cutoff",
         column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2021, 7, 1),
@@ -41,7 +41,7 @@ has_continuous_data_since_date_test_cases = [
             ("1-002", date(2022, 7, 1), 5.0, 4.0, False),
         ],
     ),
-    HasColumnDataSinceDateTestCase(
+    HasContinuousDataSinceDateTestCase(
         id="false_for_location_with_no_rows_on_or_after_cutoff",
         column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2021, 7, 1),
@@ -50,7 +50,7 @@ has_continuous_data_since_date_test_cases = [
             ("1-003", date(2020, 7, 1), 5.0, 5.0, False),
         ],
     ),
-    HasColumnDataSinceDateTestCase(
+    HasContinuousDataSinceDateTestCase(
         id="honours_the_column_name_argument",
         column_name=IndCQC.ct_non_res_care_workers_employed_imputed,
         from_date=date(2021, 7, 1),
@@ -60,7 +60,7 @@ has_continuous_data_since_date_test_cases = [
             ("1-004", date(2022, 7, 1), None, 4.0, True),
         ],
     ),
-    HasColumnDataSinceDateTestCase(
+    HasContinuousDataSinceDateTestCase(
         id="honours_a_non_default_column_alias",
         column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2025, 4, 1),
@@ -69,7 +69,7 @@ has_continuous_data_since_date_test_cases = [
             ("1-005", date(2025, 4, 1), 5.0, None, True),
         ],
     ),
-    HasColumnDataSinceDateTestCase(
+    HasContinuousDataSinceDateTestCase(
         id="false_for_location_missing_a_period_another_location_has",
         column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2021, 7, 1),
@@ -82,7 +82,7 @@ has_continuous_data_since_date_test_cases = [
             ("1-007", date(2023, 7, 1), 5.0, None, True),
         ],
     ),
-    HasColumnDataSinceDateTestCase(
+    HasContinuousDataSinceDateTestCase(
         id="duplicate_rows_at_the_same_date_do_not_inflate_the_count",
         column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2021, 7, 1),

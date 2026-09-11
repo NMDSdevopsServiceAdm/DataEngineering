@@ -29,11 +29,22 @@ class TestMain:
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
-            {IndCQC.care_home_status_count: [1, 2]}
+            {
+                IndCQC.location_id: ["1-001", "1-001"],
+                IndCQC.cqc_location_import_date: [date(2025, 4, 1), date(2026, 4, 1)],
+                IndCQC.care_home_status_count: [1, 2],
+                IndCQC.ct_care_home_total_employed_imputed: [5.0, None],
+                IndCQC.ct_non_res_care_workers_employed_imputed: [None, 6.0],
+            }
         )
         date_mock.today.return_value = date(2026, 9, 1)
         date_mock.side_effect = lambda *args, **kwargs: date(*args, **kwargs)
         reduced_data_filter_expr_mock.return_value = pl.lit(True)
+        has_continuous_data_since_date_mock.side_effect = (
+            lambda column_name, from_date, column_alias: pl.lit(True).alias(
+                column_alias
+            )
+        )
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
 
@@ -42,18 +53,6 @@ class TestMain:
         reduced_data_filter_expr_mock.assert_called_once_with(
             cutoff_date=date(2020, 4, 1),
         )
-        merged_lf.filter.assert_called_once_with(
-            reduced_data_filter_expr_mock.return_value
-        )
-
-        coalesce_expr = merged_lf.filter.return_value.with_columns.call_args_list[
-            0
-        ].args[0]
-        assert set(coalesce_expr.meta.root_names()) == {
-            IndCQC.ct_care_home_total_employed_imputed,
-            IndCQC.ct_non_res_care_workers_employed_imputed,
-        }
-        assert coalesce_expr.meta.output_name() == Pub.ct_total_employed_imputed
 
         has_continuous_data_since_date_mock.assert_has_calls(
             [
@@ -74,13 +73,24 @@ class TestMain:
                 ),
             ]
         )
-        coalesced_lf = merged_lf.filter.return_value.with_columns.return_value
-        coalesced_lf.with_columns.assert_called_once_with(
-            has_continuous_data_since_date_mock.return_value,
-            has_continuous_data_since_date_mock.return_value,
-            has_continuous_data_since_date_mock.return_value,
+
+        sink_to_parquet_mock.assert_called_once()
+        sink_call_kwargs = sink_to_parquet_mock.call_args.kwargs
+        assert sink_call_kwargs["output_path"] == TEST_DESTINATION
+        expected_lf = pl.LazyFrame(
+            {
+                IndCQC.location_id: ["1-001", "1-001"],
+                IndCQC.cqc_location_import_date: [date(2025, 4, 1), date(2026, 4, 1)],
+                IndCQC.care_home_status_count: [1, 2],
+                IndCQC.ct_care_home_total_employed_imputed: [5.0, None],
+                IndCQC.ct_non_res_care_workers_employed_imputed: [None, 6.0],
+                Pub.consistent_service: [True, False],
+                Pub.ct_total_employed_imputed: [5.0, 6.0],
+                Pub.ct_has_data_long_term: [True, True],
+                Pub.ct_has_data_medium_term: [True, True],
+                Pub.ct_has_data_short_term: [True, True],
+            }
         )
-        sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=coalesced_lf.with_columns.return_value,
-            output_path=TEST_DESTINATION,
+        assert_frame_equal(
+            sink_call_kwargs["lazy_df"], expected_lf, check_column_order=False
         )

@@ -41,7 +41,7 @@ def main(
 
     # See clean_utils/test_clean_utils for placeholders.
 
-    lf = lf.with_columns(
+    cleaned_lf = cleaned_lf.with_columns(
         pl.coalesce(
             IndCQC.ct_care_home_total_employed_imputed,
             IndCQC.ct_non_res_care_workers_employed_imputed,
@@ -51,7 +51,7 @@ def main(
     long_term_from_date = date(fy_year - 5, 7, 1)
     medium_term_from_date = date(fy_year - 1, 4, 1)
     short_term_from_date = date(fy_year, 4, 1)
-    lf = lf.with_columns(
+    cleaned_lf = cleaned_lf.with_columns(
         clean_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             long_term_from_date,
