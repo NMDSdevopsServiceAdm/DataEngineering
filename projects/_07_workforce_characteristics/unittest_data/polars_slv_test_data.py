@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_worker_utils as prepare_worker_job
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -263,6 +264,23 @@ _reshape_multi_row_case = ReshapeJobRoleColsToRowsTestCase(
 )
 
 
+EMPLSTAT_PERM_COUNT = prepare_worker_job.EMPLOYMENT_STATUS_LABEL_TO_COLUMN[
+    EmploymentStatusLabels.permanent
+]
+EMPLSTAT_TEMP_COUNT = prepare_worker_job.EMPLOYMENT_STATUS_LABEL_TO_COLUMN[
+    EmploymentStatusLabels.temporary
+]
+EMPLSTAT_BANK_OR_POOL_COUNT = prepare_worker_job.EMPLOYMENT_STATUS_LABEL_TO_COLUMN[
+    EmploymentStatusLabels.bank_or_pool
+]
+EMPLSTAT_AGENCY_COUNT = prepare_worker_job.EMPLOYMENT_STATUS_LABEL_TO_COLUMN[
+    EmploymentStatusLabels.agency
+]
+EMPLSTAT_OTHER_COUNT = prepare_worker_job.EMPLOYMENT_STATUS_LABEL_TO_COLUMN[
+    EmploymentStatusLabels.other
+]
+
+
 @dataclass
 class TestPrepareUtilsData:
     reshape_job_role_cols_to_rows_test_cases = [
@@ -381,11 +399,11 @@ class TestPrepareUtilsData:
                 AWKClean.establishment_id: ["1-001"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
                 AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
-                SLVEmpStatus.emplstat_perm_count: [3],
-                SLVEmpStatus.emplstat_temp_count: [0],
-                SLVEmpStatus.emplstat_bank_or_pool_count: [0],
-                SLVEmpStatus.emplstat_agency_count: [0],
-                SLVEmpStatus.emplstat_other_count: [0],
+                EMPLSTAT_PERM_COUNT: [3],
+                EMPLSTAT_TEMP_COUNT: [0],
+                EMPLSTAT_BANK_OR_POOL_COUNT: [0],
+                EMPLSTAT_AGENCY_COUNT: [0],
+                EMPLSTAT_OTHER_COUNT: [0],
             },
         ),
         ReshapeEmploymentStatusDataTestCase(
@@ -407,11 +425,11 @@ class TestPrepareUtilsData:
                 AWKClean.establishment_id: ["1-002"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)],
                 AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
-                SLVEmpStatus.emplstat_perm_count: [2],
-                SLVEmpStatus.emplstat_temp_count: [1],
-                SLVEmpStatus.emplstat_bank_or_pool_count: [0],
-                SLVEmpStatus.emplstat_agency_count: [0],
-                SLVEmpStatus.emplstat_other_count: [0],
+                EMPLSTAT_PERM_COUNT: [2],
+                EMPLSTAT_TEMP_COUNT: [1],
+                EMPLSTAT_BANK_OR_POOL_COUNT: [0],
+                EMPLSTAT_AGENCY_COUNT: [0],
+                EMPLSTAT_OTHER_COUNT: [0],
             },
         ),
         ReshapeEmploymentStatusDataTestCase(
@@ -438,11 +456,11 @@ class TestPrepareUtilsData:
                     MainJobRoleLabels.care_worker,
                     MainJobRoleLabels.registered_nurse,
                 ],
-                SLVEmpStatus.emplstat_perm_count: [1, 0],
-                SLVEmpStatus.emplstat_temp_count: [0, 0],
-                SLVEmpStatus.emplstat_bank_or_pool_count: [0, 0],
-                SLVEmpStatus.emplstat_agency_count: [0, 4],
-                SLVEmpStatus.emplstat_other_count: [0, 0],
+                EMPLSTAT_PERM_COUNT: [1, 0],
+                EMPLSTAT_TEMP_COUNT: [0, 0],
+                EMPLSTAT_BANK_OR_POOL_COUNT: [0, 0],
+                EMPLSTAT_AGENCY_COUNT: [0, 4],
+                EMPLSTAT_OTHER_COUNT: [0, 0],
             },
         ),
     ]

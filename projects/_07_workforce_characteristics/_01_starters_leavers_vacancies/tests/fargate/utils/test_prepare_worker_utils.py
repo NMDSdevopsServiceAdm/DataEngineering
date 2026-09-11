@@ -47,11 +47,7 @@ class TestReshapeEmploymentStatusData:
     def test_reshapes_employment_status_data(self, case):
         emplstat_count_cols = [
             SLVEmpStatus.employment_status_count,
-            SLVEmpStatus.emplstat_perm_count,
-            SLVEmpStatus.emplstat_temp_count,
-            SLVEmpStatus.emplstat_bank_or_pool_count,
-            SLVEmpStatus.emplstat_agency_count,
-            SLVEmpStatus.emplstat_other_count,
+            *job.EMPLOYMENT_STATUS_LABEL_TO_COLUMN.values(),
         ]
         test_lf = pl.LazyFrame(
             case.input_data,

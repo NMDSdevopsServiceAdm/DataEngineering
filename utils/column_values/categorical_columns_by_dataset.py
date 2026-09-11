@@ -76,6 +76,10 @@ class ASCWDSWorkerCleanedCategoricalValues:
     employment_status_labels_column_values = EmploymentStatusLabels(
         AWKClean.employment_status_clean_labelled
     )
+    employment_status_labels_excl_student_column_values = EmploymentStatusLabels(
+        AWKClean.employment_status_clean_labelled,
+        value_to_remove=EmploymentStatusLabels.student,
+    )
 
 
 @dataclass

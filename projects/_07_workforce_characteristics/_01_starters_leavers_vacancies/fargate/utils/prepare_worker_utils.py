@@ -6,7 +6,9 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.slv_job_role_columns import (
     SLVEmploymentStatusColumns as SLVEmpStatus,
 )
-from utils.column_values.categorical_column_values import EmploymentStatusLabels
+from utils.column_values.categorical_columns_by_dataset import (
+    ASCWDSWorkerCleanedCategoricalValues as CatVals,
+)
 
 GROUP_COLUMNS = [
     AWKClean.location_id,
@@ -22,12 +24,11 @@ RESHAPED_GROUP_COLUMNS = [
     if column != AWKClean.employment_status_clean_labelled
 ]
 
+# Excludes "student", which EmploymentStatusLabels defines but which doesn't
+# occur in the raw worker data, so it's not given its own output column here.
 EMPLOYMENT_STATUS_LABEL_TO_COLUMN = {
-    EmploymentStatusLabels.permanent: SLVEmpStatus.emplstat_perm_count,
-    EmploymentStatusLabels.temporary: SLVEmpStatus.emplstat_temp_count,
-    EmploymentStatusLabels.bank_or_pool: SLVEmpStatus.emplstat_bank_or_pool_count,
-    EmploymentStatusLabels.agency: SLVEmpStatus.emplstat_agency_count,
-    EmploymentStatusLabels.other: SLVEmpStatus.emplstat_other_count,
+    label: f"emplstat_{label}_count"
+    for label in CatVals.employment_status_labels_excl_student_column_values.categorical_values
 }
 
 
@@ -63,9 +64,10 @@ def reshape_employment_status_data(
             GROUP_COLUMNS with an emplstat_count column.
 
     Returns:
-        pl.LazyFrame: one row per group in RESHAPED_GROUP_COLUMNS, with 5
-            emplstat_*_count columns (one per employment status label).
-            Groups with no workers of a given status are 0 in that column.
+        pl.LazyFrame: one row per group in RESHAPED_GROUP_COLUMNS, with an
+            emplstat_<label>_count column per employment status label in
+            EMPLOYMENT_STATUS_LABEL_TO_COLUMN. Groups with no workers of a
+            given status are 0 in that column.
     """
     return employment_status_summary_lf.pivot(
         on=AWKClean.employment_status_clean_labelled,
