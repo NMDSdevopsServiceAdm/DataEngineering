@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
-- Merged the two DPR ingestion jobs (survey and external) into a single Polars job on the shared `_01_ingest` Fargate task, taking `--source`, `--dataset` (`survey`/`external`), and `--destination` as run-time arguments instead of hardcoding the destination path in Terraform each year, and removed the now-unused PySpark CSV-reading utilities and their tests/fixtures, since this was the last remaining PySpark CSV ingestion in the repo.
+- Merged the two DPR ingestion jobs (survey and external) into a single Polars job on the shared `_01_ingest` Fargate task, taking `--source`, `--dataset` (`survey`/`external`), and `--destination` as run-time arguments instead of hardcoding the destination path in Terraform each year, and removed the now-unused PySpark CSV-reading utilities and their tests/fixtures, since this was the last remaining PySpark CSV ingestion in the repo. Added a manually-started `Ingest-DPR-Data` step function to replace the deleted Glue jobs' manual-run trigger point.
 
 
 ### Improved

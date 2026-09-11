@@ -1,0 +1,101 @@
+{
+  "Comment": "Manually-started pipeline to ingest the raw DPR survey and external CSVs, replacing the old ingest_dpr_survey_data_job/ingest_dpr_external_data_job Glue jobs. Start an execution with input: {\"jobs\": {\"ingest_dpr_survey_data\": {\"source\": \"s3://...\"}, \"ingest_dpr_external_data\": {\"source\": \"s3://...\"}}}",
+  "StartAt": "Ingest DPR data in parallel",
+  "States": {
+    "Ingest DPR data in parallel": {
+      "Type": "Parallel",
+      "Next": "Success",
+      "Branches": [
+        {
+          "StartAt": "Ingest DPR survey data",
+          "States": {
+            "Ingest DPR survey data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command.$": "States.Array('ingest_dpr_data.py', '--source', $.jobs.ingest_dpr_survey_data.source, '--dataset', 'survey', '--destination', '${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_survey/version=2026.02/')"
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Ingest DPR external data",
+          "States": {
+            "Ingest DPR external data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${ingest_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${ingest_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_01_ingest-container",
+                      "Command.$": "States.Array('ingest_dpr_data.py', '--source', $.jobs.ingest_dpr_external_data.source, '--dataset', 'external', '--destination', '${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_external/version=2026.02/')"
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "Publish Error Notification"
+        }
+      ]
+    },
+    "Publish Error Notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+        "Payload": {
+          "Error.$": "$.error.Cause",
+          "ExecutionId.$": "$$.Execution.Id",
+          "StateMachineName.$": "$$.StateMachine.Name",
+          "StateMachineId.$": "$$.StateMachine.Id",
+          "ExecutionStartTime.$": "$$.Execution.StartTime",
+          "CallbackToken.$": "$$.Task.Token"
+        }
+      },
+      "Next": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail"
+    },
+    "Success": {
+      "Type": "Succeed"
+    }
+  }
+}
