@@ -44,13 +44,6 @@ def has_continuous_data_since_date(
     ).alias(column_alias)
 
 
-def add_ct_filter_consistent_service() -> pl.Expr:
-    """
-    Placeholder: flags whether a location's service has been consistent.
-    """
-    pass
-
-
 def add_ct_filter_dispersion_filter() -> pl.Expr:
     """
     Placeholder: flags whether a location passes the dispersion filter.

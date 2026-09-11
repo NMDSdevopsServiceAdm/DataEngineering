@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Carried `care_home_status_count` through the job role archive and publication merge jobs, and added a `consistent_service` boolean column to the publication clean job that is true when a location has always had the same care home status.
 
 
 ### Improved

@@ -1,6 +1,9 @@
 from datetime import date
 from unittest.mock import Mock, call, patch
 
+import polars as pl
+from polars.testing import assert_frame_equal
+
 import projects._99_publication.monthly_tracker_filled_posts.fargate._02_clean as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
@@ -25,10 +28,12 @@ class TestMain:
         has_continuous_data_since_date_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        merged_lf = Mock(name="merged_lf")
-        scan_parquet_mock.return_value = merged_lf
+        scan_parquet_mock.return_value = pl.LazyFrame(
+            {IndCQC.care_home_status_count: [1, 2]}
+        )
         date_mock.today.return_value = date(2026, 9, 1)
         date_mock.side_effect = lambda *args, **kwargs: date(*args, **kwargs)
+        reduced_data_filter_expr_mock.return_value = pl.lit(True)
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
 
