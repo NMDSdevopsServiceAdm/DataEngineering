@@ -6,7 +6,7 @@ from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_worker_utils import (
-    RESHAPED_GROUP_COLUMNS as COMPARE_COLS_TO_IMPORT,
+    RESHAPED_GROUP_COLUMNS,
 )
 
 
@@ -34,7 +34,7 @@ def main(
     source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
-        selected_columns=COMPARE_COLS_TO_IMPORT,
+        selected_columns=RESHAPED_GROUP_COLUMNS,
     )
     expected_row_count = compare_df.unique().height
 

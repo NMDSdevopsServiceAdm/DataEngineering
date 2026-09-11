@@ -17,10 +17,8 @@ class TestMain:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.source_df = pl.DataFrame({"worker_id": ["1", "2"]})
-        # Two raw rows for loc1/1-001 share every RESHAPED_GROUP_COLUMNS value
-        # (they'd only have differed by employment status, which is no longer
-        # part of the compare columns since it's pivoted to columns, not rows,
-        # in the prepared output), so they count as one group, not two.
+        # Row count is based on unique rows per RESHAPED_GROUP_COLUMNS, so the
+        # two loc1/1-001 rows below count as one group.
         self.compare_df = pl.DataFrame(
             {
                 AWKClean.location_id: ["loc1", "loc1", "loc2"],
@@ -48,7 +46,7 @@ class TestMain:
                 call(source="s3://bucket/my/source/"),
                 call(
                     source="s3://bucket/my/compare/",
-                    selected_columns=job.COMPARE_COLS_TO_IMPORT,
+                    selected_columns=job.RESHAPED_GROUP_COLUMNS,
                 ),
             ]
         )
