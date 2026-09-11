@@ -71,14 +71,6 @@ def write_to_parquet(
     df.write.mode(mode).partitionBy(*partitionKeys).parquet(output_dir)
 
 
-def read_csv(source, delimiter=","):
-    spark = get_spark()
-
-    df = spark.read.option("delimiter", delimiter).csv(source, header=True)
-
-    return df
-
-
 # converted to polars as cast_date_strings_to_dates -> polars_utils\cleaning_utils.py
 def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
     date_columns = [column for column in df.columns if date_column_identifier in column]

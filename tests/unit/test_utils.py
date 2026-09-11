@@ -9,8 +9,6 @@ from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 from pyspark.sql.types import (
     DateType,
-    FloatType,
-    IntegerType,
     StringType,
     StructField,
     StructType,
@@ -77,16 +75,17 @@ class StubberClass:
 
 
 class UtilsTests(SparkBaseTest):
-    test_csv_path = "tests/test_data/example_csv.csv"
-    test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
-    TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp-workplace"
-    example_csv_for_schema_tests_with_datetype = (
-        "tests/test_data/example_csv_for_schema_tests_with_datetype.csv"
-    )
     example_parquet_path = "tests/test_data/example_parquet.parquet"
 
     def setUp(self):
-        self.df = self.spark.read.csv(self.test_csv_path, header=True)
+        self.df = self.spark.createDataFrame(
+            [
+                ("1", "a", "tuna", "28/11/1993"),
+                ("2", "b", "salmon", "12/12/2012"),
+                ("3", "c", "cod", "18/1/2021"),
+            ],
+            ["col_a", "col_b", "col_c", "date_col"],
+        )
         self.pir_cleaned_test_df: DataFrame = self.spark.createDataFrame(
             data=UtilsData.cqc_pir_rows,
             schema=UtilsSchema.cqc_pir_schema,
@@ -102,16 +101,6 @@ class UtilsTests(SparkBaseTest):
 
 
 class GeneralUtilsTests(UtilsTests):
-    def test_read_csv(self):
-        df = utils.read_csv(self.test_csv_path)
-        self.assertEqual(df.columns, ["col_a", "col_b", "col_c", "date_col"])
-        self.assertEqual(df.count(), 3)
-
-    def test_read_with_custom_delimiter(self):
-        df = utils.read_csv(self.test_csv_custom_delim_path, "|")
-
-        self.assertEqual(df.columns, ["col_a", "col_b", "col_c"])
-        self.assertEqual(df.count(), 3)
 
     def test_read_from_parquet_imports_all_rows(self):
         df = utils.read_from_parquet(self.example_parquet_path)
@@ -254,9 +243,8 @@ class GeneralUtilsTests(UtilsTests):
         )
 
     def test_write(self):
-        df = utils.read_csv(self.test_csv_path)
         parquet_dir = self.get_temp_path("test_parquet")
-        utils.write_to_parquet(df, parquet_dir)
+        utils.write_to_parquet(self.df, parquet_dir)
 
         self.assertTrue(Path(parquet_dir).is_dir())
         self.assertTrue(Path(parquet_dir).joinpath("_SUCCESS").exists())
