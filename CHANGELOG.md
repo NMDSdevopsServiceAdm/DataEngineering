@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Carried `care_home_status_count` through the job role archive and publication merge jobs, and added a `consistent_service` boolean column to the publication clean job that is true when a location has always had the same care home status.
+- Reshaped the SLV pipeline's aggregated employment status data from one row per employment status into one row per location, establishment, import date and job role, with a worker count column per employment status, replacing the pass-through placeholder. Updated its validation's expected row count to match the new grain.
 
 
 ### Improved
