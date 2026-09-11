@@ -1,0 +1,52 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN mkdir -p /polars_scratch && chmod 777 /polars_scratch
+ENV POLARS_TEMP_DIR=/polars_scratch
+ENV PYTHONPATH=/app
+
+# Dependencies. Installed before any source is copied so that a source-only
+# change doesn't invalidate the pip layer.
+COPY docker_requirements/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Shared libraries
+COPY projects/_03_independent_cqc/_01_filled_posts/_01_merge/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_01_merge/fargate/utils
+COPY projects/_03_independent_cqc/_01_filled_posts/_02_clean/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_02_clean/fargate/utils
+COPY projects/_03_independent_cqc/_01_filled_posts/_03_impute/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_03_impute/fargate/utils
+COPY projects/_03_independent_cqc/_01_filled_posts/_04_model/utils /app/projects/_03_independent_cqc/_01_filled_posts/_04_model/utils
+COPY projects/_03_independent_cqc/_01_filled_posts/_05_workplace_estimates/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_05_workplace_estimates/fargate/utils
+COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/utils
+COPY projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/utils
+COPY projects/_03_independent_cqc/_01_filled_posts/utils /app/projects/_03_independent_cqc/_01_filled_posts/utils
+COPY polars_utils /app/polars_utils
+COPY utils/file_utils.py /app/utils/file_utils.py
+COPY utils/column_names /app/utils/column_names/
+COPY utils/column_values /app/utils/column_values/
+COPY utils/value_labels /app/utils/value_labels
+
+# Copy python jobs to WORKDIR
+COPY projects/_03_independent_cqc/_01_filled_posts/_01_merge/fargate/prepare_job_role_counts.py /app/prepare_job_role_counts.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_01_merge/fargate/merge_ind_cqc_data.py /app/merge_ind_cqc_data.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_01_merge/fargate/validate_merged_ind_cqc_data.py /app/validate_merged_ind_cqc_data.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_02_clean/fargate/clean_ind_cqc_filled_posts.py /app/clean_ind_cqc_filled_posts.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_02_clean/fargate/validate_cleaned_ind_cqc_data.py /app/validate_cleaned_ind_cqc_data.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_03_impute/fargate/impute_ind_cqc_ascwds_and_pir.py /app/impute_ind_cqc_ascwds_and_pir.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_03_impute/fargate/validate_imputed_ind_cqc_ascwds_and_pir_data.py /app/validate_imputed_ind_cqc_ascwds_and_pir_data.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_05_workplace_estimates/fargate/estimate_ind_cqc_filled_posts.py /app/estimate_ind_cqc_filled_posts.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_05_workplace_estimates/fargate/validate_estimated_ind_cqc_filled_posts_data.py /app/validate_estimated_ind_cqc_filled_posts_data.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/_01_merge.py /app/_01_merge.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/_02_clean.py /app/_02_clean.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/_03_impute.py /app/_03_impute.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/_04_estimate.py /app/_04_estimate.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/validate_01_merge.py /app/validate_01_merge.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/validate_01_merge_metadata.py /app/validate_01_merge_metadata.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/validate_02_clean.py /app/validate_02_clean.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/validate_03_impute.py /app/validate_03_impute.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/validate_04_estimates.py /app/validate_04_estimates.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/archive_filled_posts_estimates.py /app/archive_filled_posts_estimates.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/archive_job_role_estimates.py /app/archive_job_role_estimates.py
+COPY projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/validate_archive_job_role_estimates.py /app/validate_archive_job_role_estimates.py
+
+ENTRYPOINT ["python"]
