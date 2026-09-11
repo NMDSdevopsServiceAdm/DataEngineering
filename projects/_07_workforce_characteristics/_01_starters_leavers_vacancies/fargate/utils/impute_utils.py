@@ -12,12 +12,15 @@ def forward_fill_within_time_limit(
     Forward-fills each source column's last known value into later null rows,
     but only within a bounded time window from that last known date.
 
-    For each `source_column`, rows are grouped by `partition_by_columns` (e.g. a
-    location's timeline for one job role). A null is filled with the most
-    recent non-null value only if it falls on or before
-    `last_known_date + time_limit`; nulls outside that window, and nulls before
-    any known value in the partition, are left null. Known (non-null) values
-    are never overwritten.
+    For each `source_column`, rows are ordered by `date_column` within each
+    `partition_by_columns` group (e.g. a location's timeline for one job
+    role). A null is filled with its nearest *preceding* non-null value only
+    if it falls on or before `that value's date + time_limit`; nulls outside
+    that window, and nulls before any known value in the partition, are left
+    null. Known (non-null) values are never overwritten. A partition may
+    contain several known values over time (e.g. after deduplication marks
+    every genuine change as "known"); each gap is filled from the known value
+    immediately before it, not from the partition's overall last known value.
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame containing the source columns,
@@ -42,14 +45,14 @@ def forward_fill_within_time_limit(
         last_known_date = (
             pl.when(is_known)
             .then(pl.col(date_column))
-            .max()
-            .over(partition_by=partition_by_columns)
+            .forward_fill()
+            .over(partition_by=partition_by_columns, order_by=date_column)
         )
         last_known_value = (
-            pl.when(is_known & (pl.col(date_column) == last_known_date))
+            pl.when(is_known)
             .then(pl.col(source_column))
-            .max()
-            .over(partition_by=partition_by_columns)
+            .forward_fill()
+            .over(partition_by=partition_by_columns, order_by=date_column)
         )
         within_time_limit = (pl.col(date_column) > last_known_date) & (
             pl.col(date_column) <= last_known_date.dt.offset_by(time_limit)

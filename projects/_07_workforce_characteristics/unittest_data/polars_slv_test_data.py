@@ -982,6 +982,35 @@ class TestImputeUtilsData:
             },
         ),
         ForwardFillWithinTimeLimitTestCase(
+            id="fills_a_mid_timeline_gap_from_its_nearest_preceding_known_value_not_the_partitions_last_known_value",
+            columns_to_fill={SLVCols.starters_dedup: SLVCols.starters_imputed},
+            input_data={
+                IndCQC.location_id: ["loc1", "loc1", "loc1", "loc1"],
+                SLVCols.published_job_role_label: [PublishedJobRoleLabels.care_worker]
+                * 4,
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 3, 1),
+                    date(2024, 4, 1),
+                ],
+                SLVCols.starters_dedup: [10, None, 8, None],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc1", "loc1", "loc1"],
+                SLVCols.published_job_role_label: [PublishedJobRoleLabels.care_worker]
+                * 4,
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 3, 1),
+                    date(2024, 4, 1),
+                ],
+                SLVCols.starters_dedup: [10, None, 8, None],
+                SLVCols.starters_imputed: [10, 10, 8, 8],
+            },
+        ),
+        ForwardFillWithinTimeLimitTestCase(
             id="does_not_leak_values_between_partition_groups",
             columns_to_fill={SLVCols.starters_dedup: SLVCols.starters_imputed},
             input_data={
