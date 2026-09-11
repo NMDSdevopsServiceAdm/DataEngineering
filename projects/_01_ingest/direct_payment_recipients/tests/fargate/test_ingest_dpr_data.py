@@ -11,13 +11,9 @@ from utils.column_names.direct_payments_column_names import (
 
 PATCH_PATH = "projects._01_ingest.direct_payment_recipients.fargate.ingest_dpr_data"
 
-SURVEY_CSV_SOURCE = (
-    "projects/_01_ingest/direct_payment_recipients/unittest_data/"
-    "test_ingest_dpr_survey_data.csv"
-)
+SURVEY_CSV_SOURCE = "projects/_01_ingest/unittest_data/test_ingest_dpr_survey_data.csv"
 EXTERNAL_CSV_SOURCE = (
-    "projects/_01_ingest/direct_payment_recipients/unittest_data/"
-    "test_ingest_dpr_external_data.csv"
+    "projects/_01_ingest/unittest_data/test_ingest_dpr_external_data.csv"
 )
 
 
