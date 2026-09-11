@@ -36,6 +36,8 @@ DOMAIN_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
     "cqc_pir": (
         "projects/_01_ingest/cqc_pir/fargate/ingest_cqc_pir_data.py",
         "projects/_01_ingest/cqc_pir/fargate/validate_cqc_pir_raw_data.py",
+        "projects/_01_ingest/cqc_pir/fargate/clean_cqc_pir_data.py",
+        "projects/_01_ingest/cqc_pir/fargate/validate_clean_cqc_pir_data.py",
     ),
     "ons_pd": (
         "projects/_01_ingest/ons_pd/fargate/ingest_ons_data.py",

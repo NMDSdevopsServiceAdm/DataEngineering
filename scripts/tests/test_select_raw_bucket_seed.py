@@ -52,6 +52,16 @@ domain_trigger_cases = [
         id="returns_true_when_cqc_pir_raw_validate_changed",
     ),
     pytest.param(
+        "cqc_pir",
+        "projects/_01_ingest/cqc_pir/fargate/clean_cqc_pir_data.py",
+        id="returns_true_when_cqc_pir_clean_job_changed",
+    ),
+    pytest.param(
+        "cqc_pir",
+        "projects/_01_ingest/cqc_pir/fargate/validate_clean_cqc_pir_data.py",
+        id="returns_true_when_cqc_pir_clean_validate_changed",
+    ),
+    pytest.param(
         "ons_pd",
         "projects/_01_ingest/ons_pd/fargate/ingest_ons_data.py",
         id="returns_true_when_ons_pd_ingest_job_changed",
