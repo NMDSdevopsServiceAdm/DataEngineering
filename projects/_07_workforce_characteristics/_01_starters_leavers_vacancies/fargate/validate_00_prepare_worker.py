@@ -5,14 +5,9 @@ import pointblank as pb
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
-    AscwdsWorkerCleanedColumns as AWKClean,
+from projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_worker_utils import (
+    GROUP_COLUMNS as COMPARE_COLS_TO_IMPORT,
 )
-
-COMPARE_COLS_TO_IMPORT = [
-    AWKClean.establishment_id,
-    AWKClean.ascwds_worker_import_date,
-]
 
 
 def main(
@@ -21,9 +16,10 @@ def main(
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
 
-    _00_prepare_worker is currently a pass-through, so the prepared dataset is
-    expected to have exactly as many rows as the cleaned ASCWDS worker data it
-    was built from.
+    _00_prepare_worker aggregates the cleaned ASCWDS worker data down to one
+    row per group in GROUP_COLUMNS, so the prepared dataset is expected to
+    have exactly as many rows as there are unique combinations of those
+    columns in the cleaned ASCWDS worker data it was built from.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
@@ -38,6 +34,7 @@ def main(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,
     )
+    expected_row_count = compare_df.unique().height
 
     validation = (
         pb.Validate(
@@ -48,8 +45,11 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         .row_count_match(
-            compare_df.height,
-            brief=f"Expects {compare_df.height} rows (pass-through of {compare_path})",
+            expected_row_count,
+            brief=(
+                f"Expects {expected_row_count} rows (one per unique group in "
+                f"{compare_path})"
+            ),
         )
         .interrogate()
     )

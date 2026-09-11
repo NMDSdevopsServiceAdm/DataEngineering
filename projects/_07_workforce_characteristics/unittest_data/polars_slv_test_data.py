@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -9,9 +12,15 @@ from utils.column_names.employment_status_rates_columns import (
     EmploymentStatusRatesColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.slv_job_role_columns import (
+    SLVEmploymentStatusColumns as SLVEmpStatus,
+)
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_column_values import (
+    EmploymentStatusID,
+    EmploymentStatusLabels,
     JobGroupLabels,
+    MainJobRoleID,
     MainJobRoleLabels,
     PrimaryServiceType,
     PublishedJobRoleLabels,
@@ -34,6 +43,13 @@ class RelabelJobRoleColumnsTestCase:
 
 @dataclass
 class ReshapeJobRoleColsToRowsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
+class AggregateEmploymentStatusDataTestCase:
     id: str
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
@@ -245,6 +261,99 @@ class TestPrepareUtilsData:
     reshape_job_role_cols_to_rows_test_cases = [
         _reshape_single_row_case,
         _reshape_multi_row_case,
+    ]
+
+    aggregate_employment_status_data_test_cases = [
+        AggregateEmploymentStatusDataTestCase(
+            id="aggregates_multiple_workers_and_drops_worker_level_columns",
+            input_data={
+                AWKClean.worker_id: ["1", "2"],
+                AWKClean.location_id: ["loc1", "loc1"],
+                AWKClean.establishment_id: ["1-001", "1-001"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)] * 2,
+                AWKClean.main_job_role_id: [MainJobRoleID.care_worker] * 2,
+                AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 2,
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
+                * 2,
+                AWKClean.employment_status: [EmploymentStatusID.permanent] * 2,
+                AWKClean.employment_status_clean: [EmploymentStatusID.permanent] * 2,
+                AWKClean.employment_status_clean_labelled: [
+                    EmploymentStatusLabels.permanent
+                ]
+                * 2,
+            },
+            expected_data={
+                AWKClean.location_id: ["loc1"],
+                AWKClean.establishment_id: ["1-001"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
+                AWKClean.employment_status_clean_labelled: [
+                    EmploymentStatusLabels.permanent
+                ],
+                SLVEmpStatus.employment_status_count: [2],
+            },
+        ),
+        AggregateEmploymentStatusDataTestCase(
+            id="keeps_distinct_employment_status_groups_separate",
+            input_data={
+                AWKClean.worker_id: ["1", "2"],
+                AWKClean.location_id: ["loc2", "loc2"],
+                AWKClean.establishment_id: ["1-002", "1-002"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)] * 2,
+                AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 2,
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
+                * 2,
+                AWKClean.employment_status_clean: [
+                    EmploymentStatusID.permanent,
+                    EmploymentStatusID.temporary,
+                ],
+                AWKClean.employment_status_clean_labelled: [
+                    EmploymentStatusLabels.permanent,
+                    EmploymentStatusLabels.temporary,
+                ],
+            },
+            expected_data={
+                AWKClean.location_id: ["loc2", "loc2"],
+                AWKClean.establishment_id: ["1-002", "1-002"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)] * 2,
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
+                * 2,
+                AWKClean.employment_status_clean_labelled: [
+                    EmploymentStatusLabels.permanent,
+                    EmploymentStatusLabels.temporary,
+                ],
+                SLVEmpStatus.employment_status_count: [1, 1],
+            },
+        ),
+        AggregateEmploymentStatusDataTestCase(
+            id="keeps_distinct_establishments_at_the_same_location_separate",
+            input_data={
+                AWKClean.worker_id: ["1", "2"],
+                AWKClean.location_id: ["loc3", "loc3"],
+                AWKClean.establishment_id: ["1-003", "1-004"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
+                AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 2,
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
+                * 2,
+                AWKClean.employment_status_clean: [EmploymentStatusID.permanent] * 2,
+                AWKClean.employment_status_clean_labelled: [
+                    EmploymentStatusLabels.permanent
+                ]
+                * 2,
+            },
+            expected_data={
+                AWKClean.location_id: ["loc3", "loc3"],
+                AWKClean.establishment_id: ["1-003", "1-004"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
+                * 2,
+                AWKClean.employment_status_clean_labelled: [
+                    EmploymentStatusLabels.permanent
+                ]
+                * 2,
+                SLVEmpStatus.employment_status_count: [1, 1],
+            },
+        ),
     ]
 
     reduce_to_published_roles_test_cases = [

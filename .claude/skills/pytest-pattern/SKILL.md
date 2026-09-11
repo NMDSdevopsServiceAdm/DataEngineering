@@ -76,7 +76,7 @@ Store rows/schemas in `*_test_file_data.py` / `*_test_file_schemas.py`, at the n
 |---|---|
 | One job/dataset only | `projects/<project>/<stage>/unittest_data/*.py` |
 | Multiple jobs/datasets in a project | `projects/<project>/unittest_data/*.py` |
-| Multiple projects | `projects/utils/unittest_data.py` |
+| Multiple projects | `tests/test_polars_utils_data.py` / `tests/test_polars_utils_schemas.py` |
 
 File naming: `test_<module>.py`, mirroring the module under test.
 

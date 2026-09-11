@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+
+### Changed
+
+
+### Improved
+
+
+### Fixed
+
+
+## [v2026.08.1] - 11/09/2026
+
+### Added
 - Added a Polars clean job for ASCWDS worker data (`clean_ascwds_worker_data.py`) on the shared `_01_ingest` Fargate task, mirroring the existing workplace clean job, with job-role labels now sourced from the shared `data_labels_lookup.csv` lookup instead of a static Python dict.
 - Partitioned the job role archive job's outputs (estimates, metadata, geography) by `archive_date` and `run_number`, with `run_number` a single counter that increases by 1 every run (never resetting) and is shared across all three outputs, raising an error if the outputs ever disagree on the existing run_number.
 - Added turnover, starter, and vacancy rate columns to the SLV clean job, derived from the employees, starters, leavers, and vacancies counts; the new rate columns are deduplicated over time alongside the existing counts.
@@ -17,6 +31,8 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Nested the independent CQC filled posts pipeline (merge, clean, impute, model, workplace estimates, job role estimates, archive) under a new `_01_filled_posts` folder within `_03_independent_cqc`, renumbering the workplace/job role estimate and archive stages (`_06`/`_07`/`_09` to `_05`/`_06`/`_07`) to close the existing `_05`/`_08` gap, ahead of upcoming employment status and starters/leavers/vacancies sibling pipelines; updated all imports, the Dockerfile paths and `docker-bake.hcl` accordingly, with no behaviour change.
+- Implemented the employment status aggregation logic in the SLV pipeline's `_00_prepare_worker` job, collapsing worker-level rows to one row per location, establishment, import date, job role and employment status with a worker count column, replacing the pass-through placeholder. Its validation was updated to match.
 - Renamed S3 dataset domains to a project-numbered scheme (e.g. `01_cqc`, `03_ind_cqc`), consolidating related Glue crawlers and moving validation reports to live alongside the dataset they validate instead of a separate domain; removed the filled posts step function's diagnostics stage ahead of its codebase removal elsewhere, renumbering the archive stage from `08` to `07`, and renamed the job role sub-stage datasets to a `06_job_roles_0N_<task>` format. The externally-managed raw bucket upload prefixes are unaffected.
 - Renumbered the publication stage from `_08_publication` to `_99_publication` so it always sorts and runs last, and renamed its `_01_job_role_estimates` product folder to `monthly_tracker_filled_posts` to match the published product; job scripts, Docker image, ECR repo, Terraform resources and S3 dataset paths (`monthly_tracker_filled_posts_01_merge`/`_02_clean`) were updated to match.
 - Duplicate-establishment nulling in the ASCWDS workplace clean job now checks whether a known duplicate group is still submitting identical data for a given import date before nulling it, instead of nulling unconditionally for every establishment on the list.

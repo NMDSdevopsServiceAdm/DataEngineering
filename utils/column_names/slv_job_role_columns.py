@@ -23,3 +23,8 @@ class SLVJobRoleColumns:
     estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
     estimated_emp_stat_other: str = "estimated_emp_stat_other"
     estimated_employees: str = "estimated_employees"
+
+
+@dataclass
+class SLVEmploymentStatusColumns:
+    employment_status_count: str = "emplstat_count"

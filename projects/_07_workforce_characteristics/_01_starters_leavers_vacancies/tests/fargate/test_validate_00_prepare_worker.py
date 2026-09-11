@@ -8,6 +8,10 @@ import projects._07_workforce_characteristics._01_starters_leavers_vacancies.far
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_values.categorical_column_values import (
+    EmploymentStatusLabels,
+    MainJobRoleLabels,
+)
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_00_prepare_worker"
 
@@ -15,11 +19,18 @@ PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacanc
 class TestMain:
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.source_df = pl.DataFrame({"worker_id": ["1", "2", "3"]})
+        self.source_df = pl.DataFrame({"worker_id": ["1", "2"]})
         self.compare_df = pl.DataFrame(
             {
-                AWKClean.establishment_id: ["1-001", "1-002", "1-003"],
+                AWKClean.location_id: ["loc1", "loc1", "loc2"],
+                AWKClean.establishment_id: ["1-001", "1-001", "1-002"],
                 AWKClean.ascwds_worker_import_date: ["2026-01-01"] * 3,
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
+                * 3,
+                AWKClean.employment_status_clean_labelled: [
+                    EmploymentStatusLabels.permanent
+                ]
+                * 3,
             }
         )
 
@@ -63,3 +74,23 @@ class TestMain:
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
         assert "row_count_match" in assertion_types_present
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_row_count_match_expects_unique_group_count_not_raw_compare_row_count(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        row_count_match_entry = next(
+            item for item in report_json if item["assertion_type"] == "row_count_match"
+        )
+
+        assert row_count_match_entry["values"]["count"] == 2
+        assert row_count_match_entry["all_passed"] is True
