@@ -20,7 +20,7 @@ class HasColumnDataSinceDateTestCase:
         return pytest.param(self, id=self.id)
 
 
-has_column_data_since_date_test_cases = [
+has_continuous_data_since_date_test_cases = [
     HasColumnDataSinceDateTestCase(
         id="true_when_no_nulls_in_the_checked_column_since_cutoff",
         column_name=IndCQC.ct_care_home_total_employed_imputed,

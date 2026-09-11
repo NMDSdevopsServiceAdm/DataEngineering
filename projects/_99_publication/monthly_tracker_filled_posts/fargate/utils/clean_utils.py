@@ -5,7 +5,7 @@ import polars as pl
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-def has_column_data_since_date(
+def has_continuous_data_since_date(
     column_name: str, from_date: date, column_alias: str
 ) -> pl.Expr:
     """

@@ -48,17 +48,17 @@ def main(
     medium_term_from_date = date(fy_year - 1, 4, 1)
     short_term_from_date = date(fy_year, 4, 1)
     lf = lf.with_columns(
-        clean_utils.has_column_data_since_date(
+        clean_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             long_term_from_date,
             Pub.ct_has_data_long_term,
         ),
-        clean_utils.has_column_data_since_date(
+        clean_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             medium_term_from_date,
             Pub.ct_has_data_medium_term,
         ),
-        clean_utils.has_column_data_since_date(
+        clean_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             short_term_from_date,
             Pub.ct_has_data_short_term,

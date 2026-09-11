@@ -13,7 +13,7 @@ TEST_DESTINATION = "some/other/directory"
 
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.clean_utils.has_column_data_since_date")
+    @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
     @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
@@ -22,7 +22,7 @@ class TestMain:
         scan_parquet_mock: Mock,
         date_mock: Mock,
         reduced_data_filter_expr_mock: Mock,
-        has_column_data_since_date_mock: Mock,
+        has_continuous_data_since_date_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         merged_lf = Mock(name="merged_lf")
@@ -50,7 +50,7 @@ class TestMain:
         }
         assert coalesce_expr.meta.output_name() == Pub.ct_total_employed_imputed
 
-        has_column_data_since_date_mock.assert_has_calls(
+        has_continuous_data_since_date_mock.assert_has_calls(
             [
                 call(
                     Pub.ct_total_employed_imputed,
@@ -71,9 +71,9 @@ class TestMain:
         )
         coalesced_lf = merged_lf.filter.return_value.with_columns.return_value
         coalesced_lf.with_columns.assert_called_once_with(
-            has_column_data_since_date_mock.return_value,
-            has_column_data_since_date_mock.return_value,
-            has_column_data_since_date_mock.return_value,
+            has_continuous_data_since_date_mock.return_value,
+            has_continuous_data_since_date_mock.return_value,
+            has_continuous_data_since_date_mock.return_value,
         )
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=coalesced_lf.with_columns.return_value,

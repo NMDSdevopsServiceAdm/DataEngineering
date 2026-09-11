@@ -19,7 +19,10 @@ class TestHasColumnDataSinceDate:
 
     @pytest.mark.parametrize(
         "case",
-        [case.as_pytest_param() for case in Data.has_column_data_since_date_test_cases],
+        [
+            case.as_pytest_param()
+            for case in Data.has_continuous_data_since_date_test_cases
+        ],
     )
     def test_flags_locations_with_column_data_since_a_given_date(self, case):
         expected_schema = pl.Schema(
@@ -31,7 +34,7 @@ class TestHasColumnDataSinceDate:
         test_lf = expected_lf.drop(case.column_alias)
 
         returned_lf = test_lf.with_columns(
-            job.has_column_data_since_date(
+            job.has_continuous_data_since_date(
                 case.column_name, case.from_date, case.column_alias
             )
         )
