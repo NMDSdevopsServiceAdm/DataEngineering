@@ -29,9 +29,9 @@ def main(
     today = date.today()
     fy_year = today.year if today.month >= 4 else today.year - 1
     cutoff_date = date(fy_year - 6, 4, 1)
-    merged_lf = merged_lf.filter(reduced_data_filter_expr(cutoff_date=cutoff_date))
+    cleaned_lf = merged_lf.filter(reduced_data_filter_expr(cutoff_date=cutoff_date))
 
-    merged_lf = merged_lf.with_columns(
+    cleaned_lf = cleaned_lf.with_columns(
         (pl.col(IndCQC.care_home_status_count) == 1).alias(Pub.consistent_service)
     )
 
@@ -48,7 +48,7 @@ def main(
     # TODO: Add cumulative percentage change from given start period.
 
     utils.sink_to_parquet(
-        lazy_df=merged_lf,
+        lazy_df=cleaned_lf,
         output_path=clean_destination,
     )
 

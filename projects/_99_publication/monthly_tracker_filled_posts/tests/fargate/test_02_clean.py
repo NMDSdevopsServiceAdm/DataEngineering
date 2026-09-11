@@ -41,6 +41,7 @@ class TestMain:
             cutoff_date=date(2020, 4, 1),
         )
 
+        sink_to_parquet_mock.assert_called_once()
         sink_call_kwargs = sink_to_parquet_mock.call_args.kwargs
         assert sink_call_kwargs["output_path"] == TEST_DESTINATION
         expected_lf = pl.LazyFrame(
