@@ -36,25 +36,8 @@
             },
             "Clean and validate ingested CQC data": {
               "Type": "Parallel",
-              "Next": "Validate cleaned CQC PIR data",
+              "End": true,
               "Branches": [
-                {
-                  "StartAt": "Clean CQC PIR data",
-                  "States": {
-                    "Clean CQC PIR data": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${clean_cqc_pir_data_job_name}",
-                        "Arguments": {
-                          "--cqc_pir_source": "${dataset_bucket_uri}/domain=01_cqc/dataset=pir/",
-                          "--cleaned_cqc_pir_destination": "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
                 {
                   "StartAt": "Validate Ingested CQC PIR data",
                   "States": {
@@ -94,9 +77,9 @@
                   }
                 },
                 {
-                  "StartAt": "Clean CQC PIR data (Polars)",
+                  "StartAt": "Clean CQC PIR data",
                   "States": {
-                    "Clean CQC PIR data (Polars)": {
+                    "Clean CQC PIR data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
@@ -119,15 +102,15 @@
                                 "--cqc_pir_source",
                                 "${dataset_bucket_uri}/domain=01_cqc/dataset=pir/",
                                 "--cleaned_cqc_pir_destination",
-                                "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned_polars/"
+                                "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned/"
                               ]
                             }
                           ]
                         }
                       },
-                      "Next": "Validate Cleaned CQC PIR data (Polars)"
+                      "Next": "Validate Cleaned CQC PIR data"
                     },
-                    "Validate Cleaned CQC PIR data (Polars)": {
+                    "Validate Cleaned CQC PIR data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
@@ -150,9 +133,9 @@
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
-                                "domain=01_cqc/dataset=pir_cleaned_polars/",
+                                "domain=01_cqc/dataset=pir_cleaned/",
                                 "--reports_path",
-                                "domain=01_cqc/dataset=pir_cleaned_polars_validation/"
+                                "domain=01_cqc/dataset=pir_cleaned_validation/"
                               ]
                             }
                           ]
@@ -163,18 +146,6 @@
                   }
                 }
               ]
-            },
-            "Validate cleaned CQC PIR data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${validate_pir_cleaned_data_job_name}",
-                "Arguments": {
-                  "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned_validation/"
-                }
-              },
-              "End": true
             }
           }
         }

@@ -6,10 +6,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added Polars clean (`clean_cqc_pir_data.py`) and validate (`validate_clean_cqc_pir_data.py`) jobs for CQC PIR data on the shared `_01_ingest` Fargate task, mirroring the existing ons_pd/capacity_tracker clean/validate jobs. Wired into the Ingest CQC PIR Step Function alongside the existing Glue-based clean/validate jobs, writing to a separate `pir_cleaned_polars`/`pir_cleaned_polars_validation` path so outputs can be compared in Athena before cutover.
 
 
 ### Changed
+- Cut over the CQC PIR clean and validate-cleaned jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their Step Function wiring entirely. Outputs were compared against the previous PySpark version's output in Athena and matched exactly before cutover.
 
 
 ### Improved

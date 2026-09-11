@@ -3,21 +3,6 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
   description = "Database for all datasets belonging to the ${local.workspace_prefix} environment."
 }
 
-module "clean_cqc_pir_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/cqc_pir/jobs"
-  script_name     = "clean_cqc_pir_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--cqc_pir_source"              = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=pir/"
-    "--cleaned_cqc_pir_destination" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=pir_cleaned/"
-  }
-}
-
 module "ingest_dpr_external_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/direct_payment_recipients/jobs"
@@ -158,21 +143,6 @@ module "merge_coverage_data_job" {
     "--cleaned_cqc_providers_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=providers_04_full_cleaned/"
     "--merged_coverage_destination"  = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data/"
     "--reduced_coverage_destination" = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_monthly_coverage_data/"
-  }
-}
-
-module "validate_pir_cleaned_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/cqc_pir/jobs"
-  script_name     = "validate_pir_cleaned_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--cleaned_cqc_pir_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=pir_cleaned/"
-    "--report_destination"     = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=pir_cleaned_validation/"
   }
 }
 
