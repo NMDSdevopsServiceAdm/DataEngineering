@@ -1,0 +1,71 @@
+import polars as pl
+
+import projects._03_independent_cqc._01_filled_posts._01_merge.fargate.utils.utils as JRUtils
+from polars_utils import utils
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
+cleaned_ascwds_worker_columns_to_import = [
+    IndCQC.establishment_id,
+    IndCQC.ascwds_worker_import_date,
+    IndCQC.main_job_role_clean_labelled,
+    AWKClean.location_id,
+]
+
+is_cqc_location: bool = pl.col(AWKClean.location_id).str.len_chars() > 0
+
+
+def main(
+    cleaned_ascwds_worker_source: str,
+    prepared_ascwds_job_role_counts_destination: str,
+) -> None:
+    """
+    Prepares cleaned ASC-WDS worker data for merging with ind cqc estimates.
+
+    Args:
+        cleaned_ascwds_worker_source (str): path to the cleaned worker data
+        prepared_ascwds_job_role_counts_destination (str): destination for output
+    """
+    cleaned_ascwds_worker_lf = utils.scan_parquet(
+        source=cleaned_ascwds_worker_source,
+        selected_columns=cleaned_ascwds_worker_columns_to_import,
+    ).filter(is_cqc_location)
+
+    columns_to_aggregate_on = [
+        IndCQC.establishment_id,
+        IndCQC.ascwds_worker_import_date,
+        IndCQC.main_job_role_clean_labelled,
+    ]
+
+    aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
+        cleaned_ascwds_worker_lf,
+        JRUtils.LIST_OF_JOB_ROLES_SORTED,
+        columns_to_aggregate_on,
+    )
+
+    utils.sink_to_parquet(
+        lazy_df=aggregated_worker_lf,
+        output_path=prepared_ascwds_job_role_counts_destination,
+    )
+
+
+if __name__ == "__main__":
+    args = utils.get_args(
+        (
+            "--cleaned_ascwds_worker_source",
+            "Source s3 directory for parquet ASCWDS worker cleaned dataset",
+        ),
+        (
+            "--prepared_ascwds_job_role_counts_destination",
+            "Destination s3 directory for prepared_ascwds_job_role_counts",
+        ),
+    )
+
+    main(
+        cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
+        prepared_ascwds_job_role_counts_destination=args.prepared_ascwds_job_role_counts_destination,
+    )
+
+    print("Finished preparing ascwds job role counts")

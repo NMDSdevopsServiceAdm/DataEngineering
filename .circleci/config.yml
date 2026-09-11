@@ -557,8 +557,8 @@ jobs:
             if [ "$(cat bake/seed-archive-sample 2>/dev/null)" = "false" ]; then
               echo "No archive-related changes detected. Skipping archive sample seed."
             else
-              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/" --delete && \
-                aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/" --delete
+              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2026-09-09/run_number=1/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2026-09-09/run_number=1/" --delete && \
+                aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-09-09/run_number=1/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-09-09/run_number=1/" --delete
             fi
 
   terraform-destroy:

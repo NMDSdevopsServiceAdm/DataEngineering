@@ -4,11 +4,11 @@ import scripts.select_archive_sample_seed as job
 
 trigger_path_cases = [
     pytest.param(
-        "projects/_03_independent_cqc/_09_archive_estimates/fargate/archive_job_role_estimates.py",
+        "projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/archive_job_role_estimates.py",
         id="returns_true_when_changed_path_is_under_archive_estimates_dir",
     ),
     pytest.param(
-        "projects/_03_independent_cqc/_09_archive_estimates/fargate/utils/archive_utils.py",
+        "projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/utils/archive_utils.py",
         id="returns_true_when_changed_path_is_under_archive_estimates_utils_dir",
     ),
     pytest.param(
@@ -44,7 +44,7 @@ class TestMain:
         job.main(
             [
                 "--changed-path",
-                "projects/_03_independent_cqc/_09_archive_estimates/fargate/archive_job_role_estimates.py",
+                "projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/archive_job_role_estimates.py",
             ]
         )
 
