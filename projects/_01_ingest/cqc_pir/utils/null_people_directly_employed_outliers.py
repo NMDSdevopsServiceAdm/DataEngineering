@@ -7,6 +7,7 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as PIRCols
 
 
+# converted to polars -> projects/_01_ingest/cqc_pir/fargate/utils/clean_cqc_pir_utils.py
 def null_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
     """
     Creates a clean version of the'pir_people_directly_employed' column.
@@ -34,6 +35,7 @@ def null_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects/_01_ingest/cqc_pir/fargate/utils/clean_cqc_pir_utils.py
 def null_large_single_submission_locations(df: DataFrame) -> DataFrame:
     """
     Excludes CQC PIR data for locations who submitted a large employee figure

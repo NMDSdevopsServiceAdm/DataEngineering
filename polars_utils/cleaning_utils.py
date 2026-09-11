@@ -162,10 +162,13 @@ def labels_generator(
 
 
 def column_to_date(
-    lf: pl.LazyFrame, column: str, new_column: str = None
+    lf: pl.LazyFrame, column: str, new_column: str = None, format: str = None
 ) -> pl.LazyFrame:
     """
-    Converts a string or integer column (YYYYmmDD or YYYY-mm-DD) to a Polars Date column.
+    Converts a string or integer column to a Polars Date column.
+
+    By default, parses YYYYmmDD or YYYY-mm-DD. Pass `format` (a `strptime`-style
+    format string) for any other layout, e.g. "%d-%b-%y" for "dd-MMM-yy".
 
     The conversion will overwrite the original `column` unless `new_column` is provided.
 
@@ -173,19 +176,25 @@ def column_to_date(
         lf (pl.LazyFrame): Input Polars LazyFrame.
         column (str): Column name to convert.
         new_column (str): Optional. If None, overwrites the original column.
+        format (str): Optional `strptime`-style date format. If None, defaults to
+            parsing YYYYmmDD/YYYY-mm-DD.
 
     Returns:
         pl.LazyFrame: LazyFrame with the converted date column.
     """
     target_col = new_column or column
 
-    return lf.with_columns(
-        pl.col(column)
-        .cast(pl.Utf8)
-        .str.replace_all("-", "")
-        .str.to_date(DATE_FORMAT)
-        .alias(target_col)
-    )
+    if format is not None:
+        date_expr = pl.col(column).cast(pl.Utf8).str.strptime(pl.Date, format)
+    else:
+        date_expr = (
+            pl.col(column)
+            .cast(pl.Utf8)
+            .str.replace_all("-", "")
+            .str.to_date(DATE_FORMAT)
+        )
+
+    return lf.with_columns(date_expr.alias(target_col))
 
 
 def calculate_filled_posts_per_bed_ratio(

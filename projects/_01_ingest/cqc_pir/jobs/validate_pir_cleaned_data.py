@@ -15,6 +15,7 @@ from utils.validation.validation_utils import (
 )
 
 
+# converted to polars -> projects/_01_ingest/cqc_pir/fargate/validate_clean_cqc_pir_data.py
 def main(cleaned_cqc_pir_source: str, report_destination: str):
     cleaned_cqc_pir_df = utils.read_from_parquet(cleaned_cqc_pir_source)
 

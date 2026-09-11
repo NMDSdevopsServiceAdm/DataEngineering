@@ -241,6 +241,13 @@ class CleaningUtilsData:
         (date(2023, 1, 2), date(2022, 5, 4), date(2019, 12, 7), date(1908, 12, 5)),
     ]
 
+    column_to_date_custom_format_rows = [
+        ("02-Jan-23", "04-May-22"),
+    ]
+    expected_column_to_date_custom_format_rows = [
+        (date(2023, 1, 2), date(2022, 5, 4)),
+    ]
+
     filled_posts_per_bed_ratio_rows = [
         ("1-000000001", 5.0, 100, CareHome.care_home),
         ("1-000000002", 2.0, 1, CareHome.care_home),
