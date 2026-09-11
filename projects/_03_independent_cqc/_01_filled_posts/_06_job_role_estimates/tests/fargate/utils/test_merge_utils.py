@@ -1,0 +1,73 @@
+import polars as pl
+import polars.testing as pl_testing
+import pytest
+
+import projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate.utils.merge_utils as job
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_test_file_data import (
+    TestJoinEstimatesToAscwds as Data,
+)
+from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_test_file_schemas import (
+    TestJoinEstimatesToAscwds as Schemas,
+)
+
+roles = ["role_a", "role_b"]
+
+
+@pytest.fixture(autouse=True)
+def mock_roles(monkeypatch):
+    monkeypatch.setattr(
+        job,
+        "create_job_role_lazyframe",
+        lambda: pl.LazyFrame(
+            roles, {job.job_role_labels: CatColType.JobRoleCatType}, orient="row"
+        ),
+    )
+
+
+class TestJoinEstimatesToAscwds:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.join_estimates_test_cases],
+    )
+    def test_function_returns_expected_values(self, case):
+        estimates_lf = pl.LazyFrame(
+            case.estimates_data,
+            schema=Schemas.estimates_schema,
+            orient="row",
+        )
+
+        ascwds_lf = pl.LazyFrame(
+            case.ascwds_data,
+            schema=Schemas.ascwds_schema,
+            orient="row",
+        )
+
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            schema=Schemas.expected_schema,
+            orient="row",
+        )
+
+        result_lf = job.join_estimates_to_ascwds(estimates_lf, ascwds_lf)
+
+        pl_testing.assert_frame_equal(
+            result_lf,
+            expected_lf,
+            check_row_order=False,
+            categorical_as_str=True,
+        )
+
+        # Sanity check: correct expansion
+        expected_rows = len(case.estimates_data) * 2  # mocked roles
+        assert result_lf.collect().height == expected_rows
+
+
+class TestCreateJobRoleLazyFrame:
+    def test_create_job_role_lazyframe_schema_rowcount_and_order(self):
+        expected_lf = pl.LazyFrame(
+            roles, {job.job_role_labels: CatColType.JobRoleCatType}, orient="row"
+        )
+        returned_lf = job.create_job_role_lazyframe()
+
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)

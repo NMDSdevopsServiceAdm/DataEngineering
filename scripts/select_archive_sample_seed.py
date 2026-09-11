@@ -36,7 +36,7 @@ from scripts.select_bake_targets import (  # noqa: E402
 # `returns_true_when_changed_path_is_under_<name>` case in
 # scripts/tests/test_select_archive_sample_seed.py's `trigger_path_cases`.
 ARCHIVE_TRIGGER_PATHS: tuple[str, ...] = (
-    "projects/_03_independent_cqc/_09_archive_estimates",
+    "projects/_03_independent_cqc/_01_filled_posts/_07_archive",
     "projects/_99_publication",
 )
 

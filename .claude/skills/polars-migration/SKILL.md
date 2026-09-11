@@ -7,13 +7,13 @@ description: Use when migrating a PySpark job or function in this repo (jobs/) t
 
 This repo is mid-migration from PySpark (`jobs/`) to Polars (`fargate/`). When migrating, follow this checklist — it mirrors `.github/PULL_REQUEST_TEMPLATE/polars_migration_template.md`.
 
-1. **Check for existing utils before writing new ones.** Search the narrowest scope first: stage `utils/` → project `utils/` → repo-wide `projects/utils/`. Only add a new util if nothing suitable exists at any of those scopes.
+1. **Check for existing utils before writing new ones.** Search the narrowest scope first: stage `utils/` → project `utils/` → repo-wide `polars_utils/`. Only add a new util if nothing suitable exists at any of those scopes.
 2. **Confirm correct placement** for any new/moved util, using the scope table:
    | Used by | Location |
    |---|---|
    | One job/dataset only | `projects/<project>/<stage>/utils/*.py` |
    | Multiple jobs/datasets in a project | `projects/<project>/utils/*.py` |
-   | Multiple projects | `projects/utils/utils.py` |
+   | Multiple projects | `polars_utils/utils.py` |
 3. **Use `LazyFrame`** for test data, not eager `DataFrame`.
 4. **Add or port unit tests** in pytest style — see the `pytest-pattern` skill for the repo's dataclass+parametrize convention.
 5. **Add Google-style docstrings**, including non-obvious performance notes (why something stays lazy, why a `.collect()` happens where it does).

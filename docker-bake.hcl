@@ -41,14 +41,14 @@ target "_02_sfc_internal" {
 
 target "_03_independent_cqc" {
   context = "."
-  dockerfile = "./projects/_03_independent_cqc/Dockerfile_and_requirements/Dockerfile"
+  dockerfile = "./projects/_03_independent_cqc/_01_filled_posts/Dockerfile_and_requirements/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/03_independent_cqc:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
 }
 
 target "_03_independent_cqc_model" {
   context = "."
-  dockerfile = "./projects/_03_independent_cqc/_04_model/fargate/Dockerfile"
+  dockerfile = "./projects/_03_independent_cqc/_01_filled_posts/_04_model/fargate/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/03_independent_cqc_model:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
 }
