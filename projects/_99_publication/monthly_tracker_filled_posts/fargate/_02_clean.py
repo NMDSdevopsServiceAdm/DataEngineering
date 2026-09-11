@@ -18,9 +18,7 @@ def main(
     """
     Cleans merged job role data.
 
-    The remaining capacity tracker filters, the aggregation and percentage
-    change columns are currently placeholders and don't yet apply any real
-    filtering.
+    See TODO's for remaining placeholder functionality.
 
     Args:
         merge_data_source (str): source s3 directory for merged data
@@ -38,8 +36,6 @@ def main(
     cleaned_lf = cleaned_lf.with_columns(
         (pl.col(IndCQC.care_home_status_count) == 1).alias(Pub.consistent_service)
     )
-
-    # See clean_utils/test_clean_utils for placeholders.
 
     cleaned_lf = cleaned_lf.with_columns(
         pl.coalesce(
@@ -69,7 +65,7 @@ def main(
         ),
     )
 
-    # TODO: Add remaining capacity tracker filters (consistent service, dispersion).
+    # TODO: Add remaining capacity tracker dispersion filter.
 
     # TODO: Aggregate on job role, primary_service_type and current_region.
 

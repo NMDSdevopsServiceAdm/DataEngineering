@@ -7,8 +7,8 @@ import projects._99_publication.unittest_data.polars_pub_test_data as Data
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class TestHasColumnDataSinceDate:
-    has_column_data_since_data_schema = pl.Schema(
+class TestHasContinuousDataSinceDate:
+    has_continuous_data_since_data_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
@@ -24,9 +24,9 @@ class TestHasColumnDataSinceDate:
             for case in Data.has_continuous_data_since_date_test_cases
         ],
     )
-    def test_flags_locations_with_column_data_since_a_given_date(self, case):
+    def test_flags_locations_with_continuous_data_since_a_given_date(self, case):
         expected_schema = pl.Schema(
-            list(self.has_column_data_since_data_schema.items())
+            list(self.has_continuous_data_since_data_schema.items())
             + [(case.column_alias, pl.Boolean())]
         )
         expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")

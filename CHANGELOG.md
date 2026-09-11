@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added a publication cleaning util that flags locations with capacity tracker data as either a care home or non-res at all periods from a given date onwards. The two capacity tracker columns are coalesced then checked for completeness.
+- Added has_continuous_data_since_date to publication cleaning utils. It flags locations with capacity tracker data as either a care home or non-res at all periods from a given date onwards. The two capacity tracker columns are coalesced then checked for completeness.
 
 
 ### Changed
@@ -29,7 +29,6 @@ All notable changes to this project will be documented in this file.
 - Added the ASCWDS worker employment status column to the Polars worker clean and validate jobs, labelled via the shared `data_labels_lookup.csv` lookup.
 - Added a `cutoff_date` parameter to `reduced_data_filter_expr` (Polars Utils) that acts as a hard floor beneath its existing quarterly-sampling tier, and used it in the publication job role clean job so published data keeps full history for 2 financial years, quarterly snapshots back to 6 financial years, and nothing older than that.
 - Renamed the SLV pipeline's `_00_prepare` job (and its utils/validate/tests) to `_00_prepare_workplace`, and added a new `_00_prepare_worker` job (with utils, validate, and tests) running in parallel, as a placeholder pass-through ahead of employment status aggregation logic.
-- Implemented the first of the publication job role clean job's capacity tracker filters, flagging per capacity tracker column whether a location has data with no gaps since a given date, called once per column/cutoff-date combination to produce separate flag columns.
 
 
 ### Changed
