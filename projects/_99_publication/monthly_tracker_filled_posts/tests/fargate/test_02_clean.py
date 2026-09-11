@@ -41,49 +41,41 @@ class TestMain:
             reduced_data_filter_expr_mock.return_value
         )
 
+        coalesce_expr = merged_lf.filter.return_value.with_columns.call_args_list[
+            0
+        ].args[0]
+        assert set(coalesce_expr.meta.root_names()) == {
+            IndCQC.ct_care_home_total_employed_imputed,
+            IndCQC.ct_non_res_care_workers_employed_imputed,
+        }
+        assert coalesce_expr.meta.output_name() == Pub.ct_total_employed_imputed
+
         has_column_data_since_date_mock.assert_has_calls(
             [
                 call(
-                    IndCQC.ct_care_home_total_employed_imputed,
+                    Pub.ct_total_employed_imputed,
                     date(2021, 7, 1),
-                    Pub.ct_care_home_has_data_long_term,
+                    Pub.ct_has_data_long_term,
                 ),
                 call(
-                    IndCQC.ct_care_home_total_employed_imputed,
+                    Pub.ct_total_employed_imputed,
                     date(2025, 4, 1),
-                    Pub.ct_care_home_has_data_medium_term,
+                    Pub.ct_has_data_medium_term,
                 ),
                 call(
-                    IndCQC.ct_care_home_total_employed_imputed,
+                    Pub.ct_total_employed_imputed,
                     date(2026, 4, 1),
-                    Pub.ct_care_home_has_data_short_term,
-                ),
-                call(
-                    IndCQC.ct_non_res_care_workers_employed_imputed,
-                    date(2021, 7, 1),
-                    Pub.ct_non_res_has_data_long_term,
-                ),
-                call(
-                    IndCQC.ct_non_res_care_workers_employed_imputed,
-                    date(2025, 4, 1),
-                    Pub.ct_non_res_has_data_medium_term,
-                ),
-                call(
-                    IndCQC.ct_non_res_care_workers_employed_imputed,
-                    date(2026, 4, 1),
-                    Pub.ct_non_res_has_data_short_term,
+                    Pub.ct_has_data_short_term,
                 ),
             ]
         )
-        merged_lf.filter.return_value.with_columns.assert_called_once_with(
-            has_column_data_since_date_mock.return_value,
-            has_column_data_since_date_mock.return_value,
-            has_column_data_since_date_mock.return_value,
+        coalesced_lf = merged_lf.filter.return_value.with_columns.return_value
+        coalesced_lf.with_columns.assert_called_once_with(
             has_column_data_since_date_mock.return_value,
             has_column_data_since_date_mock.return_value,
             has_column_data_since_date_mock.return_value,
         )
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=merged_lf.filter.return_value.with_columns.return_value,
+            lazy_df=coalesced_lf.with_columns.return_value,
             output_path=TEST_DESTINATION,
         )

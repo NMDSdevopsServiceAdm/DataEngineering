@@ -1,5 +1,7 @@
 from datetime import date
 
+import polars as pl
+
 from polars_utils import utils
 from polars_utils.filtering_utils import reduced_data_filter_expr
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
@@ -35,39 +37,31 @@ def main(
 
     # See clean_utils/test_clean_utils for placeholders.
 
-    long_term_from_date = date(2021, 7, 1)
-    medium_term_from_date = date(2025, 4, 1)
-    short_term_from_date = date(2026, 4, 1)
+    lf = lf.with_columns(
+        pl.coalesce(
+            IndCQC.ct_care_home_total_employed_imputed,
+            IndCQC.ct_non_res_care_workers_employed_imputed,
+        ).alias(Pub.ct_total_employed_imputed)
+    )
+
+    long_term_from_date = date(fy_year - 5, 7, 1)
+    medium_term_from_date = date(fy_year - 1, 4, 1)
+    short_term_from_date = date(fy_year, 4, 1)
     lf = lf.with_columns(
         clean_utils.has_column_data_since_date(
-            IndCQC.ct_care_home_total_employed_imputed,
+            Pub.ct_total_employed_imputed,
             long_term_from_date,
-            Pub.ct_care_home_has_data_long_term,
+            Pub.ct_has_data_long_term,
         ),
         clean_utils.has_column_data_since_date(
-            IndCQC.ct_care_home_total_employed_imputed,
+            Pub.ct_total_employed_imputed,
             medium_term_from_date,
-            Pub.ct_care_home_has_data_medium_term,
+            Pub.ct_has_data_medium_term,
         ),
         clean_utils.has_column_data_since_date(
-            IndCQC.ct_care_home_total_employed_imputed,
+            Pub.ct_total_employed_imputed,
             short_term_from_date,
-            Pub.ct_care_home_has_data_short_term,
-        ),
-        clean_utils.has_column_data_since_date(
-            IndCQC.ct_non_res_care_workers_employed_imputed,
-            long_term_from_date,
-            Pub.ct_non_res_has_data_long_term,
-        ),
-        clean_utils.has_column_data_since_date(
-            IndCQC.ct_non_res_care_workers_employed_imputed,
-            medium_term_from_date,
-            Pub.ct_non_res_has_data_medium_term,
-        ),
-        clean_utils.has_column_data_since_date(
-            IndCQC.ct_non_res_care_workers_employed_imputed,
-            short_term_from_date,
-            Pub.ct_non_res_has_data_short_term,
+            Pub.ct_has_data_short_term,
         ),
     )
 
