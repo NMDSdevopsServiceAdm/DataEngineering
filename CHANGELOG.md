@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Carried `care_home_status_count` through the job role archive and publication merge jobs, and added a `consistent_service` boolean column to the publication clean job that is true when a location has always had the same care home status.
 
 
 ### Improved
@@ -27,7 +28,6 @@ All notable changes to this project will be documented in this file.
 - Added the ASCWDS worker employment status column to the Polars worker clean and validate jobs, labelled via the shared `data_labels_lookup.csv` lookup.
 - Added a `cutoff_date` parameter to `reduced_data_filter_expr` (Polars Utils) that acts as a hard floor beneath its existing quarterly-sampling tier, and used it in the publication job role clean job so published data keeps full history for 2 financial years, quarterly snapshots back to 6 financial years, and nothing older than that.
 - Renamed the SLV pipeline's `_00_prepare` job (and its utils/validate/tests) to `_00_prepare_workplace`, and added a new `_00_prepare_worker` job (with utils, validate, and tests) running in parallel, as a placeholder pass-through ahead of employment status aggregation logic.
-- Carried `care_home_status_count` through the job role archive and publication merge jobs, and added a `consistent_service` boolean column to the publication clean job that is true when a location has always had the same care home status.
 
 
 ### Changed
