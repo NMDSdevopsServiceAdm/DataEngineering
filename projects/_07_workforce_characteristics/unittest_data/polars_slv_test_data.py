@@ -908,82 +908,94 @@ class TestImputeUtilsData:
     forward_fill_within_time_limit_test_cases = [
         ForwardFillWithinTimeLimitTestCase(
             id="fills_null_within_window_after_a_known_value",
-            columns_to_fill={SLVCols.starters_dedup: SLVCols.starters_imputed},
+            columns_to_fill={
+                SLVCols.turnover_rate_dedup: SLVCols.turnover_rate_imputed
+            },
             input_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 2, 1)],
-                SLVCols.starters_dedup: [5, None],
+                SLVCols.turnover_rate_dedup: [5, None],
             },
             expected_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 2, 1)],
-                SLVCols.starters_dedup: [5, None],
-                SLVCols.starters_imputed: [5, 5],
+                SLVCols.turnover_rate_dedup: [5, None],
+                SLVCols.turnover_rate_imputed: [5, 5],
             },
         ),
         ForwardFillWithinTimeLimitTestCase(
             id="fills_null_exactly_at_the_six_month_boundary",
-            columns_to_fill={SLVCols.starters_dedup: SLVCols.starters_imputed},
+            columns_to_fill={
+                SLVCols.turnover_rate_dedup: SLVCols.turnover_rate_imputed
+            },
             input_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 7, 1)],
-                SLVCols.starters_dedup: [5, None],
+                SLVCols.turnover_rate_dedup: [5, None],
             },
             expected_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 7, 1)],
-                SLVCols.starters_dedup: [5, None],
-                SLVCols.starters_imputed: [5, 5],
+                SLVCols.turnover_rate_dedup: [5, None],
+                SLVCols.turnover_rate_imputed: [5, 5],
             },
         ),
         ForwardFillWithinTimeLimitTestCase(
             id="leaves_null_one_day_past_the_six_month_boundary",
-            columns_to_fill={SLVCols.starters_dedup: SLVCols.starters_imputed},
+            columns_to_fill={
+                SLVCols.turnover_rate_dedup: SLVCols.turnover_rate_imputed
+            },
             input_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 7, 2)],
-                SLVCols.starters_dedup: [5, None],
+                SLVCols.turnover_rate_dedup: [5, None],
             },
             expected_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 7, 2)],
-                SLVCols.starters_dedup: [5, None],
-                SLVCols.starters_imputed: [5, None],
+                SLVCols.turnover_rate_dedup: [5, None],
+                SLVCols.turnover_rate_imputed: [5, None],
             },
         ),
         ForwardFillWithinTimeLimitTestCase(
             id="does_not_overwrite_a_known_value",
-            columns_to_fill={SLVCols.starters_dedup: SLVCols.starters_imputed},
+            columns_to_fill={
+                SLVCols.turnover_rate_dedup: SLVCols.turnover_rate_imputed
+            },
             input_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 2, 1)],
-                SLVCols.starters_dedup: [5, 9],
+                SLVCols.turnover_rate_dedup: [5, 9],
             },
             expected_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 2, 1)],
-                SLVCols.starters_dedup: [5, 9],
-                SLVCols.starters_imputed: [5, 9],
+                SLVCols.turnover_rate_dedup: [5, 9],
+                SLVCols.turnover_rate_imputed: [5, 9],
             },
         ),
         ForwardFillWithinTimeLimitTestCase(
             id="leaves_null_before_any_known_value_in_the_partition",
-            columns_to_fill={SLVCols.starters_dedup: SLVCols.starters_imputed},
+            columns_to_fill={
+                SLVCols.turnover_rate_dedup: SLVCols.turnover_rate_imputed
+            },
             input_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 2, 1)],
-                SLVCols.starters_dedup: [None, 5],
+                SLVCols.turnover_rate_dedup: [None, 5],
             },
             expected_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 2, 1)],
-                SLVCols.starters_dedup: [None, 5],
-                SLVCols.starters_imputed: [None, 5],
+                SLVCols.turnover_rate_dedup: [None, 5],
+                SLVCols.turnover_rate_imputed: [None, 5],
             },
         ),
         ForwardFillWithinTimeLimitTestCase(
             id="fills_a_mid_timeline_gap_from_its_nearest_preceding_known_value_not_the_partitions_last_known_value",
-            columns_to_fill={SLVCols.starters_dedup: SLVCols.starters_imputed},
+            columns_to_fill={
+                SLVCols.turnover_rate_dedup: SLVCols.turnover_rate_imputed
+            },
             input_data={
                 IndCQC.location_id: ["loc1", "loc1", "loc1", "loc1"],
                 SLVCols.published_job_role_label: [PublishedJobRoleLabels.care_worker]
@@ -994,7 +1006,7 @@ class TestImputeUtilsData:
                     date(2024, 3, 1),
                     date(2024, 4, 1),
                 ],
-                SLVCols.starters_dedup: [10, None, 8, None],
+                SLVCols.turnover_rate_dedup: [10, None, 8, None],
             },
             expected_data={
                 IndCQC.location_id: ["loc1", "loc1", "loc1", "loc1"],
@@ -1006,13 +1018,15 @@ class TestImputeUtilsData:
                     date(2024, 3, 1),
                     date(2024, 4, 1),
                 ],
-                SLVCols.starters_dedup: [10, None, 8, None],
-                SLVCols.starters_imputed: [10, 10, 8, 8],
+                SLVCols.turnover_rate_dedup: [10, None, 8, None],
+                SLVCols.turnover_rate_imputed: [10, 10, 8, 8],
             },
         ),
         ForwardFillWithinTimeLimitTestCase(
             id="does_not_leak_values_between_partition_groups",
-            columns_to_fill={SLVCols.starters_dedup: SLVCols.starters_imputed},
+            columns_to_fill={
+                SLVCols.turnover_rate_dedup: SLVCols.turnover_rate_imputed
+            },
             input_data={
                 IndCQC.location_id: ["loc1", "loc1", "loc1", "loc1"],
                 SLVCols.published_job_role_label: [
@@ -1027,7 +1041,7 @@ class TestImputeUtilsData:
                     date(2024, 1, 1),
                     date(2024, 2, 1),
                 ],
-                SLVCols.starters_dedup: [5, None, None, None],
+                SLVCols.turnover_rate_dedup: [5, None, None, None],
             },
             expected_data={
                 IndCQC.location_id: ["loc1", "loc1", "loc1", "loc1"],
@@ -1043,29 +1057,29 @@ class TestImputeUtilsData:
                     date(2024, 1, 1),
                     date(2024, 2, 1),
                 ],
-                SLVCols.starters_dedup: [5, None, None, None],
-                SLVCols.starters_imputed: [5, 5, None, None],
+                SLVCols.turnover_rate_dedup: [5, None, None, None],
+                SLVCols.turnover_rate_imputed: [5, 5, None, None],
             },
         ),
         ForwardFillWithinTimeLimitTestCase(
             id="fills_independently_per_column_in_the_same_call",
             columns_to_fill={
-                SLVCols.starters_dedup: SLVCols.starters_imputed,
-                SLVCols.leavers_dedup: SLVCols.leavers_imputed,
+                SLVCols.turnover_rate_dedup: SLVCols.turnover_rate_imputed,
+                SLVCols.starter_rate_dedup: SLVCols.starter_rate_imputed,
             },
             input_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 2, 1)],
-                SLVCols.starters_dedup: [5, None],
-                SLVCols.leavers_dedup: [None, 3],
+                SLVCols.turnover_rate_dedup: [5, None],
+                SLVCols.starter_rate_dedup: [None, 3],
             },
             expected_data={
                 **_TWO_ROW_CARE_WORKER_AT_LOC1,
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 2, 1)],
-                SLVCols.starters_dedup: [5, None],
-                SLVCols.leavers_dedup: [None, 3],
-                SLVCols.starters_imputed: [5, 5],
-                SLVCols.leavers_imputed: [None, 3],
+                SLVCols.turnover_rate_dedup: [5, None],
+                SLVCols.starter_rate_dedup: [None, 3],
+                SLVCols.turnover_rate_imputed: [5, 5],
+                SLVCols.starter_rate_imputed: [None, 3],
             },
         ),
     ]

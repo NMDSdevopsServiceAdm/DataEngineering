@@ -21,13 +21,14 @@ def main(
     imputed_data_destination: str,
 ) -> None:
     """
-    Forward-fills gaps in the deduplicated count and rate columns.
+    Forward-fills gaps in the deduplicated rate columns.
 
-    Each deduplicated column's last known value is carried forward into
+    Each deduplicated rate column's last known value is carried forward into
     later null rows, but only within a bounded time window
     (`NumericalValues.forward_fill_time_limit`) per location and published
     job role. This does not backward-fill or interpolate between known
-    values.
+    values. Only the rate columns are imputed; the underlying deduplicated
+    count columns are left as-is.
 
     Args:
         cleaned_data_source (str): path to the cleaned data
@@ -38,9 +39,6 @@ def main(
     lf = imputeUtils.forward_fill_within_time_limit(
         lf,
         columns_to_fill={
-            SLVCols.starters_dedup: SLVCols.starters_imputed,
-            SLVCols.leavers_dedup: SLVCols.leavers_imputed,
-            SLVCols.vacancies_dedup: SLVCols.vacancies_imputed,
             SLVCols.turnover_rate_dedup: SLVCols.turnover_rate_imputed,
             SLVCols.starter_rate_dedup: SLVCols.starter_rate_imputed,
             SLVCols.vacancy_rate_dedup: SLVCols.vacancy_rate_imputed,

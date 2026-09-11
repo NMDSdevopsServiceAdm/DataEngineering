@@ -29,9 +29,6 @@ class TestMain:
         forward_fill_within_time_limit_mock.assert_called_once_with(
             scan_parquet_mock.return_value,
             columns_to_fill={
-                SLVCols.starters_dedup: SLVCols.starters_imputed,
-                SLVCols.leavers_dedup: SLVCols.leavers_imputed,
-                SLVCols.vacancies_dedup: SLVCols.vacancies_imputed,
                 SLVCols.turnover_rate_dedup: SLVCols.turnover_rate_imputed,
                 SLVCols.starter_rate_dedup: SLVCols.starter_rate_imputed,
                 SLVCols.vacancy_rate_dedup: SLVCols.vacancy_rate_imputed,

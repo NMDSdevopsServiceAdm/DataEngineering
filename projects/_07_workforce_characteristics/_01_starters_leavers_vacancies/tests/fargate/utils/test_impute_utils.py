@@ -10,10 +10,10 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 SCHEMA_OVERRIDES = {
-    SLVCols.starters_dedup: pl.Int16,
-    SLVCols.starters_imputed: pl.Int16,
-    SLVCols.leavers_dedup: pl.Int16,
-    SLVCols.leavers_imputed: pl.Int16,
+    SLVCols.turnover_rate_dedup: pl.Float32,
+    SLVCols.turnover_rate_imputed: pl.Float32,
+    SLVCols.starter_rate_dedup: pl.Float32,
+    SLVCols.starter_rate_imputed: pl.Float32,
 }
 
 
