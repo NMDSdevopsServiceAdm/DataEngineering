@@ -66,11 +66,13 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str) -> None:
         cqc_pir_lf, Keys.import_date, PIRClean.cqc_pir_import_date
     ).drop(Keys.year, Keys.month, Keys.day, Keys.import_date)
 
-    cqc_pir_lf = cUtils.column_to_date(
+    cqc_pir_lf = cqc_pir_lf.with_columns(
+        pl.col(PIRCols.pir_submission_date).alias(PIRClean.pir_submission_date_as_date)
+    )
+    cqc_pir_lf = cUtils.cast_date_strings_to_dates(
         cqc_pir_lf,
-        PIRClean.pir_submission_date,
-        PIRClean.pir_submission_date_as_date,
-        format=PIR_SUBMISSION_DATE_FORMAT,
+        date_column_identifier=PIRClean.pir_submission_date_as_date,
+        raw_date_format=PIR_SUBMISSION_DATE_FORMAT,
     )
 
     cqc_pir_lf = cpUtils.add_care_home_column(cqc_pir_lf)

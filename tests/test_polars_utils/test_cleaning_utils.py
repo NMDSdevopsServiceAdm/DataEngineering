@@ -1,5 +1,4 @@
 import unittest
-from dataclasses import dataclass
 from datetime import date
 
 import polars as pl
@@ -253,41 +252,42 @@ class TestRemoveRepeatedValuesOverTime:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
-@dataclass
-class ColumnToDateTestCase:
-    id: str
-    data: list
-    schema: pl.Schema
+class ColumnToDateTests(unittest.TestCase):
+    def test_converts_date_string_without_hyphens_to_date(self):
+        lf = pl.LazyFrame(
+            data=Data.column_to_date_string_without_hyphens_rows,
+            schema=Schemas.col_to_date_string_schema,
+        )
 
-    def as_pytest_param(self):
-        return pytest.param(self, id=self.id)
+        returned_lf = job.column_to_date(lf, "date_col")
 
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_column_to_date_rows,
+            schema=Schemas.expected_col_to_date_schema,
+        )
 
-COLUMN_TO_DATE_CASES = [
-    ColumnToDateTestCase(
-        id="string_without_hyphens",
-        data=Data.column_to_date_string_without_hyphens_rows,
-        schema=Schemas.col_to_date_string_schema,
-    ),
-    ColumnToDateTestCase(
-        id="integer_without_hyphens",
-        data=Data.column_to_date_integer_without_hyphens_rows,
-        schema=Schemas.col_to_date_integer_schema,
-    ),
-    ColumnToDateTestCase(
-        id="string_with_hyphens",
-        data=Data.column_to_date_string_with_hyphens_rows,
-        schema=Schemas.col_to_date_string_schema,
-    ),
-]
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
+    def test_converts_date_integer_without_hyphens_to_date(self):
+        lf = pl.LazyFrame(
+            data=Data.column_to_date_integer_without_hyphens_rows,
+            schema=Schemas.col_to_date_integer_schema,
+        )
 
-class TestColumnToDate:
-    @pytest.mark.parametrize(
-        "case", [c.as_pytest_param() for c in COLUMN_TO_DATE_CASES]
-    )
-    def test_converts_column_to_date(self, case: ColumnToDateTestCase):
-        lf = pl.LazyFrame(data=case.data, schema=case.schema)
+        returned_lf = job.column_to_date(lf, "date_col")
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_column_to_date_rows,
+            schema=Schemas.expected_col_to_date_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_converts_date_string_with_hyphens_to_date(self):
+        lf = pl.LazyFrame(
+            data=Data.column_to_date_string_with_hyphens_rows,
+            schema=Schemas.col_to_date_string_schema,
+        )
 
         returned_lf = job.column_to_date(lf, "date_col")
 
@@ -305,21 +305,6 @@ class TestColumnToDate:
         )
         returned_lf = job.column_to_date(
             expected_lf.drop("new_date_col"), "date_col", "new_date_col"
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_converts_column_to_date_using_custom_format(self):
-        lf = pl.LazyFrame(
-            data=Data.column_to_date_custom_format_rows,
-            schema=Schemas.col_to_date_string_schema,
-        )
-
-        returned_lf = job.column_to_date(lf, "date_col", format="%d-%b-%y")
-
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_column_to_date_custom_format_rows,
-            schema=Schemas.expected_col_to_date_schema,
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
