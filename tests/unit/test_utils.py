@@ -4,13 +4,7 @@ from pathlib import Path
 
 import boto3
 from botocore.stub import Stubber
-from pyspark.sql.types import (
-    FloatType,
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-)
+from pyspark.sql.types import StringType, StructField, StructType
 
 from tests.base_test import SparkBaseTest
 from tests.test_file_data import UtilsData
@@ -72,121 +66,20 @@ class StubberClass:
 
 
 class UtilsTests(SparkBaseTest):
-    test_csv_path = "tests/test_data/example_csv.csv"
-    TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp-workplace"
-    example_csv_for_schema_tests = "tests/test_data/example_csv_for_schema_tests.csv"
-    example_csv_for_schema_tests_extra_column = (
-        "tests/test_data/example_csv_for_schema_tests_extra_column.csv"
-    )
-    example_csv_for_schema_tests_with_datetype = (
-        "tests/test_data/example_csv_for_schema_tests_with_datetype.csv"
-    )
     example_parquet_path = "tests/test_data/example_parquet.parquet"
 
     def setUp(self):
-        self.df = self.spark.read.csv(self.test_csv_path, header=True)
-        self.df_with_extra_col = self.spark.read.csv(
-            self.example_csv_for_schema_tests_extra_column, header=True
+        self.df = self.spark.createDataFrame(
+            [
+                ("1", "a", "tuna", "28/11/1993"),
+                ("2", "b", "salmon", "12/12/2012"),
+                ("3", "c", "cod", "18/1/2021"),
+            ],
+            ["col_a", "col_b", "col_c", "date_col"],
         )
 
 
 class GeneralUtilsTests(UtilsTests):
-    def test_read_csv_with_defined_schema(self):
-        schema = StructType(
-            [
-                StructField("string_field", StringType(), True),
-                StructField("integer_field", IntegerType(), True),
-                StructField("float_field", FloatType(), True),
-            ]
-        )
-
-        df = utils.read_csv_with_defined_schema(
-            self.example_csv_for_schema_tests, schema
-        )
-        self.assertEqual(df.columns[0], "string_field")
-        self.assertEqual(df.columns[1], "integer_field")
-        self.assertEqual(df.columns[2], "float_field")
-        row_one = df.collect()[0]
-        assert isinstance(row_one.string_field, str)
-        assert isinstance(row_one.integer_field, int)
-        assert isinstance(row_one.float_field, float)
-
-    def test_read_csv_with_defined_schema_with_null_values_in_csv(self):
-        schema = StructType(
-            [
-                StructField("string_field", StringType(), False),
-                StructField("integer_field", IntegerType(), False),
-                StructField("float_field", FloatType(), False),
-            ]
-        )
-
-        df = utils.read_csv_with_defined_schema(
-            self.example_csv_for_schema_tests, schema
-        )
-        self.assertEqual(df.columns[0], "string_field")
-        self.assertEqual(df.columns[1], "integer_field")
-        self.assertEqual(df.columns[2], "float_field")
-        row_two = df.collect()[1]
-        assert isinstance(row_two.string_field, type(None))
-        assert isinstance(row_two.integer_field, type(None))
-        assert isinstance(row_two.float_field, type(None))
-
-    def test_read_csv_with_defined_schema_with_column_missing_in_csv(self):
-        schema = StructType(
-            [
-                StructField("string_field", StringType(), False),
-                StructField("integer_field", IntegerType(), False),
-                StructField("float_field", FloatType(), False),
-                StructField("missing_field", StringType(), True),
-            ]
-        )
-
-        df = utils.read_csv_with_defined_schema(
-            self.example_csv_for_schema_tests, schema
-        )
-        self.assertEqual(df.columns[0], "string_field")
-        self.assertEqual(df.columns[1], "integer_field")
-        self.assertEqual(df.columns[2], "float_field")
-        self.assertEqual(df.columns[3], "missing_field")
-
-    def test_read_csv_with_defined_schema_with_extra_column_in_csv(self):
-        schema = StructType(
-            [
-                StructField("string_field", StringType(), False),
-                StructField("integer_field", IntegerType(), False),
-                StructField("float_field", FloatType(), False),
-            ]
-        )
-
-        df_with_no_schema = self.df_with_extra_col
-
-        df = utils.read_csv_with_defined_schema(
-            self.example_csv_for_schema_tests_extra_column, schema
-        )
-        self.assertEqual(df.columns[0], "string_field")
-        self.assertEqual(df.columns[1], "integer_field")
-        self.assertEqual(df.columns[2], "float_field")
-
-        self.assertTrue(len(df.columns) < len(df_with_no_schema.columns))
-
-    def test_read_csv_with_defined_schema_where_there_is_incorrect_value_type(self):
-        schema = StructType(
-            [
-                StructField("string_field", IntegerType(), False),
-                StructField("integer_field", StringType(), False),
-                StructField("float_field", FloatType(), False),
-            ]
-        )
-
-        df = utils.read_csv_with_defined_schema(
-            self.example_csv_for_schema_tests, schema
-        )
-
-        row_one = df.collect()[0]
-        assert isinstance(row_one.string_field, type(None))
-        assert isinstance(row_one.integer_field, str)
-        assert isinstance(row_one.float_field, float)
-
     def test_read_from_parquet_imports_all_rows(self):
         df = utils.read_from_parquet(self.example_parquet_path)
 
@@ -328,9 +221,8 @@ class GeneralUtilsTests(UtilsTests):
         )
 
     def test_write(self):
-        df = self.spark.read.csv(self.test_csv_path, header=True)
         parquet_dir = self.get_temp_path("test_parquet")
-        utils.write_to_parquet(df, parquet_dir)
+        utils.write_to_parquet(self.df, parquet_dir)
 
         self.assertTrue(Path(parquet_dir).is_dir())
         self.assertTrue(Path(parquet_dir).joinpath("_SUCCESS").exists())

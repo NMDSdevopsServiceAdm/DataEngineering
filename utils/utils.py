@@ -71,14 +71,6 @@ def write_to_parquet(
     df.write.mode(mode).partitionBy(*partitionKeys).parquet(output_dir)
 
 
-def read_csv_with_defined_schema(source, schema):
-    spark = get_spark()
-
-    df = spark.read.schema(schema).option("header", "true").csv(source)
-
-    return df
-
-
 def collect_arguments(*args: Any) -> Generator[Any, None, None]:
     """
     Creates a new parser, and for each arg in the provided args parameter returns a Namespace object, and uses vars() function to convert the namespace to a dictionary,
