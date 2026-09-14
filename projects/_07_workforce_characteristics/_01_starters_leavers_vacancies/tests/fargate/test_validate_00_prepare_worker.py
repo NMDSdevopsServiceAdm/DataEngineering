@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from unittest.mock import Mock, call, patch
 
 import polars as pl
@@ -23,7 +24,7 @@ class TestMain:
             {
                 AWKClean.location_id: ["loc1", "loc1", "loc2"],
                 AWKClean.establishment_id: ["1-001", "1-001", "1-002"],
-                AWKClean.ascwds_worker_import_date: ["2026-01-01"] * 3,
+                AWKClean.ascwds_worker_import_date: [date(2026, 1, 1)] * 3,
                 AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
                 * 3,
             }
@@ -103,7 +104,7 @@ class TestMain:
             {
                 AWKClean.location_id: ["loc1", "loc1"],
                 AWKClean.establishment_id: ["1-001", "1-001"],
-                AWKClean.ascwds_worker_import_date: ["2026-01-01"] * 2,
+                AWKClean.ascwds_worker_import_date: [date(2026, 1, 1)] * 2,
                 AWKClean.main_job_role_clean_labelled: [
                     MainJobRoleLabels.middle_management,
                     MainJobRoleLabels.first_line_manager,
