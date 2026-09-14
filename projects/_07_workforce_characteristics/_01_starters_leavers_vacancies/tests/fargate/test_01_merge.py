@@ -9,6 +9,7 @@ class TestMain:
     METADATA_SOURCE = "some/source"
     JOB_ROLE_ESTIMATES_SOURCE = "another/source"
     PREPARED_SLV_DATASET_SOURCE = "other/source"
+    PREPARED_WORKER_SOURCE = "worker/source"
     EMPLOYMENT_STATUS_RATES_SOURCE = "employment/status/rates/source"
     MERGED_DATA_DESTINATION = "some/destination"
 
@@ -29,11 +30,12 @@ class TestMain:
             self.METADATA_SOURCE,
             self.JOB_ROLE_ESTIMATES_SOURCE,
             self.PREPARED_SLV_DATASET_SOURCE,
+            self.PREPARED_WORKER_SOURCE,
             self.EMPLOYMENT_STATUS_RATES_SOURCE,
             self.MERGED_DATA_DESTINATION,
         )
 
-        assert len(scan_parquet_mock.call_args_list) == 3
+        assert len(scan_parquet_mock.call_args_list) == 4
 
         scan_parquet_mock.assert_any_call(
             source=self.METADATA_SOURCE, selected_columns=job.metadata_columns
@@ -44,6 +46,9 @@ class TestMain:
         )
         scan_parquet_mock.assert_any_call(
             self.PREPARED_SLV_DATASET_SOURCE, selected_columns=job.workplace_columns
+        )
+        scan_parquet_mock.assert_any_call(
+            self.PREPARED_WORKER_SOURCE, selected_columns=job.worker_columns
         )
 
         collapse_job_role_estimates_to_published_labels_mock.assert_called_once()

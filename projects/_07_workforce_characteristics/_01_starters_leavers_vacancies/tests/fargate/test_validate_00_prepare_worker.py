@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from unittest.mock import Mock, call, patch
 
 import polars as pl
@@ -23,7 +24,7 @@ class TestMain:
             {
                 AWKClean.location_id: ["loc1", "loc1", "loc2"],
                 AWKClean.establishment_id: ["1-001", "1-001", "1-002"],
-                AWKClean.ascwds_worker_import_date: ["2026-01-01"] * 3,
+                AWKClean.ascwds_worker_import_date: [date(2026, 1, 1)] * 3,
                 AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
                 * 3,
             }
@@ -46,7 +47,7 @@ class TestMain:
                 call(source="s3://bucket/my/source/"),
                 call(
                     source="s3://bucket/my/compare/",
-                    selected_columns=job.RESHAPED_GROUP_COLUMNS,
+                    selected_columns=job.RAW_RESHAPED_GROUP_COLUMNS,
                 ),
             ]
         )
@@ -89,3 +90,35 @@ class TestMain:
 
         assert row_count_match_entry["values"]["count"] == 2
         assert row_count_match_entry["all_passed"] is True
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_expected_row_count_collapses_raw_roles_sharing_a_published_label(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        # Both roles are unpublished and share a job group, so they collapse to the
+        # same label - should count as one group, not two.
+        compare_df = pl.DataFrame(
+            {
+                AWKClean.location_id: ["loc1", "loc1"],
+                AWKClean.establishment_id: ["1-001", "1-001"],
+                AWKClean.ascwds_worker_import_date: [date(2026, 1, 1)] * 2,
+                AWKClean.main_job_role_clean_labelled: [
+                    MainJobRoleLabels.middle_management,
+                    MainJobRoleLabels.first_line_manager,
+                ],
+            }
+        )
+        mock_read_parquet.side_effect = [self.source_df, compare_df]
+
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        row_count_match_entry = next(
+            item for item in report_json if item["assertion_type"] == "row_count_match"
+        )
+
+        assert row_count_match_entry["values"]["count"] == 1

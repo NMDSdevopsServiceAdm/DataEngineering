@@ -63,6 +63,13 @@ class ReshapeEmploymentStatusDataTestCase:
     expected_data: dict[str, Any]
 
 
+@dataclass
+class CollapseJobRolesToPublishedLabelsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
 # The reshape unconditionally references every one of the 15 published labels' 4
 # metric columns (trusting that the raw ASC-WDS schema always declares them), so
 # every case below carries the full set - `other`'s columns are all-null in the
@@ -288,6 +295,35 @@ class TestPrepareUtilsData:
         _reshape_multi_row_case,
     ]
 
+    collapse_job_roles_to_published_labels_test_cases = [
+        CollapseJobRolesToPublishedLabelsTestCase(
+            id="role_shared_by_both_taxonomies_passes_through_unchanged",
+            input_data={
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
+            },
+            expected_data={
+                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
+                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker],
+            },
+        ),
+        CollapseJobRolesToPublishedLabelsTestCase(
+            id="unpublished_role_is_bucketed_into_its_job_groups_other_label",
+            input_data={
+                AWKClean.main_job_role_clean_labelled: [
+                    MainJobRoleLabels.safeguarding_officer
+                ],
+            },
+            expected_data={
+                AWKClean.main_job_role_clean_labelled: [
+                    MainJobRoleLabels.safeguarding_officer
+                ],
+                SLVCols.published_job_role_label: [
+                    PublishedJobRoleLabels.other_regulated_professions
+                ],
+            },
+        ),
+    ]
+
     aggregate_employment_status_data_test_cases = [
         AggregateEmploymentStatusDataTestCase(
             id="aggregates_multiple_workers_and_drops_worker_level_columns",
@@ -298,8 +334,7 @@ class TestPrepareUtilsData:
                 AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)] * 2,
                 AWKClean.main_job_role_id: [MainJobRoleID.care_worker] * 2,
                 AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 2,
-                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
-                * 2,
+                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status: [EmploymentStatusID.permanent] * 2,
                 AWKClean.employment_status_clean: [EmploymentStatusID.permanent] * 2,
                 AWKClean.employment_status_clean_labelled: [
@@ -311,7 +346,7 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc1"],
                 AWKClean.establishment_id: ["1-001"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
-                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
+                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker],
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ],
@@ -326,8 +361,7 @@ class TestPrepareUtilsData:
                 AWKClean.establishment_id: ["1-002", "1-002"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)] * 2,
                 AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 2,
-                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
-                * 2,
+                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status_clean: [
                     EmploymentStatusID.permanent,
                     EmploymentStatusID.temporary,
@@ -341,8 +375,7 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc2", "loc2"],
                 AWKClean.establishment_id: ["1-002", "1-002"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)] * 2,
-                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
-                * 2,
+                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.temporary,
@@ -358,8 +391,7 @@ class TestPrepareUtilsData:
                 AWKClean.establishment_id: ["1-003", "1-004"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
                 AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 2,
-                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
-                * 2,
+                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status_clean: [EmploymentStatusID.permanent] * 2,
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
@@ -370,8 +402,7 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc3", "loc3"],
                 AWKClean.establishment_id: ["1-003", "1-004"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
-                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
-                * 2,
+                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ]
@@ -388,7 +419,7 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc1"],
                 AWKClean.establishment_id: ["1-001"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
-                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
+                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker],
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ],
@@ -398,7 +429,7 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc1"],
                 AWKClean.establishment_id: ["1-001"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
-                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
+                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker],
                 EMPLSTAT_PERM_COUNT: [3],
                 EMPLSTAT_TEMP_COUNT: [0],
                 EMPLSTAT_BANK_OR_POOL_COUNT: [0],
@@ -412,8 +443,7 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc2", "loc2"],
                 AWKClean.establishment_id: ["1-002", "1-002"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)] * 2,
-                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker]
-                * 2,
+                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.temporary,
@@ -424,7 +454,7 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc2"],
                 AWKClean.establishment_id: ["1-002"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)],
-                AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
+                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker],
                 EMPLSTAT_PERM_COUNT: [2],
                 EMPLSTAT_TEMP_COUNT: [1],
                 EMPLSTAT_BANK_OR_POOL_COUNT: [0],
@@ -438,7 +468,7 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc3", "loc3"],
                 AWKClean.establishment_id: ["1-003", "1-003"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
-                AWKClean.main_job_role_clean_labelled: [
+                SLVCols.published_job_role_label: [
                     MainJobRoleLabels.care_worker,
                     MainJobRoleLabels.registered_nurse,
                 ],
@@ -452,7 +482,7 @@ class TestPrepareUtilsData:
                 AWKClean.location_id: ["loc3", "loc3"],
                 AWKClean.establishment_id: ["1-003", "1-003"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
-                AWKClean.main_job_role_clean_labelled: [
+                SLVCols.published_job_role_label: [
                     MainJobRoleLabels.care_worker,
                     MainJobRoleLabels.registered_nurse,
                 ],
