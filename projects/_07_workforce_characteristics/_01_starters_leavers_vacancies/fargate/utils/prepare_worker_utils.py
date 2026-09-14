@@ -28,9 +28,8 @@ RESHAPED_GROUP_COLUMNS = [
 ]
 
 # RESHAPED_GROUP_COLUMNS with the raw job role label instead of the published one -
-# the cleaned ASC-WDS worker data (this stage's input, and validate_00_prepare_worker's
-# comparison dataset) only has the raw label; published_job_role_label is derived from
-# it by collapse_job_roles_to_published_labels.
+# the cleaned ASC-WDS worker data only has the raw label; published_job_role_label is
+# derived from it by collapse_job_roles_to_published_labels.
 RAW_RESHAPED_GROUP_COLUMNS = [
     column
     for column in RESHAPED_GROUP_COLUMNS
