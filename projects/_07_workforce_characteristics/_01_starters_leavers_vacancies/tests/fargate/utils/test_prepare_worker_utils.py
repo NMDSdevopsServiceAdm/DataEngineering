@@ -7,6 +7,9 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._07_workforce_characteristics.unittest_data.polars_slv_test_data import (
     TestPrepareUtilsData as Data,
 )
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.slv_job_role_columns import (
     SLVEmploymentStatusColumns as SLVEmpStatus,
 )
@@ -88,6 +91,9 @@ class TestReshapeEmploymentStatusData:
                 for column in emplstat_count_cols
                 if column in case.expected_data
             },
+        ).with_columns(
+            pl.col(AWKClean.location_id).cast(CatColType.LocationCatType),
+            pl.col(AWKClean.establishment_id).cast(CatColType.EstablishmentCatType),
         )
 
         returned_lf = job.reshape_employment_status_data(test_lf)

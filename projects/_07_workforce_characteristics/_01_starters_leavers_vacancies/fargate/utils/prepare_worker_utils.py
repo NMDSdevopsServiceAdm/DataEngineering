@@ -106,12 +106,23 @@ def reshape_employment_status_data(
         pl.LazyFrame: one row per group in RESHAPED_GROUP_COLUMNS, with an
             emplstat_<label>_count column per employment status label in
             EMPLOYMENT_STATUS_LABEL_TO_COLUMN. Groups with no workers of a
-            given status are 0 in that column.
+            given status are 0 in that column. location_id and
+            establishment_id are cast to the same Categorical types
+            IndCQC.location_id/establishment_id use, so this output can be
+            joined against job role estimates data in the merge step without
+            a dtype mismatch.
     """
-    return employment_status_summary_lf.pivot(
-        on=AWKClean.employment_status_clean_labelled,
-        on_columns=list(EMPLOYMENT_STATUS_LABEL_TO_COLUMN.keys()),
-        index=RESHAPED_GROUP_COLUMNS,
-        values=SLVEmpStatus.employment_status_count,
-        aggregate_function="sum",
-    ).rename(EMPLOYMENT_STATUS_LABEL_TO_COLUMN)
+    return (
+        employment_status_summary_lf.pivot(
+            on=AWKClean.employment_status_clean_labelled,
+            on_columns=list(EMPLOYMENT_STATUS_LABEL_TO_COLUMN.keys()),
+            index=RESHAPED_GROUP_COLUMNS,
+            values=SLVEmpStatus.employment_status_count,
+            aggregate_function="sum",
+        )
+        .rename(EMPLOYMENT_STATUS_LABEL_TO_COLUMN)
+        .with_columns(
+            pl.col(AWKClean.location_id).cast(CatColType.LocationCatType),
+            pl.col(AWKClean.establishment_id).cast(CatColType.EstablishmentCatType),
+        )
+    )
