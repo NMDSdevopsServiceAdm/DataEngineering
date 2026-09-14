@@ -43,10 +43,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     PrimaryServiceRateOfChangeColumns as ROC_TempCol,
 )
-from utils.column_values.categorical_column_values import (
-    JobGroupLabels,
-    JobRoleFilteringRule,
-)
+from utils.column_values.categorical_column_values import JobGroupLabels
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
 )
@@ -265,32 +262,6 @@ class ValidateModel01FeaturesSchemas:
             ("feature 1", pl.String()),
             ("feature 2", pl.String()),
             (IndCQC.imputed_filled_post_model, pl.Float32),
-        ]
-    )
-
-
-@dataclass
-class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
-    estimates_df_before_join_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.establishment_id, pl.String()),
-            (IndCQC.ascwds_workplace_import_date, pl.Date()),
-        ]
-    )
-    worker_df_before_join_schema = pl.Schema(
-        [
-            (IndCQC.establishment_id, pl.String()),
-            (IndCQC.ascwds_worker_import_date, pl.Date()),
-            (IndCQC.main_job_role_clean_labelled, pl.String()),
-            (IndCQC.ascwds_job_role_counts, pl.Int64()),
-        ]
-    )
-    expected_join_worker_to_estimates_dataframe_schema = pl.Schema(
-        list(estimates_df_before_join_schema.items())
-        + [
-            (IndCQC.main_job_role_clean_labelled, pl.String()),
-            (IndCQC.ascwds_job_role_counts, pl.Int64()),
         ]
     )
 
@@ -740,22 +711,6 @@ class CleanIndCQCSchema:
         ]
     )
 
-    repeated_value_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.provider_id, pl.String()),
-            ("integer_column", pl.Int64()),
-            (IndCQC.cqc_location_import_date, pl.Date()),
-        ]
-    )
-
-    expected_without_repeated_values_schema = pl.Schema(
-        [
-            *repeated_value_schema.items(),
-            ("integer_column_deduplicated", pl.Int64()),
-        ]
-    )
-
     calculate_care_home_status_count_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
@@ -766,24 +721,6 @@ class CleanIndCQCSchema:
         [
             *calculate_care_home_status_count_schema.items(),
             (IndCQC.care_home_status_count, pl.UInt32()),
-        ]
-    )
-    merged_schema_for_cleaning_job = pl.Schema(
-        [
-            (CQCLClean.location_id, pl.String()),
-            (CQCLClean.cqc_location_import_date, pl.Date()),
-            (ONSClean.current_region, pl.String()),
-            (CQCLClean.current_cssr, pl.String()),
-            (CQCLClean.current_rural_urban_ind_11, pl.String()),
-            (CQCLClean.care_home, pl.String()),
-            (CQCLClean.number_of_beds, pl.Int64()),
-            (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
-            (AWPClean.total_staff_bounded, pl.Int64()),
-            (AWPClean.worker_records_bounded, pl.Int64()),
-            (CQCLClean.primary_service_type, pl.String()),
-            (IndCQC.name, pl.String()),
-            (IndCQC.postcode, pl.String()),
-            (IndCQC.imputed_registration_date, pl.Date()),
         ]
     )
 
@@ -1717,7 +1654,6 @@ class ModelRateOfChangeSchemas:
 @dataclass
 class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
     Cols = TempCols()
-    JRFR = JobRoleFilteringRule(IndCQC.job_role_filtering_rule)
     test_filter_location_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,

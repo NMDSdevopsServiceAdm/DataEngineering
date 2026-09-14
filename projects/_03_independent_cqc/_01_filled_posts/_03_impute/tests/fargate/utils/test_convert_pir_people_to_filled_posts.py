@@ -5,9 +5,6 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._01_filled_posts._03_impute.fargate.utils.convert_pir_people_to_filled_posts as job
-from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_test_file_data import (
-    ConvertPirPeopleToFilledPostsData as Data,
-)
 from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_test_file_schemas import (
     ConvertPirPeopleToFilledPostsSchema as Schemas,
 )
