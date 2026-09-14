@@ -1,11 +1,14 @@
 import polars as pl
 
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.slv_job_role_columns import (
     SLVEmploymentStatusColumns as SLVEmpStatus,
 )
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerCleanedCategoricalValues as CatVals,
 )
@@ -14,7 +17,7 @@ GROUP_COLUMNS = [
     AWKClean.location_id,
     AWKClean.establishment_id,
     AWKClean.ascwds_worker_import_date,
-    AWKClean.main_job_role_clean_labelled,
+    SLVCols.published_job_role_label,
     AWKClean.employment_status_clean_labelled,
 ]
 
@@ -30,6 +33,32 @@ EMPLOYMENT_STATUS_LABEL_TO_COLUMN = {
     label: f"emplstat_{label}_count"
     for label in CatVals.employment_status_labels_excl_student_column_values.categorical_values
 }
+
+
+def collapse_job_roles_to_published_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds a published_job_role_label column derived from the raw job role.
+
+    Reuses merge_utils.JOB_ROLE_LABEL_TO_PUBLISHED_LABEL - the same label
+    resolution merge_utils.collapse_job_role_estimates_to_published_labels
+    applies to job role estimates - since worker data shares the same raw
+    ASC-WDS job role taxonomy. Must run before aggregate_employment_status_data,
+    which groups by this new column instead of the raw
+    main_job_role_clean_labelled.
+
+    Args:
+        worker_lf (pl.LazyFrame): cleaned ASC-WDS worker LazyFrame.
+
+    Returns:
+        pl.LazyFrame: input LazyFrame with an added published_job_role_label
+            column.
+    """
+    return worker_lf.with_columns(
+        pl.col(AWKClean.main_job_role_clean_labelled)
+        .cast(pl.String)
+        .replace_strict(mUtils.JOB_ROLE_LABEL_TO_PUBLISHED_LABEL)
+        .cast(CatColType.PublishedJobRoleLabelCatType)
+        .alias(SLVCols.published_job_role_label)
+    )
 
 
 def aggregate_employment_status_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:

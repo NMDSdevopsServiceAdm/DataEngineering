@@ -14,6 +14,7 @@ def main(
         prepared_data_destination (str): destination for output
     """
     worker_lf = utils.scan_parquet(cleaned_ascwds_worker_source)
+    worker_lf = pWorkerUtils.collapse_job_roles_to_published_labels(worker_lf)
 
     employment_status_summary_lf = pWorkerUtils.aggregate_employment_status_data(
         worker_lf

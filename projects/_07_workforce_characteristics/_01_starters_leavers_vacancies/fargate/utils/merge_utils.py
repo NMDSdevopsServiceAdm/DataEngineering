@@ -17,6 +17,9 @@ from utils.column_values.categorical_columns_by_dataset import (
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
 
 # Roles that exist under the same name in both job-role taxonomies are
 # collated into this set object.
@@ -25,6 +28,29 @@ ROLES_SHARED_BY_BOTH_JOB_ROLE_TAXONOMIES = set(
 ) & set(
     SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
 )
+
+JOB_GROUP_TO_OTHER_PUBLISHED_LABEL: dict[str, str] = {
+    JobGroupLabels.managers: PublishedJobRoleLabels.other_managers,
+    JobGroupLabels.regulated_professions: PublishedJobRoleLabels.other_regulated_professions,
+    JobGroupLabels.direct_care: PublishedJobRoleLabels.other_direct_care,
+    JobGroupLabels.other: PublishedJobRoleLabels.other,
+}
+
+# Same label -> published-label associations as the when/otherwise chain in
+# collapse_job_role_estimates_to_published_labels below, expressed as a lookup dict so
+# other datasets sharing this raw taxonomy (e.g. worker data, which has no
+# main_job_group_labelled column to branch on) can resolve a published label directly
+# from the raw one via replace_strict.
+JOB_ROLE_LABEL_TO_PUBLISHED_LABEL: dict[str, str] = {
+    label: (
+        label
+        if label in ROLES_SHARED_BY_BOTH_JOB_ROLE_TAXONOMIES
+        else JOB_GROUP_TO_OTHER_PUBLISHED_LABEL[
+            AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict[label]
+        ]
+    )
+    for label in CatVals.main_job_role_labels_column_values.categorical_values
+}
 
 CSV_SERVICE_TO_PRIMARY_SERVICE_TYPE: dict[str, str] = {
     "CQC Care only home": PrimaryServiceType.care_home_only,

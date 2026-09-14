@@ -12,10 +12,12 @@ class TestPrepareWorker:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pWorkerUtils.reshape_employment_status_data")
     @patch(f"{PATCH_PATH}.pWorkerUtils.aggregate_employment_status_data")
+    @patch(f"{PATCH_PATH}.pWorkerUtils.collapse_job_roles_to_published_labels")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
+        collapse_job_roles_to_published_labels_mock: Mock,
         aggregate_employment_status_data_mock: Mock,
         reshape_employment_status_data_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -28,7 +30,10 @@ class TestPrepareWorker:
         scan_parquet_mock.assert_called_once_with(self.CLEANED_ASCWDS_WORKER_SOURCE)
         worker_lf = scan_parquet_mock.return_value
 
-        aggregate_employment_status_data_mock.assert_called_once_with(worker_lf)
+        collapse_job_roles_to_published_labels_mock.assert_called_once_with(worker_lf)
+        collapsed_lf = collapse_job_roles_to_published_labels_mock.return_value
+
+        aggregate_employment_status_data_mock.assert_called_once_with(collapsed_lf)
         aggregated_lf = aggregate_employment_status_data_mock.return_value
 
         reshape_employment_status_data_mock.assert_called_once_with(aggregated_lf)

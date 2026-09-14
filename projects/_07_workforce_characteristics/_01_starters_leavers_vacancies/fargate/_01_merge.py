@@ -1,7 +1,11 @@
 import polars as pl
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_worker_utils as pWorkerUtils
 from polars_utils import utils
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -19,6 +23,14 @@ workplace_columns = [
     SLVCols.starters,
     SLVCols.leavers,
     SLVCols.vacancies,
+]
+
+worker_columns = [
+    AWKClean.location_id,
+    AWKClean.establishment_id,
+    AWKClean.ascwds_worker_import_date,
+    SLVCols.published_job_role_label,
+    *pWorkerUtils.EMPLOYMENT_STATUS_LABEL_TO_COLUMN.values(),
 ]
 
 metadata_columns = [
@@ -57,6 +69,7 @@ def main(
     metadata_source: str,
     job_role_estimates_source: str,
     prepared_slv_dataset_source: str,
+    prepared_worker_source: str,
     employment_status_rates_source: str,
     merged_data_destination: str,
 ) -> None:
@@ -67,6 +80,8 @@ def main(
         metadata_source (str): path to the estimates ind cqc filled posts data
         job_role_estimates_source (str): path to the job role estimates data
         prepared_slv_dataset_source (str): path to the cleaned ascwds workplace data
+        prepared_worker_source (str): path to the prepared ascwds worker employment
+            status data
         employment_status_rates_source (str): path to the employment status rates csv
         merged_data_destination (str): destination for merged output
     """
@@ -122,6 +137,27 @@ def main(
         how="left",
     )
 
+    worker_lf = utils.scan_parquet(
+        prepared_worker_source, selected_columns=worker_columns
+    )
+
+    job_role_estimates_lf = job_role_estimates_lf.join(
+        worker_lf,
+        left_on=[
+            IndCQC.location_id,
+            IndCQC.establishment_id,
+            IndCQC.ascwds_workplace_import_date,
+            SLVCols.published_job_role_label,
+        ],
+        right_on=[
+            AWKClean.location_id,
+            AWKClean.establishment_id,
+            AWKClean.ascwds_worker_import_date,
+            SLVCols.published_job_role_label,
+        ],
+        how="left",
+    )
+
     job_role_estimates_lf = mUtils.apply_employment_status_magic_numbers(
         job_role_estimates_lf, employment_status_rates_lf
     )
@@ -147,6 +183,10 @@ if __name__ == "__main__":
             "Source s3 directory for cleaned ascwds workplace data",
         ),
         (
+            "--prepared_worker_source",
+            "Source s3 directory for prepared ascwds worker employment status data",
+        ),
+        (
             "--employment_status_rates_source",
             "Source s3 directory for employment status rates data",
         ),
@@ -159,6 +199,7 @@ if __name__ == "__main__":
         metadata_source=args.metadata_source,
         job_role_estimates_source=args.job_role_estimates_source,
         prepared_slv_dataset_source=args.prepared_slv_dataset_source,
+        prepared_worker_source=args.prepared_worker_source,
         employment_status_rates_source=args.employment_status_rates_source,
         merged_data_destination=args.merged_data_destination,
     )

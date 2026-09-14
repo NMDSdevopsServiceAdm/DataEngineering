@@ -41,6 +41,24 @@ class TestRolesSharedByBothJobRoleTaxonomies:
         )
 
 
+class TestJobRoleLabelToPublishedLabel:
+    all_job_roles = set(CatVals.main_job_role_labels_column_values.categorical_values)
+    published_roles = set(
+        SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+    )
+
+    def test_covers_every_raw_job_role(self):
+        assert set(job.JOB_ROLE_LABEL_TO_PUBLISHED_LABEL.keys()) == self.all_job_roles
+
+    def test_every_mapped_value_is_a_published_label(self):
+        mapped_values = set(job.JOB_ROLE_LABEL_TO_PUBLISHED_LABEL.values())
+        assert mapped_values <= self.published_roles
+
+    def test_shared_roles_map_to_themselves(self):
+        for role in job.ROLES_SHARED_BY_BOTH_JOB_ROLE_TAXONOMIES:
+            assert job.JOB_ROLE_LABEL_TO_PUBLISHED_LABEL[role] == role
+
+
 class TestCollapseJobRoleEstimatesToPublishedLabels:
     @pytest.mark.parametrize(
         "case",
