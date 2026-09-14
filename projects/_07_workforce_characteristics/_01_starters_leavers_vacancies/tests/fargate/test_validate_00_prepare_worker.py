@@ -97,9 +97,8 @@ class TestMain:
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
-        # middle_management and first_line_manager are both unpublished roles in the
-        # same job group, so they collapse to the same "other_managers" published
-        # label and the 2 rows below should count as a single group.
+        # Both roles are unpublished and share a job group, so they collapse to the
+        # same label - should count as one group, not two.
         compare_df = pl.DataFrame(
             {
                 AWKClean.location_id: ["loc1", "loc1"],

@@ -27,9 +27,8 @@ RESHAPED_GROUP_COLUMNS = [
     if column != AWKClean.employment_status_clean_labelled
 ]
 
-# RESHAPED_GROUP_COLUMNS with the raw job role label instead of the published one -
-# the cleaned ASC-WDS worker data only has the raw label; published_job_role_label is
-# derived from it by collapse_job_roles_to_published_labels.
+# Same as RESHAPED_GROUP_COLUMNS, but with the raw label - cleaned worker data doesn't
+# have published_job_role_label yet.
 RAW_RESHAPED_GROUP_COLUMNS = [
     column
     for column in RESHAPED_GROUP_COLUMNS

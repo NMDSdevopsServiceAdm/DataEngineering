@@ -36,11 +36,8 @@ JOB_GROUP_TO_OTHER_PUBLISHED_LABEL: dict[str, str] = {
     JobGroupLabels.other: PublishedJobRoleLabels.other,
 }
 
-# Same label -> published-label associations as the when/otherwise chain in
-# collapse_job_role_estimates_to_published_labels below, expressed as a lookup dict so
-# other datasets sharing this raw taxonomy (e.g. worker data, which has no
-# main_job_group_labelled column to branch on) can resolve a published label directly
-# from the raw one via replace_strict.
+# Same mapping as the when/otherwise below, as a dict - lets worker data (no
+# main_job_group_labelled column) resolve a published label via replace_strict too.
 JOB_ROLE_LABEL_TO_PUBLISHED_LABEL: dict[str, str] = {
     label: (
         label
