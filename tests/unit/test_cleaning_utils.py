@@ -15,9 +15,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    AscwdsWorkplaceColumns as AWP,
-)
 
 gender_labels: str = "gender_labels"
 nationality_labels: str = "nationality_labels"
@@ -445,40 +442,6 @@ class TestCleaningUtilsScale(SparkBaseTest):
 
         self.assertEqual(returned_data, expected_data)
 
-    def test_set_bounds_for_columns_raises_error_if_columns_dont_match_names(self):
-        with self.assertRaises(Exception) as context:
-            (
-                job.set_bounds_for_columns(
-                    self.test_scale_df,
-                    ["int", "float"],
-                    ["bound_int", "bound_float", "another_column"],
-                    lower_limit=1,
-                    upper_limit=100,
-                ),
-            )
-
-        self.assertTrue(
-            "Column list size (2) must match new column list size (3)"
-            in str(context.exception),
-        )
-
-    def test_set_bounds_for_columns_set_bounds_for_all_columns(self):
-        returned_df = job.set_bounds_for_columns(
-            self.test_scale_df,
-            ["int", "float"],
-            ["bound_int", "bound_float"],
-            lower_limit=1,
-            upper_limit=100,
-        )
-
-        returned_data = returned_df.sort("int").collect()
-        expected_df = self.spark.createDataFrame(
-            Data.expected_scale_data, Schemas.expected_scale_schema
-        )
-        expected_data = expected_df.sort("int").collect()
-
-        self.assertEqual(returned_data, expected_data)
-
 
 class TestCleaningUtilsColumnToDate(SparkBaseTest):
     def setUp(self):
@@ -715,46 +678,6 @@ class ReduceDatasetToEarliestFilePerMonthTests(SparkBaseTest):
         )
 
 
-class CastToIntTests(SparkBaseTest):
-    def setUp(self) -> None:
-
-        self.filled_posts_columns = [AWP.total_staff, AWP.worker_records]
-
-    def test_cast_to_int_returns_strings_formatted_as_ints_to_ints(self):
-        cast_to_int_df = self.spark.createDataFrame(
-            Data.cast_to_int_rows, Schemas.cast_to_int_schema
-        )
-        cast_to_int_expected_df = self.spark.createDataFrame(
-            Data.cast_to_int_expected_rows, Schemas.cast_to_int_expected_schema
-        )
-
-        returned_df = job.cast_to_int(cast_to_int_df, self.filled_posts_columns)
-
-        returned_data = returned_df.sort(AWP.location_id).collect()
-        expected_data = cast_to_int_expected_df.sort(AWP.location_id).collect()
-
-        self.assertEqual(expected_data, returned_data)
-
-    def test_cast_to_int_returns_strings_not_formatted_as_ints_as_none(self):
-        cast_to_int_with_errors_df = self.spark.createDataFrame(
-            Data.cast_to_int_errors_rows, Schemas.cast_to_int_schema
-        )
-        cast_to_int_with_errors_expected_df = self.spark.createDataFrame(
-            Data.cast_to_int_errors_expected_rows, Schemas.cast_to_int_expected_schema
-        )
-
-        returned_df = job.cast_to_int(
-            cast_to_int_with_errors_df, self.filled_posts_columns
-        )
-
-        returned_data = returned_df.sort(AWP.location_id).collect()
-        expected_data = cast_to_int_with_errors_expected_df.sort(
-            AWP.location_id
-        ).collect()
-
-        self.assertEqual(expected_data, returned_data)
-
-
 class CalculateFilledPostsPerBedRatioTests(SparkBaseTest):
     def test_calculate_filled_posts_per_bed_ratio(self):
         test_df = self.spark.createDataFrame(
@@ -767,24 +690,6 @@ class CalculateFilledPostsPerBedRatioTests(SparkBaseTest):
         expected_df = self.spark.createDataFrame(
             Data.expected_filled_posts_per_bed_ratio_rows,
             Schemas.expected_filled_posts_per_bed_ratio_schema,
-        )
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
-
-
-class CalculateFilledPostsFromBedsAndRatioTests(SparkBaseTest):
-    def test_calculate_filled_posts_from_beds_and_ratio(self):
-        test_df = self.spark.createDataFrame(
-            Data.filled_posts_from_beds_and_ratio_rows,
-            Schemas.filled_posts_from_beds_and_ratio_schema,
-        )
-        returned_df = job.calculate_filled_posts_from_beds_and_ratio(
-            test_df, IndCQC.filled_posts_per_bed_ratio, IndCQC.care_home_model
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_filled_posts_from_beds_and_ratio_rows,
-            Schemas.expected_filled_posts_from_beds_and_ratio_schema,
         )
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()

@@ -1577,15 +1577,6 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
         ("3", CareHome.care_home, 75.0, 15, 5.0, 1.0, 5.0),
     ]
 
-    set_minimum_permitted_ratio_rows = [
-        ("1", 0.05),
-        ("2", 2.55),
-    ]
-    expected_set_minimum_permitted_ratio_rows = [
-        ("1", 0.75),
-        ("2", 2.55),
-    ]
-
     combine_dataframes_care_home_rows = [
         ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 1.0, 1.0, None, 0.04, AscwdsFilteringRule.populated, 10.0),
         ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 2.0, 2.0, 2.0, 0.08, AscwdsFilteringRule.populated, 20.0),

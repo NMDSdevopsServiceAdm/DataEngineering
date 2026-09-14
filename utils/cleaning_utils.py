@@ -3,7 +3,7 @@ from typing import List, Optional, Union
 from pyspark.ml.feature import Bucketizer
 from pyspark.sql import Column, DataFrame, Window
 from pyspark.sql import functions as F
-from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+from pyspark.sql.types import StringType, StructField, StructType
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -147,24 +147,6 @@ def set_column_bounds(
     return df
 
 
-def set_bounds_for_columns(
-    df: DataFrame,
-    col_names: list,
-    new_col_names: list,
-    lower_limit=None,
-    upper_limit=None,
-):
-    if len(col_names) != len(new_col_names):
-        raise Exception(
-            f"Column list size ({len(col_names)}) must match new column list size ({len(new_col_names)})"
-        )
-
-    for col, new_col in zip(col_names, new_col_names):
-        df = set_column_bounds(df, col, new_col, lower_limit, upper_limit)
-
-    return df
-
-
 # converted to polars -> polars_utils\cleaning_utils.column_to_date
 def column_to_date(
     df: DataFrame,
@@ -288,12 +270,6 @@ def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
     return df
 
 
-def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
-    for column in column_names:
-        df = df.withColumn(column, df[column].cast(IntegerType()))
-    return df
-
-
 # converted to polars -> polars_utils.cleaning_utils.calculate_filled_posts_per_bed_ratio
 def calculate_filled_posts_per_bed_ratio(
     input_df: DataFrame, filled_posts_column: str, new_column_name: str
@@ -318,28 +294,6 @@ def calculate_filled_posts_per_bed_ratio(
     )
 
     return input_df
-
-
-# not converting this function to polars, use '.mul()' instead
-def calculate_filled_posts_from_beds_and_ratio(
-    df: DataFrame, ratio_column: str, new_column_name: str
-) -> DataFrame:
-    """
-    Calculate a column with the number of filled posts, based on the number of beds and the given beds ratio column.
-
-    Args:
-        df(DataFrame): A dataframe with number_of_beds and a beds ratio column.
-        ratio_column(str): The name of the beds ratio column to use.
-        new_column_name(str): The name of the column to fill.
-
-    Returns:
-        DataFrame: A dataframe with the new calculated filled posts column.
-    """
-    df = df.withColumn(
-        new_column_name,
-        F.col(ratio_column) * F.col(IndCQC.number_of_beds),
-    )
-    return df
 
 
 def remove_duplicates_based_on_column_order(

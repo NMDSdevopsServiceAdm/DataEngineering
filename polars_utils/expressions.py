@@ -5,33 +5,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome, Dormancy
 
 
-def has_value(df: pl.DataFrame, column: str, partition_by: str) -> pl.Expr:
-    """Identifies if a column has a non-null value for each partition (if provided) or the entire
-    Series otherwise. For Series containing Lists of values, a non-zero-sized array is treated as
-    a valid value.
-
-    Args:
-        df (pl.DataFrame): the DataFrame to analyse
-        column (str): the column to search in
-        partition_by (str): the column to partition by
-
-    Returns:
-        pl.Expr: a Polars expression which can be used to construct a DataFrame or result
-    """
-    dtype = df.get_column(column).dtype
-
-    if dtype.is_numeric():
-        # exists a non-zero value within the partition
-        return pl.col(column).cast(pl.Boolean).any().over(partition_by)
-
-    if df.schema[column] not in [pl.Array, pl.List]:
-        # exists a non-null value within the partition
-        return pl.col(column).str.len_chars().cast(pl.Boolean).any().over(partition_by)
-
-    # exists a non-zero sized array within the partition
-    return pl.col([column]).list.len().max().cast(pl.Boolean).over(partition_by)
-
-
 def percentage_share(column: str | pl.Expr) -> pl.Expr:
     """Calculate the percentage share of a column across all values.
 

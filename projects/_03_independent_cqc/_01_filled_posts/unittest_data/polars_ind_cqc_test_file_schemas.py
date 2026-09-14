@@ -1180,13 +1180,6 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
         ]
     )
 
-    set_minimum_permitted_ratio_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
-        ]
-    )
-
     winsorize_outliers_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
