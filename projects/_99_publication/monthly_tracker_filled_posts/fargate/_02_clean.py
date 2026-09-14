@@ -44,7 +44,11 @@ def main(
         ).alias(Pub.ct_total_employed_imputed)
     )
 
-    long_term_from_date = date(fy_year - 5, 7, 1)
+    # 1 July 2021 is the earliest date this CT data exists, so long_term_from_date
+    # stays pinned there rather than rolling forward every year - unless/until the
+    # retention cutoff_date itself moves past it, at which point that takes over.
+    earliest_ct_data_date = date(2021, 7, 1)
+    long_term_from_date = max(earliest_ct_data_date, cutoff_date)
     medium_term_from_date = date(fy_year - 1, 4, 1)
     short_term_from_date = date(fy_year, 4, 1)
     cleaned_lf = cleaned_lf.with_columns(
