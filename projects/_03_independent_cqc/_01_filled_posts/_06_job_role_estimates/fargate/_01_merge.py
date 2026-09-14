@@ -47,6 +47,7 @@ metadata_columns = {
     IndCQC.posts_rolling_average_model: pl.Float32,
     IndCQC.ct_care_home_total_employed_imputed: pl.Float32,
     IndCQC.ct_non_res_care_workers_employed_imputed: pl.Float32,
+    IndCQC.care_home_status_count: pl.Int16,
 }
 ascwds_columns_to_import = {
     IndCQC.ascwds_worker_import_date: pl.Date,
