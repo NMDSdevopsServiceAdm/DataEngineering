@@ -221,6 +221,29 @@ add_dispersion_filter_test_cases = [
         ],
     ),
     AddDispersionFilterTestCase(
+        # 1-006 has only one import date in the window, so its trivial zero
+        # dispersion must not be treated as evidence of stability - the flat
+        # population here means it would otherwise land exactly on the
+        # boundary and pass.
+        id="false_for_a_location_with_only_one_import_date_in_the_window",
+        column_names=CT_EMPLOYED_COLUMNS,
+        from_date=date(2021, 7, 1),
+        column_alias=Pub.ct_dispersion_filter_long_term,
+        expected_data=[
+            ("1-001", date(2021, 7, 1), 100.0, None, True),
+            ("1-001", date(2022, 7, 1), 100.0, None, True),
+            ("1-002", date(2021, 7, 1), 100.0, None, True),
+            ("1-002", date(2022, 7, 1), 100.0, None, True),
+            ("1-003", date(2021, 7, 1), 100.0, None, True),
+            ("1-003", date(2022, 7, 1), 100.0, None, True),
+            ("1-004", date(2021, 7, 1), 100.0, None, True),
+            ("1-004", date(2022, 7, 1), 100.0, None, True),
+            ("1-005", date(2021, 7, 1), 100.0, None, True),
+            ("1-005", date(2022, 7, 1), 100.0, None, True),
+            ("1-006", date(2021, 7, 1), 50.0, None, False),
+        ],
+    ),
+    AddDispersionFilterTestCase(
         # A zero mean gives an undefined dispersion, which must not propagate
         # into the boundaries and fail every other location.
         id="false_for_a_location_reporting_zero_at_every_import_date",

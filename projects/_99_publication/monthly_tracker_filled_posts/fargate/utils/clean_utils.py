@@ -125,7 +125,11 @@ def _dispersion_since_date(column_name: str, from_date: date) -> pl.Expr:
     Deduplicates to one value per import date before aggregating, since a
     location has one row per job role per import date repeating the same
     location-level capacity tracker value. Null where the location has no
-    values in the window, or where every value is zero.
+    values in the window, where every value is zero, or where the location
+    has fewer than two distinct import dates with data in the window - a
+    single observation always has a dispersion of exactly zero, which would
+    silently collapse the national mean and standard deviation used as the
+    boundary rather than being excluded like any other undefined case.
 
     Args:
         column_name (str): the column to measure dispersion on.
@@ -134,23 +138,28 @@ def _dispersion_since_date(column_name: str, from_date: date) -> pl.Expr:
     Returns:
         pl.Expr: float expression, constant across all rows of a location.
     """
+    in_window_with_data = (
+        pl.col(IndCQC.cqc_location_import_date) >= from_date
+    ) & pl.col(column_name).is_not_null()
+
     values_per_import_date = (
         pl.struct(IndCQC.cqc_location_import_date, column_name)
-        .filter(
-            (pl.col(IndCQC.cqc_location_import_date) >= from_date)
-            & pl.col(column_name).is_not_null()
-        )
+        .filter(in_window_with_data)
         .unique()
         .struct.field(column_name)
     )
-    return (
-        (
-            (values_per_import_date.max() - values_per_import_date.min())
-            / values_per_import_date.mean()
-        )
+    dates_with_data = (
+        pl.col(IndCQC.cqc_location_import_date)
+        .filter(in_window_with_data)
+        .n_unique()
         .over(IndCQC.location_id)
-        .fill_nan(None)
     )
+    dispersion = (
+        (values_per_import_date.max() - values_per_import_date.min())
+        / values_per_import_date.mean()
+    ).over(IndCQC.location_id)
+
+    return pl.when(dates_with_data >= 2).then(dispersion).otherwise(None).fill_nan(None)
 
 
 def _within_dispersion_boundaries(dispersion_column: str) -> pl.Expr:
