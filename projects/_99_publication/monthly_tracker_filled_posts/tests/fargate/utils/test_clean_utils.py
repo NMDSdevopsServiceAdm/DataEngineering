@@ -42,9 +42,34 @@ class TestHasContinuousDataSinceDate:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestAddCtFilterDispersionFilter:
-    def test_identifies_locations_within_ct_posts_dispersion_boundaries(self):
-        pass
+class TestAddDispersionFilter:
+    dispersion_filter_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.ct_care_home_total_employed_imputed, pl.Float32()),
+            (IndCQC.ct_non_res_care_workers_employed_imputed, pl.Float32()),
+        ]
+    )
+
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.add_dispersion_filter_test_cases],
+    )
+    def test_identifies_locations_within_ct_posts_dispersion_boundaries(self, case):
+        expected_schema = pl.Schema(
+            list(self.dispersion_filter_schema.items())
+            + [(case.column_alias, pl.Boolean())]
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+
+        test_lf = expected_lf.drop(case.column_alias)
+
+        returned_lf = job.add_dispersion_filter(
+            test_lf, case.column_names, case.from_date, case.column_alias
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class TestAggregateToPublicationRows:

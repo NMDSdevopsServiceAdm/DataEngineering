@@ -16,6 +16,7 @@ TEST_DESTINATION = "some/other/directory"
 
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
     @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
@@ -26,6 +27,7 @@ class TestMain:
         date_mock: Mock,
         reduced_data_filter_expr_mock: Mock,
         has_continuous_data_since_date_mock: Mock,
+        add_dispersion_filter_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
@@ -43,6 +45,11 @@ class TestMain:
         has_continuous_data_since_date_mock.side_effect = (
             lambda column_name, from_date, column_alias: pl.lit(True).alias(
                 column_alias
+            )
+        )
+        add_dispersion_filter_mock.side_effect = (
+            lambda lazy_df, column_names, from_date, column_alias: (
+                lazy_df.with_columns(pl.lit(True).alias(column_alias))
             )
         )
 
@@ -74,6 +81,33 @@ class TestMain:
             ]
         )
 
+        ct_employed_columns = [
+            IndCQC.ct_care_home_total_employed_imputed,
+            IndCQC.ct_non_res_care_workers_employed_imputed,
+        ]
+        assert add_dispersion_filter_mock.call_count == 3
+        for expected_call, mock_call in zip(
+            [
+                (
+                    ct_employed_columns,
+                    date(2021, 7, 1),
+                    Pub.ct_dispersion_filter_long_term,
+                ),
+                (
+                    ct_employed_columns,
+                    date(2025, 4, 1),
+                    Pub.ct_dispersion_filter_medium_term,
+                ),
+                (
+                    ct_employed_columns,
+                    date(2026, 4, 1),
+                    Pub.ct_dispersion_filter_short_term,
+                ),
+            ],
+            add_dispersion_filter_mock.call_args_list,
+        ):
+            assert mock_call.args[1:] == expected_call
+
         sink_to_parquet_mock.assert_called_once()
         sink_call_kwargs = sink_to_parquet_mock.call_args.kwargs
         assert sink_call_kwargs["output_path"] == TEST_DESTINATION
@@ -89,6 +123,9 @@ class TestMain:
                 Pub.ct_has_data_long_term: [True, True],
                 Pub.ct_has_data_medium_term: [True, True],
                 Pub.ct_has_data_short_term: [True, True],
+                Pub.ct_dispersion_filter_long_term: [True, True],
+                Pub.ct_dispersion_filter_medium_term: [True, True],
+                Pub.ct_dispersion_filter_short_term: [True, True],
             }
         )
         assert_frame_equal(
@@ -96,6 +133,7 @@ class TestMain:
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
     @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
@@ -106,6 +144,7 @@ class TestMain:
         date_mock: Mock,
         reduced_data_filter_expr_mock: Mock,
         has_continuous_data_since_date_mock: Mock,
+        add_dispersion_filter_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
@@ -121,6 +160,11 @@ class TestMain:
         has_continuous_data_since_date_mock.side_effect = (
             lambda column_name, from_date, column_alias: pl.lit(True).alias(
                 column_alias
+            )
+        )
+        add_dispersion_filter_mock.side_effect = (
+            lambda lazy_df, column_names, from_date, column_alias: (
+                lazy_df.with_columns(pl.lit(True).alias(column_alias))
             )
         )
 

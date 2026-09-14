@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added has_continuous_data_since_date to publication cleaning utils. It flags locations with capacity tracker data as either a care home or non-res at all periods from a given date onwards. The two capacity tracker columns are coalesced then checked for completeness.
+- Added a capacity tracker dispersion filter to publication cleaning utils. It flags locations whose capacity tracker employee numbers swing more than twice the national average swing over a given period, so unusually volatile locations can be excluded. Care home and non-residential locations are each compared only against locations of their own type, and locations with no capacity tracker data in the period are excluded too.
 
 
 ### Changed
