@@ -4,7 +4,6 @@
   "States": {
     "Ingest DPR data in parallel": {
       "Type": "Parallel",
-      "Next": "Success",
       "Branches": [
         {
           "StartAt": "Ingest DPR survey data",
@@ -83,35 +82,71 @@
           }
         }
       ],
+      "Next": "Handle Error and Run Crawler",
       "Catch": [
         {
           "ErrorEquals": ["States.ALL"],
           "ResultPath": "$.error",
-          "Next": "Publish Error Notification"
+          "Next": "Handle Error and Run Crawler"
         }
       ]
     },
-    "Publish Error Notification": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
-      "Parameters": {
-        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
-        "Payload": {
-          "Error.$": "$.error.Cause",
-          "ExecutionId.$": "$$.Execution.Id",
-          "StateMachineName.$": "$$.StateMachine.Name",
-          "StateMachineId.$": "$$.StateMachine.Id",
-          "ExecutionStartTime.$": "$$.Execution.StartTime",
-          "CallbackToken.$": "$$.Task.Token"
+    "Handle Error and Run Crawler": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
+        },
+        {
+          "StartAt": "Run DPR Crawler",
+          "States": {
+            "Run DPR Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${dpr_crawler_name}"
+              },
+              "End": true
+            }
+          }
         }
-      },
-      "Next": "Fail"
-    },
-    "Fail": {
-      "Type": "Fail"
-    },
-    "Success": {
-      "Type": "Succeed"
+      ],
+      "End": true
     }
   }
 }
