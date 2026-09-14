@@ -6,7 +6,9 @@ from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_worker_utils import (
+    RAW_RESHAPED_GROUP_COLUMNS,
     RESHAPED_GROUP_COLUMNS,
+    collapse_job_roles_to_published_labels,
 )
 
 
@@ -18,10 +20,12 @@ def main(
 
     _00_prepare_worker aggregates and pivots the cleaned ASCWDS worker data
     down to one row per group in RESHAPED_GROUP_COLUMNS (location,
-    establishment, import date and job role, with a count column per
-    employment status), so the prepared dataset is expected to have exactly
-    as many rows as there are unique combinations of those columns in the
-    cleaned ASCWDS worker data it was built from.
+    establishment, import date and published job role, with a count column
+    per employment status), so the prepared dataset is expected to have
+    exactly as many rows as there are unique combinations of those columns in
+    the cleaned ASCWDS worker data it was built from. The cleaned data only
+    has the raw job role label, so it's collapsed to the published label here
+    the same way _00_prepare_worker does, before counting unique groups.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
@@ -34,9 +38,10 @@ def main(
     source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
-        selected_columns=RESHAPED_GROUP_COLUMNS,
+        selected_columns=RAW_RESHAPED_GROUP_COLUMNS,
     )
-    expected_row_count = compare_df.unique().height
+    compare_df = collapse_job_roles_to_published_labels(compare_df)
+    expected_row_count = compare_df.select(RESHAPED_GROUP_COLUMNS).unique().height
 
     validation = (
         pb.Validate(

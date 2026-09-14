@@ -46,7 +46,7 @@ class TestMain:
                 call(source="s3://bucket/my/source/"),
                 call(
                     source="s3://bucket/my/compare/",
-                    selected_columns=job.RESHAPED_GROUP_COLUMNS,
+                    selected_columns=job.RAW_RESHAPED_GROUP_COLUMNS,
                 ),
             ]
         )
@@ -89,3 +89,36 @@ class TestMain:
 
         assert row_count_match_entry["values"]["count"] == 2
         assert row_count_match_entry["all_passed"] is True
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_expected_row_count_collapses_raw_roles_sharing_a_published_label(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        # middle_management and first_line_manager are both unpublished roles in the
+        # same job group, so they collapse to the same "other_managers" published
+        # label and the 2 rows below should count as a single group.
+        compare_df = pl.DataFrame(
+            {
+                AWKClean.location_id: ["loc1", "loc1"],
+                AWKClean.establishment_id: ["1-001", "1-001"],
+                AWKClean.ascwds_worker_import_date: ["2026-01-01"] * 2,
+                AWKClean.main_job_role_clean_labelled: [
+                    MainJobRoleLabels.middle_management,
+                    MainJobRoleLabels.first_line_manager,
+                ],
+            }
+        )
+        mock_read_parquet.side_effect = [self.source_df, compare_df]
+
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        row_count_match_entry = next(
+            item for item in report_json if item["assertion_type"] == "row_count_match"
+        )
+
+        assert row_count_match_entry["values"]["count"] == 1

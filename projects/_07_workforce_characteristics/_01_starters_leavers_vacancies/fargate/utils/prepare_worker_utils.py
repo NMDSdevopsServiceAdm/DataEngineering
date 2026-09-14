@@ -27,6 +27,16 @@ RESHAPED_GROUP_COLUMNS = [
     if column != AWKClean.employment_status_clean_labelled
 ]
 
+# RESHAPED_GROUP_COLUMNS with the raw job role label instead of the published one -
+# the cleaned ASC-WDS worker data (this stage's input, and validate_00_prepare_worker's
+# comparison dataset) only has the raw label; published_job_role_label is derived from
+# it by collapse_job_roles_to_published_labels.
+RAW_RESHAPED_GROUP_COLUMNS = [
+    column
+    for column in RESHAPED_GROUP_COLUMNS
+    if column != SLVCols.published_job_role_label
+] + [AWKClean.main_job_role_clean_labelled]
+
 # Excludes "student", which EmploymentStatusLabels defines but which doesn't
 # occur in the raw worker data, so it's not given its own output column here.
 EMPLOYMENT_STATUS_LABEL_TO_COLUMN = {
