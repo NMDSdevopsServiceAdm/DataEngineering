@@ -21,6 +21,7 @@ JOB_ROLE_METADATA_ARCHIVE_COLUMNS = [
     IndCQC.current_msoa21,
     IndCQC.ct_care_home_total_employed_imputed,
     IndCQC.ct_non_res_care_workers_employed_imputed,
+    IndCQC.care_home_status_count,
 ]
 
 

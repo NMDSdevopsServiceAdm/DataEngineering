@@ -10,13 +10,6 @@ def add_ct_filter_has_ct_data() -> pl.Expr:
     pass
 
 
-def add_ct_filter_consistent_service() -> pl.Expr:
-    """
-    Placeholder: flags whether a location's service has been consistent.
-    """
-    pass
-
-
 def add_ct_filter_dispersion_filter() -> pl.Expr:
     """
     Placeholder: flags whether a location passes the dispersion filter.
