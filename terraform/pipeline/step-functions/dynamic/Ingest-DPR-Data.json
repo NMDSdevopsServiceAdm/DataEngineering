@@ -1,5 +1,5 @@
 {
-  "Comment": "Manually-started pipeline to ingest the raw DPR survey and external CSVs, replacing the old ingest_dpr_survey_data_job/ingest_dpr_external_data_job Glue jobs. Start an execution with input: {\"jobs\": {\"ingest_dpr_survey_data\": {\"source\": \"s3://...\"}, \"ingest_dpr_external_data\": {\"source\": \"s3://...\"}}}",
+  "Comment": "Manually-started pipeline to ingest the raw DPR survey and external CSVs, replacing the old ingest_dpr_survey_data_job/ingest_dpr_external_data_job Glue jobs. Before each annual run, edit the '--source' (raw CSV S3 path) and the 'version=YYYY.MM' segment of '--destination' below for both branches, commit, and let CI/CD deploy the change - then start this state machine with no execution input needed. The destination version must also be updated to match in Direct-Payment-Recipients.json's Prepare states.",
   "StartAt": "Ingest DPR data in parallel",
   "States": {
     "Ingest DPR data in parallel": {
@@ -27,7 +27,15 @@
                   "ContainerOverrides": [
                     {
                       "Name": "_01_ingest-container",
-                      "Command.$": "States.Array('ingest_dpr_data.py', '--source', $.jobs.ingest_dpr_survey_data.source, '--dataset', 'survey', '--destination', '${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_survey/version=2026.02/')"
+                      "Command": [
+                        "ingest_dpr_data.py",
+                        "--source",
+                        "",
+                        "--dataset",
+                        "survey",
+                        "--destination",
+                        "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_survey/version=YYYY.MM/"
+                      ]
                     }
                   ]
                 }
@@ -57,7 +65,15 @@
                   "ContainerOverrides": [
                     {
                       "Name": "_01_ingest-container",
-                      "Command.$": "States.Array('ingest_dpr_data.py', '--source', $.jobs.ingest_dpr_external_data.source, '--dataset', 'external', '--destination', '${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_external/version=2026.02/')"
+                      "Command": [
+                        "ingest_dpr_data.py",
+                        "--source",
+                        "",
+                        "--dataset",
+                        "external",
+                        "--destination",
+                        "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_external/version=YYYY.MM/"
+                      ]
                     }
                   ]
                 }
