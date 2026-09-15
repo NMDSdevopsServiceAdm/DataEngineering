@@ -92,7 +92,7 @@ def main(
         Pub.ct_dispersion_filter_short_term,
     )
 
-    # TODO: Aggregate on job role, primary_service_type and current_region.
+    publication_summary_lf = clean_utils.aggregate_to_publication_rows(cleaned_lf)
 
     # TODO: Add rows for 'England', 'All CQC locations' and 'All CQC care homes'.
 
@@ -101,7 +101,7 @@ def main(
     # TODO: Add cumulative percentage change from given start period.
 
     utils.sink_to_parquet(
-        lazy_df=cleaned_lf,
+        lazy_df=publication_summary_lf,
         output_path=clean_destination,
     )
 

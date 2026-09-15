@@ -3,6 +3,7 @@ from datetime import date
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.publication_columns import PublicationColumns as Pub
 
 # A location is filtered out when its capacity tracker data swings further from
 # the national average swing than this many standard deviations.
@@ -196,14 +197,91 @@ def _within_dispersion_boundaries(dispersion_column: str) -> pl.Expr:
     )
 
 
-def aggregate_to_publication_rows():
+def aggregate_to_publication_rows(lazy_df: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Placeholder: Aggregate up to a row per import date, job role,
-    primary_service_type and current_region.
+    Aggregates location-level rows up to publication level.
 
-    Sum filled posts and count count distinct locationid's.
+    Publication columns sum filled posts and count distinct locations across
+    every row in a group. Assessment columns do the same but only over rows
+    passing that term's consistent_service, dispersion and has-data filters,
+    applied independently per term within the same group_by so a row can
+    contribute to one term's assessment columns without contributing to
+    another's.
+
+    Args:
+        lazy_df (pl.LazyFrame): location-level data with consistent_service,
+            ct_total_employed_imputed, ct_has_data_*_term and
+            ct_dispersion_filter_*_term already added.
+
+    Returns:
+        pl.LazyFrame: one row per (import date, job role, region, service
+            type) group, with publication_* and assessment_*_term columns.
     """
-    pass
+    group_keys = [
+        IndCQC.cqc_location_import_date,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.current_region,
+        IndCQC.primary_service_type,
+    ]
+
+    long_term_filter = (
+        pl.col(Pub.consistent_service)
+        & pl.col(Pub.ct_dispersion_filter_long_term)
+        & pl.col(Pub.ct_has_data_long_term)
+    )
+    medium_term_filter = (
+        pl.col(Pub.consistent_service)
+        & pl.col(Pub.ct_dispersion_filter_medium_term)
+        & pl.col(Pub.ct_has_data_medium_term)
+    )
+    short_term_filter = (
+        pl.col(Pub.consistent_service)
+        & pl.col(Pub.ct_dispersion_filter_short_term)
+        & pl.col(Pub.ct_has_data_short_term)
+    )
+
+    filled_posts_col = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+
+    return lazy_df.group_by(group_keys).agg(
+        pl.col(filled_posts_col).sum().alias(Pub.publication_filled_posts),
+        pl.col(IndCQC.location_id).n_unique().alias(Pub.publication_locationid_count),
+        pl.col(filled_posts_col)
+        .filter(long_term_filter)
+        .sum()
+        .alias(Pub.assessment_filled_posts_long_term),
+        pl.col(IndCQC.location_id)
+        .filter(long_term_filter)
+        .n_unique()
+        .alias(Pub.assessment_locationid_count_long_term),
+        pl.col(Pub.ct_total_employed_imputed)
+        .filter(long_term_filter)
+        .sum()
+        .alias(Pub.assessment_ct_total_employed_long_term),
+        pl.col(filled_posts_col)
+        .filter(medium_term_filter)
+        .sum()
+        .alias(Pub.assessment_filled_posts_medium_term),
+        pl.col(IndCQC.location_id)
+        .filter(medium_term_filter)
+        .n_unique()
+        .alias(Pub.assessment_locationid_count_medium_term),
+        pl.col(Pub.ct_total_employed_imputed)
+        .filter(medium_term_filter)
+        .sum()
+        .alias(Pub.assessment_ct_total_employed_medium_term),
+        pl.col(filled_posts_col)
+        .filter(short_term_filter)
+        .sum()
+        .alias(Pub.assessment_filled_posts_short_term),
+        pl.col(IndCQC.location_id)
+        .filter(short_term_filter)
+        .n_unique()
+        .alias(Pub.assessment_locationid_count_short_term),
+        pl.col(Pub.ct_total_employed_imputed)
+        .filter(short_term_filter)
+        .sum()
+        .alias(Pub.assessment_ct_total_employed_short_term),
+    )
 
 
 def add_rows_for_publication_groups():
