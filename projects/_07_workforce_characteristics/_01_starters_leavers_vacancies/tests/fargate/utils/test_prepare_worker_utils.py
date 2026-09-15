@@ -3,12 +3,43 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_worker_utils as job
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._07_workforce_characteristics.unittest_data.polars_slv_test_data import (
     TestPrepareUtilsData as Data,
+)
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.slv_job_role_columns import (
     SLVEmploymentStatusColumns as SLVEmpStatus,
 )
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+
+
+class TestCollapseJobRolesToPublishedLabels:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.collapse_job_roles_to_published_labels_test_cases
+        ],
+    )
+    def test_collapses_job_roles_as_expected(self, case):
+        test_lf = pl.LazyFrame(case.input_data)
+        expected_lf = pl.LazyFrame(case.expected_data).with_columns(
+            pl.col(SLVCols.published_job_role_label).cast(
+                CatColType.PublishedJobRoleLabelCatType
+            )
+        )
+
+        returned_lf = job.collapse_job_roles_to_published_labels(test_lf)
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+            check_column_order=False,
+        )
 
 
 class TestAggregateEmploymentStatusData:
@@ -60,6 +91,9 @@ class TestReshapeEmploymentStatusData:
                 for column in emplstat_count_cols
                 if column in case.expected_data
             },
+        ).with_columns(
+            pl.col(AWKClean.location_id).cast(CatColType.LocationCatType),
+            pl.col(AWKClean.establishment_id).cast(CatColType.EstablishmentCatType),
         )
 
         returned_lf = job.reshape_employment_status_data(test_lf)

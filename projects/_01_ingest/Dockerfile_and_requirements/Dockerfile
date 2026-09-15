@@ -19,11 +19,13 @@ COPY utils/column_values utils/column_values
 COPY utils/value_labels/ons_pd utils/value_labels/ons_pd
 COPY projects/_01_ingest/ascwds/fargate/utils projects/_01_ingest/ascwds/fargate/utils
 COPY projects/_01_ingest/capacity_tracker/fargate/utils projects/_01_ingest/capacity_tracker/fargate/utils
+COPY projects/_01_ingest/cqc_pir/fargate/utils projects/_01_ingest/cqc_pir/fargate/utils
 
 # Copy python jobs to WORKDIR
 COPY projects/_01_ingest/cqc_pir/fargate/*.py .
 COPY projects/_01_ingest/ascwds/fargate/*.py .
 COPY projects/_01_ingest/capacity_tracker/fargate/*.py .
 COPY projects/_01_ingest/ons_pd/fargate/*.py .
+COPY projects/_01_ingest/direct_payment_recipients/fargate/*.py .
 
 ENTRYPOINT ["python"]

@@ -14,15 +14,6 @@ from utils.validation.validation_rule_names import RuleNames as RuleName
 
 @dataclass
 class UtilsData:
-    cqc_pir_rows = [
-        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
-        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 12)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
-        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
-    ]
-
     filter_to_max_value_rows = [
         ("1", date(2024, 1, 1), "20220101"),
         ("2", date(2024, 1, 1), "20230101"),
@@ -127,12 +118,6 @@ class CleaningUtilsData:
         (-234, 999.99, "non scale"),
     ]
 
-    expected_scale_data = [
-        (23, 10.1, "non scale", 23, 10.1),
-        (-1, 10.1, "non scale", None, 10.1),
-        (24, -20.345, "non scale", 24, None),
-        (-234, 999.99, "non scale", None, None),
-    ]
     #
     align_dates_primary_rows = [
         (date(2020, 1, 1), "loc 1"),
@@ -276,68 +261,6 @@ class CleaningUtilsData:
         ("loc 6", date(2022, 4, 2)),
     ]
 
-    cast_to_int_rows = [
-        (
-            "loc 1",
-            "20",
-            "18",
-        ),
-    ]
-
-    cast_to_int_errors_rows = [
-        (
-            "loc 1",
-            "20",
-            "18",
-        ),
-        (
-            "loc 2",
-            "ZO",
-            "18",
-        ),
-        (
-            "loc 3",
-            "20",
-            "IB",
-        ),
-        (
-            "loc 4",
-            "ZO",
-            "IB",
-        ),
-    ]
-
-    cast_to_int_expected_rows = [
-        (
-            "loc 1",
-            20,
-            18,
-        ),
-    ]
-
-    cast_to_int_errors_expected_rows = [
-        (
-            "loc 1",
-            20,
-            18,
-        ),
-        (
-            "loc 2",
-            None,
-            18,
-        ),
-        (
-            "loc 3",
-            20,
-            None,
-        ),
-        (
-            "loc 4",
-            None,
-            None,
-        ),
-    ]
-
     filled_posts_per_bed_ratio_rows = [
         ("1-000000001", 5.0, 100, CareHome.care_home),
         ("1-000000002", 2.0, 1, CareHome.care_home),
@@ -363,17 +286,6 @@ class CleaningUtilsData:
         ("1-000000009", None, None, CareHome.care_home, None),
         ("1-000000010", 0.0, 0, CareHome.care_home, None),
         ("1-000000011", 4.0, 10, CareHome.not_care_home, None),
-    ]
-
-    filled_posts_from_beds_and_ratio_rows = [
-        ("loc 1", 0.5, 10),
-        ("loc 2", None, 10),
-        ("loc 3", 0.5, None),
-    ]
-    expected_filled_posts_from_beds_and_ratio_rows = [
-        ("loc 1", 0.5, 10, 5.0),
-        ("loc 2", None, 10, None),
-        ("loc 3", 0.5, None, None),
     ]
 
     remove_duplicate_locationids_rows = [
@@ -924,13 +836,6 @@ class ValidationUtils:
         ),
     ]
 
-    add_column_with_length_of_string_rows = [
-        ("loc_1",),
-    ]
-    expected_add_column_with_length_of_string_rows = [
-        ("loc_1", 5),
-    ]
-
     check_rows = fewer_distinct_values_result_rows
 
     custom_type_rule = {
@@ -968,53 +873,3 @@ class ValidationUtils:
             "Value: 0.0 does not meet the constraint requirement! The data in carehome and primary_service_type should be related.",
         ),
     ]
-
-
-@dataclass
-class ValidateEstimatedIndCqcFilledPostsData:
-    # fmt: off
-    cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1),),
-        ("1-000000002", date(2024, 1, 1),),
-        ("1-000000001", date(2024, 2, 1),),
-        ("1-000000002", date(2024, 2, 1),),
-    ]
-
-    estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0),
-    ]
-    # fmt: on
-
-    calculate_expected_size_rows = [
-        (
-            "1-000000001",
-            date(2024, 1, 1),
-        ),
-    ]
-
-
-@dataclass
-class RawDataAdjustments:
-    expected_worker_data = [
-        ("worker_1", "20240101", "estab_1", "other"),
-        ("1737540", "20240101", "estab_1", "other"),
-        ("1737540", "20230802", "estab_1", "other"),
-        ("1737540", "20240101", "28208", "other"),
-        ("worker_1", "20230802", "estab_1", "other"),
-        ("worker_1", "20230802", "28208", "other"),
-        ("worker_1", "20240101", "28208", "other"),
-    ]
-    worker_data_with_single_row_to_remove = [
-        *expected_worker_data,
-        ("1737540", "20230802", "28208", "other"),
-    ]
-    worker_data_with_multiple_rows_to_remove = [
-        *expected_worker_data,
-        ("1737540", "20230802", "28208", "other"),
-        ("1737540", "20230802", "28208", "something else"),
-    ]
-
-    worker_data_without_rows_to_remove = expected_worker_data

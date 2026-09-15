@@ -2,7 +2,7 @@ import argparse
 from typing import Any, Generator, List, Optional
 
 import pydeequ
-from pyspark.sql import Column, DataFrame, SparkSession, Window
+from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.types import StructType
 
@@ -71,49 +71,6 @@ def write_to_parquet(
     df.write.mode(mode).partitionBy(*partitionKeys).parquet(output_dir)
 
 
-def read_csv(source, delimiter=","):
-    spark = get_spark()
-
-    df = spark.read.option("delimiter", delimiter).csv(source, header=True)
-
-    return df
-
-
-def read_csv_with_defined_schema(source, schema):
-    spark = get_spark()
-
-    df = spark.read.schema(schema).option("header", "true").csv(source)
-
-    return df
-
-
-# converted to polars as cast_date_strings_to_dates -> polars_utils\cleaning_utils.py
-def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
-    date_columns = [column for column in df.columns if date_column_identifier in column]
-
-    for date_column in date_columns:
-        if "import_date" in date_column:
-            continue
-        else:
-            df = df.withColumn(date_column, F.to_date(date_column, raw_date_format))
-
-    return df
-
-
-def create_unix_timestamp_variable_from_date_column(
-    df: DataFrame, date_col: str, date_format: str, new_col_name: str
-) -> DataFrame:
-    return df.withColumn(
-        new_col_name, F.unix_timestamp(F.col(date_col), format=date_format)
-    )
-
-
-# not converting to polars
-def convert_days_to_unix_time(days: int):
-    NUMBER_OF_SECONDS_IN_ONE_DAY = 86400
-    return days * NUMBER_OF_SECONDS_IN_ONE_DAY
-
-
 def collect_arguments(*args: Any) -> Generator[Any, None, None]:
     """
     Creates a new parser, and for each arg in the provided args parameter returns a Namespace object, and uses vars() function to convert the namespace to a dictionary,
@@ -141,43 +98,6 @@ def collect_arguments(*args: Any) -> Generator[Any, None, None]:
     parsed_args, _ = parser.parse_known_args()
 
     return (vars(parsed_args)[arg[0][2:]] for arg in args)
-
-
-def latest_datefield_for_grouping(
-    df: DataFrame, grouping_column_list: list, date_field_column: Column
-) -> DataFrame:
-    """
-    For a particular column of dates, filter the latest of that date for a select grouping of other columns, returning a full dataset.
-    Note that if the provided date_field_column has multiple of the same entries for a grouping_column_list, then this function will return those duplicates.
-
-    :Args:
-        df: The DataFrame to be filtered
-        grouping_column_list: A list of pyspark.sql.Column variables representing the columns you wish to groupby, i.e. [F.col("column_name")]
-        date_field_column: A formatted pyspark.sql.Column of dates
-
-    :Returns:
-
-        latest_date_df: A dataframe with the latest value date_field_column only per grouping
-
-    :Raises:
-        TypeError: If any parameter other than the DataFrame does not contain a pyspark.sql.Column
-    """
-
-    if isinstance(date_field_column, Column) is False:
-        raise TypeError("Column must be of pyspark.sql.Column type")
-    for column in grouping_column_list:
-        if isinstance(column, Column) is False:
-            raise TypeError("List items must be of pyspark.sql.Column type")
-
-    window = Window.partitionBy(grouping_column_list).orderBy(date_field_column.desc())
-
-    latest_date_df = (
-        df.withColumn("rank", F.rank().over(window))
-        .filter(F.col("rank") == 1)
-        .drop(F.col("rank"))
-    )
-
-    return latest_date_df
 
 
 # converted to polars -> polars_utils.utils.filter_to_maximum_value_in_column

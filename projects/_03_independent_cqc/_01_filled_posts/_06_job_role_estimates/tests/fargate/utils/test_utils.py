@@ -1,51 +1,14 @@
 import polars as pl
 import polars.testing as pl_testing
-import pytest
 
 import projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate.utils.utils as job
 from polars_utils.column_types import CategoricalColumnTypes
-from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_test_file_data import (
-    ImputeJobRoleData as Data,
-)
-from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_test_file_schemas import (
-    ImputeJobRoleSchemas as Schemas,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
 
 PATCH_PATH = "projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate.utils.utils"
-
-
-class TestPercentageShareHandlingZeroSum:
-    @pytest.mark.parametrize(
-        "input_, expected",
-        [
-            pytest.param(
-                [5.0, 2.0, 1.0],
-                [0.625, 0.25, 0.125],
-                id="when_all_values_present",
-            ),
-            pytest.param(
-                [0, 0],
-                [0.5, 0.5],
-                id="handles_zero_sum_case_with_even_distribution",
-            ),
-            pytest.param(
-                [0, None, 0, None],
-                [0.5, None, 0.5, None],
-                id="handles_zero_sum_case_with_even_distribution_across_non_nulls",
-            ),
-        ],
-    )
-    def test_percentage_share_handling_zero_sum(self, input_, expected):
-        input_lf = pl.LazyFrame({"values": input_})
-        expected_lf = pl.LazyFrame({"pct_share": expected})
-        returned_lf = input_lf.select(
-            job.percentage_share_handling_zero_sum("values").alias("pct_share")
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class TestAddJobRoleGroupsColumn:

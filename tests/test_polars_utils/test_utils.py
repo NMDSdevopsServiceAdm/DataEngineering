@@ -448,21 +448,6 @@ class SendSnsNotificationTests(TestUtils):
             output,
         )
 
-    def test_parse_args_converts_simple_data_types(self):
-        self.assertTrue(utils.parse_arg_by_type("tRue"))
-        self.assertFalse(utils.parse_arg_by_type("fAlSe "))
-        self.assertEqual(19, utils.parse_arg_by_type("19 "))
-        self.assertEqual(19, utils.parse_arg_by_type(" 19"))
-        self.assertEqual(23.7, utils.parse_arg_by_type("23.7 "))
-        self.assertEqual(
-            "Dave is 173.4 cm tall", utils.parse_arg_by_type("Dave is 173.4 cm tall")
-        )
-
-    def test_parse_args_converts_complex_types(self):
-        self.assertEqual("[1, 2, 3]", utils.parse_arg_by_type("[1, 2, 3]"))
-        self.assertEqual("{1:2, 3:4}", utils.parse_arg_by_type("{1:2, 3:4}"))
-        self.assertEqual("2025-06-19", utils.parse_arg_by_type("2025-06-19"))
-
 
 class TestFilterToMaximumValueInColumn(TestUtils):
     def setUp(self) -> None:
