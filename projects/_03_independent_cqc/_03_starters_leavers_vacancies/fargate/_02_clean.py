@@ -1,5 +1,5 @@
 import polars_utils.cleaning_utils as cUtils
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.clean_utils as cleanUtils
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.clean_utils as cleanUtils
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols

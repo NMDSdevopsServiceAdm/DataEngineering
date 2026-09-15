@@ -1,9 +1,11 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._03_impute as job
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._03_impute as job
 
-PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._03_impute"
+PATCH_PATH = (
+    "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._03_impute"
+)
 
 
 class MainTests(unittest.TestCase):

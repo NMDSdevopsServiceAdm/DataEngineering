@@ -2,9 +2,9 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as job
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.merge_utils as job
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
-from projects._07_workforce_characteristics.unittest_data.polars_slv_test_data import (
+from projects._03_independent_cqc._03_starters_leavers_vacancies.unittest_data.polars_slv_test_data import (
     TestMergeUtilsData as Data,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC

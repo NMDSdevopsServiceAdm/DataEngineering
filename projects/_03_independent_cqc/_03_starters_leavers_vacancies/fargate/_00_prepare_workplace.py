@@ -1,6 +1,6 @@
 import polars.selectors as cs
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_workplace_utils as pWorkplaceUtils
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.prepare_workplace_utils as pWorkplaceUtils
 from polars_utils import utils
 from polars_utils.filtering_utils import (
     earliest_file_per_month_filter_expr,

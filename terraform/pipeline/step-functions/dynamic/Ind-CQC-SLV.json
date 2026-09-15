@@ -19,21 +19,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/_00_prepare_workplace.py",
+                                "_03_starters_leavers_vacancies/fargate/_00_prepare_workplace.py",
                                 "--cleaned_ascwds_workplace_source", "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
                                 "--prepared_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_workplace/"
                               ]
@@ -53,21 +53,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/_00_prepare_worker.py",
+                                "_03_starters_leavers_vacancies/fargate/_00_prepare_worker.py",
                                 "--cleaned_ascwds_worker_source", "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/",
                                 "--prepared_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_worker/"
                               ]
@@ -94,21 +94,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/_01_merge.py",
+                                "_03_starters_leavers_vacancies/fargate/_01_merge.py",
                                 "--metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
                                 "--job_role_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
                                 "--prepared_slv_dataset_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_workplace/",
@@ -132,21 +132,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/validate_00_prepare_workplace.py",
+                                "_03_starters_leavers_vacancies/fargate/validate_00_prepare_workplace.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_workplace/",
                                 "--compare_path", "domain=01_ascwds/dataset=workplace_cleaned/",
@@ -168,21 +168,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/validate_00_prepare_worker.py",
+                                "_03_starters_leavers_vacancies/fargate/validate_00_prepare_worker.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_worker/",
                                 "--compare_path", "domain=01_ascwds/dataset=worker_cleaned/",
@@ -210,21 +210,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/_02_clean.py",
+                                "_03_starters_leavers_vacancies/fargate/_02_clean.py",
                                 "--merged_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge/",
                                 "--cleaned_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/"
                               ]
@@ -244,21 +244,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/validate_01_merge.py",
+                                "_03_starters_leavers_vacancies/fargate/validate_01_merge.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge/",
                                 "--compare_path", "domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
@@ -286,21 +286,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/_03_impute.py",
+                                "_03_starters_leavers_vacancies/fargate/_03_impute.py",
                                 "--cleaned_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/",
                                 "--imputed_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute/"
                               ]
@@ -320,21 +320,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/validate_02_clean.py",
+                                "_03_starters_leavers_vacancies/fargate/validate_02_clean.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/",
                                 "--compare_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge/",
@@ -362,21 +362,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/_04_estimate.py",
+                                "_03_starters_leavers_vacancies/fargate/_04_estimate.py",
                                 "--imputed_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute/",
                                 "--estimated_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_04_estimate/"
                               ]
@@ -396,21 +396,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/validate_03_impute.py",
+                                "_03_starters_leavers_vacancies/fargate/validate_03_impute.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute/",
                                 "--compare_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/",
@@ -431,21 +431,21 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_07_workforce_characteristics-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_01_starters_leavers_vacancies/fargate/validate_04_estimate.py",
+                                "_03_starters_leavers_vacancies/fargate/validate_04_estimate.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_04_estimate/",
                                 "--compare_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute/",
