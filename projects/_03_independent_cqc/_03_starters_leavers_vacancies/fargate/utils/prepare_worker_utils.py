@@ -1,6 +1,6 @@
 import polars as pl
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
