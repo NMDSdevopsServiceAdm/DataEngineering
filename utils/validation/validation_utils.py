@@ -9,7 +9,6 @@ from pydeequ.verification import (
     VerificationSuite,
 )
 from pyspark.sql import DataFrame
-from pyspark.sql import functions as F
 
 from utils import utils
 from utils.column_names.validation_table_columns import Validation
@@ -281,29 +280,6 @@ def create_check_of_custom_type(rule: str, constraint_name: str, hint: str) -> C
         hint=hint,
     )
     return check
-
-
-def add_column_with_length_of_string(
-    df: DataFrame, column_names: list[str]
-) -> DataFrame:
-    """
-    Adds new columns to the dataframe containing the length of the given columns.
-
-    This function generates a new column in the dataframe for every column given and
-    populates it with the length of the given column. THe length columns are named with
-    the original column name and the suffix _length.
-
-    Args:
-        df(DataFrame): A dataframe with the given columns.
-        column_names(list[str]): A list of strings with the column names to evaluate.
-
-    Returns:
-        DataFrame: A dataframe with additional columns containing the length of each given column.
-    """
-    for column_name in column_names:
-        new_column_name = column_name + "_length"
-        df = df.withColumn(new_column_name, F.length(column_name))
-    return df
 
 
 def raise_exception_if_any_checks_failed(df: DataFrame) -> None:

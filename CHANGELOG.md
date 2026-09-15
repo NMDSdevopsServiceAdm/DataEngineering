@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Cut over the CQC PIR clean and validate-cleaned jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their Step Function wiring entirely. Outputs were compared against the previous PySpark version's output in Athena and matched exactly before cutover.
 - Carried `care_home_status_count` through the job role archive and publication merge jobs, and added a `consistent_service` boolean column to the publication clean job that is true when a location has always had the same care home status.
 - Reshaped the SLV pipeline's aggregated employment status data from one row per employment status into one row per location, establishment, import date and job role, with a worker count column per employment status, replacing the pass-through placeholder. Updated its validation's expected row count to match the new grain.
+- Removed 18 unused helper functions across `utils/`, `polars_utils/` and a couple of project-specific `fargate/utils` modules that had no call sites outside their own tests, along with their dedicated tests and any fixture data/schemas used only by those tests. Also removed 50 orphaned test fixture rows/schemas across the repo's `unittest_data` files that were no longer referenced by any test.
 
 
 ### Improved

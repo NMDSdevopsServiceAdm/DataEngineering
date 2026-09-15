@@ -379,35 +379,6 @@ def calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
     )
 
 
-def set_minimum_permitted_ratio(
-    lf: pl.LazyFrame,
-    column_name: str,
-    minimum_permitted_ratio: float,
-) -> pl.LazyFrame:
-    """
-    Replaces the value in the desired column with the minimum value of the
-    current value or minimum_permitted_ratio.
-
-    Args:
-        lf (pl.LazyFrame): The input LazyFrame.
-        column_name (str): The name of the column to be modified.
-        minimum_permitted_ratio (float): The minimum value that any entry in the
-            column should have.
-
-    Returns:
-        pl.LazyFrame: A new LazyFrame with the specified column values adjusted
-            to meet the minimum permitted ratio.
-    """
-    lf = lf.with_columns(
-        pl.when(pl.col(column_name) < minimum_permitted_ratio)
-        .then(minimum_permitted_ratio)
-        .otherwise(pl.col(column_name))
-        .alias(column_name)
-    )
-
-    return lf
-
-
 def winsorize_outliers(
     lf: pl.LazyFrame,
 ) -> pl.LazyFrame:

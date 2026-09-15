@@ -1,4 +1,4 @@
-from typing import Generator, Iterable, List
+from typing import Generator, List
 
 import polars as pl
 import requests
@@ -92,37 +92,6 @@ def call_api(
         )
 
     return response.json()
-
-
-def get_all_objects(
-    object_type: str,
-    object_identifier: str,
-    cqc_api_primary_key: str,
-    per_page: int = DEFAULT_PAGE_SIZE,
-) -> Iterable[List[dict]]:
-    url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}"
-
-    total_pages = call_api(
-        url,
-        query_params={
-            "perPage": per_page,
-        },
-        headers_dict={
-            "User-Agent": USER_AGENT,
-            "Ocp-Apim-Subscription-Key": cqc_api_primary_key,
-        },
-    )["totalPages"]
-
-    print(f"Total pages: {total_pages}")
-    print(f"Beginning CQC bulk download of {object_type}...")
-
-    for page_number in range(1, total_pages + 1):
-        print(f"Collecting {object_type} from API page {page_number}/{total_pages}")
-        page_locations = get_page_objects(
-            url, page_number, object_type, object_identifier, cqc_api_primary_key
-        )
-
-        yield page_locations
 
 
 def get_page_objects(

@@ -1,11 +1,7 @@
-import csv
 import re
 from datetime import date
-from typing import Any
 
 import boto3
-
-TWO_MB = 2000000
 
 
 def split_s3_uri(uri: str) -> tuple[str, str]:
@@ -111,32 +107,6 @@ def generate_s3_dir(
     return output_dir
 
 
-def get_s3_objects_list(
-    bucket_source: str, prefix: str, s3_resource: Any = None
-) -> list[str]:
-    """
-    Lists the keys of all objects (excluding directories) under an S3 prefix.
-
-    Args:
-        bucket_source (str): The S3 bucket to list objects from.
-        prefix (str): The prefix to filter objects by.
-        s3_resource (Any, optional): A boto3 S3 resource. Defaults to None, in
-            which case one is created.
-
-    Returns:
-        list[str]: The keys of all matching objects.
-    """
-    if s3_resource is None:
-        s3_resource = boto3.resource("s3")
-
-    bucket_name = s3_resource.Bucket(bucket_source)
-    object_keys = []
-    for obj in bucket_name.objects.filter(Prefix=prefix):
-        if obj.size > 0:  # Ignore s3 directories
-            object_keys.append(obj.key)
-    return object_keys
-
-
 def list_s3_parquet_import_dates(s3_prefix: str) -> list[int]:
     """
     List import_dates present in a partitioned S3 path.
@@ -200,57 +170,3 @@ def empty_s3_folder(bucket_name: str, prefix: str) -> None:
     keys_str = "\n".join([obj["Key"] for obj in to_delete])
     print(f"Deleting {len(to_delete):} objects:\n{keys_str}")
     s3_client.delete_objects(Bucket=bucket_name, Delete={"Objects": to_delete})
-
-
-def is_csv(filename: str) -> bool:
-    """
-    Checks whether a filename has a .csv extension.
-
-    Args:
-        filename (str): The filename or path to check.
-
-    Returns:
-        bool: True if the filename ends with ".csv", False otherwise.
-    """
-    return filename.endswith(".csv")
-
-
-def identify_csv_delimiter(sample_csv: str) -> str:
-    """
-    Identifies the delimiter used in a sample of CSV content.
-
-    Args:
-        sample_csv (str): A sample of CSV file content.
-
-    Returns:
-        str: The identified delimiter, either "," or "|".
-    """
-    dialect = csv.Sniffer().sniff(sample_csv, [",", "|"])
-    return dialect.delimiter
-
-
-def read_partial_csv_content(bucket: str, key: str, s3_client: Any = None) -> str:
-    """
-    Reads a sample of a CSV file's content from S3, capped at TWO_MB.
-
-    Reads 1% of the file's total size, or TWO_MB, whichever is smaller - enough
-    to sample the file's delimiter and structure without downloading it in full.
-
-    Args:
-        bucket (str): The S3 bucket containing the file.
-        key (str): The S3 key of the file.
-        s3_client (Any, optional): A boto3 S3 client. Defaults to None, in which
-            case one is created.
-
-    Returns:
-        str: The decoded partial content of the file.
-    """
-    if s3_client is None:
-        s3_client = boto3.client("s3")
-    response = s3_client.get_object(Bucket=bucket, Key=key)
-    num_bytes = int(response["ContentLength"] * 0.01)
-
-    if num_bytes > TWO_MB:
-        num_bytes = TWO_MB
-
-    return response["Body"].read(num_bytes).decode("utf-8")

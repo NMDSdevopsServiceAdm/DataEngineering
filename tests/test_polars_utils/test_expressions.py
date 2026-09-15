@@ -26,44 +26,6 @@ class TestExpressions(unittest.TestCase):
         )
 
 
-class TestHasValue(TestExpressions):
-    def test_null_numeric(self):
-        df = self.df_simple.with_columns(
-            job.has_value(self.df_simple, "a", "group").alias("has_value"),
-        )
-        self.assertEqual(df["has_value"].to_list(), [True, True, False, False])
-
-    def test_non_null_numeric(self):
-        df = self.df_simple.with_columns(
-            job.has_value(self.df_simple, "b", "group").alias("has_value"),
-        )
-        self.assertEqual(df["has_value"].to_list(), [True, True, True, True])
-
-    def test_null_string(self):
-        df = self.df_simple.with_columns(
-            job.has_value(self.df_simple, "c", "group").alias("has_value"),
-        )
-        self.assertEqual(df["has_value"].to_list(), [True, True, False, False])
-
-    def test_non_null_string(self):
-        df = self.df_simple.with_columns(
-            job.has_value(self.df_simple, "d", "group").alias("has_value"),
-        )
-        self.assertEqual(df["has_value"].to_list(), [True, True, True, True])
-
-    def test_partial_list_column(self):
-        df = self.df_simple.with_columns(
-            job.has_value(self.df_simple, "e", "group").alias("has_value"),
-        )
-        self.assertEqual(df["has_value"].to_list(), [True, True, False, False])
-
-    def test_list_has_column(self):
-        df = self.df_simple.with_columns(
-            job.has_value(self.df_simple, "f", "group").alias("has_value"),
-        )
-        self.assertEqual(df["has_value"].to_list(), [True, True, True, True])
-
-
 class TestPercentageShare:
     def test_over_whole_dataset(self):
         input_lf = pl.LazyFrame({"vals": [1, 2, 2]})

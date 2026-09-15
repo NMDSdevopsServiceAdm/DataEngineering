@@ -60,14 +60,6 @@ class ReconciliationSchema:
             StructField(AWPClean.purge_date, DateType(), True),
         ]
     )
-    input_cqc_dereg_locations_schema = StructType(
-        [
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.registration_status, StringType(), True),
-            StructField(CQCLClean.deregistration_date, DateType(), True),
-        ]
-    )
 
 
 @dataclass
