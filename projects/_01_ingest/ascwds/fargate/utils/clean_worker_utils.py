@@ -7,8 +7,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-
-NOT_KNOWN_JOB_ROLE = "-1"
+from utils.column_values.ascwds_labelled_vocab import NOT_KNOWN_JOB_ROLE
 
 
 def remove_workers_without_workplaces(

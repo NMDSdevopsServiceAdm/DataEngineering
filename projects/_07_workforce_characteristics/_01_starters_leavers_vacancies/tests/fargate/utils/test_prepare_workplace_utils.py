@@ -32,9 +32,7 @@ class TestReduceToPublishedRoles:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_raises_value_error_for_uncatalogued_job_role_code(self):
-        test_lf = pl.LazyFrame(
-            {"jr98emp": 1}
-        )  # not an AscwdsWorkerValueLabelsMainjrid code
+        test_lf = pl.LazyFrame({"jr98emp": 1})  # not a MAIN_JOB_ROLE code
 
         with pytest.raises(ValueError, match="98"):
             job.reduce_to_published_roles(test_lf)

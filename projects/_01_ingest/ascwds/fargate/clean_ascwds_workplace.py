@@ -9,7 +9,13 @@ from projects._01_ingest.ascwds.fargate.utils import clean_workplace_utils as wU
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
+from utils.column_values.ascwds_labelled_vocab import (
+    ESTABLISHMENT_TYPE_CODE_TO_LABEL,
+    IS_PARENT_CODE_TO_LABEL,
+    MAIN_SERVICE_ID_CODE_TO_LABEL,
+    PARENT_PERMISSION_CODE_TO_LABEL,
+    REGISTRATION_TYPE_CODE_TO_LABEL,
+)
 
 bounds = wUtils.BoundingExpressions()
 
@@ -81,10 +87,6 @@ columns_to_apply_labels = [
     AWPClean.registration_type,
 ]
 
-data_labels_schema = pl.Schema(
-    [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
-)
-
 legacy_job_roles_dict = {
     "27": ["22"],
     "40": ["41"],
@@ -94,7 +96,6 @@ legacy_job_roles_dict = {
 
 def main(
     workplace_source: str,
-    data_labels_source: str,
     cleaned_workplace_destination: str,
     ascwds_for_sfc_internal_destination: str,
 ) -> None:
@@ -103,7 +104,6 @@ def main(
 
     Args:
         workplace_source (str): path to the raw ASC-WDS workplace data
-        data_labels_source (str): path to the ASC-WDS data labels source
         cleaned_workplace_destination (str): destination for cleaned ASC-WDS
             workplace output
         ascwds_for_sfc_internal_destination (str): destination for ASC-WDS data
@@ -130,7 +130,15 @@ def main(
         lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
     )
 
-    data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
+    data_labels_lf = cUtils.build_labels_lf(
+        {
+            AWPClean.establishment_type: ESTABLISHMENT_TYPE_CODE_TO_LABEL,
+            AWPClean.parent_permission: PARENT_PERMISSION_CODE_TO_LABEL,
+            AWPClean.is_parent: IS_PARENT_CODE_TO_LABEL,
+            AWPClean.main_service_id: MAIN_SERVICE_ID_CODE_TO_LABEL,
+            AWPClean.registration_type: REGISTRATION_TYPE_CODE_TO_LABEL,
+        }
+    )
 
     lf = cUtils.apply_categorical_labels(
         lf,
@@ -156,6 +164,9 @@ def main(
             CategoricalColumnTypes.IsBulkUploaderCatType
         ),
         pl.col(AWPClean.is_parent).cast(CategoricalColumnTypes.IsParentCatType),
+        pl.col(AWPClean.parent_permission).cast(
+            CategoricalColumnTypes.ParentPermissionCatType
+        ),
     )
 
     lf = wUtils.create_purge_date_columns(lf)
@@ -223,10 +234,6 @@ if __name__ == "__main__":
             "Source s3 directory for raw ASC-WDS workplace data",
         ),
         (
-            "--data_labels_source",
-            "Source s3 directory for ASC-WDS data labels",
-        ),
-        (
             "--cleaned_workplace_destination",
             "Destination s3 directory for cleaned ASC-WDS workplace output",
         ),
@@ -237,7 +244,6 @@ if __name__ == "__main__":
     )
     main(
         workplace_source=args.workplace_source,
-        data_labels_source=args.data_labels_source,
         cleaned_workplace_destination=args.cleaned_workplace_destination,
         ascwds_for_sfc_internal_destination=args.ascwds_for_sfc_internal_destination,
     )

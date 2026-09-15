@@ -29,7 +29,7 @@ columns = {
     ASCWPClean.la_permission: str(CategoricalColumnTypes.LaPermissionCatType),
     ASCWPClean.is_bulk_uploader: str(CategoricalColumnTypes.IsBulkUploaderCatType),
     ASCWPClean.is_parent: str(CategoricalColumnTypes.IsParentCatType),
-    ASCWPClean.parent_permission: "String",
+    ASCWPClean.parent_permission: str(CategoricalColumnTypes.ParentPermissionCatType),
     ASCWPClean.registration_type: str(CategoricalColumnTypes.RegistrationTypeCatType),
     ASCWPClean.provider_id: "String",
     ASCWPClean.location_id: "String",

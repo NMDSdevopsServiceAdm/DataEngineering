@@ -12,7 +12,6 @@ PATCH_PATH = "projects._01_ingest.ascwds.fargate.clean_ascwds_workplace"
 
 class TestMain:
     WORKPLACE_SOURCE = "some/source"
-    DATA_LABELS_SOURCE = "some/labels/source"
     CLEANED_WORKPLACE_DESTINATION = "some/destination"
     SFC_INTERNAL_DESTINATION = "some/other/destination"
 
@@ -23,7 +22,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.remove_rows_with_duplicate_location_ids")
     @patch(f"{PATCH_PATH}.wUtils.create_purge_date_columns")
     @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
-    @patch(f"{PATCH_PATH}.pl.scan_csv")
+    @patch(f"{PATCH_PATH}.cUtils.build_labels_lf")
     @patch(f"{PATCH_PATH}.cUtils.column_to_date")
     @patch(f"{PATCH_PATH}.cUtils.cast_date_strings_to_dates")
     @patch(f"{PATCH_PATH}.wUtils.null_duplicate_establishment_numeric_data")
@@ -40,7 +39,7 @@ class TestMain:
         null_duplicate_establishment_numeric_data_mock: Mock,
         cast_date_strings_to_dates_mock: Mock,
         column_to_date_mock: Mock,
-        scan_csv_mock: Mock,
+        build_labels_lf_mock: Mock,
         apply_categorical_labels_mock: Mock,
         create_purge_date_columns_mock: Mock,
         remove_rows_with_duplicate_location_ids_mock: Mock,
@@ -56,7 +55,6 @@ class TestMain:
 
         job.main(
             self.WORKPLACE_SOURCE,
-            self.DATA_LABELS_SOURCE,
             self.CLEANED_WORKPLACE_DESTINATION,
             self.SFC_INTERNAL_DESTINATION,
         )
@@ -81,8 +79,14 @@ class TestMain:
         ]
         cast_date_strings_to_dates_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
-        scan_csv_mock.assert_called_once_with(
-            self.DATA_LABELS_SOURCE, schema=job.data_labels_schema
+        build_labels_lf_mock.assert_called_once_with(
+            {
+                job.AWPClean.establishment_type: job.ESTABLISHMENT_TYPE_CODE_TO_LABEL,
+                job.AWPClean.parent_permission: job.PARENT_PERMISSION_CODE_TO_LABEL,
+                job.AWPClean.is_parent: job.IS_PARENT_CODE_TO_LABEL,
+                job.AWPClean.main_service_id: job.MAIN_SERVICE_ID_CODE_TO_LABEL,
+                job.AWPClean.registration_type: job.REGISTRATION_TYPE_CODE_TO_LABEL,
+            }
         )
         apply_categorical_labels_mock.assert_called_once()
         create_purge_date_columns_mock.assert_called_once()

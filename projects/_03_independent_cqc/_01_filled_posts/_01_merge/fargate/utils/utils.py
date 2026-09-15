@@ -1,11 +1,9 @@
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
-    AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
-)
+from utils.column_values.ascwds_labelled_vocab import MAIN_JOB_ROLE
 
-LIST_OF_JOB_ROLES_SORTED = sorted(list(AscwdsJobRoles.labels_dict.values()))
+LIST_OF_JOB_ROLES_SORTED = sorted(MAIN_JOB_ROLE.code_to_label().values())
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
