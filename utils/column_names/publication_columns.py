@@ -8,4 +8,6 @@ class PublicationColumns:
     ct_has_data_medium_term: str = "ct_has_data_medium_term"
     ct_has_data_short_term: str = "ct_has_data_short_term"
     consistent_service: str = "consistent_service"
-    ct_dispersion_filter: str = "ct_dispersion_filter"
+    ct_dispersion_filter_long_term: str = "ct_dispersion_filter_long_term"
+    ct_dispersion_filter_medium_term: str = "ct_dispersion_filter_medium_term"
+    ct_dispersion_filter_short_term: str = "ct_dispersion_filter_short_term"

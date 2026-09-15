@@ -69,7 +69,28 @@ def main(
         ),
     )
 
-    # TODO: Add remaining capacity tracker dispersion filter.
+    ct_employed_columns = [
+        IndCQC.ct_care_home_total_employed_imputed,
+        IndCQC.ct_non_res_care_workers_employed_imputed,
+    ]
+    cleaned_lf = clean_utils.add_dispersion_filter(
+        cleaned_lf,
+        ct_employed_columns,
+        long_term_from_date,
+        Pub.ct_dispersion_filter_long_term,
+    )
+    cleaned_lf = clean_utils.add_dispersion_filter(
+        cleaned_lf,
+        ct_employed_columns,
+        medium_term_from_date,
+        Pub.ct_dispersion_filter_medium_term,
+    )
+    cleaned_lf = clean_utils.add_dispersion_filter(
+        cleaned_lf,
+        ct_employed_columns,
+        short_term_from_date,
+        Pub.ct_dispersion_filter_short_term,
+    )
 
     # TODO: Aggregate on job role, primary_service_type and current_region.
 
