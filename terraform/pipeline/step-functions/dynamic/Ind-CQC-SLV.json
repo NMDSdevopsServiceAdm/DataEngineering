@@ -82,9 +82,9 @@
                       "Next": "Clean and Validate Merged Employment Status Data",
                       "Branches": [
                         {
-                          "StartAt": "Merge data",
+                          "StartAt": "Merge employment status data",
                           "States": {
-                            "Merge data": {
+                            "Merge employment status data": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -160,9 +160,9 @@
                       "Type": "Parallel",
                       "Branches": [
                         {
-                          "StartAt": "Clean data",
+                          "StartAt": "Clean employment status data",
                           "States": {
-                            "Clean data": {
+                            "Clean employment status data": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -194,9 +194,9 @@
                           }
                         },
                         {
-                          "StartAt": "Validate Merged Data",
+                          "StartAt": "Validate Merged Employment Status Data",
                           "States": {
-                            "Validate Merged Data": {
+                            "Validate Merged Employment Status Data": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -590,9 +590,9 @@
                       "Next": "Estimate and Validate Imputed Employment Status Data",
                       "Branches": [
                         {
-                          "StartAt": "Impute data",
+                          "StartAt": "Impute employment status data",
                           "States": {
-                            "Impute data": {
+                            "Impute employment status data": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -624,9 +624,9 @@
                           }
                         },
                         {
-                          "StartAt": "Validate Cleaned Data",
+                          "StartAt": "Validate Cleaned Employment Status Data",
                           "States": {
-                            "Validate Cleaned Data": {
+                            "Validate Cleaned Employment Status Data": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -666,9 +666,9 @@
                       "Next": "Validate Employment Status Estimates",
                       "Branches": [
                         {
-                          "StartAt": "Estimate data",
+                          "StartAt": "Estimate employment status data",
                           "States": {
-                            "Estimate data": {
+                            "Estimate employment status data": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -700,9 +700,9 @@
                           }
                         },
                         {
-                          "StartAt": "Validate Imputed Data",
+                          "StartAt": "Validate Imputed Employment Status Data",
                           "States": {
-                            "Validate Imputed Data": {
+                            "Validate Imputed Employment Status Data": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
