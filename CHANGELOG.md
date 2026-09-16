@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Fixed
+- Fixed the Glue crawler module's `table_prefix` so Athena table names no longer start with a digit (which Athena/Presto can't query unquoted), by adding a leading underscore ahead of the numbered domain prefix.
 
 
 ## [v2026.08.1] - 11/09/2026

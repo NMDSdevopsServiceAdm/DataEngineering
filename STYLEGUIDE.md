@@ -110,6 +110,7 @@ def your_function(df: DataFrame) -> DataFrame:
 ## Dataset Names in AWS S3
 - Domains are numbered to mirror their owning project's folder number, e.g. `domain=01_cqc` (from `projects/_01_ingest`), `domain=03_ind_cqc` (from `projects/_03_independent_cqc`). A domain shared across multiple projects' outputs (e.g. `99_publication`) is numbered to sort in its logical position instead — `99_` for a terminal layer that draws from several upstream domains.
 - Athena uses the dataset partition to name the tables, and the Glue crawler module's `table_prefix` prepends the domain to every discovered table name — so a dataset's own name doesn't need to repeat its domain. Within the domain, dataset names follow `{dataset}_{sub_dataset_if_relevant}_{order_of_process_if_relevant}_{very_brief_description}`
+- The crawler module prepends an extra leading underscore to `table_prefix` (e.g. `_01_cqc_providers_01_delta_api`) since Athena/Presto can't query an unquoted table name that starts with a digit — the numbered domain itself is unaffected
 - Multi-stage pipelines within a domain (e.g. `03_ind_cqc`) prefix their dataset names with a numbered product token (`01_filled_posts`, `03_starters_leavers_vacancies`), reserving unused numbers for products that don't exist yet, then a numbered stage within that product
 
 Examples:
