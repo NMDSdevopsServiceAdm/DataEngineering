@@ -5,13 +5,13 @@ from unittest.mock import Mock, call, patch
 import polars as pl
 import pytest
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_00_prepare_worker as job
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_00_prepare_worker as job
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_values.categorical_column_values import MainJobRoleLabels
 
-PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_00_prepare_worker"
+PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_00_prepare_worker"
 
 
 class TestMain:

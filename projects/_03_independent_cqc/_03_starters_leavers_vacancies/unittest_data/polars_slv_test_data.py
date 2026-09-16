@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_worker_utils as prepare_worker_job
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.prepare_worker_utils as prepare_worker_job
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
