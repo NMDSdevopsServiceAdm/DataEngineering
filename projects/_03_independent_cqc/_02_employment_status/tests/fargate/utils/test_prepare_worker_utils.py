@@ -2,10 +2,10 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.prepare_worker_utils as job
+import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_worker_utils as job
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
-from projects._03_independent_cqc._03_starters_leavers_vacancies.unittest_data.polars_slv_test_data import (
-    TestPrepareUtilsData as Data,
+from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_test_data import (
+    TestPrepareWorkerUtilsData as Data,
 )
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,

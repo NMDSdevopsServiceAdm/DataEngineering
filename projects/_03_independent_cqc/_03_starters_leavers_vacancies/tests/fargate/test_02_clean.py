@@ -1,18 +1,20 @@
 from unittest.mock import Mock, patch
 
-import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._02_clean_general as job
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._02_clean as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
-PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._02_clean_general"
+PATCH_PATH = (
+    "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._02_clean"
+)
 
 
 class TestMain:
     MERGED_DATA_SOURCE = "some/source"
-    GENERAL_CLEANED_DATA_DESTINATION = "some/destination"
+    CLEANED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.generalCleanUtils.create_slv_rate_columns")
+    @patch(f"{PATCH_PATH}.cleanUtils.create_slv_rate_columns")
     @patch(f"{PATCH_PATH}.cUtils.remove_repeated_values_over_time")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
@@ -24,7 +26,7 @@ class TestMain:
     ):
         job.main(
             self.MERGED_DATA_SOURCE,
-            self.GENERAL_CLEANED_DATA_DESTINATION,
+            self.CLEANED_DATA_DESTINATION,
         )
 
         scan_parquet_mock.assert_called_once_with(self.MERGED_DATA_SOURCE)
@@ -50,5 +52,5 @@ class TestMain:
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=remove_repeated_values_over_time_mock.return_value,
-            output_path=self.GENERAL_CLEANED_DATA_DESTINATION,
+            output_path=self.CLEANED_DATA_DESTINATION,
         )

@@ -18,7 +18,7 @@ def main(
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
 
-    Row-count check only for now, ahead of future SLV-specific cleaning logic.
+    Row-count check only for now, ahead of future employment-status cleaning logic.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset

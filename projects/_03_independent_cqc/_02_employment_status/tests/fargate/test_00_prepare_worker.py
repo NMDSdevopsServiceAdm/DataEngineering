@@ -1,11 +1,13 @@
 from unittest.mock import Mock, patch
 
-import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._00_prepare_worker as job
+import projects._03_independent_cqc._02_employment_status.fargate._00_prepare_worker as job
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 
-PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._00_prepare_worker"
+PATCH_PATH = (
+    "projects._03_independent_cqc._02_employment_status.fargate._00_prepare_worker"
+)
 
 
 class TestPrepareWorker:
