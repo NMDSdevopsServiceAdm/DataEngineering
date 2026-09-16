@@ -436,9 +436,11 @@ aggregate_to_publication_rows_test_cases = [
         ],
     ),
     AggregateToPublicationRowsTestCase(
-        # Same location and group in every column except import date - the two
-        # rows must stay as two separate output rows, not merge into one.
-        id="rows_are_kept_separate_by_import_date_job_role_region_and_service_type",
+        # Same location and identical on every column except the one grouping
+        # key each row changes in turn - each row must stay its own output
+        # row, proving the group_by is keyed on all four columns, not just
+        # whichever one two rows happen to share.
+        id="rows_are_kept_separate_when_any_single_grouping_key_differs",
         input_data=[
             (
                 "1-005",
@@ -450,8 +452,38 @@ aggregate_to_publication_rows_test_cases = [
             ),
             (
                 "1-005",
-                date(2026, 4, 1),
+                date(2026, 4, 1),  # differs: import date
                 *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "1-005",
+                date(2025, 4, 1),
+                "Care worker",  # differs: job role
+                "London",
+                "Care home service",
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "1-005",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "South West",  # differs: region
+                "Care home service",
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "1-005",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                "Non-residential service",  # differs: service type
                 10.0,
                 5.0,
                 *_ALL_TRUE_FILTERS,
@@ -476,6 +508,57 @@ aggregate_to_publication_rows_test_cases = [
             (
                 date(2026, 4, 1),
                 *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                1,
+                10.0,
+                1,
+                5.0,
+                10.0,
+                1,
+                5.0,
+                10.0,
+                1,
+                5.0,
+            ),
+            (
+                date(2025, 4, 1),
+                "Care worker",
+                "London",
+                "Care home service",
+                10.0,
+                1,
+                10.0,
+                1,
+                5.0,
+                10.0,
+                1,
+                5.0,
+                10.0,
+                1,
+                5.0,
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "South West",
+                "Care home service",
+                10.0,
+                1,
+                10.0,
+                1,
+                5.0,
+                10.0,
+                1,
+                5.0,
+                10.0,
+                1,
+                5.0,
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                "Non-residential service",
                 10.0,
                 1,
                 10.0,
