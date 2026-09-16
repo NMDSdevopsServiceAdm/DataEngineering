@@ -203,9 +203,9 @@
               "Next": "Impute and Validate Cleaned Data",
               "Branches": [
                 {
-                  "StartAt": "Clean data",
+                  "StartAt": "General Clean data",
                   "States": {
-                    "Clean data": {
+                    "General Clean data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
@@ -224,14 +224,90 @@
                             {
                               "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_03_starters_leavers_vacancies/fargate/_02_clean.py",
+                                "_03_starters_leavers_vacancies/fargate/_02_clean_general.py",
                                 "--merged_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge/",
-                                "--cleaned_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/"
+                                "--general_cleaned_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean_general/"
                               ]
                             }
                           ]
                         }
                       },
+                      "Next": "SLV Clean and Validate General Cleaned Data"
+                    },
+                    "SLV Clean and Validate General Cleaned Data": {
+                      "Type": "Parallel",
+                      "Branches": [
+                        {
+                          "StartAt": "SLV Clean data",
+                          "States": {
+                            "SLV Clean data": {
+                              "Type": "Task",
+                              "Resource": "arn:aws:states:::ecs:runTask.sync",
+                              "Parameters": {
+                                "Cluster": "${polars_cluster_arn}",
+                                "TaskDefinition": "${independent_cqc_task_arn}",
+                                "LaunchType": "FARGATE",
+                                "NetworkConfiguration": {
+                                  "AwsvpcConfiguration": {
+                                    "Subnets": ${public_subnet_ids},
+                                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                                    "AssignPublicIp": "ENABLED"
+                                  }
+                                },
+                                "Overrides": {
+                                  "ContainerOverrides": [
+                                    {
+                                      "Name": "_03_independent_cqc-container",
+                                      "Command": [
+                                        "_03_starters_leavers_vacancies/fargate/_02_clean_slv.py",
+                                        "--general_cleaned_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean_general/",
+                                        "--cleaned_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean_slv/"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              },
+                              "End": true
+                            }
+                          }
+                        },
+                        {
+                          "StartAt": "Validate General Clean data",
+                          "States": {
+                            "Validate General Clean data": {
+                              "Type": "Task",
+                              "Resource": "arn:aws:states:::ecs:runTask.sync",
+                              "Parameters": {
+                                "Cluster": "${polars_cluster_arn}",
+                                "TaskDefinition": "${independent_cqc_task_arn}",
+                                "LaunchType": "FARGATE",
+                                "NetworkConfiguration": {
+                                  "AwsvpcConfiguration": {
+                                    "Subnets": ${public_subnet_ids},
+                                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                                    "AssignPublicIp": "ENABLED"
+                                  }
+                                },
+                                "Overrides": {
+                                  "ContainerOverrides": [
+                                    {
+                                      "Name": "_03_independent_cqc-container",
+                                      "Command": [
+                                        "_03_starters_leavers_vacancies/fargate/validate_02_clean_general.py",
+                                        "--bucket_name", "${dataset_bucket_name}",
+                                        "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean_general/",
+                                        "--compare_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge/",
+                                        "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean_general_validation/"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              },
+                              "End": true
+                            }
+                          }
+                        }
+                      ],
                       "End": true
                     }
                   }
@@ -301,7 +377,7 @@
                               "Name": "_03_independent_cqc-container",
                               "Command": [
                                 "_03_starters_leavers_vacancies/fargate/_03_impute.py",
-                                "--cleaned_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/",
+                                "--cleaned_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean_slv/",
                                 "--imputed_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute/"
                               ]
                             }
@@ -334,11 +410,11 @@
                             {
                               "Name": "_03_independent_cqc-container",
                               "Command": [
-                                "_03_starters_leavers_vacancies/fargate/validate_02_clean.py",
+                                "_03_starters_leavers_vacancies/fargate/validate_02_clean_slv.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/",
+                                "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean_slv/",
                                 "--compare_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_01_merge/",
-                                "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean_validation/"
+                                "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean_slv_validation/"
                               ]
                             }
                           ]
@@ -413,7 +489,7 @@
                                 "_03_starters_leavers_vacancies/fargate/validate_03_impute.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute/",
-                                "--compare_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_02_clean_slv/",
                                 "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_03_impute_validation/"
                               ]
                             }

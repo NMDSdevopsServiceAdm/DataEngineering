@@ -2,29 +2,20 @@ import json
 from unittest.mock import Mock, call, patch
 
 import polars as pl
-import pytest
 
-import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_02_clean as job
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_02_clean_general as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
-PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_02_clean"
+PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_02_clean_general"
 
 
 class TestMain:
-    @pytest.fixture(autouse=True)
-    def setup(self):
+    def setup_method(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
-            SLVCols.turnover_rate: pl.Float32,
-            SLVCols.starter_rate: pl.Float32,
-            SLVCols.vacancy_rate: pl.Float32,
-            SLVCols.turnover_rate_dedup: pl.Float32,
-            SLVCols.starter_rate_dedup: pl.Float32,
-            SLVCols.vacancy_rate_dedup: pl.Float32,
         }
         source_rows = [
-            ("1-001", 0.1, 0.2, 0.3, 0.1, 0.2, 0.3),
+            ("1-001",),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
@@ -53,7 +44,7 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_report_includes_expected_validations(
+    def test_validation_report_includes_row_count_check_only(
         self,
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
@@ -67,13 +58,4 @@ class TestMain:
 
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
-        expected_assertions = {
-            "row_count_match",
-            "col_vals_ge",
-            "col_vals_between",
-        }
-
-        for assertion in expected_assertions:
-            assert (
-                assertion in assertion_types_present
-            ), f"{assertion} not found in validation report"
+        assert assertion_types_present == {"row_count_match"}

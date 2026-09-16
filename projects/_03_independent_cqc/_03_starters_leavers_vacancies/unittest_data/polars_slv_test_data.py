@@ -1060,7 +1060,7 @@ class CreateSlvRateColumnsTestCase:
 
 
 @dataclass
-class TestCleanUtilsData:
+class TestGeneralCleanUtilsData:
     create_slv_rate_columns_test_cases = [
         CreateSlvRateColumnsTestCase(
             id="computes_rates_for_a_typical_row",
