@@ -48,6 +48,10 @@ class WorkplaceCodeToLabelDictTestCase:
     code_to_label: dict[str, str]
     column_values_class: type
     expected_code_count: int
+    # A hand-written, independent restatement of specific code->label pairs,
+    # to catch a transposed code<->label mistake in the transcription that
+    # set-membership and count checks alone wouldn't catch.
+    expected_pairs: dict[str, str]
 
     def as_pytest_param(self):
         return pytest.param(self, id=self.id)
@@ -59,30 +63,71 @@ workplace_dict_test_cases = [
         code_to_label=ESTABLISHMENT_TYPE_CODE_TO_LABEL,
         column_values_class=EstablishmentType,
         expected_code_count=9,
+        expected_pairs={
+            "0": EstablishmentType.not_known,
+            "1": EstablishmentType.local_authority_adult_services,
+            "2": EstablishmentType.local_authority_childrens_services,
+            "3": EstablishmentType.local_authority_generic_other,
+            "4": EstablishmentType.local_authority_owned,
+            "5": EstablishmentType.health,
+            "6": EstablishmentType.private_sector,
+            "7": EstablishmentType.voluntary_charity,
+            "8": EstablishmentType.other,
+        },
     ),
     WorkplaceCodeToLabelDictTestCase(
         id="parent_permission",
         code_to_label=PARENT_PERMISSION_CODE_TO_LABEL,
         column_values_class=ParentPermission,
         expected_code_count=2,
+        expected_pairs={
+            "1": ParentPermission.parent_has_ownership,
+            "2": ParentPermission.workplace_has_ownership,
+        },
     ),
     WorkplaceCodeToLabelDictTestCase(
         id="is_parent",
         code_to_label=IS_PARENT_CODE_TO_LABEL,
         column_values_class=IsParent,
         expected_code_count=2,
+        expected_pairs={
+            "0": IsParent.is_not_parent,
+            "1": IsParent.is_parent,
+        },
     ),
     WorkplaceCodeToLabelDictTestCase(
         id="main_service_id",
         code_to_label=MAIN_SERVICE_ID_CODE_TO_LABEL,
         column_values_class=MainServiceID,
         expected_code_count=70,
+        expected_pairs={
+            "1": MainServiceID.care_home_services_with_nursing_chn,
+            "2": MainServiceID.care_home_services_without_nursing_chs,
+            # 4/53, 16/37, and 20/39 each intentionally share one label
+            # across two codes - the trickiest pairs to transcribe correctly.
+            "4": MainServiceID.sheltered_housing,
+            "53": MainServiceID.sheltered_housing,
+            "16": MainServiceID.social_work_and_care_management,
+            "37": MainServiceID.social_work_and_care_management,
+            "20": MainServiceID.information_and_advice_services,
+            "39": MainServiceID.information_and_advice_services,
+            "42": MainServiceID.nhs_primary_care_trust,
+            "46": MainServiceID.any_other_part_of_nhs_hospital_community_health_services,
+            "68": MainServiceID.hospital_services_for_people_with_mental_health_needs_learning_disabilities_and_or_problems_with_substance_misuse,
+            "75": MainServiceID.any_childrens_young_peoples_service,
+        },
     ),
     WorkplaceCodeToLabelDictTestCase(
         id="registration_type",
         code_to_label=REGISTRATION_TYPE_CODE_TO_LABEL,
         column_values_class=RegistrationType,
         expected_code_count=4,
+        expected_pairs={
+            "-1": RegistrationType.not_recorded,
+            "0": RegistrationType.not_regulated,
+            "1": RegistrationType.ofsted,
+            "2": RegistrationType.cqc_regulated,
+        },
     ),
 ]
 
@@ -101,3 +146,10 @@ class TestWorkplaceCodeToLabelDicts:
     )
     def test_dict_has_one_entry_per_raw_code(self, case):
         assert len(case.code_to_label) == case.expected_code_count
+
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in workplace_dict_test_cases]
+    )
+    def test_specific_codes_map_to_their_expected_label(self, case):
+        for code, expected_label in case.expected_pairs.items():
+            assert case.code_to_label[code] == expected_label

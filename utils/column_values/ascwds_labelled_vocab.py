@@ -28,7 +28,7 @@ from utils.column_values.categorical_column_values import (
     RegistrationType,
 )
 
-# Moved here from clean_worker_utils.py - this is main_job_role's owning vocab.
+# Lives beside main_job_role's owning vocab rather than as a loose module constant.
 NOT_KNOWN_JOB_ROLE = "-1"
 
 _BASE_FIELDS = {"column_name", "value_to_remove", "contains_null_values"}
