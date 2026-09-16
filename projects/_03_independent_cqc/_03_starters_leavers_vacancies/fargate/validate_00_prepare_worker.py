@@ -10,7 +10,7 @@ from polars_utils.filtering_utils import (
 )
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_worker_utils import (
+from projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.prepare_worker_utils import (
     RAW_RESHAPED_GROUP_COLUMNS,
     RESHAPED_GROUP_COLUMNS,
     collapse_job_roles_to_published_labels,

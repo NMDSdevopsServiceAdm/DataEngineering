@@ -5,14 +5,14 @@ from unittest.mock import Mock, call, patch
 import polars as pl
 import pytest
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_01_merge as job
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_01_merge as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
 
-PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_01_merge"
+PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_01_merge"
 
 PUBLISHED_ROLE_COUNT = len(
     SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values

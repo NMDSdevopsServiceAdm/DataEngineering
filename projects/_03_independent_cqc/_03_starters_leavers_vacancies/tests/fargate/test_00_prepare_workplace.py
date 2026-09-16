@@ -2,12 +2,12 @@ from unittest.mock import Mock, patch
 
 import polars.selectors as cs
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare_workplace as job
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._00_prepare_workplace as job
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
-PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare_workplace"
+PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._00_prepare_workplace"
 
 
 class TestPrepareWorkplace:

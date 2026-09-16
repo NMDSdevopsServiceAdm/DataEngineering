@@ -4,10 +4,10 @@ from unittest.mock import Mock, call, patch
 
 import polars as pl
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_03_impute as job
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_03_impute as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
-PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_03_impute"
+PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_03_impute"
 
 
 class ValidateImputedSLVDataTests(unittest.TestCase):

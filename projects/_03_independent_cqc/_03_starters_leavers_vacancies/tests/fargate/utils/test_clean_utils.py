@@ -2,8 +2,8 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.clean_utils as job
-from projects._07_workforce_characteristics.unittest_data.polars_slv_test_data import (
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.clean_utils as job
+from projects._03_independent_cqc._03_starters_leavers_vacancies.unittest_data.polars_slv_test_data import (
     TestCleanUtilsData as Data,
 )
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols

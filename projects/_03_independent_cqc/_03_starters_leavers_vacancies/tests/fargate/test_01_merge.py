@@ -1,8 +1,10 @@
 from unittest.mock import ANY, Mock, patch
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._01_merge as job
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._01_merge as job
 
-PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._01_merge"
+PATCH_PATH = (
+    "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._01_merge"
+)
 
 
 class TestMain:
