@@ -16,6 +16,7 @@ TEST_DESTINATION = "some/other/directory"
 
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
     @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
@@ -28,6 +29,7 @@ class TestMain:
         reduced_data_filter_expr_mock: Mock,
         has_continuous_data_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
+        aggregate_to_publication_rows_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
@@ -51,6 +53,9 @@ class TestMain:
             lambda lazy_df, column_names, from_date, column_alias: (
                 lazy_df.with_columns(pl.lit(True).alias(column_alias))
             )
+        )
+        aggregate_to_publication_rows_mock.return_value = pl.LazyFrame(
+            {Pub.publication_filled_posts: [42.0]}
         )
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
@@ -108,10 +113,7 @@ class TestMain:
         ):
             assert mock_call.args[1:] == expected_call
 
-        sink_to_parquet_mock.assert_called_once()
-        sink_call_kwargs = sink_to_parquet_mock.call_args.kwargs
-        assert sink_call_kwargs["output_path"] == TEST_DESTINATION
-        expected_lf = pl.LazyFrame(
+        cleaned_lf_expected = pl.LazyFrame(
             {
                 IndCQC.location_id: ["1-001", "1-001"],
                 IndCQC.cqc_location_import_date: [date(2025, 4, 1), date(2026, 4, 1)],
@@ -128,11 +130,22 @@ class TestMain:
                 Pub.ct_dispersion_filter_short_term: [True, True],
             }
         )
+        aggregate_to_publication_rows_mock.assert_called_once()
         assert_frame_equal(
-            sink_call_kwargs["lazy_df"], expected_lf, check_column_order=False
+            aggregate_to_publication_rows_mock.call_args.args[0],
+            cleaned_lf_expected,
+            check_column_order=False,
+        )
+
+        sink_to_parquet_mock.assert_called_once()
+        sink_call_kwargs = sink_to_parquet_mock.call_args.kwargs
+        assert sink_call_kwargs["output_path"] == TEST_DESTINATION
+        assert_frame_equal(
+            sink_call_kwargs["lazy_df"], aggregate_to_publication_rows_mock.return_value
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
     @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
@@ -145,6 +158,7 @@ class TestMain:
         reduced_data_filter_expr_mock: Mock,
         has_continuous_data_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
+        aggregate_to_publication_rows_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
@@ -166,6 +180,9 @@ class TestMain:
             lambda lazy_df, column_names, from_date, column_alias: (
                 lazy_df.with_columns(pl.lit(True).alias(column_alias))
             )
+        )
+        aggregate_to_publication_rows_mock.return_value = pl.LazyFrame(
+            {Pub.publication_filled_posts: [42.0]}
         )
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
