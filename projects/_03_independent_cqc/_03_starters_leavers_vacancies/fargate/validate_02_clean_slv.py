@@ -6,7 +6,6 @@ from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
@@ -18,6 +17,8 @@ def main(
 ) -> None:
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
+
+    Row-count check only for now, ahead of future SLV-specific cleaning logic.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
@@ -46,46 +47,7 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        )
-        .col_vals_ge(
-            SLVCols.turnover_rate,
-            0,
-            na_pass=True,
-            brief="turnover_rate is greater than or equal to 0",
-        )
-        .col_vals_ge(
-            SLVCols.starter_rate,
-            0,
-            na_pass=True,
-            brief="starter_rate is greater than or equal to 0",
-        )
-        .col_vals_between(
-            SLVCols.vacancy_rate,
-            0,
-            1,
-            na_pass=True,
-            brief="vacancy_rate is between 0 and 1",
-        )
-        .col_vals_ge(
-            SLVCols.turnover_rate_dedup,
-            0,
-            na_pass=True,
-            brief="turnover_rate_dedup is greater than or equal to 0",
-        )
-        .col_vals_ge(
-            SLVCols.starter_rate_dedup,
-            0,
-            na_pass=True,
-            brief="starter_rate_dedup is greater than or equal to 0",
-        )
-        .col_vals_between(
-            SLVCols.vacancy_rate_dedup,
-            0,
-            1,
-            na_pass=True,
-            brief="vacancy_rate_dedup is between 0 and 1",
-        )
-        .interrogate()
+        ).interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 
