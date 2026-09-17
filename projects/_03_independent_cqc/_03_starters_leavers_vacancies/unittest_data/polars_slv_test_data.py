@@ -385,14 +385,12 @@ class TestPrepareWorkplaceUtilsData:
 
 @dataclass
 class TestPrepareMainData:
-    # Metadata is CQC-matched only to 2024-10-08; the cleaned source additionally
-    # carries 2024-10-01, the date the old hardcoded quarterly/earliest-file-per-month
-    # rule would have kept instead - proving main() now follows the metadata match
-    # rather than that independent rule.
-    metadata_matched_to_late_arriving_file_data = {
+    # Metadata is matched to a single date; the cleaned source also carries an
+    # extra, unmatched date so filtering to metadata's dates is exercised for real.
+    metadata_matched_dates_data = {
         IndCQC.ascwds_workplace_import_date: [date(2024, 10, 8)],
     }
-    cleaned_workplace_with_late_arriving_file_data = {
+    cleaned_workplace_with_extra_date_data = {
         AWPClean.location_id: ["loc1", "loc1"],
         AWPClean.establishment_id: ["1-001", "1-001"],
         AWPClean.ascwds_workplace_import_date: [date(2024, 10, 1), date(2024, 10, 8)],

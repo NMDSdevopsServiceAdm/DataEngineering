@@ -1,8 +1,13 @@
+from datetime import date
 from unittest.mock import Mock, patch
 
 import polars as pl
+from polars.testing import assert_frame_equal
 
 import projects._03_independent_cqc._02_employment_status.fargate._00_prepare_worker as job
+from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_test_data import (
+    TestPrepareMainData as Data,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -25,7 +30,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.get_matched_ascwds_dates")
     @patch(f"{PATCH_PATH}.not_null_filter_expr")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_filters_worker_data_to_dates_present_in_metadata(
+    def test_main_chains_date_filter_directly_off_scan_for_pushdown(
         self,
         scan_parquet_mock: Mock,
         not_null_filter_expr_mock: Mock,
@@ -80,3 +85,40 @@ class TestMain:
             lazy_df=reshaped_lf,
             output_path=self.PREPARED_DATA_DESTINATION,
         )
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.pWorkerUtils.reshape_employment_status_data")
+    @patch(f"{PATCH_PATH}.pWorkerUtils.aggregate_employment_status_data")
+    @patch(f"{PATCH_PATH}.pWorkerUtils.collapse_job_roles_to_published_labels")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_main_filters_worker_data_to_dates_present_in_metadata(
+        self,
+        scan_parquet_mock: Mock,
+        collapse_job_roles_to_published_labels_mock: Mock,
+        aggregate_employment_status_data_mock: Mock,
+        reshape_employment_status_data_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
+        # not_null_filter_expr and get_matched_ascwds_dates are left unmocked so the
+        # real join between the two sources runs, proving the join is a plain
+        # is_in match on metadata's workplace-keyed dates against the worker's own
+        # date column - not verifying wiring shape.
+        cleaned_worker_lf = pl.LazyFrame(Data.cleaned_worker_with_extra_date_data)
+        metadata_lf = pl.LazyFrame(Data.metadata_matched_dates_data)
+        scan_parquet_mock.side_effect = [cleaned_worker_lf, metadata_lf]
+
+        job.main(
+            self.CLEANED_ASCWDS_WORKER_SOURCE,
+            self.METADATA_SOURCE,
+            self.PREPARED_DATA_DESTINATION,
+        )
+
+        filtered_lf = collapse_job_roles_to_published_labels_mock.call_args.args[0]
+        expected_lf = pl.LazyFrame(
+            {
+                AWKClean.location_id: ["loc1"],
+                AWKClean.establishment_id: ["1-001"],
+                AWKClean.ascwds_worker_import_date: [date(2024, 10, 8)],
+            }
+        )
+        assert_frame_equal(filtered_lf.collect(), expected_lf.collect())

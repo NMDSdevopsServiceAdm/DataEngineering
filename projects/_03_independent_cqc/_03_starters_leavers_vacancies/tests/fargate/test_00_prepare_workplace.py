@@ -29,7 +29,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.get_matched_ascwds_dates")
     @patch(f"{PATCH_PATH}.not_null_filter_expr")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_filters_workplace_data_to_dates_present_in_metadata(
+    def test_main_chains_date_filter_directly_off_scan_for_pushdown(
         self,
         scan_parquet_mock: Mock,
         not_null_filter_expr_mock: Mock,
@@ -102,7 +102,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.pWorkplaceUtils.reshape_job_role_cols_to_rows")
     @patch(f"{PATCH_PATH}.pWorkplaceUtils.reduce_to_published_roles")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_keeps_late_arriving_file_when_metadata_matched_to_it(
+    def test_main_filters_workplace_data_to_dates_present_in_metadata(
         self,
         scan_parquet_mock: Mock,
         reduce_to_published_roles_mock: Mock,
@@ -110,15 +110,11 @@ class TestMain:
         relabel_job_role_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        # Metadata is only CQC-matched to 2024-10-08. The cleaned source also carries
-        # 2024-10-01 - the date the old hardcoded quarterly/earliest-file-per-month
-        # rule would have kept instead of the later, metadata-matched file. Filtering
-        # and get_matched_ascwds_dates are left unmocked here so the real join between
-        # the two runs, proving the fix rather than just the mocked call shape.
-        cleaned_workplace_lf = pl.LazyFrame(
-            Data.cleaned_workplace_with_late_arriving_file_data
-        )
-        metadata_lf = pl.LazyFrame(Data.metadata_matched_to_late_arriving_file_data)
+        # not_null_filter_expr and get_matched_ascwds_dates are left unmocked so the
+        # real join between the two sources runs, proving the join is a plain
+        # is_in match on the metadata's dates - not verifying wiring shape.
+        cleaned_workplace_lf = pl.LazyFrame(Data.cleaned_workplace_with_extra_date_data)
+        metadata_lf = pl.LazyFrame(Data.metadata_matched_dates_data)
         scan_parquet_mock.side_effect = [cleaned_workplace_lf, metadata_lf]
 
         job.main(

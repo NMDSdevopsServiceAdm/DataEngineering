@@ -677,3 +677,18 @@ class TestMergeUtilsData:
             },
         ),
     ]
+
+
+@dataclass
+class TestPrepareMainData:
+    # Metadata is matched to a single workplace import date; the cleaned worker
+    # source also carries an extra, unmatched date so filtering the worker's own
+    # date column against metadata's workplace-keyed dates is exercised for real.
+    metadata_matched_dates_data = {
+        IndCQC.ascwds_workplace_import_date: [date(2024, 10, 8)],
+    }
+    cleaned_worker_with_extra_date_data = {
+        AWKClean.location_id: ["loc1", "loc1"],
+        AWKClean.establishment_id: ["1-001", "1-001"],
+        AWKClean.ascwds_worker_import_date: [date(2024, 10, 1), date(2024, 10, 8)],
+    }
