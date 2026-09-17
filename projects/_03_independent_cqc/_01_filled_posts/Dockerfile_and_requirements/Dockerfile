@@ -12,6 +12,7 @@ COPY docker_requirements/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Shared libraries
+COPY projects/_03_independent_cqc/utils /app/projects/_03_independent_cqc/utils
 COPY projects/_03_independent_cqc/_01_filled_posts/_01_merge/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_01_merge/fargate/utils
 COPY projects/_03_independent_cqc/_01_filled_posts/_02_clean/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_02_clean/fargate/utils
 COPY projects/_03_independent_cqc/_01_filled_posts/_03_impute/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_03_impute/fargate/utils
