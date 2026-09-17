@@ -16,6 +16,10 @@ TEST_DESTINATION = "some/other/directory"
 
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(
+        f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
+    )
+    @patch(f"{PATCH_PATH}.clean_utils.calc_perc_change_between_rows")
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
@@ -30,6 +34,8 @@ class TestMain:
         has_continuous_data_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
         aggregate_to_publication_rows_mock: Mock,
+        calc_perc_change_between_rows_mock: Mock,
+        calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
@@ -56,6 +62,16 @@ class TestMain:
         )
         aggregate_to_publication_rows_mock.return_value = pl.LazyFrame(
             {Pub.publication_filled_posts: [42.0]}
+        )
+        calc_perc_change_between_rows_mock.side_effect = (
+            lambda column_name, from_date, group_columns, column_alias: pl.lit(
+                None, dtype=pl.Float32
+            ).alias(column_alias)
+        )
+        calc_perc_change_cumulative_from_given_period_onwards_mock.side_effect = (
+            lambda column_name, from_date, group_columns, column_alias: pl.lit(
+                None, dtype=pl.Float32
+            ).alias(column_alias)
         )
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
@@ -137,14 +153,86 @@ class TestMain:
             check_column_order=False,
         )
 
+        group_columns = [
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+        ]
+        calc_perc_change_between_rows_mock.assert_has_calls(
+            [
+                call(
+                    Pub.assessment_ct_total_employed_long_term,
+                    date(2021, 7, 1),
+                    group_columns,
+                    Pub.assessment_ct_period_perc_change_long_term,
+                ),
+                call(
+                    Pub.assessment_ct_total_employed_medium_term,
+                    date(2025, 4, 1),
+                    group_columns,
+                    Pub.assessment_ct_period_perc_change_medium_term,
+                ),
+                call(
+                    Pub.assessment_ct_total_employed_short_term,
+                    date(2026, 4, 1),
+                    group_columns,
+                    Pub.assessment_ct_period_perc_change_short_term,
+                ),
+            ]
+        )
+        calc_perc_change_cumulative_from_given_period_onwards_mock.assert_has_calls(
+            [
+                call(
+                    Pub.assessment_ct_total_employed_long_term,
+                    date(2021, 7, 1),
+                    group_columns,
+                    Pub.assessment_ct_cumulative_perc_change_long_term,
+                ),
+                call(
+                    Pub.assessment_ct_total_employed_medium_term,
+                    date(2025, 4, 1),
+                    group_columns,
+                    Pub.assessment_ct_cumulative_perc_change_medium_term,
+                ),
+                call(
+                    Pub.assessment_ct_total_employed_short_term,
+                    date(2026, 4, 1),
+                    group_columns,
+                    Pub.assessment_ct_cumulative_perc_change_short_term,
+                ),
+            ]
+        )
+
         sink_to_parquet_mock.assert_called_once()
         sink_call_kwargs = sink_to_parquet_mock.call_args.kwargs
         assert sink_call_kwargs["output_path"] == TEST_DESTINATION
-        assert_frame_equal(
-            sink_call_kwargs["lazy_df"], aggregate_to_publication_rows_mock.return_value
+        expected_sink_lf = aggregate_to_publication_rows_mock.return_value.with_columns(
+            pl.lit(None, dtype=pl.Float32).alias(
+                Pub.assessment_ct_period_perc_change_long_term
+            ),
+            pl.lit(None, dtype=pl.Float32).alias(
+                Pub.assessment_ct_period_perc_change_medium_term
+            ),
+            pl.lit(None, dtype=pl.Float32).alias(
+                Pub.assessment_ct_period_perc_change_short_term
+            ),
+            pl.lit(None, dtype=pl.Float32).alias(
+                Pub.assessment_ct_cumulative_perc_change_long_term
+            ),
+            pl.lit(None, dtype=pl.Float32).alias(
+                Pub.assessment_ct_cumulative_perc_change_medium_term
+            ),
+            pl.lit(None, dtype=pl.Float32).alias(
+                Pub.assessment_ct_cumulative_perc_change_short_term
+            ),
         )
+        assert_frame_equal(sink_call_kwargs["lazy_df"], expected_sink_lf)
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(
+        f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
+    )
+    @patch(f"{PATCH_PATH}.clean_utils.calc_perc_change_between_rows")
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
@@ -159,6 +247,8 @@ class TestMain:
         has_continuous_data_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
         aggregate_to_publication_rows_mock: Mock,
+        calc_perc_change_between_rows_mock: Mock,
+        calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
@@ -183,6 +273,16 @@ class TestMain:
         )
         aggregate_to_publication_rows_mock.return_value = pl.LazyFrame(
             {Pub.publication_filled_posts: [42.0]}
+        )
+        calc_perc_change_between_rows_mock.side_effect = (
+            lambda column_name, from_date, group_columns, column_alias: pl.lit(
+                None, dtype=pl.Float32
+            ).alias(column_alias)
+        )
+        calc_perc_change_cumulative_from_given_period_onwards_mock.side_effect = (
+            lambda column_name, from_date, group_columns, column_alias: pl.lit(
+                None, dtype=pl.Float32
+            ).alias(column_alias)
         )
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
