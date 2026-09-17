@@ -96,9 +96,49 @@ def main(
 
     # TODO: Add rows for 'England', 'All CQC locations' and 'All CQC care homes'.
 
-    # TODO: Add percentage change between rows.
-
-    # TODO: Add cumulative percentage change from given start period.
+    group_columns = [
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.current_region,
+        IndCQC.primary_service_type,
+    ]
+    publication_summary_lf = publication_summary_lf.with_columns(
+        clean_utils.calc_perc_change_between_rows(
+            Pub.assessment_ct_total_employed_long_term,
+            long_term_from_date,
+            group_columns,
+            Pub.assessment_ct_period_perc_change_long_term,
+        ),
+        clean_utils.calc_perc_change_between_rows(
+            Pub.assessment_ct_total_employed_medium_term,
+            medium_term_from_date,
+            group_columns,
+            Pub.assessment_ct_period_perc_change_medium_term,
+        ),
+        clean_utils.calc_perc_change_between_rows(
+            Pub.assessment_ct_total_employed_short_term,
+            short_term_from_date,
+            group_columns,
+            Pub.assessment_ct_period_perc_change_short_term,
+        ),
+        clean_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.assessment_ct_total_employed_long_term,
+            long_term_from_date,
+            group_columns,
+            Pub.assessment_ct_cumulative_perc_change_long_term,
+        ),
+        clean_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.assessment_ct_total_employed_medium_term,
+            medium_term_from_date,
+            group_columns,
+            Pub.assessment_ct_cumulative_perc_change_medium_term,
+        ),
+        clean_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.assessment_ct_total_employed_short_term,
+            short_term_from_date,
+            group_columns,
+            Pub.assessment_ct_cumulative_perc_change_short_term,
+        ),
+    )
 
     utils.sink_to_parquet(
         lazy_df=publication_summary_lf,

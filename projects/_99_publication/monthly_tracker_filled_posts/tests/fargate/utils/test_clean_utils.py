@@ -139,10 +139,74 @@ class TestAddRowsForPublicationGroups:
 
 
 class TestCalcPercChangeBetweenRows:
-    def test_returns_expected_data(self):
-        pass
+    perc_change_schema = pl.Schema(
+        [
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+            (Pub.assessment_ct_total_employed_long_term, pl.Float32()),
+            (Pub.assessment_ct_total_employed_medium_term, pl.Float32()),
+        ]
+    )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.calc_perc_change_between_rows_test_cases
+        ],
+    )
+    def test_returns_percentage_change_against_the_previous_period(self, case):
+        expected_schema = pl.Schema(
+            list(self.perc_change_schema.items()) + [(case.column_alias, pl.Float32())]
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+
+        test_lf = expected_lf.drop(case.column_alias)
+
+        returned_lf = test_lf.with_columns(
+            job.calc_perc_change_between_rows(
+                case.column_name, case.from_date, case.group_columns, case.column_alias
+            )
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class TestCalcPercChangeCumulativeFromGivenPeriodOnwards:
-    def test_returns_expected_data(self):
-        pass
+    perc_change_schema = pl.Schema(
+        [
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+            (Pub.assessment_ct_total_employed_long_term, pl.Float32()),
+            (Pub.assessment_ct_total_employed_medium_term, pl.Float32()),
+        ]
+    )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.calc_perc_change_cumulative_from_given_period_onwards_test_cases
+        ],
+    )
+    def test_returns_cumulative_percentage_change_from_the_first_period_in_the_window(
+        self, case
+    ):
+        expected_schema = pl.Schema(
+            list(self.perc_change_schema.items()) + [(case.column_alias, pl.Float32())]
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+
+        test_lf = expected_lf.drop(case.column_alias)
+
+        returned_lf = test_lf.with_columns(
+            job.calc_perc_change_cumulative_from_given_period_onwards(
+                case.column_name, case.from_date, case.group_columns, case.column_alias
+            )
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

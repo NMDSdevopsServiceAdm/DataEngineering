@@ -292,17 +292,86 @@ def add_rows_for_publication_groups():
     pass
 
 
-def calc_perc_change_between_rows():
+def calc_perc_change_between_rows(
+    column_name: str,
+    from_date: date,
+    group_columns: list[str],
+    column_alias: str,
+) -> pl.Expr:
     """
-    Placeholder: Add a column with the percentage change between rows of
-    aggregated data.
+    Row-over-row percentage change in column_name within each group, as a
+    net change fraction: (current - previous) / previous, so 0.25 = +25%.
+
+    Restricted to periods on or after from_date: earlier periods are null,
+    and so is a group's first in-window period, since a term's window
+    never borrows a value from before its own start. "Previous" is the
+    last present period in the group's data, not necessarily the prior
+    calendar date, so a missing row spans the gap silently. Null (not
+    inf/NaN) when the previous value is exactly 0, since column_name is a
+    sum over a filter and can legitimately be 0.
+
+    Args:
+        column_name (str): the value column to measure change in.
+        from_date (date): the earliest import date this term's window covers.
+        group_columns (list[str]): columns identifying a group, e.g. region,
+            job role and service type.
+        column_alias (str): name to alias the resulting column to.
+
+    Returns:
+        pl.Expr: float expression with the row-over-row percentage change.
     """
-    pass
+    in_window_value = (
+        pl.when(pl.col(IndCQC.cqc_location_import_date) >= from_date)
+        .then(pl.col(column_name))
+        .otherwise(None)
+    )
+    previous_value = in_window_value.shift(1)
+    return (
+        pl.when(previous_value == 0)
+        .then(None)
+        .otherwise((in_window_value - previous_value) / previous_value)
+        .over(group_columns, order_by=IndCQC.cqc_location_import_date)
+        .alias(column_alias)
+    )
 
 
-def calc_perc_change_cumulative_from_given_period_onwards():
+def calc_perc_change_cumulative_from_given_period_onwards(
+    column_name: str,
+    from_date: date,
+    group_columns: list[str],
+    column_alias: str,
+) -> pl.Expr:
     """
-    Placeholder: Add a column with the cumulative percentage change from a given
-    import date onwards
+    Cumulative percentage change in column_name within each group, as a net
+    change fraction against the group's first in-window value (the
+    baseline): (current - baseline) / baseline. The baseline period itself
+    is 0.0.
+
+    Restricted to periods on or after from_date: earlier periods are null,
+    since a term's window never borrows a baseline from before its own
+    start. Null (not inf/NaN) when the baseline is exactly 0 - see
+    calc_perc_change_between_rows for why column_name can legitimately be 0.
+
+    Args:
+        column_name (str): the value column to measure change in.
+        from_date (date): the earliest import date this term's window covers.
+        group_columns (list[str]): columns identifying a group, e.g. region,
+            job role and service type.
+        column_alias (str): name to alias the resulting column to.
+
+    Returns:
+        pl.Expr: float expression with the cumulative percentage change.
     """
-    pass
+    in_window_value = (
+        pl.when(pl.col(IndCQC.cqc_location_import_date) >= from_date)
+        .then(pl.col(column_name))
+        .otherwise(None)
+    )
+    baseline_value = in_window_value.filter(in_window_value.is_not_null()).first()
+    return (
+        pl.when(baseline_value == 0)
+        .then(None)
+        .otherwise((in_window_value - baseline_value) / baseline_value)
+        .over(group_columns, order_by=IndCQC.cqc_location_import_date)
+        .alias(column_alias)
+    )

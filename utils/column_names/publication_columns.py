@@ -32,3 +32,21 @@ class PublicationColumns:
     assessment_ct_total_employed_short_term: str = (
         "assessment_ct_total_employed_short_term"
     )
+    assessment_ct_period_perc_change_long_term: str = (
+        "assessment_ct_period_perc_change_long_term"
+    )
+    assessment_ct_period_perc_change_medium_term: str = (
+        "assessment_ct_period_perc_change_medium_term"
+    )
+    assessment_ct_period_perc_change_short_term: str = (
+        "assessment_ct_period_perc_change_short_term"
+    )
+    assessment_ct_cumulative_perc_change_long_term: str = (
+        "assessment_ct_cumulative_perc_change_long_term"
+    )
+    assessment_ct_cumulative_perc_change_medium_term: str = (
+        "assessment_ct_cumulative_perc_change_medium_term"
+    )
+    assessment_ct_cumulative_perc_change_short_term: str = (
+        "assessment_ct_cumulative_perc_change_short_term"
+    )

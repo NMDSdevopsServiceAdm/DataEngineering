@@ -574,3 +574,242 @@ aggregate_to_publication_rows_test_cases = [
         ],
     ),
 ]
+
+
+@dataclass
+class CalcPercChangeBetweenRowsTestCase:
+    id: str
+    column_name: str
+    from_date: date
+    group_columns: list[str]
+    column_alias: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase:
+    id: str
+    column_name: str
+    from_date: date
+    group_columns: list[str]
+    column_alias: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+PERC_CHANGE_GROUP_COLUMNS = [
+    IndCQC.main_job_role_clean_labelled,
+    IndCQC.current_region,
+    IndCQC.primary_service_type,
+]
+_CARE_WORKER_SOUTH_WEST_NON_RES = (
+    "Care worker",
+    "South West",
+    "Non-residential service",
+)
+
+calc_perc_change_between_rows_test_cases = [
+    CalcPercChangeBetweenRowsTestCase(
+        id="change_is_measured_against_the_previous_period_in_the_group",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_period_perc_change_long_term,
+        expected_data=[
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
+            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, -0.5),
+        ],
+    ),
+    CalcPercChangeBetweenRowsTestCase(
+        id="periods_before_from_date_are_null",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_period_perc_change_long_term,
+        expected_data=[
+            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 999.0, None, None),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
+        ],
+    ),
+    CalcPercChangeBetweenRowsTestCase(
+        id="null_for_every_period_when_none_are_in_the_window",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_period_perc_change_long_term,
+        expected_data=[
+            (date(2023, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, None),
+        ],
+    ),
+    CalcPercChangeBetweenRowsTestCase(
+        id="null_when_the_previous_period_is_zero",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_period_perc_change_long_term,
+        expected_data=[
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, None, None),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 50.0, None, None),
+        ],
+    ),
+    CalcPercChangeBetweenRowsTestCase(
+        id="a_period_dropping_to_zero_is_a_full_decrease_not_a_null",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_period_perc_change_long_term,
+        expected_data=[
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, None, -1.0),
+        ],
+    ),
+    CalcPercChangeBetweenRowsTestCase(
+        # No row at all for 2026-04-01 - the comparison silently spans the gap
+        # to the last present period rather than treating it as a missing value.
+        id="compares_with_the_last_present_period_when_one_is_missing",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_period_perc_change_long_term,
+        expected_data=[
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
+        ],
+    ),
+    CalcPercChangeBetweenRowsTestCase(
+        # Rows are deliberately out of date order within each group, so this
+        # only passes if the window genuinely orders by import date rather
+        # than relying on physical row order.
+        id="groups_do_not_affect_each_other",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_period_perc_change_long_term,
+        expected_data=[
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
+            (date(2027, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 25.0, None, -0.5),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+            (date(2026, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 50.0, None, None),
+        ],
+    ),
+    CalcPercChangeBetweenRowsTestCase(
+        id="honours_the_column_name_from_date_and_alias_arguments",
+        column_name=Pub.assessment_ct_total_employed_medium_term,
+        from_date=date(2026, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_period_perc_change_medium_term,
+        expected_data=[
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 40.0, None),
+            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 60.0, 0.5),
+        ],
+    ),
+]
+
+calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
+    CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
+        id="change_is_measured_against_the_first_period_in_the_window",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_cumulative_perc_change_long_term,
+        expected_data=[
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
+            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 400.0, None, 3.0),
+        ],
+    ),
+    CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
+        id="baseline_ignores_periods_before_from_date",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_cumulative_perc_change_long_term,
+        expected_data=[
+            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 50.0, None, None),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
+        ],
+    ),
+    CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
+        id="null_for_every_period_when_none_are_in_the_window",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_cumulative_perc_change_long_term,
+        expected_data=[
+            (date(2023, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, None),
+        ],
+    ),
+    CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
+        id="null_when_the_baseline_period_is_zero",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_cumulative_perc_change_long_term,
+        expected_data=[
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, None, None),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 50.0, None, None),
+            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+        ],
+    ),
+    CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
+        id="a_period_dropping_to_zero_is_a_full_decrease_not_a_null",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_cumulative_perc_change_long_term,
+        expected_data=[
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, None, -1.0),
+        ],
+    ),
+    CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
+        # No row at all for 2026-04-01 - the baseline stays anchored to the
+        # first in-window period regardless of the gap.
+        id="baseline_is_unaffected_by_a_missing_period",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_cumulative_perc_change_long_term,
+        expected_data=[
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
+            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
+        ],
+    ),
+    CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
+        # Rows are deliberately out of date order within each group, so this
+        # only passes if the baseline genuinely orders by import date rather
+        # than relying on physical row order.
+        id="groups_do_not_affect_each_other",
+        column_name=Pub.assessment_ct_total_employed_long_term,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_cumulative_perc_change_long_term,
+        expected_data=[
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
+            (date(2027, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 25.0, None, -0.5),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
+            (date(2026, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 50.0, None, 0.0),
+        ],
+    ),
+    CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
+        id="honours_the_column_name_from_date_and_alias_arguments",
+        column_name=Pub.assessment_ct_total_employed_medium_term,
+        from_date=date(2026, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.assessment_ct_cumulative_perc_change_medium_term,
+        expected_data=[
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 40.0, 0.0),
+            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 60.0, 0.5),
+        ],
+    ),
+]
