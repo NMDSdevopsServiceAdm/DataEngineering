@@ -18,10 +18,6 @@ def main(
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
 
-    The merge left-joins prepared workplace data onto the cleaned employment
-    status data, so the merged output has exactly as many rows as the cleaned
-    employment status data it was built from.
-
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
             and output the report to (should correspond to workspace / feature

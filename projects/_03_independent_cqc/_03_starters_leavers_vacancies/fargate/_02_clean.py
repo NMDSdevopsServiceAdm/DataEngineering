@@ -44,7 +44,7 @@ if __name__ == "__main__":
     args = utils.get_args(
         (
             "--merged_data_source",
-            "Source s3 directory for estimated ind cqc filled posts data",
+            "Source s3 directory for merged slv data",
         ),
         (
             "--cleaned_data_destination",

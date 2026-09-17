@@ -1,6 +1,8 @@
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._01_merge as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 PATCH_PATH = (
     "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._01_merge"
@@ -8,60 +10,41 @@ PATCH_PATH = (
 
 
 class TestMain:
-    METADATA_SOURCE = "some/source"
-    JOB_ROLE_ESTIMATES_SOURCE = "another/source"
+    EMPLOYMENT_STATUS_CLEAN_SOURCE = "some/source"
     PREPARED_SLV_DATASET_SOURCE = "other/source"
-    PREPARED_WORKER_SOURCE = "worker/source"
-    EMPLOYMENT_STATUS_RATES_SOURCE = "employment/status/rates/source"
     MERGED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
-    @patch(f"{PATCH_PATH}.pl.scan_csv")
-    @patch(f"{PATCH_PATH}.mUtils.collapse_job_role_estimates_to_published_labels")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        collapse_job_role_estimates_to_published_labels_mock: Mock,
-        scan_csv_mock: Mock,
-        apply_employment_status_magic_numbers_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
+        employment_status_clean_lf = Mock()
+        workplace_lf = Mock()
+        scan_parquet_mock.side_effect = [employment_status_clean_lf, workplace_lf]
+
         job.main(
-            self.METADATA_SOURCE,
-            self.JOB_ROLE_ESTIMATES_SOURCE,
+            self.EMPLOYMENT_STATUS_CLEAN_SOURCE,
             self.PREPARED_SLV_DATASET_SOURCE,
-            self.PREPARED_WORKER_SOURCE,
-            self.EMPLOYMENT_STATUS_RATES_SOURCE,
             self.MERGED_DATA_DESTINATION,
         )
 
-        assert len(scan_parquet_mock.call_args_list) == 4
+        scan_parquet_mock.assert_any_call(self.EMPLOYMENT_STATUS_CLEAN_SOURCE)
+        scan_parquet_mock.assert_any_call(self.PREPARED_SLV_DATASET_SOURCE)
 
-        scan_parquet_mock.assert_any_call(
-            source=self.METADATA_SOURCE, selected_columns=job.metadata_columns
-        )
-        scan_parquet_mock.assert_any_call(
-            source=self.JOB_ROLE_ESTIMATES_SOURCE,
-            selected_columns=job.job_role_estimates_columns,
-        )
-        scan_parquet_mock.assert_any_call(
-            self.PREPARED_SLV_DATASET_SOURCE, selected_columns=job.workplace_columns
-        )
-        scan_parquet_mock.assert_any_call(
-            self.PREPARED_WORKER_SOURCE, selected_columns=job.worker_columns
-        )
-
-        collapse_job_role_estimates_to_published_labels_mock.assert_called_once()
-
-        apply_employment_status_magic_numbers_mock.assert_called_once()
-
-        scan_csv_mock.assert_called_once_with(
-            self.EMPLOYMENT_STATUS_RATES_SOURCE, schema=ANY
+        employment_status_clean_lf.join.assert_called_once_with(
+            workplace_lf,
+            on=[
+                IndCQC.establishment_id,
+                IndCQC.ascwds_workplace_import_date,
+                SLVCols.published_job_role_label,
+            ],
+            how="left",
         )
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=ANY,
+            lazy_df=employment_status_clean_lf.join.return_value,
             output_path=self.MERGED_DATA_DESTINATION,
         )
