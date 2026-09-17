@@ -305,12 +305,14 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
 class BoundingExpressions:
     """Create Polars expressions that bound workplace metrics to valid ranges.
 
-    The class defines expressions for constraining filled-posts values,
-    starters/leavers/vacancies (SLV) job-role values, and job-role employees
-    values to acceptable ranges. Employees is bounded separately from SLV with
-    a lower bound of 1 rather than 0, since it is used as a divisor in
-    downstream turnover/starter/vacancy rate calculations - a value of 0
-    there must stay null, not become a real zero.
+    The class defines expressions for constraining filled-posts values and
+    job-role values (starters, leavers, vacancies and employees) to acceptable
+    ranges. Job-role columns share a single lower-bound-of-0 rule: the raw
+    ASC-WDS files use -1/-2 as "not known"/"not recorded" sentinels, which
+    must be nulled, but 0 is a legitimate value for any job role, including
+    employees (a workplace can genuinely employ nobody in a given role).
+    Upper-bound sentinel handling (998/999, "not known") is intentionally not
+    done here - it is being moved to a dedicated SLV cleaning stage.
     These expressions are designed for use in lazy Polars pipelines and keep
     the transformation logic declarative and readable.
 
@@ -319,22 +321,15 @@ class BoundingExpressions:
             estimates needing bounding.
         filled_posts_lower_bound (int): Minimum accepted value for filled-posts
             columns.
-        slv_bounding_cols (pl.selectors.Selector): Selector for starters,
-            leavers and vacancies job-role columns.
-        employees_bounding_cols (pl.selectors.Selector): Selector for
-            employees job-role columns.
-        slv_lower_bound (int): Minimum accepted value for SLV job-role columns.
-        employees_lower_bound (int): Minimum accepted value for employees
-            job-role columns.
-        slv_upper_bound (int): Maximum accepted value for SLV and employees
-            job-role columns.
+        job_role_bounding_cols (pl.selectors.Selector): Selector for
+            starters, leavers, vacancies and employees job-role columns.
+        job_role_lower_bound (int): Minimum accepted value for job-role
+            columns.
         filled_posts_expr (pl.Expr): Expression that bounds columns needed in
             filled-posts estimates to the configured valid range and renaming.
-        slv_expr (pl.Expr): Expression that bounds SLV job-role columns to the
-            configured valid range while preserving the original column names.
-        employees_expr (pl.Expr): Expression that bounds employees job-role
-            columns to the configured valid range while preserving the
-            original column names.
+        job_role_expr (pl.Expr): Expression that bounds job-role columns to
+            the configured valid range while preserving the original column
+            names.
     """
 
     filled_posts_bounding_cols: list[str] = [
@@ -343,15 +338,8 @@ class BoundingExpressions:
     ]
     filled_posts_lower_bound: int = 1
 
-    slv_bounding_cols: pl.selectors.Selector = (
-        expr.is_slv_job_role_column() & ~cs.ends_with("emp")
-    )
-    employees_bounding_cols: pl.selectors.Selector = (
-        expr.is_slv_job_role_column() & cs.ends_with("emp")
-    )
-    slv_lower_bound: int = 0
-    employees_lower_bound: int = 1
-    slv_upper_bound: int = 998  # 999 has been used as code for not known
+    job_role_bounding_cols: pl.selectors.Selector = expr.is_slv_job_role_column()
+    job_role_lower_bound: int = 0
 
     filled_posts_expr: pl.Expr = (
         pl.when(pl.col(*filled_posts_bounding_cols) >= filled_posts_lower_bound)
@@ -360,24 +348,9 @@ class BoundingExpressions:
         .name.suffix("_bounded")
     )
 
-    slv_expr: pl.Expr = (
-        pl.when(
-            slv_bounding_cols.as_expr().is_between(
-                slv_lower_bound, slv_upper_bound, closed="both"
-            )
-        )
-        .then(slv_bounding_cols)
-        .otherwise(None)
-        .name.keep()
-    )
-
-    employees_expr: pl.Expr = (
-        pl.when(
-            employees_bounding_cols.as_expr().is_between(
-                employees_lower_bound, slv_upper_bound, closed="both"
-            )
-        )
-        .then(employees_bounding_cols)
+    job_role_expr: pl.Expr = (
+        pl.when(job_role_bounding_cols.as_expr() >= job_role_lower_bound)
+        .then(job_role_bounding_cols)
         .otherwise(None)
         .name.keep()
     )
