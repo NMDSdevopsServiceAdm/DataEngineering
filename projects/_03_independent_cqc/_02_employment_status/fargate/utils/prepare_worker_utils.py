@@ -35,11 +35,9 @@ RAW_RESHAPED_GROUP_COLUMNS = [
     if column != SLVCols.published_job_role_label
 ] + [AWKClean.main_job_role_clean_labelled]
 
-# Excludes "student", which EmploymentStatusLabels defines but which doesn't
-# occur in the raw worker data, so it's not given its own output column here.
 EMPLOYMENT_STATUS_LABEL_TO_COLUMN = {
     label: f"emplstat_{label}_count"
-    for label in CatVals.employment_status_labels_excl_student_column_values.categorical_values
+    for label in CatVals.employment_status_labels_column_values.categorical_values
 }
 
 
