@@ -6,6 +6,7 @@ import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
 @dataclass
@@ -570,6 +571,354 @@ aggregate_to_publication_rows_test_cases = [
                 10.0,
                 1,
                 5.0,
+            ),
+        ],
+    ),
+]
+
+
+def _all_terms_metrics(
+    filled_posts: float, locationid_count: int, ct_total_employed: float
+) -> tuple:
+    """Publication + long/medium/short assessment metrics, identical across
+    all three terms since every input row's filters pass in these tests."""
+    return (
+        filled_posts,
+        locationid_count,
+        filled_posts,
+        locationid_count,
+        ct_total_employed,
+        filled_posts,
+        locationid_count,
+        ct_total_employed,
+        filled_posts,
+        locationid_count,
+        ct_total_employed,
+    )
+
+
+@dataclass
+class AddRowsForPublicationGroupsTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+_CARE_HOME_WITH_NURSING = PrimaryServiceType.care_home_with_nursing
+_NON_RESIDENTIAL = PrimaryServiceType.non_residential
+
+add_rows_for_publication_groups_test_cases = [
+    AddRowsForPublicationGroupsTestCase(
+        # Location "1-001" has two job roles, so a naive sum of the two rows'
+        # publication_locationid_count would give 2 for "All job roles" - it
+        # must stay 1, since it is still only one location.
+        id="all_job_roles_row_counts_a_multi_job_role_location_once_not_per_role",
+        input_data=[
+            (
+                "1-001",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "1-001",
+                date(2025, 4, 1),
+                "Care worker",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                20.0,
+                8.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        expected_data=[
+            # real rows, unchanged
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Care worker",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(20.0, 1, 8.0),
+            ),
+            # "All job roles" - filled posts sum to 30, but it is still the
+            # same single location, so locationid_count stays 1.
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(30.0, 1, 13.0),
+            ),
+            # Only one real service type is present, so both service type
+            # rollups mirror the three London rows above under a new label.
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                "All CQC locations",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Care worker",
+                "London",
+                "All CQC locations",
+                *_all_terms_metrics(20.0, 1, 8.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "London",
+                "All CQC locations",
+                *_all_terms_metrics(30.0, 1, 13.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                "All CQC care homes",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Care worker",
+                "London",
+                "All CQC care homes",
+                *_all_terms_metrics(20.0, 1, 8.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "London",
+                "All CQC care homes",
+                *_all_terms_metrics(30.0, 1, 13.0),
+            ),
+            # Only one real region is present, so England mirrors every row
+            # above - this is the "England ends up with all the previous
+            # aggregation rows" property.
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "England",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Care worker",
+                "England",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(20.0, 1, 8.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "England",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(30.0, 1, 13.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "England",
+                "All CQC locations",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Care worker",
+                "England",
+                "All CQC locations",
+                *_all_terms_metrics(20.0, 1, 8.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "England",
+                "All CQC locations",
+                *_all_terms_metrics(30.0, 1, 13.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "England",
+                "All CQC care homes",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Care worker",
+                "England",
+                "All CQC care homes",
+                *_all_terms_metrics(20.0, 1, 8.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "England",
+                "All CQC care homes",
+                *_all_terms_metrics(30.0, 1, 13.0),
+            ),
+        ],
+    ),
+    AddRowsForPublicationGroupsTestCase(
+        # Two locations, one care home and one non-residential: "All CQC care
+        # homes" must exclude the non-residential location while "All CQC
+        # locations" includes it.
+        id="all_cqc_care_homes_excludes_non_residential_locations",
+        input_data=[
+            (
+                "2-001",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "2-002",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _NON_RESIDENTIAL,
+                15.0,
+                6.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _NON_RESIDENTIAL,
+                *_all_terms_metrics(15.0, 1, 6.0),
+            ),
+            # Only one job role is present, so "All job roles" mirrors both
+            # rows above under a new label.
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "London",
+                _NON_RESIDENTIAL,
+                *_all_terms_metrics(15.0, 1, 6.0),
+            ),
+            # "All CQC locations" sums both service types - two locations.
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                "All CQC locations",
+                *_all_terms_metrics(25.0, 2, 11.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "London",
+                "All CQC locations",
+                *_all_terms_metrics(25.0, 2, 11.0),
+            ),
+            # "All CQC care homes" excludes the non-residential location.
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                "All CQC care homes",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "London",
+                "All CQC care homes",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            # England mirrors every row above - only one real region present.
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "England",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "England",
+                _NON_RESIDENTIAL,
+                *_all_terms_metrics(15.0, 1, 6.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "England",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "England",
+                _NON_RESIDENTIAL,
+                *_all_terms_metrics(15.0, 1, 6.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "England",
+                "All CQC locations",
+                *_all_terms_metrics(25.0, 2, 11.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "England",
+                "All CQC locations",
+                *_all_terms_metrics(25.0, 2, 11.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "England",
+                "All CQC care homes",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "England",
+                "All CQC care homes",
+                *_all_terms_metrics(10.0, 1, 5.0),
             ),
         ],
     ),
