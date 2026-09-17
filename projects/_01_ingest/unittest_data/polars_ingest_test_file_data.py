@@ -2421,7 +2421,6 @@ class TestCleanAscwdsWorkerUtilsData:
                 ("102", "191"),
                 ("103", "192"),
                 ("104", "193"),
-                ("105", "194"),
                 ("106", "196"),
             ],
             labels_data=[
@@ -2445,11 +2444,6 @@ class TestCleanAscwdsWorkerUtilsData:
                     "193",
                     EmploymentStatusLabels.agency,
                 ),
-                (
-                    AWKClean.employment_status_clean,
-                    "194",
-                    EmploymentStatusLabels.student,
-                ),
                 (AWKClean.employment_status_clean, "196", EmploymentStatusLabels.other),
             ],
             expected_data=[
@@ -2457,7 +2451,6 @@ class TestCleanAscwdsWorkerUtilsData:
                 ("102", "191", "191", EmploymentStatusLabels.temporary),
                 ("103", "192", "192", EmploymentStatusLabels.bank_or_pool),
                 ("104", "193", "193", EmploymentStatusLabels.agency),
-                ("105", "194", "194", EmploymentStatusLabels.student),
                 ("106", "196", "196", EmploymentStatusLabels.other),
             ],
         )

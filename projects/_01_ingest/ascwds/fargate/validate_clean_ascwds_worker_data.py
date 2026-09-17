@@ -105,6 +105,20 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             ),
             brief=f"{ASCWKClean.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
         )
+        .specially(
+            vl.is_unique_count_equal(
+                ASCWKClean.employment_status_clean,
+                CatValues.employment_status_id_column_values.count_of_categorical_values,
+            ),
+            brief=f"{ASCWKClean.employment_status_clean} should have exactly {CatValues.employment_status_id_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                ASCWKClean.employment_status_clean_labelled,
+                CatValues.employment_status_labels_column_values.count_of_categorical_values,
+            ),
+            brief=f"{ASCWKClean.employment_status_clean_labelled} should have exactly {CatValues.employment_status_labels_column_values.count_of_categorical_values} distinct values",
+        )
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)

@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Reshaped the SLV pipeline's aggregated employment status data from one row per employment status into one row per location, establishment, import date and job role, with a worker count column per employment status, replacing the pass-through placeholder. Updated its validation's expected row count to match the new grain.
 - Removed 18 unused helper functions across `utils/`, `polars_utils/` and a couple of project-specific `fargate/utils` modules that had no call sites outside their own tests, along with their dedicated tests and any fixture data/schemas used only by those tests. Also removed 50 orphaned test fixture rows/schemas across the repo's `unittest_data` files that were no longer referenced by any test.
 - Changed the ASCWDS workplace job-role lower bound from 1 to 0 for employees columns to match starters/leavers/vacancies, since a workplace can legitimately have 0 employees in a given job role; added explicit null handling in the SLV clean job's rate calculations for employees-is-zero cases.
+- Removed the unused `student` employment status value from `EmploymentStatusLabels`/`EmploymentStatusID`, confirmed absent from production ASC-WDS worker data, consolidated the SLV employment-status pivot onto a single label list, and added a full-coverage validation check for the cleaned employment status columns.
 
 
 ### Improved
