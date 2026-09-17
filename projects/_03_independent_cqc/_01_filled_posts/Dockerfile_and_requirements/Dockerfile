@@ -55,17 +55,6 @@ COPY projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/validate_
 # flattened to /app/) because several of their filenames (_01_merge.py,
 # _02_clean.py, etc.) are identical to job_role_estimates scripts already
 # copied above, and to each other.
-COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/_00_prepare_workplace.py /app/_03_starters_leavers_vacancies/fargate/_00_prepare_workplace.py
-COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/_01_merge.py /app/_03_starters_leavers_vacancies/fargate/_01_merge.py
-COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/_02_clean.py /app/_03_starters_leavers_vacancies/fargate/_02_clean.py
-COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/_03_impute.py /app/_03_starters_leavers_vacancies/fargate/_03_impute.py
-COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/_04_estimate.py /app/_03_starters_leavers_vacancies/fargate/_04_estimate.py
-COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/validate_00_prepare_workplace.py /app/_03_starters_leavers_vacancies/fargate/validate_00_prepare_workplace.py
-COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/validate_01_merge.py /app/_03_starters_leavers_vacancies/fargate/validate_01_merge.py
-COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/validate_02_clean.py /app/_03_starters_leavers_vacancies/fargate/validate_02_clean.py
-COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/validate_03_impute.py /app/_03_starters_leavers_vacancies/fargate/validate_03_impute.py
-COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/validate_04_estimate.py /app/_03_starters_leavers_vacancies/fargate/validate_04_estimate.py
-
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/_00_prepare_worker.py /app/_02_employment_status/fargate/_00_prepare_worker.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/_01_merge.py /app/_02_employment_status/fargate/_01_merge.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/_02_clean.py /app/_02_employment_status/fargate/_02_clean.py
@@ -76,5 +65,16 @@ COPY projects/_03_independent_cqc/_02_employment_status/fargate/validate_01_merg
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/validate_02_clean.py /app/_02_employment_status/fargate/validate_02_clean.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/validate_03_impute.py /app/_02_employment_status/fargate/validate_03_impute.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/validate_04_estimate.py /app/_02_employment_status/fargate/validate_04_estimate.py
+
+COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/_00_prepare_workplace.py /app/_03_starters_leavers_vacancies/fargate/_00_prepare_workplace.py
+COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/_01_merge.py /app/_03_starters_leavers_vacancies/fargate/_01_merge.py
+COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/_02_clean.py /app/_03_starters_leavers_vacancies/fargate/_02_clean.py
+COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/_03_impute.py /app/_03_starters_leavers_vacancies/fargate/_03_impute.py
+COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/_04_estimate.py /app/_03_starters_leavers_vacancies/fargate/_04_estimate.py
+COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/validate_00_prepare_workplace.py /app/_03_starters_leavers_vacancies/fargate/validate_00_prepare_workplace.py
+COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/validate_01_merge.py /app/_03_starters_leavers_vacancies/fargate/validate_01_merge.py
+COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/validate_02_clean.py /app/_03_starters_leavers_vacancies/fargate/validate_02_clean.py
+COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/validate_03_impute.py /app/_03_starters_leavers_vacancies/fargate/validate_03_impute.py
+COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/validate_04_estimate.py /app/_03_starters_leavers_vacancies/fargate/validate_04_estimate.py
 
 ENTRYPOINT ["python"]
