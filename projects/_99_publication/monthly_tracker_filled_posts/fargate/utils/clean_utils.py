@@ -299,21 +299,16 @@ def calc_perc_change_between_rows(
     column_alias: str,
 ) -> pl.Expr:
     """
-    Builds a polars expression for the row-over-row percentage change in
-    column_name within each group, restricted to periods on or after
-    from_date.
+    Row-over-row percentage change in column_name within each group, as a
+    net change fraction: (current - previous) / previous, so 0.25 = +25%.
 
-    Expressed as a net change fraction: (current - previous) / previous, so
-    a 25% rise is 0.25. "Previous" means the immediately preceding import
-    date present in the group's data, not the preceding calendar period -
-    if a group has no qualifying row for a given date, the comparison spans
-    the gap silently. Periods before from_date are null, and so is the
-    first in-window period of a group, since there is no in-window previous
-    period to compare it to; a term's window never borrows a value from
-    before its own start date. Null, rather than inf/NaN, when the previous
-    period's value is exactly 0 - column_name is a sum over a filter and
-    can be legitimately 0 when no location qualifies, unlike most divisors
-    in this repo which are guaranteed >=1 or null upstream.
+    Restricted to periods on or after from_date: earlier periods are null,
+    and so is a group's first in-window period, since a term's window
+    never borrows a value from before its own start. "Previous" is the
+    last present period in the group's data, not necessarily the prior
+    calendar date, so a missing row spans the gap silently. Null (not
+    inf/NaN) when the previous value is exactly 0, since column_name is a
+    sum over a filter and can legitimately be 0.
 
     Args:
         column_name (str): the value column to measure change in.
@@ -347,17 +342,15 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     column_alias: str,
 ) -> pl.Expr:
     """
-    Builds a polars expression for the percentage change in column_name
-    within each group, cumulative from from_date onwards.
+    Cumulative percentage change in column_name within each group, as a net
+    change fraction against the group's first in-window value (the
+    baseline): (current - baseline) / baseline. The baseline period itself
+    is 0.0.
 
-    Expressed as a net change fraction against the group's first in-window
-    value (the baseline): (current - baseline) / baseline. The baseline
-    period itself is therefore 0.0, not null. Periods before from_date are
-    null, and a group with no row on or after from_date is null throughout
-    - a term's window never borrows a baseline from before its own start
-    date. Null, rather than inf/NaN, when the baseline value is exactly 0 -
-    see calc_perc_change_between_rows for why column_name can legitimately
-    be 0.
+    Restricted to periods on or after from_date: earlier periods are null,
+    since a term's window never borrows a baseline from before its own
+    start. Null (not inf/NaN) when the baseline is exactly 0 - see
+    calc_perc_change_between_rows for why column_name can legitimately be 0.
 
     Args:
         column_name (str): the value column to measure change in.
