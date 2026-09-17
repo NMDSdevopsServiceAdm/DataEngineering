@@ -35,6 +35,7 @@
                               "Command": [
                                 "_03_starters_leavers_vacancies/fargate/_00_prepare_workplace.py",
                                 "--cleaned_ascwds_workplace_source", "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
+                                "--metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
                                 "--prepared_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_workplace/"
                               ]
                             }
@@ -69,6 +70,7 @@
                               "Command": [
                                 "_02_employment_status/fargate/_00_prepare_worker.py",
                                 "--cleaned_ascwds_worker_source", "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/",
+                                "--metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
                                 "--prepared_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_00_prepare_worker/"
                               ]
                             }
@@ -144,6 +146,7 @@
                                         "--bucket_name", "${dataset_bucket_name}",
                                         "--source_path", "domain=03_ind_cqc/dataset=02_employment_status_00_prepare_worker/",
                                         "--compare_path", "domain=01_ascwds/dataset=worker_cleaned/",
+                                        "--metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
                                         "--reports_path", "domain=03_ind_cqc/dataset=02_employment_status_00_prepare_worker_validation/"
                                       ]
                                     }
@@ -309,6 +312,7 @@
                                         "--bucket_name", "${dataset_bucket_name}",
                                         "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_workplace/",
                                         "--compare_path", "domain=01_ascwds/dataset=workplace_cleaned/",
+                                        "--metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
                                         "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_00_prepare_workplace_validation/"
                                       ]
                                     }

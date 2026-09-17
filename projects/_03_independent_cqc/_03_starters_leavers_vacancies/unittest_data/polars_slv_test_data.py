@@ -5,6 +5,7 @@ from typing import Any
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_column_values import PublishedJobRoleLabels
 
@@ -380,6 +381,20 @@ class TestPrepareWorkplaceUtilsData:
             ],
         ),
     ]
+
+
+@dataclass
+class TestPrepareMainData:
+    # Metadata is matched to a single date; the cleaned source also carries an
+    # extra, unmatched date so filtering to metadata's dates is exercised for real.
+    metadata_matched_dates_data = {
+        IndCQC.ascwds_workplace_import_date: [date(2024, 10, 8)],
+    }
+    cleaned_workplace_with_extra_date_data = {
+        AWPClean.location_id: ["loc1", "loc1"],
+        AWPClean.establishment_id: ["1-001", "1-001"],
+        AWPClean.ascwds_workplace_import_date: [date(2024, 10, 1), date(2024, 10, 8)],
+    }
 
 
 @dataclass

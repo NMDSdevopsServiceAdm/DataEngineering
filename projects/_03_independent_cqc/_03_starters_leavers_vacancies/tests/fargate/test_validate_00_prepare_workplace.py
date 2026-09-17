@@ -9,6 +9,7 @@ import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.valid
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
@@ -18,6 +19,8 @@ PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargat
 
 
 class TestMain:
+    METADATA_SOURCE = "my/metadata/"
+
     @pytest.fixture(autouse=True)
     def setup(self):
         source_schema = {
@@ -36,11 +39,9 @@ class TestMain:
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
 
         # The compare frame is the unreduced cleaned ASCWDS data, so it carries rows
-        # the reduction filters drop. Dates are chosen to stay stable as time passes:
-        # January always survives (quarterly sampling) and a pre-window May never does.
-        # 1-003 shares January with 1-001 but has a later date, so it's dropped by the
-        # earliest-file-per-month filter rather than the retention filter - proving the
-        # monthly reduction itself is exercised here, not just retention.
+        # the metadata-matched-dates filter drops. 1-001 sits on the one date metadata
+        # is matched to; 1-002 and 1-003 sit on dates metadata never matched, so they
+        # must not count towards the expected row total.
         compare_schema = {
             AWPClean.location_id: pl.String,
             AWPClean.establishment_id: pl.String,
@@ -48,20 +49,30 @@ class TestMain:
         }
         compare_rows = [
             ("Loc-001", "1-001", date(2026, 1, 1)),
-            ("Loc-003", "1-003", date(2026, 1, 15)),  # same month as 1-001, later date -> dropped by monthly filter
-            ("Loc-002", "1-002", date(2020, 5, 1)),
-        ]  # fmt: skip
+            ("Loc-002", "1-002", date(2026, 1, 15)),
+            ("Loc-003", "1-003", date(2020, 5, 1)),
+        ]
         self.compare_df = pl.DataFrame(compare_rows, compare_schema, orient="row")
 
+        self.matched_dates = pl.Series(
+            IndCQC.ascwds_workplace_import_date, [date(2026, 1, 1)]
+        )
+
     @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.get_matched_ascwds_dates")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_runs(
         self,
         mock_read_parquet: Mock,
+        mock_get_matched_ascwds_dates: Mock,
         mock_write_reports: Mock,
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+        mock_get_matched_ascwds_dates.return_value = self.matched_dates
+
+        job.main(
+            "bucket", "my/source/", "my/compare/", self.METADATA_SOURCE, "my/reports/"
+        )
 
         assert mock_read_parquet.call_count == 2
         mock_read_parquet.assert_has_calls(
@@ -73,18 +84,26 @@ class TestMain:
                 ),
             ]
         )
+        mock_get_matched_ascwds_dates.assert_called_once_with(
+            self.METADATA_SOURCE, IndCQC.ascwds_workplace_import_date
+        )
         mock_write_reports.assert_called_once()
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.get_matched_ascwds_dates")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_report_includes_expected_validations(
         self,
         mock_read_parquet: Mock,
+        mock_get_matched_ascwds_dates: Mock,
         mock_write_reports: Mock,
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+        mock_get_matched_ascwds_dates.return_value = self.matched_dates
 
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+        job.main(
+            "bucket", "my/source/", "my/compare/", self.METADATA_SOURCE, "my/reports/"
+        )
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
@@ -102,3 +121,33 @@ class TestMain:
             assert (
                 assertion in assertion_types_present
             ), f"{assertion} not found in validation report"
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.get_matched_ascwds_dates")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_expected_row_count_uses_dates_matched_in_metadata(
+        self,
+        mock_read_parquet: Mock,
+        mock_get_matched_ascwds_dates: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+        mock_get_matched_ascwds_dates.return_value = self.matched_dates
+
+        job.main(
+            "bucket", "my/source/", "my/compare/", self.METADATA_SOURCE, "my/reports/"
+        )
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        row_count_match_entry = next(
+            item for item in report_json if item["assertion_type"] == "row_count_match"
+        )
+
+        # Only 1-001 (2026-1-1) sits on a metadata-matched date, so one compare row
+        # explodes into one row per published job role label.
+        expected_row_count = len(
+            SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+        )
+        assert row_count_match_entry["values"]["count"] == expected_row_count
+        assert row_count_match_entry["all_passed"] is True
