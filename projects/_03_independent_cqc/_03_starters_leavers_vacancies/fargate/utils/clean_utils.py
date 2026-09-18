@@ -12,21 +12,22 @@ def create_slv_rate_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     period; vacancy rate is mathematically bounded to [0, 1].
 
     Args:
-        lf (pl.LazyFrame): dataset containing employees, starters, leavers and vacancies
+        lf (pl.LazyFrame): dataset containing employees and deduplicated starters,
+            leavers and vacancies
 
     Returns:
         pl.LazyFrame: dataset with turnover_rate, starter_rate and vacancy_rate added
     """
     return lf.with_columns(
-        (pl.col(SLVCols.leavers) / pl.col(SLVCols.employees))
+        (pl.col(SLVCols.leavers_dedup) / pl.col(SLVCols.employees))
         .cast(pl.Float32)
         .alias(SLVCols.turnover_rate),
-        (pl.col(SLVCols.starters) / pl.col(SLVCols.employees))
+        (pl.col(SLVCols.starters_dedup) / pl.col(SLVCols.employees))
         .cast(pl.Float32)
         .alias(SLVCols.starter_rate),
         (
-            pl.col(SLVCols.vacancies)
-            / (pl.col(SLVCols.employees) + pl.col(SLVCols.vacancies))
+            pl.col(SLVCols.vacancies_dedup)
+            / (pl.col(SLVCols.employees) + pl.col(SLVCols.vacancies_dedup))
         )
         .cast(pl.Float32)
         .alias(SLVCols.vacancy_rate),
