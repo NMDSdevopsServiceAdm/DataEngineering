@@ -372,7 +372,43 @@ class CreateSlvRateColumnsTestCase:
 
 
 @dataclass
+class NullNotKnownSlvValuesTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
 class TestCleanUtilsData:
+    null_not_known_slv_values_test_cases = [
+        NullNotKnownSlvValuesTestCase(
+            id="nulls_999_in_each_slv_column",
+            input_data={
+                SLVCols.starters: [999],
+                SLVCols.leavers: [999],
+                SLVCols.vacancies: [999],
+            },
+            expected_data={
+                SLVCols.starters: [None],
+                SLVCols.leavers: [None],
+                SLVCols.vacancies: [None],
+            },
+        ),
+        NullNotKnownSlvValuesTestCase(
+            id="keeps_values_that_are_not_999",
+            input_data={
+                SLVCols.starters: [0],
+                SLVCols.leavers: [5],
+                SLVCols.vacancies: [998],
+            },
+            expected_data={
+                SLVCols.starters: [0],
+                SLVCols.leavers: [5],
+                SLVCols.vacancies: [998],
+            },
+        ),
+    ]
+
     create_slv_rate_columns_test_cases = [
         CreateSlvRateColumnsTestCase(
             id="returns_expected_rates_for_typical_rows",
