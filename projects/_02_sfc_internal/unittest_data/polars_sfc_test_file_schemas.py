@@ -10,6 +10,9 @@ from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_names.reconciliation_columns import ReconciliationColumns
 
 
@@ -62,3 +65,33 @@ class ValidateMergeCoverageSchemas:
             (Keys.day, pl.String),
         ]
     )
+
+
+class ReconciliationSchema:
+    ascwds_workplace_schema = {
+        AscWdsColumns.ascwds_workplace_import_date: pl.Date,
+        AscWdsColumns.establishment_id: pl.String,
+        AscWdsColumns.nmds_id: pl.String,
+        AscWdsColumns.is_parent: pl.String,
+        AscWdsColumns.organisation_id: pl.String,
+        AscWdsColumns.parent_permission: pl.String,
+        AscWdsColumns.establishment_type: pl.String,
+        AscWdsColumns.registration_type: pl.String,
+        AscWdsColumns.location_id: pl.String,
+        AscWdsColumns.main_service_id: pl.String,
+        AscWdsColumns.establishment_name: pl.String,
+        AscWdsColumns.region_id: pl.String,
+    }
+
+    main_ascwds_workplace_schema = {
+        **ascwds_workplace_schema,
+        AscWdsColumns.workplace_last_active_date: pl.Date,
+        AscWdsColumns.purge_date: pl.Date,
+    }
+
+    main_cqc_location_schema = {
+        CQCL.location_id: pl.String,
+        CQCLClean.cqc_location_import_date: pl.Date,
+        CQCL.registration_status: pl.String,
+        CQCL.deregistration_date: pl.Date,
+    }
