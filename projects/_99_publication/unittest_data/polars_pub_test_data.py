@@ -922,6 +922,170 @@ add_rows_for_publication_groups_test_cases = [
             ),
         ],
     ),
+    AddRowsForPublicationGroupsTestCase(
+        # Two locations in different real regions: England must sum across
+        # both, once each - not double-count a region by also summing in a
+        # rollup row derived from it (e.g. "All CQC locations") as if it
+        # were a second, separate addend.
+        id="england_row_sums_across_multiple_real_regions_without_double_counting",
+        input_data=[
+            (
+                "3-001",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "3-002",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "South West",
+                _CARE_HOME_WITH_NURSING,
+                12.0,
+                6.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "South West",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(12.0, 1, 6.0),
+            ),
+            # Only one job role is present in each region, so "All job roles"
+            # mirrors both rows above under a new label.
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "South West",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(12.0, 1, 6.0),
+            ),
+            # Only one real service type is present (a care home type), so
+            # both service type rollups mirror the four rows above.
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                "All CQC locations",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "South West",
+                "All CQC locations",
+                *_all_terms_metrics(12.0, 1, 6.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "London",
+                "All CQC locations",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "South West",
+                "All CQC locations",
+                *_all_terms_metrics(12.0, 1, 6.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                "All CQC care homes",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "South West",
+                "All CQC care homes",
+                *_all_terms_metrics(12.0, 1, 6.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "London",
+                "All CQC care homes",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "South West",
+                "All CQC care homes",
+                *_all_terms_metrics(12.0, 1, 6.0),
+            ),
+            # England sums London (10/1/5) + South West (12/1/6) exactly once
+            # each = 22/2/11, for every job role/service type combination
+            # present above, including the rollups themselves.
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "England",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(22.0, 2, 11.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "England",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(22.0, 2, 11.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "England",
+                "All CQC locations",
+                *_all_terms_metrics(22.0, 2, 11.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "England",
+                "All CQC locations",
+                *_all_terms_metrics(22.0, 2, 11.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "England",
+                "All CQC care homes",
+                *_all_terms_metrics(22.0, 2, 11.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "England",
+                "All CQC care homes",
+                *_all_terms_metrics(22.0, 2, 11.0),
+            ),
+        ],
+    ),
 ]
 
 

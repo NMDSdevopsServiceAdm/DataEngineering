@@ -237,12 +237,13 @@ def aggregate_to_publication_rows(
         pl.LazyFrame: one row per group_keys combination, with publication_*
             and assessment_*_term columns.
     """
-    group_keys = group_keys or [
-        IndCQC.cqc_location_import_date,
-        IndCQC.main_job_role_clean_labelled,
-        IndCQC.current_region,
-        IndCQC.primary_service_type,
-    ]
+    if group_keys is None:
+        group_keys = [
+            IndCQC.cqc_location_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+        ]
 
     long_term_filter = (
         pl.col(Pub.consistent_service)

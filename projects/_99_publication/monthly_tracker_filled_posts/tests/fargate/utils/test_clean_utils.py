@@ -8,6 +8,7 @@ import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.clean
 import projects._99_publication.unittest_data.polars_pub_test_data as Data
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
 class TestHasContinuousDataSinceDate:
@@ -227,13 +228,25 @@ class TestAggregateToPublicationRows:
 
 
 class TestAddRowsForPublicationGroups:
+    # primary_service_type is a closed Enum in production (unlike the other
+    # dimension columns, which are open Categorical) - using the real Enum
+    # here, rather than String, exercises the cast-to-Categorical handling
+    # this function relies on to be able to write the new rollup labels into
+    # it at all.
+    _primary_service_type_enum = pl.Enum(
+        [
+            PrimaryServiceType.care_home_with_nursing,
+            PrimaryServiceType.care_home_only,
+            PrimaryServiceType.non_residential,
+        ]
+    )
     input_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
-            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.primary_service_type, _primary_service_type_enum),
             (
                 IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
                 pl.Float32(),
