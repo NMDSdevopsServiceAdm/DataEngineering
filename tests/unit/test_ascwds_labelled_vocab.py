@@ -10,10 +10,14 @@ from utils.column_values.ascwds_labelled_vocab import (
     MAIN_SERVICE_ID_CODE_TO_LABEL,
     PARENT_PERMISSION_CODE_TO_LABEL,
     REGISTRATION_TYPE_CODE_TO_LABEL,
+    PairedVocab,
 )
 from utils.column_values.categorical_column_values import (
+    EmploymentStatusID,
+    EmploymentStatusLabels,
     EstablishmentType,
     IsParent,
+    MainJobRoleID,
     MainServiceID,
     ParentPermission,
     RegistrationType,
@@ -35,11 +39,24 @@ class TestMainJobRoleVocab:
 
 
 class TestEmploymentStatusVocab:
-    def test_code_to_label_returns_every_labelled_code(self):
-        assert len(EMPLOYMENT_STATUS.code_to_label()) == 6
+    def test_code_to_label_maps_every_code_to_its_label(self):
+        assert EMPLOYMENT_STATUS.code_to_label() == {
+            EmploymentStatusID.permanent: EmploymentStatusLabels.permanent,
+            EmploymentStatusID.temporary: EmploymentStatusLabels.temporary,
+            EmploymentStatusID.bank_or_pool: EmploymentStatusLabels.bank_or_pool,
+            EmploymentStatusID.agency: EmploymentStatusLabels.agency,
+            EmploymentStatusID.student: EmploymentStatusLabels.student,
+            EmploymentStatusID.other: EmploymentStatusLabels.other,
+        }
 
     def test_unlabelled_codes_returns_an_empty_dict(self):
         assert EMPLOYMENT_STATUS.unlabelled_codes() == {}
+
+
+class TestPairedVocabValidation:
+    def test_raises_when_label_side_has_a_field_the_code_side_lacks(self):
+        with pytest.raises(ValueError, match="IsParent"):
+            PairedVocab(MainJobRoleID, IsParent)
 
 
 @dataclass

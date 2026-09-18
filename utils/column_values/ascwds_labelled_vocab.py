@@ -41,6 +41,32 @@ class PairedVocab:
     id_cls: type
     label_cls: type
 
+    def __post_init__(self) -> None:
+        """Fail fast if the label side declares a field the code side doesn't.
+
+        `id_cls` is allowed extra fields (legacy codes with no label, e.g.
+        main_job_role's `technician`/`care_navigator` - see
+        `unlabelled_codes()`). `label_cls` is not: an unmatched label field
+        would otherwise be silently dropped by `code_to_label()` instead of
+        raising, reintroducing the hand-sync drift this class exists to
+        eliminate.
+
+        Raises:
+            ValueError: if `label_cls` declares a field `id_cls` doesn't.
+        """
+        orphaned_labels = self._label_fields() - self._id_fields()
+        if orphaned_labels:
+            raise ValueError(
+                f"{self.label_cls.__name__} declares field(s) {sorted(orphaned_labels)} "
+                f"with no matching field on {self.id_cls.__name__}"
+            )
+
+    def _id_fields(self) -> set[str]:
+        return {f.name for f in fields(self.id_cls)} - _BASE_FIELDS
+
+    def _label_fields(self) -> set[str]:
+        return {f.name for f in fields(self.label_cls)} - _BASE_FIELDS
+
     def code_to_label(self) -> dict[str, str]:
         """Build the `{code: label}` mapping for fields both classes declare.
 
@@ -50,9 +76,7 @@ class PairedVocab:
         Returns:
             dict[str, str]: mapping of raw code to label.
         """
-        id_fields = {f.name for f in fields(self.id_cls)} - _BASE_FIELDS
-        label_fields = {f.name for f in fields(self.label_cls)} - _BASE_FIELDS
-        shared = id_fields & label_fields
+        shared = self._id_fields() & self._label_fields()
         return {
             getattr(self.id_cls, name): getattr(self.label_cls, name) for name in shared
         }
@@ -63,9 +87,10 @@ class PairedVocab:
         Returns:
             dict[str, str]: mapping of field name to raw code.
         """
-        id_fields = {f.name for f in fields(self.id_cls)} - _BASE_FIELDS
-        label_fields = {f.name for f in fields(self.label_cls)} - _BASE_FIELDS
-        return {name: getattr(self.id_cls, name) for name in id_fields - label_fields}
+        return {
+            name: getattr(self.id_cls, name)
+            for name in self._id_fields() - self._label_fields()
+        }
 
 
 MAIN_JOB_ROLE = PairedVocab(MainJobRoleID, MainJobRoleLabels)
