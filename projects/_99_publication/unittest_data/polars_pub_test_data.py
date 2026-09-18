@@ -612,9 +612,7 @@ _NON_RESIDENTIAL = PrimaryServiceType.non_residential
 
 add_rows_for_publication_groups_test_cases = [
     AddRowsForPublicationGroupsTestCase(
-        # Location "1-001" has two job roles, so a naive sum of the two rows'
-        # publication_locationid_count would give 2 for "All job roles" - it
-        # must stay 1, since it is still only one location.
+        # A multi-job-role location counts once for "All job roles", not per role.
         id="all_job_roles_row_counts_a_multi_job_role_location_once_not_per_role",
         input_data=[
             (
@@ -639,7 +637,6 @@ add_rows_for_publication_groups_test_cases = [
             ),
         ],
         expected_data=[
-            # real rows, unchanged
             (
                 date(2025, 4, 1),
                 "Registered nurse",
@@ -654,8 +651,6 @@ add_rows_for_publication_groups_test_cases = [
                 _CARE_HOME_WITH_NURSING,
                 *_all_terms_metrics(20.0, 1, 8.0),
             ),
-            # "All job roles" - filled posts sum to 30, but it is still the
-            # same single location, so locationid_count stays 1.
             (
                 date(2025, 4, 1),
                 "All job roles",
@@ -663,8 +658,6 @@ add_rows_for_publication_groups_test_cases = [
                 _CARE_HOME_WITH_NURSING,
                 *_all_terms_metrics(30.0, 1, 13.0),
             ),
-            # Only one real service type is present, so both service type
-            # rollups mirror the three London rows above under a new label.
             (
                 date(2025, 4, 1),
                 "Registered nurse",
@@ -707,9 +700,6 @@ add_rows_for_publication_groups_test_cases = [
                 "All CQC care homes",
                 *_all_terms_metrics(30.0, 1, 13.0),
             ),
-            # Only one real region is present, so England mirrors every row
-            # above - this is the "England ends up with all the previous
-            # aggregation rows" property.
             (
                 date(2025, 4, 1),
                 "Registered nurse",
@@ -776,9 +766,7 @@ add_rows_for_publication_groups_test_cases = [
         ],
     ),
     AddRowsForPublicationGroupsTestCase(
-        # Two locations, one care home and one non-residential: "All CQC care
-        # homes" must exclude the non-residential location while "All CQC
-        # locations" includes it.
+        # "All CQC care homes" must exclude non-residential locations.
         id="all_cqc_care_homes_excludes_non_residential_locations",
         input_data=[
             (
@@ -817,8 +805,6 @@ add_rows_for_publication_groups_test_cases = [
                 _NON_RESIDENTIAL,
                 *_all_terms_metrics(15.0, 1, 6.0),
             ),
-            # Only one job role is present, so "All job roles" mirrors both
-            # rows above under a new label.
             (
                 date(2025, 4, 1),
                 "All job roles",
@@ -833,7 +819,6 @@ add_rows_for_publication_groups_test_cases = [
                 _NON_RESIDENTIAL,
                 *_all_terms_metrics(15.0, 1, 6.0),
             ),
-            # "All CQC locations" sums both service types - two locations.
             (
                 date(2025, 4, 1),
                 "Registered nurse",
@@ -848,7 +833,6 @@ add_rows_for_publication_groups_test_cases = [
                 "All CQC locations",
                 *_all_terms_metrics(25.0, 2, 11.0),
             ),
-            # "All CQC care homes" excludes the non-residential location.
             (
                 date(2025, 4, 1),
                 "Registered nurse",
@@ -863,7 +847,6 @@ add_rows_for_publication_groups_test_cases = [
                 "All CQC care homes",
                 *_all_terms_metrics(10.0, 1, 5.0),
             ),
-            # England mirrors every row above - only one real region present.
             (
                 date(2025, 4, 1),
                 "Registered nurse",
@@ -923,10 +906,7 @@ add_rows_for_publication_groups_test_cases = [
         ],
     ),
     AddRowsForPublicationGroupsTestCase(
-        # Two locations in different real regions: England must sum across
-        # both, once each - not double-count a region by also summing in a
-        # rollup row derived from it (e.g. "All CQC locations") as if it
-        # were a second, separate addend.
+        # England must sum two real regions once each, not double-count.
         id="england_row_sums_across_multiple_real_regions_without_double_counting",
         input_data=[
             (
@@ -965,8 +945,6 @@ add_rows_for_publication_groups_test_cases = [
                 _CARE_HOME_WITH_NURSING,
                 *_all_terms_metrics(12.0, 1, 6.0),
             ),
-            # Only one job role is present in each region, so "All job roles"
-            # mirrors both rows above under a new label.
             (
                 date(2025, 4, 1),
                 "All job roles",
@@ -981,8 +959,6 @@ add_rows_for_publication_groups_test_cases = [
                 _CARE_HOME_WITH_NURSING,
                 *_all_terms_metrics(12.0, 1, 6.0),
             ),
-            # Only one real service type is present (a care home type), so
-            # both service type rollups mirror the four rows above.
             (
                 date(2025, 4, 1),
                 "Registered nurse",
@@ -1039,9 +1015,7 @@ add_rows_for_publication_groups_test_cases = [
                 "All CQC care homes",
                 *_all_terms_metrics(12.0, 1, 6.0),
             ),
-            # England sums London (10/1/5) + South West (12/1/6) exactly once
-            # each = 22/2/11, for every job role/service type combination
-            # present above, including the rollups themselves.
+            # England = London (10/1/5) + South West (12/1/6) = 22/2/11.
             (
                 date(2025, 4, 1),
                 "Registered nurse",

@@ -228,11 +228,7 @@ class TestAggregateToPublicationRows:
 
 
 class TestAddRowsForPublicationGroups:
-    # primary_service_type is a closed Enum in production (unlike the other
-    # dimension columns, which are open Categorical) - using the real Enum
-    # here, rather than String, exercises the cast-to-Categorical handling
-    # this function relies on to be able to write the new rollup labels into
-    # it at all.
+    # Real closed Enum in production - exercises the cast-to-Categorical.
     _primary_service_type_enum = pl.Enum(
         [
             PrimaryServiceType.care_home_with_nursing,

@@ -11,8 +11,7 @@ from utils.column_values.categorical_column_values import PrimaryServiceType
 _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 
-# Publication-only rollup labels - not real source data, so kept local to this
-# job rather than in the shared utils/column_values categorical value classes.
+# Rollup labels are publication-only, not real source data - kept local here.
 _ALL_JOB_ROLES: str = "All job roles"
 _ALL_CQC_CARE_HOMES: str = "All CQC care homes"
 _ALL_CQC_LOCATIONS: str = "All CQC locations"
@@ -218,13 +217,10 @@ def aggregate_to_publication_rows(
     contribute to one term's assessment columns without contributing to
     another's.
 
-    group_keys defaults to (import date, job role, region, service type).
-    A caller can pass a narrower set - e.g. dropping job role - to aggregate
-    location counts correctly across job roles: a location has one row per
-    job role it employs, so n_unique(location_id) only counts each location
-    once when job role is excluded from the group_by, whereas summing
-    per-job-role counts computed separately would count a multi-job-role
-    location once per role.
+    group_keys defaults to (import date, job role, region, service type). A
+    narrower set (e.g. dropping job role) still counts each location once,
+    since n_unique(location_id) is recomputed at that grain rather than
+    summed from separately-computed per-job-role counts.
 
     Args:
         lazy_df (pl.LazyFrame): location-level data with consistent_service,
@@ -309,31 +305,23 @@ def add_rows_for_publication_groups(
     cleaned_lf: pl.LazyFrame, publication_summary_lf: pl.LazyFrame
 ) -> pl.LazyFrame:
     """
-    Adds national and "all group" rollup rows for the Tableau/Excel filters.
+    Adds "All job roles", "All CQC care homes", "All CQC locations" and
+    "England" rollup rows for the Tableau/Excel filter dropdowns.
 
-    Adds a row per (import date, region, service type) with job role set to
-    "All job roles", then per (import date, job role, region) a row with
-    service type set to "All CQC care homes" (care home types only) and
-    another with "All CQC locations" (every service type), then finally a
-    row per (import date, job role, service type) with region set to
-    "England" - built last, from the already-enlarged data, so England ends
-    up with a row for every job role/service type combination, including the
-    rollups themselves.
+    Built recursively - job role, then service type, then region - so
+    England ends up with a row for every job role/service type combination,
+    including the other rollups.
 
-    Region and service type are single-valued per location, so their rollups
-    can safely re-sum the already-aggregated publication_* and assessment_*
-    columns. Job role is not - a location has one row per job role it
-    employs - so its rollup is instead derived from cleaned_lf directly via
-    aggregate_to_publication_rows with job role dropped from the group keys,
-    which recomputes n_unique(location_id) at the correct grain rather than
-    summing per-job-role counts, which would count a multi-job-role location
-    once per role it has.
+    Job role is rebuilt from cleaned_lf via aggregate_to_publication_rows
+    with job role dropped from the group keys, since a location has one row
+    per job role it employs and summing per-job-role counts would
+    double-count it. Region and service type are single-valued per
+    location, so those rollups just re-sum the aggregated columns.
 
-    primary_service_type arrives as a closed-category Enum (from the shared
-    IND CQC schema), so it is cast to Categorical here before "All CQC
-    locations"/"All CQC care homes" are written into it - kept local to this
-    job rather than widening the shared Enum, which would desync the IND CQC
-    pipeline's category-count validation from its real data.
+    primary_service_type is a closed Enum in production, so it is cast to
+    Categorical here, local to this job, before the new labels are written
+    into it - the shared PrimaryServiceType enum is left alone, since it's
+    also used by the IND CQC pipeline's own category-count validation.
 
     Args:
         cleaned_lf (pl.LazyFrame): location-level data, as passed into
