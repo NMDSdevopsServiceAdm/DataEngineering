@@ -2031,7 +2031,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
         NullDuplicateEstablishmentNumericDataTestCase(
-            id="nulls_job_role_columns_for_flagged_rows",
+            id="nulls_slv_job_role_columns_but_not_employees_for_flagged_rows",
             input_data={
                 AWPClean.establishment_id: ["48904", "1"],  # 48904 is a known duplicate
                 AWPClean.import_date: ["20260101", "20260101"],
@@ -2045,7 +2045,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
             expected_data={
                 AWPClean.establishment_id: ["48904", "1"],
                 AWPClean.import_date: ["20260101", "20260101"],
-                "jr01emp": [None, 5],
+                "jr01emp": [5, 5],  # not an SLV column, left untouched
                 "jr01strt": [None, 1],
             },
         ),
@@ -2206,24 +2206,14 @@ class TestCleanAscwdsWorkplaceUtilsData:
             expected_data={AWPClean.job_role_01_starters: 0},
         ),
         JobRoleExpressionBoundsTestCase(
-            id="allows_zero_at_lower_bound_for_employees_column",
-            input_data={AWPClean.job_role_01_employees: 0},
-            expected_data={AWPClean.job_role_01_employees: 0},
-        ),
-        JobRoleExpressionBoundsTestCase(
             id="nulls_slv_value_below_lower_bound",
             input_data={AWPClean.job_role_01_starters: -1},
             expected_data={AWPClean.job_role_01_starters: None},
         ),
         JobRoleExpressionBoundsTestCase(
-            id="nulls_employees_value_below_lower_bound",
+            id="does_not_bound_non_slv_job_role_columns",
             input_data={AWPClean.job_role_01_employees: -1},
-            expected_data={AWPClean.job_role_01_employees: None},
-        ),
-        JobRoleExpressionBoundsTestCase(
-            id="does_not_bound_non_job_role_columns",
-            input_data={AWPClean.job_role_01_temporary: -1},
-            expected_data={AWPClean.job_role_01_temporary: -1},
+            expected_data={AWPClean.job_role_01_employees: -1},
         ),
     ]
 

@@ -306,13 +306,11 @@ class BoundingExpressions:
     """Create Polars expressions that bound workplace metrics to valid ranges.
 
     The class defines expressions for constraining filled-posts values and
-    job-role values (starters, leavers, vacancies and employees) to acceptable
-    ranges. Job-role columns share a single lower-bound-of-0 rule: the raw
-    ASC-WDS files use -1/-2 as "not known"/"not recorded" sentinels, which
-    must be nulled, but 0 is a legitimate value for any job role, including
-    employees (a workplace can genuinely employ nobody in a given role).
-    Upper-bound sentinel handling (998/999, "not known") is intentionally not
-    done here - it is being moved to a dedicated SLV cleaning stage.
+    starters/leavers/vacancies (SLV) job-role values to acceptable ranges.
+    SLV columns share a single lower-bound-of-0 rule: the raw ASC-WDS files
+    use -1/-2 as "not known"/"not recorded" sentinels, which must be nulled,
+    but 0 is a legitimate value for any job role (a workplace can genuinely
+    have 0 starters/leavers/vacancies in a given role).
     These expressions are designed for use in lazy Polars pipelines and keep
     the transformation logic declarative and readable.
 
@@ -321,13 +319,13 @@ class BoundingExpressions:
             estimates needing bounding.
         filled_posts_lower_bound (int): Minimum accepted value for filled-posts
             columns.
-        job_role_bounding_cols (pl.selectors.Selector): Selector for
-            starters, leavers, vacancies and employees job-role columns.
-        job_role_lower_bound (int): Minimum accepted value for job-role
+        slv_bounding_cols (pl.selectors.Selector): Selector for starters,
+            leavers and vacancies job-role columns.
+        slv_lower_bound (int): Minimum accepted value for SLV job-role
             columns.
         filled_posts_expr (pl.Expr): Expression that bounds columns needed in
             filled-posts estimates to the configured valid range and renaming.
-        job_role_expr (pl.Expr): Expression that bounds job-role columns to
+        slv_expr (pl.Expr): Expression that bounds SLV job-role columns to
             the configured valid range while preserving the original column
             names.
     """
@@ -338,8 +336,8 @@ class BoundingExpressions:
     ]
     filled_posts_lower_bound: int = 1
 
-    job_role_bounding_cols: pl.selectors.Selector = expr.is_slv_job_role_column()
-    job_role_lower_bound: int = 0
+    slv_bounding_cols: pl.selectors.Selector = expr.is_slv_job_role_column()
+    slv_lower_bound: int = 0
 
     filled_posts_expr: pl.Expr = (
         pl.when(pl.col(*filled_posts_bounding_cols) >= filled_posts_lower_bound)
@@ -348,9 +346,9 @@ class BoundingExpressions:
         .name.suffix("_bounded")
     )
 
-    job_role_expr: pl.Expr = (
-        pl.when(job_role_bounding_cols.as_expr() >= job_role_lower_bound)
-        .then(job_role_bounding_cols)
+    slv_expr: pl.Expr = (
+        pl.when(slv_bounding_cols.as_expr() >= slv_lower_bound)
+        .then(slv_bounding_cols)
         .otherwise(None)
         .name.keep()
     )

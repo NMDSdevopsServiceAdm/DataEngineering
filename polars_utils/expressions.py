@@ -52,14 +52,8 @@ def is_dormant() -> pl.Expr:
 
 def is_slv_job_role_column() -> cs.Selector:
     """
-    Returns a Selector for columns that:
-     - start with 'jr'
-     - end with either 'emp', 'strt', 'stop' or 'vacy
-     - do not end with 'temp'
+    Returns a Selector for starters/leavers/vacancies job role columns: columns
+    that start with 'jr' and end with either 'strt', 'stop' or 'vacy'.
     """
 
-    return (
-        cs.starts_with("jr")
-        & cs.ends_with("emp", "strt", "stop", "vacy")
-        & ~cs.ends_with("temp")
-    )
+    return cs.starts_with("jr") & cs.ends_with("strt", "stop", "vacy")

@@ -205,7 +205,7 @@ def main(
 
     workplace_lf = workplace_lf.with_columns(
         bounds.filled_posts_expr,
-        bounds.job_role_expr,
+        bounds.slv_expr,
     )
 
     workplace_lf = wUtils.merge_legacy_job_role_columns(
