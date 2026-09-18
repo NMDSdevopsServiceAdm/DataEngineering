@@ -23,8 +23,7 @@ def main(
     """
     lf = utils.scan_parquet(merged_data_source)
 
-    # Employees = directly employed by the workplace; bank/pool, agency and other
-    # non-employed worker counts are deliberately excluded.
+    # Employees = directly employed by the workplace (permanent + temporary) only.
     lf = lf.with_columns(
         (
             pl.col(SLVEmpStatus.permanent_count) + pl.col(SLVEmpStatus.temporary_count)
