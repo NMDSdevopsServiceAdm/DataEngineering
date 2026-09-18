@@ -4,11 +4,18 @@ import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_values.categorical_column_values import PrimaryServiceType
 
 # A location is filtered out when its capacity tracker data swings further from
 # the national average swing than this many standard deviations.
 _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
+
+# Rollup labels are publication-only, not real source data - kept local here.
+_ALL_JOB_ROLES: str = "All job roles"
+_ALL_CQC_CARE_HOMES: str = "All CQC care homes"
+_ALL_CQC_LOCATIONS: str = "All CQC locations"
+_ENGLAND: str = "England"
 
 
 def has_continuous_data_since_date(
@@ -197,7 +204,9 @@ def _within_dispersion_boundaries(dispersion_column: str) -> pl.Expr:
     )
 
 
-def aggregate_to_publication_rows(lazy_df: pl.LazyFrame) -> pl.LazyFrame:
+def aggregate_to_publication_rows(
+    lazy_df: pl.LazyFrame, group_keys: list[str] | None = None
+) -> pl.LazyFrame:
     """
     Aggregates location-level rows up to publication level.
 
@@ -208,21 +217,29 @@ def aggregate_to_publication_rows(lazy_df: pl.LazyFrame) -> pl.LazyFrame:
     contribute to one term's assessment columns without contributing to
     another's.
 
+    group_keys defaults to (import date, job role, region, service type). A
+    narrower set (e.g. dropping job role) still counts each location once,
+    since n_unique(location_id) is recomputed at that grain rather than
+    summed from separately-computed per-job-role counts.
+
     Args:
         lazy_df (pl.LazyFrame): location-level data with consistent_service,
             ct_total_employed_imputed, ct_has_data_*_term and
             ct_dispersion_filter_*_term already added.
+        group_keys (list[str] | None): columns to group by. Defaults to
+            import date, job role, region and service type.
 
     Returns:
-        pl.LazyFrame: one row per (import date, job role, region, service
-            type) group, with publication_* and assessment_*_term columns.
+        pl.LazyFrame: one row per group_keys combination, with publication_*
+            and assessment_*_term columns.
     """
-    group_keys = [
-        IndCQC.cqc_location_import_date,
-        IndCQC.main_job_role_clean_labelled,
-        IndCQC.current_region,
-        IndCQC.primary_service_type,
-    ]
+    if group_keys is None:
+        group_keys = [
+            IndCQC.cqc_location_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+        ]
 
     long_term_filter = (
         pl.col(Pub.consistent_service)
@@ -284,12 +301,135 @@ def aggregate_to_publication_rows(lazy_df: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def add_rows_for_publication_groups():
+def add_rows_for_publication_groups(
+    cleaned_lf: pl.LazyFrame, publication_summary_lf: pl.LazyFrame
+) -> pl.LazyFrame:
     """
-    Placeholder: Add rows for 'England', 'All CQC locations', 'All CQC care homes'
-    and 'All job roles'
+    Adds "All job roles", "All CQC care homes", "All CQC locations" and
+    "England" rollup rows for the Tableau/Excel filter dropdowns.
+
+    Built recursively - job role, then service type, then region - so
+    England ends up with a row for every job role/service type combination,
+    including the other rollups.
+
+    Job role is rebuilt from cleaned_lf via aggregate_to_publication_rows
+    with job role dropped from the group keys, since a location has one row
+    per job role it employs and summing per-job-role counts would
+    double-count it. Region and service type are single-valued per
+    location, so those rollups just re-sum the aggregated columns.
+
+    primary_service_type is a closed Enum in production, so it is cast to
+    Categorical here, local to this job, before the new labels are written
+    into it - the shared PrimaryServiceType enum is left alone, since it's
+    also used by the IND CQC pipeline's own category-count validation.
+
+    Args:
+        cleaned_lf (pl.LazyFrame): location-level data, as passed into
+            aggregate_to_publication_rows.
+        publication_summary_lf (pl.LazyFrame): output of
+            aggregate_to_publication_rows on cleaned_lf.
+
+    Returns:
+        pl.LazyFrame: publication_summary_lf with rollup rows added for
+            "All job roles", "All CQC care homes", "All CQC locations" and
+            "England".
     """
-    pass
+    publication_summary_lf = publication_summary_lf.with_columns(
+        pl.col(IndCQC.primary_service_type).cast(pl.Categorical)
+    )
+    column_schema = publication_summary_lf.collect_schema()
+    column_order = column_schema.names()
+
+    metric_columns = [
+        Pub.publication_filled_posts,
+        Pub.publication_locationid_count,
+        Pub.assessment_filled_posts_long_term,
+        Pub.assessment_locationid_count_long_term,
+        Pub.assessment_ct_total_employed_long_term,
+        Pub.assessment_filled_posts_medium_term,
+        Pub.assessment_locationid_count_medium_term,
+        Pub.assessment_ct_total_employed_medium_term,
+        Pub.assessment_filled_posts_short_term,
+        Pub.assessment_locationid_count_short_term,
+        Pub.assessment_ct_total_employed_short_term,
+    ]
+
+    all_job_roles_lf = (
+        aggregate_to_publication_rows(
+            cleaned_lf,
+            group_keys=[
+                IndCQC.cqc_location_import_date,
+                IndCQC.current_region,
+                IndCQC.primary_service_type,
+            ],
+        )
+        .with_columns(
+            pl.lit(_ALL_JOB_ROLES)
+            .cast(column_schema[IndCQC.main_job_role_clean_labelled])
+            .alias(IndCQC.main_job_role_clean_labelled),
+            pl.col(IndCQC.primary_service_type).cast(pl.Categorical),
+        )
+        .select(column_order)
+    )
+    job_role_enlarged_lf = pl.concat(
+        [publication_summary_lf, all_job_roles_lf], how="vertical"
+    )
+
+    service_type_group_keys = [
+        IndCQC.cqc_location_import_date,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.current_region,
+    ]
+    all_cqc_locations_lf = (
+        job_role_enlarged_lf.group_by(service_type_group_keys)
+        .agg([pl.col(column).sum() for column in metric_columns])
+        .with_columns(
+            pl.lit(_ALL_CQC_LOCATIONS)
+            .cast(column_schema[IndCQC.primary_service_type])
+            .alias(IndCQC.primary_service_type)
+        )
+        .select(column_order)
+    )
+    all_cqc_care_homes_lf = (
+        job_role_enlarged_lf.filter(
+            pl.col(IndCQC.primary_service_type).is_in(
+                [
+                    PrimaryServiceType.care_home_with_nursing,
+                    PrimaryServiceType.care_home_only,
+                ]
+            )
+        )
+        .group_by(service_type_group_keys)
+        .agg([pl.col(column).sum() for column in metric_columns])
+        .with_columns(
+            pl.lit(_ALL_CQC_CARE_HOMES)
+            .cast(column_schema[IndCQC.primary_service_type])
+            .alias(IndCQC.primary_service_type)
+        )
+        .select(column_order)
+    )
+    service_type_enlarged_lf = pl.concat(
+        [job_role_enlarged_lf, all_cqc_locations_lf, all_cqc_care_homes_lf],
+        how="vertical",
+    )
+
+    england_group_keys = [
+        IndCQC.cqc_location_import_date,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.primary_service_type,
+    ]
+    england_lf = (
+        service_type_enlarged_lf.group_by(england_group_keys)
+        .agg([pl.col(column).sum() for column in metric_columns])
+        .with_columns(
+            pl.lit(_ENGLAND)
+            .cast(column_schema[IndCQC.current_region])
+            .alias(IndCQC.current_region)
+        )
+        .select(column_order)
+    )
+
+    return pl.concat([service_type_enlarged_lf, england_lf], how="vertical")
 
 
 def calc_perc_change_between_rows(

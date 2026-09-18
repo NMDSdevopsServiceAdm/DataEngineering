@@ -20,6 +20,7 @@ class TestMain:
         f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
     )
     @patch(f"{PATCH_PATH}.clean_utils.calc_perc_change_between_rows")
+    @patch(f"{PATCH_PATH}.clean_utils.add_rows_for_publication_groups")
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
@@ -34,6 +35,7 @@ class TestMain:
         has_continuous_data_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
         aggregate_to_publication_rows_mock: Mock,
+        add_rows_for_publication_groups_mock: Mock,
         calc_perc_change_between_rows_mock: Mock,
         calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -62,6 +64,9 @@ class TestMain:
         )
         aggregate_to_publication_rows_mock.return_value = pl.LazyFrame(
             {Pub.publication_filled_posts: [42.0]}
+        )
+        add_rows_for_publication_groups_mock.return_value = (
+            aggregate_to_publication_rows_mock.return_value
         )
         calc_perc_change_between_rows_mock.side_effect = (
             lambda column_name, from_date, group_columns, column_alias: pl.lit(
@@ -153,6 +158,17 @@ class TestMain:
             check_column_order=False,
         )
 
+        add_rows_for_publication_groups_mock.assert_called_once()
+        assert_frame_equal(
+            add_rows_for_publication_groups_mock.call_args.args[0],
+            cleaned_lf_expected,
+            check_column_order=False,
+        )
+        assert (
+            add_rows_for_publication_groups_mock.call_args.args[1]
+            is aggregate_to_publication_rows_mock.return_value
+        )
+
         group_columns = [
             IndCQC.main_job_role_clean_labelled,
             IndCQC.current_region,
@@ -233,6 +249,7 @@ class TestMain:
         f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
     )
     @patch(f"{PATCH_PATH}.clean_utils.calc_perc_change_between_rows")
+    @patch(f"{PATCH_PATH}.clean_utils.add_rows_for_publication_groups")
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
@@ -247,6 +264,7 @@ class TestMain:
         has_continuous_data_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
         aggregate_to_publication_rows_mock: Mock,
+        add_rows_for_publication_groups_mock: Mock,
         calc_perc_change_between_rows_mock: Mock,
         calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -273,6 +291,9 @@ class TestMain:
         )
         aggregate_to_publication_rows_mock.return_value = pl.LazyFrame(
             {Pub.publication_filled_posts: [42.0]}
+        )
+        add_rows_for_publication_groups_mock.return_value = (
+            aggregate_to_publication_rows_mock.return_value
         )
         calc_perc_change_between_rows_mock.side_effect = (
             lambda column_name, from_date, group_columns, column_alias: pl.lit(
