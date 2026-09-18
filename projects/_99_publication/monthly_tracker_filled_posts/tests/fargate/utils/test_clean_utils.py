@@ -292,8 +292,19 @@ class TestAddRowsForPublicationGroups:
             input_lf, publication_summary_lf
         )
 
+        assert returned_lf.collect().height == case.expected_row_count
+
         expected_lf = pl.LazyFrame(
             case.expected_data, self.expected_schema, orient="row"
+        )
+        key_columns = [
+            IndCQC.cqc_location_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+        ]
+        returned_lf = returned_lf.join(
+            expected_lf.select(key_columns), on=key_columns, how="semi"
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
