@@ -490,9 +490,6 @@ jobs:
           name: Copy main datasets to non-prod dataset bucket
           command: |
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_04_full_cleaned_registered/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_04_full_cleaned_registered/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_04_latest_snapshot/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_04_latest_snapshot/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=providers_04_full_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=providers_04_full_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=postcode_corrections/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_ons/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ons/dataset=postcode_directory_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=workplace/" --delete
@@ -507,10 +504,6 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_04_estimate/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_01_merge_metadata/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_04_estimate/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_03_starters_leavers_vacancies_04_estimate/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=02_sfc/dataset=sfc_merged_coverage_data/" "s3://$BRANCH_DATASET_BUCKET/domain=02_sfc/dataset=main_sfc_merged_coverage_data/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=02_sfc/dataset=sfc_reconciliation_parents/" "s3://$BRANCH_DATASET_BUCKET/domain=02_sfc/dataset=main_sfc_reconciliation_parents/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=02_sfc/dataset=sfc_reconciliation_singles_and_subs/" "s3://$BRANCH_DATASET_BUCKET/domain=02_sfc/dataset=main_sfc_reconciliation_singles_and_subs/" --delete
       - run:
           name: Copy models to non-prod dataset
           command: |
