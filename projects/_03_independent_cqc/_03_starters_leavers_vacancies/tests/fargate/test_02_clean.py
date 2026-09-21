@@ -15,14 +15,12 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.cleanUtils.create_slv_rate_columns")
-    @patch(f"{PATCH_PATH}.cleanUtils.null_not_known_slv_values")
     @patch(f"{PATCH_PATH}.cUtils.remove_repeated_values_over_time")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         remove_repeated_values_over_time_mock: Mock,
-        null_not_known_slv_values_mock: Mock,
         create_slv_rate_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -32,11 +30,8 @@ class TestMain:
         )
 
         scan_parquet_mock.assert_called_once_with(self.MERGED_DATA_SOURCE)
-        null_not_known_slv_values_mock.assert_called_once_with(
-            scan_parquet_mock.return_value.with_columns.return_value
-        )
         create_slv_rate_columns_mock.assert_called_once_with(
-            null_not_known_slv_values_mock.return_value
+            scan_parquet_mock.return_value.with_columns.return_value
         )
         remove_repeated_values_over_time_mock.assert_called_once_with(
             create_slv_rate_columns_mock.return_value,

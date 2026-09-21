@@ -30,8 +30,6 @@ def main(
         ).alias(SLVCols.employees)
     )
 
-    lf = cleanUtils.null_not_known_slv_values(lf)
-
     lf = cleanUtils.create_slv_rate_columns(lf)
 
     lf = cUtils.remove_repeated_values_over_time(

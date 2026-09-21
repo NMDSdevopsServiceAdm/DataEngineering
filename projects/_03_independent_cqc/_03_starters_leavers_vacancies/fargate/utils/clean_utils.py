@@ -2,28 +2,6 @@ import polars as pl
 
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
-NOT_KNOWN_CODE = 999  # '999' is used elsewhere in ASCWDS to represent not known.
-
-
-def null_not_known_slv_values(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Nulls starters, leavers and vacancies values that use 999 as a not known code.
-
-    Args:
-        lf (pl.LazyFrame): dataset containing starters, leavers and vacancies
-
-    Returns:
-        pl.LazyFrame: dataset with 999 starters, leavers and vacancies values nulled
-    """
-    slv_columns = [SLVCols.starters, SLVCols.leavers, SLVCols.vacancies]
-    return lf.with_columns(
-        pl.when(pl.col(column) != NOT_KNOWN_CODE)
-        .then(pl.col(column))
-        .otherwise(None)
-        .alias(column)
-        for column in slv_columns
-    )
-
 
 def create_slv_rate_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
