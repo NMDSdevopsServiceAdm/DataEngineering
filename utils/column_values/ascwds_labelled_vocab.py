@@ -10,8 +10,7 @@ label-side ColumnValues class in categorical_column_values.py; PairedVocab
 derives their {code: label} mapping by shared field name instead of
 maintaining it a third time. The other 5 columns only ever had a label-side
 ColumnValues class - their raw ASC-WDS code is discarded during cleaning -
-so their {code: label} dicts are declared directly here, transcribed from
-data_labels_lookup.csv (source column names in comments for traceability).
+so their {code: label} dicts are declared directly here.
 """
 
 from dataclasses import dataclass, fields
@@ -96,7 +95,6 @@ class PairedVocab:
 MAIN_JOB_ROLE = PairedVocab(MainJobRoleID, MainJobRoleLabels)
 EMPLOYMENT_STATUS = PairedVocab(EmploymentStatusID, EmploymentStatusLabels)
 
-# Source: data_labels_lookup.csv, column_name "esttype"
 ESTABLISHMENT_TYPE_CODE_TO_LABEL: dict[str, str] = {
     "0": EstablishmentType.not_known,
     "1": EstablishmentType.local_authority_adult_services,
@@ -109,7 +107,6 @@ ESTABLISHMENT_TYPE_CODE_TO_LABEL: dict[str, str] = {
     "8": EstablishmentType.other,
 }
 
-# Source: data_labels_lookup.csv, column_name "parentpermission"
 # Code 3 ("Placeholder label") intentionally excluded - legacy/unused code,
 # same treatment as MainJobRoleID's technician/care_navigator.
 PARENT_PERMISSION_CODE_TO_LABEL: dict[str, str] = {
@@ -117,13 +114,11 @@ PARENT_PERMISSION_CODE_TO_LABEL: dict[str, str] = {
     "2": ParentPermission.workplace_has_ownership,
 }
 
-# Source: data_labels_lookup.csv, column_name "isparent"
 IS_PARENT_CODE_TO_LABEL: dict[str, str] = {
     "0": IsParent.is_not_parent,
     "1": IsParent.is_parent,
 }
 
-# Source: data_labels_lookup.csv, column_name "mainstid"
 # Codes 4/53, 16/37, and 20/39 intentionally share a label each (see the
 # matching comments on MainServiceID in categorical_column_values.py).
 MAIN_SERVICE_ID_CODE_TO_LABEL: dict[str, str] = {
@@ -199,7 +194,6 @@ MAIN_SERVICE_ID_CODE_TO_LABEL: dict[str, str] = {
     "75": MainServiceID.any_childrens_young_peoples_service,
 }
 
-# Source: data_labels_lookup.csv, column_name "regtype"
 REGISTRATION_TYPE_CODE_TO_LABEL: dict[str, str] = {
     "-1": RegistrationType.not_recorded,
     "0": RegistrationType.not_regulated,

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 import pytest
 
@@ -13,11 +13,13 @@ from utils.column_values.ascwds_labelled_vocab import (
     PairedVocab,
 )
 from utils.column_values.categorical_column_values import (
+    ColumnValues,
     EmploymentStatusID,
     EmploymentStatusLabels,
     EstablishmentType,
     IsParent,
     MainJobRoleID,
+    MainJobRoleLabels,
     MainServiceID,
     ParentPermission,
     RegistrationType,
@@ -26,7 +28,8 @@ from utils.column_values.categorical_column_values import (
 
 class TestMainJobRoleVocab:
     def test_code_to_label_returns_every_labelled_code(self):
-        assert len(MAIN_JOB_ROLE.code_to_label()) == 37
+        expected_count = len(fields(MainJobRoleLabels)) - len(fields(ColumnValues))
+        assert len(MAIN_JOB_ROLE.code_to_label()) == expected_count
 
     def test_code_to_label_maps_a_known_code_to_its_label(self):
         assert MAIN_JOB_ROLE.code_to_label()["1"] == "Senior management"
@@ -57,6 +60,11 @@ class TestPairedVocabValidation:
     def test_raises_when_label_side_has_a_field_the_code_side_lacks(self):
         with pytest.raises(ValueError, match="IsParent"):
             PairedVocab(MainJobRoleID, IsParent)
+
+    def test_does_not_raise_when_code_side_has_a_field_the_label_side_lacks(self):
+        # main_job_role's technician/care_navigator exist only on MainJobRoleID -
+        # that's the allowed direction (see unlabelled_codes()), so this must not raise.
+        PairedVocab(MainJobRoleID, MainJobRoleLabels)
 
 
 @dataclass
