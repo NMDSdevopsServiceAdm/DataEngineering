@@ -18,8 +18,6 @@ def main(
     """
     Cleans merged job role data.
 
-    See TODO's for remaining placeholder functionality.
-
     Args:
         merge_data_source (str): source s3 directory for merged data
         clean_destination (str): destination s3 directory for the cleaned data
@@ -93,8 +91,9 @@ def main(
     )
 
     publication_summary_lf = clean_utils.aggregate_to_publication_rows(cleaned_lf)
-
-    # TODO: Add rows for 'England', 'All CQC locations' and 'All CQC care homes'.
+    publication_summary_lf = clean_utils.add_rows_for_publication_groups(
+        cleaned_lf, publication_summary_lf
+    )
 
     group_columns = [
         IndCQC.main_job_role_clean_labelled,

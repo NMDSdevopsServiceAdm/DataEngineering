@@ -6,6 +6,7 @@ import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
 @dataclass
@@ -570,6 +571,169 @@ aggregate_to_publication_rows_test_cases = [
                 10.0,
                 1,
                 5.0,
+            ),
+        ],
+    ),
+]
+
+
+def _all_terms_metrics(
+    filled_posts: float, locationid_count: int, ct_total_employed: float
+) -> tuple:
+    """Publication + long/medium/short assessment metrics, identical across
+    all three terms since every input row's filters pass in these tests."""
+    return (
+        filled_posts,
+        locationid_count,
+        filled_posts,
+        locationid_count,
+        ct_total_employed,
+        filled_posts,
+        locationid_count,
+        ct_total_employed,
+        filled_posts,
+        locationid_count,
+        ct_total_employed,
+    )
+
+
+@dataclass
+class AddRowsForPublicationGroupsTestCase:
+    id: str
+    input_data: list[Any]
+    expected_row_count: int
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+_CARE_HOME_WITH_NURSING = PrimaryServiceType.care_home_with_nursing
+_NON_RESIDENTIAL = PrimaryServiceType.non_residential
+
+add_rows_for_publication_groups_test_cases = [
+    AddRowsForPublicationGroupsTestCase(
+        # A multi-job-role location counts once for "All job roles", not per role.
+        id="all_job_roles_row_counts_a_multi_job_role_location_once_not_per_role",
+        input_data=[
+            (
+                "1-001",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "1-001",
+                date(2025, 4, 1),
+                "Care worker",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                20.0,
+                8.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        # 3 job roles (incl. rollup) x 2 regions (incl. England) x 3 service
+        # types (incl. both rollups) = 18 rows; only the row that proves the
+        # count doesn't double is worth spelling out.
+        expected_row_count=18,
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                "All job roles",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(30.0, 1, 13.0),
+            ),
+        ],
+    ),
+    AddRowsForPublicationGroupsTestCase(
+        # "All CQC care homes" must exclude non-residential locations.
+        id="all_cqc_care_homes_excludes_non_residential_locations",
+        input_data=[
+            (
+                "2-001",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "2-002",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _NON_RESIDENTIAL,
+                15.0,
+                6.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        # 2 job roles (incl. rollup) x 2 regions (incl. England) x 4 service
+        # types (both real, plus both rollups) = 16 rows; only the pair that
+        # proves the inclusion/exclusion split is worth spelling out.
+        expected_row_count=16,
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                "All CQC locations",
+                *_all_terms_metrics(25.0, 2, 11.0),
+            ),
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                "All CQC care homes",
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+        ],
+    ),
+    AddRowsForPublicationGroupsTestCase(
+        # England must sum two real regions once each, not double-count.
+        id="england_row_sums_across_multiple_real_regions_without_double_counting",
+        input_data=[
+            (
+                "3-001",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "3-002",
+                date(2025, 4, 1),
+                "Registered nurse",
+                "South West",
+                _CARE_HOME_WITH_NURSING,
+                12.0,
+                6.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        # 2 job roles (incl. rollup) x 3 regions (incl. England) x 3 service
+        # types (incl. both rollups) = 18 rows; only the England row that
+        # proves the two real regions are summed once each is worth
+        # spelling out: 22/2/11 = London (10/1/5) + South West (12/1/6).
+        expected_row_count=18,
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "England",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(22.0, 2, 11.0),
             ),
         ],
     ),

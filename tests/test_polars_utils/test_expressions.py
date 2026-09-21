@@ -158,7 +158,6 @@ class TestJrColsSelector(unittest.TestCase):
             test_lf.select(job.is_slv_job_role_column()).collect_schema().names()
         )
         expected_cols = [
-            AWPClean.job_role_01_employees,
             AWPClean.job_role_01_starters,
             AWPClean.job_role_01_leavers,
             AWPClean.job_role_01_vacancies,

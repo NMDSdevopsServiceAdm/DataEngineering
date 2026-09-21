@@ -31,7 +31,7 @@ class TestMain:
 
         scan_parquet_mock.assert_called_once_with(self.MERGED_DATA_SOURCE)
         remove_repeated_values_over_time_mock.assert_called_once_with(
-            scan_parquet_mock.return_value,
+            scan_parquet_mock.return_value.with_columns.return_value,
             columns_to_clean=[
                 SLVCols.starters,
                 SLVCols.leavers,
