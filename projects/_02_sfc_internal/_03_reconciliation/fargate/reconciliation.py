@@ -5,9 +5,7 @@ import polars as pl
 
 from polars_utils import cleaning_utils as cUtils
 from polars_utils import utils
-from projects._02_sfc_internal.utils.utils import (
-    add_parents_or_singles_and_subs_column,
-)
+from projects._02_sfc_internal.utils.utils import add_parents_or_singles_and_subs_column
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
