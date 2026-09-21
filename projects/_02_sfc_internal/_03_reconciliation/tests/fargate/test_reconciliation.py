@@ -54,7 +54,6 @@ class TestMain:
         scan_parquet_mock.side_effect = [cqc_location_lf, ascwds_workplace_lf]
 
         job.main(
-            "bucket",
             "cqc_source/",
             "ascwds_source/",
             "single_and_subs_dest/",
@@ -63,8 +62,8 @@ class TestMain:
 
         scan_parquet_mock.assert_has_calls(
             [
-                call("s3://bucket/cqc_source/"),
-                call("s3://bucket/ascwds_source/"),
+                call("cqc_source/"),
+                call("ascwds_source/"),
             ]
         )
         assert sink_to_parquet_mock.call_count == 2
@@ -72,8 +71,8 @@ class TestMain:
         single_and_sub_args, _ = sink_to_parquet_mock.call_args_list[0]
         parents_args, _ = sink_to_parquet_mock.call_args_list[1]
 
-        assert single_and_sub_args[1] == "s3://bucket/single_and_subs_dest/"
-        assert parents_args[1] == "s3://bucket/parents_dest/"
+        assert single_and_sub_args[1] == "single_and_subs_dest/"
+        assert parents_args[1] == "parents_dest/"
 
         single_and_sub_df = single_and_sub_args[0].collect()
         assert (

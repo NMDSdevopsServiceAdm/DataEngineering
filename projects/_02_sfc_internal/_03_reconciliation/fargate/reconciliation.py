@@ -35,11 +35,10 @@ from utils.value_labels.reconciliation.label_dictionary import (
 
 
 def main(
-    bucket_name: str,
-    cqc_locations_snapshot_source_path: str,
-    ascwds_workplace_source_path: str,
-    reconciliation_single_and_subs_destination_path: str,
-    reconciliation_parents_destination_path: str,
+    cqc_locations_snapshot_source: str,
+    ascwds_workplace_source: str,
+    reconciliation_single_and_subs_destination: str,
+    reconciliation_parents_destination: str,
 ) -> None:
     """Builds the ASC-WDS reconciliation reports for deregistered CQC locations.
 
@@ -48,22 +47,17 @@ def main(
     that have deregistered (or have no registration status) and need following up.
 
     Args:
-        bucket_name (str): The bucket to source the datasets from and write reports to.
-        cqc_locations_snapshot_source_path (str): Source path for the latest run CQC
-            locations snapshot dataset.
-        ascwds_workplace_source_path (str): Source path for the ASC-WDS workplace
+        cqc_locations_snapshot_source (str): Source s3 directory for the latest run
+            CQC locations snapshot dataset.
+        ascwds_workplace_source (str): Source s3 directory for the ASC-WDS workplace
             parquet dataset.
-        reconciliation_single_and_subs_destination_path (str): Destination directory
+        reconciliation_single_and_subs_destination (str): Destination s3 directory
             for the singles and subs reconciliation report.
-        reconciliation_parents_destination_path (str): Destination directory for the
+        reconciliation_parents_destination (str): Destination s3 directory for the
             parents reconciliation report.
     """
-    cqc_location_lf = utils.scan_parquet(
-        f"s3://{bucket_name}/{cqc_locations_snapshot_source_path}"
-    )
-    ascwds_workplace_lf = utils.scan_parquet(
-        f"s3://{bucket_name}/{ascwds_workplace_source_path}"
-    )
+    cqc_location_lf = utils.scan_parquet(cqc_locations_snapshot_source)
+    ascwds_workplace_lf = utils.scan_parquet(ascwds_workplace_source)
 
     ascwds_workplace_lf = ascwds_workplace_lf.filter(
         pl.col(AWPClean.workplace_last_active_date) >= pl.col(AWPClean.purge_date)
@@ -103,14 +97,8 @@ def main(
         ascwds_parent_accounts_lf, reconciliation_df.lazy(), first_of_previous_month
     )
 
-    utils.sink_to_parquet(
-        single_and_sub_lf,
-        f"s3://{bucket_name}/{reconciliation_single_and_subs_destination_path}",
-    )
-    utils.sink_to_parquet(
-        parents_lf,
-        f"s3://{bucket_name}/{reconciliation_parents_destination_path}",
-    )
+    utils.sink_to_parquet(single_and_sub_lf, reconciliation_single_and_subs_destination)
+    utils.sink_to_parquet(parents_lf, reconciliation_parents_destination)
 
 
 def get_reconciliation_month_boundaries(
@@ -470,32 +458,27 @@ if __name__ == "__main__":
 
     args = utils.get_args(
         (
-            "--bucket_name",
-            "The bucket to source the datasets from and write reports to",
+            "--cqc_locations_snapshot_source",
+            "Source s3 directory for latest run CQC locations snapshot dataset",
         ),
         (
-            "--cqc_locations_snapshot_source_path",
-            "Source path for the latest run CQC locations snapshot dataset",
+            "--ascwds_workplace_source",
+            "Source s3 directory for ASC-WDS workplace parquet dataset",
         ),
         (
-            "--ascwds_workplace_source_path",
-            "Source path for the ASC-WDS workplace parquet dataset",
+            "--reconciliation_single_and_subs_destination",
+            "Destination s3 directory for the singles and subs reconciliation report",
         ),
         (
-            "--reconciliation_single_and_subs_destination_path",
-            "Destination directory for the singles and subs reconciliation report",
-        ),
-        (
-            "--reconciliation_parents_destination_path",
-            "Destination directory for the parents reconciliation report",
+            "--reconciliation_parents_destination",
+            "Destination s3 directory for the parents reconciliation report",
         ),
     )
     main(
-        args.bucket_name,
-        args.cqc_locations_snapshot_source_path,
-        args.ascwds_workplace_source_path,
-        args.reconciliation_single_and_subs_destination_path,
-        args.reconciliation_parents_destination_path,
+        args.cqc_locations_snapshot_source,
+        args.ascwds_workplace_source,
+        args.reconciliation_single_and_subs_destination,
+        args.reconciliation_parents_destination,
     )
 
     print("Fargate job 'reconciliation' complete")

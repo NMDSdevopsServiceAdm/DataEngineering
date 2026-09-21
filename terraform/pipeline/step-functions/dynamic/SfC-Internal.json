@@ -94,11 +94,10 @@
                       "Name": "_02_sfc_internal-container",
                       "Command": [
                         "reconciliation.py",
-                        "--bucket_name", "${dataset_bucket_name}",
-                        "--cqc_locations_snapshot_source_path", "domain=01_cqc/dataset=locations_04_latest_snapshot/",
-                        "--ascwds_workplace_source_path", "domain=02_sfc/dataset=ascwds_for_sfc_internal/",
-                        "--reconciliation_single_and_subs_destination_path", "domain=02_sfc/dataset=sfc_reconciliation_singles_and_subs/",
-                        "--reconciliation_parents_destination_path", "domain=02_sfc/dataset=sfc_reconciliation_parents/"
+                        "--cqc_locations_snapshot_source", "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_04_latest_snapshot/",
+                        "--ascwds_workplace_source", "${dataset_bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/",
+                        "--reconciliation_single_and_subs_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_singles_and_subs/",
+                        "--reconciliation_parents_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_parents/"
                       ]
                     }
                   ]
