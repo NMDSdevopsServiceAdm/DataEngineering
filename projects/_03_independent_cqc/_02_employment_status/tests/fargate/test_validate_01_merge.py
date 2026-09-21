@@ -7,7 +7,6 @@ import pytest
 
 import projects._03_independent_cqc._02_employment_status.fargate.validate_01_merge as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
@@ -69,12 +68,6 @@ class TestMain:
         self.source_df = pl.DataFrame(
             {
                 IndCqcColumns.location_id: ["1-001"] * PUBLISHED_ROLE_COUNT,
-                job.METRIC: [10.0] * PUBLISHED_ROLE_COUNT,
-                SLVCols.estimated_emp_stat_perm: [5.0] * PUBLISHED_ROLE_COUNT,
-                SLVCols.estimated_emp_stat_temp: [2.0] * PUBLISHED_ROLE_COUNT,
-                SLVCols.estimated_emp_stat_bank_or_pool: [1.5] * PUBLISHED_ROLE_COUNT,
-                SLVCols.estimated_emp_stat_agency: [1.0] * PUBLISHED_ROLE_COUNT,
-                SLVCols.estimated_emp_stat_other: [0.5] * PUBLISHED_ROLE_COUNT,
             }
         )
 
@@ -117,6 +110,4 @@ class TestMain:
 
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
-        assert "row_count_match" in assertion_types_present
-        assert "col_vals_ge" in assertion_types_present
-        assert "col_vals_expr" in assertion_types_present
+        assert assertion_types_present == {"row_count_match"}
