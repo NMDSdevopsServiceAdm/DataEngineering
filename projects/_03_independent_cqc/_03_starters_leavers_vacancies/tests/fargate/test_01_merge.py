@@ -2,9 +2,6 @@ from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._01_merge as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import (
-    StartersLeaversVacanciesColumns as SLVCols,
-)
 
 PATCH_PATH = (
     "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._01_merge"
@@ -41,7 +38,7 @@ class TestMain:
             on=[
                 IndCQC.establishment_id,
                 IndCQC.ascwds_workplace_import_date,
-                SLVCols.published_job_role_label,
+                IndCQC.published_job_role_label,
             ],
             how="left",
         )

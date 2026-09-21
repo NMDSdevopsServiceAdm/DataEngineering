@@ -39,7 +39,7 @@ def main(
             SLVCols.leavers,
             SLVCols.vacancies,
         ],
-        partition_by_columns=[IndCQC.location_id, SLVCols.published_job_role_label],
+        partition_by_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
         date_column=IndCQC.cqc_location_import_date,
     )
 

@@ -94,7 +94,7 @@ _reshape_single_row_case = ReshapeJobRoleColsToRowsTestCase(
     expected_data={
         AWPClean.establishment_id: ["1"] * 15,
         AWPClean.ascwds_workplace_import_date: [date(2024, 1, 1)] * 15,
-        SLVCols.published_job_role_label: [
+        IndCQC.published_job_role_label: [
             PublishedJobRoleLabels.senior_management,
             PublishedJobRoleLabels.registered_manager,
             PublishedJobRoleLabels.social_worker,
@@ -176,7 +176,7 @@ _reshape_multi_row_case = ReshapeJobRoleColsToRowsTestCase(
         AWPClean.establishment_id: ["10"] * 15 + ["20"] * 15,
         AWPClean.ascwds_workplace_import_date: [date(2024, 2, 1)] * 15
         + [date(2024, 3, 1)] * 15,
-        SLVCols.published_job_role_label: [
+        IndCQC.published_job_role_label: [
             PublishedJobRoleLabels.senior_management,
             PublishedJobRoleLabels.registered_manager,
             PublishedJobRoleLabels.social_worker,

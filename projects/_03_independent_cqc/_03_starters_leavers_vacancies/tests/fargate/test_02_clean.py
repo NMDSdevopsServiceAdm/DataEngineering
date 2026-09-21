@@ -41,7 +41,7 @@ class TestMain:
             ],
             partition_by_columns=[
                 IndCQC.location_id,
-                SLVCols.published_job_role_label,
+                IndCQC.published_job_role_label,
             ],
             date_column=IndCQC.cqc_location_import_date,
         )

@@ -11,9 +11,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import (
-    StartersLeaversVacanciesColumns as SLVCols,
-)
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
 )
@@ -77,7 +74,7 @@ class TestCollapseJobRoleEstimatesToPublishedLabels:
         expected_lf = pl.LazyFrame(
             case.expected_data, schema_overrides={METRIC: pl.Float64}
         ).with_columns(
-            pl.col(SLVCols.published_job_role_label).cast(
+            pl.col(IndCQC.published_job_role_label).cast(
                 CatColType.PublishedJobRoleLabelCatType
             )
         )
@@ -94,7 +91,7 @@ class TestCollapseJobRoleEstimatesToPublishedLabels:
 
 JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES = {
     IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
-    SLVCols.published_job_role_label: CatColType.PublishedJobRoleLabelCatType,
+    IndCQC.published_job_role_label: CatColType.PublishedJobRoleLabelCatType,
     METRIC: pl.Float64,
 }
 

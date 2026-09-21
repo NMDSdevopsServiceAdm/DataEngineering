@@ -8,9 +8,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import (
-    StartersLeaversVacanciesColumns as SLVCols,
-)
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     PrimaryServiceType,
@@ -124,11 +121,11 @@ def collapse_job_role_estimates_to_published_labels(
             .otherwise(pl.lit(PublishedJobRoleLabels.other))
         )
         .cast(CatColType.PublishedJobRoleLabelCatType)
-        .alias(SLVCols.published_job_role_label)
+        .alias(IndCQC.published_job_role_label)
     )
 
     return published_role_lf.group_by(
-        IndCQC.id_per_locationid_import_date, SLVCols.published_job_role_label
+        IndCQC.id_per_locationid_import_date, IndCQC.published_job_role_label
     ).agg(
         pl.col(IndCQC.location_id).first(),
         pl.col(IndCQC.cqc_location_import_date).first(),
@@ -179,7 +176,7 @@ def apply_employment_status_magic_numbers(
         .cast(pl.String)
         .replace_strict(CSV_WEIGHTING_JOB_ROLE_TO_PUBLISHED_JOB_ROLE_LABEL)
         .cast(CatColType.PublishedJobRoleLabelCatType)
-        .alias(SLVCols.published_job_role_label),
+        .alias(IndCQC.published_job_role_label),
         pl.col(EmpStatRates.emp_stat_perm),
         pl.col(EmpStatRates.emp_stat_temp),
         pl.col(EmpStatRates.emp_stat_bank_or_pool),
@@ -190,7 +187,7 @@ def apply_employment_status_magic_numbers(
     job_role_estimates_lf = (
         job_role_estimates_lf.join(
             mapped_rates_lf,
-            on=[IndCQC.primary_service_type, SLVCols.published_job_role_label],
+            on=[IndCQC.primary_service_type, IndCQC.published_job_role_label],
             how="left",
         )
         .with_columns(

@@ -13,9 +13,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    StartersLeaversVacanciesColumns as SLVCols,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class TestCollapseJobRolesToPublishedLabels:
@@ -29,7 +27,7 @@ class TestCollapseJobRolesToPublishedLabels:
     def test_collapses_job_roles_as_expected(self, case):
         test_lf = pl.LazyFrame(case.input_data)
         expected_lf = pl.LazyFrame(case.expected_data).with_columns(
-            pl.col(SLVCols.published_job_role_label).cast(
+            pl.col(IndCQC.published_job_role_label).cast(
                 CatColType.PublishedJobRoleLabelCatType
             )
         )
