@@ -53,9 +53,9 @@ def main(
             locations snapshot dataset.
         ascwds_workplace_source_path (str): Source path for the ASC-WDS workplace
             parquet dataset.
-        reconciliation_single_and_subs_destination_path (str): Destination filepath
+        reconciliation_single_and_subs_destination_path (str): Destination directory
             for the singles and subs reconciliation report.
-        reconciliation_parents_destination_path (str): Destination filepath for the
+        reconciliation_parents_destination_path (str): Destination directory for the
             parents reconciliation report.
     """
     cqc_location_lf = utils.scan_parquet(
@@ -98,20 +98,18 @@ def main(
         merged_ascwds_cqc_lf, first_of_most_recent_month, first_of_previous_month
     ).collect()
 
-    single_and_sub_df = build_single_and_subs_output(reconciliation_df.lazy())
-    parents_df = build_parents_output(
+    single_and_sub_lf = build_single_and_subs_output(reconciliation_df.lazy())
+    parents_lf = build_parents_output(
         ascwds_parent_accounts_lf, reconciliation_df.lazy(), first_of_previous_month
     )
 
-    utils.write_to_parquet(
-        single_and_sub_df,
+    utils.sink_to_parquet(
+        single_and_sub_lf,
         f"s3://{bucket_name}/{reconciliation_single_and_subs_destination_path}",
-        append=False,
     )
-    utils.write_to_parquet(
-        parents_df,
+    utils.sink_to_parquet(
+        parents_lf,
         f"s3://{bucket_name}/{reconciliation_parents_destination_path}",
-        append=False,
     )
 
 
@@ -245,7 +243,7 @@ def filter_to_locations_relevant_to_reconciliation_process(
     )
 
 
-def build_single_and_subs_output(reconciliation_lf: pl.LazyFrame) -> pl.DataFrame:
+def build_single_and_subs_output(reconciliation_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Builds the reconciliation report for ASC-WDS single and sub accounts.
 
     Args:
@@ -253,7 +251,7 @@ def build_single_and_subs_output(reconciliation_lf: pl.LazyFrame) -> pl.DataFram
             process.
 
     Returns:
-        pl.DataFrame: The singles and subs reconciliation report.
+        pl.LazyFrame: The singles and subs reconciliation report.
     """
     single_and_sub_lf = reconciliation_lf.filter(
         pl.col(ReconColumn.parents_or_singles_and_subs)
@@ -266,14 +264,14 @@ def build_single_and_subs_output(reconciliation_lf: pl.LazyFrame) -> pl.DataFram
         pl.lit(Subject.single_sub_subject_value).alias(ReconColumn.subject),
     )
     single_and_sub_lf = create_missing_columns_required_for_output(single_and_sub_lf)
-    return final_column_selection(single_and_sub_lf).collect()
+    return final_column_selection(single_and_sub_lf)
 
 
 def build_parents_output(
     ascwds_parent_accounts_lf: pl.LazyFrame,
     reconciliation_lf: pl.LazyFrame,
     first_of_previous_month: date,
-) -> pl.DataFrame:
+) -> pl.LazyFrame:
     """Builds the reconciliation report for ASC-WDS parent accounts.
 
     Args:
@@ -283,7 +281,7 @@ def build_parents_output(
         first_of_previous_month (date): First day of the previous month.
 
     Returns:
-        pl.DataFrame: The parent accounts reconciliation report.
+        pl.LazyFrame: The parent accounts reconciliation report.
     """
     parents_lf = reconciliation_lf.filter(
         pl.col(ReconColumn.parents_or_singles_and_subs)
@@ -321,7 +319,7 @@ def build_parents_output(
     ascwds_parent_accounts_lf = create_missing_columns_required_for_output(
         ascwds_parent_accounts_lf
     )
-    return final_column_selection(ascwds_parent_accounts_lf).collect()
+    return final_column_selection(ascwds_parent_accounts_lf)
 
 
 def join_nmds_ids_into_parent_accounts(
@@ -485,11 +483,11 @@ if __name__ == "__main__":
         ),
         (
             "--reconciliation_single_and_subs_destination_path",
-            "Destination filepath for the singles and subs reconciliation report",
+            "Destination directory for the singles and subs reconciliation report",
         ),
         (
             "--reconciliation_parents_destination_path",
-            "Destination filepath for the parents reconciliation report",
+            "Destination directory for the parents reconciliation report",
         ),
     )
     main(

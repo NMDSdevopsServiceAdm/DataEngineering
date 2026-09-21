@@ -36,10 +36,10 @@ PATCH_PATH = "projects._02_sfc_internal._03_reconciliation.fargate.reconciliatio
 
 
 class TestMain:
-    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_writes_both_reports_and_applies_purge_filter_before_processing(
-        self, scan_parquet_mock: Mock, write_to_parquet_mock: Mock
+        self, scan_parquet_mock: Mock, sink_to_parquet_mock: Mock
     ):
         ascwds_workplace_lf = pl.LazyFrame(
             Data.main_ascwds_workplace_rows,
@@ -57,8 +57,8 @@ class TestMain:
             "bucket",
             "cqc_source/",
             "ascwds_source/",
-            "single_and_subs_dest.parquet",
-            "parents_dest.parquet",
+            "single_and_subs_dest/",
+            "parents_dest/",
         )
 
         scan_parquet_mock.assert_has_calls(
@@ -67,25 +67,21 @@ class TestMain:
                 call("s3://bucket/ascwds_source/"),
             ]
         )
-        assert write_to_parquet_mock.call_count == 2
+        assert sink_to_parquet_mock.call_count == 2
 
-        single_and_sub_args, single_and_sub_kwargs = (
-            write_to_parquet_mock.call_args_list[0]
-        )
-        parents_args, parents_kwargs = write_to_parquet_mock.call_args_list[1]
+        single_and_sub_args, _ = sink_to_parquet_mock.call_args_list[0]
+        parents_args, _ = sink_to_parquet_mock.call_args_list[1]
 
-        assert single_and_sub_args[1] == "s3://bucket/single_and_subs_dest.parquet"
-        assert single_and_sub_kwargs == {"append": False}
-        assert parents_args[1] == "s3://bucket/parents_dest.parquet"
-        assert parents_kwargs == {"append": False}
+        assert single_and_sub_args[1] == "s3://bucket/single_and_subs_dest/"
+        assert parents_args[1] == "s3://bucket/parents_dest/"
 
-        single_and_sub_df = single_and_sub_args[0]
+        single_and_sub_df = single_and_sub_args[0].collect()
         assert (
             single_and_sub_df[ReconColumn.nmds].to_list()
             == Data.main_expected_single_and_subs_nmds_ids
         )
 
-        parents_df = parents_args[0]
+        parents_df = parents_args[0].collect()
         assert parents_df.height == 0
 
 
@@ -434,7 +430,7 @@ class TestBuildSingleAndSubsOutput:
             }
         )
 
-        returned_df = job.build_single_and_subs_output(input_lf)
+        returned_df = job.build_single_and_subs_output(input_lf).collect()
 
         assert returned_df[ReconColumn.nmds].to_list() == ["10"]
         assert returned_df[ReconColumn.subject].to_list() == [
@@ -466,7 +462,7 @@ class TestBuildSingleAndSubsOutput:
             },
         )
 
-        returned_df = job.build_single_and_subs_output(input_lf)
+        returned_df = job.build_single_and_subs_output(input_lf).collect()
 
         assert returned_df[ReconColumn.description].to_list() == [
             SingleSubDescription.single_sub_reg_type_description
@@ -506,7 +502,7 @@ class TestBuildParentsOutput:
 
         returned_df = job.build_parents_output(
             ascwds_parent_accounts_lf, reconciliation_lf, date(2024, 3, 1)
-        )
+        ).collect()
 
         assert returned_df.height == 1
         assert returned_df[ReconColumn.nmds].to_list() == ["P1"]
@@ -546,7 +542,7 @@ class TestBuildParentsOutput:
 
         returned_df = job.build_parents_output(
             ascwds_parent_accounts_lf, reconciliation_lf, date(2024, 3, 1)
-        )
+        ).collect()
 
         assert returned_df.height == 0
 
