@@ -23,6 +23,7 @@ from utils.column_values.categorical_column_values import (
     ContemporaryCSSR,
     EstimateFilledPostsSource,
     JobRoleFilteringRule,
+    SLVFilteringRule,
 )
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
@@ -46,6 +47,20 @@ class RemoveRepeatedValuesOverTimeTestCase:
     columns_to_clean: list[str] | cs.Selector
     partition_by_columns: str | list[str]
     date_column: str
+    expected_data: list[Any]
+    expected_schema: pl.Schema
+
+
+@dataclass
+class NullNotKnownValuesTestCase:
+    id: str
+    test_data: list[Any]
+    test_schema: pl.Schema
+    columns_to_clean: list[str]
+    not_known_code: int
+    populated_rule: str
+    missing_rule: str
+    not_known_rule: str
     expected_data: list[Any]
     expected_schema: pl.Schema
 
@@ -390,6 +405,86 @@ class CleaningUtilsData:
                 ("1-0001", "registered_nurse", date(2023, 2, 1), 5, None),
             ],
             expected_schema=Schemas.expected_remove_repeated_values_over_time_multiple_partition_columns_schema,
+        ),
+    ]
+
+    null_not_known_values_test_cases = [
+        NullNotKnownValuesTestCase(
+            id="nulls_the_not_known_code_and_records_the_reason",
+            test_data=[
+                ("1-0001", 999),
+            ],
+            test_schema=Schemas.null_not_known_values_single_column_schema,
+            columns_to_clean=["metric"],
+            not_known_code=999,
+            populated_rule=SLVFilteringRule.populated,
+            missing_rule=SLVFilteringRule.missing_data,
+            not_known_rule=SLVFilteringRule.contained_invalid_missing_data_code,
+            expected_data=[
+                (
+                    "1-0001",
+                    999,
+                    SLVFilteringRule.contained_invalid_missing_data_code,
+                    None,
+                ),
+            ],
+            expected_schema=Schemas.expected_null_not_known_values_single_column_schema,
+        ),
+        NullNotKnownValuesTestCase(
+            id="keeps_a_normal_value_and_marks_it_populated",
+            test_data=[
+                ("1-0001", 5),
+            ],
+            test_schema=Schemas.null_not_known_values_single_column_schema,
+            columns_to_clean=["metric"],
+            not_known_code=999,
+            populated_rule=SLVFilteringRule.populated,
+            missing_rule=SLVFilteringRule.missing_data,
+            not_known_rule=SLVFilteringRule.contained_invalid_missing_data_code,
+            expected_data=[
+                ("1-0001", 5, SLVFilteringRule.populated, 5),
+            ],
+            expected_schema=Schemas.expected_null_not_known_values_single_column_schema,
+        ),
+        NullNotKnownValuesTestCase(
+            id="records_missing_data_when_raw_value_is_null",
+            test_data=[
+                ("1-0001", None),
+            ],
+            test_schema=Schemas.null_not_known_values_single_column_schema,
+            columns_to_clean=["metric"],
+            not_known_code=999,
+            populated_rule=SLVFilteringRule.populated,
+            missing_rule=SLVFilteringRule.missing_data,
+            not_known_rule=SLVFilteringRule.contained_invalid_missing_data_code,
+            expected_data=[
+                ("1-0001", None, SLVFilteringRule.missing_data, None),
+            ],
+            expected_schema=Schemas.expected_null_not_known_values_single_column_schema,
+        ),
+        NullNotKnownValuesTestCase(
+            id="cleans_multiple_columns_independently_in_one_call",
+            test_data=[
+                ("1-0001", 999, 5),
+            ],
+            test_schema=Schemas.null_not_known_values_multiple_columns_schema,
+            columns_to_clean=["starters", "leavers"],
+            not_known_code=999,
+            populated_rule=SLVFilteringRule.populated,
+            missing_rule=SLVFilteringRule.missing_data,
+            not_known_rule=SLVFilteringRule.contained_invalid_missing_data_code,
+            expected_data=[
+                (
+                    "1-0001",
+                    999,
+                    5,
+                    SLVFilteringRule.contained_invalid_missing_data_code,
+                    None,
+                    SLVFilteringRule.populated,
+                    5,
+                ),
+            ],
+            expected_schema=Schemas.expected_null_not_known_values_multiple_columns_schema,
         ),
     ]
 

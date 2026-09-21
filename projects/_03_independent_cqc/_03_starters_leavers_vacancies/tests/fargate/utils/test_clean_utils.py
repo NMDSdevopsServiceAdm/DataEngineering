@@ -10,9 +10,9 @@ from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 INPUT_SCHEMA_OVERRIDES = {
     SLVCols.employees: pl.Int16,
-    SLVCols.starters_dedup: pl.Int16,
-    SLVCols.leavers_dedup: pl.Int16,
-    SLVCols.vacancies_dedup: pl.Int16,
+    SLVCols.starters_cleaned_dedup: pl.Int16,
+    SLVCols.leavers_cleaned_dedup: pl.Int16,
+    SLVCols.vacancies_cleaned_dedup: pl.Int16,
 }
 
 EXPECTED_SCHEMA_OVERRIDES = {

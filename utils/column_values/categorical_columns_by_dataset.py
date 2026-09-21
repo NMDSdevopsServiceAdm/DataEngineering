@@ -18,6 +18,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import ONScol as ONS
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_column_values import (
     RUI,
     RUI2021,
@@ -48,6 +49,7 @@ from utils.column_values.categorical_column_values import (
     RelatedLocation,
     Sector,
     Services,
+    SLVFilteringRule,
     Specialisms,
     SpecialistGeneralistOther,
 )
@@ -301,4 +303,17 @@ class DiagnosticOnKnownFilledPostsCategoricalValues:
 class SLVPrepareCategoricalValues:
     published_job_role_labels_column_values = PublishedJobRoleLabels(
         AWKClean.main_job_role_clean_labelled
+    )
+
+
+@dataclass
+class SLVCleanCategoricalValues:
+    starters_filtering_rule_column_values = SLVFilteringRule(
+        SLVCols.starters_filtering_rule
+    )
+    leavers_filtering_rule_column_values = SLVFilteringRule(
+        SLVCols.leavers_filtering_rule
+    )
+    vacancies_filtering_rule_column_values = SLVFilteringRule(
+        SLVCols.vacancies_filtering_rule
     )
