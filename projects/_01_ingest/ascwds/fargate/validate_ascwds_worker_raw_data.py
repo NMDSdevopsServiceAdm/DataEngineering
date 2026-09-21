@@ -8,6 +8,7 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
+from utils.column_values.ascwds_labelled_vocab import NOT_KNOWN_JOB_ROLE
 from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerRawCategoricalValues as CatValues,
 )
@@ -60,11 +61,11 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         # categorical values
         .col_vals_in_set(
             AWK.main_job_role_id,
-            [*known_values, "-1"],
-            # "-1" (unknown) is allowed here even though ingest now hard-fails on
-            # it in new files, since historical raw data already contains
+            [*known_values, NOT_KNOWN_JOB_ROLE],
+            # NOT_KNOWN_JOB_ROLE is allowed here even though ingest now hard-fails
+            # on it in new files, since historical raw data already contains
             # legitimate "-1" rows.
-            brief=f"{AWK.main_job_role_id} should be a known job role id, or -1 (unknown)",
+            brief=f"{AWK.main_job_role_id} should be a known job role id, or {NOT_KNOWN_JOB_ROLE} (unknown)",
         )
         # distinct values
         .specially(

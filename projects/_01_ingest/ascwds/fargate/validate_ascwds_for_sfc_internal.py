@@ -24,7 +24,7 @@ EXPECTED_SCHEMA = pb.Schema(
         AWPClean.is_parent: str(CategoricalColumnTypes.IsParentCatType),
         AWPClean.parent_id: "String",
         AWPClean.organisation_id: "String",
-        AWPClean.parent_permission: "String",
+        AWPClean.parent_permission: str(CategoricalColumnTypes.ParentPermissionCatType),
         AWPClean.establishment_type: str(
             CategoricalColumnTypes.EstablishmentTypeCatType
         ),

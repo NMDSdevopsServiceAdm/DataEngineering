@@ -7,6 +7,7 @@ from utils import file_utils
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
+from utils.column_values.ascwds_labelled_vocab import NOT_KNOWN_JOB_ROLE
 
 DELIMITER = "|"
 
@@ -60,7 +61,9 @@ def raise_error_if_mainjrid_includes_unknown_values(lf: pl.LazyFrame) -> None:
     # CSV has no columnar pruning, matching the two-pass cost the original
     # PySpark filter().count() had.
     count_unknown = (
-        lf.select((pl.col(AWK.main_job_role_id) == "-1").sum()).collect().item()
+        lf.select((pl.col(AWK.main_job_role_id) == NOT_KNOWN_JOB_ROLE).sum())
+        .collect()
+        .item()
     )
 
     if count_unknown > 0:

@@ -11,7 +11,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
+from utils.column_values.ascwds_labelled_vocab import EMPLOYMENT_STATUS, MAIN_JOB_ROLE
 
 WORKER_SCHEMA = {
     AWKClean.location_id: pl.String,
@@ -27,17 +27,10 @@ WORKPLACE_SCHEMA = {
     AWPClean.establishment_id: pl.String,
 }
 
-data_labels_schema = {
-    DLC.column_name: pl.String,
-    DLC.code: pl.String,
-    DLC.label: pl.String,
-}
-
 
 def main(
     worker_source: str,
     cleaned_workplace_source: str,
-    data_labels_source: str,
     cleaned_worker_destination: str,
 ) -> None:
     """
@@ -48,7 +41,6 @@ def main(
         cleaned_workplace_source (str): path to the cleaned ASC-WDS workplace
             data - used to drop workers whose workplace was removed during
             workplace cleaning
-        data_labels_source (str): path to the ASC-WDS data labels source
         cleaned_worker_destination (str): destination for cleaned ASC-WDS
             worker output
     """
@@ -69,7 +61,12 @@ def main(
     worker_lf = wUtils.remove_workers_without_workplaces(worker_lf, workplace_lf)
     worker_lf = worker_lf.drop(AWKClean.import_date)
 
-    data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
+    data_labels_lf = cUtils.build_labels_lf(
+        {
+            AWKClean.main_job_role_clean: MAIN_JOB_ROLE.code_to_label(),
+            AWKClean.employment_status_clean: EMPLOYMENT_STATUS.code_to_label(),
+        }
+    )
 
     worker_lf = wUtils.create_clean_main_job_role_column(worker_lf, data_labels_lf)
     worker_lf = wUtils.create_clean_employment_status_column(worker_lf, data_labels_lf)
@@ -100,7 +97,6 @@ if __name__ == "__main__":
             "--cleaned_workplace_source",
             "Source s3 directory for cleaned ASC-WDS workplace data",
         ),
-        ("--data_labels_source", "Source s3 directory for ASC-WDS data labels"),
         (
             "--cleaned_worker_destination",
             "Destination s3 directory for cleaned ASC-WDS worker output",
@@ -109,6 +105,5 @@ if __name__ == "__main__":
     main(
         worker_source=args.worker_source,
         cleaned_workplace_source=args.cleaned_workplace_source,
-        data_labels_source=args.data_labels_source,
         cleaned_worker_destination=args.cleaned_worker_destination,
     )
