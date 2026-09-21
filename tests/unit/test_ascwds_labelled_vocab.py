@@ -48,7 +48,6 @@ class TestEmploymentStatusVocab:
             EmploymentStatusID.temporary: EmploymentStatusLabels.temporary,
             EmploymentStatusID.bank_or_pool: EmploymentStatusLabels.bank_or_pool,
             EmploymentStatusID.agency: EmploymentStatusLabels.agency,
-            EmploymentStatusID.student: EmploymentStatusLabels.student,
             EmploymentStatusID.other: EmploymentStatusLabels.other,
         }
 
