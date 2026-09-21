@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Consolidated ASC-WDS code-label vocabulary (7 workplace/worker columns) into a single Python source of truth, retiring `data_labels_lookup.csv`.
+- Migrated the reconciliation job (CQC deregistration reports for ASC-WDS singles/subs and parent accounts) from PySpark/Glue to Polars on the `_02_sfc_internal` shared Fargate task, folding its Dockerfile into that project's shared `Dockerfile_and_requirements` image alongside `cqc_coverage`, renumbering its folder to `_03_reconciliation`, and removing the old Glue job, its PySpark code, and their tests/fixtures.
 - Moved the starters/leavers/vacancies (SLV) pipeline from its own `_07_workforce_characteristics` project into `_03_independent_cqc` as `_03_starters_leavers_vacancies`, and folded its deployment onto IND CQC's existing shared Fargate task, retiring the separate ECS task, ECR repo and Docker image it used to run on.
 - Split the SLV pipeline into two sibling pipelines under `_03_independent_cqc`: `_02_employment_status` (worker-derived data) and `_03_starters_leavers_vacancies` (workplace-derived data), each with their own prepare/merge/clean/impute/estimate stages, with SLV's merge consuming employment status's cleaned output.
 - Merged the two DPR ingestion jobs (survey and external) into a single Polars job on the shared `_01_ingest` Fargate task, taking `--source`, `--dataset` (`survey`/`external`), and `--destination` as run-time arguments instead of hardcoding the destination path in Terraform each year, and removed the now-unused PySpark CSV-reading utilities and their tests/fixtures, since this was the last remaining PySpark CSV ingestion in the repo. Added a manually-started `Ingest-DPR-Data` step function to replace the deleted Glue jobs' manual-run trigger point.
@@ -23,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Carried `care_home_status_count` through the job role archive and publication merge jobs, and added a `consistent_service` boolean column to the publication clean job that is true when a location has always had the same care home status.
 - Reshaped the SLV pipeline's aggregated employment status data from one row per employment status into one row per location, establishment, import date and job role, with a worker count column per employment status, replacing the pass-through placeholder. Updated its validation's expected row count to match the new grain.
 - Removed 18 unused helper functions across `utils/`, `polars_utils/` and a couple of project-specific `fargate/utils` modules that had no call sites outside their own tests, along with their dedicated tests and any fixture data/schemas used only by those tests. Also removed 50 orphaned test fixture rows/schemas across the repo's `unittest_data` files that were no longer referenced by any test.
+- Sourced the SLV clean job's employees column from the ASC-WDS worker file (permanent plus temporary employment status counts) instead of the workplace job-role data, and narrowed the ingest job-role selector/bounding to only starters/leavers/vacancies now that employees no longer needs bounding there (it's a mandatory field with no -1/-2 "not known" sentinel); added explicit null handling in the SLV clean job's rate calculations for employees-is-zero cases.
 - Removed the unused `student` employment status value from `EmploymentStatusLabels`/`EmploymentStatusID`, confirmed absent from production ASC-WDS worker data, consolidated the SLV employment-status pivot onto a single label list, and added a full-coverage validation check for the cleaned employment status columns.
 
 
@@ -32,6 +34,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed the Glue crawler module's `table_prefix` so Athena table names no longer start with a digit (which Athena/Presto can't query unquoted), by adding a leading underscore ahead of the numbered domain prefix.
 - Fixed the `_02_employment_status`/`_03_starters_leavers_vacancies` pipelines' `_00_prepare_worker`/`_00_prepare_workplace` and their validate jobs to reduce ASCWDS import dates to those already CQC-matched in the job role metadata, instead of an independent hardcoded quarterly/earliest-file-per-month rule that could disagree with the metadata match and cause the merge step to silently miss rows.
+- Fixed the SLV clean job computing turnover/starter/vacancy rates before deduplicating starters, leavers and vacancies, which could change a location's rate even when the underlying deduplicated figure hadn't changed; rates are now calculated from the deduplicated columns.
 
 
 ## [v2026.08.1] - 11/09/2026

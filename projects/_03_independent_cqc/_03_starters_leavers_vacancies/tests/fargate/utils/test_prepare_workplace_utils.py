@@ -82,7 +82,6 @@ class TestReshapeJobRoleColsToRows:
             pl.col(SLVCols.published_job_role_label).cast(
                 CatColType.PublishedJobRoleLabelCatType
             ),
-            pl.col(SLVCols.employees).cast(pl.Int16),
             pl.col(SLVCols.starters).cast(pl.Int16),
             pl.col(SLVCols.leavers).cast(pl.Int16),
             pl.col(SLVCols.vacancies).cast(pl.Int16),

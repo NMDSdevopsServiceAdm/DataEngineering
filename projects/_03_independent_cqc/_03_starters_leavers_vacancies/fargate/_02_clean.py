@@ -1,7 +1,12 @@
+import polars as pl
+
 import polars_utils.cleaning_utils as cUtils
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.clean_utils as cleanUtils
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.slv_job_role_columns import (
+    SLVEmploymentStatusColumns as SLVEmpStatus,
+)
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 
@@ -18,7 +23,12 @@ def main(
     """
     lf = utils.scan_parquet(merged_data_source)
 
-    lf = cleanUtils.create_slv_rate_columns(lf)
+    # Employees = directly employed by the workplace (permanent + temporary) only.
+    lf = lf.with_columns(
+        (
+            pl.col(SLVEmpStatus.permanent_count) + pl.col(SLVEmpStatus.temporary_count)
+        ).alias(SLVCols.employees)
+    )
 
     lf = cUtils.remove_repeated_values_over_time(
         lf,
@@ -26,13 +36,12 @@ def main(
             SLVCols.starters,
             SLVCols.leavers,
             SLVCols.vacancies,
-            SLVCols.turnover_rate,
-            SLVCols.starter_rate,
-            SLVCols.vacancy_rate,
         ],
         partition_by_columns=[IndCQC.location_id, SLVCols.published_job_role_label],
         date_column=IndCQC.cqc_location_import_date,
     )
+
+    lf = cleanUtils.create_slv_rate_columns(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,

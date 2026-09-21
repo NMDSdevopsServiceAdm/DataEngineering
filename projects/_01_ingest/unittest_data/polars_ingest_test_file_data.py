@@ -1539,7 +1539,7 @@ class CleanWorkplaceUtilsTestCase:
 
 
 @dataclass
-class SlvExpressionBoundsTestCase:
+class JobRoleExpressionBoundsTestCase:
     id: str
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
@@ -2031,7 +2031,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
         NullDuplicateEstablishmentNumericDataTestCase(
-            id="nulls_job_role_columns_for_flagged_rows",
+            id="nulls_slv_job_role_columns_but_not_employees_for_flagged_rows",
             input_data={
                 AWPClean.establishment_id: ["48904", "1"],  # 48904 is a known duplicate
                 AWPClean.import_date: ["20260101", "20260101"],
@@ -2045,7 +2045,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
             expected_data={
                 AWPClean.establishment_id: ["48904", "1"],
                 AWPClean.import_date: ["20260101", "20260101"],
-                "jr01emp": [None, 5],
+                "jr01emp": [5, 5],  # not an SLV column, left untouched
                 "jr01strt": [None, 1],
             },
         ),
@@ -2199,69 +2199,21 @@ class TestCleanAscwdsWorkplaceUtilsData:
         ),
     ]
 
-    slv_expression_bounds_test_cases = [
-        SlvExpressionBoundsTestCase(
-            id="allows_zero_at_lower_bound",
+    job_role_expression_bounds_test_cases = [
+        JobRoleExpressionBoundsTestCase(
+            id="allows_zero_at_lower_bound_for_slv_column",
             input_data={AWPClean.job_role_01_starters: 0},
             expected_data={AWPClean.job_role_01_starters: 0},
         ),
-        SlvExpressionBoundsTestCase(
-            id="nulls_value_below_lower_bound",
+        JobRoleExpressionBoundsTestCase(
+            id="nulls_slv_value_below_lower_bound",
             input_data={AWPClean.job_role_01_starters: -1},
             expected_data={AWPClean.job_role_01_starters: None},
         ),
-        SlvExpressionBoundsTestCase(
-            id="keeps_value_at_upper_bound",
-            input_data={AWPClean.job_role_01_starters: 998},
-            expected_data={AWPClean.job_role_01_starters: 998},
-        ),
-        SlvExpressionBoundsTestCase(
-            id="nulls_value_above_upper_bound",
-            input_data={AWPClean.job_role_01_starters: 999},
-            expected_data={AWPClean.job_role_01_starters: None},
-        ),
-        SlvExpressionBoundsTestCase(
-            id="does_not_bound_non_slv_columns",
-            input_data={AWPClean.job_role_01_temporary: 9999},
-            expected_data={AWPClean.job_role_01_temporary: 9999},
-        ),
-        SlvExpressionBoundsTestCase(
-            id="does_not_bound_employees_column",
-            input_data={AWPClean.job_role_01_employees: 0},
-            expected_data={AWPClean.job_role_01_employees: 0},
-        ),
-    ]
-
-    employees_expression_bounds_test_cases = [
-        SlvExpressionBoundsTestCase(
-            id="nulls_employees_at_zero",
-            input_data={AWPClean.job_role_01_employees: 0},
-            expected_data={AWPClean.job_role_01_employees: None},
-        ),
-        SlvExpressionBoundsTestCase(
-            id="keeps_employees_at_lower_bound",
-            input_data={AWPClean.job_role_01_employees: 1},
-            expected_data={AWPClean.job_role_01_employees: 1},
-        ),
-        SlvExpressionBoundsTestCase(
-            id="keeps_employees_at_upper_bound",
-            input_data={AWPClean.job_role_01_employees: 998},
-            expected_data={AWPClean.job_role_01_employees: 998},
-        ),
-        SlvExpressionBoundsTestCase(
-            id="nulls_employees_above_upper_bound",
-            input_data={AWPClean.job_role_01_employees: 999},
-            expected_data={AWPClean.job_role_01_employees: None},
-        ),
-        SlvExpressionBoundsTestCase(
-            id="does_not_bound_non_employees_columns",
-            input_data={AWPClean.job_role_01_starters: 0},
-            expected_data={AWPClean.job_role_01_starters: 0},
-        ),
-        SlvExpressionBoundsTestCase(
-            id="does_not_bound_temporary_column",
-            input_data={AWPClean.job_role_01_temporary: 0},
-            expected_data={AWPClean.job_role_01_temporary: 0},
+        JobRoleExpressionBoundsTestCase(
+            id="does_not_bound_non_slv_job_role_columns",
+            input_data={AWPClean.job_role_01_employees: -1},
+            expected_data={AWPClean.job_role_01_employees: -1},
         ),
     ]
 
