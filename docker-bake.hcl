@@ -34,7 +34,7 @@ target "_01_ingest" {
 
 target "_02_sfc_internal" {
   context = "."
-  dockerfile = "./projects/_02_sfc_internal/cqc_coverage/fargate/Dockerfile"
+  dockerfile = "./projects/_02_sfc_internal/Dockerfile_and_requirements/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/02_sfc_internal:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
 }
