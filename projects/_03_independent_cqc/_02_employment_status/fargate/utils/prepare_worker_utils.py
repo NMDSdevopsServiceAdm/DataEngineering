@@ -6,7 +6,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
-    EmploymentStatusColumns as SLVEmpStatus,
+    EmploymentStatusColumns as EmpStatus,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
@@ -85,7 +85,7 @@ def aggregate_employment_status_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
             emplstat_count column counting workers in that group.
     """
     return worker_lf.group_by(GROUP_COLUMNS).agg(
-        pl.len().alias(SLVEmpStatus.employment_status_count)
+        pl.len().alias(EmpStatus.employment_status_count)
     )
 
 
@@ -115,7 +115,7 @@ def reshape_employment_status_data(
             on=AWKClean.employment_status_clean_labelled,
             on_columns=list(EMPLOYMENT_STATUS_LABEL_TO_COLUMN.keys()),
             index=RESHAPED_GROUP_COLUMNS,
-            values=SLVEmpStatus.employment_status_count,
+            values=EmpStatus.employment_status_count,
             aggregate_function="sum",
         )
         .rename(EMPLOYMENT_STATUS_LABEL_TO_COLUMN)

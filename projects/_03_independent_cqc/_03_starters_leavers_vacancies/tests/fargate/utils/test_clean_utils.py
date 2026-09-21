@@ -7,11 +7,14 @@ from projects._03_independent_cqc._03_starters_leavers_vacancies.unittest_data.p
     TestCleanUtilsData as Data,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
 )
 
 INPUT_SCHEMA_OVERRIDES = {
-    SLVCols.employees: pl.Int16,
+    EmpStatus.employee_count: pl.Int16,
     SLVCols.starters_dedup: pl.Int16,
     SLVCols.leavers_dedup: pl.Int16,
     SLVCols.vacancies_dedup: pl.Int16,

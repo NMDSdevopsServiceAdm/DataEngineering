@@ -6,10 +6,10 @@ import polars as pl
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import (
-    StartersLeaversVacanciesColumns as SLVCols,
+    EmploymentStatusColumns as EmpStatus,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
@@ -21,11 +21,11 @@ COMPARE_COLS_TO_IMPORT = [
 METRIC = IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
 
 EMPLOYMENT_STATUS_SPLIT_COLUMNS = [
-    SLVCols.estimated_emp_stat_perm,
-    SLVCols.estimated_emp_stat_temp,
-    SLVCols.estimated_emp_stat_bank_or_pool,
-    SLVCols.estimated_emp_stat_agency,
-    SLVCols.estimated_emp_stat_other,
+    EmpStatus.estimated_emp_stat_perm,
+    EmpStatus.estimated_emp_stat_temp,
+    EmpStatus.estimated_emp_stat_bank_or_pool,
+    EmpStatus.estimated_emp_stat_agency,
+    EmpStatus.estimated_emp_stat_other,
 ]
 
 EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE = 1e-5

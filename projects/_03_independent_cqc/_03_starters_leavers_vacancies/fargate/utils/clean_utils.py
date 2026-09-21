@@ -1,6 +1,9 @@
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
 )
 
@@ -27,19 +30,19 @@ def create_slv_rate_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: dataset with turnover_rate, starter_rate and vacancy_rate added
     """
-    employees_plus_vacancies = pl.col(SLVCols.employees) + pl.col(
+    employees_plus_vacancies = pl.col(EmpStatus.employee_count) + pl.col(
         SLVCols.vacancies_dedup
     )
 
     return lf.with_columns(
-        pl.when(pl.col(SLVCols.employees) == 0)
+        pl.when(pl.col(EmpStatus.employee_count) == 0)
         .then(None)
-        .otherwise(pl.col(SLVCols.leavers_dedup) / pl.col(SLVCols.employees))
+        .otherwise(pl.col(SLVCols.leavers_dedup) / pl.col(EmpStatus.employee_count))
         .cast(pl.Float32)
         .alias(SLVCols.turnover_rate),
-        pl.when(pl.col(SLVCols.employees) == 0)
+        pl.when(pl.col(EmpStatus.employee_count) == 0)
         .then(None)
-        .otherwise(pl.col(SLVCols.starters_dedup) / pl.col(SLVCols.employees))
+        .otherwise(pl.col(SLVCols.starters_dedup) / pl.col(EmpStatus.employee_count))
         .cast(pl.Float32)
         .alias(SLVCols.starter_rate),
         pl.when(employees_plus_vacancies == 0)

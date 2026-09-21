@@ -458,7 +458,6 @@ class ModelRegistryKeys:
 @dataclass
 class StartersLeaversVacanciesColumns:
     published_job_role_label: str = "published_job_role_label"
-    employees: str = "employees"
     starters: str = "starters"
     leavers: str = "leavers"
     vacancies: str = "vacancies"
@@ -471,12 +470,6 @@ class StartersLeaversVacanciesColumns:
     turnover_rate_dedup: str = turnover_rate + "_deduplicated"
     starter_rate_dedup: str = starter_rate + "_deduplicated"
     vacancy_rate_dedup: str = vacancy_rate + "_deduplicated"
-    estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
-    estimated_emp_stat_temp: str = "estimated_emp_stat_temp"
-    estimated_emp_stat_bank_or_pool: str = "estimated_emp_stat_bank_or_pool"
-    estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
-    estimated_emp_stat_other: str = "estimated_emp_stat_other"
-    estimated_employees: str = "estimated_employees"
 
 
 @dataclass
@@ -487,3 +480,10 @@ class EmploymentStatusColumns:
     bank_or_pool_count: str = "emplstat_bank_or_pool_count"
     agency_count: str = "emplstat_agency_count"
     other_count: str = "emplstat_other_count"
+    employee_count: str = "emplstat_employee_count"
+    estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
+    estimated_emp_stat_temp: str = "estimated_emp_stat_temp"
+    estimated_emp_stat_bank_or_pool: str = "estimated_emp_stat_bank_or_pool"
+    estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
+    estimated_emp_stat_other: str = "estimated_emp_stat_other"
+    estimated_employees: str = "estimated_employees"

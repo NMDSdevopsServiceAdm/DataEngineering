@@ -4,7 +4,7 @@ import polars_utils.cleaning_utils as cUtils
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.clean_utils as cleanUtils
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
-    EmploymentStatusColumns as SLVEmpStatus,
+    EmploymentStatusColumns as EmpStatus,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -27,9 +27,9 @@ def main(
 
     # Employees = directly employed by the workplace (permanent + temporary) only.
     lf = lf.with_columns(
-        (
-            pl.col(SLVEmpStatus.permanent_count) + pl.col(SLVEmpStatus.temporary_count)
-        ).alias(SLVCols.employees)
+        (pl.col(EmpStatus.permanent_count) + pl.col(EmpStatus.temporary_count)).alias(
+            EmpStatus.employee_count
+        )
     )
 
     lf = cUtils.remove_repeated_values_over_time(

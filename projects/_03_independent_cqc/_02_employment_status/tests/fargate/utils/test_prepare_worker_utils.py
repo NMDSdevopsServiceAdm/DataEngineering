@@ -11,7 +11,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
-    EmploymentStatusColumns as SLVEmpStatus,
+    EmploymentStatusColumns as EmpStatus,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
@@ -56,7 +56,7 @@ class TestAggregateEmploymentStatusData:
         test_lf = pl.LazyFrame(case.input_data)
         expected_lf = pl.LazyFrame(
             case.expected_data,
-            schema_overrides={SLVEmpStatus.employment_status_count: pl.UInt32},
+            schema_overrides={EmpStatus.employment_status_count: pl.UInt32},
         )
 
         returned_lf = job.aggregate_employment_status_data(test_lf)
@@ -79,12 +79,12 @@ class TestReshapeEmploymentStatusData:
     )
     def test_reshapes_employment_status_data(self, case):
         emplstat_count_cols = [
-            SLVEmpStatus.employment_status_count,
+            EmpStatus.employment_status_count,
             *job.EMPLOYMENT_STATUS_LABEL_TO_COLUMN.values(),
         ]
         test_lf = pl.LazyFrame(
             case.input_data,
-            schema_overrides={SLVEmpStatus.employment_status_count: pl.UInt32},
+            schema_overrides={EmpStatus.employment_status_count: pl.UInt32},
         )
         expected_lf = pl.LazyFrame(
             case.expected_data,
