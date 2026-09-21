@@ -79,8 +79,8 @@ def main(
         .col_vals_between(CTCHClean.non_agency_total_employed, 0, 1000, na_pass=True)
         .col_vals_between(CTCHClean.agency_total_employed, 0, 4000, na_pass=True)
         .col_vals_between(CTCHClean.ct_care_home_total_employed, 1, 4000, na_pass=True)
-        # placeholder bound pending real cleaned data - no plausible max is known yet
-        .col_vals_between(CTCHClean.hours_agency, 0, 100000, na_pass=True)
+        # no plausible upper bound is known yet - just a non-negative sanity check
+        .col_vals_ge(CTCHClean.hours_agency, 0, na_pass=True)
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
