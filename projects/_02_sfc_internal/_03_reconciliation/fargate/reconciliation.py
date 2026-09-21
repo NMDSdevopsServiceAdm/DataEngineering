@@ -73,9 +73,6 @@ def main(
         ascwds_parent_accounts_lf,
     ) = prepare_latest_cleaned_ascwds_workforce_data(ascwds_workplace_lf)
 
-    # Selected down to just the columns the join/filter below need: cqc_location_lf is
-    # the full flattened CQC snapshot (nested ratings/specialisms/etc columns included),
-    # and it's about to be collected via the reconciliation_df line below.
     cqc_location_lf = cqc_location_lf.select(
         CQCL.location_id, CQCL.registration_status, CQCL.deregistration_date
     )
@@ -84,10 +81,7 @@ def main(
         {AWPClean.location_id: CQCL.location_id}
     ).join(cqc_location_lf, on=CQCL.location_id, how="left")
 
-    # Collected here rather than at the very end: this filter shrinks the joined frame
-    # down to just the reconciliation-relevant rows, and it feeds two independent output
-    # branches below. Without this collect, Polars would re-run the whole
-    # scan/join/filter chain once per branch.
+    # Collected here to avoid recomputing the scan/join/filter chain for each of the two output branches below.
     reconciliation_df = filter_to_locations_relevant_to_reconciliation_process(
         merged_ascwds_cqc_lf, first_of_most_recent_month, first_of_previous_month
     ).collect()
