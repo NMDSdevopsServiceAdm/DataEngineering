@@ -79,6 +79,13 @@ def main(
         ascwds_parent_accounts_lf,
     ) = prepare_latest_cleaned_ascwds_workforce_data(ascwds_workplace_lf)
 
+    # Selected down to just the columns the join/filter below need: cqc_location_lf is
+    # the full flattened CQC snapshot (nested ratings/specialisms/etc columns included),
+    # and it's about to be collected via the reconciliation_df line below.
+    cqc_location_lf = cqc_location_lf.select(
+        CQCL.location_id, CQCL.registration_status, CQCL.deregistration_date
+    )
+
     merged_ascwds_cqc_lf = cqc_registered_workplace_lf.rename(
         {AWPClean.location_id: CQCL.location_id}
     ).join(cqc_location_lf, on=CQCL.location_id, how="left")
