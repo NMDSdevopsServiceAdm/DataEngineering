@@ -2,9 +2,7 @@ import polars as pl
 
 from polars_utils import utils
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
-from projects._03_independent_cqc._01_filled_posts._01_merge.fargate.utils.merge_utils import (
-    join_data_into_cqc_lf,
-)
+from projects._03_independent_cqc.utils.join_utils import join_data_into_cqc_lf
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
 )
