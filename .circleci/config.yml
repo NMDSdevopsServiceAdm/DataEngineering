@@ -500,11 +500,6 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=care_home_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=care_home_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=non_residential_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=non_residential_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=pir_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=pir_cleaned/" --delete
-            # TEMPORARY (ticket 2052): reconciliation.py reads these two directly, but
-            # they're pipeline-internal outputs (Transform-CQC-Data/Transform-ASCWDS-Data)
-            # this branch's CI run won't otherwise produce. Remove once no longer needed.
-            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_04_latest_snapshot/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_04_latest_snapshot/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=02_sfc/dataset=ascwds_for_sfc_internal/" "s3://$BRANCH_DATASET_BUCKET/domain=02_sfc/dataset=ascwds_for_sfc_internal/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_05_estimated/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_04_estimate/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_01_merge_metadata/" --delete
