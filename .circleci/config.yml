@@ -497,8 +497,6 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=workplace_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=worker_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=worker_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=data_labels/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=data_labels/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=care_home/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=care_home/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=non_residential/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=non_residential/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=care_home_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=care_home_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=non_residential_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=non_residential_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=pir_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=pir_cleaned/" --delete
