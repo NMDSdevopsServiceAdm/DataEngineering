@@ -457,22 +457,6 @@ class ModelRegistryKeys:
 
 
 @dataclass
-class StartersLeaversVacanciesColumns:
-    starters: str = "starters"
-    leavers: str = "leavers"
-    vacancies: str = "vacancies"
-    turnover_rate: str = "turnover_rate"
-    starter_rate: str = "starter_rate"
-    vacancy_rate: str = "vacancy_rate"
-    starters_dedup: str = starters + "_deduplicated"
-    leavers_dedup: str = leavers + "_deduplicated"
-    vacancies_dedup: str = vacancies + "_deduplicated"
-    turnover_rate_dedup: str = turnover_rate + "_deduplicated"
-    starter_rate_dedup: str = starter_rate + "_deduplicated"
-    vacancy_rate_dedup: str = vacancy_rate + "_deduplicated"
-
-
-@dataclass
 class EmploymentStatusColumns:
     employment_status_count: str = "emplstat_count"
     permanent_count: str = "emplstat_permanent_count"
@@ -487,3 +471,19 @@ class EmploymentStatusColumns:
     estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
     estimated_emp_stat_other: str = "estimated_emp_stat_other"
     estimated_employees: str = "estimated_employees"
+
+
+@dataclass
+class StartersLeaversVacanciesColumns:
+    starters: str = "starters"
+    leavers: str = "leavers"
+    vacancies: str = "vacancies"
+    turnover_rate: str = "turnover_rate"
+    starter_rate: str = "starter_rate"
+    vacancy_rate: str = "vacancy_rate"
+    starters_dedup: str = starters + "_deduplicated"
+    leavers_dedup: str = leavers + "_deduplicated"
+    vacancies_dedup: str = vacancies + "_deduplicated"
+    turnover_rate_dedup: str = turnover_rate + "_deduplicated"
+    starter_rate_dedup: str = starter_rate + "_deduplicated"
+    vacancy_rate_dedup: str = vacancy_rate + "_deduplicated"
