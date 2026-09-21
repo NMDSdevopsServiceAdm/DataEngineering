@@ -453,3 +453,37 @@ class ModelRegistryKeys:
     model_params: str = "model_params"
     model_type: str = "model_type"
     version: str = "version"
+
+
+@dataclass
+class StartersLeaversVacanciesColumns:
+    published_job_role_label: str = "published_job_role_label"
+    employees: str = "employees"
+    starters: str = "starters"
+    leavers: str = "leavers"
+    vacancies: str = "vacancies"
+    turnover_rate: str = "turnover_rate"
+    starter_rate: str = "starter_rate"
+    vacancy_rate: str = "vacancy_rate"
+    starters_dedup: str = starters + "_deduplicated"
+    leavers_dedup: str = leavers + "_deduplicated"
+    vacancies_dedup: str = vacancies + "_deduplicated"
+    turnover_rate_dedup: str = turnover_rate + "_deduplicated"
+    starter_rate_dedup: str = starter_rate + "_deduplicated"
+    vacancy_rate_dedup: str = vacancy_rate + "_deduplicated"
+    estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
+    estimated_emp_stat_temp: str = "estimated_emp_stat_temp"
+    estimated_emp_stat_bank_or_pool: str = "estimated_emp_stat_bank_or_pool"
+    estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
+    estimated_emp_stat_other: str = "estimated_emp_stat_other"
+    estimated_employees: str = "estimated_employees"
+
+
+@dataclass
+class EmploymentStatusColumns:
+    employment_status_count: str = "emplstat_count"
+    permanent_count: str = "emplstat_permanent_count"
+    temporary_count: str = "emplstat_temporary_count"
+    bank_or_pool_count: str = "emplstat_bank_or_pool_count"
+    agency_count: str = "emplstat_agency_count"
+    other_count: str = "emplstat_other_count"

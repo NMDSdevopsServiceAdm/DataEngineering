@@ -10,7 +10,9 @@ from utils.column_names.employment_status_rates_columns import (
     EmploymentStatusRatesColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 
 worker_columns = [
     AWKClean.location_id,

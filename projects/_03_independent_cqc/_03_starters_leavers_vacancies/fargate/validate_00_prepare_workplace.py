@@ -12,7 +12,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )

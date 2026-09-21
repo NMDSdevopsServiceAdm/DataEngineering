@@ -6,7 +6,9 @@ import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils
 from projects._03_independent_cqc._03_starters_leavers_vacancies.unittest_data.polars_slv_test_data import (
     TestCleanUtilsData as Data,
 )
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 
 INPUT_SCHEMA_OVERRIDES = {
     SLVCols.employees: pl.Int16,

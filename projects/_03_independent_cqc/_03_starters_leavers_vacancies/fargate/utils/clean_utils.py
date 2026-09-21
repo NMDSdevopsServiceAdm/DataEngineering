@@ -1,6 +1,8 @@
 import polars as pl
 
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 
 
 def create_slv_rate_columns(lf: pl.LazyFrame) -> pl.LazyFrame:

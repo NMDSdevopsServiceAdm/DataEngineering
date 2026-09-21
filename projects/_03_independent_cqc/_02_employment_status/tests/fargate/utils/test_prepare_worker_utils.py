@@ -10,10 +10,12 @@ from projects._03_independent_cqc._02_employment_status.unittest_data.polars_emp
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.slv_job_role_columns import (
-    SLVEmploymentStatusColumns as SLVEmpStatus,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as SLVEmpStatus,
 )
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 
 
 class TestCollapseJobRolesToPublishedLabels:

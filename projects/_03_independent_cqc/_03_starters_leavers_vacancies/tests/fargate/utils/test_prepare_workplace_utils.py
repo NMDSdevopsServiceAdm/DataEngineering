@@ -10,7 +10,9 @@ from projects._03_independent_cqc._03_starters_leavers_vacancies.unittest_data.p
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 from utils.column_values.categorical_column_values import PublishedJobRoleLabels
 
 PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.prepare_workplace_utils"

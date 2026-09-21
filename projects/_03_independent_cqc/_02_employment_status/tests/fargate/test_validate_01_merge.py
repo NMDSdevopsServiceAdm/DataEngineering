@@ -7,7 +7,9 @@ import pytest
 
 import projects._03_independent_cqc._02_employment_status.fargate.validate_01_merge as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
