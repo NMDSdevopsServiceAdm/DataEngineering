@@ -2,10 +2,12 @@ import polars as pl
 
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusMagicNumberRateColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     PublishedJobRoleLabels,
@@ -74,7 +76,7 @@ def apply_employment_status_magic_numbers(
         .cast(pl.String)
         .replace_strict(CSV_WEIGHTING_JOB_ROLE_TO_PUBLISHED_JOB_ROLE_LABEL)
         .cast(CatColType.PublishedJobRoleLabelCatType)
-        .alias(SLVCols.published_job_role_label),
+        .alias(IndCQC.published_job_role_label),
         pl.col(EmpStatRates.emp_stat_perm),
         pl.col(EmpStatRates.emp_stat_temp),
         pl.col(EmpStatRates.emp_stat_bank_or_pool),
@@ -85,24 +87,24 @@ def apply_employment_status_magic_numbers(
     job_role_estimates_lf = (
         job_role_estimates_lf.join(
             mapped_rates_lf,
-            on=[IndCQC.primary_service_type, SLVCols.published_job_role_label],
+            on=[IndCQC.primary_service_type, IndCQC.published_job_role_label],
             how="left",
         )
         .with_columns(
             (pl.col(metric) * pl.col(EmpStatRates.emp_stat_perm)).alias(
-                SLVCols.estimated_emp_stat_perm
+                EmpStatus.estimated_emp_stat_perm
             ),
             (pl.col(metric) * pl.col(EmpStatRates.emp_stat_temp)).alias(
-                SLVCols.estimated_emp_stat_temp
+                EmpStatus.estimated_emp_stat_temp
             ),
             (pl.col(metric) * pl.col(EmpStatRates.emp_stat_bank_or_pool)).alias(
-                SLVCols.estimated_emp_stat_bank_or_pool
+                EmpStatus.estimated_emp_stat_bank_or_pool
             ),
             (pl.col(metric) * pl.col(EmpStatRates.emp_stat_agency)).alias(
-                SLVCols.estimated_emp_stat_agency
+                EmpStatus.estimated_emp_stat_agency
             ),
             (pl.col(metric) * pl.col(EmpStatRates.emp_stat_other)).alias(
-                SLVCols.estimated_emp_stat_other
+                EmpStatus.estimated_emp_stat_other
             ),
         )
         .drop(
@@ -116,7 +118,7 @@ def apply_employment_status_magic_numbers(
 
     return job_role_estimates_lf.with_columns(
         (
-            pl.col(SLVCols.estimated_emp_stat_perm)
-            + pl.col(SLVCols.estimated_emp_stat_temp)
-        ).alias(SLVCols.estimated_employees)
+            pl.col(EmpStatus.estimated_emp_stat_perm)
+            + pl.col(EmpStatus.estimated_emp_stat_temp)
+        ).alias(EmpStatus.estimated_employees)
     )

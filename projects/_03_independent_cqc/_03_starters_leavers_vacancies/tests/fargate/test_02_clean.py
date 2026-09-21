@@ -2,7 +2,9 @@ from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._02_clean as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 
 PATCH_PATH = (
     "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._02_clean"
@@ -39,7 +41,7 @@ class TestMain:
             ],
             partition_by_columns=[
                 IndCQC.location_id,
-                SLVCols.published_job_role_label,
+                IndCQC.published_job_role_label,
             ],
             date_column=IndCQC.cqc_location_import_date,
         )

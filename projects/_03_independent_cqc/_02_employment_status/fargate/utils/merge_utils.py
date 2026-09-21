@@ -2,7 +2,6 @@ import polars as pl
 
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     PublishedJobRoleLabels,
@@ -91,11 +90,11 @@ def collapse_job_role_estimates_to_published_labels(
             .otherwise(pl.lit(PublishedJobRoleLabels.other))
         )
         .cast(CatColType.PublishedJobRoleLabelCatType)
-        .alias(SLVCols.published_job_role_label)
+        .alias(IndCQC.published_job_role_label)
     )
 
     return published_role_lf.group_by(
-        IndCQC.id_per_locationid_import_date, SLVCols.published_job_role_label
+        IndCQC.id_per_locationid_import_date, IndCQC.published_job_role_label
     ).agg(
         pl.col(IndCQC.location_id).first(),
         pl.col(IndCQC.cqc_location_import_date).first(),

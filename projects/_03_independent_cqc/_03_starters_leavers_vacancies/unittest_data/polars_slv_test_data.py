@@ -5,8 +5,13 @@ from typing import Any
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 from utils.column_values.categorical_column_values import PublishedJobRoleLabels
 
 
@@ -89,7 +94,7 @@ _reshape_single_row_case = ReshapeJobRoleColsToRowsTestCase(
     expected_data={
         AWPClean.establishment_id: ["1"] * 15,
         AWPClean.ascwds_workplace_import_date: [date(2024, 1, 1)] * 15,
-        SLVCols.published_job_role_label: [
+        IndCQC.published_job_role_label: [
             PublishedJobRoleLabels.senior_management,
             PublishedJobRoleLabels.registered_manager,
             PublishedJobRoleLabels.social_worker,
@@ -171,7 +176,7 @@ _reshape_multi_row_case = ReshapeJobRoleColsToRowsTestCase(
         AWPClean.establishment_id: ["10"] * 15 + ["20"] * 15,
         AWPClean.ascwds_workplace_import_date: [date(2024, 2, 1)] * 15
         + [date(2024, 3, 1)] * 15,
-        SLVCols.published_job_role_label: [
+        IndCQC.published_job_role_label: [
             PublishedJobRoleLabels.senior_management,
             PublishedJobRoleLabels.registered_manager,
             PublishedJobRoleLabels.social_worker,
@@ -377,13 +382,13 @@ class TestCleanUtilsData:
         CreateSlvRateColumnsTestCase(
             id="returns_expected_rates_for_typical_rows",
             input_data={
-                SLVCols.employees: [8, 2],
+                EmpStatus.employee_count: [8, 2],
                 SLVCols.starters_dedup: [2, 0],
                 SLVCols.leavers_dedup: [4, 3],
                 SLVCols.vacancies_dedup: [2, 0],
             },
             expected_data={
-                SLVCols.employees: [8, 2],
+                EmpStatus.employee_count: [8, 2],
                 SLVCols.starters_dedup: [2, 0],
                 SLVCols.leavers_dedup: [4, 3],
                 SLVCols.vacancies_dedup: [2, 0],
@@ -395,13 +400,13 @@ class TestCleanUtilsData:
         CreateSlvRateColumnsTestCase(
             id="returns_null_rates_when_employees_is_null",
             input_data={
-                SLVCols.employees: [None],
+                EmpStatus.employee_count: [None],
                 SLVCols.starters_dedup: [1],
                 SLVCols.leavers_dedup: [1],
                 SLVCols.vacancies_dedup: [1],
             },
             expected_data={
-                SLVCols.employees: [None],
+                EmpStatus.employee_count: [None],
                 SLVCols.starters_dedup: [1],
                 SLVCols.leavers_dedup: [1],
                 SLVCols.vacancies_dedup: [1],
@@ -413,13 +418,13 @@ class TestCleanUtilsData:
         CreateSlvRateColumnsTestCase(
             id="returns_null_rates_when_employees_and_vacancies_are_both_zero",
             input_data={
-                SLVCols.employees: [0],
+                EmpStatus.employee_count: [0],
                 SLVCols.starters_dedup: [0],
                 SLVCols.leavers_dedup: [0],
                 SLVCols.vacancies_dedup: [0],
             },
             expected_data={
-                SLVCols.employees: [0],
+                EmpStatus.employee_count: [0],
                 SLVCols.starters_dedup: [0],
                 SLVCols.leavers_dedup: [0],
                 SLVCols.vacancies_dedup: [0],
@@ -431,13 +436,13 @@ class TestCleanUtilsData:
         CreateSlvRateColumnsTestCase(
             id="returns_full_vacancy_rate_when_employees_is_zero_but_vacancies_exist",
             input_data={
-                SLVCols.employees: [0],
+                EmpStatus.employee_count: [0],
                 SLVCols.starters_dedup: [0],
                 SLVCols.leavers_dedup: [0],
                 SLVCols.vacancies_dedup: [1],
             },
             expected_data={
-                SLVCols.employees: [0],
+                EmpStatus.employee_count: [0],
                 SLVCols.starters_dedup: [0],
                 SLVCols.leavers_dedup: [0],
                 SLVCols.vacancies_dedup: [1],

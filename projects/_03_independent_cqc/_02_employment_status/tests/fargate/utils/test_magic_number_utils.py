@@ -7,25 +7,27 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_test_data import (
     TestMagicNumberUtilsData as Data,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 METRIC = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
 
 JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES = {
     IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
-    SLVCols.published_job_role_label: CatColType.PublishedJobRoleLabelCatType,
+    IndCQC.published_job_role_label: CatColType.PublishedJobRoleLabelCatType,
     METRIC: pl.Float64,
 }
 
 EXPECTED_SCHEMA_OVERRIDES = {
     **JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES,
-    SLVCols.estimated_emp_stat_perm: pl.Float64,
-    SLVCols.estimated_emp_stat_temp: pl.Float64,
-    SLVCols.estimated_emp_stat_bank_or_pool: pl.Float64,
-    SLVCols.estimated_emp_stat_agency: pl.Float64,
-    SLVCols.estimated_emp_stat_other: pl.Float64,
-    SLVCols.estimated_employees: pl.Float64,
+    EmpStatus.estimated_emp_stat_perm: pl.Float64,
+    EmpStatus.estimated_emp_stat_temp: pl.Float64,
+    EmpStatus.estimated_emp_stat_bank_or_pool: pl.Float64,
+    EmpStatus.estimated_emp_stat_agency: pl.Float64,
+    EmpStatus.estimated_emp_stat_other: pl.Float64,
+    EmpStatus.estimated_employees: pl.Float64,
 }
 
 

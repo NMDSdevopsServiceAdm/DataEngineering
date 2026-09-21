@@ -8,7 +8,6 @@ from projects._03_independent_cqc._02_employment_status.unittest_data.polars_emp
     TestMergeUtilsData as Data,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
 )
@@ -72,7 +71,7 @@ class TestCollapseJobRoleEstimatesToPublishedLabels:
         expected_lf = pl.LazyFrame(
             case.expected_data, schema_overrides={METRIC: pl.Float64}
         ).with_columns(
-            pl.col(SLVCols.published_job_role_label).cast(
+            pl.col(IndCQC.published_job_role_label).cast(
                 CatColType.PublishedJobRoleLabelCatType
             )
         )
