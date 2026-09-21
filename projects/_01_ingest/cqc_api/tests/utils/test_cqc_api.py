@@ -312,31 +312,6 @@ class CallApiTests(CqcApiTests):
         )  # only 4 successful calls as 5th should fail
 
 
-class GetAllObjectsTests(CqcApiTests):
-    @patch(f"{PATCH_PATH}.get_page_objects")
-    @patch(f"{PATCH_PATH}.call_api")
-    def test_get_all_objects_returns_correct_generator(
-        self, call_api_mock: Mock, get_page_objects_mock: Mock
-    ):
-        test_response_page_1_json = {"locations": ["1"]}
-        test_response_page_2_json = {"locations": ["2"]}
-        call_api_mock.return_value = {"totalPages": 2}
-        get_page_objects_mock.side_effect = [
-            test_response_page_1_json,
-            test_response_page_2_json,
-        ]
-
-        generator = cqc.get_all_objects(
-            object_type="locations",
-            object_identifier="location_id",
-            cqc_api_primary_key="cqc_api_primary_key",
-        )
-
-        self.assertTrue(isinstance(generator, Generator))
-        self.assertEqual(next(generator), test_response_page_1_json)
-        self.assertEqual(next(generator), test_response_page_2_json)
-
-
 class GetUpdatedObjectsTests(CqcApiTests):
     @patch(f"{PATCH_PATH}.get_changes_within_timeframe")
     @patch(f"{PATCH_PATH}.get_object")

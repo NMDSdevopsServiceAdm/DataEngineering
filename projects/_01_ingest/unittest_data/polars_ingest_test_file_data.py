@@ -1472,27 +1472,6 @@ class PostcodeMatcherTest:
         ("AB1 2CD",),
     ]
 
-    combine_matched_df1_rows = [
-        ("1-001", "1-003"),
-        (date(2025, 1, 1), date(2025, 1, 1)),
-        ("AA11AA", "AA12AA"),
-        ("CSSR 1", "CSSR 1"),
-    ]
-    combine_matched_df2_rows = [
-        ("1-002", "1-004"),
-        (date(2025, 1, 1), date(2025, 1, 1)),
-        ("ZZ11AA", "ZZ12AA"),
-        ("ZZ11", "ZZ12"),
-        ("CSSR 2", "CSSR 3"),
-    ]
-    expected_combine_matched_rows = [
-        ("1-001", "1-003", "1-002", "1-004"),
-        (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
-        ("AA11AA", "AA12AA", "ZZ11AA", "ZZ12AA"),
-        ("CSSR 1", "CSSR 1", "CSSR 2", "CSSR 3"),
-        (None, None, "ZZ11", "ZZ12"),
-    ]
-
 
 @dataclass
 class ValidateCqcLocations4FullCleanTest:
@@ -2480,7 +2459,6 @@ class TestCleanAscwdsWorkerUtilsData:
                 ("102", "191"),
                 ("103", "192"),
                 ("104", "193"),
-                ("105", "194"),
                 ("106", "196"),
             ],
             labels_data=[
@@ -2504,11 +2482,6 @@ class TestCleanAscwdsWorkerUtilsData:
                     "193",
                     EmploymentStatusLabels.agency,
                 ),
-                (
-                    AWKClean.employment_status_clean,
-                    "194",
-                    EmploymentStatusLabels.student,
-                ),
                 (AWKClean.employment_status_clean, "196", EmploymentStatusLabels.other),
             ],
             expected_data=[
@@ -2516,7 +2489,6 @@ class TestCleanAscwdsWorkerUtilsData:
                 ("102", "191", "191", EmploymentStatusLabels.temporary),
                 ("103", "192", "192", EmploymentStatusLabels.bank_or_pool),
                 ("104", "193", "193", EmploymentStatusLabels.agency),
-                ("105", "194", "194", EmploymentStatusLabels.student),
                 ("106", "196", "196", EmploymentStatusLabels.other),
             ],
         )

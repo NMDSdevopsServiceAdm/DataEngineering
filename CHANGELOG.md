@@ -6,21 +6,32 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Joined worker-derived employment status counts into the SLV merge step, collapsing worker job roles to the published scheme already used by workplace and job-role-estimate data, and applying the same null-location and date-reduction filtering `_00_prepare_workplace` already uses so the worker and workplace import dates line up for the join.
 - Added has_continuous_data_since_date to publication cleaning utils. It flags locations with capacity tracker data as either a care home or non-res at all periods from a given date onwards. The two capacity tracker columns are coalesced then checked for completeness.
+- Added a capacity tracker dispersion filter to publication cleaning utils. It flags locations whose capacity tracker employee numbers swing more than two standard deviations from the national average swing over a given period, so unusually volatile locations can be excluded. Care home and non-residential locations are each compared only against locations of their own type, and locations with no capacity tracker data (or too few import dates to judge) in the period are excluded too.
+- Added an aggregation step to the publication clean job that collapses location-level rows up to one row per import date, job role, region and service type, summing filled posts and counting distinct locations. It also produces three independent assessment aggregates (one per long/medium/short term sampling window) over only the rows passing that window's consistent service, dispersion and has-data filters, summing filled posts, counting distinct locations, and summing capacity tracker total employed. This aggregated output is now the publication clean job's sink target.
+- Added period-on-period and cumulative percentage change columns for capacity tracker total employed to the publication clean job, calculated per region, job role and service type over each of the long, medium and short term assessment windows.
+- Added rollup rows to the publication clean job for "England", "All CQC locations", "All CQC care homes" and "All job roles", so the Tableau and Excel downloads can offer them as top-level filter options.
 
 
 ### Changed
 - Consolidated ASC-WDS code-label vocabulary (7 workplace/worker columns) into a single Python source of truth, retiring `data_labels_lookup.csv`.
+- Moved the starters/leavers/vacancies (SLV) pipeline from its own `_07_workforce_characteristics` project into `_03_independent_cqc` as `_03_starters_leavers_vacancies`, and folded its deployment onto IND CQC's existing shared Fargate task, retiring the separate ECS task, ECR repo and Docker image it used to run on.
+- Split the SLV pipeline into two sibling pipelines under `_03_independent_cqc`: `_02_employment_status` (worker-derived data) and `_03_starters_leavers_vacancies` (workplace-derived data), each with their own prepare/merge/clean/impute/estimate stages, with SLV's merge consuming employment status's cleaned output.
 - Merged the two DPR ingestion jobs (survey and external) into a single Polars job on the shared `_01_ingest` Fargate task, taking `--source`, `--dataset` (`survey`/`external`), and `--destination` as run-time arguments instead of hardcoding the destination path in Terraform each year, and removed the now-unused PySpark CSV-reading utilities and their tests/fixtures, since this was the last remaining PySpark CSV ingestion in the repo. Added a manually-started `Ingest-DPR-Data` step function to replace the deleted Glue jobs' manual-run trigger point.
 - Cut over the CQC PIR clean and validate-cleaned jobs from PySpark/Glue to Polars/pointblank on the shared `_01_ingest` Fargate task, replacing the old Glue jobs and their Step Function wiring entirely. Outputs were compared against the previous PySpark version's output in Athena and matched exactly before cutover.
 - Carried `care_home_status_count` through the job role archive and publication merge jobs, and added a `consistent_service` boolean column to the publication clean job that is true when a location has always had the same care home status.
 - Reshaped the SLV pipeline's aggregated employment status data from one row per employment status into one row per location, establishment, import date and job role, with a worker count column per employment status, replacing the pass-through placeholder. Updated its validation's expected row count to match the new grain.
+- Removed 18 unused helper functions across `utils/`, `polars_utils/` and a couple of project-specific `fargate/utils` modules that had no call sites outside their own tests, along with their dedicated tests and any fixture data/schemas used only by those tests. Also removed 50 orphaned test fixture rows/schemas across the repo's `unittest_data` files that were no longer referenced by any test.
+- Removed the unused `student` employment status value from `EmploymentStatusLabels`/`EmploymentStatusID`, confirmed absent from production ASC-WDS worker data, consolidated the SLV employment-status pivot onto a single label list, and added a full-coverage validation check for the cleaned employment status columns.
 
 
 ### Improved
 
 
 ### Fixed
+- Fixed the Glue crawler module's `table_prefix` so Athena table names no longer start with a digit (which Athena/Presto can't query unquoted), by adding a leading underscore ahead of the numbered domain prefix.
+- Fixed the `_02_employment_status`/`_03_starters_leavers_vacancies` pipelines' `_00_prepare_worker`/`_00_prepare_workplace` and their validate jobs to reduce ASCWDS import dates to those already CQC-matched in the job role metadata, instead of an independent hardcoded quarterly/earliest-file-per-month rule that could disagree with the metadata match and cause the merge step to silently miss rows.
 
 
 ## [v2026.08.1] - 11/09/2026

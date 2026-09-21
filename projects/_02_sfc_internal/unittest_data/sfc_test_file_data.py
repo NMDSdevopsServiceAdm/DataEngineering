@@ -48,31 +48,10 @@ class ReconciliationData:
         ("purged", date(2020, 1, 1), date(2022, 4, 1)),
     ]
 
-    input_cqc_dereg_locations_rows = [
-        (date(2024, 1, 1), "1-901", "Deregistered", date(2024, 1, 1)),
-        (date(2024, 4, 1), "1-902", "Deregistered", date(2024, 1, 1)),
-        (date(2024, 4, 1), "1-903", "Deregistered", date(2024, 3, 1)),
-        (date(2024, 4, 1), "1-904", "Deregistered", date(2024, 3, 1)),
-        (date(2024, 4, 1), "1-912", "Deregistered", date(2024, 1, 1)),
-        (date(2024, 4, 1), "1-913", "Deregistered", date(2024, 3, 1)),
-        (date(2024, 4, 1), "1-922", "Deregistered", date(2024, 1, 1)),
-        (date(2024, 4, 1), "1-923", "Deregistered", date(2024, 3, 1)),
-        (date(2024, 4, 1), "1-995", "Deregistered", date(2024, 4, 1)),
-    ]
-
 
 @dataclass
 class ReconciliationUtilsData:
     input_ascwds_workplace_rows = ReconciliationData.input_ascwds_workplace_rows
-
-    dates_to_use_mid_month_rows = [
-        ("1-001", date(2024, 3, 28)),
-        ("1-002", date(2023, 1, 1)),
-    ]
-    dates_to_use_first_month_rows = [
-        ("1-001", date(2024, 4, 1)),
-        ("1-002", date(2023, 1, 1)),
-    ]
 
     dates_to_use_rows = [
         ("1-001", date(2024, 3, 28)),

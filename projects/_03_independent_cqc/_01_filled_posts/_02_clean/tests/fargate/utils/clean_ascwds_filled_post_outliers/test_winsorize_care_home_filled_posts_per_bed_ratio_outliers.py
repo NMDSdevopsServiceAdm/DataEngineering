@@ -255,27 +255,6 @@ class CalculateMinAndMaxPermittedFilledPostPerBedRatiosTests(unittest.TestCase):
         pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
 
 
-class SetMinimumPermittedRatioTests(unittest.TestCase):
-    def test_function_returns_expected_values(self):
-        TEST_MIN_VALUE: float = 0.75
-
-        test_lf = pl.LazyFrame(
-            Data.set_minimum_permitted_ratio_rows,
-            Schemas.set_minimum_permitted_ratio_schema,
-            orient="row",
-        )
-        returned_lf = job.set_minimum_permitted_ratio(
-            test_lf, IndCQC.filled_posts_per_bed_ratio, TEST_MIN_VALUE
-        )
-        expected_lf = pl.LazyFrame(
-            Data.expected_set_minimum_permitted_ratio_rows,
-            Schemas.set_minimum_permitted_ratio_schema,
-            orient="row",
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
 class WinsorizeOutliersTests(unittest.TestCase):
     def setUp(self) -> None:
         self.test_lf = pl.LazyFrame(

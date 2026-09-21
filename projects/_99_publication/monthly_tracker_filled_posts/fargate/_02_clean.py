@@ -18,8 +18,6 @@ def main(
     """
     Cleans merged job role data.
 
-    See TODO's for remaining placeholder functionality.
-
     Args:
         merge_data_source (str): source s3 directory for merged data
         clean_destination (str): destination s3 directory for the cleaned data
@@ -69,18 +67,80 @@ def main(
         ),
     )
 
-    # TODO: Add remaining capacity tracker dispersion filter.
+    ct_employed_columns = [
+        IndCQC.ct_care_home_total_employed_imputed,
+        IndCQC.ct_non_res_care_workers_employed_imputed,
+    ]
+    cleaned_lf = clean_utils.add_dispersion_filter(
+        cleaned_lf,
+        ct_employed_columns,
+        long_term_from_date,
+        Pub.ct_dispersion_filter_long_term,
+    )
+    cleaned_lf = clean_utils.add_dispersion_filter(
+        cleaned_lf,
+        ct_employed_columns,
+        medium_term_from_date,
+        Pub.ct_dispersion_filter_medium_term,
+    )
+    cleaned_lf = clean_utils.add_dispersion_filter(
+        cleaned_lf,
+        ct_employed_columns,
+        short_term_from_date,
+        Pub.ct_dispersion_filter_short_term,
+    )
 
-    # TODO: Aggregate on job role, primary_service_type and current_region.
+    publication_summary_lf = clean_utils.aggregate_to_publication_rows(cleaned_lf)
+    publication_summary_lf = clean_utils.add_rows_for_publication_groups(
+        cleaned_lf, publication_summary_lf
+    )
 
-    # TODO: Add rows for 'England', 'All CQC locations' and 'All CQC care homes'.
-
-    # TODO: Add percentage change between rows.
-
-    # TODO: Add cumulative percentage change from given start period.
+    group_columns = [
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.current_region,
+        IndCQC.primary_service_type,
+    ]
+    publication_summary_lf = publication_summary_lf.with_columns(
+        clean_utils.calc_perc_change_between_rows(
+            Pub.assessment_ct_total_employed_long_term,
+            long_term_from_date,
+            group_columns,
+            Pub.assessment_ct_period_perc_change_long_term,
+        ),
+        clean_utils.calc_perc_change_between_rows(
+            Pub.assessment_ct_total_employed_medium_term,
+            medium_term_from_date,
+            group_columns,
+            Pub.assessment_ct_period_perc_change_medium_term,
+        ),
+        clean_utils.calc_perc_change_between_rows(
+            Pub.assessment_ct_total_employed_short_term,
+            short_term_from_date,
+            group_columns,
+            Pub.assessment_ct_period_perc_change_short_term,
+        ),
+        clean_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.assessment_ct_total_employed_long_term,
+            long_term_from_date,
+            group_columns,
+            Pub.assessment_ct_cumulative_perc_change_long_term,
+        ),
+        clean_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.assessment_ct_total_employed_medium_term,
+            medium_term_from_date,
+            group_columns,
+            Pub.assessment_ct_cumulative_perc_change_medium_term,
+        ),
+        clean_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.assessment_ct_total_employed_short_term,
+            short_term_from_date,
+            group_columns,
+            Pub.assessment_ct_cumulative_perc_change_short_term,
+        ),
+    )
 
     utils.sink_to_parquet(
-        lazy_df=cleaned_lf,
+        lazy_df=publication_summary_lf,
         output_path=clean_destination,
     )
 

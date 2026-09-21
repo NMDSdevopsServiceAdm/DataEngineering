@@ -145,20 +145,6 @@ class PAFilledPostsByIcbArea:
         (None, None),
     ]
 
-    sample_la_name_rows = [
-        ("Bath & N E Somerset",),
-        ("Southend",),
-        ("Bedford",),
-        (None,),
-    ]
-
-    expected_la_names_with_correct_spelling_rows = [
-        ("Bath and North East Somerset",),
-        ("Southend on Sea",),
-        ("Bedford",),
-        (None,),
-    ]
-
 
 @dataclass
 class CalculatePaRatioData:

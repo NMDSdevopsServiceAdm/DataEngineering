@@ -390,33 +390,6 @@ class PostcodeMatcherTest:
         ]
     )
 
-    combine_matched_df1_schema = pl.Schema(
-        [
-            (CQCLClean.location_id, pl.String()),
-            (CQCLClean.cqc_location_import_date, pl.Date),
-            (CQCLClean.postcode_cleaned, pl.String()),
-            (ONSClean.current_cssr, pl.String()),
-        ]
-    )
-    combine_matched_df2_schema = pl.Schema(
-        [
-            (CQCLClean.location_id, pl.String()),
-            (CQCLClean.cqc_location_import_date, pl.Date()),
-            (CQCLClean.postcode_cleaned, pl.String()),
-            (CQCLClean.postcode_truncated, pl.String()),
-            (ONSClean.current_cssr, pl.String()),
-        ]
-    )
-    expected_combine_matched_schema = pl.Schema(
-        [
-            (CQCLClean.location_id, pl.String()),
-            (CQCLClean.cqc_location_import_date, pl.Date()),
-            (CQCLClean.postcode_cleaned, pl.String()),
-            (ONSClean.current_cssr, pl.String()),
-            (CQCLClean.postcode_truncated, pl.String()),
-        ]
-    )
-
 
 @dataclass
 class ValidateCqcLocations4FullCleanTest:

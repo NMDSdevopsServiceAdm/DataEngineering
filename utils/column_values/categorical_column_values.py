@@ -286,7 +286,6 @@ class EmploymentStatusID(ColumnValues):
     temporary: str = "191"
     bank_or_pool: str = "192"
     agency: str = "193"
-    student: str = "194"
     other: str = "196"
 
 
@@ -298,7 +297,6 @@ class EmploymentStatusLabels(ColumnValues):
     temporary: str = "temporary"
     bank_or_pool: str = "bank_or_pool"
     agency: str = "agency"
-    student: str = "student"
     other: str = "other"
 
 
