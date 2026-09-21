@@ -123,8 +123,7 @@ def get_reconciliation_month_boundaries(
     most_recent_month_col = "first_of_most_recent_month"
     previous_month_col = "first_of_previous_month"
 
-    # A single-row aggregation collected immediately - not the pipeline's main
-    # materialisation point (see the collect in main()).
+    # Collecting here is cheap: it's a single-row aggregate, not a full materialisation.
     month_boundaries = (
         cqc_location_lf.select(
             pl.col(CQCLClean.cqc_location_import_date)
@@ -325,9 +324,8 @@ def join_nmds_ids_into_parent_accounts(
 ) -> pl.LazyFrame:
     """Folds a labelled, comma-separated list of sub-account NMDS IDs onto each parent.
 
-    IDs are sorted for a deterministic, human-readable output - this is a manual-review
-    report, and the old PySpark version's order was an unspecified artifact of
-    `collect_set`, not a business requirement.
+    IDs are sorted for a deterministic, human-readable output, since this feeds a
+    manual-review report rather than anything order-sensitive.
 
     Args:
         lf_with_issues (pl.LazyFrame): Sub-accounts with an outstanding issue of one

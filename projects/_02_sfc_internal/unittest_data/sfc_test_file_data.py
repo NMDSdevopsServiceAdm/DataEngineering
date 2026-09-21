@@ -15,9 +15,6 @@ from utils.column_values.categorical_column_values import (
 
 @dataclass
 class ReconciliationUtilsData:
-    # Only the fixtures still needed by cqc_coverage's
-    # add_parents_or_singles_and_subs_col_to_df test remain here - the rest of this
-    # dataset moved to the Polars reconciliation fargate job (ticket 2052).
     parents_or_singles_and_subs_rows = [
         ("1", "Yes", "Parent has ownership"),
         ("2", "Yes", "Workplace has ownership"),

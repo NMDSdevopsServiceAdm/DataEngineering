@@ -37,9 +37,6 @@ from utils.column_names.reconciliation_columns import (
 
 @dataclass
 class ReconciliationUtilsSchema:
-    # Only the schema still needed by cqc_coverage's
-    # add_parents_or_singles_and_subs_col_to_df test remains here - the rest of this
-    # dataset moved to the Polars reconciliation fargate job (ticket 2052).
     parents_or_singles_and_subs_schema = StructType(
         [
             StructField(AWPClean.establishment_id, StringType(), True),
