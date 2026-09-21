@@ -6,7 +6,7 @@ import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.employment_status_columns import (
+from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusMagicNumberRateColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC

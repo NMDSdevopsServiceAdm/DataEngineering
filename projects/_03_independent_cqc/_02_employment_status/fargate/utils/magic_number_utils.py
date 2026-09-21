@@ -1,7 +1,7 @@
 import polars as pl
 
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
-from utils.column_names.employment_status_columns import (
+from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusMagicNumberRateColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
