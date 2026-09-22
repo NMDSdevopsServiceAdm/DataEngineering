@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Added an aggregation step to the publication clean job that collapses location-level rows up to one row per import date, job role, region and service type, summing filled posts and counting distinct locations. It also produces three independent assessment aggregates (one per long/medium/short term sampling window) over only the rows passing that window's consistent service, dispersion and has-data filters, summing filled posts, counting distinct locations, and summing capacity tracker total employed. This aggregated output is now the publication clean job's sink target.
 - Added period-on-period and cumulative percentage change columns for capacity tracker total employed to the publication clean job, calculated per region, job role and service type over each of the long, medium and short term assessment windows.
 - Added rollup rows to the publication clean job for "England", "All CQC locations", "All CQC care homes" and "All job roles", so the Tableau and Excel downloads can offer them as top-level filter options.
+- Added display-formatted columns to the publication clean job: each filled posts aggregate gets a comma-formatted or millions-abbreviated string (e.g. "800,000" or "1.175m"), and the import date gets abbreviated and full month-year string formats (e.g. "Jan 2026" and "January 2026").
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
 
 

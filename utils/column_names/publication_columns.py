@@ -12,10 +12,20 @@ class PublicationColumns:
     ct_dispersion_filter_medium_term: str = "ct_dispersion_filter_medium_term"
     ct_dispersion_filter_short_term: str = "ct_dispersion_filter_short_term"
     publication_filled_posts: str = "publication_filled_posts"
+    publication_filled_posts_formatted: str = "publication_filled_posts_formatted"
     publication_locationid_count: str = "publication_locationid_count"
     assessment_filled_posts_long_term: str = "assessment_filled_posts_long_term"
+    assessment_filled_posts_long_term_formatted: str = (
+        "assessment_filled_posts_long_term_formatted"
+    )
     assessment_filled_posts_medium_term: str = "assessment_filled_posts_medium_term"
+    assessment_filled_posts_medium_term_formatted: str = (
+        "assessment_filled_posts_medium_term_formatted"
+    )
     assessment_filled_posts_short_term: str = "assessment_filled_posts_short_term"
+    assessment_filled_posts_short_term_formatted: str = (
+        "assessment_filled_posts_short_term_formatted"
+    )
     assessment_locationid_count_long_term: str = "assessment_locationid_count_long_term"
     assessment_locationid_count_medium_term: str = (
         "assessment_locationid_count_medium_term"
@@ -50,3 +60,5 @@ class PublicationColumns:
     assessment_ct_cumulative_perc_change_short_term: str = (
         "assessment_ct_cumulative_perc_change_short_term"
     )
+    cqc_location_import_date_abbreviated: str = "cqc_location_import_date_abbreviated"
+    cqc_location_import_date_full: str = "cqc_location_import_date_full"
