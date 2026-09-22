@@ -10,7 +10,10 @@ from projects._03_independent_cqc._03_starters_leavers_vacancies.unittest_data.p
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 from utils.column_values.categorical_column_values import PublishedJobRoleLabels
 
 PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.prepare_workplace_utils"
@@ -79,7 +82,7 @@ class TestReshapeJobRoleColsToRows:
         test_lf = pl.LazyFrame(case.input_data)
         expected_lf = pl.LazyFrame(case.expected_data).with_columns(
             pl.col(AWPClean.establishment_id).cast(CatColType.EstablishmentCatType),
-            pl.col(SLVCols.published_job_role_label).cast(
+            pl.col(IndCQC.published_job_role_label).cast(
                 CatColType.PublishedJobRoleLabelCatType
             ),
             pl.col(SLVCols.starters).cast(pl.Int16),

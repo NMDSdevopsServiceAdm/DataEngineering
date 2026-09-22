@@ -6,7 +6,12 @@ from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    SLVCleanCategoricalValues as CatValues,
+)
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
@@ -65,6 +70,21 @@ def main(
             1,
             na_pass=True,
             brief="vacancy_rate is between 0 and 1",
+        )
+        .col_vals_in_set(
+            SLVCols.starters_filtering_rule,
+            CatValues.starters_filtering_rule_column_values.categorical_values,
+            brief="starters_filtering_rule is a known reason",
+        )
+        .col_vals_in_set(
+            SLVCols.leavers_filtering_rule,
+            CatValues.leavers_filtering_rule_column_values.categorical_values,
+            brief="leavers_filtering_rule is a known reason",
+        )
+        .col_vals_in_set(
+            SLVCols.vacancies_filtering_rule,
+            CatValues.vacancies_filtering_rule_column_values.categorical_values,
+            brief="vacancies_filtering_rule is a known reason",
         )
         .interrogate()
     )

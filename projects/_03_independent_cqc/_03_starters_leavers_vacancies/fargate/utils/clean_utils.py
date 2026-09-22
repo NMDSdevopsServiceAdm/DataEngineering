@@ -1,6 +1,11 @@
 import polars as pl
 
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 
 
 def create_slv_rate_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -19,30 +24,34 @@ def create_slv_rate_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     are both 0.
 
     Args:
-        lf (pl.LazyFrame): dataset containing employees and deduplicated starters,
-            leavers and vacancies
+        lf (pl.LazyFrame): dataset containing employees and cleaned, deduplicated
+            starters, leavers and vacancies
 
     Returns:
         pl.LazyFrame: dataset with turnover_rate, starter_rate and vacancy_rate added
     """
-    employees_plus_vacancies = pl.col(SLVCols.employees) + pl.col(
-        SLVCols.vacancies_dedup
+    employees_plus_vacancies = pl.col(EmpStatus.employee_count) + pl.col(
+        SLVCols.vacancies_cleaned_dedup
     )
 
     return lf.with_columns(
-        pl.when(pl.col(SLVCols.employees) == 0)
+        pl.when(pl.col(EmpStatus.employee_count) == 0)
         .then(None)
-        .otherwise(pl.col(SLVCols.leavers_dedup) / pl.col(SLVCols.employees))
+        .otherwise(
+            pl.col(SLVCols.leavers_cleaned_dedup) / pl.col(EmpStatus.employee_count)
+        )
         .cast(pl.Float32)
         .alias(SLVCols.turnover_rate),
-        pl.when(pl.col(SLVCols.employees) == 0)
+        pl.when(pl.col(EmpStatus.employee_count) == 0)
         .then(None)
-        .otherwise(pl.col(SLVCols.starters_dedup) / pl.col(SLVCols.employees))
+        .otherwise(
+            pl.col(SLVCols.starters_cleaned_dedup) / pl.col(EmpStatus.employee_count)
+        )
         .cast(pl.Float32)
         .alias(SLVCols.starter_rate),
         pl.when(employees_plus_vacancies == 0)
         .then(None)
-        .otherwise(pl.col(SLVCols.vacancies_dedup) / employees_plus_vacancies)
+        .otherwise(pl.col(SLVCols.vacancies_cleaned_dedup) / employees_plus_vacancies)
         .cast(pl.Float32)
         .alias(SLVCols.vacancy_rate),
     )

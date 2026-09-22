@@ -9,8 +9,13 @@ import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.valid
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
@@ -26,8 +31,8 @@ class TestMain:
         source_schema = {
             AWPClean.establishment_id: pl.String,
             AWPClean.ascwds_workplace_import_date: pl.Date,
-            SLVCols.published_job_role_label: pl.String,
-            SLVCols.employees: pl.Int64,
+            IndCQC.published_job_role_label: pl.String,
+            EmpStatus.employee_count: pl.Int64,
             SLVCols.starters: pl.Int64,
             SLVCols.leavers: pl.Int64,
             SLVCols.vacancies: pl.Int64,

@@ -6,7 +6,10 @@ import pytest
 
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_02_clean as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
+from utils.column_values.categorical_column_values import SLVFilteringRule
 
 PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_02_clean"
 
@@ -19,9 +22,20 @@ class TestMain:
             SLVCols.turnover_rate: pl.Float32,
             SLVCols.starter_rate: pl.Float32,
             SLVCols.vacancy_rate: pl.Float32,
+            SLVCols.starters_filtering_rule: pl.String,
+            SLVCols.leavers_filtering_rule: pl.String,
+            SLVCols.vacancies_filtering_rule: pl.String,
         }
         source_rows = [
-            ("1-001", 0.1, 0.2, 0.3),
+            (
+                "1-001",
+                0.1,
+                0.2,
+                0.3,
+                SLVFilteringRule.populated,
+                SLVFilteringRule.populated,
+                SLVFilteringRule.populated,
+            ),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
@@ -68,6 +82,7 @@ class TestMain:
             "row_count_match",
             "col_vals_ge",
             "col_vals_between",
+            "col_vals_in_set",
         }
 
         for assertion in expected_assertions:
