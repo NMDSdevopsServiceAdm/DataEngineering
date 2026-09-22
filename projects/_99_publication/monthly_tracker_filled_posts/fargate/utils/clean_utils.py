@@ -61,8 +61,10 @@ def format_large_number(column_name: str, column_alias: str) -> pl.Expr:
     """
     Builds a polars expression formatting a number for display.
 
-    Values above 1,000,000 are abbreviated to millions with three decimal
-    places and an "m" suffix (e.g. 1175000 -> "1.175m"). Values at or below
+    Values at or above 1,000,000 are abbreviated to millions with three
+    decimal places and an "m" suffix (e.g. 1175000 -> "1.175m", and
+    2000000 -> "2.000m" rather than "2,000,000", so round-million values
+    are formatted consistently with the rest of that bucket). Values below
     1,000,000 keep their full value with comma thousands separators (e.g.
     800000 -> "800,000"). Both branches round to the nearest whole number
     first, since fractional posts aren't meaningful for display.
@@ -97,7 +99,7 @@ def format_large_number(column_name: str, column_alias: str) -> pl.Expr:
     )
 
     return (
-        pl.when(pl.col(column_name) > 1_000_000)
+        pl.when(pl.col(column_name) >= 1_000_000)
         .then(millions_format)
         .otherwise(comma_format)
         .alias(column_alias)

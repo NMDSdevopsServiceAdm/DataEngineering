@@ -1010,10 +1010,16 @@ format_large_number_test_cases = [
         expected_data=[(1234.6, "1,235")],
     ),
     FormatLargeNumberTestCase(
-        id="value_exactly_one_million_stays_comma_formatted",
+        id="value_just_below_one_million_stays_comma_formatted",
         column_name=Pub.publication_filled_posts,
         column_alias=Pub.publication_filled_posts_formatted,
-        expected_data=[(1000000.0, "1,000,000")],
+        expected_data=[(999999.0, "999,999")],
+    ),
+    FormatLargeNumberTestCase(
+        id="value_exactly_one_million_is_abbreviated_to_millions",
+        column_name=Pub.publication_filled_posts,
+        column_alias=Pub.publication_filled_posts_formatted,
+        expected_data=[(1000000.0, "1.000m")],
     ),
     FormatLargeNumberTestCase(
         id="value_just_above_one_million_is_abbreviated_to_millions",
