@@ -85,7 +85,7 @@ class TestAggregateToPublicationRows:
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
             (
-                IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
+                IndCQC.estimate_filled_posts_by_job_role,
                 pl.Float32(),
             ),
             (Pub.ct_total_employed_imputed, pl.Float32()),
@@ -244,7 +244,7 @@ class TestAddRowsForPublicationGroups:
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, _primary_service_type_enum),
             (
-                IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
+                IndCQC.estimate_filled_posts_by_job_role,
                 pl.Float32(),
             ),
             (Pub.ct_total_employed_imputed, pl.Float32()),

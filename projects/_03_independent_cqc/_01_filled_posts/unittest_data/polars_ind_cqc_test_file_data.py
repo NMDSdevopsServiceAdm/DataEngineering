@@ -2359,13 +2359,13 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
         ),
     ]
 
-    expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_rows = [
-        (0, 10.0, MainJobRoleLabels.care_worker, 5.0, 10.0, 0.0), # All job roles have filled posts.
-        (0, 10.0, MainJobRoleLabels.senior_care_worker, 5.0, 10.0, 0.0),
-        (1, 10.0, MainJobRoleLabels.care_worker, 5.0, 5.0, -5.0), # Job roles have mix of value and null.
-        (1, 10.0, MainJobRoleLabels.senior_care_worker, None, 5.0, -5.0),
-        (2, 10.0, MainJobRoleLabels.care_worker, None, None, None), # All job role posts are null.
-        (2, 10.0, MainJobRoleLabels.senior_care_worker, None, None, None),
+    expected_calc_difference_between_estimate_filled_posts_and_summed_job_roles_rows = [
+        (0, 10.0, MainJobRoleLabels.care_worker, 5.0, 0.0), # All job roles have filled posts.
+        (0, 10.0, MainJobRoleLabels.senior_care_worker, 5.0, 0.0),
+        (1, 10.0, MainJobRoleLabels.care_worker, 5.0, -5.0), # Job roles have mix of value and null.
+        (1, 10.0, MainJobRoleLabels.senior_care_worker, None, -5.0),
+        (2, 10.0, MainJobRoleLabels.care_worker, None, None), # All job role posts are null.
+        (2, 10.0, MainJobRoleLabels.senior_care_worker, None, None),
     ]  # fmt: skip
 
     reallocate_historical_filled_posts_by_job_role_test_cases = [

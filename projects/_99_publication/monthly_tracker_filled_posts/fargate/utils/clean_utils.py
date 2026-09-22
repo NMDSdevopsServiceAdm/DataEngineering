@@ -257,7 +257,7 @@ def aggregate_to_publication_rows(
         & pl.col(Pub.ct_has_data_short_term)
     )
 
-    filled_posts_col = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+    filled_posts_col = IndCQC.estimate_filled_posts_by_job_role
 
     return lazy_df.group_by(group_keys).agg(
         pl.col(filled_posts_col).sum().alias(Pub.publication_filled_posts),

@@ -94,10 +94,10 @@ def collapse_job_role_estimates_to_published_labels(
 
     Returns:
         pl.LazyFrame: one row per location/import-date/published-job-role, with
-            estimate_filled_posts_by_job_role_historically_reallocated summed
+            estimate_filled_posts_by_job_role summed
             across whichever granular roles collapsed into each published label.
     """
-    metric = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+    metric = IndCQC.estimate_filled_posts_by_job_role
 
     published_role_lf = job_role_estimates_lf.with_columns(
         pl.when(
@@ -162,7 +162,7 @@ def apply_employment_status_magic_numbers(
             estimated-filled-post-by-employment-status
             columns and an estimated_employees column.
     """
-    metric = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+    metric = IndCQC.estimate_filled_posts_by_job_role
 
     mapped_rates_lf = employment_status_rates_lf.select(
         pl.col(EmpStatRates.service)

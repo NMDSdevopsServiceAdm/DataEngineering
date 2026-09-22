@@ -43,11 +43,10 @@ OTHER_VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.ascwds_job_role_rolling_ratio,
     IndCqcColumns.ascwds_job_role_ratios_merged,
     IndCqcColumns.ascwds_job_role_ratios_merged_source,
+    IndCqcColumns.estimate_filled_posts_by_job_role_unadjusted,
+    IndCqcColumns.estimate_filled_posts_by_job_role_pre_reallocation,
     IndCqcColumns.estimate_filled_posts_by_job_role,
-    IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
-    IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
-    IndCqcColumns.estimate_filled_posts_from_all_job_roles,
-    IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
+    IndCqcColumns.difference_between_estimate_filled_posts_and_summed_job_roles,
     IndCqcColumns.main_job_group_labelled,
     PartitionKeys.year,
 ]
@@ -83,11 +82,10 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.ascwds_job_role_ratios_merged_source: str(
             CategoricalColumnTypes.AscwdsJobRoleRatiosMergedSourceEnumType
         ),
+        IndCqcColumns.estimate_filled_posts_by_job_role_unadjusted: "Float32",
+        IndCqcColumns.estimate_filled_posts_by_job_role_pre_reallocation: "Float32",
         IndCqcColumns.estimate_filled_posts_by_job_role: "Float32",
-        IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: "Float32",
-        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: "Float32",
-        IndCqcColumns.estimate_filled_posts_from_all_job_roles: "Float32",
-        IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: "Float32",
+        IndCqcColumns.difference_between_estimate_filled_posts_and_summed_job_roles: "Float32",
         IndCqcColumns.main_job_group_labelled: str(
             CategoricalColumnTypes.JobGroupCatType
         ),
@@ -214,11 +212,10 @@ def other_validation(
                 IndCqcColumns.ascwds_job_role_rolling_ratio,
                 IndCqcColumns.ascwds_job_role_ratios_merged,
                 IndCqcColumns.ascwds_job_role_ratios_merged_source,
+                IndCqcColumns.estimate_filled_posts_by_job_role_unadjusted,
+                IndCqcColumns.estimate_filled_posts_by_job_role_pre_reallocation,
                 IndCqcColumns.estimate_filled_posts_by_job_role,
-                IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
-                IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
-                IndCqcColumns.estimate_filled_posts_from_all_job_roles,
-                IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
+                IndCqcColumns.difference_between_estimate_filled_posts_and_summed_job_roles,
                 PartitionKeys.year,
             ],
             brief="Key columns should contain no null values",
@@ -270,13 +267,12 @@ def other_validation(
             brief=f"{IndCqcColumns.main_job_group_labelled} should have exactly {CatValues.main_job_group_labels_column_values.count_of_categorical_values} distinct values",
         )
         # numerical
+        # Summed job-role posts being > 0 is already implied by this check plus the
+        # [0, 1] difference-tolerance check below, so it isn't checked separately.
         .col_vals_gt(
-            columns=[
-                IndCqcColumns.estimate_filled_posts,
-                IndCqcColumns.estimate_filled_posts_from_all_job_roles,
-            ],
+            columns=IndCqcColumns.estimate_filled_posts,
             value=0,
-            brief="estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be > 0",
+            brief="estimate_filled_posts should be > 0",
         )
         .col_vals_ge(
             columns=[
@@ -290,9 +286,9 @@ def other_validation(
         )
         .col_vals_ge(
             columns=[
+                IndCqcColumns.estimate_filled_posts_by_job_role_unadjusted,
+                IndCqcColumns.estimate_filled_posts_by_job_role_pre_reallocation,
                 IndCqcColumns.estimate_filled_posts_by_job_role,
-                IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
-                IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
             ],
             value=0,
             brief="ascwds_job_role_counts should be >= 0 where present",
@@ -311,8 +307,8 @@ def other_validation(
         .col_vals_expr(
             difference_within_drift_tolerance_expr(),
             brief=(
-                "Difference between estimate_filled_posts and "
-                "estimate_filled_posts_from_all_job_roles, rounded to 2dp, should be "
+                "Difference between estimate_filled_posts and the summed "
+                "estimate_filled_posts_by_job_role, rounded to 2dp, should be "
                 "between 0 and 1 where present"
             ),
         )
@@ -435,8 +431,8 @@ def other_validation(
 def difference_within_drift_tolerance_expr() -> pl.Expr:
     """
     Constructs an expression checking that
-        difference_estimate_filled_posts_and_from_all_job_roles, rounded to 2dp,
-        falls between 0 and 1 inclusive.
+        difference_between_estimate_filled_posts_and_summed_job_roles, rounded to
+        2dp, falls between 0 and 1 inclusive.
 
     Rounding to 2dp absorbs float32 accumulation drift on both sides: a small
         negative drift below zero, and a small overshoot above the flat 1
@@ -446,7 +442,7 @@ def difference_within_drift_tolerance_expr() -> pl.Expr:
         pl.Expr: the expression for validating the difference is within tolerance
     """
     difference_col = pl.col(
-        IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles
+        IndCqcColumns.difference_between_estimate_filled_posts_and_summed_job_roles
     )
 
     return difference_col.is_null() | difference_col.round(2).is_between(0, 1)
@@ -495,9 +491,7 @@ def estimates_percentage_expressions(name: str, pcts: tuple[float]) -> pl.Expr:
     Raises:
         ValueError: if pcts is not a list of two numbers
     """
-    job_role_estimate_col = pl.col(
-        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
-    )
+    job_role_estimate_col = pl.col(IndCqcColumns.estimate_filled_posts_by_job_role)
     if len(pcts) != 2 or not all(isinstance(pct, (int, float)) for pct in pcts):
         raise ValueError(
             "pcts must be a tuple of two values: (lower_bound, upper_bound)"

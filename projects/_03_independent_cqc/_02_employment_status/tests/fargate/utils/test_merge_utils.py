@@ -16,7 +16,7 @@ from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
 
-METRIC = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+METRIC = IndCQC.estimate_filled_posts_by_job_role
 
 
 class TestRolesSharedByBothJobRoleTaxonomies:
