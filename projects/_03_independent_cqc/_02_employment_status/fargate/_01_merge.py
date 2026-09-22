@@ -138,25 +138,16 @@ def main(
 
     cleaned_cqc_pir_lf = utils.scan_parquet(
         source=cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns
-    ).with_columns(
-        pl.col(CQCPIRClean.location_id).cast(CatColType.LocationCatType),
-        pl.col(CQCPIRClean.care_home).cast(CatColType.CareHomeEnumType),
-    )
+    ).with_columns(pl.col(CQCPIRClean.location_id).cast(CatColType.LocationCatType))
 
     cleaned_ct_care_home_lf = utils.scan_parquet(
         source=cleaned_ct_care_home_source,
         selected_columns=cleaned_ct_care_home_columns,
-    ).with_columns(
-        pl.col(CTCHClean.cqc_id).cast(CatColType.LocationCatType),
-        pl.col(CTCHClean.care_home).cast(CatColType.CareHomeEnumType),
-    )
+    ).with_columns(pl.col(CTCHClean.cqc_id).cast(CatColType.LocationCatType))
 
     cleaned_ct_non_res_lf = utils.scan_parquet(
         source=cleaned_ct_non_res_source, selected_columns=cleaned_ct_non_res_columns
-    ).with_columns(
-        pl.col(CTNRClean.cqc_id).cast(CatColType.LocationCatType),
-        pl.col(CTNRClean.care_home).cast(CatColType.CareHomeEnumType),
-    )
+    ).with_columns(pl.col(CTNRClean.cqc_id).cast(CatColType.LocationCatType))
 
     job_role_estimates_lf = join_data_into_cqc_lf(
         job_role_estimates_lf,

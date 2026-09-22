@@ -113,11 +113,12 @@ class TestMain:
         apply_employment_status_magic_numbers_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        # job_role_estimates_lf's location_id/care_home dtypes here mirror what the
-        # real upstream pipeline produces (a namespaced Categorical location_id, and
-        # the CareHomeEnumType care_home from metadata) - PIR/CT's cleaned data uses
-        # plainer types (String location ids), so this exercises the dtype casts the
-        # joins below rely on.
+        # Dtypes here mirror what the real pipeline produces: job_role_estimates_lf's
+        # location_id is a namespaced Categorical, metadata's care_home is the
+        # CareHomeEnumType, and PIR/CT's cleaned data already carries care_home as
+        # CareHomeEnumType too (cast at their own clean stage) but leaves location
+        # ids as plain String - so this exercises the location_id cast the joins
+        # below rely on.
         job_role_estimates_lf = pl.LazyFrame(
             {
                 IndCQC.id_per_locationid_import_date: [1],
@@ -144,7 +145,9 @@ class TestMain:
             {
                 CQCPIRClean.location_id: ["1-001"],
                 CQCPIRClean.cqc_pir_import_date: [date(2024, 1, 1)],
-                CQCPIRClean.care_home: [CareHome.care_home],
+                CQCPIRClean.care_home: pl.Series(
+                    [CareHome.care_home], dtype=CatColType.CareHomeEnumType
+                ),
                 CQCPIRClean.staff_leavers: [3],
                 CQCPIRClean.staff_vacancies: [2],
             }
@@ -153,7 +156,9 @@ class TestMain:
             {
                 CTCHClean.cqc_id: ["1-001"],
                 CTCHClean.ct_care_home_import_date: [date(2024, 1, 1)],
-                CTCHClean.care_home: [CareHome.care_home],
+                CTCHClean.care_home: pl.Series(
+                    [CareHome.care_home], dtype=CatColType.CareHomeEnumType
+                ),
                 CTCHClean.agency_nurses_employed: [1],
                 CTCHClean.agency_care_workers_employed: [2],
                 CTCHClean.agency_non_care_workers_employed: [3],
@@ -166,7 +171,9 @@ class TestMain:
                 CTNRClean.ct_non_res_import_date: [date(2024, 1, 1)],
                 # deliberately not_care_home: a genuine care home location shouldn't
                 # match non-res Capacity Tracker data, since care_home is a join key
-                CTNRClean.care_home: [CareHome.not_care_home],
+                CTNRClean.care_home: pl.Series(
+                    [CareHome.not_care_home], dtype=CatColType.CareHomeEnumType
+                ),
                 CTNRClean.hours_agency_dom_care: [7.5],
             }
         )
