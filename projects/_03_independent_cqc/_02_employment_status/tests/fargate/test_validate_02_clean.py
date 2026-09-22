@@ -4,10 +4,10 @@ from unittest.mock import Mock, call, patch
 import polars as pl
 
 import projects._03_independent_cqc._02_employment_status.fargate.validate_02_clean as job
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_names.slv_job_role_columns import (
-    SLVEmploymentStatusColumns as SLVEmpStatus,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
 PATCH_PATH = (
     "projects._03_independent_cqc._02_employment_status.fargate.validate_02_clean"
@@ -18,16 +18,16 @@ class TestMain:
     def setup_method(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
-            SLVEmpStatus.permanent_count_dedup: pl.Int64,
-            SLVEmpStatus.temporary_count_dedup: pl.Int64,
-            SLVEmpStatus.bank_or_pool_count_dedup: pl.Int64,
-            SLVEmpStatus.agency_count_dedup: pl.Int64,
-            SLVEmpStatus.other_count_dedup: pl.Int64,
-            SLVEmpStatus.permanent_percentage: pl.Float32,
-            SLVEmpStatus.temporary_percentage: pl.Float32,
-            SLVEmpStatus.bank_or_pool_percentage: pl.Float32,
-            SLVEmpStatus.agency_percentage: pl.Float32,
-            SLVEmpStatus.other_percentage: pl.Float32,
+            EmpStatus.permanent_count_dedup: pl.Int64,
+            EmpStatus.temporary_count_dedup: pl.Int64,
+            EmpStatus.bank_or_pool_count_dedup: pl.Int64,
+            EmpStatus.agency_count_dedup: pl.Int64,
+            EmpStatus.other_count_dedup: pl.Int64,
+            EmpStatus.permanent_percentage: pl.Float32,
+            EmpStatus.temporary_percentage: pl.Float32,
+            EmpStatus.bank_or_pool_percentage: pl.Float32,
+            EmpStatus.agency_percentage: pl.Float32,
+            EmpStatus.other_percentage: pl.Float32,
         }
         source_rows = [
             ("1-001", 2, 1, 0, 1, 0, 0.5, 0.25, 0.0, 0.25, 0.0),

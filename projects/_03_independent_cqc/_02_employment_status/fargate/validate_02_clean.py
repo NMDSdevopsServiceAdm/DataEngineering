@@ -5,29 +5,29 @@ import pointblank as pb
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_names.slv_job_role_columns import (
-    SLVEmploymentStatusColumns as SLVEmpStatus,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
 ]
 
 DEDUPLICATED_COUNT_COLUMNS = [
-    SLVEmpStatus.permanent_count_dedup,
-    SLVEmpStatus.temporary_count_dedup,
-    SLVEmpStatus.bank_or_pool_count_dedup,
-    SLVEmpStatus.agency_count_dedup,
-    SLVEmpStatus.other_count_dedup,
+    EmpStatus.permanent_count_dedup,
+    EmpStatus.temporary_count_dedup,
+    EmpStatus.bank_or_pool_count_dedup,
+    EmpStatus.agency_count_dedup,
+    EmpStatus.other_count_dedup,
 ]
 
 PERCENTAGE_COLUMNS = [
-    SLVEmpStatus.permanent_percentage,
-    SLVEmpStatus.temporary_percentage,
-    SLVEmpStatus.bank_or_pool_percentage,
-    SLVEmpStatus.agency_percentage,
-    SLVEmpStatus.other_percentage,
+    EmpStatus.permanent_percentage,
+    EmpStatus.temporary_percentage,
+    EmpStatus.bank_or_pool_percentage,
+    EmpStatus.agency_percentage,
+    EmpStatus.other_percentage,
 ]
 
 
