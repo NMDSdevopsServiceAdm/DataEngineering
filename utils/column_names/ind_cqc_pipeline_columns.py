@@ -174,18 +174,18 @@ class IndCqcColumns:
     last_dormant_date: str = "last_dormant_date"
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
+    estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
+    estimate_filled_posts_by_job_role_pre_reallocation: str = (
+        "estimate_filled_posts_by_job_role_pre_reallocation"
+    )
+    estimate_filled_posts_by_job_role_unadjusted: str = (
+        "estimate_filled_posts_by_job_role_unadjusted"
+    )
     estimate_filled_posts_size_group: str = "estimate_filled_posts_size_group"
     estimated_managerial_filled_posts_temp: str = (
         "estimated_managerial_filled_posts_temp"
     )
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
-    estimate_filled_posts_by_job_role_unadjusted: str = (
-        "estimate_filled_posts_by_job_role_unadjusted"
-    )
-    estimate_filled_posts_by_job_role_pre_reallocation: str = (
-        "estimate_filled_posts_by_job_role_pre_reallocation"
-    )
-    estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"
