@@ -18,7 +18,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import ONScol as ONS
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 from utils.column_values.categorical_column_values import (
     RUI,
     RUI2021,

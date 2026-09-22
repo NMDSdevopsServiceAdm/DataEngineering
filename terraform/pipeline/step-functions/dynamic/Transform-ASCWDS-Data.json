@@ -30,8 +30,6 @@
                         "clean_ascwds_workplace.py",
                         "--workplace_source",
                         "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace/",
-                        "--data_labels_source",
-                        "${dataset_bucket_uri}/domain=01_ascwds/dataset=data_labels/data_labels_lookup.csv",
                         "--cleaned_workplace_destination",
                         "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
                         "--ascwds_for_sfc_internal_destination",
@@ -74,8 +72,6 @@
                                 "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker/",
                                 "--cleaned_workplace_source",
                                 "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
-                                "--data_labels_source",
-                                "${dataset_bucket_uri}/domain=01_ascwds/dataset=data_labels/data_labels_lookup.csv",
                                 "--cleaned_worker_destination",
                                 "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/"
                               ]

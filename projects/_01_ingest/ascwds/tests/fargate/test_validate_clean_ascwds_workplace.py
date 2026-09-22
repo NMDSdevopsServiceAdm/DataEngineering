@@ -70,7 +70,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 ASCWPClean.la_permission: CategoricalColumnTypes.LaPermissionCatType,
                 ASCWPClean.is_bulk_uploader: CategoricalColumnTypes.IsBulkUploaderCatType,
                 ASCWPClean.is_parent: CategoricalColumnTypes.IsParentCatType,
-                ASCWPClean.parent_permission: pl.String,
+                ASCWPClean.parent_permission: CategoricalColumnTypes.ParentPermissionCatType,
                 ASCWPClean.registration_type: CategoricalColumnTypes.RegistrationTypeCatType,
                 ASCWPClean.provider_id: pl.String,
                 ASCWPClean.location_id: pl.String,

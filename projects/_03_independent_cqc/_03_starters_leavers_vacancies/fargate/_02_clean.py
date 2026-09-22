@@ -3,11 +3,13 @@ import polars as pl
 import polars_utils.cleaning_utils as cUtils
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.clean_utils as cleanUtils
 from polars_utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import (
-    SLVEmploymentStatusColumns as SLVEmpStatus,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
 )
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 from utils.column_values.categorical_column_values import SLVFilteringRule
 
 NOT_KNOWN_CODE = 999  # '999' is used elsewhere in ASCWDS to represent not known.
@@ -28,9 +30,9 @@ def main(
 
     # Employees = directly employed by the workplace (permanent + temporary) only.
     lf = lf.with_columns(
-        (
-            pl.col(SLVEmpStatus.permanent_count) + pl.col(SLVEmpStatus.temporary_count)
-        ).alias(SLVCols.employees)
+        (pl.col(EmpStatus.permanent_count) + pl.col(EmpStatus.temporary_count)).alias(
+            EmpStatus.employee_count
+        )
     )
 
     # Nulls ASCWDS's 999 "not known" code in starters/leavers/vacancies, recording
@@ -51,7 +53,7 @@ def main(
             SLVCols.leavers_cleaned,
             SLVCols.vacancies_cleaned,
         ],
-        partition_by_columns=[IndCQC.location_id, SLVCols.published_job_role_label],
+        partition_by_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
         date_column=IndCQC.cqc_location_import_date,
     )
 

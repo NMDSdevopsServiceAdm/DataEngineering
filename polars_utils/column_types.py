@@ -18,7 +18,22 @@ from utils.column_values.categorical_columns_by_dataset import (
 
 @dataclass
 class CategoricalColumnTypes:
-    """Reusable polars Categorical and Enum dtype constants."""
+    """Reusable polars Categorical and Enum dtype constants.
+
+    Use `pl.Enum` when the column's vocab is finite, known upfront, and
+    controlled by our own pipeline (e.g. CQC location classifications,
+    internally-computed filtering-rule/source-tag columns) - enforcement at
+    cast time is safe because we're the only ones who can add a new value.
+
+    Use `pl.Categorical` (no explicit category list) when the vocab is
+    open-ended (free-form IDs like `brand`/`establishment`), externally
+    sourced and relabelled independently (ONS geography), or sourced from
+    ASC-WDS's own reference data, which has changed under us before (e.g.
+    the `technician`/`care_navigator` job-role codes retired mid-2024) -
+    hard `Enum` enforcement there would fail the whole cast the moment
+    ASC-WDS adds or retires a code, instead of surfacing as a triageable
+    `col_vals_in_set` validation failure.
+    """
 
     AscwdsFilledPostsSourceEnumType = pl.Enum(
         CleanedIndCQCCatVals.ascwds_filled_posts_source_column_values.categorical_values
@@ -102,6 +117,9 @@ class CategoricalColumnTypes:
     )
     OnsSubIcbCatType = pl.Categorical(
         pl.Categories("ons_sub_icb", namespace="filled_posts")
+    )
+    ParentPermissionCatType = pl.Categorical(
+        pl.Categories("parent_permission", namespace="filled_posts")
     )
     PrimaryServiceEnumType = pl.Enum(
         CQCLocationCatVals.primary_service_type_column_values.categorical_values

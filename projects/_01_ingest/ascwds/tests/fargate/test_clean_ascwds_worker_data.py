@@ -8,13 +8,12 @@ PATCH_PATH = "projects._01_ingest.ascwds.fargate.clean_ascwds_worker_data"
 class TestMain:
     WORKER_SOURCE = "some/worker/source"
     CLEANED_WORKPLACE_SOURCE = "some/workplace/source"
-    DATA_LABELS_SOURCE = "some/labels/source"
     CLEANED_WORKER_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.create_clean_employment_status_column")
     @patch(f"{PATCH_PATH}.wUtils.create_clean_main_job_role_column")
-    @patch(f"{PATCH_PATH}.pl.scan_csv")
+    @patch(f"{PATCH_PATH}.cUtils.build_labels_lf")
     @patch(f"{PATCH_PATH}.wUtils.remove_workers_without_workplaces")
     @patch(f"{PATCH_PATH}.is_unique_worker_data")
     @patch(f"{PATCH_PATH}.cUtils.column_to_date")
@@ -25,7 +24,7 @@ class TestMain:
         column_to_date_mock: Mock,
         is_unique_worker_data_mock: Mock,
         remove_workers_without_workplaces_mock: Mock,
-        scan_csv_mock: Mock,
+        build_labels_lf_mock: Mock,
         create_clean_main_job_role_column_mock: Mock,
         create_clean_employment_status_column_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -33,7 +32,6 @@ class TestMain:
         job.main(
             self.WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
-            self.DATA_LABELS_SOURCE,
             self.CLEANED_WORKER_DESTINATION,
         )
 
@@ -49,8 +47,11 @@ class TestMain:
         is_unique_worker_data_mock.assert_called_once()
         remove_workers_without_workplaces_mock.assert_called_once()
 
-        scan_csv_mock.assert_called_once_with(
-            self.DATA_LABELS_SOURCE, schema=job.data_labels_schema
+        build_labels_lf_mock.assert_called_once_with(
+            {
+                job.AWKClean.main_job_role_clean: job.MAIN_JOB_ROLE.code_to_label(),
+                job.AWKClean.employment_status_clean: job.EMPLOYMENT_STATUS.code_to_label(),
+            }
         )
         create_clean_main_job_role_column_mock.assert_called_once()
         create_clean_employment_status_column_mock.assert_called_once()
