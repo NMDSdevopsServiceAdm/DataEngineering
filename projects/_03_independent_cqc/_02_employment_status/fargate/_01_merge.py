@@ -136,13 +136,6 @@ def main(
         how="left",
     )
 
-    # metadata_lf's care_home is a generic pl.Categorical (cast that way further
-    # upstream), but the cleaned PIR/CT data below uses the stricter CareHomeEnumType -
-    # re-cast so the care_home join key matches on both sides.
-    job_role_estimates_lf = job_role_estimates_lf.with_columns(
-        pl.col(IndCQC.care_home).cast(CatColType.CareHomeEnumType)
-    )
-
     cleaned_cqc_pir_lf = utils.scan_parquet(
         source=cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns
     ).with_columns(

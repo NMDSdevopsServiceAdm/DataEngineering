@@ -114,10 +114,10 @@ class TestMain:
         sink_to_parquet_mock: Mock,
     ):
         # job_role_estimates_lf's location_id/care_home dtypes here mirror what the
-        # real upstream pipeline produces (a namespaced Categorical location_id, and a
-        # generic Categorical care_home once joined with metadata) - PIR/CT's cleaned
-        # data uses plainer types (String location ids, a stricter care_home Enum), so
-        # this exercises the dtype casts the joins below rely on.
+        # real upstream pipeline produces (a namespaced Categorical location_id, and
+        # the CareHomeEnumType care_home from metadata) - PIR/CT's cleaned data uses
+        # plainer types (String location ids), so this exercises the dtype casts the
+        # joins below rely on.
         job_role_estimates_lf = pl.LazyFrame(
             {
                 IndCQC.id_per_locationid_import_date: [1],
@@ -131,7 +131,9 @@ class TestMain:
         metadata_lf = pl.LazyFrame(
             {
                 IndCQC.id_per_locationid_import_date: [1],
-                IndCQC.care_home: pl.Series([CareHome.care_home], dtype=pl.Categorical),
+                IndCQC.care_home: pl.Series(
+                    [CareHome.care_home], dtype=CatColType.CareHomeEnumType
+                ),
                 IndCQC.establishment_id: pl.Series(
                     ["est-1"], dtype=CatColType.EstablishmentCatType
                 ),
