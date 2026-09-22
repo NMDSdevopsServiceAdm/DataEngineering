@@ -8,13 +8,15 @@ from sklearn.base import BaseEstimator
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 
+from utils.file_utils import split_s3_uri
+
 
 def get_run_number(s3_root: str) -> int:
     """
     Determines the most recent run number stored under an S3 model root.
 
-    The function scans all objects under the given S3 prefix and looks for keys
-    that end with `metadata.json`.
+    The function scans all objects under the given S3 prefix, across every page
+    of results, and looks for keys that end with `metadata.json`.
 
     Each run is assumed to be structured like:
         s3_root/<run_number>/metadata.json
@@ -29,18 +31,19 @@ def get_run_number(s3_root: str) -> int:
         int: The highest existing run number, or `0` if none exist.
     """
     s3 = boto3.client("s3")
-    bucket = s3_root.replace("s3://", "").split("/")[0]
-    prefix = "/".join(s3_root.replace("s3://", "").split("/")[1:])
-    response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)
+    bucket, prefix = split_s3_uri(s3_root)
+    paginator = s3.get_paginator("list_objects_v2")
+    pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
 
     runs = []
-    for obj in response.get("Contents", []):
-        if obj["Key"].endswith("metadata.json"):
-            try:
-                run = int(obj["Key"].split("/")[-2])
-                runs.append(run)
-            except:
-                pass
+    for page in pages:
+        for obj in page.get("Contents", []):
+            if obj["Key"].endswith("metadata.json"):
+                try:
+                    run = int(obj["Key"].split("/")[-2])
+                    runs.append(run)
+                except:
+                    pass
 
     return max(runs) if runs else 0
 
