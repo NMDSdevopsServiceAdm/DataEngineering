@@ -5,6 +5,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
 )
+from utils.column_values.categorical_column_values import SLVFilteringRule
 
 PATCH_PATH = (
     "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._02_clean"
@@ -18,10 +19,12 @@ class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.cleanUtils.create_slv_rate_columns")
     @patch(f"{PATCH_PATH}.cUtils.remove_repeated_values_over_time")
+    @patch(f"{PATCH_PATH}.cUtils.null_not_known_values")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
+        null_not_known_values_mock: Mock,
         remove_repeated_values_over_time_mock: Mock,
         create_slv_rate_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -32,12 +35,20 @@ class TestMain:
         )
 
         scan_parquet_mock.assert_called_once_with(self.MERGED_DATA_SOURCE)
-        remove_repeated_values_over_time_mock.assert_called_once_with(
+        null_not_known_values_mock.assert_called_once_with(
             scan_parquet_mock.return_value.with_columns.return_value,
+            columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
+            not_known_code=job.NOT_KNOWN_CODE,
+            populated_rule=SLVFilteringRule.populated,
+            missing_rule=SLVFilteringRule.missing_data,
+            not_known_rule=SLVFilteringRule.contained_invalid_missing_data_code,
+        )
+        remove_repeated_values_over_time_mock.assert_called_once_with(
+            null_not_known_values_mock.return_value,
             columns_to_clean=[
-                SLVCols.starters,
-                SLVCols.leavers,
-                SLVCols.vacancies,
+                SLVCols.starters_cleaned,
+                SLVCols.leavers_cleaned,
+                SLVCols.vacancies_cleaned,
             ],
             partition_by_columns=[
                 IndCQC.location_id,

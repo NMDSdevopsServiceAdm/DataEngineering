@@ -144,6 +144,37 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    null_not_known_values_single_column_schema = pl.Schema(
+        [
+            ("location_id", pl.String()),
+            ("metric", pl.Int64()),
+        ]
+    )
+    expected_null_not_known_values_single_column_schema = pl.Schema(
+        list(null_not_known_values_single_column_schema.items())
+        + [
+            ("metric_filtering_rule", pl.String()),
+            ("metric_cleaned", pl.Int64()),
+        ]
+    )
+
+    null_not_known_values_multiple_columns_schema = pl.Schema(
+        [
+            ("location_id", pl.String()),
+            ("starters", pl.Int64()),
+            ("leavers", pl.Int64()),
+        ]
+    )
+    expected_null_not_known_values_multiple_columns_schema = pl.Schema(
+        list(null_not_known_values_multiple_columns_schema.items())
+        + [
+            ("starters_filtering_rule", pl.String()),
+            ("starters_cleaned", pl.Int64()),
+            ("leavers_filtering_rule", pl.String()),
+            ("leavers_cleaned", pl.Int64()),
+        ]
+    )
+
 
 @dataclass
 class RawDataAdjustmentsSchemas:

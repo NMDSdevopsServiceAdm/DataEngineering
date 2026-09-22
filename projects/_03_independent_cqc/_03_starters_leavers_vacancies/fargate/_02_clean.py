@@ -10,6 +10,9 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
 )
+from utils.column_values.categorical_column_values import SLVFilteringRule
+
+NOT_KNOWN_CODE = 999  # '999' is used elsewhere in ASCWDS to represent not known.
 
 
 def main(
@@ -32,12 +35,23 @@ def main(
         )
     )
 
+    # Nulls ASCWDS's 999 "not known" code in starters/leavers/vacancies, recording
+    # why in a filtering-rule column per metric.
+    lf = cUtils.null_not_known_values(
+        lf,
+        columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
+        not_known_code=NOT_KNOWN_CODE,
+        populated_rule=SLVFilteringRule.populated,
+        missing_rule=SLVFilteringRule.missing_data,
+        not_known_rule=SLVFilteringRule.contained_invalid_missing_data_code,
+    )
+
     lf = cUtils.remove_repeated_values_over_time(
         lf,
         columns_to_clean=[
-            SLVCols.starters,
-            SLVCols.leavers,
-            SLVCols.vacancies,
+            SLVCols.starters_cleaned,
+            SLVCols.leavers_cleaned,
+            SLVCols.vacancies_cleaned,
         ],
         partition_by_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
         date_column=IndCQC.cqc_location_import_date,
