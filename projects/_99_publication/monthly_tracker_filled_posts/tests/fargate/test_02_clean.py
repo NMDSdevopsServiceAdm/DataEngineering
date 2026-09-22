@@ -274,12 +274,8 @@ class TestMain:
             pl.lit("42").alias(Pub.assessment_filled_posts_long_term_formatted),
             pl.lit("42").alias(Pub.assessment_filled_posts_medium_term_formatted),
             pl.lit("42").alias(Pub.assessment_filled_posts_short_term_formatted),
-            pl.col(IndCQC.cqc_location_import_date)
-            .dt.strftime("%b %Y")
-            .alias(Pub.cqc_location_import_date_abbreviated),
-            pl.col(IndCQC.cqc_location_import_date)
-            .dt.strftime("%B %Y")
-            .alias(Pub.cqc_location_import_date_full),
+            pl.lit("Apr 2026").alias(Pub.cqc_location_import_date_abbreviated),
+            pl.lit("April 2026").alias(Pub.cqc_location_import_date_full),
         )
         assert_frame_equal(sink_call_kwargs["lazy_df"], expected_sink_lf)
 
