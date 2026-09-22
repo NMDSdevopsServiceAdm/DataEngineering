@@ -333,6 +333,11 @@ class RegionID(ColumnValues):
     south_west: str = "7"
     west_midlands: str = "8"
     yorkshire_and_humber: str = "9"
+    # Confirmed present in production data (ticket 2090) - not in the old
+    # reconciliation-only label dict this module's REGION_ID_CODE_TO_LABEL
+    # replaces, since that dict only needed to label rows, never validate
+    # completeness against every code actually in use.
+    not_known: str = "-1"
 
 
 @dataclass(frozen=True)
@@ -513,4 +518,5 @@ REGION_ID_CODE_TO_LABEL: dict[str, str] = {
     RegionID.south_west: "D - South West",
     RegionID.west_midlands: "E - West Midlands",
     RegionID.yorkshire_and_humber: "J - Yorkshire Humber",
+    RegionID.not_known: "Not known",
 }
