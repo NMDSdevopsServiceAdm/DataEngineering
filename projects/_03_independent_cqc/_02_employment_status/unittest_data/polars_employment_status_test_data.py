@@ -6,14 +6,13 @@ import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.employment_status_rates_columns import (
-    EmploymentStatusRatesColumns as EmpStatRates,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusMagicNumberRateColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import (
-    SLVEmploymentStatusColumns as SLVEmpStatus,
-)
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_column_values import (
     EmploymentStatusID,
     EmploymentStatusLabels,
@@ -73,7 +72,7 @@ class TestPrepareWorkerUtilsData:
             },
             expected_data={
                 AWKClean.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
-                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker],
+                IndCQC.published_job_role_label: [MainJobRoleLabels.care_worker],
             },
         ),
         CollapseJobRolesToPublishedLabelsTestCase(
@@ -87,7 +86,7 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.main_job_role_clean_labelled: [
                     MainJobRoleLabels.safeguarding_officer
                 ],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.other_regulated_professions
                 ],
             },
@@ -104,7 +103,7 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)] * 2,
                 AWKClean.main_job_role_id: [MainJobRoleID.care_worker] * 2,
                 AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 2,
-                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
+                IndCQC.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status: [EmploymentStatusID.permanent] * 2,
                 AWKClean.employment_status_clean: [EmploymentStatusID.permanent] * 2,
                 AWKClean.employment_status_clean_labelled: [
@@ -116,11 +115,11 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.location_id: ["loc1"],
                 AWKClean.establishment_id: ["1-001"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
-                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker],
+                IndCQC.published_job_role_label: [MainJobRoleLabels.care_worker],
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ],
-                SLVEmpStatus.employment_status_count: [2],
+                EmpStatus.employment_status_count: [2],
             },
         ),
         AggregateEmploymentStatusDataTestCase(
@@ -131,7 +130,7 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.establishment_id: ["1-002", "1-002"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)] * 2,
                 AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 2,
-                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
+                IndCQC.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status_clean: [
                     EmploymentStatusID.permanent,
                     EmploymentStatusID.temporary,
@@ -145,12 +144,12 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.location_id: ["loc2", "loc2"],
                 AWKClean.establishment_id: ["1-002", "1-002"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)] * 2,
-                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
+                IndCQC.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.temporary,
                 ],
-                SLVEmpStatus.employment_status_count: [1, 1],
+                EmpStatus.employment_status_count: [1, 1],
             },
         ),
         AggregateEmploymentStatusDataTestCase(
@@ -161,7 +160,7 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.establishment_id: ["1-003", "1-004"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
                 AWKClean.main_job_role_clean: [MainJobRoleID.care_worker] * 2,
-                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
+                IndCQC.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status_clean: [EmploymentStatusID.permanent] * 2,
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
@@ -172,12 +171,12 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.location_id: ["loc3", "loc3"],
                 AWKClean.establishment_id: ["1-003", "1-004"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
-                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
+                IndCQC.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ]
                 * 2,
-                SLVEmpStatus.employment_status_count: [1, 1],
+                EmpStatus.employment_status_count: [1, 1],
             },
         ),
     ]
@@ -189,17 +188,17 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.location_id: ["loc1"],
                 AWKClean.establishment_id: ["1-001"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
-                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker],
+                IndCQC.published_job_role_label: [MainJobRoleLabels.care_worker],
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ],
-                SLVEmpStatus.employment_status_count: [3],
+                EmpStatus.employment_status_count: [3],
             },
             expected_data={
                 AWKClean.location_id: ["loc1"],
                 AWKClean.establishment_id: ["1-001"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
-                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker],
+                IndCQC.published_job_role_label: [MainJobRoleLabels.care_worker],
                 EMPLSTAT_PERM_COUNT: [3],
                 EMPLSTAT_TEMP_COUNT: [0],
                 EMPLSTAT_BANK_OR_POOL_COUNT: [0],
@@ -213,18 +212,18 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.location_id: ["loc2", "loc2"],
                 AWKClean.establishment_id: ["1-002", "1-002"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)] * 2,
-                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
+                IndCQC.published_job_role_label: [MainJobRoleLabels.care_worker] * 2,
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.temporary,
                 ],
-                SLVEmpStatus.employment_status_count: [2, 1],
+                EmpStatus.employment_status_count: [2, 1],
             },
             expected_data={
                 AWKClean.location_id: ["loc2"],
                 AWKClean.establishment_id: ["1-002"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 2, 1)],
-                SLVCols.published_job_role_label: [MainJobRoleLabels.care_worker],
+                IndCQC.published_job_role_label: [MainJobRoleLabels.care_worker],
                 EMPLSTAT_PERM_COUNT: [2],
                 EMPLSTAT_TEMP_COUNT: [1],
                 EMPLSTAT_BANK_OR_POOL_COUNT: [0],
@@ -238,7 +237,7 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.location_id: ["loc3", "loc3"],
                 AWKClean.establishment_id: ["1-003", "1-003"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     MainJobRoleLabels.care_worker,
                     MainJobRoleLabels.registered_nurse,
                 ],
@@ -246,13 +245,13 @@ class TestPrepareWorkerUtilsData:
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.agency,
                 ],
-                SLVEmpStatus.employment_status_count: [1, 4],
+                EmpStatus.employment_status_count: [1, 4],
             },
             expected_data={
                 AWKClean.location_id: ["loc3", "loc3"],
                 AWKClean.establishment_id: ["1-003", "1-003"],
                 AWKClean.ascwds_worker_import_date: [date(2024, 3, 1)] * 2,
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     MainJobRoleLabels.care_worker,
                     MainJobRoleLabels.registered_nurse,
                 ],
@@ -302,7 +301,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.id_per_locationid_import_date: [1],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.registered_nurse
                 ],
                 IndCQC.location_id: ["loc1"],
@@ -327,7 +326,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.id_per_locationid_import_date: [2],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.other_managers
                 ],
                 IndCQC.location_id: ["loc2"],
@@ -354,7 +353,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.id_per_locationid_import_date: [3],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.other_direct_care
                 ],
                 IndCQC.location_id: ["loc3"],
@@ -381,7 +380,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.id_per_locationid_import_date: [4],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.other_regulated_professions
                 ],
                 IndCQC.location_id: ["loc4"],
@@ -404,7 +403,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.id_per_locationid_import_date: [5],
-                SLVCols.published_job_role_label: [PublishedJobRoleLabels.other],
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.other],
                 IndCQC.location_id: ["loc5"],
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
                 IndCQC.primary_service_type: [PrimaryServiceType.care_home_only],
@@ -429,7 +428,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.id_per_locationid_import_date: [6],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.other_managers
                 ],
                 IndCQC.location_id: ["loc6"],
@@ -457,7 +456,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.id_per_locationid_import_date: [7],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.other_managers
                 ],
                 IndCQC.location_id: ["loc7"],
@@ -483,7 +482,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.id_per_locationid_import_date: [8],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.other_managers
                 ],
                 IndCQC.location_id: ["loc8"],
@@ -512,7 +511,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.id_per_locationid_import_date: [9, 9],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.care_worker,
                     PublishedJobRoleLabels.other,
                 ],
@@ -548,7 +547,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.id_per_locationid_import_date: [10, 11],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.care_worker,
                     PublishedJobRoleLabels.care_worker,
                 ],
@@ -567,14 +566,17 @@ class TestMergeUtilsData:
         ),
     ]
 
+
+@dataclass
+class TestMagicNumberUtilsData:
     apply_employment_status_magic_numbers_test_cases = [
         ApplyEmploymentStatusMagicNumbersTestCase(
             id="splits_filled_post_metric_by_employment_status_rates",
             job_role_estimates_data={
                 IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                SLVCols.published_job_role_label: [PublishedJobRoleLabels.care_worker],
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
                 METRIC: [100.0],
-                SLVCols.employees: [50],
+                EmpStatus.employee_count: [50],
             },
             employment_status_rates_data={
                 EmpStatRates.service: ["CQC Non residential"],
@@ -587,15 +589,15 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                SLVCols.published_job_role_label: [PublishedJobRoleLabels.care_worker],
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
                 METRIC: [100.0],
-                SLVCols.employees: [50],
-                SLVCols.estimated_emp_stat_perm: [50.0],
-                SLVCols.estimated_emp_stat_temp: [20.0],
-                SLVCols.estimated_emp_stat_bank_or_pool: [15.0],
-                SLVCols.estimated_emp_stat_agency: [10.0],
-                SLVCols.estimated_emp_stat_other: [5.0],
-                SLVCols.estimated_employees: [70.0],
+                EmpStatus.employee_count: [50],
+                EmpStatus.estimated_emp_stat_perm: [50.0],
+                EmpStatus.estimated_emp_stat_temp: [20.0],
+                EmpStatus.estimated_emp_stat_bank_or_pool: [15.0],
+                EmpStatus.estimated_emp_stat_agency: [10.0],
+                EmpStatus.estimated_emp_stat_other: [5.0],
+                EmpStatus.estimated_employees: [70.0],
             },
         ),
         ApplyEmploymentStatusMagicNumbersTestCase(
@@ -605,12 +607,12 @@ class TestMergeUtilsData:
                     PrimaryServiceType.care_home_only,
                     PrimaryServiceType.care_home_with_nursing,
                 ],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.community_support_and_outreach,
                     PublishedJobRoleLabels.other,
                 ],
                 METRIC: [10.0, 8.0],
-                SLVCols.employees: [4, 10],
+                EmpStatus.employee_count: [4, 10],
             },
             employment_status_rates_data={
                 EmpStatRates.service: [
@@ -632,27 +634,27 @@ class TestMergeUtilsData:
                     PrimaryServiceType.care_home_only,
                     PrimaryServiceType.care_home_with_nursing,
                 ],
-                SLVCols.published_job_role_label: [
+                IndCQC.published_job_role_label: [
                     PublishedJobRoleLabels.community_support_and_outreach,
                     PublishedJobRoleLabels.other,
                 ],
                 METRIC: [10.0, 8.0],
-                SLVCols.employees: [4, 10],
-                SLVCols.estimated_emp_stat_perm: [4.0, 4.0],
-                SLVCols.estimated_emp_stat_temp: [1.0, 4.0],
-                SLVCols.estimated_emp_stat_bank_or_pool: [2.0, 0.0],
-                SLVCols.estimated_emp_stat_agency: [2.0, 0.0],
-                SLVCols.estimated_emp_stat_other: [1.0, 0.0],
-                SLVCols.estimated_employees: [5.0, 8.0],
+                EmpStatus.employee_count: [4, 10],
+                EmpStatus.estimated_emp_stat_perm: [4.0, 4.0],
+                EmpStatus.estimated_emp_stat_temp: [1.0, 4.0],
+                EmpStatus.estimated_emp_stat_bank_or_pool: [2.0, 0.0],
+                EmpStatus.estimated_emp_stat_agency: [2.0, 0.0],
+                EmpStatus.estimated_emp_stat_other: [1.0, 0.0],
+                EmpStatus.estimated_employees: [5.0, 8.0],
             },
         ),
         ApplyEmploymentStatusMagicNumbersTestCase(
             id="propagates_null_metric_to_all_split_columns_and_the_estimated_employees_column",
             job_role_estimates_data={
                 IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                SLVCols.published_job_role_label: [PublishedJobRoleLabels.care_worker],
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
                 METRIC: [None],
-                SLVCols.employees: [5],
+                EmpStatus.employee_count: [5],
             },
             employment_status_rates_data={
                 EmpStatRates.service: ["CQC Non residential"],
@@ -665,15 +667,15 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                SLVCols.published_job_role_label: [PublishedJobRoleLabels.care_worker],
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
                 METRIC: [None],
-                SLVCols.employees: [5],
-                SLVCols.estimated_emp_stat_perm: [None],
-                SLVCols.estimated_emp_stat_temp: [None],
-                SLVCols.estimated_emp_stat_bank_or_pool: [None],
-                SLVCols.estimated_emp_stat_agency: [None],
-                SLVCols.estimated_emp_stat_other: [None],
-                SLVCols.estimated_employees: [None],
+                EmpStatus.employee_count: [5],
+                EmpStatus.estimated_emp_stat_perm: [None],
+                EmpStatus.estimated_emp_stat_temp: [None],
+                EmpStatus.estimated_emp_stat_bank_or_pool: [None],
+                EmpStatus.estimated_emp_stat_agency: [None],
+                EmpStatus.estimated_emp_stat_other: [None],
+                EmpStatus.estimated_employees: [None],
             },
         ),
     ]

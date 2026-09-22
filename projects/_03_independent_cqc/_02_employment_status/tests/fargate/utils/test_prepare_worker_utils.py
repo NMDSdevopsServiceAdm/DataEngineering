@@ -10,10 +10,10 @@ from projects._03_independent_cqc._02_employment_status.unittest_data.polars_emp
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.slv_job_role_columns import (
-    SLVEmploymentStatusColumns as SLVEmpStatus,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
 )
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class TestCollapseJobRolesToPublishedLabels:
@@ -27,7 +27,7 @@ class TestCollapseJobRolesToPublishedLabels:
     def test_collapses_job_roles_as_expected(self, case):
         test_lf = pl.LazyFrame(case.input_data)
         expected_lf = pl.LazyFrame(case.expected_data).with_columns(
-            pl.col(SLVCols.published_job_role_label).cast(
+            pl.col(IndCQC.published_job_role_label).cast(
                 CatColType.PublishedJobRoleLabelCatType
             )
         )
@@ -54,7 +54,7 @@ class TestAggregateEmploymentStatusData:
         test_lf = pl.LazyFrame(case.input_data)
         expected_lf = pl.LazyFrame(
             case.expected_data,
-            schema_overrides={SLVEmpStatus.employment_status_count: pl.UInt32},
+            schema_overrides={EmpStatus.employment_status_count: pl.UInt32},
         )
 
         returned_lf = job.aggregate_employment_status_data(test_lf)
@@ -77,12 +77,12 @@ class TestReshapeEmploymentStatusData:
     )
     def test_reshapes_employment_status_data(self, case):
         emplstat_count_cols = [
-            SLVEmpStatus.employment_status_count,
+            EmpStatus.employment_status_count,
             *job.EMPLOYMENT_STATUS_LABEL_TO_COLUMN.values(),
         ]
         test_lf = pl.LazyFrame(
             case.input_data,
-            schema_overrides={SLVEmpStatus.employment_status_count: pl.UInt32},
+            schema_overrides={EmpStatus.employment_status_count: pl.UInt32},
         )
         expected_lf = pl.LazyFrame(
             case.expected_data,

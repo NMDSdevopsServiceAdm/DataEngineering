@@ -6,7 +6,10 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     PublishedJobRoleLabels,
@@ -159,7 +162,7 @@ def reshape_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
     # this list-of-structs-per-row into one row per label.
     label_structs = [
         pl.struct(
-            pl.lit(label).alias(SLVCols.published_job_role_label),
+            pl.lit(label).alias(IndCQC.published_job_role_label),
             *[
                 pl.col(f"{label}_{suffix}").alias(metric)
                 for metric, suffix in metric_suffixes.items()
@@ -178,7 +181,7 @@ def reshape_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
         .unnest("_job_role_struct_list")
         .with_columns(
             pl.col(AWPClean.establishment_id).cast(CatColType.EstablishmentCatType),
-            pl.col(SLVCols.published_job_role_label).cast(
+            pl.col(IndCQC.published_job_role_label).cast(
                 CatColType.PublishedJobRoleLabelCatType
             ),
             pl.col(SLVCols.starters).cast(pl.Int16),
