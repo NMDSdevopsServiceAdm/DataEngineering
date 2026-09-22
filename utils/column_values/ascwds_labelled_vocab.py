@@ -333,7 +333,7 @@ class RegionID(ColumnValues):
     south_west: str = "7"
     west_midlands: str = "8"
     yorkshire_and_humber: str = "9"
-    # Confirmed present in production data (ticket 2090) - not in the old
+    # Confirmed present in production data - absent from the old
     # reconciliation-only label dict this module's REGION_ID_CODE_TO_LABEL
     # replaces, since that dict only needed to label rows, never validate
     # completeness against every code actually in use.
