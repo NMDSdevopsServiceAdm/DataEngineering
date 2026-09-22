@@ -136,6 +136,12 @@ def main(
         how="left",
     )
 
+    # job_role_estimates_lf's location_id is the namespaced LocationCatType (set by
+    # _06_job_role_estimates), but PIR/CT's cleaned data leaves its id column as plain
+    # String - unlike care_home, that's not a bug to fix upstream (PIR/CT's own clean
+    # jobs never carry a Categorical id, and casting one there would collide with
+    # _01_filled_posts/_01_merge's own, unrelated PIR/CT join, which relies on
+    # everything being plain String). So the cast stays local to this join.
     cleaned_cqc_pir_lf = utils.scan_parquet(
         source=cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns
     ).with_columns(pl.col(CQCPIRClean.location_id).cast(CatColType.LocationCatType))

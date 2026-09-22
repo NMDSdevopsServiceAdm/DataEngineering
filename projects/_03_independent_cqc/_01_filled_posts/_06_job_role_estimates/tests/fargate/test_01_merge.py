@@ -4,6 +4,8 @@ from unittest.mock import ANY, Mock, call, patch
 import polars as pl
 
 import projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate._01_merge as job
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH = "projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate._01_merge"
 
@@ -62,3 +64,11 @@ class MainTests(unittest.TestCase):
                 ),
             ]
         )
+
+
+def test_metadata_columns_declares_care_home_as_the_care_home_enum_type():
+    # care_home must stay the stricter CareHomeEnumType here, not a generic
+    # Categorical - _02_employment_status/fargate/_01_merge.py joins this metadata
+    # output against PIR/Capacity Tracker data whose care_home is CareHomeEnumType,
+    # and a generic Categorical would raise a dtype mismatch on that join.
+    assert job.metadata_columns[IndCQC.care_home] == CatColType.CareHomeEnumType
