@@ -267,8 +267,7 @@ def other_validation(
             brief=f"{IndCqcColumns.main_job_group_labelled} should have exactly {CatValues.main_job_group_labels_column_values.count_of_categorical_values} distinct values",
         )
         # numerical
-        # Summed job-role posts being > 0 is already implied by this check plus the
-        # [0, 1] difference-tolerance check below, so it isn't checked separately.
+        # Summed job-role posts > 0 is implied by this plus the tolerance check below.
         .col_vals_gt(
             columns=IndCqcColumns.estimate_filled_posts,
             value=0,
