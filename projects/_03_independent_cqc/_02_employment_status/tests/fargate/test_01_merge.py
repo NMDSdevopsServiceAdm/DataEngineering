@@ -96,12 +96,7 @@ class TestMain:
         collapse_job_role_estimates_to_published_labels_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        # Dtypes here mirror what the real pipeline produces: job_role_estimates_lf's
-        # location_id is a namespaced Categorical, metadata's care_home is the
-        # CareHomeEnumType, and PIR/CT's cleaned data already carries care_home as
-        # CareHomeEnumType too (cast at their own clean stage) but leaves location
-        # ids as plain String - so this exercises the location_id cast the joins
-        # below rely on.
+        # Dtypes mirror production, to exercise the location_id cast the joins rely on.
         job_role_estimates_lf = pl.LazyFrame(
             {
                 IndCQC.id_per_locationid_import_date: [1],
