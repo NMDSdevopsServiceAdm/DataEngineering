@@ -1,3 +1,4 @@
+import projects._03_independent_cqc._02_employment_status.fargate.utils.clean_utils as cUtils
 from polars_utils import utils
 
 
@@ -8,14 +9,16 @@ def main(
     """
     Cleans the merged employment status data.
 
-    Currently a placeholder pass-through: no employment-status cleaning logic
-    exists yet.
+    Deduplicates the 5 employment status count columns as a single unit, and
+    adds a percentage-share column per employment status.
 
     Args:
         merged_data_source (str): path to the merged data
         cleaned_data_destination (str): destination for cleaned output
     """
     lf = utils.scan_parquet(merged_data_source)
+
+    lf = cUtils.create_employment_status_percentage_columns(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,

@@ -5,10 +5,29 @@ import pointblank as pb
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
+]
+
+DEDUPLICATED_COUNT_COLUMNS = [
+    EmpStatus.permanent_count_dedup,
+    EmpStatus.temporary_count_dedup,
+    EmpStatus.bank_or_pool_count_dedup,
+    EmpStatus.agency_count_dedup,
+    EmpStatus.other_count_dedup,
+]
+
+PERCENTAGE_COLUMNS = [
+    EmpStatus.permanent_percentage,
+    EmpStatus.temporary_percentage,
+    EmpStatus.bank_or_pool_percentage,
+    EmpStatus.agency_percentage,
+    EmpStatus.other_percentage,
 ]
 
 
@@ -17,8 +36,6 @@ def main(
 ) -> None:
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
-
-    Row-count check only for now, ahead of future employment-status cleaning logic.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
@@ -47,7 +64,21 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        ).interrogate()
+        )
+        .col_vals_ge(
+            DEDUPLICATED_COUNT_COLUMNS,
+            0,
+            na_pass=True,
+            brief="deduplicated employment status counts are greater than or equal to 0",
+        )
+        .col_vals_between(
+            PERCENTAGE_COLUMNS,
+            0,
+            1,
+            na_pass=True,
+            brief="employment status percentages are between 0 and 1",
+        )
+        .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 
