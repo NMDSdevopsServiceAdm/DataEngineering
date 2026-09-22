@@ -490,10 +490,6 @@ jobs:
           name: Copy main datasets to non-prod dataset bucket
           command: |
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_04_full_cleaned_registered/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_04_full_cleaned_registered/" --delete
-            # TEMPORARY for ticket 2090's manual SfC-Internal testing - remove before merging.
-            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_04_latest_snapshot/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_04_latest_snapshot/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=providers_04_full_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=providers_04_full_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=postcode_corrections/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_ons/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ons/dataset=postcode_directory_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=workplace/" --delete
