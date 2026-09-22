@@ -13,9 +13,13 @@ All notable changes to this project will be documented in this file.
 - Added period-on-period and cumulative percentage change columns for capacity tracker total employed to the publication clean job, calculated per region, job role and service type over each of the long, medium and short term assessment windows.
 - Added rollup rows to the publication clean job for "England", "All CQC locations", "All CQC care homes" and "All job roles", so the Tableau and Excel downloads can offer them as top-level filter options.
 - Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
+- Added display-formatted columns to the publication clean job: each filled posts aggregate gets a comma-formatted or millions-abbreviated string (e.g. "800,000" or "1.175m"), and the import date gets abbreviated and full month-year string formats (e.g. "Jan 2026" and "January 2026").
+- Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
 
 
 ### Changed
+- Consolidated ASC-WDS code-label vocabulary (7 workplace/worker columns) into a single Python source of truth, retiring `data_labels_lookup.csv`.
+- Migrated the reconciliation job (CQC deregistration reports for ASC-WDS singles/subs and parent accounts) from PySpark/Glue to Polars on the `_02_sfc_internal` shared Fargate task, folding its Dockerfile into that project's shared `Dockerfile_and_requirements` image alongside `cqc_coverage`, renumbering its folder to `_03_reconciliation`, and removing the old Glue job, its PySpark code, and their tests/fixtures.
 - Moved the starters/leavers/vacancies (SLV) pipeline from its own `_07_workforce_characteristics` project into `_03_independent_cqc` as `_03_starters_leavers_vacancies`, and folded its deployment onto IND CQC's existing shared Fargate task, retiring the separate ECS task, ECR repo and Docker image it used to run on.
 - Split the SLV pipeline into two sibling pipelines under `_03_independent_cqc`: `_02_employment_status` (worker-derived data) and `_03_starters_leavers_vacancies` (workplace-derived data), each with their own prepare/merge/clean/impute/estimate stages, with SLV's merge consuming employment status's cleaned output.
 - Merged the two DPR ingestion jobs (survey and external) into a single Polars job on the shared `_01_ingest` Fargate task, taking `--source`, `--dataset` (`survey`/`external`), and `--destination` as run-time arguments instead of hardcoding the destination path in Terraform each year, and removed the now-unused PySpark CSV-reading utilities and their tests/fixtures, since this was the last remaining PySpark CSV ingestion in the repo. Added a manually-started `Ingest-DPR-Data` step function to replace the deleted Glue jobs' manual-run trigger point.
@@ -25,6 +29,10 @@ All notable changes to this project will be documented in this file.
 - Removed 18 unused helper functions across `utils/`, `polars_utils/` and a couple of project-specific `fargate/utils` modules that had no call sites outside their own tests, along with their dedicated tests and any fixture data/schemas used only by those tests. Also removed 50 orphaned test fixture rows/schemas across the repo's `unittest_data` files that were no longer referenced by any test.
 - Sourced the SLV clean job's employees column from the ASC-WDS worker file (permanent plus temporary employment status counts) instead of the workplace job-role data, and narrowed the ingest job-role selector/bounding to only starters/leavers/vacancies now that employees no longer needs bounding there (it's a mandatory field with no -1/-2 "not known" sentinel); added explicit null handling in the SLV clean job's rate calculations for employees-is-zero cases.
 - Removed the unused `student` employment status value from `EmploymentStatusLabels`/`EmploymentStatusID`, confirmed absent from production ASC-WDS worker data, consolidated the SLV employment-status pivot onto a single label list, and added a full-coverage validation check for the cleaned employment status columns.
+- Renamed the job role filled posts estimate columns so the final, most-accurate estimate has the short canonical name.
+- Moved the temporary employment-status-rates split from the employment status pipeline's merge stage to its estimate stage, along with its validation checks, so it runs closer to where its output is used.
+- Consolidated and reorganised the SLV/employment-status column-name classes in `ind_cqc_pipeline_columns.py`.
+- Moved `EmploymentStatusRatesColumns` (renamed `EmploymentStatusMagicNumberRateColumns`) into the shared `ind_cqc_pipeline_columns.py`, alongside the other column-name classes.
 
 
 ### Improved

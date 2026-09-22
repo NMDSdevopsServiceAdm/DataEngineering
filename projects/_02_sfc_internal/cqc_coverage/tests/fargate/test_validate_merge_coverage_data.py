@@ -5,10 +5,10 @@ from unittest.mock import Mock, call, patch
 import polars as pl
 
 import projects._02_sfc_internal.cqc_coverage.fargate.validate_merge_coverage_data as job
-from projects._02_sfc_internal.unittest_data.merged_coverage_data_polars import (
+from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import (
     ValidateMergeCoverageData as Data,
 )
-from projects._02_sfc_internal.unittest_data.merged_coverage_schema_polars import (
+from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import (
     ValidateMergeCoverageSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns

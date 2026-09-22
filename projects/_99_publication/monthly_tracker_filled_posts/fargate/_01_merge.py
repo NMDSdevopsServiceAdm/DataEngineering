@@ -8,7 +8,7 @@ JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
     IndCQC.primary_service_type,
     IndCQC.main_job_role_clean_labelled,
     IndCQC.main_job_group_labelled,
-    IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
+    IndCQC.estimate_filled_posts_by_job_role,
 ]
 
 JOB_ROLE_METADATA_ARCHIVE_COLUMNS = [

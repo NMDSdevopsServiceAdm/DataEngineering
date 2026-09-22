@@ -74,14 +74,33 @@
             },
             "Reconciliation": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${reconciliation_job_name}",
-                "Arguments": {
-                  "--cqc_locations_snapshot_source": "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_04_latest_snapshot/",
-                  "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/",
-                  "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_singles_and_subs",
-                  "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_parents"
+                "Cluster": "${model_cluster_arn}",
+                "TaskDefinition": "${sfc_internal_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${sfc_internal_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_02_sfc_internal-container",
+                      "Command": [
+                        "reconciliation.py",
+                        "--cqc_locations_snapshot_source", "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_04_latest_snapshot/",
+                        "--ascwds_workplace_source", "${dataset_bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/",
+                        "--reconciliation_single_and_subs_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_singles_and_subs/",
+                        "--reconciliation_parents_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_parents/"
+                      ]
+                    }
+                  ]
                 }
               },
               "End": true

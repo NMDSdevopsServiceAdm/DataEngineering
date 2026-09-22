@@ -18,7 +18,6 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_column_values import CareHome
 
 PATCH_PATH = "projects._03_independent_cqc._02_employment_status.fargate._01_merge"
@@ -28,7 +27,6 @@ class TestMain:
     METADATA_SOURCE = "some/source"
     JOB_ROLE_ESTIMATES_SOURCE = "another/source"
     PREPARED_WORKER_SOURCE = "worker/source"
-    EMPLOYMENT_STATUS_RATES_SOURCE = "employment/status/rates/source"
     CLEANED_CQC_PIR_SOURCE = "pir/source"
     CLEANED_CT_CARE_HOME_SOURCE = "ct/care/home/source"
     CLEANED_CT_NON_RES_SOURCE = "ct/non/res/source"
@@ -36,16 +34,12 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.join_data_into_cqc_lf")
-    @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
-    @patch(f"{PATCH_PATH}.pl.scan_csv")
     @patch(f"{PATCH_PATH}.mUtils.collapse_job_role_estimates_to_published_labels")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         collapse_job_role_estimates_to_published_labels_mock: Mock,
-        scan_csv_mock: Mock,
-        apply_employment_status_magic_numbers_mock: Mock,
         join_data_into_cqc_lf_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -53,7 +47,6 @@ class TestMain:
             self.METADATA_SOURCE,
             self.JOB_ROLE_ESTIMATES_SOURCE,
             self.PREPARED_WORKER_SOURCE,
-            self.EMPLOYMENT_STATUS_RATES_SOURCE,
             self.CLEANED_CQC_PIR_SOURCE,
             self.CLEANED_CT_CARE_HOME_SOURCE,
             self.CLEANED_CT_NON_RES_SOURCE,
@@ -89,28 +82,18 @@ class TestMain:
 
         assert join_data_into_cqc_lf_mock.call_count == 3
 
-        apply_employment_status_magic_numbers_mock.assert_called_once()
-
-        scan_csv_mock.assert_called_once_with(
-            self.EMPLOYMENT_STATUS_RATES_SOURCE, schema=ANY
-        )
-
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
             output_path=self.MERGED_DATA_DESTINATION,
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
-    @patch(f"{PATCH_PATH}.pl.scan_csv")
     @patch(f"{PATCH_PATH}.mUtils.collapse_job_role_estimates_to_published_labels")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_joins_pir_and_capacity_tracker_data_without_dtype_errors(
         self,
         scan_parquet_mock: Mock,
         collapse_job_role_estimates_to_published_labels_mock: Mock,
-        scan_csv_mock: Mock,
-        apply_employment_status_magic_numbers_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         # Dtypes here mirror what the real pipeline produces: job_role_estimates_lf's
@@ -126,7 +109,7 @@ class TestMain:
                     ["1-001"], dtype=CatColType.LocationCatType
                 ),
                 IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
-                SLVCols.published_job_role_label: ["care_worker"],
+                IndCQC.published_job_role_label: ["care_worker"],
             }
         )
         metadata_lf = pl.LazyFrame(
@@ -186,7 +169,7 @@ class TestMain:
                     ["est-1"], dtype=CatColType.EstablishmentCatType
                 ),
                 AWKClean.ascwds_worker_import_date: [date(2024, 1, 1)],
-                SLVCols.published_job_role_label: ["care_worker"],
+                IndCQC.published_job_role_label: ["care_worker"],
             }
         )
         scan_parquet_mock.side_effect = [
@@ -198,13 +181,11 @@ class TestMain:
             worker_lf,
         ]
         collapse_job_role_estimates_to_published_labels_mock.side_effect = lambda lf: lf
-        apply_employment_status_magic_numbers_mock.side_effect = lambda lf, rates_lf: lf
 
         job.main(
             self.METADATA_SOURCE,
             self.JOB_ROLE_ESTIMATES_SOURCE,
             self.PREPARED_WORKER_SOURCE,
-            self.EMPLOYMENT_STATUS_RATES_SOURCE,
             self.CLEANED_CQC_PIR_SOURCE,
             self.CLEANED_CT_CARE_HOME_SOURCE,
             self.CLEANED_CT_NON_RES_SOURCE,

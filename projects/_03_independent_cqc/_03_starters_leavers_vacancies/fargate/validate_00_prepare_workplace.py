@@ -12,7 +12,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
@@ -86,23 +85,23 @@ def main(
             columns_subset=[
                 AWPClean.establishment_id,
                 AWPClean.ascwds_workplace_import_date,
-                SLVCols.published_job_role_label,
+                IndCQC.published_job_role_label,
             ],
             brief="Primary key (establishment_id, ascwds_workplace_import_date, "
             "published_job_role_label) should be unique",
         )
         # categorical
         .col_vals_in_set(
-            SLVCols.published_job_role_label,
+            IndCQC.published_job_role_label,
             SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values,
         )
         # distinct values
         .specially(
             vl.is_unique_count_equal(
-                SLVCols.published_job_role_label,
+                IndCQC.published_job_role_label,
                 SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values,
             ),
-            brief=f"{SLVCols.published_job_role_label} should have exactly "
+            brief=f"{IndCQC.published_job_role_label} should have exactly "
             f"{SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values} distinct values",
         ).interrogate()
     )

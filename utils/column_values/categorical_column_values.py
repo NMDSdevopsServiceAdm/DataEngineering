@@ -641,6 +641,15 @@ class CTFilteringRule(ColumnValues):
 
 
 @dataclass
+class SLVFilteringRule(ColumnValues):
+    """The possible reasons for filtering SLV (starters/leavers/vacancies) data"""
+
+    populated: str = "populated"
+    missing_data: str = "missing_data"
+    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
+
+
+@dataclass
 class RelatedLocation(ColumnValues):
     has_related_location: str = "Y"
     no_related_location: str = "N"
@@ -741,6 +750,9 @@ class MainServiceID(ColumnValues):
     social_work_and_care_management: str = (
         "Social work and care management"  # This label has two possible codes
     )
+    information_and_advice_services: str = (
+        "Information and advice services"  # This label has two possible codes
+    )
     shared_lives_shl: str = "Shared lives - SHL"
     disability_adaptations_assistive_technology_services: str = (
         "Disability adaptations / assistive technology services"
@@ -748,7 +760,6 @@ class MainServiceID(ColumnValues):
     occupational_employment_related_services: str = (
         "Occupational / employment-related services"
     )
-    information_and_advice_services: str = "Information and advice services"
     other_adult_community_care_service: str = "Other adult community care service"
     care_home_hostel: str = "Care home / hostel"
     family_centre_residential: str = "Family centre (residential)"
@@ -772,7 +783,6 @@ class MainServiceID(ColumnValues):
     child_protection: str = "Child protection"
     family_centre: str = "Family centre"
     family_support: str = "Family support"
-    information_and_advice_services: str = "Information and advice services"
     mental_health: str = "Mental health"
     other_childrens_community_care_service: str = (
         "Other childrens community care service"

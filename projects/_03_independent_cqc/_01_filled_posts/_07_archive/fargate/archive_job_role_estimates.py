@@ -21,8 +21,8 @@ JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
     IndCQC.ascwds_job_role_rolling_ratio,
     IndCQC.ascwds_job_role_ratios_merged,
     IndCQC.ascwds_job_role_ratios_merged_source,
-    IndCQC.estimate_filled_posts_by_job_role_manager_adjusted,
-    IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
+    IndCQC.estimate_filled_posts_by_job_role_pre_reallocation,
+    IndCQC.estimate_filled_posts_by_job_role,
     IndCQC.main_job_group_labelled,
     IndCQC.job_role_filtering_rule,
 ]

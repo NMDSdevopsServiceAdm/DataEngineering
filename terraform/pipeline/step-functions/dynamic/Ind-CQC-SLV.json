@@ -109,7 +109,6 @@
                                         "--metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
                                         "--job_role_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
                                         "--prepared_worker_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_00_prepare_worker/",
-                                        "--employment_status_rates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/employee_status_rates.csv",
                                         "--cleaned_cqc_pir_source", "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned/",
                                         "--cleaned_ct_care_home_source", "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=care_home_cleaned/",
                                         "--cleaned_ct_non_res_source", "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=non_residential_cleaned/",
@@ -696,6 +695,7 @@
                                       "Command": [
                                         "_02_employment_status/fargate/_04_estimate.py",
                                         "--imputed_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_03_impute/",
+                                        "--employment_status_rates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/employee_status_rates.csv",
                                         "--estimated_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_04_estimate/"
                                       ]
                                     }

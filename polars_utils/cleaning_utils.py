@@ -4,6 +4,10 @@ import polars as pl
 import polars.selectors as cs
 
 from polars_utils.expressions import is_care_home, is_not_care_home
+from polars_utils.filtering_utils import (
+    add_filtering_rule_column,
+    update_filtering_rule,
+)
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -339,3 +343,59 @@ def remove_repeated_values_over_time(
         )
 
     return lf.with_columns(dedup_exprs)
+
+
+def null_not_known_values(
+    lf: pl.LazyFrame,
+    columns_to_clean: list[str],
+    not_known_code: int | float,
+    populated_rule: str,
+    missing_rule: str,
+    not_known_rule: str,
+) -> pl.LazyFrame:
+    """
+    Nulls a "not known" sentinel value, for one or more columns at once.
+
+    Adds a "<column>_cleaned" and a "<column>_filtering_rule" column per input
+    column. The cleaned column is a copy of the original with not_known_code
+    nulled out; the filtering rule column records why (populated_rule,
+    missing_rule if the value was null to begin with, or not_known_rule if it
+    used the sentinel).
+
+    Args:
+        lf (pl.LazyFrame): The LazyFrame to clean.
+        columns_to_clean (list[str]): Column names to clean.
+        not_known_code (int | float): The sentinel value meaning "not known".
+        populated_rule (str): Filtering rule value for present, valid data.
+        missing_rule (str): Filtering rule value for data that was null to
+            begin with.
+        not_known_rule (str): Filtering rule value for data that used
+            not_known_code.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with a "<column>_cleaned" and
+            "<column>_filtering_rule" column added per input column.
+    """
+    for column in columns_to_clean:
+        clean_column = f"{column}_cleaned"
+        filtering_rule_column = f"{column}_filtering_rule"
+
+        lf = add_filtering_rule_column(
+            lf, filtering_rule_column, column, populated_rule, missing_rule
+        )
+        lf = lf.with_columns(
+            pl.when(pl.col(column) != not_known_code)
+            .then(pl.col(column))
+            .otherwise(None)
+            .alias(clean_column)
+        )
+        lf = update_filtering_rule(
+            lf,
+            filtering_rule_column,
+            column,
+            clean_column,
+            populated_rule,
+            not_known_rule,
+        )
+
+    return lf

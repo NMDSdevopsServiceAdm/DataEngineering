@@ -52,17 +52,16 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.ascwds_job_role_rolling_ratio: pl.Float32,
             IndCqcColumns.ascwds_job_role_ratios_merged: pl.Float32,
             IndCqcColumns.ascwds_job_role_ratios_merged_source: pl.String,
+            IndCqcColumns.estimate_filled_posts_by_job_role_unadjusted: pl.Float32,
+            IndCqcColumns.estimate_filled_posts_by_job_role_pre_reallocation: pl.Float32,
             IndCqcColumns.estimate_filled_posts_by_job_role: pl.Float32,
-            IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
-            IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
-            IndCqcColumns.estimate_filled_posts_from_all_job_roles: pl.Float32,
-            IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: pl.Float32,
+            IndCqcColumns.difference_between_estimate_filled_posts_and_summed_job_roles: pl.Float32,
             IndCqcColumns.main_job_group_labelled: pl.String,
             PartitionKeys.year: pl.String,
         }
         source_rows = [
-            ("1", "1-001", date(2026, 1, 1), 100.0, PrimaryServiceType.non_residential, 1, MainJobRoleLabels.care_worker,    40, "Rule", 0.1, 0.1, 10.0, "size", 0.1, 0.1, "source", 10.0, 10.0, 10.0, 10.0, 10.0, JobGroupLabels.direct_care, "2026"),
-            ("2", "1-002", date(2026, 1, 1), 100.0, PrimaryServiceType.non_residential, 1, MainJobRoleLabels.support_worker, 30, "Rule", 0.1, 0.1, 10.0, "size", 0.1, 0.1, "source", 10.0, 10.0, 10.0, 10.0, 10.0, JobGroupLabels.direct_care, "2026"),
+            ("1", "1-001", date(2026, 1, 1), 100.0, PrimaryServiceType.non_residential, 1, MainJobRoleLabels.care_worker,    40, "Rule", 0.1, 0.1, 10.0, "size", 0.1, 0.1, "source", 10.0, 10.0, 10.0, 10.0, JobGroupLabels.direct_care, "2026"),
+            ("2", "1-002", date(2026, 1, 1), 100.0, PrimaryServiceType.non_residential, 1, MainJobRoleLabels.support_worker, 30, "Rule", 0.1, 0.1, 10.0, "size", 0.1, 0.1, "source", 10.0, 10.0, 10.0, 10.0, JobGroupLabels.direct_care, "2026"),
         ]  # fmt: skip
         self.source_lf = pl.DataFrame(source_rows, source_schema, orient="row")
 
@@ -174,7 +173,7 @@ class TestEstimatesPercentageExpressions:
             IndCqcColumns.cqc_location_import_date: pl.Date,
             IndCqcColumns.main_job_role_clean_labelled: pl.String,
             IndCqcColumns.main_job_group_labelled: pl.String,
-            IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
+            IndCqcColumns.estimate_filled_posts_by_job_role: pl.Float32,
             "expression": pl.Boolean,
         },
         data=[
@@ -236,7 +235,7 @@ class TestAscwdsJobRoleRatiosMergedMatchesCoalesceSource:
 class TestDifferenceWithinDriftTolerance:
     expected_lf = pl.LazyFrame(
         schema={
-            IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: pl.Float32,
+            IndCqcColumns.difference_between_estimate_filled_posts_and_summed_job_roles: pl.Float32,
             "expression": pl.Boolean,
         },
         data=[

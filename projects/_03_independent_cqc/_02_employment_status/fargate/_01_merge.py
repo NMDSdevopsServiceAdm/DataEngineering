@@ -17,17 +17,13 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from utils.column_names.employment_status_rates_columns import (
-    EmploymentStatusRatesColumns as EmpStatRates,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 worker_columns = [
     AWKClean.location_id,
     AWKClean.establishment_id,
     AWKClean.ascwds_worker_import_date,
-    SLVCols.published_job_role_label,
+    IndCQC.published_job_role_label,
     *pWorkerUtils.EMPLOYMENT_STATUS_LABEL_TO_COLUMN.values(),
 ]
 
@@ -58,7 +54,7 @@ job_role_estimates_columns = [
     IndCQC.primary_service_type,
     IndCQC.id_per_locationid_import_date,
     IndCQC.main_job_role_clean_labelled,
-    IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
+    IndCQC.estimate_filled_posts_by_job_role,
     IndCQC.main_job_group_labelled,
 ]
 
@@ -92,7 +88,6 @@ def main(
     metadata_source: str,
     job_role_estimates_source: str,
     prepared_worker_source: str,
-    employment_status_rates_source: str,
     cleaned_cqc_pir_source: str,
     cleaned_ct_care_home_source: str,
     cleaned_ct_non_res_source: str,
@@ -110,7 +105,6 @@ def main(
         job_role_estimates_source (str): path to the job role estimates data
         prepared_worker_source (str): path to the prepared ascwds worker employment
             status data
-        employment_status_rates_source (str): path to the employment status rates csv
         cleaned_cqc_pir_source (str): path to the cleaned CQC PIR data
         cleaned_ct_care_home_source (str): path to the cleaned capacity tracker care
             home data
@@ -179,30 +173,6 @@ def main(
         CTNRClean.care_home,
     )
 
-    # The source CSV is expected to already be trimmed to exactly these columns, in this
-    # order, and to only the current weighting year's rows — scan_csv's schema is matched
-    # positionally, not by name, so a reordered file would silently load into the wrong
-    # columns with no error.
-    employment_status_rates_schema = pl.Schema(
-        [
-            (EmpStatRates.service, pl.Categorical()),
-            (EmpStatRates.weighting_job_role, pl.Categorical()),
-            (EmpStatRates.emp_stat_perm, pl.Float32),
-            (EmpStatRates.emp_stat_temp, pl.Float32),
-            (EmpStatRates.emp_stat_bank_or_pool, pl.Float32),
-            (EmpStatRates.emp_stat_agency, pl.Float32),
-            (EmpStatRates.emp_stat_other, pl.Float32),
-        ]
-    )
-
-    employment_status_rates_lf = pl.scan_csv(
-        employment_status_rates_source, schema=employment_status_rates_schema
-    )
-
-    job_role_estimates_lf = mUtils.apply_employment_status_magic_numbers(
-        job_role_estimates_lf, employment_status_rates_lf
-    )
-
     worker_lf = utils.scan_parquet(
         prepared_worker_source, selected_columns=worker_columns
     )
@@ -215,13 +185,13 @@ def main(
             IndCQC.location_id,
             IndCQC.establishment_id,
             IndCQC.ascwds_workplace_import_date,
-            SLVCols.published_job_role_label,
+            IndCQC.published_job_role_label,
         ],
         right_on=[
             AWKClean.location_id,
             AWKClean.establishment_id,
             AWKClean.ascwds_worker_import_date,
-            SLVCols.published_job_role_label,
+            IndCQC.published_job_role_label,
         ],
         how="left",
     )
@@ -247,10 +217,6 @@ if __name__ == "__main__":
             "Source s3 directory for prepared ascwds worker employment status data",
         ),
         (
-            "--employment_status_rates_source",
-            "Source s3 directory for employment status rates data",
-        ),
-        (
             "--cleaned_cqc_pir_source",
             "Source s3 directory for cleaned CQC PIR data",
         ),
@@ -271,7 +237,6 @@ if __name__ == "__main__":
         metadata_source=args.metadata_source,
         job_role_estimates_source=args.job_role_estimates_source,
         prepared_worker_source=args.prepared_worker_source,
-        employment_status_rates_source=args.employment_status_rates_source,
         cleaned_cqc_pir_source=args.cleaned_cqc_pir_source,
         cleaned_ct_care_home_source=args.cleaned_ct_care_home_source,
         cleaned_ct_non_res_source=args.cleaned_ct_non_res_source,

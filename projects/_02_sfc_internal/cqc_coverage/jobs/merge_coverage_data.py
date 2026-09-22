@@ -7,11 +7,11 @@ from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
 import utils.cleaning_utils as cUtils
+from projects._02_sfc_internal.cqc_coverage.utils import (
+    reconciliation_utils as rUtils,
+)
 from projects._02_sfc_internal.cqc_coverage.utils.lm_engagement_utils import (
     add_columns_for_locality_manager_dashboard,
-)
-from projects._02_sfc_internal.reconciliation.utils import (
-    reconciliation_utils as rUtils,
 )
 from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (

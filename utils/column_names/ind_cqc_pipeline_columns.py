@@ -162,8 +162,8 @@ class IndCqcColumns:
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
     )
-    difference_estimate_filled_posts_and_from_all_job_roles: str = (
-        "difference_estimate_filled_posts_and_from_all_job_roles"
+    difference_between_estimate_filled_posts_and_summed_job_roles: str = (
+        "difference_between_estimate_filled_posts_and_summed_job_roles"
     )
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
@@ -174,21 +174,18 @@ class IndCqcColumns:
     last_dormant_date: str = "last_dormant_date"
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
-    estimate_filled_posts_size_group: str = "estimate_filled_posts_size_group"
-    estimate_filled_posts_from_all_job_roles: str = (
-        "estimate_filled_posts_from_all_job_roles"
+    estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
+    estimate_filled_posts_by_job_role_pre_reallocation: str = (
+        "estimate_filled_posts_by_job_role_pre_reallocation"
     )
+    estimate_filled_posts_by_job_role_unadjusted: str = (
+        "estimate_filled_posts_by_job_role_unadjusted"
+    )
+    estimate_filled_posts_size_group: str = "estimate_filled_posts_size_group"
     estimated_managerial_filled_posts_temp: str = (
         "estimated_managerial_filled_posts_temp"
     )
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
-    estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
-    estimate_filled_posts_by_job_role_manager_adjusted: str = (
-        "estimate_filled_posts_by_job_role_manager_adjusted"
-    )
-    estimate_filled_posts_by_job_role_historically_reallocated: str = (
-        "estimate_filled_posts_by_job_role_historically_reallocated"
-    )
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"
@@ -317,6 +314,7 @@ class IndCqcColumns:
     )
     provider_id: str = CQCLClean.provider_id
     provider_name: str = CQCLClean.provider_name
+    published_job_role_label: str = "published_job_role_label"
     r2: str = "r2"
     registered_manager_count: str = "registered_manager_count"
     registered_manager_names: str = CQCLClean.registered_manager_names
@@ -453,3 +451,53 @@ class ModelRegistryKeys:
     model_params: str = "model_params"
     model_type: str = "model_type"
     version: str = "version"
+
+
+@dataclass
+class EmploymentStatusColumns:
+    employment_status_count: str = "emplstat_count"
+    permanent_count: str = "emplstat_permanent_count"
+    temporary_count: str = "emplstat_temporary_count"
+    bank_or_pool_count: str = "emplstat_bank_or_pool_count"
+    agency_count: str = "emplstat_agency_count"
+    other_count: str = "emplstat_other_count"
+    employee_count: str = "emplstat_employee_count"
+    estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
+    estimated_emp_stat_temp: str = "estimated_emp_stat_temp"
+    estimated_emp_stat_bank_or_pool: str = "estimated_emp_stat_bank_or_pool"
+    estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
+    estimated_emp_stat_other: str = "estimated_emp_stat_other"
+    estimated_employees: str = "estimated_employees"
+
+
+@dataclass
+class StartersLeaversVacanciesColumns:
+    starters: str = "starters"
+    leavers: str = "leavers"
+    vacancies: str = "vacancies"
+    turnover_rate: str = "turnover_rate"
+    starter_rate: str = "starter_rate"
+    vacancy_rate: str = "vacancy_rate"
+    starters_cleaned: str = starters + "_cleaned"
+    leavers_cleaned: str = leavers + "_cleaned"
+    vacancies_cleaned: str = vacancies + "_cleaned"
+    starters_filtering_rule: str = starters + "_filtering_rule"
+    leavers_filtering_rule: str = leavers + "_filtering_rule"
+    vacancies_filtering_rule: str = vacancies + "_filtering_rule"
+    starters_cleaned_dedup: str = starters_cleaned + "_deduplicated"
+    leavers_cleaned_dedup: str = leavers_cleaned + "_deduplicated"
+    vacancies_cleaned_dedup: str = vacancies_cleaned + "_deduplicated"
+    turnover_rate_dedup: str = turnover_rate + "_deduplicated"
+    starter_rate_dedup: str = starter_rate + "_deduplicated"
+    vacancy_rate_dedup: str = vacancy_rate + "_deduplicated"
+
+
+@dataclass
+class EmploymentStatusMagicNumberRateColumns:
+    service: str = "service"
+    weighting_job_role: str = "weighting_job_role"
+    emp_stat_perm: str = "emp_stat_perm"
+    emp_stat_temp: str = "emp_stat_temp"
+    emp_stat_bank_or_pool: str = "emp_stat_bank_or_pool"
+    emp_stat_agency: str = "emp_stat_agency"
+    emp_stat_other: str = "emp_stat_other"

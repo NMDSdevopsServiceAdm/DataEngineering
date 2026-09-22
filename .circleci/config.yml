@@ -496,7 +496,6 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=worker/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=worker/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=workplace_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=worker_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=worker_cleaned/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=data_labels/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=data_labels/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=care_home_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=care_home_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=non_residential_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_capacity_tracker/dataset=non_residential_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=pir_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=pir_cleaned/" --delete
@@ -557,8 +556,8 @@ jobs:
             if [ "$(cat bake/seed-archive-sample 2>/dev/null)" = "false" ]; then
               echo "No archive-related changes detected. Skipping archive sample seed."
             else
-              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2026-09-09/run_number=1/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2026-09-09/run_number=1/" --delete && \
-                aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-09-09/run_number=1/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-09-09/run_number=1/" --delete
+              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2026-09-22/run_number=1/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2026-09-22/run_number=1/" --delete && \
+                aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-09-22/run_number=1/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-09-22/run_number=1/" --delete
             fi
 
   terraform-destroy:
