@@ -1,11 +1,16 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_values.categorical_column_values import EmploymentStatusFilteringRule
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
@@ -17,8 +22,6 @@ def main(
 ) -> None:
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
-
-    Row-count check only for now, ahead of future employment-status cleaning logic.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
@@ -47,7 +50,33 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        ).interrogate()
+        )
+        # complete columns
+        .col_vals_not_null(
+            [
+                EmpStatus.filtering_rule,
+            ]
+        )
+        .col_vals_expr(
+            expr=(
+                (
+                    (
+                        pl.col(EmpStatus.filtering_rule)
+                        != pl.lit(EmploymentStatusFilteringRule.populated)
+                    )
+                    & pl.col(EmpStatus.permanent_count_clean).is_null()
+                )
+                | (
+                    (
+                        pl.col(EmpStatus.filtering_rule)
+                        == pl.lit(EmploymentStatusFilteringRule.populated)
+                    )
+                    & pl.col(EmpStatus.permanent_count_clean).is_not_null()
+                )
+            ),
+            brief=f"{EmpStatus.permanent_count_clean} must be null when {EmpStatus.filtering_rule} value is not 'populated', and non-null when it is 'populated'",
+        )
+        .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 

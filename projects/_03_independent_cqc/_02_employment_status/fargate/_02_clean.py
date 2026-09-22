@@ -1,3 +1,6 @@
+from projects._03_independent_cqc._02_employment_status.fargate.utils import (
+    clean_utils as cUtils,
+)
 from polars_utils import utils
 
 
@@ -8,14 +11,24 @@ def main(
     """
     Cleans the merged employment status data.
 
-    Currently a placeholder pass-through: no employment-status cleaning logic
-    exists yet.
+    Nulls a location's/org's permanent, temporary, bank_or_pool, agency and
+    other employment status counts where too few of its reported staff have a
+    recorded permanent/temporary status to trust the split, recording why in
+    employment_status_filtering_rule. Raw counts are kept untouched.
 
     Args:
         merged_data_source (str): path to the merged data
         cleaned_data_destination (str): destination for cleaned output
     """
     lf = utils.scan_parquet(merged_data_source)
+
+    lf = cUtils.seed_employment_status_clean_columns(lf)
+    lf = cUtils.null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low(
+        lf
+    )
+    lf = cUtils.null_employment_status_counts_where_location_permanent_temporary_ratio_is_too_low(
+        lf
+    )
 
     utils.sink_to_parquet(
         lazy_df=lf,

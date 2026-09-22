@@ -691,6 +691,20 @@ class JobRoleFilteringRule(ColumnValues):
 
 
 @dataclass
+class EmploymentStatusFilteringRule(ColumnValues):
+    """The possible reasons for filtering employment status data"""
+
+    populated: str = "populated"
+    missing_data: str = "missing_data"
+    org_level_low_permanent_temporary_ratio: str = (
+        "org_level_low_permanent_temporary_ratio"
+    )
+    location_level_low_permanent_temporary_ratio: str = (
+        "location_level_low_permanent_temporary_ratio"
+    )
+
+
+@dataclass
 class AscwdsJobRoleRatiosMergedSource(ColumnValues):
     """The possible values of the ASCWDS job role ratios merged source column in the independent CQC estimates pipeline"""
 

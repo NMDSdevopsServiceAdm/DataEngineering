@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Added period-on-period and cumulative percentage change columns for capacity tracker total employed to the publication clean job, calculated per region, job role and service type over each of the long, medium and short term assessment windows.
 - Added rollup rows to the publication clean job for "England", "All CQC locations", "All CQC care homes" and "All job roles", so the Tableau and Excel downloads can offer them as top-level filter options.
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
+- Added a data-quality cleaning step for the EmpStat clean job that nulls a location's or org's permanent, temporary, bank-or-pool, agency and other employment status counts where too few of its reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
 
 
 ### Changed
