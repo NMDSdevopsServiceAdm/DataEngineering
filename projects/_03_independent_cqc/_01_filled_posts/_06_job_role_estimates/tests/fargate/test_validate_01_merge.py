@@ -8,9 +8,9 @@ import polars as pl
 import projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate.validate_01_merge as job
 from polars_utils.column_types import CategoricalColumnTypes
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
-    MainJobRoleLabels,
     PrimaryServiceType,
 )
 

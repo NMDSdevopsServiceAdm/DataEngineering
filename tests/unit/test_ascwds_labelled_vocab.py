@@ -9,10 +9,8 @@ from utils.column_values.ascwds_labelled_vocab import (
     MAIN_JOB_ROLE,
     MAIN_SERVICE_ID_CODE_TO_LABEL,
     PARENT_PERMISSION_CODE_TO_LABEL,
+    REGION_ID_CODE_TO_LABEL,
     REGISTRATION_TYPE_CODE_TO_LABEL,
-    PairedVocab,
-)
-from utils.column_values.categorical_column_values import (
     ColumnValues,
     EmploymentStatusID,
     EmploymentStatusLabels,
@@ -21,7 +19,10 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleID,
     MainJobRoleLabels,
     MainServiceID,
+    PairedVocab,
     ParentPermission,
+    PublishedJobRoleLabels,
+    RegionID,
     RegistrationType,
 )
 
@@ -66,6 +67,29 @@ class TestPairedVocabValidation:
         PairedVocab(MainJobRoleID, MainJobRoleLabels)
 
 
+class TestPublishedJobRoleLabels:
+    def test_pins_the_published_job_role_label_values(self):
+        test_object = PublishedJobRoleLabels("test_column")
+        expected_values = [
+            "Senior management",
+            "Registered manager",
+            "Social worker",
+            "Senior care worker",
+            "Care worker",
+            "Community support and outreach work",
+            "Occupational therapist",
+            "Registered nurse",
+            "Allied health professional",
+            "Deputy manager",
+            "Support worker",
+            "Other managers",
+            "Other regulated professions",
+            "Other direct care",
+            "Other",
+        ]
+        assert test_object.categorical_values == expected_values
+
+
 @dataclass
 class WorkplaceCodeToLabelDictTestCase:
     id: str
@@ -76,6 +100,10 @@ class WorkplaceCodeToLabelDictTestCase:
     # to catch a transposed code<->label mistake in the transcription that
     # set-membership and count checks alone wouldn't catch.
     expected_pairs: dict[str, str]
+    # region_id's ColumnValues class holds codes, not labels (its raw code
+    # survives cleaning - see ascwds_labelled_vocab's module docstring), so
+    # its membership check is against code_to_label's keys, not its values.
+    column_values_holds: str = "labels"
 
     def as_pytest_param(self):
         return pytest.param(self, id=self.id)
@@ -153,6 +181,19 @@ workplace_dict_test_cases = [
             "2": RegistrationType.cqc_regulated,
         },
     ),
+    WorkplaceCodeToLabelDictTestCase(
+        id="region_id",
+        code_to_label=REGION_ID_CODE_TO_LABEL,
+        column_values_class=RegionID,
+        expected_code_count=9,
+        expected_pairs={
+            "1": "I - Eastern",
+            "2": "C - East Midlands",
+            "3": "G - London",
+            "9": "J - Yorkshire Humber",
+        },
+        column_values_holds="codes",
+    ),
 ]
 
 
@@ -163,7 +204,12 @@ class TestWorkplaceCodeToLabelDicts:
     def test_every_value_is_a_member_of_the_column_values_vocab(self, case):
         test_object = case.column_values_class("test_column")
 
-        assert set(case.code_to_label.values()) <= set(test_object.categorical_values)
+        vocab_side = (
+            case.code_to_label.keys()
+            if case.column_values_holds == "codes"
+            else case.code_to_label.values()
+        )
+        assert set(vocab_side) <= set(test_object.categorical_values)
 
     @pytest.mark.parametrize(
         "case", [c.as_pytest_param() for c in workplace_dict_test_cases]
