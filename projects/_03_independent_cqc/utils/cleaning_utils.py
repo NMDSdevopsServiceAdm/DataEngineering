@@ -2,9 +2,6 @@ import polars as pl
 
 from polars_utils.cleaning_utils import remove_repeated_values_over_time
 
-_COMPOSITE_DEDUP_STRUCT_COLUMN = "_composite_dedup_struct"
-_PERCENTAGE_SHARE_SUM_COLUMN = "_percentage_share_sum"
-
 
 def remove_repeated_values_over_time_as_group(
     lf: pl.LazyFrame,
@@ -39,25 +36,27 @@ def remove_repeated_values_over_time_as_group(
         pl.LazyFrame: The input LazyFrame with one new "<original>_dedup" column
             per input column.
     """
+    composite_dedup_struct_column = "_composite_dedup_struct"
+
     lf = lf.with_columns(
-        pl.struct(columns_to_clean).alias(_COMPOSITE_DEDUP_STRUCT_COLUMN)
+        pl.struct(columns_to_clean).alias(composite_dedup_struct_column)
     )
 
     lf = remove_repeated_values_over_time(
         lf,
-        columns_to_clean=[_COMPOSITE_DEDUP_STRUCT_COLUMN],
+        columns_to_clean=[composite_dedup_struct_column],
         partition_by_columns=partition_by_columns,
         date_column=date_column,
     )
 
-    composite_dedup_column = f"{_COMPOSITE_DEDUP_STRUCT_COLUMN}_deduplicated"
+    composite_dedup_column = f"{composite_dedup_struct_column}_deduplicated"
 
     lf = lf.with_columns(
         [
             pl.col(composite_dedup_column).struct.field(column).alias(f"{column}_dedup")
             for column in columns_to_clean
         ]
-    ).drop(_COMPOSITE_DEDUP_STRUCT_COLUMN, composite_dedup_column)
+    ).drop(composite_dedup_struct_column, composite_dedup_column)
 
     return lf
 
@@ -93,12 +92,14 @@ def percentage_share_horizontal(
         pl.LazyFrame: The input LazyFrame with one new Float32 percentage column
             per pair in `columns`/`output_columns`.
     """
-    lf = lf.with_columns(pl.sum_horizontal(columns).alias(_PERCENTAGE_SHARE_SUM_COLUMN))
+    percentage_share_sum_column = "_percentage_share_sum"
+
+    lf = lf.with_columns(pl.sum_horizontal(columns).alias(percentage_share_sum_column))
 
     any_column_is_null = pl.any_horizontal([pl.col(c).is_null() for c in columns])
     has_valid_denominator = (
-        pl.col(_PERCENTAGE_SHARE_SUM_COLUMN).is_not_null()
-        & (pl.col(_PERCENTAGE_SHARE_SUM_COLUMN) != 0)
+        pl.col(percentage_share_sum_column).is_not_null()
+        & (pl.col(percentage_share_sum_column) != 0)
         & ~any_column_is_null
     )
 
@@ -106,13 +107,13 @@ def percentage_share_horizontal(
         pl.when(has_valid_denominator)
         .then(
             pl.col(column).cast(pl.Float32)
-            / pl.col(_PERCENTAGE_SHARE_SUM_COLUMN).cast(pl.Float32)
+            / pl.col(percentage_share_sum_column).cast(pl.Float32)
         )
         .otherwise(pl.lit(None).cast(pl.Float32))
         .alias(output_column)
         for column, output_column in zip(columns, output_columns)
     ]
 
-    lf = lf.with_columns(percentage_exprs).drop(_PERCENTAGE_SHARE_SUM_COLUMN)
+    lf = lf.with_columns(percentage_exprs).drop(percentage_share_sum_column)
 
     return lf
