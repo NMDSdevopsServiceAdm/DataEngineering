@@ -9,27 +9,21 @@ class TestMain:
     METADATA_SOURCE = "some/source"
     JOB_ROLE_ESTIMATES_SOURCE = "another/source"
     PREPARED_WORKER_SOURCE = "worker/source"
-    EMPLOYMENT_STATUS_RATES_SOURCE = "employment/status/rates/source"
     MERGED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
-    @patch(f"{PATCH_PATH}.pl.scan_csv")
     @patch(f"{PATCH_PATH}.mUtils.collapse_job_role_estimates_to_published_labels")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         collapse_job_role_estimates_to_published_labels_mock: Mock,
-        scan_csv_mock: Mock,
-        apply_employment_status_magic_numbers_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
             self.METADATA_SOURCE,
             self.JOB_ROLE_ESTIMATES_SOURCE,
             self.PREPARED_WORKER_SOURCE,
-            self.EMPLOYMENT_STATUS_RATES_SOURCE,
             self.MERGED_DATA_DESTINATION,
         )
 
@@ -47,12 +41,6 @@ class TestMain:
         )
 
         collapse_job_role_estimates_to_published_labels_mock.assert_called_once()
-
-        apply_employment_status_magic_numbers_mock.assert_called_once()
-
-        scan_csv_mock.assert_called_once_with(
-            self.EMPLOYMENT_STATUS_RATES_SOURCE, schema=ANY
-        )
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
