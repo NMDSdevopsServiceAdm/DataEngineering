@@ -6,11 +6,11 @@ import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.employment_status_rates_columns import (
-    EmploymentStatusRatesColumns as EmpStatRates,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusMagicNumberRateColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
@@ -566,6 +566,9 @@ class TestMergeUtilsData:
         ),
     ]
 
+
+@dataclass
+class TestMagicNumberUtilsData:
     apply_employment_status_magic_numbers_test_cases = [
         ApplyEmploymentStatusMagicNumbersTestCase(
             id="splits_filled_post_metric_by_employment_status_rates",
