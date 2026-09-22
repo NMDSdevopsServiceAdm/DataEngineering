@@ -280,7 +280,7 @@ class ApplyEmploymentStatusMagicNumbersTestCase:
     expected_data: dict[str, Any]
 
 
-METRIC = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+METRIC = IndCQC.estimate_filled_posts_by_job_role
 
 
 @dataclass

@@ -41,7 +41,7 @@ job_role_estimates_columns = [
     IndCQC.primary_service_type,
     IndCQC.id_per_locationid_import_date,
     IndCQC.main_job_role_clean_labelled,
-    IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
+    IndCQC.estimate_filled_posts_by_job_role,
     IndCQC.main_job_group_labelled,
 ]
 
