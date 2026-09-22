@@ -64,7 +64,7 @@ def apply_employment_status_magic_numbers(
             estimated-filled-post-by-employment-status
             columns and an estimated_employees column.
     """
-    metric = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+    metric = IndCQC.estimate_filled_posts_by_job_role
 
     mapped_rates_lf = employment_status_rates_lf.select(
         pl.col(EmpStatRates.service)
