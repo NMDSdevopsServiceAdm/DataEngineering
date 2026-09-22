@@ -10,13 +10,12 @@ from utils.column_names.employment_status_rates_columns import (
     EmploymentStatusRatesColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 worker_columns = [
     AWKClean.location_id,
     AWKClean.establishment_id,
     AWKClean.ascwds_worker_import_date,
-    SLVCols.published_job_role_label,
+    IndCQC.published_job_role_label,
     *pWorkerUtils.EMPLOYMENT_STATUS_LABEL_TO_COLUMN.values(),
 ]
 
@@ -124,13 +123,13 @@ def main(
             IndCQC.location_id,
             IndCQC.establishment_id,
             IndCQC.ascwds_workplace_import_date,
-            SLVCols.published_job_role_label,
+            IndCQC.published_job_role_label,
         ],
         right_on=[
             AWKClean.location_id,
             AWKClean.establishment_id,
             AWKClean.ascwds_worker_import_date,
-            SLVCols.published_job_role_label,
+            IndCQC.published_job_role_label,
         ],
         how="left",
     )

@@ -5,10 +5,10 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.slv_job_role_columns import (
-    SLVEmploymentStatusColumns as SLVEmpStatus,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
 )
-from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerCleanedCategoricalValues as CatVals,
 )
@@ -17,7 +17,7 @@ GROUP_COLUMNS = [
     AWKClean.location_id,
     AWKClean.establishment_id,
     AWKClean.ascwds_worker_import_date,
-    SLVCols.published_job_role_label,
+    IndCQC.published_job_role_label,
     AWKClean.employment_status_clean_labelled,
 ]
 
@@ -32,7 +32,7 @@ RESHAPED_GROUP_COLUMNS = [
 RAW_RESHAPED_GROUP_COLUMNS = [
     column
     for column in RESHAPED_GROUP_COLUMNS
-    if column != SLVCols.published_job_role_label
+    if column != IndCQC.published_job_role_label
 ] + [AWKClean.main_job_role_clean_labelled]
 
 EMPLOYMENT_STATUS_LABEL_TO_COLUMN = {
@@ -63,7 +63,7 @@ def collapse_job_roles_to_published_labels(worker_lf: pl.LazyFrame) -> pl.LazyFr
         .cast(pl.String)
         .replace_strict(mUtils.JOB_ROLE_LABEL_TO_PUBLISHED_LABEL)
         .cast(CatColType.PublishedJobRoleLabelCatType)
-        .alias(SLVCols.published_job_role_label)
+        .alias(IndCQC.published_job_role_label)
     )
 
 
@@ -83,7 +83,7 @@ def aggregate_employment_status_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
             emplstat_count column counting workers in that group.
     """
     return worker_lf.group_by(GROUP_COLUMNS).agg(
-        pl.len().alias(SLVEmpStatus.employment_status_count)
+        pl.len().alias(EmpStatus.employment_status_count)
     )
 
 
@@ -113,7 +113,7 @@ def reshape_employment_status_data(
             on=AWKClean.employment_status_clean_labelled,
             on_columns=list(EMPLOYMENT_STATUS_LABEL_TO_COLUMN.keys()),
             index=RESHAPED_GROUP_COLUMNS,
-            values=SLVEmpStatus.employment_status_count,
+            values=EmpStatus.employment_status_count,
             aggregate_function="sum",
         )
         .rename(EMPLOYMENT_STATUS_LABEL_TO_COLUMN)
