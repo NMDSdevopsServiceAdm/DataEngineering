@@ -46,6 +46,26 @@ class TestHasContinuousDataSinceDate:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestFormatLargeNumber:
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.format_large_number_test_cases],
+    )
+    def test_formats_a_number_for_display(self, case):
+        expected_schema = pl.Schema(
+            [(case.column_name, pl.Float32()), (case.column_alias, pl.String())]
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+
+        test_lf = expected_lf.drop(case.column_alias)
+
+        returned_lf = test_lf.with_columns(
+            job.format_large_number(case.column_name, case.column_alias)
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestAddDispersionFilter:
     dispersion_filter_schema = pl.Schema(
         [

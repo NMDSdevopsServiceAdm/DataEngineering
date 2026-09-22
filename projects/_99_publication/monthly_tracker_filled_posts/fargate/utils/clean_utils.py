@@ -57,6 +57,53 @@ def has_continuous_data_since_date(
     ).alias(column_alias)
 
 
+def format_large_number(column_name: str, column_alias: str) -> pl.Expr:
+    """
+    Builds a polars expression formatting a number for display.
+
+    Values above 1,000,000 are abbreviated to millions with three decimal
+    places and an "m" suffix (e.g. 1175000 -> "1.175m"). Values at or below
+    1,000,000 keep their full value with comma thousands separators (e.g.
+    800000 -> "800,000"). Both branches round to the nearest whole number
+    first, since fractional posts aren't meaningful for display.
+
+    Args:
+        column_name (str): the numeric column to format.
+        column_alias (str): name to alias the resulting column to.
+
+    Returns:
+        pl.Expr: string expression with the formatted value.
+    """
+    thousandths_of_millions = (
+        (pl.col(column_name) / 1_000_000 * 1000).round(0).cast(pl.Int64)
+    )
+    millions_format = (
+        (thousandths_of_millions // 1000).cast(pl.Utf8)
+        + "."
+        + (thousandths_of_millions % 1000).cast(pl.Utf8).str.zfill(3)
+        + "m"
+    )
+
+    # Groups every 3 digits from the right (via a reverse/group/reverse round trip,
+    # since polars' regex engine doesn't support the lookahead a single-pass
+    # left-to-right version would need), then drops the comma this leaves
+    # trailing whenever the digit count is itself a multiple of 3.
+    rounded_whole = pl.col(column_name).round(0).cast(pl.Int64).cast(pl.Utf8)
+    comma_format = (
+        rounded_whole.str.reverse()
+        .str.replace_all(r"(\d{3})", r"$1,")
+        .str.strip_chars_end(",")
+        .str.reverse()
+    )
+
+    return (
+        pl.when(pl.col(column_name) > 1_000_000)
+        .then(millions_format)
+        .otherwise(comma_format)
+        .alias(column_alias)
+    )
+
+
 def add_dispersion_filter(
     lazy_df: pl.LazyFrame,
     column_names: list[str],

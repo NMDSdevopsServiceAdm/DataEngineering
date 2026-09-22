@@ -977,3 +977,60 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
         ],
     ),
 ]
+
+
+@dataclass
+class FormatLargeNumberTestCase:
+    id: str
+    column_name: str
+    column_alias: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+format_large_number_test_cases = [
+    FormatLargeNumberTestCase(
+        id="value_under_a_thousand_has_no_separator",
+        column_name=Pub.publication_filled_posts,
+        column_alias=Pub.publication_filled_posts_formatted,
+        expected_data=[(500.0, "500")],
+    ),
+    FormatLargeNumberTestCase(
+        id="value_in_the_thousands_gets_one_comma",
+        column_name=Pub.publication_filled_posts,
+        column_alias=Pub.publication_filled_posts_formatted,
+        expected_data=[(800000.0, "800,000")],
+    ),
+    FormatLargeNumberTestCase(
+        id="fractional_value_below_the_threshold_rounds_to_the_nearest_whole_number",
+        column_name=Pub.publication_filled_posts,
+        column_alias=Pub.publication_filled_posts_formatted,
+        expected_data=[(1234.6, "1,235")],
+    ),
+    FormatLargeNumberTestCase(
+        id="value_exactly_one_million_stays_comma_formatted",
+        column_name=Pub.publication_filled_posts,
+        column_alias=Pub.publication_filled_posts_formatted,
+        expected_data=[(1000000.0, "1,000,000")],
+    ),
+    FormatLargeNumberTestCase(
+        id="value_just_above_one_million_is_abbreviated_to_millions",
+        column_name=Pub.publication_filled_posts,
+        column_alias=Pub.publication_filled_posts_formatted,
+        expected_data=[(1175000.0, "1.175m")],
+    ),
+    FormatLargeNumberTestCase(
+        id="whole_millions_value_still_shows_three_decimals",
+        column_name=Pub.publication_filled_posts,
+        column_alias=Pub.publication_filled_posts_formatted,
+        expected_data=[(2000000.0, "2.000m")],
+    ),
+    FormatLargeNumberTestCase(
+        id="honours_the_column_name_and_alias_arguments",
+        column_name=Pub.assessment_filled_posts_long_term,
+        column_alias=Pub.assessment_filled_posts_long_term_formatted,
+        expected_data=[(3500000.0, "3.500m")],
+    ),
+]

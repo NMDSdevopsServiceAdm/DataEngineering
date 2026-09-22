@@ -16,6 +16,7 @@ TEST_DESTINATION = "some/other/directory"
 
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.clean_utils.format_large_number")
     @patch(
         f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
     )
@@ -38,6 +39,7 @@ class TestMain:
         add_rows_for_publication_groups_mock: Mock,
         calc_perc_change_between_rows_mock: Mock,
         calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
+        format_large_number_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
@@ -63,7 +65,10 @@ class TestMain:
             )
         )
         aggregate_to_publication_rows_mock.return_value = pl.LazyFrame(
-            {Pub.publication_filled_posts: [42.0]}
+            {
+                Pub.publication_filled_posts: [42.0],
+                IndCQC.cqc_location_import_date: [date(2026, 4, 1)],
+            }
         )
         add_rows_for_publication_groups_mock.return_value = (
             aggregate_to_publication_rows_mock.return_value
@@ -78,6 +83,9 @@ class TestMain:
                 None, dtype=pl.Float32
             ).alias(column_alias)
         )
+        format_large_number_mock.side_effect = lambda column_name, column_alias: pl.lit(
+            "42"
+        ).alias(column_alias)
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
 
@@ -219,6 +227,27 @@ class TestMain:
             ]
         )
 
+        format_large_number_mock.assert_has_calls(
+            [
+                call(
+                    Pub.publication_filled_posts,
+                    Pub.publication_filled_posts_formatted,
+                ),
+                call(
+                    Pub.assessment_filled_posts_long_term,
+                    Pub.assessment_filled_posts_long_term_formatted,
+                ),
+                call(
+                    Pub.assessment_filled_posts_medium_term,
+                    Pub.assessment_filled_posts_medium_term_formatted,
+                ),
+                call(
+                    Pub.assessment_filled_posts_short_term,
+                    Pub.assessment_filled_posts_short_term_formatted,
+                ),
+            ]
+        )
+
         sink_to_parquet_mock.assert_called_once()
         sink_call_kwargs = sink_to_parquet_mock.call_args.kwargs
         assert sink_call_kwargs["output_path"] == TEST_DESTINATION
@@ -241,10 +270,21 @@ class TestMain:
             pl.lit(None, dtype=pl.Float32).alias(
                 Pub.assessment_ct_cumulative_perc_change_short_term
             ),
+            pl.lit("42").alias(Pub.publication_filled_posts_formatted),
+            pl.lit("42").alias(Pub.assessment_filled_posts_long_term_formatted),
+            pl.lit("42").alias(Pub.assessment_filled_posts_medium_term_formatted),
+            pl.lit("42").alias(Pub.assessment_filled_posts_short_term_formatted),
+            pl.col(IndCQC.cqc_location_import_date)
+            .dt.strftime("%b %Y")
+            .alias(Pub.cqc_location_import_date_abbreviated),
+            pl.col(IndCQC.cqc_location_import_date)
+            .dt.strftime("%B %Y")
+            .alias(Pub.cqc_location_import_date_full),
         )
         assert_frame_equal(sink_call_kwargs["lazy_df"], expected_sink_lf)
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.clean_utils.format_large_number")
     @patch(
         f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
     )
@@ -267,6 +307,7 @@ class TestMain:
         add_rows_for_publication_groups_mock: Mock,
         calc_perc_change_between_rows_mock: Mock,
         calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
+        format_large_number_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
@@ -290,7 +331,10 @@ class TestMain:
             )
         )
         aggregate_to_publication_rows_mock.return_value = pl.LazyFrame(
-            {Pub.publication_filled_posts: [42.0]}
+            {
+                Pub.publication_filled_posts: [42.0],
+                IndCQC.cqc_location_import_date: [date(2033, 4, 1)],
+            }
         )
         add_rows_for_publication_groups_mock.return_value = (
             aggregate_to_publication_rows_mock.return_value
@@ -305,6 +349,9 @@ class TestMain:
                 None, dtype=pl.Float32
             ).alias(column_alias)
         )
+        format_large_number_mock.side_effect = lambda column_name, column_alias: pl.lit(
+            "42"
+        ).alias(column_alias)
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
 
