@@ -15,7 +15,7 @@ COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
 ]
 
-METRIC = IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
+METRIC = IndCqcColumns.estimate_filled_posts_by_job_role
 
 EMPLOYMENT_STATUS_SPLIT_COLUMNS = [
     EmpStatus.estimated_emp_stat_perm,

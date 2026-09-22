@@ -12,7 +12,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
-METRIC = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+METRIC = IndCQC.estimate_filled_posts_by_job_role
 
 JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES = {
     IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
