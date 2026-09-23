@@ -66,7 +66,10 @@
                               "Command": [
                                 "validate_archive_job_role_estimates.py",
                                 "--bucket_name", "${dataset_bucket_name}",
+                                "--dataset", "estimates",
                                 "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_04_estimate/",
+                                "--other_output_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/",
                                 "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_validation/"
                               ]
                             }
@@ -101,7 +104,10 @@
                               "Command": [
                                 "validate_archive_job_role_estimates.py",
                                 "--bucket_name", "${dataset_bucket_name}",
+                                "--dataset", "metadata",
                                 "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_01_merge_metadata/",
+                                "--other_output_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/",
                                 "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata_validation/"
                               ]
                             }

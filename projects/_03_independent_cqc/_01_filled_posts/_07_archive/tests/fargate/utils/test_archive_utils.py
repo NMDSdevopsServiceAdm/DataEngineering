@@ -280,3 +280,30 @@ class TestGetRunNumber:
                     "s3://test-bucket/domain=test/dataset=metadata/",
                 ]
             )
+
+
+class TestMakeRunNumbersAgreeValidator:
+    @patch(f"{PATCH_PATH}.get_run_number")
+    def test_returns_true_when_run_numbers_agree(self, mock_get_run_number: Mock):
+        mock_get_run_number.return_value = 3
+
+        validator = job.make_run_numbers_agree_validator(
+            ["s3://bucket/estimates/", "s3://bucket/metadata/"]
+        )
+        result = validator(pl.DataFrame({"dummy": [1]}))
+
+        assert result is True
+        mock_get_run_number.assert_called_once_with(
+            ["s3://bucket/estimates/", "s3://bucket/metadata/"]
+        )
+
+    @patch(f"{PATCH_PATH}.get_run_number")
+    def test_returns_false_when_run_numbers_disagree(self, mock_get_run_number: Mock):
+        mock_get_run_number.side_effect = ValueError("run_number has diverged")
+
+        validator = job.make_run_numbers_agree_validator(
+            ["s3://bucket/estimates/", "s3://bucket/metadata/"]
+        )
+        result = validator(pl.DataFrame({"dummy": [1]}))
+
+        assert result is False
