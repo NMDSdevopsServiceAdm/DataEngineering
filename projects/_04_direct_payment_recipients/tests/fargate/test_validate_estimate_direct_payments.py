@@ -1,5 +1,4 @@
 import json
-import unittest
 from dataclasses import dataclass
 from unittest.mock import Mock, call, patch
 
@@ -38,27 +37,23 @@ class Data:
     estimates_rows = merged_rows
 
 
-class ValidateEstimateDirectPaymentsTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.source_df = pl.DataFrame(
-            data=Data.estimates_rows,
-            schema=Schemas.estimates_schema,
-            orient="row",
-        )
-        self.compare_df = pl.DataFrame(
-            data=Data.merged_rows,
-            schema=Schemas.merged_schema,
-            orient="row",
-        )
+class TestMain:
+    source_df = pl.DataFrame(
+        data=Data.estimates_rows,
+        schema=Schemas.estimates_schema,
+        orient="row",
+    )
+    compare_df = pl.DataFrame(
+        data=Data.merged_rows,
+        schema=Schemas.merged_schema,
+        orient="row",
+    )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_runs(
-        self,
-        mock_read_parquet: Mock,
-        mock_write_reports: Mock,
-    ):
+    def test_validation_runs(self, mock_read_parquet: Mock, mock_write_reports: Mock):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+
         job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
 
         mock_read_parquet.assert_has_calls(
@@ -72,20 +67,16 @@ class ValidateEstimateDirectPaymentsTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_report_includes_expected_validations(
-        self,
-        mock_read_parquet: Mock,
-        mock_write_reports: Mock,
+        self, mock_read_parquet: Mock, mock_write_reports: Mock
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+
         job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
-
-        # Extract all assertion types present in the report
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
-        # Check that key validations were run
         expected_assertions = {
             "row_count_match",
             "col_vals_not_null",
@@ -93,10 +84,7 @@ class ValidateEstimateDirectPaymentsTests(unittest.TestCase):
             "rows_distinct",
             "specially",
         }
-
         for assertion in expected_assertions:
-            self.assertIn(
-                assertion,
-                assertion_types_present,
-                f"{assertion} not found in validation report",
-            )
+            assert (
+                assertion in assertion_types_present
+            ), f"{assertion} not found in validation report"

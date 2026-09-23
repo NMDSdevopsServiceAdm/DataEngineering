@@ -49,7 +49,7 @@ def main(
         # distinct rows
         .rows_distinct(
             [DP.LA_AREA, DP.YEAR_AS_INTEGER],
-            brief=f"Rows are distinct on {DP.LA_AREA} and {DP.YEAR_AS_INTEGER}",
+            brief=f"Duplicate rows found for {DP.LA_AREA} and {DP.YEAR_AS_INTEGER}",
         )
         # complete columns
         .col_vals_not_null(

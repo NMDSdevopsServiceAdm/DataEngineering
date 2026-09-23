@@ -21,51 +21,29 @@ class ModelExtrapolationTestCase:
         return pytest.param(self.data, id=self.id)
 
 
+# Rows are (la_area, year, ...), used by the sort keys below to reorder the same data.
+expected_rows = [
+    ("area_1", 2018, None, 280.0, 2019, 2021, 0.35),
+    ("area_1", 2019, 0.375, 300.0, 2019, 2021, None),
+    ("area_1", 2020, None, 300.0, 2019, 2021, None),
+    ("area_1", 2021, 0.3, 320.0, 2019, 2021, None),
+    ("area_1", 2022, None, 340.0, 2019, 2021, 0.31875),
+    ("area_2", 2018, None, 280.0, 2019, 2021, 0.186667),
+    ("area_2", 2019, 0.2, 300.0, 2019, 2021, None),
+    ("area_2", 2020, 0.35, 300.0, 2019, 2021, None),
+    ("area_2", 2021, 0.4, 320.0, 2019, 2021, None),
+    ("area_2", 2022, None, 340.0, 2019, 2021, 0.425),
+]
+
 model_extrapolation_test_cases = [
-    ModelExtrapolationTestCase(
-        id="returns_expected_values",
-        data=[
-            ("area_1", 2018, None, 280.0, 2019, 2021, 0.35),
-            ("area_1", 2019, 0.375, 300.0, 2019, 2021, None),
-            ("area_1", 2020, None, 300.0, 2019, 2021, None),
-            ("area_1", 2021, 0.3, 320.0, 2019, 2021, None),
-            ("area_1", 2022, None, 340.0, 2019, 2021, 0.31875),
-            ("area_2", 2018, None, 280.0, 2019, 2021, 0.186667),
-            ("area_2", 2019, 0.2, 300.0, 2019, 2021, None),
-            ("area_2", 2020, 0.35, 300.0, 2019, 2021, None),
-            ("area_2", 2021, 0.4, 320.0, 2019, 2021, None),
-            ("area_2", 2022, None, 340.0, 2019, 2021, 0.425),
-        ],
-    ),
+    ModelExtrapolationTestCase(id="returns_expected_values", data=expected_rows),
     ModelExtrapolationTestCase(
         id="returns_same_values_when_rows_reversed_within_la_area",
-        data=[
-            ("area_1", 2022, None, 340.0, 2019, 2021, 0.31875),
-            ("area_1", 2021, 0.3, 320.0, 2019, 2021, None),
-            ("area_1", 2020, None, 300.0, 2019, 2021, None),
-            ("area_1", 2019, 0.375, 300.0, 2019, 2021, None),
-            ("area_1", 2018, None, 280.0, 2019, 2021, 0.35),
-            ("area_2", 2022, None, 340.0, 2019, 2021, 0.425),
-            ("area_2", 2021, 0.4, 320.0, 2019, 2021, None),
-            ("area_2", 2020, 0.35, 300.0, 2019, 2021, None),
-            ("area_2", 2019, 0.2, 300.0, 2019, 2021, None),
-            ("area_2", 2018, None, 280.0, 2019, 2021, 0.186667),
-        ],
+        data=sorted(expected_rows, key=lambda row: (row[0], -row[1])),
     ),
     ModelExtrapolationTestCase(
         id="returns_same_values_when_la_areas_interleaved",
-        data=[
-            ("area_2", 2020, 0.35, 300.0, 2019, 2021, None),
-            ("area_1", 2022, None, 340.0, 2019, 2021, 0.31875),
-            ("area_2", 2018, None, 280.0, 2019, 2021, 0.186667),
-            ("area_1", 2019, 0.375, 300.0, 2019, 2021, None),
-            ("area_2", 2022, None, 340.0, 2019, 2021, 0.425),
-            ("area_1", 2020, None, 300.0, 2019, 2021, None),
-            ("area_2", 2019, 0.2, 300.0, 2019, 2021, None),
-            ("area_1", 2018, None, 280.0, 2019, 2021, 0.35),
-            ("area_2", 2021, 0.4, 320.0, 2019, 2021, None),
-            ("area_1", 2021, 0.3, 320.0, 2019, 2021, None),
-        ],
+        data=sorted(expected_rows, key=lambda row: (row[1], row[0])),
     ),
 ]
 
