@@ -25,14 +25,12 @@ class TestMain:
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
-    @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         date_mock: Mock,
-        reduced_data_filter_expr_mock: Mock,
         has_continuous_data_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
         aggregate_to_publication_rows_mock: Mock,
@@ -53,7 +51,6 @@ class TestMain:
         )
         date_mock.today.return_value = date(2026, 9, 1)
         date_mock.side_effect = lambda *args, **kwargs: date(*args, **kwargs)
-        reduced_data_filter_expr_mock.return_value = pl.lit(True)
         has_continuous_data_since_date_mock.side_effect = (
             lambda column_name, from_date, column_alias: pl.lit(True).alias(
                 column_alias
@@ -90,10 +87,6 @@ class TestMain:
         job.main(TEST_SOURCE, TEST_DESTINATION)
 
         scan_parquet_mock.assert_called_once_with(TEST_SOURCE)
-
-        reduced_data_filter_expr_mock.assert_called_once_with(
-            cutoff_date=date(2020, 4, 1),
-        )
 
         has_continuous_data_since_date_mock.assert_has_calls(
             [
@@ -289,14 +282,12 @@ class TestMain:
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
-    @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_uses_retention_cutoff_date_for_long_term_once_it_is_later_than_the_earliest_ct_data_date(
         self,
         scan_parquet_mock: Mock,
         date_mock: Mock,
-        reduced_data_filter_expr_mock: Mock,
         has_continuous_data_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
         aggregate_to_publication_rows_mock: Mock,
@@ -308,6 +299,7 @@ class TestMain:
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
             {
+                IndCQC.cqc_location_import_date: [date(2032, 4, 1)],
                 IndCQC.care_home_status_count: [1],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None],
@@ -315,7 +307,6 @@ class TestMain:
         )
         date_mock.today.return_value = date(2033, 9, 1)
         date_mock.side_effect = lambda *args, **kwargs: date(*args, **kwargs)
-        reduced_data_filter_expr_mock.return_value = pl.lit(True)
         has_continuous_data_since_date_mock.side_effect = (
             lambda column_name, from_date, column_alias: pl.lit(True).alias(
                 column_alias
@@ -351,9 +342,6 @@ class TestMain:
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
 
-        reduced_data_filter_expr_mock.assert_called_once_with(
-            cutoff_date=date(2027, 4, 1),
-        )
         has_continuous_data_since_date_mock.assert_any_call(
             Pub.ct_total_employed_imputed,
             date(2027, 4, 1),

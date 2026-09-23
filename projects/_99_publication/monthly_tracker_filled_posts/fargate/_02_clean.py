@@ -3,12 +3,13 @@ from datetime import date
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.filtering_utils import reduced_data_filter_expr
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     clean_utils,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+
+MONTHLY_DATA_FROM_DATE = date(2015, 1, 1)
 
 
 def main(
@@ -22,14 +23,15 @@ def main(
         merge_data_source (str): source s3 directory for merged data
         clean_destination (str): destination s3 directory for the cleaned data
     """
-    merged_lf = utils.scan_parquet(merge_data_source)
+    cleaned_lf = utils.scan_parquet(merge_data_source).filter(
+        pl.col(IndCQC.cqc_location_import_date) >= MONTHLY_DATA_FROM_DATE
+    )
 
-    # Publication policy: full retention for 2 financial years, quarterly
-    # sampling further back, nothing before 6 financial years ago.
+    # cutoff_date/fy_year compute the long/medium/short term assessment window
+    # boundaries below - unrelated to the retention filter above.
     today = date.today()
     fy_year = today.year if today.month >= 4 else today.year - 1
     cutoff_date = date(fy_year - 6, 4, 1)
-    cleaned_lf = merged_lf.filter(reduced_data_filter_expr(cutoff_date=cutoff_date))
 
     cleaned_lf = cleaned_lf.with_columns(
         (pl.col(IndCQC.care_home_status_count) == 1).alias(Pub.consistent_service)
