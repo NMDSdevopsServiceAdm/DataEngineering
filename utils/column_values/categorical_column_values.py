@@ -567,6 +567,7 @@ class CQCRatingsValues(ColumnValues):
     good: str = "Good"
     requires_improvement: str = "Requires improvement"
     inadequate: str = "Inadequate"
+    not_yet_rated: str = "Not yet rated"
 
 
 @dataclass
@@ -841,3 +842,12 @@ class RegistrationType(ColumnValues):
     not_regulated: str = "Not regulated"
     ofsted: str = "Ofsted"
     cqc_regulated: str = "CQC regulated"
+
+
+@dataclass
+class ImputationRowKind(ColumnValues):
+    """The possible values of the imputation row kind column when modelling percentage shares"""
+
+    known: str = "known"
+    interpolated: str = "interpolated"
+    carried: str = "carried"
