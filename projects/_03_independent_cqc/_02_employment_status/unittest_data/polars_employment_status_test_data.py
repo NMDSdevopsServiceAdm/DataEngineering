@@ -709,7 +709,7 @@ class CleanUtilsTestCase:
 
 @dataclass
 class TestCleanUtilsData:
-    null_employment_status_counts_where_location_permanent_temporary_ratio_is_too_low_test_cases = [
+    null_counts_for_low_location_ratio_test_cases = [
         CleanUtilsTestCase(
             id="sums_permanent_and_temporary_across_job_roles_before_comparing_to_location_staff",
             input_data={
@@ -820,7 +820,7 @@ class TestCleanUtilsData:
         ),
     ]
 
-    null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low_test_cases = [
+    null_counts_for_low_org_ratio_test_cases = [
         CleanUtilsTestCase(
             id="nulls_org_at_boundary_ratio_and_staff_threshold",
             input_data={
@@ -860,9 +860,8 @@ class TestCleanUtilsData:
         CleanUtilsTestCase(
             id="does_not_inflate_org_staff_total_by_job_role_row_count",
             input_data={
-                # 2 locations x 3 staff = 6 real org staff, below the 10 threshold.
-                # Each location has 2 job-role rows: a buggy sum-per-row (not
-                # deduped per location) would see 3*2 + 3*2 = 12 and wrongly null.
+                # 2 locations x 3 staff = 6 (below threshold); a per-row sum
+                # instead of per-location dedup would double-count to 12.
                 IndCQC.organisation_id: ["org2"] * 4,
                 IndCQC.location_id: ["loc1", "loc1", "loc2", "loc2"],
                 IndCQC.establishment_id: ["est1", "est1", "est2", "est2"],
@@ -929,10 +928,9 @@ class TestCleanUtilsData:
         CleanUtilsTestCase(
             id="does_not_null_rows_with_null_organisation_id_despite_low_ratio",
             input_data={
-                # Without the null-organisation_id guard, .over() would pool
-                # these two unrelated locations into one fabricated "null org"
-                # group, sum their staff/counts together, and could wrongly
-                # trigger (or dodge) the org-level rule for both.
+                # Without the null-org guard, .over() would pool these
+                # unrelated locations into one fake org and could wrongly
+                # trigger the rule for both.
                 IndCQC.organisation_id: [None, None],
                 IndCQC.location_id: ["loc1", "loc2"],
                 IndCQC.establishment_id: ["est1", "est2"],
@@ -966,11 +964,9 @@ class TestCleanUtilsData:
         CleanUtilsTestCase(
             id="flags_missing_data_for_a_null_row_even_when_the_orgs_overall_ratio_is_fine",
             input_data={
-                # loc1's 2nd job role has no matching worker records at all
-                # (null dedup counts), but loc1's 1st job role alone gives the
-                # org enough permanent+temporary coverage that the org ratio
-                # rule never fires - the null row must not default to
-                # "populated" just because the org as a whole passed.
+                # loc1's 2nd job role has no worker records (null dedup), but
+                # its 1st job role alone keeps the org ratio fine - the null
+                # row must not default to "populated".
                 IndCQC.organisation_id: ["org4", "org4"],
                 IndCQC.location_id: ["loc1", "loc1"],
                 IndCQC.establishment_id: ["est1", "est1"],

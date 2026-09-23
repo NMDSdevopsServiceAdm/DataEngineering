@@ -10,12 +10,8 @@ class TestMain:
     CLEANED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(
-        f"{PATCH_PATH}.cUtils.null_employment_status_counts_where_location_permanent_temporary_ratio_is_too_low"
-    )
-    @patch(
-        f"{PATCH_PATH}.cUtils.null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low"
-    )
+    @patch(f"{PATCH_PATH}.cUtils.null_counts_for_low_location_ratio")
+    @patch(f"{PATCH_PATH}.cUtils.null_counts_for_low_org_ratio")
     @patch(f"{PATCH_PATH}.cUtils.create_employment_status_percentage_columns")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(

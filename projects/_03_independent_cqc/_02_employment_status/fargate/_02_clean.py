@@ -12,10 +12,9 @@ def main(
     Cleans the merged employment status data.
 
     Deduplicates the 5 employment status count columns as a single unit and
-    adds a percentage-share column per employment status, then nulls a
-    location's/org's deduplicated permanent, temporary, bank_or_pool, agency
-    and other counts where too few of its reported staff have a recorded
-    permanent/temporary status to trust the split, recording why in
+    adds a percentage-share column per employment status. Then nulls a
+    location's/org's counts where too few of its staff have a recorded
+    permanent/temporary status, recording why in
     employment_status_filtering_rule.
 
     Args:
@@ -25,12 +24,8 @@ def main(
     lf = utils.scan_parquet(merged_data_source)
 
     lf = cUtils.create_employment_status_percentage_columns(lf)
-    lf = cUtils.null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low(
-        lf
-    )
-    lf = cUtils.null_employment_status_counts_where_location_permanent_temporary_ratio_is_too_low(
-        lf
-    )
+    lf = cUtils.null_counts_for_low_org_ratio(lf)
+    lf = cUtils.null_counts_for_low_location_ratio(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,

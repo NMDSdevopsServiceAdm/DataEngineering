@@ -94,21 +94,19 @@ class TestCreateEmploymentStatusPercentageColumns:
         assert returned_lf == percentage_share_horizontal_mock.return_value
 
 
-class TestNullEmploymentStatusCountsWhereLocationPermanentTemporaryRatioIsTooLow:
+class TestNullCountsForLowLocationRatio:
     @pytest.mark.parametrize(
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.null_employment_status_counts_where_location_permanent_temporary_ratio_is_too_low_test_cases
+            for case in Data.null_counts_for_low_location_ratio_test_cases
         ],
     )
     def test_nulls_clean_counts_only_where_location_ratio_is_too_low(self, case):
         test_lf = build_input_lf(case.input_data)
         expected_lf = build_expected_lf(case.expected_data)
 
-        returned_lf = job.null_employment_status_counts_where_location_permanent_temporary_ratio_is_too_low(
-            test_lf
-        )
+        returned_lf = job.null_counts_for_low_location_ratio(test_lf)
 
         pl_testing.assert_frame_equal(
             returned_lf,
@@ -118,21 +116,19 @@ class TestNullEmploymentStatusCountsWhereLocationPermanentTemporaryRatioIsTooLow
         )
 
 
-class TestNullEmploymentStatusCountsWhereOrgPermanentTemporaryRatioIsTooLow:
+class TestNullCountsForLowOrgRatio:
     @pytest.mark.parametrize(
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low_test_cases
+            for case in Data.null_counts_for_low_org_ratio_test_cases
         ],
     )
     def test_nulls_clean_counts_only_where_org_ratio_is_too_low(self, case):
         test_lf = build_input_lf(case.input_data)
         expected_lf = build_expected_lf(case.expected_data)
 
-        returned_lf = job.null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low(
-            test_lf
-        )
+        returned_lf = job.null_counts_for_low_org_ratio(test_lf)
 
         pl_testing.assert_frame_equal(
             returned_lf,

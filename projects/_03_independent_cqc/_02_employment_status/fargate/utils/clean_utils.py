@@ -1,6 +1,7 @@
 import polars as pl
 
 import projects._03_independent_cqc.utils.cleaning_utils as cleaningUtils
+from polars_utils import filtering_utils
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
@@ -75,52 +76,43 @@ def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFram
     return lf
 
 
-def null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low(
-    lf: pl.LazyFrame,
-) -> pl.LazyFrame:
+def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Creates the 5 employment status clean count columns from their _dedup
-    counterparts, nulling an org's where too few of its staff have a recorded
-    permanent/temporary status to trust the split, and sets
-    employment_status_filtering_rule accordingly.
+    Nulls an org's employment status clean counts where too few of its staff
+    have a recorded permanent/temporary status, and sets
+    employment_status_filtering_rule.
 
-    Must run before
-    null_employment_status_counts_where_location_permanent_temporary_ratio_is_too_low,
-    which narrows the _clean/employment_status_filtering_rule columns this
-    creates rather than re-deriving them.
+    Must run before null_counts_for_low_location_ratio, which narrows the
+    columns created here.
 
-    An org's total staff is worker_records_bounded summed once per distinct
-    location under the org (not once per job-role row, which would inflate the
-    total by however many job roles each location has), via
-    `.filter(is_first_distinct)` rather than a join - a join broadcasting an
-    aggregate back onto every row measurably costs more peak memory than
-    `.over()`'s in-memory fallback for this fan-out-free case (see the
-    over-vs-join skill). worker_records_bounded genuinely varies per
-    location_id even under a shared establishment_id/organisation_id (a
-    grouped-provider ASCWDS submission covering many locations), so location_id
-    alone identifies a location here - no need to pair it with
-    establishment_id.
+    Org staff is worker_records_bounded summed once per distinct location_id
+    (not per job-role row, or the total inflates with job-role count). Uses
+    `.filter(is_first_distinct)` rather than a join, which costs more peak
+    memory for this kind of broadcast (see the over-vs-join skill).
+    location_id alone is enough: worker_records_bounded varies per location_id
+    even under a shared establishment_id (a grouped-provider submission).
 
-    organisation_id can be null. `.over()` would otherwise group every
-    null-organisation_id row together as if they were one org, so the rule is
-    explicitly gated on organisation_id being populated - those rows are left
-    to the location-level rule instead.
+    Partitions by ascwds_workplace_import_date, not cqc_location_import_date
+    (which create_employment_status_percentage_columns dedups on) - that's
+    the date the staff data is actually from. A repeat ASCWDS submission seen
+    through several CQC snapshots is already nulled by that dedup, so it
+    won't be double-counted here.
 
-    A row's own _dedup counts can be null regardless of whether its org's
-    ratio is too low (e.g. a job role with no matching worker records at all),
-    so employment_status_filtering_rule is set to missing_data for those rows
-    rather than populated - otherwise a null _clean column could be labelled
-    populated whenever the rest of the org's rows keep the ratio above
-    threshold.
+    organisation_id can be null, so the rule is gated explicitly on it -
+    otherwise `.over()` would pool unrelated null-org locations into one group.
+
+    The 5 _dedup columns are confirmed null/populated together as a group
+    (see percentage_share_horizontal's docstring), so permanent_count_dedup
+    is used as a stand-in for "is this row missing data".
 
     Args:
         lf (pl.LazyFrame): merged employment status data, already processed by
             create_employment_status_percentage_columns.
 
     Returns:
-        pl.LazyFrame: lf with a _clean column added per deduplicated count
-            column (nulled for orgs with 10+ staff whose permanent+temporary
-            workers make up 5% or less of that staff), plus
+        pl.LazyFrame: lf with a _clean column per deduplicated count column
+            (nulled for orgs with 10+ staff whose permanent+temporary workers
+            make up 5% or less of that staff), plus
             employment_status_filtering_rule.
     """
     org_partition = [IndCQC.organisation_id, IndCQC.ascwds_workplace_import_date]
@@ -156,45 +148,40 @@ def null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low
             for dedup, clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.items()
         ]
     )
-    return lf.with_columns(
-        pl.when(org_ratio_too_low)
-        .then(
-            pl.lit(
-                EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio
-            )
-        )
-        .when(pl.col(EmpStatus.permanent_count_dedup).is_null())
-        .then(pl.lit(EmploymentStatusFilteringRule.missing_data))
-        .otherwise(pl.lit(EmploymentStatusFilteringRule.populated))
-        .cast(CatColType.EmploymentStatusFilteringRuleCatType)
-        .alias(EmpStatus.filtering_rule)
+    lf = filtering_utils.add_filtering_rule_column(
+        lf,
+        EmpStatus.filtering_rule,
+        EmpStatus.permanent_count_dedup,
+        EmploymentStatusFilteringRule.populated,
+        EmploymentStatusFilteringRule.missing_data,
+        categorical_type=CatColType.EmploymentStatusFilteringRuleCatType,
+    )
+    return filtering_utils.update_filtering_rule(
+        lf,
+        EmpStatus.filtering_rule,
+        EmpStatus.permanent_count_dedup,
+        EmpStatus.permanent_count_clean,
+        EmploymentStatusFilteringRule.populated,
+        EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio,
+        categorical_type=CatColType.EmploymentStatusFilteringRuleCatType,
     )
 
 
-def null_employment_status_counts_where_location_permanent_temporary_ratio_is_too_low(
-    lf: pl.LazyFrame,
-) -> pl.LazyFrame:
+def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Further nulls a location's employment status clean count columns where too
-    few of its staff have a recorded permanent/temporary status to trust the
-    split, updating employment_status_filtering_rule where it's still
-    'populated'.
+    Further nulls a location's employment status clean counts where too few
+    of its staff have a recorded permanent/temporary status, updating
+    employment_status_filtering_rule where it's still 'populated'.
 
-    Must run after
-    null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low,
-    which creates the _clean/employment_status_filtering_rule columns this
-    narrows further. Sums permanent+temporary across all of a location's
+    Must run after null_counts_for_low_org_ratio, which creates the columns
+    this narrows further. Sums permanent+temporary across a location's
     job-role rows via `.over()`; worker_records_bounded is already
-    location-wide, so needs no equivalent dedup step.
-
-    Partitions on location_id alone (plus import date) - worker_records_bounded
-    genuinely varies per location_id even under a shared establishment_id (a
-    grouped-provider ASCWDS submission covering many locations), so
-    establishment_id adds nothing here.
+    location-wide, so no dedup step is needed here (unlike the org rule,
+    which sums across locations too).
 
     Args:
         lf (pl.LazyFrame): merged employment status data, already processed by
-            null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low.
+            null_counts_for_low_org_ratio.
 
     Returns:
         pl.LazyFrame: lf with the _clean count columns further nulled, and
@@ -231,20 +218,12 @@ def null_employment_status_counts_where_location_permanent_temporary_ratio_is_to
             for clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.values()
         ]
     )
-    return lf.with_columns(
-        pl.when(
-            location_ratio_too_low
-            & (
-                pl.col(EmpStatus.filtering_rule)
-                == EmploymentStatusFilteringRule.populated
-            )
-        )
-        .then(
-            pl.lit(
-                EmploymentStatusFilteringRule.location_level_low_permanent_temporary_ratio
-            )
-        )
-        .otherwise(pl.col(EmpStatus.filtering_rule))
-        .cast(CatColType.EmploymentStatusFilteringRuleCatType)
-        .alias(EmpStatus.filtering_rule)
+    return filtering_utils.update_filtering_rule(
+        lf,
+        EmpStatus.filtering_rule,
+        EmpStatus.permanent_count_dedup,
+        EmpStatus.permanent_count_clean,
+        EmploymentStatusFilteringRule.populated,
+        EmploymentStatusFilteringRule.location_level_low_permanent_temporary_ratio,
+        categorical_type=CatColType.EmploymentStatusFilteringRuleCatType,
     )

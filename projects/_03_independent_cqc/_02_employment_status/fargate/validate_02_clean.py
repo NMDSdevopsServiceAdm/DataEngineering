@@ -32,6 +32,25 @@ PERCENTAGE_COLUMNS = [
     EmpStatus.other_percentage,
 ]
 
+CLEAN_COUNT_COLUMNS = [
+    EmpStatus.permanent_count_clean,
+    EmpStatus.temporary_count_clean,
+    EmpStatus.bank_or_pool_count_clean,
+    EmpStatus.agency_count_clean,
+    EmpStatus.other_count_clean,
+]
+
+
+def _clean_column_matches_filtering_rule_expr(clean_column: str) -> pl.Expr:
+    """Builds the "clean column is null iff filtering_rule isn't 'populated'" check."""
+    populated = pl.lit(EmploymentStatusFilteringRule.populated)
+    return (
+        (pl.col(EmpStatus.filtering_rule) != populated) & pl.col(clean_column).is_null()
+    ) | (
+        (pl.col(EmpStatus.filtering_rule) == populated)
+        & pl.col(clean_column).is_not_null()
+    )
+
 
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
@@ -89,27 +108,13 @@ def main(
                 EmpStatus.filtering_rule,
             ]
         )
-        .col_vals_expr(
-            expr=(
-                (
-                    (
-                        pl.col(EmpStatus.filtering_rule)
-                        != pl.lit(EmploymentStatusFilteringRule.populated)
-                    )
-                    & pl.col(EmpStatus.permanent_count_clean).is_null()
-                )
-                | (
-                    (
-                        pl.col(EmpStatus.filtering_rule)
-                        == pl.lit(EmploymentStatusFilteringRule.populated)
-                    )
-                    & pl.col(EmpStatus.permanent_count_clean).is_not_null()
-                )
-            ),
-            brief=f"{EmpStatus.permanent_count_clean} must be null when {EmpStatus.filtering_rule} value is not 'populated', and non-null when it is 'populated'",
-        )
-        .interrogate()
     )
+    for clean_column in CLEAN_COUNT_COLUMNS:
+        validation = validation.col_vals_expr(
+            expr=_clean_column_matches_filtering_rule_expr(clean_column),
+            brief=f"{clean_column} must be null when {EmpStatus.filtering_rule} isn't 'populated', and non-null when it is",
+        )
+    validation = validation.interrogate()
     vl.write_reports(validation, bucket_name, reports_path)
 
 
