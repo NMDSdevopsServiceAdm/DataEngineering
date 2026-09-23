@@ -162,8 +162,8 @@ class IndCqcColumns:
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
     )
-    difference_estimate_filled_posts_and_from_all_job_roles: str = (
-        "difference_estimate_filled_posts_and_from_all_job_roles"
+    difference_between_estimate_filled_posts_and_summed_job_roles: str = (
+        "difference_between_estimate_filled_posts_and_summed_job_roles"
     )
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
@@ -174,21 +174,18 @@ class IndCqcColumns:
     last_dormant_date: str = "last_dormant_date"
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
-    estimate_filled_posts_size_group: str = "estimate_filled_posts_size_group"
-    estimate_filled_posts_from_all_job_roles: str = (
-        "estimate_filled_posts_from_all_job_roles"
+    estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
+    estimate_filled_posts_by_job_role_pre_reallocation: str = (
+        "estimate_filled_posts_by_job_role_pre_reallocation"
     )
+    estimate_filled_posts_by_job_role_unadjusted: str = (
+        "estimate_filled_posts_by_job_role_unadjusted"
+    )
+    estimate_filled_posts_size_group: str = "estimate_filled_posts_size_group"
     estimated_managerial_filled_posts_temp: str = (
         "estimated_managerial_filled_posts_temp"
     )
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
-    estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
-    estimate_filled_posts_by_job_role_manager_adjusted: str = (
-        "estimate_filled_posts_by_job_role_manager_adjusted"
-    )
-    estimate_filled_posts_by_job_role_historically_reallocated: str = (
-        "estimate_filled_posts_by_job_role_historically_reallocated"
-    )
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"
@@ -464,6 +461,16 @@ class EmploymentStatusColumns:
     bank_or_pool_count: str = "emplstat_bank_or_pool_count"
     agency_count: str = "emplstat_agency_count"
     other_count: str = "emplstat_other_count"
+    permanent_count_dedup: str = permanent_count + "_dedup"
+    temporary_count_dedup: str = temporary_count + "_dedup"
+    bank_or_pool_count_dedup: str = bank_or_pool_count + "_dedup"
+    agency_count_dedup: str = agency_count + "_dedup"
+    other_count_dedup: str = other_count + "_dedup"
+    permanent_percentage: str = "emplstat_permanent_percentage"
+    temporary_percentage: str = "emplstat_temporary_percentage"
+    bank_or_pool_percentage: str = "emplstat_bank_or_pool_percentage"
+    agency_percentage: str = "emplstat_agency_percentage"
+    other_percentage: str = "emplstat_other_percentage"
     employee_count: str = "emplstat_employee_count"
     estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
     estimated_emp_stat_temp: str = "estimated_emp_stat_temp"

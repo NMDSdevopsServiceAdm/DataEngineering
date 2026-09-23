@@ -139,6 +139,30 @@ def main(
         ),
     )
 
+    publication_summary_lf = publication_summary_lf.with_columns(
+        clean_utils.format_large_number(
+            Pub.publication_filled_posts, Pub.publication_filled_posts_formatted
+        ),
+        clean_utils.format_large_number(
+            Pub.assessment_filled_posts_long_term,
+            Pub.assessment_filled_posts_long_term_formatted,
+        ),
+        clean_utils.format_large_number(
+            Pub.assessment_filled_posts_medium_term,
+            Pub.assessment_filled_posts_medium_term_formatted,
+        ),
+        clean_utils.format_large_number(
+            Pub.assessment_filled_posts_short_term,
+            Pub.assessment_filled_posts_short_term_formatted,
+        ),
+        pl.col(IndCQC.cqc_location_import_date)
+        .dt.strftime("%b %Y")
+        .alias(Pub.cqc_location_import_date_abbreviated),
+        pl.col(IndCQC.cqc_location_import_date)
+        .dt.strftime("%B %Y")
+        .alias(Pub.cqc_location_import_date_full),
+    )
+
     utils.sink_to_parquet(
         lazy_df=publication_summary_lf,
         output_path=clean_destination,

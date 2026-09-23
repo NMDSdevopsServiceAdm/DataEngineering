@@ -1,5 +1,6 @@
 import polars as pl
 
+import projects._03_independent_cqc.utils.cleaning_utils as cleaningUtils
 from polars_utils import filtering_utils
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -13,37 +14,97 @@ LOCATION_PERMANENT_TEMPORARY_RATIO_THRESHOLD = 0.01
 ORG_STAFF_THRESHOLD = 10
 ORG_PERMANENT_TEMPORARY_RATIO_THRESHOLD = 0.05
 
-RAW_TO_CLEAN_COUNT_COLUMNS: dict[str, str] = {
-    EmpStatus.permanent_count: EmpStatus.permanent_count_clean,
-    EmpStatus.temporary_count: EmpStatus.temporary_count_clean,
-    EmpStatus.bank_or_pool_count: EmpStatus.bank_or_pool_count_clean,
-    EmpStatus.agency_count: EmpStatus.agency_count_clean,
-    EmpStatus.other_count: EmpStatus.other_count_clean,
+DEDUP_TO_CLEAN_COUNT_COLUMNS: dict[str, str] = {
+    EmpStatus.permanent_count_dedup: EmpStatus.permanent_count_clean,
+    EmpStatus.temporary_count_dedup: EmpStatus.temporary_count_clean,
+    EmpStatus.bank_or_pool_count_dedup: EmpStatus.bank_or_pool_count_clean,
+    EmpStatus.agency_count_dedup: EmpStatus.agency_count_clean,
+    EmpStatus.other_count_dedup: EmpStatus.other_count_clean,
 }
+
+
+def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Deduplicates the 5 employment status count columns as a single unit, then
+    adds a percentage-share column per employment status.
+
+    A row's counts are only treated as a repeat of the prior row in its
+    location/job-role timeline (and nulled) if all 5 are unchanged; if any one
+    changes, all 5 survive. Percentage-share columns are then computed from the
+    deduplicated counts, so a repeated (nulled) row's percentages are also null
+    rather than carrying forward a stale share.
+
+    Args:
+        lf (pl.LazyFrame): dataset containing the merged employment status count
+            columns.
+
+    Returns:
+        pl.LazyFrame: dataset with 5 "<count>_dedup" and 5
+            "emplstat_<status>_percentage" columns added.
+    """
+    lf = cleaningUtils.remove_repeated_values_over_time_as_group(
+        lf,
+        columns_to_clean=[
+            EmpStatus.permanent_count,
+            EmpStatus.temporary_count,
+            EmpStatus.bank_or_pool_count,
+            EmpStatus.agency_count,
+            EmpStatus.other_count,
+        ],
+        partition_by_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
+        date_column=IndCQC.cqc_location_import_date,
+    )
+
+    lf = cleaningUtils.percentage_share_horizontal(
+        lf,
+        columns=[
+            EmpStatus.permanent_count_dedup,
+            EmpStatus.temporary_count_dedup,
+            EmpStatus.bank_or_pool_count_dedup,
+            EmpStatus.agency_count_dedup,
+            EmpStatus.other_count_dedup,
+        ],
+        output_columns=[
+            EmpStatus.permanent_percentage,
+            EmpStatus.temporary_percentage,
+            EmpStatus.bank_or_pool_percentage,
+            EmpStatus.agency_percentage,
+            EmpStatus.other_percentage,
+        ],
+    )
+
+    return lf
 
 
 def seed_employment_status_clean_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Copies each raw employment status count column into its clean counterpart.
+    Copies each deduplicated employment status count column into its clean
+    counterpart.
 
-    Also seeds the shared filtering rule column as populated/missing_data, ahead
-    of downstream rules narrowing it further.
+    Also seeds the shared filtering rule column as populated/missing_data,
+    ahead of downstream rules narrowing it further. Builds on the _dedup
+    columns (not the raw counts) so a row already nulled as a stale repeat by
+    create_employment_status_percentage_columns is treated the same as missing
+    data here, rather than counting toward the org/location ratio checks below.
 
     Args:
-        lf (pl.LazyFrame): merged employment status data with raw
-            emplstat_*_count columns.
+        lf (pl.LazyFrame): merged employment status data, already processed by
+            create_employment_status_percentage_columns.
 
     Returns:
-        pl.LazyFrame: lf with a _clean column added per raw count column, plus
-            the employment_status_filtering_rule column.
+        pl.LazyFrame: lf with a _clean column added per deduplicated count
+            column, plus the employment_status_filtering_rule column.
     """
     lf = lf.with_columns(
-        [pl.col(raw).alias(clean) for raw, clean in RAW_TO_CLEAN_COUNT_COLUMNS.items()]
+        [
+            pl.col(dedup).alias(clean)
+            for dedup, clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.items()
+        ]
     )
     return filtering_utils.add_filtering_rule_column(
         lf,
         EmpStatus.filtering_rule,
-        EmpStatus.permanent_count,
+        EmpStatus.permanent_count_dedup,
         EmploymentStatusFilteringRule.populated,
         EmploymentStatusFilteringRule.missing_data,
         categorical_type=CatColType.EmploymentStatusFilteringRuleCatType,
@@ -86,7 +147,10 @@ def null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low
         .over(org_partition)
     )
     org_permanent_temporary_total = (
-        (pl.col(EmpStatus.permanent_count) + pl.col(EmpStatus.temporary_count))
+        (
+            pl.col(EmpStatus.permanent_count_dedup)
+            + pl.col(EmpStatus.temporary_count_dedup)
+        )
         .sum()
         .over(org_partition)
     )
@@ -99,13 +163,13 @@ def null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low
     lf = lf.with_columns(
         [
             pl.when(org_ratio_too_low).then(None).otherwise(pl.col(clean)).alias(clean)
-            for clean in RAW_TO_CLEAN_COUNT_COLUMNS.values()
+            for clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.values()
         ]
     )
     return filtering_utils.update_filtering_rule(
         lf,
         EmpStatus.filtering_rule,
-        EmpStatus.permanent_count,
+        EmpStatus.permanent_count_dedup,
         EmpStatus.permanent_count_clean,
         EmploymentStatusFilteringRule.populated,
         EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio,
@@ -140,7 +204,10 @@ def null_employment_status_counts_where_location_permanent_temporary_ratio_is_to
         IndCQC.ascwds_workplace_import_date,
     ]
     location_permanent_temporary_total = (
-        (pl.col(EmpStatus.permanent_count) + pl.col(EmpStatus.temporary_count))
+        (
+            pl.col(EmpStatus.permanent_count_dedup)
+            + pl.col(EmpStatus.temporary_count_dedup)
+        )
         .sum()
         .over(location_partition)
     )
@@ -158,13 +225,13 @@ def null_employment_status_counts_where_location_permanent_temporary_ratio_is_to
             .then(None)
             .otherwise(pl.col(clean))
             .alias(clean)
-            for clean in RAW_TO_CLEAN_COUNT_COLUMNS.values()
+            for clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.values()
         ]
     )
     return filtering_utils.update_filtering_rule(
         lf,
         EmpStatus.filtering_rule,
-        EmpStatus.permanent_count,
+        EmpStatus.permanent_count_dedup,
         EmpStatus.permanent_count_clean,
         EmploymentStatusFilteringRule.populated,
         EmploymentStatusFilteringRule.location_level_low_permanent_temporary_ratio,

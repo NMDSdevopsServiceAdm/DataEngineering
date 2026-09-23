@@ -16,6 +16,22 @@ COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
 ]
 
+DEDUPLICATED_COUNT_COLUMNS = [
+    EmpStatus.permanent_count_dedup,
+    EmpStatus.temporary_count_dedup,
+    EmpStatus.bank_or_pool_count_dedup,
+    EmpStatus.agency_count_dedup,
+    EmpStatus.other_count_dedup,
+]
+
+PERCENTAGE_COLUMNS = [
+    EmpStatus.permanent_percentage,
+    EmpStatus.temporary_percentage,
+    EmpStatus.bank_or_pool_percentage,
+    EmpStatus.agency_percentage,
+    EmpStatus.other_percentage,
+]
+
 
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
@@ -50,6 +66,19 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
+        )
+        .col_vals_ge(
+            DEDUPLICATED_COUNT_COLUMNS,
+            0,
+            na_pass=True,
+            brief="deduplicated employment status counts are greater than or equal to 0",
+        )
+        .col_vals_between(
+            PERCENTAGE_COLUMNS,
+            0,
+            1,
+            na_pass=True,
+            brief="employment status percentages are between 0 and 1",
         )
         # complete columns
         .col_vals_not_null(

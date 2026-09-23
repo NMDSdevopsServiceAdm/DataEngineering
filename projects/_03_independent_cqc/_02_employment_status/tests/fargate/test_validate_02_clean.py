@@ -19,11 +19,35 @@ class TestMain:
     def setup_method(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
-            EmpStatus.permanent_count_clean: pl.Int32,
+            EmpStatus.permanent_count_dedup: pl.Int64,
+            EmpStatus.temporary_count_dedup: pl.Int64,
+            EmpStatus.bank_or_pool_count_dedup: pl.Int64,
+            EmpStatus.agency_count_dedup: pl.Int64,
+            EmpStatus.other_count_dedup: pl.Int64,
+            EmpStatus.permanent_percentage: pl.Float32,
+            EmpStatus.temporary_percentage: pl.Float32,
+            EmpStatus.bank_or_pool_percentage: pl.Float32,
+            EmpStatus.agency_percentage: pl.Float32,
+            EmpStatus.other_percentage: pl.Float32,
+            EmpStatus.permanent_count_clean: pl.Int64,
             EmpStatus.filtering_rule: pl.String,
         }
         source_rows = [
-            ("1-001", 5, EmploymentStatusFilteringRule.populated),
+            (
+                "1-001",
+                2,
+                1,
+                0,
+                1,
+                0,
+                0.5,
+                0.25,
+                0.0,
+                0.25,
+                0.0,
+                2,
+                EmploymentStatusFilteringRule.populated,
+            ),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
@@ -68,6 +92,8 @@ class TestMain:
 
         assert assertion_types_present == {
             "row_count_match",
+            "col_vals_ge",
+            "col_vals_between",
             "col_vals_not_null",
             "col_vals_expr",
         }
