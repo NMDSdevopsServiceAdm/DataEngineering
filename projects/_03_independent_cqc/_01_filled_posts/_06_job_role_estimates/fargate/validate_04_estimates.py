@@ -194,9 +194,12 @@ def other_validation(
             schema=EXPECTED_SCHEMA, brief="Dataset should match the expected schema"
         )
         # dataset size
+        # Job role rows with an exactly-zero final estimate are dropped, so the
+        # row count can be lower than the impute stage's, but never higher.
         .row_count_match(
             expected_row_count,
-            brief=f"Expects {expected_row_count} rows",
+            tol=(expected_row_count, 0),
+            brief=f"Expects at most {expected_row_count} rows",
         )
         # complete columns
         .col_vals_not_null(

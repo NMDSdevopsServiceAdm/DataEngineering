@@ -6,7 +6,6 @@ import polars as pl
 
 from polars_utils import utils
 from polars_utils.column_types import CategoricalColumnTypes
-from polars_utils.filtering_utils import reduced_data_filter_expr
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
@@ -75,7 +74,7 @@ def main(
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
-    ).filter(reduced_data_filter_expr())
+    )
     expected_row_count = compare_df.height * len(
         CatValues.main_job_role_labels_column_values.categorical_values
     )

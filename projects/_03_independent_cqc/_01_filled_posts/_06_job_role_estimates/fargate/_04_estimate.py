@@ -49,6 +49,10 @@ def main(
 
     lf = eUtils.reallocate_historical_filled_posts_by_job_role(lf)
 
+    # A job role row with an exactly-zero final estimate has no posts to split
+    # into further breakdowns (e.g. employment status, gender) downstream.
+    lf = lf.filter(pl.col(IndCQC.estimate_filled_posts_by_job_role) != 0.0)
+
     lf = eUtils.calc_difference_between_estimate_filled_posts_and_summed_job_roles(lf)
 
     lf = add_job_role_groups_column(lf, IndCQC.main_job_group_labelled)

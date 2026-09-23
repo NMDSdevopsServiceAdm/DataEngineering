@@ -1,7 +1,11 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 
+import polars as pl
+from polars.testing import assert_frame_equal
+
 import projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate._04_estimate as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate._04_estimate"
@@ -48,4 +52,37 @@ class TestMain(unittest.TestCase):
             lazy_df=ANY,
             output_path=self.TEST_DESTINATION,
             partition_cols=[Keys.year],
+        )
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(
+        f"{PATCH_PATH}.eUtils.calc_difference_between_estimate_filled_posts_and_summed_job_roles"
+    )
+    @patch(f"{PATCH_PATH}.eUtils.reallocate_historical_filled_posts_by_job_role")
+    @patch(f"{PATCH_PATH}.eUtils.adjust_managerial_roles")
+    @patch(f"{PATCH_PATH}.eUtils.has_rm_in_cqc_rm_name_list_flag")
+    @patch(f"{PATCH_PATH}.eUtils.calculate_estimated_filled_posts_by_job_role")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_main_filters_out_rows_with_zero_final_job_role_estimate(
+        self,
+        scan_parquet_mock: Mock,
+        calculate_estimated_filled_posts_by_job_role_mock: Mock,
+        has_rm_in_cqc_rm_name_list_flag_mock: Mock,
+        adjust_managerial_roles_mock: Mock,
+        reallocate_historical_filled_posts_by_job_role_mock: Mock,
+        calc_difference_between_estimate_filled_posts_and_summed_job_roles_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
+        reallocate_historical_filled_posts_by_job_role_mock.return_value = pl.LazyFrame(
+            {IndCQC.estimate_filled_posts_by_job_role: [0.0, 5.0, 0.0, 3.5]}
+        )
+
+        job.main(self.TEST_IMPUTED_SOURCE, self.TEST_DESTINATION)
+
+        filtered_lf = calc_difference_between_estimate_filled_posts_and_summed_job_roles_mock.call_args.args[
+            0
+        ]
+        assert_frame_equal(
+            filtered_lf,
+            pl.LazyFrame({IndCQC.estimate_filled_posts_by_job_role: [5.0, 3.5]}),
         )
