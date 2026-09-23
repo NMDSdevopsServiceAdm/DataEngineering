@@ -478,6 +478,11 @@ class EmploymentStatusColumns:
     estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
     estimated_emp_stat_other: str = "estimated_emp_stat_other"
     estimated_employees: str = "estimated_employees"
+    permanent_percentage_clean: str = "emplstat_permanent_percentage_clean"
+    temporary_percentage_clean: str = "emplstat_temporary_percentage_clean"
+    bank_or_pool_percentage_clean: str = "emplstat_bank_or_pool_percentage_clean"
+    agency_percentage_clean: str = "emplstat_agency_percentage_clean"
+    other_percentage_clean: str = "emplstat_other_percentage_clean"
 
 
 @dataclass

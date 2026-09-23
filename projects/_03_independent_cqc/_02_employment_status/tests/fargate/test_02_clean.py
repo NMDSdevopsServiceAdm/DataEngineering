@@ -10,12 +10,14 @@ class TestMain:
     CLEANED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.cUtils.copy_percentages_to_clean_columns")
     @patch(f"{PATCH_PATH}.cUtils.create_employment_status_percentage_columns")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         create_employment_status_percentage_columns_mock: Mock,
+        copy_percentages_to_clean_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -27,8 +29,11 @@ class TestMain:
         create_employment_status_percentage_columns_mock.assert_called_once_with(
             scan_parquet_mock.return_value
         )
+        copy_percentages_to_clean_columns_mock.assert_called_once_with(
+            create_employment_status_percentage_columns_mock.return_value
+        )
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=create_employment_status_percentage_columns_mock.return_value,
+            lazy_df=copy_percentages_to_clean_columns_mock.return_value,
             output_path=self.CLEANED_DATA_DESTINATION,
         )

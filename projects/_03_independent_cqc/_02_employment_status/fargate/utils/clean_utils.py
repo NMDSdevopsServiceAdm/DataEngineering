@@ -58,3 +58,31 @@ def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFram
     )
 
     return lf
+
+
+def copy_percentages_to_clean_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Copies the 5 employment status percentage columns into their "_clean" columns.
+
+    A temporary stand-in until ticket 2094's cleaning filters reach main, so model work can
+    use the "_clean" names from the start. Remove it when 2094's clean step replaces it.
+
+    Args:
+        lf (pl.LazyFrame): dataset containing the 5 "emplstat_<status>_percentage" columns.
+
+    Returns:
+        pl.LazyFrame: dataset with the 5 "emplstat_<status>_percentage_clean" columns added.
+    """
+    return lf.with_columns(
+        pl.col(EmpStatus.permanent_percentage).alias(
+            EmpStatus.permanent_percentage_clean
+        ),
+        pl.col(EmpStatus.temporary_percentage).alias(
+            EmpStatus.temporary_percentage_clean
+        ),
+        pl.col(EmpStatus.bank_or_pool_percentage).alias(
+            EmpStatus.bank_or_pool_percentage_clean
+        ),
+        pl.col(EmpStatus.agency_percentage).alias(EmpStatus.agency_percentage_clean),
+        pl.col(EmpStatus.other_percentage).alias(EmpStatus.other_percentage_clean),
+    )
