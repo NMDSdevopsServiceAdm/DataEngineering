@@ -125,6 +125,9 @@ def job_role_estimates_validation(
     source_uri = f"s3://{bucket_name}/{source_path}"
     other_output_uri = f"s3://{bucket_name}/{other_output_path}"
 
+    # Called for this output alone first (raises ValueError only if S3 itself is
+    # unreadable) so a real run_number mismatch is caught below as a reported
+    # `specially` check instead of crashing the task before any report is written.
     latest_run_number = aUtils.get_run_number([source_uri])
     latest_partition_df = (
         utils.scan_parquet(source_uri)
@@ -132,8 +135,12 @@ def job_role_estimates_validation(
         .collect()
     )
 
-    compare_df = utils.read_parquet(source=f"s3://{bucket_name}/{compare_path}")
-    expected_row_count = compare_df.height
+    expected_row_count = (
+        utils.scan_parquet(f"s3://{bucket_name}/{compare_path}")
+        .select(pl.len())
+        .collect()
+        .item()
+    )
 
     validation = (
         pb.Validate(
@@ -182,6 +189,9 @@ def job_role_metadata_validation(
     source_uri = f"s3://{bucket_name}/{source_path}"
     other_output_uri = f"s3://{bucket_name}/{other_output_path}"
 
+    # Called for this output alone first (raises ValueError only if S3 itself is
+    # unreadable) so a real run_number mismatch is caught below as a reported
+    # `specially` check instead of crashing the task before any report is written.
     latest_run_number = aUtils.get_run_number([source_uri])
     latest_partition_df = (
         utils.scan_parquet(source_uri)
@@ -189,8 +199,12 @@ def job_role_metadata_validation(
         .collect()
     )
 
-    compare_df = utils.read_parquet(source=f"s3://{bucket_name}/{compare_path}")
-    expected_row_count = compare_df.height
+    expected_row_count = (
+        utils.scan_parquet(f"s3://{bucket_name}/{compare_path}")
+        .select(pl.len())
+        .collect()
+        .item()
+    )
 
     validation = (
         pb.Validate(

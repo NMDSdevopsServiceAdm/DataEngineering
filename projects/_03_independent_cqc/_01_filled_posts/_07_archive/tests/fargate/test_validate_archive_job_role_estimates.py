@@ -77,14 +77,12 @@ class TestMain:
 
 class TestJobRoleEstimatesValidation:
     @patch(f"{PATCH_PATH}.vl.write_reports")
-    @patch(f"{PATCH_PATH}.utils.read_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     @patch(f"{PATCH_PATH}.aUtils.get_run_number")
     def test_job_role_estimates_validation_runs(
         self,
         mock_get_run_number: Mock,
         mock_scan_parquet: Mock,
-        mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
         mock_get_run_number.return_value = 3
@@ -103,9 +101,8 @@ class TestJobRoleEstimatesValidation:
         mock_filtered_lf = Mock()
         mock_scanned_lf.filter.return_value = mock_filtered_lf
         mock_filtered_lf.collect.return_value = latest_partition_df
-        mock_scan_parquet.return_value = mock_scanned_lf
-
-        mock_read_parquet.return_value = pl.DataFrame({"dummy": [1, 2]})
+        compare_lf = pl.LazyFrame({"dummy": [1, 2]})
+        mock_scan_parquet.side_effect = [mock_scanned_lf, compare_lf]
 
         job.job_role_estimates_validation(
             BUCKET_NAME, SOURCE_PATH, COMPARE_PATH, OTHER_OUTPUT_PATH, REPORTS_PATH
@@ -120,11 +117,10 @@ class TestJobRoleEstimatesValidation:
         )
         assert mock_get_run_number.call_count == 2
 
-        mock_scan_parquet.assert_called_once_with(f"s3://{BUCKET_NAME}/{SOURCE_PATH}")
+        mock_scan_parquet.assert_any_call(f"s3://{BUCKET_NAME}/{SOURCE_PATH}")
+        mock_scan_parquet.assert_any_call(f"s3://{BUCKET_NAME}/{COMPARE_PATH}")
+        assert mock_scan_parquet.call_count == 2
         mock_scanned_lf.filter.assert_called_once()
-        mock_read_parquet.assert_called_once_with(
-            source=f"s3://{BUCKET_NAME}/{COMPARE_PATH}"
-        )
 
         mock_write_reports.assert_called_once()
         validation_arg, bucket_name_arg, reports_path_arg = (
@@ -150,14 +146,12 @@ class TestJobRoleEstimatesValidation:
 
 class TestJobRoleMetadataValidation:
     @patch(f"{PATCH_PATH}.vl.write_reports")
-    @patch(f"{PATCH_PATH}.utils.read_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     @patch(f"{PATCH_PATH}.aUtils.get_run_number")
     def test_job_role_metadata_validation_runs(
         self,
         mock_get_run_number: Mock,
         mock_scan_parquet: Mock,
-        mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
         mock_get_run_number.return_value = 3
@@ -173,9 +167,8 @@ class TestJobRoleMetadataValidation:
         mock_filtered_lf = Mock()
         mock_scanned_lf.filter.return_value = mock_filtered_lf
         mock_filtered_lf.collect.return_value = latest_partition_df
-        mock_scan_parquet.return_value = mock_scanned_lf
-
-        mock_read_parquet.return_value = pl.DataFrame({"dummy": [1, 2]})
+        compare_lf = pl.LazyFrame({"dummy": [1, 2]})
+        mock_scan_parquet.side_effect = [mock_scanned_lf, compare_lf]
 
         job.job_role_metadata_validation(
             BUCKET_NAME, SOURCE_PATH, COMPARE_PATH, OTHER_OUTPUT_PATH, REPORTS_PATH
@@ -190,11 +183,10 @@ class TestJobRoleMetadataValidation:
         )
         assert mock_get_run_number.call_count == 2
 
-        mock_scan_parquet.assert_called_once_with(f"s3://{BUCKET_NAME}/{SOURCE_PATH}")
+        mock_scan_parquet.assert_any_call(f"s3://{BUCKET_NAME}/{SOURCE_PATH}")
+        mock_scan_parquet.assert_any_call(f"s3://{BUCKET_NAME}/{COMPARE_PATH}")
+        assert mock_scan_parquet.call_count == 2
         mock_scanned_lf.filter.assert_called_once()
-        mock_read_parquet.assert_called_once_with(
-            source=f"s3://{BUCKET_NAME}/{COMPARE_PATH}"
-        )
 
         mock_write_reports.assert_called_once()
         validation_arg, bucket_name_arg, reports_path_arg = (
