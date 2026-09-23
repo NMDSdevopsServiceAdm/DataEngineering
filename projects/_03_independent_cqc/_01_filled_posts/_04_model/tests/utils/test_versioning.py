@@ -1,6 +1,7 @@
 import io
 import json
 import unittest
+from unittest.mock import MagicMock, Mock, patch
 
 import boto3
 import joblib
@@ -10,46 +11,91 @@ from projects._03_independent_cqc._01_filled_posts._04_model.utils import (
     versioning as job,
 )
 
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._01_filled_posts._04_model.utils.versioning"
+)
 
-class GetRunNumberTests(unittest.TestCase):
-    @mock_aws
-    def test_get_run_number_returns_zero_when_no_runs(self):
-        s3 = boto3.client("s3", region_name="eu-west-2")
-        s3.create_bucket(
+
+class TestGetRunNumber:
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_returns_zero_when_no_runs_exist(self, mock_boto_client: Mock):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [{"Contents": []}]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        run_number = job.get_run_number("s3://pipeline-resources/models/model_A/")
+
+        assert run_number == 0
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_returns_highest_existing_run_number(self, mock_boto_client: Mock):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [
+            {
+                "Contents": [
+                    {"Key": "models/model_A/1/metadata.json"},
+                    {"Key": "models/model_A/3/metadata.json"},
+                ]
+            }
+        ]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        run_number = job.get_run_number("s3://pipeline-resources/models/model_A/")
+
+        assert run_number == 3
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_paginates_across_multiple_pages(self, mock_boto_client: Mock):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [
+            {"Contents": [{"Key": "models/model_A/1/metadata.json"}]},
+            {"Contents": [{"Key": "models/model_A/501/metadata.json"}]},
+        ]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        run_number = job.get_run_number("s3://pipeline-resources/models/model_A/")
+
+        assert run_number == 501
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_ignores_keys_that_are_not_metadata_json(self, mock_boto_client: Mock):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [
+            {
+                "Contents": [
+                    {"Key": "models/model_A/1/metadata.json"},
+                    {"Key": "models/model_A/5/model.pkl"},
+                ]
+            }
+        ]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        run_number = job.get_run_number("s3://pipeline-resources/models/model_A/")
+
+        assert run_number == 1
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_scopes_the_search_to_the_given_s3_root(self, mock_boto_client: Mock):
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [{"Contents": []}]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client.return_value = mock_s3
+
+        job.get_run_number("s3://pipeline-resources/models/model_A/")
+
+        mock_paginator.paginate.assert_called_once_with(
             Bucket="pipeline-resources",
-            CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+            Prefix="models/model_A/",
         )
-        s3_root = "s3://pipeline-resources/models/model_A/"
-
-        run_number = job.get_run_number(s3_root)
-
-        self.assertEqual(run_number, 0)
-
-    @mock_aws
-    def test_get_run_number_detects_existing_runs(self):
-        s3 = boto3.client("s3", region_name="eu-west-2")
-        s3.create_bucket(
-            Bucket="pipeline-resources",
-            CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
-        )
-
-        # simulate existing runs
-        s3.put_object(
-            Bucket="pipeline-resources",
-            Key="models/model_A/1/metadata.json",
-            Body=b"{}",
-        )
-        s3.put_object(
-            Bucket="pipeline-resources",
-            Key="models/model_A/3/metadata.json",
-            Body=b"{}",
-        )
-
-        s3_root = "s3://pipeline-resources/models/model_A/"
-
-        run_number = job.get_run_number(s3_root)
-
-        self.assertEqual(run_number, 3)
 
 
 class SaveModelAndMetadataTests(unittest.TestCase):
