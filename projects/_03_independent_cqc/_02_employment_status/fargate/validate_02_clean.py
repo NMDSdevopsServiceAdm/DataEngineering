@@ -32,6 +32,13 @@ PERCENTAGE_COLUMNS = [
     EmpStatus.other_percentage,
 ]
 
+VALIDATION_COLS_TO_IMPORT = [
+    EmpStatus.filtering_rule,
+    EmpStatus.permanent_count_clean,
+    *DEDUPLICATED_COUNT_COLUMNS,
+    *PERCENTAGE_COLUMNS,
+]
+
 
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
@@ -47,7 +54,10 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
-    source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        selected_columns=VALIDATION_COLS_TO_IMPORT,
+    )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,
