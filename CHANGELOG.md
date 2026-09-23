@@ -34,6 +34,7 @@ All notable changes to this project will be documented in this file.
 - Moved the temporary employment-status-rates split from the employment status pipeline's merge stage to its estimate stage, along with its validation checks, so it runs closer to where its output is used.
 - Consolidated and reorganised the SLV/employment-status column-name classes in `ind_cqc_pipeline_columns.py`.
 - Moved `EmploymentStatusRatesColumns` (renamed `EmploymentStatusMagicNumberRateColumns`) into the shared `ind_cqc_pipeline_columns.py`, alongside the other column-name classes.
+- Replaced the job role archive validation's single "at least 1 row" check with schema, row-count-against-source, and primary-key uniqueness/completeness checks scoped to just the newly-written partition for each output (estimates and metadata), plus a cross-output check confirming both outputs received the same run's partition.
 
 
 ### Improved
