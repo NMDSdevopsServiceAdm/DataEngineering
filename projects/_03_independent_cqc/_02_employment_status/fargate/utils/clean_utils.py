@@ -22,6 +22,8 @@ DEDUP_TO_CLEAN_COUNT_COLUMNS: dict[str, str] = {
     EmpStatus.other_count_dedup: EmpStatus.other_count_clean,
 }
 
+RATIO_TOO_LOW_COLUMN = "_ratio_too_low"
+
 
 def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
@@ -142,12 +144,18 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
         )
     )
 
+    # Materialised once: each window aggregation above would otherwise be
+    # recomputed per _clean column, since it's used in 5 separate expressions.
+    lf = lf.with_columns(org_ratio_too_low.alias(RATIO_TOO_LOW_COLUMN))
     lf = lf.with_columns(
         [
-            pl.when(org_ratio_too_low).then(None).otherwise(pl.col(dedup)).alias(clean)
+            pl.when(pl.col(RATIO_TOO_LOW_COLUMN))
+            .then(None)
+            .otherwise(pl.col(dedup))
+            .alias(clean)
             for dedup, clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.items()
         ]
-    )
+    ).drop(RATIO_TOO_LOW_COLUMN)
     lf = filtering_utils.add_filtering_rule_column(
         lf,
         EmpStatus.filtering_rule,
@@ -209,15 +217,17 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
         <= LOCATION_PERMANENT_TEMPORARY_RATIO_THRESHOLD
     )
 
+    # Materialised once: see null_counts_for_low_org_ratio for why.
+    lf = lf.with_columns(location_ratio_too_low.alias(RATIO_TOO_LOW_COLUMN))
     lf = lf.with_columns(
         [
-            pl.when(location_ratio_too_low)
+            pl.when(pl.col(RATIO_TOO_LOW_COLUMN))
             .then(None)
             .otherwise(pl.col(clean))
             .alias(clean)
             for clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.values()
         ]
-    )
+    ).drop(RATIO_TOO_LOW_COLUMN)
     return filtering_utils.update_filtering_rule(
         lf,
         EmpStatus.filtering_rule,

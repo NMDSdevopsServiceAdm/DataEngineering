@@ -11,6 +11,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_column_values import EmploymentStatusFilteringRule
+from utils.column_values.categorical_columns_by_dataset import (
+    EmploymentStatusCleanCategoricalValues as CatValues,
+)
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
@@ -107,6 +110,12 @@ def main(
             [
                 EmpStatus.filtering_rule,
             ]
+        )
+        # categorical
+        .col_vals_in_set(
+            EmpStatus.filtering_rule,
+            CatValues.filtering_rule_column_values.categorical_values,
+            brief="employment_status_filtering_rule is a known reason",
         )
     )
     for clean_column in CLEAN_COUNT_COLUMNS:

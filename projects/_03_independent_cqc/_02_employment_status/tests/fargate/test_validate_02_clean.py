@@ -106,5 +106,6 @@ class TestMain:
             "col_vals_ge",
             "col_vals_between",
             "col_vals_not_null",
+            "col_vals_in_set",
             "col_vals_expr",
         }

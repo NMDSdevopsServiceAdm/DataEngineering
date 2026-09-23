@@ -1000,4 +1000,87 @@ class TestCleanUtilsData:
                 ],
             },
         ),
+        CleanUtilsTestCase(
+            id="nulls_both_locations_when_their_combined_org_ratio_is_too_low",
+            input_data={
+                # Neither location's own perm+temp/staff looks obviously bad in
+                # isolation, but the combined org-wide ratio (1/20 = 0.05) is
+                # exactly at threshold - both locations should be nulled.
+                IndCQC.organisation_id: ["org5", "org5"],
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.establishment_id: ["est1", "est2"],
+                IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
+                IndCQC.worker_records_bounded: [10, 10],
+                EmpStatus.permanent_count_dedup: [1, 0],
+                EmpStatus.temporary_count_dedup: [0, 0],
+                EmpStatus.bank_or_pool_count_dedup: [0, 0],
+                EmpStatus.agency_count_dedup: [0, 0],
+                EmpStatus.other_count_dedup: [0, 0],
+            },
+            expected_data={
+                IndCQC.organisation_id: ["org5", "org5"],
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.establishment_id: ["est1", "est2"],
+                IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
+                IndCQC.worker_records_bounded: [10, 10],
+                EmpStatus.permanent_count_dedup: [1, 0],
+                EmpStatus.temporary_count_dedup: [0, 0],
+                EmpStatus.bank_or_pool_count_dedup: [0, 0],
+                EmpStatus.agency_count_dedup: [0, 0],
+                EmpStatus.other_count_dedup: [0, 0],
+                EmpStatus.permanent_count_clean: [None, None],
+                EmpStatus.temporary_count_clean: [None, None],
+                EmpStatus.bank_or_pool_count_clean: [None, None],
+                EmpStatus.agency_count_clean: [None, None],
+                EmpStatus.other_count_clean: [None, None],
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio
+                ]
+                * 2,
+            },
+        ),
+        CleanUtilsTestCase(
+            id="does_not_pool_different_import_dates_into_one_org_group",
+            input_data={
+                # Same org and location, but two different import dates - a
+                # low ratio on one date must not affect the other date's rows.
+                IndCQC.organisation_id: ["org6", "org6"],
+                IndCQC.location_id: ["loc1", "loc1"],
+                IndCQC.establishment_id: ["est1", "est1"],
+                IndCQC.ascwds_workplace_import_date: [
+                    CLEAN_UTILS_IMPORT_DATE,
+                    date(2024, 2, 1),
+                ],
+                IndCQC.worker_records_bounded: [20, 20],
+                EmpStatus.permanent_count_dedup: [0, 15],
+                EmpStatus.temporary_count_dedup: [0, 0],
+                EmpStatus.bank_or_pool_count_dedup: [0, 0],
+                EmpStatus.agency_count_dedup: [0, 0],
+                EmpStatus.other_count_dedup: [0, 0],
+            },
+            expected_data={
+                IndCQC.organisation_id: ["org6", "org6"],
+                IndCQC.location_id: ["loc1", "loc1"],
+                IndCQC.establishment_id: ["est1", "est1"],
+                IndCQC.ascwds_workplace_import_date: [
+                    CLEAN_UTILS_IMPORT_DATE,
+                    date(2024, 2, 1),
+                ],
+                IndCQC.worker_records_bounded: [20, 20],
+                EmpStatus.permanent_count_dedup: [0, 15],
+                EmpStatus.temporary_count_dedup: [0, 0],
+                EmpStatus.bank_or_pool_count_dedup: [0, 0],
+                EmpStatus.agency_count_dedup: [0, 0],
+                EmpStatus.other_count_dedup: [0, 0],
+                EmpStatus.permanent_count_clean: [None, 15],
+                EmpStatus.temporary_count_clean: [None, 0],
+                EmpStatus.bank_or_pool_count_clean: [None, 0],
+                EmpStatus.agency_count_clean: [None, 0],
+                EmpStatus.other_count_clean: [None, 0],
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio,
+                    EmploymentStatusFilteringRule.populated,
+                ],
+            },
+        ),
     ]
