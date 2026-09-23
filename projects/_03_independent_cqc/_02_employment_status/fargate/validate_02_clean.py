@@ -44,15 +44,12 @@ CLEAN_COUNT_COLUMNS = [
 ]
 
 
-def _clean_column_matches_filtering_rule_expr(clean_column: str) -> pl.Expr:
-    """Builds the "clean column is null iff filtering_rule isn't 'populated'" check."""
+def _nullable_column_matches_filtering_rule_expr(column: str) -> pl.Expr:
+    """Builds the "column is null iff filtering_rule isn't 'populated'" check."""
     populated = pl.lit(EmploymentStatusFilteringRule.populated)
     return (
-        (pl.col(EmpStatus.filtering_rule) != populated) & pl.col(clean_column).is_null()
-    ) | (
-        (pl.col(EmpStatus.filtering_rule) == populated)
-        & pl.col(clean_column).is_not_null()
-    )
+        (pl.col(EmpStatus.filtering_rule) != populated) & pl.col(column).is_null()
+    ) | ((pl.col(EmpStatus.filtering_rule) == populated) & pl.col(column).is_not_null())
 
 
 def main(
@@ -118,10 +115,10 @@ def main(
             brief="employment_status_filtering_rule is a known reason",
         )
     )
-    for clean_column in CLEAN_COUNT_COLUMNS:
+    for column in [*CLEAN_COUNT_COLUMNS, *PERCENTAGE_COLUMNS]:
         validation = validation.col_vals_expr(
-            expr=_clean_column_matches_filtering_rule_expr(clean_column),
-            brief=f"{clean_column} must be null when {EmpStatus.filtering_rule} isn't 'populated', and non-null when it is",
+            expr=_nullable_column_matches_filtering_rule_expr(column),
+            brief=f"{column} must be null when {EmpStatus.filtering_rule} isn't 'populated', and non-null when it is",
         )
     validation = validation.interrogate()
     vl.write_reports(validation, bucket_name, reports_path)

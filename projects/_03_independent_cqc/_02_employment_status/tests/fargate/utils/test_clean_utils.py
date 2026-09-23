@@ -26,20 +26,30 @@ CLEAN_COUNT_COLUMNS = [
     EmpStatus.other_count_clean,
 ]
 
+PERCENTAGE_COLUMNS = [
+    EmpStatus.permanent_percentage,
+    EmpStatus.temporary_percentage,
+    EmpStatus.bank_or_pool_percentage,
+    EmpStatus.agency_percentage,
+    EmpStatus.other_percentage,
+]
 
-def _clean_count_schema_overrides(data: dict) -> dict:
-    return {column: pl.Int64 for column in CLEAN_COUNT_COLUMNS if column in data}
+
+def _schema_overrides(data: dict) -> dict:
+    overrides = {column: pl.Int64 for column in CLEAN_COUNT_COLUMNS if column in data}
+    overrides.update(
+        {column: pl.Float32 for column in PERCENTAGE_COLUMNS if column in data}
+    )
+    return overrides
 
 
 def build_input_lf(input_data: dict) -> pl.LazyFrame:
-    return pl.LazyFrame(
-        input_data, schema_overrides=_clean_count_schema_overrides(input_data)
-    )
+    return pl.LazyFrame(input_data, schema_overrides=_schema_overrides(input_data))
 
 
 def build_expected_lf(expected_data: dict) -> pl.LazyFrame:
     return pl.LazyFrame(
-        expected_data, schema_overrides=_clean_count_schema_overrides(expected_data)
+        expected_data, schema_overrides=_schema_overrides(expected_data)
     ).with_columns(
         pl.col(EmpStatus.filtering_rule).cast(
             CatColType.EmploymentStatusFilteringRuleCatType

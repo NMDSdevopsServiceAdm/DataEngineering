@@ -22,7 +22,30 @@ DEDUP_TO_CLEAN_COUNT_COLUMNS: dict[str, str] = {
     EmpStatus.other_count_dedup: EmpStatus.other_count_clean,
 }
 
+PERCENTAGE_COLUMNS: list[str] = [
+    EmpStatus.permanent_percentage,
+    EmpStatus.temporary_percentage,
+    EmpStatus.bank_or_pool_percentage,
+    EmpStatus.agency_percentage,
+    EmpStatus.other_percentage,
+]
+
 RATIO_TOO_LOW_COLUMN = "_ratio_too_low"
+
+
+def _null_same_named_columns_where_ratio_too_low(
+    lf: pl.LazyFrame, columns: list[str]
+) -> pl.LazyFrame:
+    """Nulls each of `columns` in place wherever RATIO_TOO_LOW_COLUMN is True."""
+    return lf.with_columns(
+        [
+            pl.when(pl.col(RATIO_TOO_LOW_COLUMN))
+            .then(None)
+            .otherwise(pl.col(column))
+            .alias(column)
+            for column in columns
+        ]
+    )
 
 
 def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -112,10 +135,10 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
             create_employment_status_percentage_columns.
 
     Returns:
-        pl.LazyFrame: lf with a _clean column per deduplicated count column
-            (nulled for orgs with 10+ staff whose permanent+temporary workers
-            make up 5% or less of that staff), plus
-            employment_status_filtering_rule.
+        pl.LazyFrame: lf with a _clean column per deduplicated count column,
+            plus employment_status_filtering_rule. Both the _clean and
+            percentage columns are nulled for orgs with 10+ staff whose
+            permanent+temporary workers make up 5% or less of that staff.
     """
     org_partition = [IndCQC.organisation_id, IndCQC.ascwds_workplace_import_date]
     location_is_first_distinct = pl.col(IndCQC.location_id).is_first_distinct()
@@ -145,7 +168,7 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     # Materialised once: each window aggregation above would otherwise be
-    # recomputed per _clean column, since it's used in 5 separate expressions.
+    # recomputed per _clean column, since it's used in several expressions.
     lf = lf.with_columns(org_ratio_too_low.alias(RATIO_TOO_LOW_COLUMN))
     lf = lf.with_columns(
         [
@@ -155,7 +178,10 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
             .alias(clean)
             for dedup, clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.items()
         ]
-    ).drop(RATIO_TOO_LOW_COLUMN)
+    )
+    lf = _null_same_named_columns_where_ratio_too_low(lf, PERCENTAGE_COLUMNS).drop(
+        RATIO_TOO_LOW_COLUMN
+    )
     lf = filtering_utils.add_filtering_rule_column(
         lf,
         EmpStatus.filtering_rule,
@@ -192,10 +218,10 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
             null_counts_for_low_org_ratio.
 
     Returns:
-        pl.LazyFrame: lf with the _clean count columns further nulled, and
-            employment_status_filtering_rule updated, for locations with 10+
-            staff whose permanent+temporary workers make up 1% or less of that
-            staff.
+        pl.LazyFrame: lf with the _clean and percentage columns further
+            nulled, and employment_status_filtering_rule updated, for
+            locations with 10+ staff whose permanent+temporary workers make
+            up 1% or less of that staff.
     """
     location_partition = [
         IndCQC.location_id,
@@ -219,14 +245,8 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     # Materialised once: see null_counts_for_low_org_ratio for why.
     lf = lf.with_columns(location_ratio_too_low.alias(RATIO_TOO_LOW_COLUMN))
-    lf = lf.with_columns(
-        [
-            pl.when(pl.col(RATIO_TOO_LOW_COLUMN))
-            .then(None)
-            .otherwise(pl.col(clean))
-            .alias(clean)
-            for clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.values()
-        ]
+    lf = _null_same_named_columns_where_ratio_too_low(
+        lf, [*DEDUP_TO_CLEAN_COUNT_COLUMNS.values(), *PERCENTAGE_COLUMNS]
     ).drop(RATIO_TOO_LOW_COLUMN)
     return filtering_utils.update_filtering_rule(
         lf,
