@@ -34,6 +34,11 @@ class TestMain:
             EmpStatus.bank_or_pool_count_clean: pl.Int64,
             EmpStatus.agency_count_clean: pl.Int64,
             EmpStatus.other_count_clean: pl.Int64,
+            EmpStatus.permanent_percentage_clean: pl.Float32,
+            EmpStatus.temporary_percentage_clean: pl.Float32,
+            EmpStatus.bank_or_pool_percentage_clean: pl.Float32,
+            EmpStatus.agency_percentage_clean: pl.Float32,
+            EmpStatus.other_percentage_clean: pl.Float32,
             EmpStatus.filtering_rule: pl.String,
         }
         source_rows = [
@@ -54,6 +59,11 @@ class TestMain:
                 0,
                 1,
                 0,
+                0.5,
+                0.25,
+                0.0,
+                0.25,
+                0.0,
                 EmploymentStatusFilteringRule.populated,
             ),
         ]

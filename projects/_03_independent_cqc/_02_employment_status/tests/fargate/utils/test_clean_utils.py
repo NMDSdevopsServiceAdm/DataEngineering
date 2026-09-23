@@ -32,6 +32,11 @@ PERCENTAGE_COLUMNS = [
     EmpStatus.bank_or_pool_percentage,
     EmpStatus.agency_percentage,
     EmpStatus.other_percentage,
+    EmpStatus.permanent_percentage_clean,
+    EmpStatus.temporary_percentage_clean,
+    EmpStatus.bank_or_pool_percentage_clean,
+    EmpStatus.agency_percentage_clean,
+    EmpStatus.other_percentage_clean,
 ]
 
 

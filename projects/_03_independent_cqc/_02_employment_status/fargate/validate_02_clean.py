@@ -43,6 +43,14 @@ CLEAN_COUNT_COLUMNS = [
     EmpStatus.other_count_clean,
 ]
 
+CLEAN_PERCENTAGE_COLUMNS = [
+    EmpStatus.permanent_percentage_clean,
+    EmpStatus.temporary_percentage_clean,
+    EmpStatus.bank_or_pool_percentage_clean,
+    EmpStatus.agency_percentage_clean,
+    EmpStatus.other_percentage_clean,
+]
+
 
 def _nullable_column_matches_filtering_rule_expr(column: str) -> pl.Expr:
     """Builds the "column is null iff filtering_rule isn't 'populated'" check."""
@@ -96,7 +104,7 @@ def main(
             brief="deduplicated employment status counts are greater than or equal to 0",
         )
         .col_vals_between(
-            PERCENTAGE_COLUMNS,
+            [*PERCENTAGE_COLUMNS, *CLEAN_PERCENTAGE_COLUMNS],
             0,
             1,
             na_pass=True,
@@ -115,7 +123,7 @@ def main(
             brief="employment_status_filtering_rule is a known reason",
         )
     )
-    for column in [*CLEAN_COUNT_COLUMNS, *PERCENTAGE_COLUMNS]:
+    for column in [*CLEAN_COUNT_COLUMNS, *CLEAN_PERCENTAGE_COLUMNS]:
         validation = validation.col_vals_expr(
             expr=_nullable_column_matches_filtering_rule_expr(column),
             brief=f"{column} must be null when {EmpStatus.filtering_rule} isn't 'populated', and non-null when it is",
