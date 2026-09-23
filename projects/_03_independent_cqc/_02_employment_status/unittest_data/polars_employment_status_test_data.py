@@ -926,4 +926,41 @@ class TestCleanUtilsData:
                 EmpStatus.filtering_rule: [EmploymentStatusFilteringRule.populated],
             },
         ),
+        CleanUtilsTestCase(
+            id="does_not_null_rows_with_null_organisation_id_despite_low_ratio",
+            input_data={
+                # Without the null-organisation_id guard, .over() would pool
+                # these two unrelated locations into one fabricated "null org"
+                # group, sum their staff/counts together, and could wrongly
+                # trigger (or dodge) the org-level rule for both.
+                IndCQC.organisation_id: [None, None],
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.establishment_id: ["est1", "est2"],
+                IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
+                IndCQC.worker_records_bounded: [20, 20],
+                EmpStatus.permanent_count_dedup: [0, 0],
+                EmpStatus.temporary_count_dedup: [0, 0],
+                EmpStatus.bank_or_pool_count_dedup: [0, 0],
+                EmpStatus.agency_count_dedup: [0, 0],
+                EmpStatus.other_count_dedup: [0, 0],
+            },
+            expected_data={
+                IndCQC.organisation_id: [None, None],
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.establishment_id: ["est1", "est2"],
+                IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
+                IndCQC.worker_records_bounded: [20, 20],
+                EmpStatus.permanent_count_dedup: [0, 0],
+                EmpStatus.temporary_count_dedup: [0, 0],
+                EmpStatus.bank_or_pool_count_dedup: [0, 0],
+                EmpStatus.agency_count_dedup: [0, 0],
+                EmpStatus.other_count_dedup: [0, 0],
+                EmpStatus.permanent_count_clean: [0, 0],
+                EmpStatus.temporary_count_clean: [0, 0],
+                EmpStatus.bank_or_pool_count_clean: [0, 0],
+                EmpStatus.agency_count_clean: [0, 0],
+                EmpStatus.other_count_clean: [0, 0],
+                EmpStatus.filtering_rule: [EmploymentStatusFilteringRule.populated] * 2,
+            },
+        ),
     ]

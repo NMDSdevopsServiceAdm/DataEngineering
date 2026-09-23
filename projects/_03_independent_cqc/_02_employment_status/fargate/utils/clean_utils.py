@@ -95,7 +95,16 @@ def null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low
     `.filter(is_first_distinct)` rather than a join - a join broadcasting an
     aggregate back onto every row measurably costs more peak memory than
     `.over()`'s in-memory fallback for this fan-out-free case (see the
-    over-vs-join skill).
+    over-vs-join skill). worker_records_bounded genuinely varies per
+    location_id even under a shared establishment_id/organisation_id (a
+    grouped-provider ASCWDS submission covering many locations), so location_id
+    alone identifies a location here - no need to pair it with
+    establishment_id.
+
+    organisation_id can be null. `.over()` would otherwise group every
+    null-organisation_id row together as if they were one org, so the rule is
+    explicitly gated on organisation_id being populated - those rows are left
+    to the location-level rule instead.
 
     Args:
         lf (pl.LazyFrame): merged employment status data, already processed by
@@ -108,13 +117,11 @@ def null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low
             employment_status_filtering_rule.
     """
     org_partition = [IndCQC.organisation_id, IndCQC.ascwds_workplace_import_date]
-    location_key_is_first_distinct = pl.struct(
-        [IndCQC.location_id, IndCQC.establishment_id]
-    ).is_first_distinct()
+    location_is_first_distinct = pl.col(IndCQC.location_id).is_first_distinct()
 
     org_total_staff = (
         pl.col(IndCQC.worker_records_bounded)
-        .filter(location_key_is_first_distinct)
+        .filter(location_is_first_distinct)
         .sum()
         .over(org_partition)
     )
@@ -127,9 +134,13 @@ def null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low
         .over(org_partition)
     )
 
-    org_ratio_too_low = (org_total_staff >= ORG_STAFF_THRESHOLD) & (
-        org_permanent_temporary_total / org_total_staff
-        <= ORG_PERMANENT_TEMPORARY_RATIO_THRESHOLD
+    org_ratio_too_low = (
+        pl.col(IndCQC.organisation_id).is_not_null()
+        & (org_total_staff >= ORG_STAFF_THRESHOLD)
+        & (
+            org_permanent_temporary_total / org_total_staff
+            <= ORG_PERMANENT_TEMPORARY_RATIO_THRESHOLD
+        )
     )
 
     lf = lf.with_columns(
@@ -167,6 +178,11 @@ def null_employment_status_counts_where_location_permanent_temporary_ratio_is_to
     job-role rows via `.over()`; worker_records_bounded is already
     location-wide, so needs no equivalent dedup step.
 
+    Partitions on location_id alone (plus import date) - worker_records_bounded
+    genuinely varies per location_id even under a shared establishment_id (a
+    grouped-provider ASCWDS submission covering many locations), so
+    establishment_id adds nothing here.
+
     Args:
         lf (pl.LazyFrame): merged employment status data, already processed by
             null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low.
@@ -179,7 +195,6 @@ def null_employment_status_counts_where_location_permanent_temporary_ratio_is_to
     """
     location_partition = [
         IndCQC.location_id,
-        IndCQC.establishment_id,
         IndCQC.ascwds_workplace_import_date,
     ]
     location_permanent_temporary_total = (
