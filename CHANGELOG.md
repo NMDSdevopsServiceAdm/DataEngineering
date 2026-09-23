@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Added a clean step to the employment status pipeline that deduplicates the 5 employment status count columns as a single unit (a row is only treated as repeated if all 5 are unchanged) and adds a percentage-share column per employment status, via two new reusable `_03_independent_cqc` project-level utilities intended for future gender/ethnicity breakdowns too. Extended its validation from a row-count-only check to also cover the 10 new columns.
 - Added display-formatted columns to the publication clean job: each filled posts aggregate gets a comma-formatted or millions-abbreviated string (e.g. "800,000" or "1.175m"), and the import date gets abbreviated and full month-year string formats (e.g. "Jan 2026" and "January 2026").
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
+- Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
 
 
 ### Changed
@@ -43,6 +44,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the Glue crawler module's `table_prefix` so Athena table names no longer start with a digit (which Athena/Presto can't query unquoted), by adding a leading underscore ahead of the numbered domain prefix.
 - Fixed the `_02_employment_status`/`_03_starters_leavers_vacancies` pipelines' `_00_prepare_worker`/`_00_prepare_workplace` and their validate jobs to reduce ASCWDS import dates to those already CQC-matched in the job role metadata, instead of an independent hardcoded quarterly/earliest-file-per-month rule that could disagree with the metadata match and cause the merge step to silently miss rows.
 - Fixed the SLV clean job computing turnover/starter/vacancy rates before deduplicating starters, leavers and vacancies, which could change a location's rate even when the underlying deduplicated figure hadn't changed; rates are now calculated from the deduplicated columns.
+- Fixed `care_home` being downgraded from its `CareHomeEnumType` to a generic `Categorical` in the job role estimates merge metadata, an oversight from when the metadata schema was set up; it's now cast to the correct type at source, and its validation schema check updated to match.
 
 
 ## [v2026.08.1] - 11/09/2026

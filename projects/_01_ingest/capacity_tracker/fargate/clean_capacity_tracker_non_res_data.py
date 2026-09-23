@@ -19,6 +19,7 @@ CAPACITY_TRACKER_NON_RES_COLUMNS = [
     CTNR.cqc_id,
     CTNR.cqc_care_workers_employed,
     CTNR.service_user_count,
+    CTNR.hours_agency_dom_care,
     Keys.import_date,
 ]
 COLUMNS_TO_CAST_TO_INT = [CTNR.cqc_care_workers_employed, CTNR.service_user_count]
@@ -53,6 +54,10 @@ def main(
 
     non_res_lf = non_res_lf.with_columns(
         pl.col(COLUMNS_TO_CAST_TO_INT).cast(pl.Int32, strict=False)
+    )
+
+    non_res_lf = non_res_lf.with_columns(
+        pl.col(CTNR.hours_agency_dom_care).cast(pl.Float32, strict=False)
     )
 
     non_res_lf = column_to_date(

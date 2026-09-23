@@ -131,6 +131,7 @@ CLEAN_CARE_HOME_MAIN_INPUT_DATA = {
     CTCH.agency_nurses_employed: ["0"],
     CTCH.agency_care_workers_employed: ["0"],
     CTCH.agency_non_care_workers_employed: ["0"],
+    CTCH.hours_agency: ["12.5"],
     Keys.import_date: ["20240101"],
 }
 
@@ -140,12 +141,14 @@ CLEAN_NON_RES_MAIN_INPUT_DATA = {
     CTNR.cqc_id: ["1-001"],
     CTNR.cqc_care_workers_employed: ["5"],
     CTNR.service_user_count: ["10"],
+    CTNR.hours_agency_dom_care: ["7.5"],
     Keys.import_date: ["20240101"],
 }
 CLEAN_NON_RES_OUT_OF_RANGE_INPUT_DATA = {
     CTNR.cqc_id: ["1-001"],
     CTNR.cqc_care_workers_employed: ["0"],
     CTNR.service_user_count: ["3001"],
+    CTNR.hours_agency_dom_care: ["7.5"],
     Keys.import_date: ["20240101"],
 }
 
@@ -173,6 +176,7 @@ VALIDATE_CARE_HOME_CLEANED_DATA = {
     CTCHClean.non_agency_total_employed: [4],
     CTCHClean.agency_total_employed: [11],
     CTCHClean.ct_care_home_total_employed: [15],
+    CTCHClean.hours_agency: [50.0],
 }
 
 # --- validate_clean_capacity_tracker_non_res_data ---
@@ -183,6 +187,7 @@ VALIDATE_NON_RES_CLEANED_DATA = {
     CTNRClean.ct_non_res_import_date: ["20240101", "20240101"],
     CTNRClean.cqc_care_workers_employed: [5, 10],
     CTNRClean.service_user_count: [10, 20],
+    CTNRClean.hours_agency_dom_care: [15.0, 20.0],
 }
 
 # --- ingest_capacity_tracker_data ---
