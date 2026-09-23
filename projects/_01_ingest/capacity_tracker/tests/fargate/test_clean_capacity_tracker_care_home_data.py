@@ -33,3 +33,4 @@ class TestMain:
             CTCHClean.ct_care_home_total_employed
             in returned_lf.collect_schema().names()
         )
+        assert returned_lf.collect()[CTCHClean.hours_agency][0] == 12.5

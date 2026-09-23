@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Added display-formatted columns to the publication clean job: each filled posts aggregate gets a comma-formatted or millions-abbreviated string (e.g. "800,000" or "1.175m"), and the import date gets abbreviated and full month-year string formats (e.g. "Jan 2026" and "January 2026").
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
 - Added a data-quality cleaning step for the EmpStat clean job that nulls a location's or org's permanent, temporary, bank-or-pool, agency and other employment status counts where too few of its reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
+- Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
 
 
 ### Changed
@@ -40,9 +41,11 @@ All notable changes to this project will be documented in this file.
 
 
 ### Fixed
+- Fixed the IND CQC filled posts model's `get_run_number` to paginate through all S3 objects under a model root instead of only the first page, so it no longer silently undercounts (and risks reusing/overwriting a run number) once a model root passes 1000 objects.
 - Fixed the Glue crawler module's `table_prefix` so Athena table names no longer start with a digit (which Athena/Presto can't query unquoted), by adding a leading underscore ahead of the numbered domain prefix.
 - Fixed the `_02_employment_status`/`_03_starters_leavers_vacancies` pipelines' `_00_prepare_worker`/`_00_prepare_workplace` and their validate jobs to reduce ASCWDS import dates to those already CQC-matched in the job role metadata, instead of an independent hardcoded quarterly/earliest-file-per-month rule that could disagree with the metadata match and cause the merge step to silently miss rows.
 - Fixed the SLV clean job computing turnover/starter/vacancy rates before deduplicating starters, leavers and vacancies, which could change a location's rate even when the underlying deduplicated figure hadn't changed; rates are now calculated from the deduplicated columns.
+- Fixed `care_home` being downgraded from its `CareHomeEnumType` to a generic `Categorical` in the job role estimates merge metadata, an oversight from when the metadata schema was set up; it's now cast to the correct type at source, and its validation schema check updated to match.
 
 
 ## [v2026.08.1] - 11/09/2026

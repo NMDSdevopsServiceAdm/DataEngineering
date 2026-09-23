@@ -1,8 +1,21 @@
+import polars as pl
+
 import projects._03_independent_cqc._02_employment_status.fargate.utils.merge_utils as mUtils
 import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_worker_utils as pWorkerUtils
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from projects._03_independent_cqc.utils.join_utils import join_data_into_cqc_lf
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
+)
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
+)
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
+    CqcPIRCleanedColumns as CQCPIRClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -45,21 +58,58 @@ job_role_estimates_columns = [
     IndCQC.main_job_group_labelled,
 ]
 
+cleaned_cqc_pir_columns = [
+    CQCPIRClean.location_id,
+    CQCPIRClean.cqc_pir_import_date,
+    CQCPIRClean.care_home,
+    CQCPIRClean.staff_leavers,
+    CQCPIRClean.staff_vacancies,
+]
+
+cleaned_ct_care_home_columns = [
+    CTCHClean.cqc_id,
+    CTCHClean.ct_care_home_import_date,
+    CTCHClean.care_home,
+    CTCHClean.agency_nurses_employed,
+    CTCHClean.agency_care_workers_employed,
+    CTCHClean.agency_non_care_workers_employed,
+    CTCHClean.hours_agency,
+]
+
+cleaned_ct_non_res_columns = [
+    CTNRClean.cqc_id,
+    CTNRClean.ct_non_res_import_date,
+    CTNRClean.care_home,
+    CTNRClean.hours_agency_dom_care,
+]
+
 
 def main(
     metadata_source: str,
     job_role_estimates_source: str,
     prepared_worker_source: str,
+    cleaned_cqc_pir_source: str,
+    cleaned_ct_care_home_source: str,
+    cleaned_ct_non_res_source: str,
     merged_data_destination: str,
 ) -> None:
     """
     Merges job role estimates with metadata and prepared worker employment status data.
+
+    Also joins in cleaned PIR and Capacity Tracker data, so it's available for checking
+    SLV and employment status estimates. Neither is job-role-specific, so both are
+    duplicated across every published job role row for a location.
 
     Args:
         metadata_source (str): path to the estimates ind cqc filled posts data
         job_role_estimates_source (str): path to the job role estimates data
         prepared_worker_source (str): path to the prepared ascwds worker employment
             status data
+        cleaned_cqc_pir_source (str): path to the cleaned CQC PIR data
+        cleaned_ct_care_home_source (str): path to the cleaned capacity tracker care
+            home data
+        cleaned_ct_non_res_source (str): path to the cleaned capacity tracker
+            non-residential data
         merged_data_destination (str): destination for merged output
     """
 
@@ -78,6 +128,45 @@ def main(
         metadata_lf,
         on=IndCQC.id_per_locationid_import_date,
         how="left",
+    )
+
+    # PIR/CT's id column is plain String, but job_role_estimates_lf's location_id is
+    # the namespaced LocationCatType - cast here so the join keys match.
+    cleaned_cqc_pir_lf = utils.scan_parquet(
+        source=cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns
+    ).with_columns(pl.col(CQCPIRClean.location_id).cast(CatColType.LocationCatType))
+
+    cleaned_ct_care_home_lf = utils.scan_parquet(
+        source=cleaned_ct_care_home_source,
+        selected_columns=cleaned_ct_care_home_columns,
+    ).with_columns(pl.col(CTCHClean.cqc_id).cast(CatColType.LocationCatType))
+
+    cleaned_ct_non_res_lf = utils.scan_parquet(
+        source=cleaned_ct_non_res_source, selected_columns=cleaned_ct_non_res_columns
+    ).with_columns(pl.col(CTNRClean.cqc_id).cast(CatColType.LocationCatType))
+
+    job_role_estimates_lf = join_data_into_cqc_lf(
+        job_role_estimates_lf,
+        cleaned_cqc_pir_lf,
+        CQCPIRClean.location_id,
+        CQCPIRClean.cqc_pir_import_date,
+        CQCPIRClean.care_home,
+    )
+
+    job_role_estimates_lf = join_data_into_cqc_lf(
+        job_role_estimates_lf,
+        cleaned_ct_care_home_lf,
+        CTCHClean.cqc_id,
+        CTCHClean.ct_care_home_import_date,
+        CTCHClean.care_home,
+    )
+
+    job_role_estimates_lf = join_data_into_cqc_lf(
+        job_role_estimates_lf,
+        cleaned_ct_non_res_lf,
+        CTNRClean.cqc_id,
+        CTNRClean.ct_non_res_import_date,
+        CTNRClean.care_home,
     )
 
     worker_lf = utils.scan_parquet(
@@ -124,6 +213,18 @@ if __name__ == "__main__":
             "Source s3 directory for prepared ascwds worker employment status data",
         ),
         (
+            "--cleaned_cqc_pir_source",
+            "Source s3 directory for cleaned CQC PIR data",
+        ),
+        (
+            "--cleaned_ct_care_home_source",
+            "Source s3 directory for cleaned capacity tracker care home data",
+        ),
+        (
+            "--cleaned_ct_non_res_source",
+            "Source s3 directory for cleaned capacity tracker non-residential data",
+        ),
+        (
             "--merged_data_destination",
             "Destination s3 directory for merged data",
         ),
@@ -132,5 +233,8 @@ if __name__ == "__main__":
         metadata_source=args.metadata_source,
         job_role_estimates_source=args.job_role_estimates_source,
         prepared_worker_source=args.prepared_worker_source,
+        cleaned_cqc_pir_source=args.cleaned_cqc_pir_source,
+        cleaned_ct_care_home_source=args.cleaned_ct_care_home_source,
+        cleaned_ct_non_res_source=args.cleaned_ct_non_res_source,
         merged_data_destination=args.merged_data_destination,
     )

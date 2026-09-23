@@ -53,6 +53,7 @@ def main(
         # clean job nulls out-of-range values rather than dropping the row
         .col_vals_between(CTNRClean.cqc_care_workers_employed, 1, 3000, na_pass=True)
         .col_vals_between(CTNRClean.service_user_count, 1, 3000, na_pass=True)
+        .col_vals_ge(CTNRClean.hours_agency_dom_care, 0, na_pass=True)
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)

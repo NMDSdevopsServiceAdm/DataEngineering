@@ -18,7 +18,7 @@ metadata_columns = {
     IndCQC.brand_id: CatColType.BrandCatType,
     IndCQC.services_offered: pl.List(str),
     IndCQC.primary_service_type_second_level: pl.Categorical,
-    IndCQC.care_home: pl.Categorical,
+    IndCQC.care_home: CatColType.CareHomeEnumType,
     IndCQC.dormancy: pl.Categorical,
     IndCQC.number_of_beds: pl.Int16,
     IndCQC.imputed_registration_date: pl.Date,

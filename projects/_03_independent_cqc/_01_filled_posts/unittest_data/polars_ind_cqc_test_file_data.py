@@ -339,63 +339,6 @@ class MergeIndCQCData:
 
 
 @dataclass
-class MergeUtilsData:
-
-    clean_cqc_location_for_merge_rows = [
-        ("1-001", date(2024, 1, 1), Sector.independent, "Y", 10),
-        ("1-002", date(2024, 1, 1), Sector.independent, "N", None),
-        ("1-003", date(2024, 1, 1), Sector.independent, "N", None),
-        ("1-001", date(2024, 2, 1), Sector.independent, "Y", 10),
-        ("1-002", date(2024, 2, 1), Sector.independent, "N", None),
-        ("1-003", date(2024, 2, 1), Sector.independent, "N", None),
-        ("1-001", date(2024, 3, 1), Sector.independent, "Y", 10),
-        ("1-002", date(2024, 3, 1), Sector.independent, "N", None),
-        ("1-003", date(2024, 3, 1), Sector.independent, "N", None),
-    ] # fmt: skip
-
-    data_to_merge_without_care_home_col_rows = [
-        ("1-001", date(2024, 1, 1), "1", 1),
-        ("1-003", date(2024, 1, 1), "3", 2),
-        ("1-001", date(2024, 1, 5), "1", 3),
-        ("1-001", date(2024, 1, 9), "1", 4),
-        ("1-003", date(2024, 1, 9), "3", 5),
-        ("1-003", date(2024, 3, 1), "4", 6),
-    ]
-
-    expected_merged_without_care_home_col_rows = [
-        ("1-001", date(2024, 1, 1), Sector.independent, "Y", 10, date(2024, 1, 1), "1", 1),
-        ("1-002", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), None, None),
-        ("1-003", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), "3", 2),
-        ("1-001", date(2024, 2, 1), Sector.independent, "Y", 10, date(2024, 1, 9), "1", 4),
-        ("1-002", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 1, 9), None, None),
-        ("1-003", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 1, 9), "3", 5),
-        ("1-001", date(2024, 3, 1), Sector.independent, "Y", 10, date(2024, 3, 1), None, None),
-        ("1-002", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 3, 1), None, None),
-        ("1-003", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 3, 1), "4", 6),
-    ] # fmt: skip
-
-    data_to_merge_with_care_home_col_rows = [
-        ("1-001", "Y", date(2024, 1, 1), 10),
-        ("1-002", "N", date(2024, 1, 1), 20),
-        ("1-003", "Y", date(2024, 1, 1), 30),
-        ("1-001", "Y", date(2024, 2, 1), 1),
-        ("1-002", "N", date(2024, 2, 1), 4),
-    ]
-
-    expected_merged_with_care_home_col_rows = [
-        ("1-001", date(2024, 1, 1), Sector.independent, "Y", 10, date(2024, 1, 1), 10),
-        ("1-002", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), 20),
-        ("1-003", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), None),
-        ("1-001", date(2024, 2, 1), Sector.independent, "Y", 10, date(2024, 2, 1), 1),
-        ("1-002", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 2, 1), 4),
-        ("1-003", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 2, 1), None),
-        ("1-001", date(2024, 3, 1), Sector.independent, "Y", 10, date(2024, 2, 1), 1),
-        ("1-002", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 2, 1), 4),
-        ("1-003", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 2, 1), None),
-    ] # fmt: skip
-
-
-@dataclass
 class ValidateMergeIndCQCData:
 
     merged_ind_cqc_data_rows = [

@@ -37,6 +37,7 @@ class TestMain:
         assert returned_df[CTNRClean.care_home][0] == "N"
         assert returned_df[CTNR.cqc_care_workers_employed][0] == 5
         assert returned_df[CTNR.service_user_count][0] == 10
+        assert returned_df[CTNR.hours_agency_dom_care][0] == 7.5
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
