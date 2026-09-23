@@ -4,6 +4,7 @@ import polars as pl
 
 from polars_utils import utils
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from polars_utils.filtering_utils import reduced_data_filter_expr
 from projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate.utils.merge_utils import (
     join_estimates_to_ascwds,
 )
@@ -12,8 +13,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
-
-MONTHLY_DATA_FROM_DATE = date(2015, 1, 1)
 
 metadata_columns = {
     IndCQC.name: str,
@@ -89,7 +88,15 @@ def main(
     combined_schema = transformation_columns | metadata_columns
     full_estimates_lf = (
         utils.scan_parquet(estimates_source)
-        .filter(pl.col(IndCQC.cqc_location_import_date) >= MONTHLY_DATA_FROM_DATE)
+        .filter(
+            # Full monthly retention from 2015 onwards, quarterly sampling before
+            # that - fixing `today` to 2015-01-01 with a January FY start and no
+            # lookback makes monthly_start resolve to exactly 2015-01-01
+            # regardless of when this job actually runs.
+            reduced_data_filter_expr(
+                today=date(2015, 1, 1), fy_start_month=1, lookback_fy_years=0
+            )
+        )
         .select(list(combined_schema))
         .with_row_index(name=IndCQC.id_per_locationid_import_date)
         .with_columns(utils.cast_to_schema(combined_schema))

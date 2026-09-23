@@ -6,6 +6,7 @@ import polars as pl
 
 from polars_utils import utils
 from polars_utils.column_types import CategoricalColumnTypes
+from polars_utils.filtering_utils import reduced_data_filter_expr
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
@@ -31,7 +32,6 @@ IND_CQC_ESTIMATES_COLS_TO_IMPORT = [
 ]
 
 CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
-MONTHLY_DATA_FROM_DATE = date(2015, 1, 1)
 
 EXPECTED_SCHEMA = pb.Schema(
     columns={
@@ -75,7 +75,15 @@ def main(
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
-    ).filter(pl.col(IndCqcColumns.cqc_location_import_date) >= MONTHLY_DATA_FROM_DATE)
+    ).filter(
+        # Full monthly retention from 2015 onwards, quarterly sampling before
+        # that - fixing `today` to 2015-01-01 with a January FY start and no
+        # lookback makes monthly_start resolve to exactly 2015-01-01 regardless
+        # of when this job actually runs.
+        reduced_data_filter_expr(
+            today=date(2015, 1, 1), fy_start_month=1, lookback_fy_years=0
+        )
+    )
     expected_row_count = compare_df.height * len(
         CatValues.main_job_role_labels_column_values.categorical_values
     )

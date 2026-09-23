@@ -34,7 +34,7 @@ All notable changes to this project will be documented in this file.
 - Moved the temporary employment-status-rates split from the employment status pipeline's merge stage to its estimate stage, along with its validation checks, so it runs closer to where its output is used.
 - Consolidated and reorganised the SLV/employment-status column-name classes in `ind_cqc_pipeline_columns.py`.
 - Moved `EmploymentStatusRatesColumns` (renamed `EmploymentStatusMagicNumberRateColumns`) into the shared `ind_cqc_pipeline_columns.py`, alongside the other column-name classes.
-- Replaced quarterly sampling of historical data in the job role estimates merge and monthly tracker publication clean pipelines with a hard 2015 cutoff, so all periods from 2015 onwards are retained at monthly resolution, as a spike to check whether this now runs without OOM errors.
+- Moved the full-monthly-retention start date in the job role estimates merge and monthly tracker publication clean pipelines from a rolling 2-financial-year lookback to a fixed 2015 date, so more historical data is retained at monthly resolution (still quarterly-sampled before 2015), as a spike to check whether this now runs without OOM errors.
 
 
 ### Improved
