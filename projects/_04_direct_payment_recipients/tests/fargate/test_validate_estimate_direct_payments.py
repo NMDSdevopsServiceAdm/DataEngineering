@@ -90,6 +90,7 @@ class ValidateEstimateDirectPaymentsTests(unittest.TestCase):
             "row_count_match",
             "col_vals_not_null",
             "col_vals_in_set",
+            "rows_distinct",
             "specially",
         }
 
