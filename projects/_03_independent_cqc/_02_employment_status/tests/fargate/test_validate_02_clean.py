@@ -67,7 +67,7 @@ class TestMain:
             [
                 call(
                     source="s3://bucket/my/source/",
-                    selected_columns=job.VALIDATION_COLS_TO_IMPORT,
+                    exclude_complex_types=True,
                 ),
                 call(
                     source="s3://bucket/my/compare/",
