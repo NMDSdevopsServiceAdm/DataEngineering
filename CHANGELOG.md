@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Added display-formatted columns to the publication clean job: each filled posts aggregate gets a comma-formatted or millions-abbreviated string (e.g. "800,000" or "1.175m"), and the import date gets abbreviated and full month-year string formats (e.g. "Jan 2026" and "January 2026").
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
 - Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
+- Added short-term imputation to the employment status impute job: each location and job role's 5 employment status percentages are interpolated by date across gaps of up to 5 years, and the first and last known values are carried up to 2 years outside the known range. Also added a 6-month rolling average of those imputed percentages per primary service type, region and job role, counting each location equally. Region is now carried through from the job role metadata at the merge step, with validation checks that it has no nulls and holds only the expected regions; the impute validation now checks that the imputed and rolling average percentages are between 0 and 1 and that the imputed percentages sum to 1.
 
 
 ### Changed

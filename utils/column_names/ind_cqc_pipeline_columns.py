@@ -368,6 +368,25 @@ class JobRoleImputeTempColumns:
 
 
 @dataclass
+class EmploymentStatusImputeTempColumns:
+    """
+    The names of the temporary columns used while imputing employment status percentages.
+
+    The `_prefix` fields are joined to each percentage column's name, since first/last known
+    values and rolling totals are needed once per employment status.
+    """
+
+    first_known_date: str = "es_impute_first_known_date"
+    last_known_date: str = "es_impute_last_known_date"
+    previous_known_date: str = "es_impute_previous_known_date"
+    next_known_date: str = "es_impute_next_known_date"
+    contributing_locations: str = "es_impute_contributing_locations"
+    first_known_value_prefix: str = "es_impute_first_known_value_"
+    last_known_value_prefix: str = "es_impute_last_known_value_"
+    rolling_total_prefix: str = "es_impute_rolling_total_"
+
+
+@dataclass
 class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
@@ -471,6 +490,16 @@ class EmploymentStatusColumns:
     bank_or_pool_percentage: str = "emplstat_bank_or_pool_percentage"
     agency_percentage: str = "emplstat_agency_percentage"
     other_percentage: str = "emplstat_other_percentage"
+    permanent_percentage_imputed: str = permanent_percentage + "_imputed"
+    temporary_percentage_imputed: str = temporary_percentage + "_imputed"
+    bank_or_pool_percentage_imputed: str = bank_or_pool_percentage + "_imputed"
+    agency_percentage_imputed: str = agency_percentage + "_imputed"
+    other_percentage_imputed: str = other_percentage + "_imputed"
+    permanent_percentage_rolling_avg: str = permanent_percentage + "_rolling_avg"
+    temporary_percentage_rolling_avg: str = temporary_percentage + "_rolling_avg"
+    bank_or_pool_percentage_rolling_avg: str = bank_or_pool_percentage + "_rolling_avg"
+    agency_percentage_rolling_avg: str = agency_percentage + "_rolling_avg"
+    other_percentage_rolling_avg: str = other_percentage + "_rolling_avg"
     employee_count: str = "emplstat_employee_count"
     estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
     estimated_emp_stat_temp: str = "estimated_emp_stat_temp"

@@ -15,9 +15,11 @@ class TestMain:
     def setup_method(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
+            **{col: pl.Float32 for col in job.IMPUTED_PERCENTAGE_COLUMNS},
+            **{col: pl.Float32 for col in job.ROLLING_AVERAGE_PERCENTAGE_COLUMNS},
         }
         source_rows = [
-            ("1-001",),
+            ("1-001", *[0.2] * 5, *[0.2] * 5),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
@@ -46,7 +48,7 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_report_includes_row_count_check_only(
+    def test_validation_report_includes_expected_validations(
         self,
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
@@ -60,4 +62,8 @@ class TestMain:
 
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
-        assert assertion_types_present == {"row_count_match"}
+        assert assertion_types_present == {
+            "row_count_match",
+            "col_vals_between",
+            "col_vals_expr",
+        }

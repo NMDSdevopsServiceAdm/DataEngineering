@@ -1,15 +1,38 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
 ]
+
+IMPUTED_PERCENTAGE_COLUMNS = [
+    EmpStatus.permanent_percentage_imputed,
+    EmpStatus.temporary_percentage_imputed,
+    EmpStatus.bank_or_pool_percentage_imputed,
+    EmpStatus.agency_percentage_imputed,
+    EmpStatus.other_percentage_imputed,
+]
+
+ROLLING_AVERAGE_PERCENTAGE_COLUMNS = [
+    EmpStatus.permanent_percentage_rolling_avg,
+    EmpStatus.temporary_percentage_rolling_avg,
+    EmpStatus.bank_or_pool_percentage_rolling_avg,
+    EmpStatus.agency_percentage_rolling_avg,
+    EmpStatus.other_percentage_rolling_avg,
+]
+
+# Imputed percentages are Float32, so their sum can drift slightly from 1.
+PERCENTAGE_SUM_TOLERANCE = 1e-4
 
 
 def main(
@@ -45,7 +68,31 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        ).interrogate()
+        )
+        # imputed and rolling average percentages
+        .col_vals_between(
+            IMPUTED_PERCENTAGE_COLUMNS,
+            0,
+            1,
+            na_pass=True,
+            brief="imputed percentage columns are between 0 and 1",
+        )
+        .col_vals_between(
+            ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
+            0,
+            1,
+            na_pass=True,
+            brief="rolling average percentage columns are between 0 and 1",
+        )
+        .col_vals_expr(
+            pl.col(EmpStatus.permanent_percentage_imputed).is_null()
+            | (
+                (pl.sum_horizontal(IMPUTED_PERCENTAGE_COLUMNS) - 1).abs()
+                <= PERCENTAGE_SUM_TOLERANCE
+            ),
+            brief="imputed percentages sum to 1 where populated",
+        )
+        .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 

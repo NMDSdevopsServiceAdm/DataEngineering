@@ -7,6 +7,7 @@ import pytest
 
 import projects._03_independent_cqc._02_employment_status.fargate.validate_01_merge as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_values.categorical_column_values import Region
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
@@ -68,6 +69,7 @@ class TestMain:
         self.source_df = pl.DataFrame(
             {
                 IndCqcColumns.location_id: ["1-001"] * PUBLISHED_ROLE_COUNT,
+                IndCqcColumns.current_region: [Region.london] * PUBLISHED_ROLE_COUNT,
             }
         )
 
@@ -110,4 +112,8 @@ class TestMain:
 
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
-        assert assertion_types_present == {"row_count_match"}
+        assert assertion_types_present == {
+            "row_count_match",
+            "col_vals_not_null",
+            "col_vals_in_set",
+        }

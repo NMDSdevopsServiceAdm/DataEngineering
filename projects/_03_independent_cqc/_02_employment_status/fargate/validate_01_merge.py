@@ -8,6 +8,9 @@ from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
+)
+from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
 
@@ -74,7 +77,18 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        ).interrogate()
+        )
+        # region, joined in from the job role metadata
+        .col_vals_not_null(
+            IndCqcColumns.current_region,
+            brief="current_region has no nulls",
+        )
+        .col_vals_in_set(
+            IndCqcColumns.current_region,
+            CatValues.current_region_column_values.categorical_values,
+            brief="current_region is one of the expected ONS regions",
+        )
+        .interrogate()
     )
 
     vl.write_reports(validation, bucket_name, reports_path)
