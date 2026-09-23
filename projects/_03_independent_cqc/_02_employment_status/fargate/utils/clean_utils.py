@@ -106,6 +106,13 @@ def null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low
     explicitly gated on organisation_id being populated - those rows are left
     to the location-level rule instead.
 
+    A row's own _dedup counts can be null regardless of whether its org's
+    ratio is too low (e.g. a job role with no matching worker records at all),
+    so employment_status_filtering_rule is set to missing_data for those rows
+    rather than populated - otherwise a null _clean column could be labelled
+    populated whenever the rest of the org's rows keep the ratio above
+    threshold.
+
     Args:
         lf (pl.LazyFrame): merged employment status data, already processed by
             create_employment_status_percentage_columns.
@@ -156,6 +163,8 @@ def null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low
                 EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio
             )
         )
+        .when(pl.col(EmpStatus.permanent_count_dedup).is_null())
+        .then(pl.lit(EmploymentStatusFilteringRule.missing_data))
         .otherwise(pl.lit(EmploymentStatusFilteringRule.populated))
         .cast(CatColType.EmploymentStatusFilteringRuleCatType)
         .alias(EmpStatus.filtering_rule)

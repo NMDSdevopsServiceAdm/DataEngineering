@@ -963,4 +963,45 @@ class TestCleanUtilsData:
                 EmpStatus.filtering_rule: [EmploymentStatusFilteringRule.populated] * 2,
             },
         ),
+        CleanUtilsTestCase(
+            id="flags_missing_data_for_a_null_row_even_when_the_orgs_overall_ratio_is_fine",
+            input_data={
+                # loc1's 2nd job role has no matching worker records at all
+                # (null dedup counts), but loc1's 1st job role alone gives the
+                # org enough permanent+temporary coverage that the org ratio
+                # rule never fires - the null row must not default to
+                # "populated" just because the org as a whole passed.
+                IndCQC.organisation_id: ["org4", "org4"],
+                IndCQC.location_id: ["loc1", "loc1"],
+                IndCQC.establishment_id: ["est1", "est1"],
+                IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
+                IndCQC.worker_records_bounded: [20, 20],
+                EmpStatus.permanent_count_dedup: [10, None],
+                EmpStatus.temporary_count_dedup: [0, None],
+                EmpStatus.bank_or_pool_count_dedup: [0, None],
+                EmpStatus.agency_count_dedup: [0, None],
+                EmpStatus.other_count_dedup: [0, None],
+            },
+            expected_data={
+                IndCQC.organisation_id: ["org4", "org4"],
+                IndCQC.location_id: ["loc1", "loc1"],
+                IndCQC.establishment_id: ["est1", "est1"],
+                IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
+                IndCQC.worker_records_bounded: [20, 20],
+                EmpStatus.permanent_count_dedup: [10, None],
+                EmpStatus.temporary_count_dedup: [0, None],
+                EmpStatus.bank_or_pool_count_dedup: [0, None],
+                EmpStatus.agency_count_dedup: [0, None],
+                EmpStatus.other_count_dedup: [0, None],
+                EmpStatus.permanent_count_clean: [10, None],
+                EmpStatus.temporary_count_clean: [0, None],
+                EmpStatus.bank_or_pool_count_clean: [0, None],
+                EmpStatus.agency_count_clean: [0, None],
+                EmpStatus.other_count_clean: [0, None],
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.populated,
+                    EmploymentStatusFilteringRule.missing_data,
+                ],
+            },
+        ),
     ]
