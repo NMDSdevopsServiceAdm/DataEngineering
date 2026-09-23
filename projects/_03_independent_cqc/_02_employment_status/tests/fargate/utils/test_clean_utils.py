@@ -27,14 +27,19 @@ CLEAN_COUNT_COLUMNS = [
 ]
 
 
+def _clean_count_schema_overrides(data: dict) -> dict:
+    return {column: pl.Int64 for column in CLEAN_COUNT_COLUMNS if column in data}
+
+
+def build_input_lf(input_data: dict) -> pl.LazyFrame:
+    return pl.LazyFrame(
+        input_data, schema_overrides=_clean_count_schema_overrides(input_data)
+    )
+
+
 def build_expected_lf(expected_data: dict) -> pl.LazyFrame:
     return pl.LazyFrame(
-        expected_data,
-        schema_overrides={
-            column: pl.Int64
-            for column in CLEAN_COUNT_COLUMNS
-            if column in expected_data
-        },
+        expected_data, schema_overrides=_clean_count_schema_overrides(expected_data)
     ).with_columns(
         pl.col(EmpStatus.filtering_rule).cast(
             CatColType.EmploymentStatusFilteringRuleCatType
@@ -89,28 +94,6 @@ class TestCreateEmploymentStatusPercentageColumns:
         assert returned_lf == percentage_share_horizontal_mock.return_value
 
 
-class TestSeedEmploymentStatusCleanColumns:
-    @pytest.mark.parametrize(
-        "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.seed_employment_status_clean_columns_test_cases
-        ],
-    )
-    def test_copies_dedup_counts_and_flags_populated_vs_missing(self, case):
-        test_lf = pl.LazyFrame(case.input_data)
-        expected_lf = build_expected_lf(case.expected_data)
-
-        returned_lf = job.seed_employment_status_clean_columns(test_lf)
-
-        pl_testing.assert_frame_equal(
-            returned_lf,
-            expected_lf,
-            check_row_order=False,
-            check_column_order=False,
-        )
-
-
 class TestNullEmploymentStatusCountsWhereLocationPermanentTemporaryRatioIsTooLow:
     @pytest.mark.parametrize(
         "case",
@@ -120,7 +103,7 @@ class TestNullEmploymentStatusCountsWhereLocationPermanentTemporaryRatioIsTooLow
         ],
     )
     def test_nulls_clean_counts_only_where_location_ratio_is_too_low(self, case):
-        test_lf = pl.LazyFrame(case.input_data)
+        test_lf = build_input_lf(case.input_data)
         expected_lf = build_expected_lf(case.expected_data)
 
         returned_lf = job.null_employment_status_counts_where_location_permanent_temporary_ratio_is_too_low(
@@ -144,7 +127,7 @@ class TestNullEmploymentStatusCountsWhereOrgPermanentTemporaryRatioIsTooLow:
         ],
     )
     def test_nulls_clean_counts_only_where_org_ratio_is_too_low(self, case):
-        test_lf = pl.LazyFrame(case.input_data)
+        test_lf = build_input_lf(case.input_data)
         expected_lf = build_expected_lf(case.expected_data)
 
         returned_lf = job.null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low(

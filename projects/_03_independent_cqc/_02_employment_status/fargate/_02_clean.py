@@ -25,7 +25,6 @@ def main(
     lf = utils.scan_parquet(merged_data_source)
 
     lf = cUtils.create_employment_status_percentage_columns(lf)
-    lf = cUtils.seed_employment_status_clean_columns(lf)
     lf = cUtils.null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low(
         lf
     )

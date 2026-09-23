@@ -16,14 +16,12 @@ class TestMain:
     @patch(
         f"{PATCH_PATH}.cUtils.null_employment_status_counts_where_org_permanent_temporary_ratio_is_too_low"
     )
-    @patch(f"{PATCH_PATH}.cUtils.seed_employment_status_clean_columns")
     @patch(f"{PATCH_PATH}.cUtils.create_employment_status_percentage_columns")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         create_employment_status_percentage_columns_mock: Mock,
-        seed_employment_status_clean_columns_mock: Mock,
         null_org_ratio_mock: Mock,
         null_location_ratio_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -37,11 +35,8 @@ class TestMain:
         create_employment_status_percentage_columns_mock.assert_called_once_with(
             scan_parquet_mock.return_value
         )
-        seed_employment_status_clean_columns_mock.assert_called_once_with(
-            create_employment_status_percentage_columns_mock.return_value
-        )
         null_org_ratio_mock.assert_called_once_with(
-            seed_employment_status_clean_columns_mock.return_value
+            create_employment_status_percentage_columns_mock.return_value
         )
         null_location_ratio_mock.assert_called_once_with(
             null_org_ratio_mock.return_value

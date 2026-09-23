@@ -695,7 +695,6 @@ class EmploymentStatusFilteringRule(ColumnValues):
     """The possible reasons for filtering employment status data"""
 
     populated: str = "populated"
-    missing_data: str = "missing_data"
     org_level_low_permanent_temporary_ratio: str = (
         "org_level_low_permanent_temporary_ratio"
     )
