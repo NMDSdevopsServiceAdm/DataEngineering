@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from unittest.mock import Mock, call, patch
 
 import polars as pl
@@ -15,11 +16,13 @@ class TestMain:
     def setup_method(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
+            IndCqcColumns.published_job_role_label: pl.String,
+            IndCqcColumns.cqc_location_import_date: pl.Date,
             **{col: pl.Float32 for col in job.IMPUTED_PERCENTAGE_COLUMNS},
             **{col: pl.Float32 for col in job.ROLLING_AVERAGE_PERCENTAGE_COLUMNS},
         }
         source_rows = [
-            ("1-001", *[0.2] * 5, *[0.2] * 5),
+            ("1-001", "Care worker", date(2024, 1, 1), *[0.2] * 5, *[0.2] * 5),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
@@ -37,7 +40,10 @@ class TestMain:
         assert mock_read_parquet.call_count == 2
         mock_read_parquet.assert_has_calls(
             [
-                call(source="s3://bucket/my/source/"),
+                call(
+                    source="s3://bucket/my/source/",
+                    selected_columns=job.SOURCE_COLS_TO_IMPORT,
+                ),
                 call(
                     source="s3://bucket/my/compare/",
                     selected_columns=job.COMPARE_COLS_TO_IMPORT,

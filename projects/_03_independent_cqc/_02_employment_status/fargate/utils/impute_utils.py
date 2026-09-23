@@ -205,10 +205,12 @@ def add_rolling_average_percentages(
         TempCols.rolling_total_prefix + col for col in IMPUTED_PERCENTAGE_COLUMNS
     ]
 
+    # Totals are Float64: a Float32 sliding-window sum leaves a residual as values leave the
+    # window, pushing averages just outside 0 to 1. The aggregate is small, so this is cheap.
     # polars_streaming: groupby-agg pre-aggregation workaround; data reduction allows streaming but limits flexibility
     date_totals_lf = lf.group_by(date_groups).agg(
         *[
-            pl.col(col).sum().alias(total_col)
+            pl.col(col).cast(pl.Float64).sum().alias(total_col)
             for col, total_col in zip(IMPUTED_PERCENTAGE_COLUMNS, rolling_total_columns)
         ],
         pl.col(EmpStatus.permanent_percentage_imputed)
@@ -228,10 +230,11 @@ def add_rolling_average_percentages(
     )
 
     rolling_agg_lf = rolling_agg_lf.with_columns(
-        pl.when(pl.col(TempCols.contributing_locations) > 0)
-        .then(pl.col(total_col) / pl.col(TempCols.contributing_locations))
-        .cast(pl.Float32)
-        .alias(rolling_col)
+        pl.when(pl.col(TempCols.contributing_locations) > 0).then(
+            pl.col(total_col) / pl.col(TempCols.contributing_locations)
+        )
+        # a mean of shares is within 0 to 1, so clipping only removes rounding error
+        .clip(0, 1).cast(pl.Float32).alias(rolling_col)
         for total_col, rolling_col in zip(
             rolling_total_columns, ROLLING_AVERAGE_PERCENTAGE_COLUMNS
         )

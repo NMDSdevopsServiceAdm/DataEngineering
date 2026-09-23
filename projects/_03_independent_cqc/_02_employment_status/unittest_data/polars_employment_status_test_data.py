@@ -1107,4 +1107,27 @@ class TestImputeUtilsData:
             ],
             expected_permanent=[0.2],
         ),
+        # A Float32 sliding-window sum leaves a residual once non-zero values leave the
+        # window, so windows of all zeros come out slightly above (or below) 0.
+        rolling_average_case(
+            id="does_not_carry_rounding_error_into_later_windows",
+            rows=[
+                ("loc1", NON_RES, LONDON, CARE_WORKER, date(2024, month, 1), value)
+                for month, value in zip(
+                    range(1, 11), [0.7, 0.1, 0.3, 0.9, 0.6, 0.2, 0.0, 0.0, 0.0, 0.0]
+                )
+            ],
+            expected_permanent=[
+                0.7,
+                0.8 / 2,
+                1.1 / 3,
+                1.3 / 3,
+                1.8 / 3,
+                1.7 / 3,
+                0.8 / 3,
+                0.2 / 3,
+                0.0,
+                0.0,
+            ],
+        ),
     ]

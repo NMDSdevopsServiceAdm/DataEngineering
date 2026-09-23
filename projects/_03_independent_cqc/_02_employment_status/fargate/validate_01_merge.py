@@ -18,6 +18,14 @@ COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,
 ]
 
+# Only what the checks need: the merged output is wide and includes list columns,
+# which pointblank can't write out when it extracts failing rows.
+SOURCE_COLS_TO_IMPORT = [
+    IndCqcColumns.location_id,
+    IndCqcColumns.cqc_location_import_date,
+    IndCqcColumns.current_region,
+]
+
 
 def calculate_expected_row_count(compare_df: pl.DataFrame) -> int:
     """
@@ -58,7 +66,10 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
-    source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        selected_columns=SOURCE_COLS_TO_IMPORT,
+    )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,
