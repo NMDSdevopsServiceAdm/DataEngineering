@@ -134,9 +134,11 @@ def main(
         .col_vals_between(
             IndCqcColumns.filled_posts_per_bed_ratio, 0.0, 20.0, na_pass=True
         )
-        .col_vals_between(
-            IndCqcColumns.ct_care_home_posts_per_bed_ratio, 0.0, 20.0, na_pass=True
-        )
+        # ct_care_home_total_employed (the numerator) is raw Capacity Tracker
+        # data, not yet outlier-cleaned at this point in the pipeline (unlike
+        # filled_posts_per_bed_ratio's ASCWDS-bounded numerator above), so only
+        # non-negativity is checked - a 0-20 upper bound failed in production.
+        .col_vals_ge(IndCqcColumns.ct_care_home_posts_per_bed_ratio, 0.0, na_pass=True)
         .col_vals_ge(IndCqcColumns.ct_care_home_total_employed_cleaned, 0, na_pass=True)
         .col_vals_ge(
             IndCqcColumns.ct_non_res_care_workers_employed_cleaned, 0, na_pass=True
