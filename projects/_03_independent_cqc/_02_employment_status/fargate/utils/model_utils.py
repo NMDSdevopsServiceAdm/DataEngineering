@@ -19,18 +19,14 @@ from utils.column_values.categorical_column_values import (
 
 def add_elapsed_months(lf: pl.LazyFrame, date_column: str) -> pl.LazyFrame:
     """
-    Add the number of calendar months between each row's date and the earliest date in the
-    dataset.
-
-    Months follow the calendar rather than counting distinct dates, so a step between quarterly
-    dates counts as 3 months.
+    Add calendar months since the dataset's earliest date, so a quarterly step counts as 3.
 
     Args:
         lf (pl.LazyFrame): dataset containing `date_column`
-        date_column (str): the date to count months from
+        date_column (str): the date column
 
     Returns:
-        pl.LazyFrame: dataset with the "elapsed_months" column added
+        pl.LazyFrame: dataset with "elapsed_months" added
     """
     month_number = pl.col(date_column).dt.year() * 12 + pl.col(date_column).dt.month()
 
@@ -47,25 +43,20 @@ def add_imputation_row_kind(
     date_column: str,
 ) -> pl.LazyFrame:
     """
-    Label where each row's imputed share comes from, within each partition (such as each
-    location and job role).
+    Label each row "known", "interpolated" (between known dates) or "carried" (before the
+    first or after the last known date), per partition. Rows with no imputed share are null.
 
-    Rows with a known share are "known". Rows with only an imputed share are "interpolated" when
-    they fall between the partition's first and last known dates, and "carried" when they fall
-    before the first or after the last. Rows without an imputed share are left null.
-
-    The shares in a breakdown are either all populated or all null, so one known share column
-    and its imputed column are enough to label every row.
+    One share column of each is enough, as a breakdown's shares are all populated or all null.
 
     Args:
-        lf (pl.LazyFrame): dataset containing the known and imputed share columns
-        known_column (str): one of the known share columns
-        imputed_column (str): the imputed column for the same share
-        partition_columns (list[str]): the columns that identify each timeline
-        date_column (str): the date that orders each timeline
+        lf (pl.LazyFrame): dataset containing the share columns
+        known_column (str): a known share column
+        imputed_column (str): the matching imputed share column
+        partition_columns (list[str]): the columns identifying each timeline
+        date_column (str): the date column
 
     Returns:
-        pl.LazyFrame: dataset with the "imputation_row_kind" column added
+        pl.LazyFrame: dataset with "imputation_row_kind" added
     """
     is_known = pl.col(known_column).is_not_null()
     is_imputed = pl.col(imputed_column).is_not_null()
@@ -94,19 +85,16 @@ def add_provider_location_count(
     lf: pl.LazyFrame, provider_column: str, location_column: str, date_column: str
 ) -> pl.LazyFrame:
     """
-    Add the number of distinct locations each provider has on each date.
-
-    Each location has a row per job role, so locations are counted once each rather than
-    counting rows.
+    Add each provider's number of distinct locations per date, counting locations, not rows.
 
     Args:
         lf (pl.LazyFrame): dataset containing the provider, location and date columns
         provider_column (str): the provider ID
         location_column (str): the location ID
-        date_column (str): the date
+        date_column (str): the date column
 
     Returns:
-        pl.LazyFrame: dataset with the "provider_location_count" column added
+        pl.LazyFrame: dataset with "provider_location_count" added
     """
     return lf.with_columns(
         pl.col(location_column)
@@ -120,31 +108,23 @@ def add_latest_overall_rating(
     lf: pl.LazyFrame, ratings_lf: pl.LazyFrame, location_column: str, date_column: str
 ) -> pl.LazyFrame:
     """
-    Add each location's latest real overall CQC rating as of each row's date, or "Not yet rated"
-    when it has none by then.
+    Add each location's latest real overall CQC rating as of each row's date.
 
-    A rating counts from its rating date, so each row only gets a rating from on or before its
-    own date. Ratings with no rating date can't be placed in time, so they're left out. Blank
-    ratings (such as "Inspected but not rated", which the ratings job blanks) are skipped, so a
-    location whose latest rating is blank gets its most recent real one. Ratings on the same date
-    are ordered the way the ratings job picks its latest rating: by assessment date, with its
-    latest rating flag breaking any tie.
-
-    The rating is found once per location and date, rather than for every row (such as every job
-    role), then joined back on. Any existing "latest_overall_rating" column is replaced.
+    Blank (e.g. "Inspected but not rated") and undated ratings are skipped, and locations
+    with no rating yet get "Not yet rated". Same-date ratings are ordered as the ratings job
+    does: by assessment date, then its latest rating flag. Found once per location and date,
+    then joined on. Replaces any existing rating.
 
     Args:
-        lf (pl.LazyFrame): dataset containing the location ID and date
-        ratings_lf (pl.LazyFrame): CQC ratings dataset, with the location ID in a column of the
-            same name
+        lf (pl.LazyFrame): dataset containing the location and date columns
+        ratings_lf (pl.LazyFrame): CQC ratings dataset, with the same location column name
         location_column (str): the location ID
-        date_column (str): the date each row's rating must be in place by
+        date_column (str): the date each rating must be in place by
 
     Returns:
-        pl.LazyFrame: dataset with the categorical "latest_overall_rating" column added
+        pl.LazyFrame: dataset with categorical "latest_overall_rating" added
     """
-    # The ratings dataset stores location IDs as plain strings, so they're cast to this
-    # dataset's type (categorical in the pipeline) to allow the joins.
+    # Ratings store location IDs as strings, so match this dataset's type for the joins.
     location_type = lf.collect_schema()[location_column]
 
     ratings_by_date_lf = (
@@ -171,8 +151,7 @@ def add_latest_overall_rating(
         .sort(CQCRatings.date)
     )
 
-    # join_asof needs both sides sorted by date (the ratings are sorted above). Polars can't
-    # check that when also joining by location, so its check is switched off.
+    # join_asof needs both sides sorted by date, which Polars can't check when using `by`.
     location_date_ratings_lf = (
         lf.select(location_column, date_column)
         .unique()
@@ -208,19 +187,15 @@ def build_modelling_dataset(
     rolling_average_columns: list[str],
 ) -> pl.LazyFrame:
     """
-    Build the dataset for modelling a percentage-share breakdown, such as employment status.
+    Build the dataset for modelling a share breakdown, such as employment status.
 
-    Both source datasets are wide, so only the columns the models need are selected, straight
-    away. The estimates columns are joined on location and import date, which the estimates
-    dataset has one row for each of, and the ratings are reduced to one per location and import
-    date, so neither join duplicates rows.
-
-    Build this before filtering out any rows, so each location's flags and counts reflect all of
-    its data.
+    Only the needed columns are selected, as the sources are wide. Neither join duplicates
+    rows: estimates are unique per location and date, and ratings are reduced to one per
+    location and date. Build before filtering rows, so each location's flags use all its data.
 
     Args:
-        shares_lf (pl.LazyFrame): the breakdown's imputed dataset, with a row per location, job
-            role and import date
+        shares_lf (pl.LazyFrame): the breakdown's imputed dataset, a row per location, job role
+            and date
         estimates_lf (pl.LazyFrame): the filled posts estimates dataset
         ratings_lf (pl.LazyFrame): the CQC ratings dataset
         known_share_columns (list[str]): the known share columns
@@ -228,7 +203,7 @@ def build_modelling_dataset(
         rolling_average_columns (list[str]): the rolling average share columns
 
     Returns:
-        pl.LazyFrame: the modelling dataset, with a row per location, job role and import date
+        pl.LazyFrame: the modelling dataset, a row per location, job role and date
     """
     location_role_columns = [IndCQC.location_id, IndCQC.published_job_role_label]
     date_column = IndCQC.cqc_location_import_date
@@ -247,8 +222,7 @@ def build_modelling_dataset(
         *rolling_average_columns,
     )
 
-    # The estimates dataset may store location IDs as plain strings, so they're cast to this
-    # dataset's type (categorical in the pipeline) to allow the join.
+    # Match the estimates' location ID type to this dataset's for the join.
     location_type = lf.collect_schema()[IndCQC.location_id]
     estimates_lf = estimates_lf.select(
         pl.col(IndCQC.location_id).cast(location_type),
@@ -296,34 +270,24 @@ def add_fold_safe_rolling_average(
     key_columns: list[str],
 ) -> pl.LazyFrame:
     """
-    Add a rolling average in which each fold's rows only get averages made from the other folds'
-    values.
+    Add a rolling average where each fold's rows only get averages from the other folds.
 
-    For each fold, that fold's input values are blanked, `rolling_average_function` is run, and
-    only that fold's rows are kept. So a tested fold's rows still get their group's average, even
-    rows with no value of their own, but their own values don't feed into it. The kept outputs
-    are joined back onto `lf`, so every row keeps its own input values and the row count doesn't
-    change. Any `output_columns` already in `lf`, such as averages made from all folds, are
-    replaced, rather than being kept alongside the fold-safe ones.
-
-    This runs `rolling_average_function` once per fold, over every row each time. The folds run
-    one after another rather than all at once, so memory peaks at one fold's working data rather
-    than all of them. Pass a collected frame (as `df.lazy()`) so the steps that built `lf` aren't
-    repeated for every fold.
+    Each fold's inputs are blanked, the function run and that fold's rows kept, then joined
+    back so every row keeps its inputs. Existing `output_columns` are replaced. Folds run one
+    at a time to limit memory, so pass a collected frame (`df.lazy()`) to avoid recomputing.
 
     Args:
         lf (pl.LazyFrame): dataset containing the input, fold and key columns
         rolling_average_function (Callable[[pl.LazyFrame], pl.LazyFrame]): adds
-            `output_columns` averaged from `input_columns`, keeping every row
-        input_columns (list[str]): the columns the rolling average is made from
-        output_columns (list[str]): the rolling average columns `rolling_average_function`
-            adds
-        fold_column (str): the fold of each row, numbered from 0
+            `output_columns` from `input_columns`, keeping every row
+        input_columns (list[str]): the columns to average
+        output_columns (list[str]): the columns the function adds
+        fold_column (str): each row's fold, numbered from 0
         n_folds (int): the number of folds
-        key_columns (list[str]): the columns that identify each row
+        key_columns (list[str]): the columns identifying each row
 
     Returns:
-        pl.LazyFrame: dataset with the fold-safe `output_columns`
+        pl.LazyFrame: dataset with fold-safe `output_columns`
     """
     lf = lf.drop(output_columns, strict=False)
 

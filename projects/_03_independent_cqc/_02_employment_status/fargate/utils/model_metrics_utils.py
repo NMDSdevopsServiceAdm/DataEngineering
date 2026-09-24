@@ -14,25 +14,20 @@ def aggregate_shares_by_cell(
     cell_columns: list[str],
 ) -> pl.LazyFrame:
     """
-    Aggregate predicted and actual shares into cells, such as service, CSSR, job role and year.
+    Aggregate predicted and actual shares into cells, weighting rows by their workers.
 
-    Only rows with both known actual shares and predictions are used, so each cell compares
-    predictions and actual shares for the same workers. When comparing models, give them all
-    the same rows, so a model isn't scored on fewer rows because it left some unpredicted.
-    Each cell's share is the average of its rows' shares weighted by their workers,
-    Σ(share × weight) / Σ weight, so it matches the share of all the cell's workers. The sums are
-    in Float64, since a cell can sum a lot of rows and the aggregated result is small.
+    Only rows with both shares are used, so compare models on the same rows. Sums are Float64,
+    as a cell can sum many rows.
 
     Args:
         lf (pl.LazyFrame): dataset containing the share, weight and cell columns
         predicted_columns (list[str]): the predicted share columns
         actual_columns (list[str]): the actual share columns
-        weight_column (str): the number of workers each row's shares apply to
-        cell_columns (list[str]): the columns that define each cell
+        weight_column (str): each row's number of workers
+        cell_columns (list[str]): the columns defining each cell
 
     Returns:
-        pl.LazyFrame: one row per cell with any usable rows, with its weighted shares (keeping
-            their column names) and its total weight in "cell_weight"
+        pl.LazyFrame: a row per cell, with its weighted shares and total "cell_weight"
     """
     weight = pl.col(weight_column).cast(pl.Float64)
 
@@ -59,26 +54,21 @@ def score_cell_shares(
     by_columns: list[str] | None = None,
 ) -> pl.LazyFrame:
     """
-    Score each share's predictions against the actual shares across cells.
+    Score predicted against actual cell shares with weighted R² and mean absolute error.
 
-    R² and mean absolute error are both weighted by each cell's weight, so bigger cells count
-    for more: R² = 1 - Σ w(actual - predicted)² / Σ w(actual - weighted mean actual)², and the
-    error is Σ w|actual - predicted| / Σ w, in percentage points. Cells missing either share are
-    left out.
+    Bigger cells count for more, the error is in percentage points, and cells missing either
+    share are skipped.
 
     Args:
-        cells_lf (pl.LazyFrame): one row per cell, such as from `aggregate_shares_by_cell`
+        cells_lf (pl.LazyFrame): a row per cell, such as from `aggregate_shares_by_cell`
         predicted_columns (list[str]): the predicted share columns
-        actual_columns (list[str]): the actual share columns, paired in order with
-            `predicted_columns`
+        actual_columns (list[str]): the actual share columns, in the same order
         weight_column (str): each cell's weight
-        by_columns (list[str] | None): columns to score each group of separately, such as the
-            fold. Defaults to scoring all cells together.
+        by_columns (list[str] | None): columns to score separately by, such as the fold.
+            Defaults to scoring all cells together.
 
     Returns:
-        pl.LazyFrame: one row per share (and per group of `by_columns`), naming the share by its
-            actual column in "share", with its "r2" and its "mean_absolute_error" in percentage
-            points
+        pl.LazyFrame: a row per share (and group), with its "r2" and "mean_absolute_error"
     """
     by_columns = by_columns or []
     weight = pl.col(weight_column).cast(pl.Float64)

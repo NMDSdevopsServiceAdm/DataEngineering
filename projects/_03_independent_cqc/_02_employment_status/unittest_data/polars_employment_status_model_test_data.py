@@ -31,8 +31,7 @@ from utils.column_values.categorical_column_values import (
 )
 
 KNOWN_SHARE = EmpStatus.permanent_percentage_clean
-# Existing share columns stand in for the imputed and rolling average shares, so these tests
-# don't depend on those columns being defined.
+# Existing columns stand in for the imputed and rolling average shares.
 IMPUTED_SHARE = EmpStatus.permanent_percentage
 ROLLING_AVERAGE_SHARE = IndCQC.posts_rolling_average_model
 
@@ -69,10 +68,7 @@ def one_location_rating_case(
     ratings: list[tuple[str | None, str, str | None, int]],
     expected_rating: str,
 ) -> AddLatestOverallRatingTestCase:
-    """
-    Build a case for one location on a date after all of its ratings, listing the ratings as
-    (overall rating, rating date, assessment date, latest rating flag) rows.
-    """
+    """One location, dated after its ratings: (rating, date, assessment date, latest flag)."""
     overall_ratings, rating_dates, assessment_dates, flags = map(list, zip(*ratings))
     location = {
         IndCQC.location_id: ["loc1"],
@@ -108,10 +104,7 @@ def fold_safe_case(
     n_folds: int = 2,
     existing_averages: list[float] | None = None,
 ) -> FoldSafeRollingAverageTestCase:
-    """
-    Build a case of one location per row, all in the same service and date, so each row's
-    average comes from the other folds' shares in that one group.
-    """
+    """One location per row, in one service and date, so averages come from other folds."""
     rows = {
         IndCQC.location_id: [f"loc{i}" for i in range(len(folds))],
         IndCQC.published_job_role_label: [CARE_WORKER] * len(folds),
@@ -376,8 +369,7 @@ class TestModelUtilsData:
         ),
     ]
 
-    # The row that should come first is listed second each time, so these fail if the order
-    # falls back to the order of the rows.
+    # The expected rating is listed second, so these fail if row order decides.
     same_date_ratings_test_cases = [
         one_location_rating_case(
             id="later_assessment_date_comes_first",
@@ -449,8 +441,7 @@ class TestModelUtilsData:
         },
     )
 
-    # loc1 has two job roles on each of two dates, and more than one rating, so a join that
-    # isn't one match per location and date would duplicate its rows.
+    # loc1 has two roles, two dates and two ratings, so a bad join would duplicate its rows.
     build_modelling_dataset_shares_data = {
         IndCQC.location_id: ["loc1"] * 4 + ["loc2"] * 2,
         IndCQC.provider_id: ["prov1"] * 6,
@@ -544,7 +535,7 @@ class ModelMetricsUtilsTestCase:
 @dataclass
 class TestModelMetricsUtilsData:
     cell_shares_are_worker_weighted_test_cases = [
-        # A mean that ignored workers would give actual 0.4 and predicted 0.4 for non-res.
+        # Unweighted, non-res would be 0.4 for both.
         ModelMetricsUtilsTestCase(
             id="weights_each_row_by_its_workers",
             input_data={
@@ -578,8 +569,7 @@ class TestModelMetricsUtilsData:
                 ShareModel.cell_weight: [2.0],
             },
         ),
-        # Counting the row's workers but not its missing prediction would give a predicted
-        # share of 0.1.
+        # Keeping the row's workers without its prediction would give 0.1.
         ModelMetricsUtilsTestCase(
             id="row_without_a_prediction_left_out_of_its_cells_shares_and_weight",
             input_data={
@@ -630,8 +620,7 @@ class TestModelMetricsUtilsData:
         ),
     ]
 
-    # Both cases have one exact cell and one 20 point miss, which unweighted would score an R²
-    # of 0.5 and an error of 10 points.
+    # One exact cell and one 20 point miss: unweighted, that's R² 0.5 and error 10.
     larger_cells_weigh_more_test_cases = [
         ModelMetricsUtilsTestCase(
             id="miss_in_the_smaller_cell_counts_for_less",
@@ -661,8 +650,7 @@ class TestModelMetricsUtilsData:
         ),
     ]
 
-    # Counting the last cell's weight but not its missing error would give an R² of 0.94 and
-    # an error of 5 points.
+    # Keeping the last cell's weight without its error would give R² 0.94 and error 5.
     cells_missing_a_share_test_cases = [
         ModelMetricsUtilsTestCase(
             id="cell_without_a_prediction_left_out",

@@ -520,10 +520,7 @@ class EmploymentStatusMagicNumberRateColumns:
 
 @dataclass
 class ModelEvaluationColumns:
-    """
-    The names of the columns added while evaluating models, such as the filled posts and
-    employment status models.
-    """
+    """The names of the columns added when evaluating models, such as filled posts."""
 
     fold: str = "fold"
     never_submitted: str = "never_submitted"
@@ -533,10 +530,7 @@ class ModelEvaluationColumns:
 
 @dataclass
 class ShareModelColumns:
-    """
-    The names of the columns added while modelling a percentage-share breakdown (such as
-    employment status) and scoring the models.
-    """
+    """The names of the columns added when modelling and scoring share breakdowns."""
 
     elapsed_months: str = "elapsed_months"
     imputation_row_kind: str = "imputation_row_kind"

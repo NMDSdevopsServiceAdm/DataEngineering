@@ -62,10 +62,9 @@ def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFram
 
 def copy_percentages_to_clean_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Copies the 5 employment status percentage columns into their "_clean" columns.
+    Copy the 5 percentage columns into their "_clean" columns.
 
-    A temporary stand-in until the employment status cleaning filters are added, so model work
-    can use the "_clean" names from the start. Remove it when those filters replace it.
+    A stand-in until the cleaning filters are added, which should replace it.
 
     Args:
         lf (pl.LazyFrame): dataset containing the 5 "emplstat_<status>_percentage" columns.

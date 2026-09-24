@@ -273,7 +273,7 @@ class TestModelEvaluationUtilsData:
             location_ids=[f"loc{i}" for i in range(7)],
             n_folds=3,
         ),
-        # loc0 has far more rows than the others, so folds balanced by rows would differ.
+        # loc0 has most of the rows, so balancing by rows would differ.
         AssignLocationFoldsTestCase(
             id="balanced_by_locations_not_rows",
             location_ids=["loc0"] * 20 + [f"loc{i}" for i in range(1, 10)],
@@ -348,8 +348,7 @@ class TestModelEvaluationUtilsData:
         ),
     ]
 
-    # Rows are in date order across partitions, so a change measured from one row to the next,
-    # ignoring the partition, would jump between their different values.
+    # Rows alternate between partitions, so changes across them would show as jumps.
     change_within_partition_test_cases = [
         MeanPeriodToPeriodChangeTestCase(
             id="not_measured_across_job_roles",
@@ -375,7 +374,7 @@ class TestModelEvaluationUtilsData:
                 ModelEvaluation.mean_period_to_period_change: [0.0],
             },
         ),
-        # loc1 changes by 10 posts and loc2 doesn't change, so the mean change is 5 posts.
+        # loc1 changes by 10 and loc2 by 0, so the mean change is 5.
         MeanPeriodToPeriodChangeTestCase(
             id="not_measured_across_locations",
             input_data={

@@ -846,7 +846,7 @@ class RegistrationType(ColumnValues):
 
 @dataclass
 class ImputationRowKind(ColumnValues):
-    """The possible values of the imputation row kind column when modelling percentage shares"""
+    """The possible values of the imputation row kind column"""
 
     known: str = "known"
     interpolated: str = "interpolated"

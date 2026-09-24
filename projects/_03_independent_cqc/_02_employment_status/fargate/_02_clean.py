@@ -10,9 +10,8 @@ def main(
     Cleans the merged employment status data.
 
     Deduplicates the 5 employment status count columns as a single unit, and
-    adds a percentage-share column per employment status. The percentages are
-    then copied into "_clean" columns, as a stand-in until the cleaning filters
-    are added.
+    adds a percentage-share column per employment status, copied into stand-in
+    "_clean" columns until the cleaning filters are added.
 
     Args:
         merged_data_source (str): path to the merged data

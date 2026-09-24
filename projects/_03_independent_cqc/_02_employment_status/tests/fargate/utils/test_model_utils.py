@@ -50,7 +50,7 @@ SCHEMA_OVERRIDES = {
 
 
 def to_lf(data: dict[str, Any]) -> pl.LazyFrame:
-    """Build a LazyFrame, typing the columns the functions create or expect."""
+    """Build a LazyFrame with the column types the functions use."""
     return pl.LazyFrame(
         data,
         schema_overrides={
@@ -60,7 +60,7 @@ def to_lf(data: dict[str, Any]) -> pl.LazyFrame:
 
 
 def to_ratings_lf(data: dict[str, Any]) -> pl.LazyFrame:
-    """Build a ratings LazyFrame, with its text columns typed as strings even when blank."""
+    """Build a ratings LazyFrame, keeping blank text columns as strings."""
     return pl.LazyFrame(
         data,
         schema_overrides=dict.fromkeys(
@@ -125,10 +125,7 @@ class TestAddProviderLocationCount:
 class TestAddLatestOverallRating:
     @staticmethod
     def returned_and_expected_lfs(case) -> tuple[pl.LazyFrame, pl.LazyFrame]:
-        """
-        Run the function with the location ID typed as in the pipeline: categorical in the
-        dataset and a plain string in the ratings.
-        """
+        """Run with location IDs as in the pipeline: categorical, but strings in ratings."""
         returned_lf = job.add_latest_overall_rating(
             to_lf(case.input_data).with_columns(AS_LOCATION_TYPE),
             to_ratings_lf(case.ratings_data),
@@ -202,8 +199,7 @@ class TestAddLatestOverallRating:
 
 class TestBuildModellingDataset:
     def test_builder_does_not_duplicate_rows(self):
-        # Location IDs are typed as in the pipeline: categorical in the shares dataset and plain
-        # strings in the estimates and ratings.
+        # Location IDs as in the pipeline: categorical here, strings in estimates and ratings.
         shares_lf = to_lf(Data.build_modelling_dataset_shares_data).with_columns(
             AS_LOCATION_TYPE
         )
@@ -225,10 +221,7 @@ class TestBuildModellingDataset:
 
 
 def mean_share_by_service_and_date(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Stand in for a rolling average: the mean share per service and date, joined back onto
-    every row.
-    """
+    """Stand-in rolling average: the mean share per service and date."""
     group_columns = [IndCQC.primary_service_type, IndCQC.cqc_location_import_date]
     means_lf = lf.group_by(group_columns).agg(
         pl.col(IMPUTED_SHARE).mean().alias(ROLLING_AVERAGE_SHARE)

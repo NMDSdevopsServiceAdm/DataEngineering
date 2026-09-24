@@ -65,7 +65,7 @@ class TestAssignLocationFolds:
 
     def test_existing_folds_are_replaced(self):
         case = Data.existing_folds_replaced_test_case
-        # Folds are numbered from 0, so n_folds is a fold number no new assignment gives.
+        # No new assignment gives fold n_folds, as folds are numbered from 0.
         earlier_folds_lf = pl.LazyFrame(
             {
                 IndCQC.location_id: case.location_ids,

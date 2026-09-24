@@ -9,22 +9,19 @@ def assign_location_folds(
     lf: pl.LazyFrame, location_column: str, n_folds: int, seed: int
 ) -> pl.LazyFrame:
     """
-    Assign each location to one of `n_folds` cross-validation folds, so all of its rows share
-    a fold.
+    Assign each location to one of `n_folds` cross-validation folds.
 
-    Folds are dealt out in turn down a shuffled list of the unique location IDs, so fold sizes
-    differ by at most one location. The IDs are sorted before shuffling, so the same seed gives
-    the same folds whatever order the rows are in. Any existing "fold" column is replaced, such
-    as when folds are assigned again with another seed.
+    Shuffled unique location IDs are dealt into folds in turn, so sizes differ by at most one.
+    IDs are sorted first, so a seed always gives the same folds. Replaces any existing "fold".
 
     Args:
         lf (pl.LazyFrame): dataset containing the location ID
         location_column (str): the location ID
         n_folds (int): the number of folds
-        seed (int): the seed for shuffling the locations
+        seed (int): the shuffle seed
 
     Returns:
-        pl.LazyFrame: dataset with the "fold" column added, numbered from 0
+        pl.LazyFrame: dataset with "fold" added, numbered from 0
     """
     lf = lf.drop(ModelEvaluation.fold, strict=False)
 
@@ -46,15 +43,15 @@ def add_never_submitted_flag(
     lf: pl.LazyFrame, known_column: str, location_column: str
 ) -> pl.LazyFrame:
     """
-    Flag the locations that never have a known value, on any row.
+    Flag locations that never have a known value, on any row.
 
     Args:
         lf (pl.LazyFrame): dataset containing the known value column
-        known_column (str): a column that's populated when the value is known
+        known_column (str): a column populated only when the value is known
         location_column (str): the location ID
 
     Returns:
-        pl.LazyFrame: dataset with the boolean "never_submitted" column added
+        pl.LazyFrame: dataset with boolean "never_submitted" added
     """
     return lf.with_columns(
         pl.col(known_column)
@@ -73,21 +70,17 @@ def mean_period_to_period_change(
     date_column: str,
 ) -> pl.LazyFrame:
     """
-    Measure how jumpy each column is: its mean absolute change from one period to the next, in
-    the column's own units.
-
-    Changes are only taken between consecutive dates within a partition (such as a location, or
-    a location and job role), never from one partition's last date to the next partition's
-    first.
+    Measure jumpiness: each column's mean absolute change between consecutive dates, within
+    each partition, in the column's own units.
 
     Args:
         lf (pl.LazyFrame): dataset containing the measured, partition and date columns
         columns (list[str]): the columns to measure, such as predictions
-        partition_columns (list[str]): the columns that identify each timeline
-        date_column (str): the date that orders each timeline
+        partition_columns (list[str]): the columns identifying each timeline
+        date_column (str): the date column
 
     Returns:
-        pl.LazyFrame: one row per measured column, naming it in "column_name", with its
+        pl.LazyFrame: a row per measured column, named in "column_name", with its
             "mean_period_to_period_change"
     """
     return lf.select(
