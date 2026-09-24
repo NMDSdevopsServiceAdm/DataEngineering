@@ -1,0 +1,35 @@
+{
+  "Comment": "THROWAWAY. Manual-start only. Runs the instrumented copy of the monthly tracker publication clean step (2102 monthly-data spike) so its memory profile can be measured against real data. Writes to its own dataset name so it can never overwrite the real pipeline's output. Delete with _02_clean_prototype.py.",
+  "StartAt": "Diagnose Monthly Tracker Clean",
+  "States": {
+    "Diagnose Monthly Tracker Clean": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${publication_prototype_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${publication_prototype_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_99_publication_prototype-container",
+              "Command": [
+                "_02_clean_prototype.py",
+                "--merge_data_source", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge/",
+                "--clean_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_clean_diagnostics/"
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}
