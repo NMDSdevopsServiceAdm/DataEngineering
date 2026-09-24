@@ -16,6 +16,10 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedNewValidationColumns as CQCLVal,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    contemporary_geography_columns,
+    current_geography_columns,
+)
 from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_column_values import (
     LocationType,
@@ -101,15 +105,15 @@ def main(
                 CQCLClean.specialism_dementia,
                 CQCLClean.specialism_learning_disabilities,
                 CQCLClean.specialism_mental_health,
-                CQCLClean.contemporary_ons_import_date,
-                CQCLClean.contemporary_cssr,
-                CQCLClean.contemporary_region,
-                CQCLClean.current_ons_import_date,
-                CQCLClean.current_cssr,
-                CQCLClean.current_region,
-                CQCLClean.current_rural_urban_ind_11,
+                CQCLClean.postcode_cleaned,
             ]
         )
+        # ONS postcode-match geography columns: a location either matches a single
+        # ONS postcode row (populating every field below together) or the pipeline
+        # raises before reaching this validator (see raise_error_if_unmatched),
+        # so these are always populated as one group.
+        .col_vals_not_null(contemporary_geography_columns)
+        .col_vals_not_null(current_geography_columns)
         # index columns
         .rows_distinct([CQCLClean.location_id, CQCLClean.cqc_location_import_date])
         # Complex column validation for completeness
