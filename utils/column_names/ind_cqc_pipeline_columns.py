@@ -483,11 +483,6 @@ class EmploymentStatusColumns:
     bank_or_pool_count_clean: str = "emplstat_bank_or_pool_count_clean"
     agency_count_clean: str = "emplstat_agency_count_clean"
     other_count_clean: str = "emplstat_other_count_clean"
-    permanent_percentage_clean: str = "emplstat_permanent_percentage_clean"
-    temporary_percentage_clean: str = "emplstat_temporary_percentage_clean"
-    bank_or_pool_percentage_clean: str = "emplstat_bank_or_pool_percentage_clean"
-    agency_percentage_clean: str = "emplstat_agency_percentage_clean"
-    other_percentage_clean: str = "emplstat_other_percentage_clean"
     filtering_rule: str = "employment_status_filtering_rule"
 
 

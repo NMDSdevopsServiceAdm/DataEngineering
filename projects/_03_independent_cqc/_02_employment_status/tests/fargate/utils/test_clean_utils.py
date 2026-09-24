@@ -32,11 +32,6 @@ PERCENTAGE_COLUMNS = [
     EmpStatus.bank_or_pool_percentage,
     EmpStatus.agency_percentage,
     EmpStatus.other_percentage,
-    EmpStatus.permanent_percentage_clean,
-    EmpStatus.temporary_percentage_clean,
-    EmpStatus.bank_or_pool_percentage_clean,
-    EmpStatus.agency_percentage_clean,
-    EmpStatus.other_percentage_clean,
 ]
 
 
@@ -62,17 +57,15 @@ def build_expected_lf(expected_data: dict) -> pl.LazyFrame:
     )
 
 
-class TestCreateEmploymentStatusPercentageColumns:
-    @patch(f"{PATCH_PATH}.cleaningUtils.percentage_share_horizontal")
+class TestDeduplicateEmploymentStatusCounts:
     @patch(f"{PATCH_PATH}.cleaningUtils.remove_repeated_values_over_time_as_group")
-    def test_calls_dedup_then_percentage_share_with_expected_args(
+    def test_calls_remove_repeated_values_with_expected_args(
         self,
         remove_repeated_values_over_time_as_group_mock: Mock,
-        percentage_share_horizontal_mock: Mock,
     ):
         input_lf = Mock()
 
-        returned_lf = job.create_employment_status_percentage_columns(input_lf)
+        returned_lf = job.deduplicate_employment_status_counts(input_lf)
 
         remove_repeated_values_over_time_as_group_mock.assert_called_once_with(
             input_lf,
@@ -89,14 +82,29 @@ class TestCreateEmploymentStatusPercentageColumns:
             ],
             date_column=IndCQC.cqc_location_import_date,
         )
+        assert (
+            returned_lf == remove_repeated_values_over_time_as_group_mock.return_value
+        )
+
+
+class TestCreateEmploymentStatusPercentageColumns:
+    @patch(f"{PATCH_PATH}.cleaningUtils.percentage_share_horizontal")
+    def test_calls_percentage_share_horizontal_with_clean_counts(
+        self,
+        percentage_share_horizontal_mock: Mock,
+    ):
+        input_lf = Mock()
+
+        returned_lf = job.create_employment_status_percentage_columns(input_lf)
+
         percentage_share_horizontal_mock.assert_called_once_with(
-            remove_repeated_values_over_time_as_group_mock.return_value,
+            input_lf,
             columns=[
-                EmpStatus.permanent_count_dedup,
-                EmpStatus.temporary_count_dedup,
-                EmpStatus.bank_or_pool_count_dedup,
-                EmpStatus.agency_count_dedup,
-                EmpStatus.other_count_dedup,
+                EmpStatus.permanent_count_clean,
+                EmpStatus.temporary_count_clean,
+                EmpStatus.bank_or_pool_count_clean,
+                EmpStatus.agency_count_clean,
+                EmpStatus.other_count_clean,
             ],
             output_columns=[
                 EmpStatus.permanent_percentage,

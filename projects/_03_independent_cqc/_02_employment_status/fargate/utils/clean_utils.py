@@ -22,14 +22,6 @@ DEDUP_TO_CLEAN_COUNT_COLUMNS: dict[str, str] = {
     EmpStatus.other_count_dedup: EmpStatus.other_count_clean,
 }
 
-PERCENTAGE_TO_CLEAN_PERCENTAGE_COLUMNS: dict[str, str] = {
-    EmpStatus.permanent_percentage: EmpStatus.permanent_percentage_clean,
-    EmpStatus.temporary_percentage: EmpStatus.temporary_percentage_clean,
-    EmpStatus.bank_or_pool_percentage: EmpStatus.bank_or_pool_percentage_clean,
-    EmpStatus.agency_percentage: EmpStatus.agency_percentage_clean,
-    EmpStatus.other_percentage: EmpStatus.other_percentage_clean,
-}
-
 RATIO_TOO_LOW_COLUMN = "_ratio_too_low"
 
 
@@ -65,26 +57,22 @@ def _null_clean_columns_where_ratio_too_low(
     )
 
 
-def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
+def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Deduplicates the 5 employment status count columns as a single unit, then
-    adds a percentage-share column per employment status.
+    Deduplicates the 5 employment status count columns as a single unit.
 
     A row's counts are only treated as a repeat of the prior row in its
-    location/job-role timeline (and nulled) if all 5 are unchanged; if any one
-    changes, all 5 survive. Percentage-share columns are then computed from the
-    deduplicated counts, so a repeated (nulled) row's percentages are also null
-    rather than carrying forward a stale share.
+    location/job-role timeline (and nulled) if all 5 are unchanged; if any
+    one changes, all 5 survive.
 
     Args:
         lf (pl.LazyFrame): dataset containing the merged employment status count
             columns.
 
     Returns:
-        pl.LazyFrame: dataset with 5 "<count>_dedup" and 5
-            "emplstat_<status>_percentage" columns added.
+        pl.LazyFrame: dataset with 5 "<count>_dedup" columns added.
     """
-    lf = cleaningUtils.remove_repeated_values_over_time_as_group(
+    return cleaningUtils.remove_repeated_values_over_time_as_group(
         lf,
         columns_to_clean=[
             EmpStatus.permanent_count,
@@ -97,14 +85,34 @@ def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFram
         date_column=IndCQC.cqc_location_import_date,
     )
 
-    lf = cleaningUtils.percentage_share_horizontal(
+
+def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Adds a percentage-share column per employment status, computed from the
+    _clean counts rather than the raw/dedup counts.
+
+    Must run last, after both ratio rules: a row's percentages come out null
+    wherever its _clean counts are null, whether that's from the
+    pre-existing dedup-staleness reason or from this stage's own
+    ratio-too-low rules - so no separate _clean variant of the percentage
+    columns is needed.
+
+    Args:
+        lf (pl.LazyFrame): dataset already processed by
+            null_counts_for_low_location_ratio (has the 5 "<count>_clean"
+            columns).
+
+    Returns:
+        pl.LazyFrame: dataset with 5 "emplstat_<status>_percentage" columns added.
+    """
+    return cleaningUtils.percentage_share_horizontal(
         lf,
         columns=[
-            EmpStatus.permanent_count_dedup,
-            EmpStatus.temporary_count_dedup,
-            EmpStatus.bank_or_pool_count_dedup,
-            EmpStatus.agency_count_dedup,
-            EmpStatus.other_count_dedup,
+            EmpStatus.permanent_count_clean,
+            EmpStatus.temporary_count_clean,
+            EmpStatus.bank_or_pool_count_clean,
+            EmpStatus.agency_count_clean,
+            EmpStatus.other_count_clean,
         ],
         output_columns=[
             EmpStatus.permanent_percentage,
@@ -115,8 +123,6 @@ def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFram
         ],
     )
 
-    return lf
-
 
 def _dedup_total_staff_expr() -> pl.Expr:
     """Sums a job-role row's 5 deduplicated employment status counts.
@@ -124,7 +130,7 @@ def _dedup_total_staff_expr() -> pl.Expr:
     Reconciles to worker_records_bounded for a populated row, but the 5
     _dedup columns are nulled together as a group for a row that's an
     unchanged repeat of its prior snapshot (see
-    create_employment_status_percentage_columns), so a stale row's sum is
+    deduplicate_employment_status_counts), so a stale row's sum is
     null and drops out of any later `.sum()` over it entirely - unlike
     worker_records_bounded, which stays populated regardless. Using
     worker_records_bounded as the staff denominator let a stale row's
@@ -180,14 +186,14 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         lf (pl.LazyFrame): merged employment status data, already processed by
-            create_employment_status_percentage_columns.
+            deduplicate_employment_status_counts.
 
     Returns:
-        pl.LazyFrame: lf with a _clean column per deduplicated count column and
-            per percentage column (the _dedup/percentage columns themselves
-            are left untouched), plus employment_status_filtering_rule. The
-            _clean columns are nulled for orgs with 10+ staff whose
-            permanent+temporary workers make up 5% or less of that staff.
+        pl.LazyFrame: lf with a _clean column per deduplicated count column
+            (the _dedup columns themselves are left untouched), plus
+            employment_status_filtering_rule. The _clean columns are nulled
+            for orgs with 10+ staff whose permanent+temporary workers make
+            up 5% or less of that staff.
     """
     org_partition = [IndCQC.organisation_id, IndCQC.ascwds_workplace_import_date]
 
@@ -208,9 +214,8 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     # Materialised once: each window aggregation above would otherwise be
     # recomputed per clean column, since it's used in several expressions.
     lf = lf.with_columns(org_ratio_too_low.alias(RATIO_TOO_LOW_COLUMN))
-    lf = _create_clean_columns_where_ratio_too_low(lf, DEDUP_TO_CLEAN_COUNT_COLUMNS)
     lf = _create_clean_columns_where_ratio_too_low(
-        lf, PERCENTAGE_TO_CLEAN_PERCENTAGE_COLUMNS
+        lf, DEDUP_TO_CLEAN_COUNT_COLUMNS
     ).drop(RATIO_TOO_LOW_COLUMN)
     lf = filtering_utils.add_filtering_rule_column(
         lf,
@@ -249,10 +254,10 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
             null_counts_for_low_org_ratio.
 
     Returns:
-        pl.LazyFrame: lf with the _clean count and percentage columns further
-            nulled, and employment_status_filtering_rule updated, for
-            locations with 10+ staff whose permanent+temporary workers make
-            up 1% or less of that staff.
+        pl.LazyFrame: lf with the _clean count columns further nulled, and
+            employment_status_filtering_rule updated, for locations with
+            10+ staff whose permanent+temporary workers make up 1% or less
+            of that staff.
     """
     location_partition = [
         IndCQC.location_id,
@@ -272,11 +277,7 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     # Materialised once: see null_counts_for_low_org_ratio for why.
     lf = lf.with_columns(location_ratio_too_low.alias(RATIO_TOO_LOW_COLUMN))
     lf = _null_clean_columns_where_ratio_too_low(
-        lf,
-        [
-            *DEDUP_TO_CLEAN_COUNT_COLUMNS.values(),
-            *PERCENTAGE_TO_CLEAN_PERCENTAGE_COLUMNS.values(),
-        ],
+        lf, list(DEDUP_TO_CLEAN_COUNT_COLUMNS.values())
     ).drop(RATIO_TOO_LOW_COLUMN)
     return filtering_utils.update_filtering_rule(
         lf,
