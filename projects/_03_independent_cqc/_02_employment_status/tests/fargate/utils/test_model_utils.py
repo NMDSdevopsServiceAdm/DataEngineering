@@ -20,6 +20,9 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     ShareModelColumns as ShareModel,
 )
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_values.categorical_column_values import ImputationRowKind
 
 LOCATION_ROLE_COLUMNS = [IndCQC.location_id, IndCQC.published_job_role_label]
@@ -51,6 +54,17 @@ def to_lf(data: dict[str, Any]) -> pl.LazyFrame:
         schema_overrides={
             col: dtype for col, dtype in SCHEMA_OVERRIDES.items() if col in data
         },
+    )
+
+
+def to_ratings_lf(data: dict[str, Any]) -> pl.LazyFrame:
+    """Build a ratings LazyFrame, with its text columns typed as strings even when blank."""
+    return pl.LazyFrame(
+        data,
+        schema_overrides=dict.fromkeys(
+            [CQCRatings.overall_rating, CQCRatings.date, CQCL.assessment_date],
+            pl.String,
+        ),
     )
 
 
@@ -131,13 +145,9 @@ class TestAddLatestOverallRating:
         Run the function with the location ID typed as in the pipeline: categorical in the
         dataset and a plain string in the ratings.
         """
-        ratings_lf = pl.LazyFrame(
-            case.ratings_data, schema_overrides={CQCRatings.overall_rating: pl.String}
-        )
-
         returned_lf = job.add_latest_overall_rating(
             to_lf(case.input_data).with_columns(AS_LOCATION_TYPE),
-            ratings_lf,
+            to_ratings_lf(case.ratings_data),
             location_column=IndCQC.location_id,
         )
 
@@ -151,6 +161,27 @@ class TestAddLatestOverallRating:
         ],
     )
     def test_latest_rating_joined_per_location(self, case):
+        returned_lf, expected_lf = self.returned_and_expected_lfs(case)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.blank_latest_rating_test_cases
+        ],
+    )
+    def test_blank_latest_rating_uses_latest_real_rating(self, case):
+        returned_lf, expected_lf = self.returned_and_expected_lfs(case)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.same_date_ratings_test_cases],
+    )
+    def test_same_date_ratings_ordered_like_the_ratings_job(self, case):
         returned_lf, expected_lf = self.returned_and_expected_lfs(case)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
@@ -176,7 +207,7 @@ class TestBuildModellingDataset:
         returned_lf = job.build_modelling_dataset(
             shares_lf,
             pl.LazyFrame(Data.build_modelling_dataset_estimates_data),
-            pl.LazyFrame(Data.build_modelling_dataset_ratings_data),
+            to_ratings_lf(Data.build_modelling_dataset_ratings_data),
             known_share_columns=[KNOWN_SHARE],
             imputed_share_columns=[IMPUTED_SHARE],
             rolling_average_columns=[ROLLING_AVERAGE_SHARE],

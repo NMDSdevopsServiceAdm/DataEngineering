@@ -7,8 +7,10 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     ShareModelColumns as ShareModel,
 )
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_values.categorical_column_values import (
-    CQCLatestRating,
     CQCRatingsValues,
     ImputationRowKind,
 )
@@ -141,12 +143,14 @@ def add_latest_overall_rating(
     lf: pl.LazyFrame, ratings_lf: pl.LazyFrame, location_column: str
 ) -> pl.LazyFrame:
     """
-    Add each location's latest overall CQC rating to all of its rows, or "Not yet rated" when
-    it has none.
+    Add each location's latest real overall CQC rating to all of its rows, or "Not yet rated"
+    when it has none.
 
-    The ratings dataset has a row per rating, so it's filtered to each location's latest one
-    before joining, which keeps the join to one match per location. A location is "Not yet
-    rated" when it isn't in the ratings or its latest rating is blank.
+    Blank ratings (such as "Inspected but not rated", which the ratings job blanks) are skipped,
+    so a location whose latest rating is blank gets its most recent real one. Ratings are
+    ordered the way the ratings job picks its latest rating, by rating date then assessment
+    date, with its latest rating flag breaking any tie. The ratings dataset has a row per
+    rating, so taking one per location before joining keeps the join to one match per location.
 
     Args:
         lf (pl.LazyFrame): dataset containing the location ID
@@ -161,13 +165,23 @@ def add_latest_overall_rating(
     # dataset's type (categorical in the pipeline) to allow the join.
     location_type = lf.collect_schema()[location_column]
 
-    latest_ratings_lf = ratings_lf.filter(
-        pl.col(CQCRatings.latest_rating_flag) == CQCLatestRating.is_latest_rating
-    ).select(
-        pl.col(location_column).cast(location_type),
-        pl.col(CQCRatings.overall_rating)
-        .cast(pl.Categorical)
-        .alias(ShareModel.latest_overall_rating),
+    latest_ratings_lf = (
+        ratings_lf.filter(pl.col(CQCRatings.overall_rating).is_not_null())
+        .group_by(location_column)
+        .agg(
+            pl.col(CQCRatings.overall_rating)
+            .sort_by(
+                [CQCRatings.date, CQCL.assessment_date, CQCRatings.latest_rating_flag],
+                descending=True,
+                nulls_last=True,
+            )
+            .first()
+            .alias(ShareModel.latest_overall_rating)
+        )
+        .with_columns(
+            pl.col(location_column).cast(location_type),
+            pl.col(ShareModel.latest_overall_rating).cast(pl.Categorical),
+        )
     )
 
     lf = lf.join(latest_ratings_lf, on=location_column, how="left")

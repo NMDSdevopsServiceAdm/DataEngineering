@@ -10,6 +10,9 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     ShareModelColumns as ShareModel,
 )
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_values.categorical_column_values import (
     RUI,
     CareHome,
@@ -58,6 +61,34 @@ class AddLatestOverallRatingTestCase:
     input_data: dict[str, Any]
     ratings_data: dict[str, Any]
     expected_data: dict[str, Any]
+
+
+def one_location_rating_case(
+    id: str,
+    ratings: list[tuple[str | None, str, str | None, int]],
+    expected_rating: str,
+) -> AddLatestOverallRatingTestCase:
+    """
+    Build a case for one location on one date, listing its ratings as (overall rating, rating
+    date, assessment date, latest rating flag) rows.
+    """
+    overall_ratings, rating_dates, assessment_dates, flags = map(list, zip(*ratings))
+    location = {
+        IndCQC.location_id: ["loc1"],
+        IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
+    }
+    return AddLatestOverallRatingTestCase(
+        id=id,
+        input_data=location,
+        ratings_data={
+            IndCQC.location_id: ["loc1"] * len(ratings),
+            CQCRatings.overall_rating: overall_ratings,
+            CQCRatings.date: rating_dates,
+            CQCL.assessment_date: assessment_dates,
+            CQCRatings.latest_rating_flag: flags,
+        },
+        expected_data={**location, ShareModel.latest_overall_rating: [expected_rating]},
+    )
 
 
 @dataclass
@@ -301,11 +332,13 @@ class TestModelUtilsData:
             },
             ratings_data={
                 IndCQC.location_id: ["loc1", "loc1"],
-                CQCRatings.latest_rating_flag: [NOT_LATEST, LATEST],
                 CQCRatings.overall_rating: [
                     CQCRatingsValues.requires_improvement,
                     CQCRatingsValues.good,
                 ],
+                CQCRatings.date: ["2023-01-01", "2024-01-01"],
+                CQCL.assessment_date: [None, None],
+                CQCRatings.latest_rating_flag: [NOT_LATEST, LATEST],
             },
             expected_data={
                 IndCQC.location_id: ["loc1", "loc1"],
@@ -321,11 +354,13 @@ class TestModelUtilsData:
             },
             ratings_data={
                 IndCQC.location_id: ["loc1", "loc2"],
-                CQCRatings.latest_rating_flag: [LATEST, LATEST],
                 CQCRatings.overall_rating: [
                     CQCRatingsValues.good,
                     CQCRatingsValues.outstanding,
                 ],
+                CQCRatings.date: ["2024-01-01", "2024-01-01"],
+                CQCL.assessment_date: [None, None],
+                CQCRatings.latest_rating_flag: [LATEST, LATEST],
             },
             expected_data={
                 IndCQC.location_id: ["loc1", "loc2"],
@@ -338,6 +373,40 @@ class TestModelUtilsData:
         ),
     ]
 
+    blank_latest_rating_test_cases = [
+        one_location_rating_case(
+            id="uses_the_most_recent_real_rating",
+            ratings=[
+                (CQCRatingsValues.requires_improvement, "2022-01-01", None, NOT_LATEST),
+                (CQCRatingsValues.good, "2023-01-01", None, NOT_LATEST),
+                (None, "2024-01-01", None, LATEST),
+            ],
+            expected_rating=CQCRatingsValues.good,
+        ),
+    ]
+
+    # The row that should come first is listed second each time, so these fail if the order
+    # falls back to the order of the rows.
+    same_date_ratings_test_cases = [
+        one_location_rating_case(
+            id="later_assessment_date_comes_first",
+            ratings=[
+                (CQCRatingsValues.good, "2024-06-01", "2024-03-01", NOT_LATEST),
+                (CQCRatingsValues.outstanding, "2024-06-01", "2024-04-01", NOT_LATEST),
+                (None, "2024-07-01", None, LATEST),
+            ],
+            expected_rating=CQCRatingsValues.outstanding,
+        ),
+        one_location_rating_case(
+            id="latest_rating_flag_breaks_a_tie",
+            ratings=[
+                (CQCRatingsValues.good, "2024-06-01", "2024-04-01", NOT_LATEST),
+                (CQCRatingsValues.outstanding, "2024-06-01", "2024-04-01", LATEST),
+            ],
+            expected_rating=CQCRatingsValues.outstanding,
+        ),
+    ]
+
     unrated_location_test_cases = [
         AddLatestOverallRatingTestCase(
             id="location_missing_from_the_ratings",
@@ -347,8 +416,10 @@ class TestModelUtilsData:
             },
             ratings_data={
                 IndCQC.location_id: ["loc2"],
-                CQCRatings.latest_rating_flag: [LATEST],
                 CQCRatings.overall_rating: [CQCRatingsValues.good],
+                CQCRatings.date: ["2024-01-01"],
+                CQCL.assessment_date: [None],
+                CQCRatings.latest_rating_flag: [LATEST],
             },
             expected_data={
                 IndCQC.location_id: ["loc1"],
@@ -356,22 +427,13 @@ class TestModelUtilsData:
                 ShareModel.latest_overall_rating: [CQCRatingsValues.not_yet_rated],
             },
         ),
-        AddLatestOverallRatingTestCase(
-            id="latest_rating_is_blank",
-            input_data={
-                IndCQC.location_id: ["loc1"],
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
-            },
-            ratings_data={
-                IndCQC.location_id: ["loc1"],
-                CQCRatings.latest_rating_flag: [LATEST],
-                CQCRatings.overall_rating: [None],
-            },
-            expected_data={
-                IndCQC.location_id: ["loc1"],
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
-                ShareModel.latest_overall_rating: [CQCRatingsValues.not_yet_rated],
-            },
+        one_location_rating_case(
+            id="location_with_only_blank_ratings",
+            ratings=[
+                (None, "2023-01-01", None, NOT_LATEST),
+                (None, "2024-01-01", None, LATEST),
+            ],
+            expected_rating=CQCRatingsValues.not_yet_rated,
         ),
     ]
 
@@ -405,12 +467,14 @@ class TestModelUtilsData:
     }
     build_modelling_dataset_ratings_data = {
         IndCQC.location_id: ["loc1", "loc1", "loc2"],
-        CQCRatings.latest_rating_flag: [NOT_LATEST, LATEST, LATEST],
         CQCRatings.overall_rating: [
             CQCRatingsValues.requires_improvement,
             CQCRatingsValues.good,
             CQCRatingsValues.outstanding,
         ],
+        CQCRatings.date: ["2023-01-01", "2024-01-01", "2024-01-01"],
+        CQCL.assessment_date: [None, None, None],
+        CQCRatings.latest_rating_flag: [NOT_LATEST, LATEST, LATEST],
     }
 
     location_rows_share_a_fold_test_cases = [
