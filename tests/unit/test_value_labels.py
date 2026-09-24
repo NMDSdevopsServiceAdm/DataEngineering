@@ -1,7 +1,5 @@
-from utils.column_values.categorical_column_values import (
-    JobGroupLabels,
-    MainJobRoleLabels,
-)
+from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
+from utils.column_values.categorical_column_values import JobGroupLabels
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
