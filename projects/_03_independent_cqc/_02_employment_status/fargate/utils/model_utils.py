@@ -1,5 +1,8 @@
+from typing import Callable
+
 import polars as pl
 
+import projects._03_independent_cqc.utils.model_evaluation_utils as evaluationUtils
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -84,30 +87,6 @@ def add_imputation_row_kind(
         .then(pl.lit(ImputationRowKind.carried))
         .cast(row_kind_type)
         .alias(ShareModel.imputation_row_kind)
-    )
-
-
-def add_never_submitted_flag(
-    lf: pl.LazyFrame, known_column: str, location_column: str
-) -> pl.LazyFrame:
-    """
-    Flag the locations that never have a known share, for any job role or date.
-
-    Args:
-        lf (pl.LazyFrame): dataset containing a known share column
-        known_column (str): one of the known share columns
-        location_column (str): the location ID
-
-    Returns:
-        pl.LazyFrame: dataset with the boolean "never_submitted" column added
-    """
-    return lf.with_columns(
-        pl.col(known_column)
-        .is_not_null()
-        .any()
-        .over(location_column)
-        .not_()
-        .alias(ShareModel.never_submitted)
     )
 
 
@@ -291,7 +270,7 @@ def build_modelling_dataset(
         partition_columns=location_role_columns,
         date_column=date_column,
     )
-    lf = add_never_submitted_flag(
+    lf = evaluationUtils.add_never_submitted_flag(
         lf, known_column=known_share_columns[0], location_column=IndCQC.location_id
     )
     lf = add_provider_location_count(
@@ -305,3 +284,61 @@ def build_modelling_dataset(
     )
 
     return lf
+
+
+def add_fold_safe_rolling_average(
+    lf: pl.LazyFrame,
+    rolling_average_function: Callable[[pl.LazyFrame], pl.LazyFrame],
+    input_columns: list[str],
+    output_columns: list[str],
+    fold_column: str,
+    n_folds: int,
+    key_columns: list[str],
+) -> pl.LazyFrame:
+    """
+    Add a rolling average in which each fold's rows only get averages made from the other folds'
+    values.
+
+    For each fold, that fold's input values are blanked, `rolling_average_function` is run, and
+    only that fold's rows are kept. So a tested fold's rows still get their group's average, even
+    rows with no value of their own, but their own values don't feed into it. The kept outputs
+    are joined back onto `lf`, so every row keeps its own input values and the row count doesn't
+    change. Any `output_columns` already in `lf`, such as averages made from all folds, are
+    replaced, rather than being kept alongside the fold-safe ones.
+
+    This runs `rolling_average_function` once per fold, over every row each time. The folds run
+    one after another rather than all at once, so memory peaks at one fold's working data rather
+    than all of them. Pass a collected frame (as `df.lazy()`) so the steps that built `lf` aren't
+    repeated for every fold.
+
+    Args:
+        lf (pl.LazyFrame): dataset containing the input, fold and key columns
+        rolling_average_function (Callable[[pl.LazyFrame], pl.LazyFrame]): adds
+            `output_columns` averaged from `input_columns`, keeping every row
+        input_columns (list[str]): the columns the rolling average is made from
+        output_columns (list[str]): the rolling average columns `rolling_average_function`
+            adds
+        fold_column (str): the fold of each row, numbered from 0
+        n_folds (int): the number of folds
+        key_columns (list[str]): the columns that identify each row
+
+    Returns:
+        pl.LazyFrame: dataset with the fold-safe `output_columns`
+    """
+    lf = lf.drop(output_columns, strict=False)
+
+    fold_output_lfs = []
+    for fold in range(n_folds):
+        blanked_lf = lf.with_columns(
+            pl.when(pl.col(fold_column) != fold).then(pl.col(column)).alias(column)
+            for column in input_columns
+        )
+        fold_output_lfs.append(
+            rolling_average_function(blanked_lf)
+            .filter(pl.col(fold_column) == fold)
+            .select(*key_columns, *output_columns)
+        )
+
+    return lf.join(
+        pl.concat(fold_output_lfs, parallel=False), on=key_columns, how="left"
+    )

@@ -88,65 +88,18 @@ class TestAssignLocationFolds:
         )
 
 
-def mean_posts_by_service_and_date(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Stand in for a rolling average: the mean filled posts per service and date, joined back
-    onto every row.
-    """
-    group_columns = [IndCQC.primary_service_type, IndCQC.cqc_location_import_date]
-    means_lf = lf.group_by(group_columns).agg(
-        pl.col(IndCQC.ascwds_filled_posts_dedup_clean)
-        .mean()
-        .alias(IndCQC.posts_rolling_average_model)
+class TestAddNeverSubmittedFlag:
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in Data.never_submitted_test_cases]
     )
-    return lf.join(means_lf, on=group_columns, how="left")
-
-
-class TestAddFoldSafeRollingAverage:
-    @staticmethod
-    def add_fold_safe_average(case) -> pl.LazyFrame:
-        return job.add_fold_safe_rolling_average(
+    def test_never_submitted_only_when_no_row_is_ever_known(self, case):
+        returned_lf = job.add_never_submitted_flag(
             pl.LazyFrame(case.input_data),
-            rolling_average_function=mean_posts_by_service_and_date,
-            input_columns=[IndCQC.ascwds_filled_posts_dedup_clean],
-            output_columns=[IndCQC.posts_rolling_average_model],
-            fold_column=ModelEvaluation.fold,
-            n_folds=case.n_folds,
-            key_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
+            known_column=IndCQC.ascwds_filled_posts_dedup_clean,
+            location_column=IndCQC.location_id,
         )
 
-    @pytest.mark.parametrize(
-        "case", [c.as_pytest_param() for c in Data.tested_fold_excluded_test_cases]
-    )
-    def test_tested_fold_excluded_from_its_rolling_average(self, case):
-        returned_lf = self.add_fold_safe_average(case)
-
-        averages = [IndCQC.location_id, IndCQC.posts_rolling_average_model]
-        pl_testing.assert_frame_equal(
-            returned_lf.select(averages),
-            pl.LazyFrame(case.expected_data).select(averages),
-            check_row_order=False,
-        )
-
-    @pytest.mark.parametrize(
-        "case",
-        [c.as_pytest_param() for c in Data.tested_fold_gets_group_value_test_cases],
-    )
-    def test_tested_fold_still_gets_group_value(self, case):
-        returned_lf = self.add_fold_safe_average(case)
-
-        pl_testing.assert_frame_equal(
-            returned_lf, pl.LazyFrame(case.expected_data), check_row_order=False
-        )
-
-    def test_existing_output_columns_are_replaced(self):
-        case = Data.existing_averages_replaced_test_case
-
-        returned_lf = self.add_fold_safe_average(case)
-
-        pl_testing.assert_frame_equal(
-            returned_lf, pl.LazyFrame(case.expected_data), check_row_order=False
-        )
+        pl_testing.assert_frame_equal(returned_lf, pl.LazyFrame(case.expected_data))
 
 
 class TestMeanPeriodToPeriodChange:

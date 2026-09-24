@@ -526,6 +526,7 @@ class ModelEvaluationColumns:
     """
 
     fold: str = "fold"
+    never_submitted: str = "never_submitted"
     column_name: str = "column_name"
     mean_period_to_period_change: str = "mean_period_to_period_change"
 
@@ -539,7 +540,6 @@ class ShareModelColumns:
 
     elapsed_months: str = "elapsed_months"
     imputation_row_kind: str = "imputation_row_kind"
-    never_submitted: str = "never_submitted"
     provider_location_count: str = "provider_location_count"
     latest_overall_rating: str = "latest_overall_rating"
     cell_weight: str = "cell_weight"

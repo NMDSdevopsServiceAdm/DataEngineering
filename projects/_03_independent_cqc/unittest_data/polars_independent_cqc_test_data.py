@@ -8,10 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     ModelEvaluationColumns as ModelEvaluation,
 )
-from utils.column_values.categorical_column_values import (
-    PrimaryServiceType,
-    PublishedJobRoleLabels,
-)
+from utils.column_values.categorical_column_values import PublishedJobRoleLabels
 
 
 @dataclass
@@ -235,49 +232,13 @@ class AssignLocationFoldsTestCase:
 
 
 @dataclass
-class FoldSafeRollingAverageTestCase:
+class AddNeverSubmittedFlagTestCase:
     id: str
-    n_folds: int
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
 
     def as_pytest_param(self):
         return pytest.param(self, id=self.id)
-
-
-def fold_safe_case(
-    id: str,
-    folds: list[int],
-    filled_posts: list[float | None],
-    expected_averages: list[float],
-    n_folds: int = 2,
-    existing_averages: list[float] | None = None,
-) -> FoldSafeRollingAverageTestCase:
-    """
-    Build a case of one location per row, all in the same service and date, so each row's
-    average comes from the other folds' filled posts in that one group.
-    """
-    rows = {
-        IndCQC.location_id: [f"loc{i}" for i in range(len(folds))],
-        IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * len(folds),
-        IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * len(folds),
-        ModelEvaluation.fold: folds,
-        IndCQC.ascwds_filled_posts_dedup_clean: filled_posts,
-    }
-    existing = (
-        {}
-        if existing_averages is None
-        else {IndCQC.posts_rolling_average_model: existing_averages}
-    )
-    return FoldSafeRollingAverageTestCase(
-        id=id,
-        n_folds=n_folds,
-        input_data={**rows, **existing},
-        expected_data={
-            **rows,
-            IndCQC.posts_rolling_average_model: expected_averages,
-        },
-    )
 
 
 @dataclass
@@ -332,39 +293,32 @@ class TestModelEvaluationUtilsData:
         n_folds=2,
     )
 
-    # Averaging all 3 locations would give 5.0 on every row.
-    tested_fold_excluded_test_cases = [
-        fold_safe_case(
-            id="leaves_out_only_the_tested_fold",
-            folds=[0, 1, 2],
-            filled_posts=[2.0, 4.0, 9.0],
-            expected_averages=[6.5, 5.5, 3.0],
-            n_folds=3,
+    never_submitted_test_cases = [
+        AddNeverSubmittedFlagTestCase(
+            id="one_known_value_counts_for_the_whole_location",
+            input_data={
+                IndCQC.location_id: ["loc1"] * 3,
+                IndCQC.ascwds_filled_posts_dedup_clean: [None, 5.0, None],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1"] * 3,
+                IndCQC.ascwds_filled_posts_dedup_clean: [None, 5.0, None],
+                ModelEvaluation.never_submitted: [False] * 3,
+            },
         ),
-        fold_safe_case(
-            id="leaves_out_every_location_in_the_tested_fold",
-            folds=[0, 1, 1],
-            filled_posts=[2.0, 4.0, 9.0],
-            expected_averages=[6.5, 2.0, 2.0],
+        AddNeverSubmittedFlagTestCase(
+            id="location_without_any_known_value_is_never_submitted",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc2", "loc2"],
+                IndCQC.ascwds_filled_posts_dedup_clean: [5.0, None, None],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc2", "loc2"],
+                IndCQC.ascwds_filled_posts_dedup_clean: [5.0, None, None],
+                ModelEvaluation.never_submitted: [False, True, True],
+            },
         ),
     ]
-
-    tested_fold_gets_group_value_test_cases = [
-        fold_safe_case(
-            id="location_without_its_own_value_gets_its_groups_value",
-            folds=[0, 1, 1],
-            filled_posts=[2.0, 6.0, None],
-            expected_averages=[6.0, 2.0, 2.0],
-        ),
-    ]
-
-    existing_averages_replaced_test_case = fold_safe_case(
-        id="averages_from_all_folds_are_replaced",
-        folds=[0, 1, 1],
-        filled_posts=[2.0, 4.0, 9.0],
-        expected_averages=[6.5, 2.0, 2.0],
-        existing_averages=[5.0, 5.0, 5.0],
-    )
 
     steady_predictions_test_cases = [
         MeanPeriodToPeriodChangeTestCase(
