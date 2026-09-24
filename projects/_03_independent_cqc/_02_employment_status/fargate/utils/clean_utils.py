@@ -57,27 +57,35 @@ def _null_clean_columns_where_ratio_too_low(
     )
 
 
-def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
+def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Deduplicates the 5 employment status count columns as a single unit.
+    Deduplicates the 5 employment status count columns as a single unit, then
+    adds a percentage-share column per employment status, computed from the
+    _clean counts rather than the raw/dedup counts.
 
     A row's counts are only treated as a repeat of the prior row in its
-    location/job-role timeline (and nulled) if all 5 are unchanged; if any
-    one changes, all 5 survive. Not used by this branch's own ratio rules
-    (see null_counts_for_low_org_ratio's docstring for why) - kept because
-    the _dedup columns are a shared, reusable output other consumers rely
-    on. Independent of the ratio rules (reads only the raw counts, doesn't
-    touch or depend on their _clean/filtering_rule output), so it can run
-    before or after them with no difference to the result.
+    location/job-role timeline (and nulled) if all 5 are unchanged; if any one
+    changes, all 5 survive. The _dedup columns this produces aren't used by
+    this branch's own ratio rules (see null_counts_for_low_org_ratio's
+    docstring for why) - kept because they're a shared, reusable output other
+    consumers rely on. Independent of the ratio rules (reads only the raw
+    counts, doesn't touch or depend on their _clean/filtering_rule output),
+    so deduplication can run before or after them with no difference to the
+    result - here it's alongside the percentage-share step, which does need
+    to run last: a row's percentages come out null wherever its _clean counts
+    are null, so no separate _clean variant of the percentage columns is
+    needed.
 
     Args:
-        lf (pl.LazyFrame): dataset containing the merged employment status count
-            columns.
+        lf (pl.LazyFrame): dataset already processed by
+            null_counts_for_low_location_ratio (has the 5 "<count>_clean"
+            columns).
 
     Returns:
-        pl.LazyFrame: dataset with 5 "<count>_dedup" columns added.
+        pl.LazyFrame: dataset with 5 "<count>_dedup" and 5
+            "emplstat_<status>_percentage" columns added.
     """
-    return cleaningUtils.remove_repeated_values_over_time_as_group(
+    lf = cleaningUtils.remove_repeated_values_over_time_as_group(
         lf,
         columns_to_clean=[
             EmpStatus.permanent_count,
@@ -90,25 +98,7 @@ def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
         date_column=IndCQC.cqc_location_import_date,
     )
 
-
-def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Adds a percentage-share column per employment status, computed from the
-    _clean counts rather than the raw/dedup counts.
-
-    Must run last, after both ratio rules: a row's percentages come out null
-    wherever its _clean counts are null - so no separate _clean variant of
-    the percentage columns is needed.
-
-    Args:
-        lf (pl.LazyFrame): dataset already processed by
-            null_counts_for_low_location_ratio (has the 5 "<count>_clean"
-            columns).
-
-    Returns:
-        pl.LazyFrame: dataset with 5 "emplstat_<status>_percentage" columns added.
-    """
-    return cleaningUtils.percentage_share_horizontal(
+    lf = cleaningUtils.percentage_share_horizontal(
         lf,
         columns=[
             EmpStatus.permanent_count_clean,
@@ -125,6 +115,8 @@ def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFram
             EmpStatus.other_percentage,
         ],
     )
+
+    return lf
 
 
 def _total_staff_expr() -> pl.Expr:
@@ -184,8 +176,7 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     was never recorded at all, not because it's unchanged since last time.
 
     Args:
-        lf (pl.LazyFrame): the raw merged employment status data - no
-            dependency on deduplicate_employment_status_counts having run.
+        lf (pl.LazyFrame): the raw merged employment status data.
 
     Returns:
         pl.LazyFrame: lf with a _clean column per raw count column (the raw

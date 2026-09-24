@@ -13,12 +13,10 @@ def main(
 
     Nulls a location's/org's raw counts where too few of its staff have a
     recorded permanent/temporary status (recording why in
-    employment_status_filtering_rule), then adds a percentage-share column
-    per employment status computed from those cleaned counts.
-    Deduplicates the 5 raw employment status count columns as a single unit
-    too, for other consumers - independent of the filter above, since that
-    reads the raw counts directly rather than the _dedup columns this
-    produces, so the two can run in either order.
+    employment_status_filtering_rule), then deduplicates the 5 raw
+    employment status count columns as a single unit and adds a
+    percentage-share column per employment status, computed from those
+    cleaned counts.
 
     Args:
         merged_data_source (str): path to the merged data
@@ -28,7 +26,6 @@ def main(
 
     lf = cUtils.null_counts_for_low_org_ratio(lf)
     lf = cUtils.null_counts_for_low_location_ratio(lf)
-    lf = cUtils.deduplicate_employment_status_counts(lf)
     lf = cUtils.create_employment_status_percentage_columns(lf)
 
     utils.sink_to_parquet(

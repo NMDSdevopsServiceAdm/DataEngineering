@@ -2,7 +2,9 @@
 
 Wraps this branch's raw-counts EmpStat ratio-filter clean job (still
 .over()-based, like 2094-empstat, but sourced from raw counts instead of
-_dedup) with RunDiagnostics to measure peak memory, for comparison against
+_dedup, with dedup/percentage-share folded back into a single
+create_employment_status_percentage_columns call, matching main's shape)
+with RunDiagnostics to measure peak memory, for comparison against
 2094-empstat's dedup-based equivalent prototype. Delete this file (and its
 terraform/Dockerfile/Step Function wiring) once that comparison concludes.
 """
@@ -38,11 +40,8 @@ def main(merged_data_source: str, cleaned_data_destination: str) -> None:
         lf = cUtils.null_counts_for_low_location_ratio(lf)
         diagnostics.checkpoint("after_location_ratio", lf)
 
-        lf = cUtils.deduplicate_employment_status_counts(lf)
-        diagnostics.checkpoint("after_dedup", lf)
-
         lf = cUtils.create_employment_status_percentage_columns(lf)
-        diagnostics.checkpoint("after_percentage", lf)
+        diagnostics.checkpoint("after_dedup_and_percentage", lf)
 
         utils.sink_to_parquet(lazy_df=lf, output_path=cleaned_data_destination)
         diagnostics.checkpoint("after_sink")
