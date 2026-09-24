@@ -164,6 +164,15 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     full dataset - no repeated-row double-counting risk from summing raw
     directly, so no distinct-row guard is needed here.
 
+    Partitioned by ascwds_worker_import_date, not ascwds_workplace_import_
+    date: these counts come from the ASCWDS worker file, not the workplace
+    file, so the worker import date is the one that actually governs them.
+    The merge join keys workplace data to worker data by matching these two
+    dates against each other (kept as distinct columns afterwards, not
+    coalesced) - so they're always equal in practice, and the uniqueness
+    check above holds for either, but the worker date is the semantically
+    correct one to group by.
+
     Org staff is summed across the org's job-role rows via `.over()`, not a
     join, which costs more peak memory for this kind of broadcast (see the
     over-vs-join skill).
@@ -185,7 +194,7 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
             for orgs with 10+ staff whose permanent+temporary workers make
             up 5% or less of that staff.
     """
-    org_partition = [IndCQC.organisation_id, IndCQC.ascwds_workplace_import_date]
+    org_partition = [IndCQC.organisation_id, IndCQC.ascwds_worker_import_date]
 
     org_total_staff = _total_staff_expr().sum().over(org_partition)
     org_permanent_temporary_total = (
@@ -249,7 +258,7 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     location_partition = [
         IndCQC.location_id,
-        IndCQC.ascwds_workplace_import_date,
+        IndCQC.ascwds_worker_import_date,
     ]
 
     location_total_staff = _total_staff_expr().sum().over(location_partition)
