@@ -291,19 +291,25 @@ class ModelUtilsData:
 @dataclass
 class ValidateModelsData:
     validate_model_feature_rows = [
-        ("1-001", date(2025, 1, 1), "N", None, ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, None),
-        ("1-002", date(2025, 1, 1), "Y", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5),
-        ("1-003", date(2025, 1, 1), "N", "Y", ["activity 1"], 12.0, None, ["specialism 1"], "rui", "region", "Y", 10, 5),
-        ("1-004", date(2025, 1, 1), "N", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5),
-        ("1-005", date(2024, 1, 1), "N", None, ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, None),
+        ("1-001", date(2025, 1, 1), "N", None, ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, None, None, None),
+        ("1-002", date(2025, 1, 1), "Y", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, 10, 1.2),
+        ("1-003", date(2025, 1, 1), "N", "Y", ["activity 1"], 12.0, None, ["specialism 1"], "rui", "region", "Y", 10, 5, None, None),
+        ("1-004", date(2025, 1, 1), "N", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, None, None),
+        ("1-005", date(2024, 1, 1), "N", None, ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, None, None, None),
     ] # fmt: skip
     expected_get_expected_row_count_rows = 1
 
     null_posts_rolling_average_rows = [
-        ("1-001", date(2025, 1, 1), "Y", "Y", ["activity 1"], None, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5),
-        ("1-002", date(2025, 1, 1), "N", "Y", ["activity 1"], None, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5),
+        ("1-001", date(2025, 1, 1), "N", "Y", ["activity 1"], None, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, None, None),
     ] # fmt: skip
     expected_null_posts_rolling_average_row_count = 1
+
+    care_home_missing_bed_feature_rows = [
+        ("1-001", date(2025, 1, 1), "Y", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, 10, 1.2),
+        ("1-002", date(2025, 1, 1), "Y", "Y", ["activity 1"], None, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, None, 1.2),
+        ("1-003", date(2025, 1, 1), "Y", "Y", ["activity 1"], None, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, 10, None),
+    ] # fmt: skip
+    expected_care_home_missing_bed_feature_row_count = 1
 
 
 @dataclass

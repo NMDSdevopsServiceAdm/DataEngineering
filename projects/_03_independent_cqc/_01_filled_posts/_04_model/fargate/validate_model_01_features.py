@@ -22,9 +22,12 @@ def main(
 ) -> None:
     """Validates a dataset according to a set of provided rules and produces a summary report as well as failure outputs.
 
+    The comparison dataset is scanned lazily rather than read, as only its filtered row
+    count is needed, so just the columns that count uses are read from it.
+
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset and output the report to
-            - shoud correspond to workspace / feature branch name
+            - should correspond to workspace / feature branch name
         source_path (str): the source dataset path to be validated
         reports_path (str): the output path to write reports to
         compare_path (str): path to a dataset to compare against for expected size
@@ -36,11 +39,9 @@ def main(
         str_length_cols([IndCQC.location_id]),
     )
 
-    compare_df = utils.read_parquet(
-        f"s3://{bucket_name}/{compare_path}",
-    )
+    compare_lf = utils.scan_parquet(f"s3://{bucket_name}/{compare_path}")
 
-    expected_row_count = get_expected_row_count_for_model_features(compare_df, model)
+    expected_row_count = get_expected_row_count_for_model_features(compare_lf, model)
     not_null_cols = source_df.columns
     if model == "care_home_model":
         not_null_cols.remove(IndCQC.imputed_filled_posts_per_bed_ratio_model)
