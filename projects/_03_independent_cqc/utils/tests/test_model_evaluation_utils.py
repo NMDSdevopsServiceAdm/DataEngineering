@@ -63,6 +63,34 @@ class TestAssignLocationFolds:
             first_lf.unique(), reordered_lf.unique(), check_row_order=False
         )
 
+    def test_folds_ignore_category_order(self):
+        case = Data.folds_repeat_for_same_seed_test_case
+
+        def folds(location_ids: list[str], categories_name: str) -> pl.LazyFrame:
+            # Each name gets its own categories, created in the order the IDs arrive.
+            location_type = pl.Categorical(pl.Categories(categories_name))
+            lf = pl.LazyFrame({IndCQC.location_id: location_ids}).with_columns(
+                pl.col(IndCQC.location_id).cast(location_type)
+            )
+            return (
+                job.assign_location_folds(
+                    lf,
+                    location_column=IndCQC.location_id,
+                    n_folds=case.n_folds,
+                    seed=FOLD_SEED,
+                )
+                .select(
+                    pl.col(IndCQC.location_id).cast(pl.String), ModelEvaluation.fold
+                )
+                .unique()
+            )
+
+        pl_testing.assert_frame_equal(
+            folds(case.location_ids, "fold_test_forward"),
+            folds(case.location_ids[::-1], "fold_test_reversed"),
+            check_row_order=False,
+        )
+
     def test_existing_folds_are_replaced(self):
         case = Data.existing_folds_replaced_test_case
         # No new assignment gives fold n_folds, as folds are numbered from 0.
@@ -125,6 +153,14 @@ class TestMeanPeriodToPeriodChange:
         [c.as_pytest_param() for c in Data.change_within_partition_test_cases],
     )
     def test_change_measured_within_partition(self, case):
+        pl_testing.assert_frame_equal(
+            self.mean_change(case), pl.LazyFrame(case.expected_data)
+        )
+
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in Data.date_order_test_cases]
+    )
+    def test_change_measured_in_date_order(self, case):
         pl_testing.assert_frame_equal(
             self.mean_change(case), pl.LazyFrame(case.expected_data)
         )

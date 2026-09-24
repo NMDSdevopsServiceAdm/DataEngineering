@@ -124,7 +124,7 @@ def add_latest_overall_rating(
     Returns:
         pl.LazyFrame: dataset with categorical "latest_overall_rating" added
     """
-    # Ratings store location IDs as strings, so match this dataset's type for the joins.
+    # Ratings store location IDs as strings, so match this dataset's type for the as-of join.
     location_type = lf.collect_schema()[location_column]
 
     ratings_by_date_lf = (

@@ -12,7 +12,8 @@ def assign_location_folds(
     Assign each location to one of `n_folds` cross-validation folds.
 
     Shuffled unique location IDs are dealt into folds in turn, so sizes differ by at most one.
-    IDs are sorted first, so a seed always gives the same folds. Replaces any existing "fold".
+    IDs are sorted as text first, so a seed always gives the same folds. Replaces any existing
+    "fold".
 
     Args:
         lf (pl.LazyFrame): dataset containing the location ID
@@ -27,7 +28,7 @@ def assign_location_folds(
 
     location_folds_lf = (
         lf.select(pl.col(location_column).unique())
-        .sort(location_column)
+        .sort(pl.col(location_column).cast(pl.String))
         .select(
             pl.col(location_column).shuffle(seed=seed),
             (pl.int_range(pl.len()) % n_folds)
@@ -71,7 +72,8 @@ def mean_period_to_period_change(
 ) -> pl.LazyFrame:
     """
     Measure jumpiness: each column's mean absolute change between consecutive dates, within
-    each partition, in the column's own units.
+    each partition, in the column's own units. Changes next to a null are skipped, so compare
+    models on the same rows.
 
     Args:
         lf (pl.LazyFrame): dataset containing the measured, partition and date columns

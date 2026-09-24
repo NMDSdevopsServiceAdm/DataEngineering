@@ -124,16 +124,19 @@ class TestAddProviderLocationCount:
 
 class TestAddLatestOverallRating:
     @staticmethod
-    def returned_and_expected_lfs(case) -> tuple[pl.LazyFrame, pl.LazyFrame]:
-        """Run with location IDs as in the pipeline: categorical, but strings in ratings."""
+    def returned_and_expected_lfs(
+        case, location_type: pl.DataType = CatColType.LocationCatType
+    ) -> tuple[pl.LazyFrame, pl.LazyFrame]:
+        """Run with the data's location IDs cast to `location_type`, and strings in ratings."""
+        as_location_type = pl.col(IndCQC.location_id).cast(location_type)
         returned_lf = job.add_latest_overall_rating(
-            to_lf(case.input_data).with_columns(AS_LOCATION_TYPE),
+            to_lf(case.input_data).with_columns(as_location_type),
             to_ratings_lf(case.ratings_data),
             location_column=IndCQC.location_id,
             date_column=IndCQC.cqc_location_import_date,
         )
 
-        return returned_lf, to_lf(case.expected_data).with_columns(AS_LOCATION_TYPE)
+        return returned_lf, to_lf(case.expected_data).with_columns(as_location_type)
 
     @pytest.mark.parametrize(
         "case",
@@ -154,8 +157,16 @@ class TestAddLatestOverallRating:
             for case in Data.rating_as_of_import_date_test_cases
         ],
     )
-    def test_rating_as_of_each_import_date(self, case):
-        returned_lf, expected_lf = self.returned_and_expected_lfs(case)
+    # Polars' as-of join takes a different path for categorical keys, so test both.
+    @pytest.mark.parametrize(
+        "location_type",
+        [
+            pytest.param(pl.String, id="string_ids"),
+            pytest.param(CatColType.LocationCatType, id="categorical_ids"),
+        ],
+    )
+    def test_rating_as_of_each_import_date(self, case, location_type):
+        returned_lf, expected_lf = self.returned_and_expected_lfs(case, location_type)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 

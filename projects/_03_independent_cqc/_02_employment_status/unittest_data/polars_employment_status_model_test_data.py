@@ -355,6 +355,63 @@ class TestModelUtilsData:
                 ],
             },
         ),
+        # Rows and ratings are out of date order, so this fails if either isn't sorted.
+        AddLatestOverallRatingTestCase(
+            id="rows_and_ratings_out_of_date_order",
+            input_data={
+                IndCQC.location_id: ["loc1"] * 6 + ["loc2"] * 2,
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 6, 1),
+                    date(2021, 6, 1),
+                    date(2023, 6, 1),
+                    date(2022, 6, 1),
+                    date(2024, 1, 1),
+                    date(2021, 1, 1),
+                    date(2024, 6, 1),
+                    date(2022, 6, 1),
+                ],
+            },
+            ratings_data={
+                IndCQC.location_id: ["loc1", "loc2", "loc1", "loc1"],
+                CQCRatings.overall_rating: [
+                    CQCRatingsValues.outstanding,
+                    CQCRatingsValues.requires_improvement,
+                    CQCRatingsValues.requires_improvement,
+                    CQCRatingsValues.good,
+                ],
+                CQCRatings.date: [
+                    "2024-01-01",
+                    "2023-01-01",
+                    "2021-03-01",
+                    "2022-03-01",
+                ],
+                CQCL.assessment_date: [None] * 4,
+                CQCRatings.latest_rating_flag: [LATEST, LATEST, NOT_LATEST, NOT_LATEST],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1"] * 6 + ["loc2"] * 2,
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 6, 1),
+                    date(2021, 6, 1),
+                    date(2023, 6, 1),
+                    date(2022, 6, 1),
+                    date(2024, 1, 1),
+                    date(2021, 1, 1),
+                    date(2024, 6, 1),
+                    date(2022, 6, 1),
+                ],
+                ShareModel.latest_overall_rating: [
+                    CQCRatingsValues.outstanding,
+                    CQCRatingsValues.requires_improvement,
+                    CQCRatingsValues.good,
+                    CQCRatingsValues.good,
+                    CQCRatingsValues.outstanding,
+                    CQCRatingsValues.not_yet_rated,
+                    CQCRatingsValues.requires_improvement,
+                    CQCRatingsValues.not_yet_rated,
+                ],
+            },
+        ),
     ]
 
     blank_latest_rating_test_cases = [

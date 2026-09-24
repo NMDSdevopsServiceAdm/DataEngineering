@@ -395,3 +395,25 @@ class TestModelEvaluationUtilsData:
             },
         ),
     ]
+
+    # In date order the change is 10 each period; in row order it would average 15.
+    date_order_test_cases = [
+        MeanPeriodToPeriodChangeTestCase(
+            id="rows_out_of_date_order",
+            input_data={
+                IndCQC.location_id: ["loc1"] * 3,
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 3, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
+                IndCQC.estimate_filled_posts: [30.0, 10.0, 20.0],
+            },
+            columns=[IndCQC.estimate_filled_posts],
+            partition_columns=[IndCQC.location_id],
+            expected_data={
+                ModelEvaluation.column_name: [IndCQC.estimate_filled_posts],
+                ModelEvaluation.mean_period_to_period_change: [10.0],
+            },
+        ),
+    ]
