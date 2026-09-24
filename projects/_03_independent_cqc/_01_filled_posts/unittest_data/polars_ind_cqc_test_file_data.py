@@ -299,6 +299,12 @@ class ValidateModelsData:
     ] # fmt: skip
     expected_get_expected_row_count_rows = 1
 
+    null_posts_rolling_average_rows = [
+        ("1-001", date(2025, 1, 1), "Y", "Y", ["activity 1"], None, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5),
+        ("1-002", date(2025, 1, 1), "N", "Y", ["activity 1"], None, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5),
+    ] # fmt: skip
+    expected_null_posts_rolling_average_row_count = 1
+
 
 @dataclass
 class ValidateModel01FeaturesData:

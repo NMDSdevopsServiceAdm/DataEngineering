@@ -9,7 +9,6 @@ non_res_with_dormancy_cols_for_features = [
     IndCQC.dormancy,
     IndCQC.regulated_activities_offered,
     IndCQC.cqc_location_import_date,
-    IndCQC.posts_rolling_average_model,
     IndCQC.services_offered,
     IndCQC.specialisms_offered,
     IndCQC.current_rural_urban_indicator_2011,
@@ -35,7 +34,6 @@ care_home_cols_for_features = [
     IndCQC.care_home,
     IndCQC.regulated_activities_offered,
     IndCQC.cqc_location_import_date,
-    IndCQC.posts_rolling_average_model,
     IndCQC.services_offered,
     IndCQC.specialisms_offered,
     IndCQC.current_rural_urban_indicator_2011,
@@ -46,11 +44,13 @@ care_home_cols_for_features = [
 def get_expected_row_count_for_model_features(df: pl.DataFrame, model: str) -> int:
     """
     Returns the expected row count for validation of the model features dataset.
-    This function tries to replicate the feature creation process to get the row count.
+
+    This function tries to replicate the feature creation process to get the row count,
+    so each model's list of non-null columns should only include columns that model uses.
 
     Args:
-        df (pl.DataFrame): compare Dataframe to get expect row count from
-        model (str): the model for which the features were created. Thiss affect which variables must be non-null.
+        df (pl.DataFrame): comparison DataFrame to derive the expected row count from
+        model (str): the model for which the features were created. This affects which columns must be non-null.
 
     Returns:
         int: The expected row count after performing minimum set of feature creation steps.
