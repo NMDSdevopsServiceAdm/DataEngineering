@@ -449,6 +449,13 @@ class ValidateCleanIndCQCSchemas:
                 IndCQC.ascwds_filled_posts_source,
                 CatColType.AscwdsFilledPostsSourceEnumType,
             ),
+            (IndCQC.care_home_status_count, pl.Int32()),
+            (IndCQC.number_of_beds_banded, pl.Float64()),
+            (IndCQC.ct_care_home_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.ct_care_home_filtering_rule, pl.String()),
+            (IndCQC.ct_non_res_filtering_rule, pl.String()),
+            (IndCQC.ct_care_home_total_employed_cleaned, pl.Int64()),
+            (IndCQC.ct_non_res_care_workers_employed_cleaned, pl.Int64()),
         ]
     )
 

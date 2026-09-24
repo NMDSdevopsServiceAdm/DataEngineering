@@ -121,9 +121,11 @@ def main(
         )
         # # above
         .col_vals_ge(IndCqcColumns.time_registered, 1)
+        .col_vals_between(IndCqcColumns.care_home_status_count, 1, 2)
         # between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(IndCqcColumns.number_of_beds, 0, 500, na_pass=True)
+        .col_vals_between(IndCqcColumns.number_of_beds_banded, 0, 8, na_pass=True)
         .col_vals_between(
             IndCqcColumns.pir_people_directly_employed_cleaned, 1, 1500, na_pass=True
         )
@@ -131,6 +133,13 @@ def main(
         .col_vals_between(IndCqcColumns.worker_records_bounded, 1, 3000, na_pass=True)
         .col_vals_between(
             IndCqcColumns.filled_posts_per_bed_ratio, 0.0, 20.0, na_pass=True
+        )
+        .col_vals_between(
+            IndCqcColumns.ct_care_home_posts_per_bed_ratio, 0.0, 20.0, na_pass=True
+        )
+        .col_vals_ge(IndCqcColumns.ct_care_home_total_employed_cleaned, 0, na_pass=True)
+        .col_vals_ge(
+            IndCqcColumns.ct_non_res_care_workers_employed_cleaned, 0, na_pass=True
         )
         # categorical
         .col_vals_in_set(
@@ -179,6 +188,14 @@ def main(
         .col_vals_in_set(
             IndCqcColumns.ascwds_filtering_rule,
             CatValues.ascwds_filtering_rule_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            IndCqcColumns.ct_care_home_filtering_rule,
+            CatValues.ct_care_home_filtering_rule_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            IndCqcColumns.ct_non_res_filtering_rule,
+            CatValues.ct_non_res_filtering_rule_column_values.categorical_values,
         )
         .col_vals_in_set(
             IndCqcColumns.related_location,
@@ -273,6 +290,20 @@ def main(
                 CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
             ),
             brief=f"{IndCqcColumns.ascwds_filtering_rule} needs to be one of {CatValues.ascwds_filtering_rule_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.ct_care_home_filtering_rule,
+                CatValues.ct_care_home_filtering_rule_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.ct_care_home_filtering_rule} needs to be one of {CatValues.ct_care_home_filtering_rule_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.ct_non_res_filtering_rule,
+                CatValues.ct_non_res_filtering_rule_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.ct_non_res_filtering_rule} needs to be one of {CatValues.ct_non_res_filtering_rule_column_values.categorical_values}",
         )
         .specially(
             vl.is_unique_count_equal(

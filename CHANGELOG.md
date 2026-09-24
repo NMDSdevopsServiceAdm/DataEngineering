@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added validation checks for columns that are created but never checked, starting with the Independent CQC filled posts clean job's `care_home_status_count` and 6 sibling columns.
 - Joined worker-derived employment status counts into the SLV merge step, collapsing worker job roles to the published scheme already used by workplace and job-role-estimate data, and applying the same null-location and date-reduction filtering `_00_prepare_workplace` already uses so the worker and workplace import dates line up for the join.
 - Added has_continuous_data_since_date to publication cleaning utils. It flags locations with capacity tracker data as either a care home or non-res at all periods from a given date onwards. The two capacity tracker columns are coalesced then checked for completeness.
 - Added a capacity tracker dispersion filter to publication cleaning utils. It flags locations whose capacity tracker employee numbers swing more than two standard deviations from the national average swing over a given period, so unusually volatile locations can be excluded. Care home and non-residential locations are each compared only against locations of their own type, and locations with no capacity tracker data (or too few import dates to judge) in the period are excluded too.

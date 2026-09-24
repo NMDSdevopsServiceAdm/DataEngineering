@@ -29,6 +29,7 @@ from utils.column_values.categorical_column_values import (
     AscwdsJobRoleRatiosMergedSource,
     CareHome,
     ContemporaryCSSR,
+    CTFilteringRule,
     CurrentCSSR,
     Dormancy,
     EmploymentStatusID,
@@ -197,6 +198,13 @@ class CleanedIndCQCCategoricalValues:
     )
     ascwds_filtering_rule_column_values = AscwdsFilteringRule(
         IndCQC.ascwds_filtering_rule
+    )
+    ct_care_home_filtering_rule_column_values = CTFilteringRule(
+        IndCQC.ct_care_home_filtering_rule
+    )
+    ct_non_res_filtering_rule_column_values = CTFilteringRule(
+        IndCQC.ct_non_res_filtering_rule,
+        value_to_remove=CTFilteringRule.beds_ratio_outlier,
     )
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
     specialism_dementia_column_values = SpecialistGeneralistOther(
