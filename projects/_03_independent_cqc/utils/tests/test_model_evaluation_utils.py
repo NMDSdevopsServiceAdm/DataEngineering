@@ -133,3 +133,10 @@ class TestMeanPeriodToPeriodChange:
         pl_testing.assert_frame_equal(
             self.mean_change(case), pl.LazyFrame(case.expected_data)
         )
+
+    def test_change_measured_in_date_order(self):
+        case = Data.unordered_dates_test_case
+
+        pl_testing.assert_frame_equal(
+            self.mean_change(case), pl.LazyFrame(case.expected_data)
+        )

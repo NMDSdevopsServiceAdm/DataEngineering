@@ -73,6 +73,10 @@ def mean_period_to_period_change(
     Measure jumpiness: each column's mean absolute change between consecutive dates, within
     each partition, in the column's own units.
 
+    Consecutive means the next row present, so a gap in dates counts as one period. A null
+    drops the changes either side of it, so columns with different nulls are scored on
+    different rows.
+
     Args:
         lf (pl.LazyFrame): dataset containing the measured, partition and date columns
         columns (list[str]): the columns to measure, such as predictions
