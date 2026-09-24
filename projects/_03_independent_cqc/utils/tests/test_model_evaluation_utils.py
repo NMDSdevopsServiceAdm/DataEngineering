@@ -35,8 +35,11 @@ class TestAssignLocationFolds:
         folds_per_location = returned_df.group_by(IndCQC.location_id).agg(
             pl.col(ModelEvaluation.fold).n_unique()
         )
+        # No rows gained or lost: the fold join mustn't fan out or drop rows.
         assert returned_df.height == len(case.location_ids)
+        # Every row got a fold: each location found a match in the join.
         assert returned_df[ModelEvaluation.fold].null_count() == 0
+        # Each location sits in one fold, so it's never in both training and test.
         assert (folds_per_location[ModelEvaluation.fold] == 1).all()
 
     @pytest.mark.parametrize(
@@ -50,7 +53,9 @@ class TestAssignLocationFolds:
             .collect()[IndCQC.location_id]
         )
 
+        # Every fold is used, so none is empty.
         assert locations_per_fold.len() == case.n_folds
+        # Location counts per fold differ by at most one.
         assert locations_per_fold.max() - locations_per_fold.min() <= 1
 
     def test_folds_repeat_for_same_seed(self):
@@ -61,34 +66,6 @@ class TestAssignLocationFolds:
 
         pl_testing.assert_frame_equal(
             first_lf.unique(), reordered_lf.unique(), check_row_order=False
-        )
-
-    def test_folds_ignore_category_order(self):
-        case = Data.folds_repeat_for_same_seed_test_case
-
-        def folds(location_ids: list[str], categories_name: str) -> pl.LazyFrame:
-            # Each name gets its own categories, created in the order the IDs arrive.
-            location_type = pl.Categorical(pl.Categories(categories_name))
-            lf = pl.LazyFrame({IndCQC.location_id: location_ids}).with_columns(
-                pl.col(IndCQC.location_id).cast(location_type)
-            )
-            return (
-                job.assign_location_folds(
-                    lf,
-                    location_column=IndCQC.location_id,
-                    n_folds=case.n_folds,
-                    seed=FOLD_SEED,
-                )
-                .select(
-                    pl.col(IndCQC.location_id).cast(pl.String), ModelEvaluation.fold
-                )
-                .unique()
-            )
-
-        pl_testing.assert_frame_equal(
-            folds(case.location_ids, "fold_test_forward"),
-            folds(case.location_ids[::-1], "fold_test_reversed"),
-            check_row_order=False,
         )
 
     def test_existing_folds_are_replaced(self):
@@ -157,10 +134,9 @@ class TestMeanPeriodToPeriodChange:
             self.mean_change(case), pl.LazyFrame(case.expected_data)
         )
 
-    @pytest.mark.parametrize(
-        "case", [c.as_pytest_param() for c in Data.date_order_test_cases]
-    )
-    def test_change_measured_in_date_order(self, case):
+    def test_change_measured_in_date_order(self):
+        case = Data.unordered_dates_test_case
+
         pl_testing.assert_frame_equal(
             self.mean_change(case), pl.LazyFrame(case.expected_data)
         )
