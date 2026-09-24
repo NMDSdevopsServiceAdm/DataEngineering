@@ -3,12 +3,13 @@ from datetime import date
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.filtering_utils import reduced_data_filter_expr
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     clean_utils,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+
+MONTHLY_DATA_FROM_DATE = date(2015, 1, 1)
 
 
 def main(
@@ -23,13 +24,7 @@ def main(
         clean_destination (str): destination s3 directory for the cleaned data
     """
     cleaned_lf = utils.scan_parquet(merge_data_source).filter(
-        # Full monthly retention from 2015 onwards, quarterly sampling before
-        # that - fixing `today` to 2015-01-01 with a January FY start and no
-        # lookback makes monthly_start resolve to exactly 2015-01-01 regardless
-        # of when this job actually runs.
-        reduced_data_filter_expr(
-            today=date(2015, 1, 1), fy_start_month=1, lookback_fy_years=0
-        )
+        pl.col(IndCQC.cqc_location_import_date) >= MONTHLY_DATA_FROM_DATE
     )
 
     # cutoff_date/fy_year compute the long/medium/short term assessment window
