@@ -59,6 +59,7 @@ COPY projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/validate_
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/_00_prepare_worker.py /app/_02_employment_status/fargate/_00_prepare_worker.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/_01_merge.py /app/_02_employment_status/fargate/_01_merge.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/_02_clean.py /app/_02_employment_status/fargate/_02_clean.py
+COPY projects/_03_independent_cqc/_02_employment_status/fargate/_02_clean_prototype.py /app/_02_employment_status/fargate/_02_clean_prototype.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/_03_impute.py /app/_02_employment_status/fargate/_03_impute.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/_04_estimate.py /app/_02_employment_status/fargate/_04_estimate.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/validate_00_prepare_worker.py /app/_02_employment_status/fargate/validate_00_prepare_worker.py
