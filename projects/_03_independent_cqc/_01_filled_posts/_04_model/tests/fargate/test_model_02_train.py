@@ -1,10 +1,10 @@
-import unittest
 from unittest.mock import ANY, MagicMock, Mock, patch
 
 import numpy as np
 
 import projects._03_independent_cqc._01_filled_posts._04_model.fargate.model_02_train as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import ModelMetadataKeys as MMKeys
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
 PATCH_PATH = (
@@ -12,7 +12,7 @@ PATCH_PATH = (
 )
 
 
-class ModelTrainTests(unittest.TestCase):
+class TestMain:
     TEST_BUCKET_NAME = "some_bucket"
     TEST_MODEL_NAME = "my_model"
     TEST_CARE_HOME_NAME = IndCQC.care_home_model
@@ -64,7 +64,7 @@ class ModelTrainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.validate_model_definition")
     @patch(f"{PATCH_PATH}.paths.generate_features_path")
     @patch(f"{PATCH_PATH}.model_registry", TEST_MODEL_REGISTRY_RETRAIN_CH)
-    def test_main_runs_successfully_when_model_is_auto_retrained_and_model_is_care_home(
+    def test_runs_successfully_for_care_home_model(
         self,
         generate_features_path_mock: Mock,
         validate_model_definition_mock: Mock,
@@ -91,7 +91,7 @@ class ModelTrainTests(unittest.TestCase):
         validate_model_definition_mock.assert_called_once()
         scan_parquet_mock.assert_called_once()
         split_train_test_mock.assert_called_once()
-        self.assertEqual(convert_dataframe_to_numpy_mock.call_count, 2)
+        assert convert_dataframe_to_numpy_mock.call_count == 2
         build_model_mock.assert_called_once()
         calculate_metrics_mock.assert_called_once_with(
             ANY, ANY, self.TEST_CARE_HOME_NAME, ANY
@@ -111,7 +111,7 @@ class ModelTrainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.validate_model_definition")
     @patch(f"{PATCH_PATH}.paths.generate_features_path")
     @patch(f"{PATCH_PATH}.model_registry", TEST_MODEL_REGISTRY_RETRAIN_OTHER)
-    def test_main_runs_successfully_when_model_is_auto_retrained_and_model_is_not_care_home(
+    def test_runs_successfully_for_non_care_home_model(
         self,
         generate_features_path_mock: Mock,
         validate_model_definition_mock: Mock,
@@ -138,7 +138,7 @@ class ModelTrainTests(unittest.TestCase):
         validate_model_definition_mock.assert_called_once()
         scan_parquet_mock.assert_called_once()
         split_train_test_mock.assert_called_once()
-        self.assertEqual(convert_dataframe_to_numpy_mock.call_count, 2)
+        assert convert_dataframe_to_numpy_mock.call_count == 2
         build_model_mock.assert_called_once()
         calculate_metrics_mock.assert_called_once_with(ANY, ANY, self.TEST_MODEL_NAME)
         generate_model_path_mock.assert_called_once()
@@ -155,8 +155,48 @@ class ModelTrainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_feature_data)
     @patch(f"{PATCH_PATH}.validate_model_definition")
     @patch(f"{PATCH_PATH}.paths.generate_features_path")
+    @patch(f"{PATCH_PATH}.model_registry", TEST_MODEL_REGISTRY_RETRAIN_OTHER)
+    def test_saves_registry_features_in_metadata(
+        self,
+        generate_features_path_mock: Mock,
+        validate_model_definition_mock: Mock,
+        scan_parquet_mock: Mock,
+        split_train_test_mock: Mock,
+        convert_dataframe_to_numpy_mock: Mock,
+        build_model_mock: Mock,
+        calculate_metrics_mock: Mock,
+        generate_model_path_mock: Mock,
+        get_run_number_mock: Mock,
+        save_model_and_metadata_mock: Mock,
+    ):
+        split_train_test_mock.side_effect = [
+            (self.mock_train_data, self.mock_test_data)
+        ]
+        convert_dataframe_to_numpy_mock.side_effect = [
+            (self.mock_X, self.mock_y),
+            (self.mock_X, self.mock_y),
+        ]
+
+        job.main(self.TEST_BUCKET_NAME, self.TEST_MODEL_NAME)
+
+        saved_metadata = save_model_and_metadata_mock.call_args.args[3]
+        registry_features = self.TEST_MODEL_REGISTRY_RETRAIN_OTHER[
+            self.TEST_MODEL_NAME
+        ][MRKeys.features]
+        assert saved_metadata[MMKeys.feature_columns] == registry_features
+
+    @patch(f"{PATCH_PATH}.vUtils.save_model_and_metadata")
+    @patch(f"{PATCH_PATH}.vUtils.get_run_number", return_value=3)
+    @patch(f"{PATCH_PATH}.paths.generate_model_path")
+    @patch(f"{PATCH_PATH}.mUtils.calculate_metrics")
+    @patch(f"{PATCH_PATH}.mUtils.build_model")
+    @patch(f"{PATCH_PATH}.tUtils.convert_dataframe_to_numpy")
+    @patch(f"{PATCH_PATH}.tUtils.split_train_test")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_feature_data)
+    @patch(f"{PATCH_PATH}.validate_model_definition")
+    @patch(f"{PATCH_PATH}.paths.generate_features_path")
     @patch(f"{PATCH_PATH}.model_registry", TEST_MODEL_REGISTRY_NO_RETRAIN)
-    def test_main_skips_when_auto_retrain_false(
+    def test_skips_training_when_auto_retrain_is_false(
         self,
         generate_features_path_mock: Mock,
         validate_model_definition_mock: Mock,
