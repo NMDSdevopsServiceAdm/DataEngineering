@@ -16,6 +16,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
+from utils.column_values.ascwds_labelled_vocab import PublishedJobRoleLabels
 from utils.column_values.categorical_column_values import (
     RUI,
     CareHome,
@@ -24,7 +25,6 @@ from utils.column_values.categorical_column_values import (
     CurrentCSSR,
     ImputationRowKind,
     PrimaryServiceType,
-    PublishedJobRoleLabels,
     Region,
     Services,
     Specialisms,

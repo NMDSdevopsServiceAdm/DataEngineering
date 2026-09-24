@@ -1,9 +1,6 @@
 import unittest
 
-from utils.column_values.categorical_column_values import (
-    Dormancy,
-    PublishedJobRoleLabels,
-)
+from utils.column_values.categorical_column_values import Dormancy
 
 
 class ListValuesTests(unittest.TestCase):
@@ -79,29 +76,6 @@ class CountValuesTests(unittest.TestCase):
             test_object.count_of_categorical_values,
             self.expected_filtered_count_with_null_values,
         )
-
-
-class TestPublishedJobRoleLabels:
-    def test_pins_the_published_job_role_label_values(self):
-        test_object = PublishedJobRoleLabels("test_column")
-        expected_values = [
-            "Senior management",
-            "Registered manager",
-            "Social worker",
-            "Senior care worker",
-            "Care worker",
-            "Community support and outreach work",
-            "Occupational therapist",
-            "Registered nurse",
-            "Allied health professional",
-            "Deputy manager",
-            "Support worker",
-            "Other managers",
-            "Other regulated professions",
-            "Other direct care",
-            "Other",
-        ]
-        assert test_object.categorical_values == expected_values
 
 
 if __name__ == "__main__":

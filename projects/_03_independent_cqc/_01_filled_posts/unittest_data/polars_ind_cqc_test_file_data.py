@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
 from utils.column_values.categorical_column_values import (
     RUI,
     ASCWDSFilledPostsSource,
@@ -18,7 +19,6 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
     JobRoleFilteringRule,
-    MainJobRoleLabels,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
     Region,

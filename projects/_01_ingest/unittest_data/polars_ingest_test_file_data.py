@@ -35,7 +35,7 @@ from utils.column_values.categorical_column_values import (
 from utils.column_values.categorical_column_values import (
     SpecialistGeneralistOther as SpecGenOther,
 )
-from utils.column_values.categorical_column_values import (
+from utils.column_values.ascwds_labelled_vocab import (
     EmploymentStatusLabels,
     MainJobRoleLabels,
 )
