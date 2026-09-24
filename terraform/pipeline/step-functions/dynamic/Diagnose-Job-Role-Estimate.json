@@ -1,0 +1,35 @@
+{
+  "Comment": "THROWAWAY. Manual-start only. Runs the instrumented copy of the job role estimates estimate step (2102 monthly-data spike, including the new zero-estimate row filter) so its memory profile can be measured against real data. Writes to its own dataset name so it can never overwrite the real pipeline's output. Delete with _04_estimate_prototype.py.",
+  "StartAt": "Diagnose Job Role Estimate",
+  "States": {
+    "Diagnose Job Role Estimate": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${independent_cqc_prototype_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${independent_cqc_prototype_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_03_independent_cqc_prototype-container",
+              "Command": [
+                "_04_estimate_prototype.py",
+                "--imputed_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_03_impute/",
+                "--estimated_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate_diagnostics/"
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}

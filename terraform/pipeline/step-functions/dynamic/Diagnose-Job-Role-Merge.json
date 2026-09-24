@@ -1,0 +1,37 @@
+{
+  "Comment": "THROWAWAY. Manual-start only. Runs the instrumented copy of the job role estimates merge step (2102 monthly-data spike) so its memory profile can be measured against real data. Writes to its own dataset names so it can never overwrite the real pipeline's output. Delete with _01_merge_prototype.py.",
+  "StartAt": "Diagnose Job Role Merge",
+  "States": {
+    "Diagnose Job Role Merge": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${independent_cqc_prototype_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${independent_cqc_prototype_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_03_independent_cqc_prototype-container",
+              "Command": [
+                "_01_merge_prototype.py",
+                "--estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/",
+                "--ascwds_job_role_counts_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_00_ascwds_prepared_counts/",
+                "--merged_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_diagnostics/",
+                "--metadata_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata_diagnostics/"
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}
