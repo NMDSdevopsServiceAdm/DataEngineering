@@ -66,7 +66,9 @@ def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
     one changes, all 5 survive. Not used by this branch's own ratio rules
     (see null_counts_for_low_org_ratio's docstring for why) - kept because
     the _dedup columns are a shared, reusable output other consumers rely
-    on.
+    on. Independent of the ratio rules (reads only the raw counts, doesn't
+    touch or depend on their _clean/filtering_rule output), so it can run
+    before or after them with no difference to the result.
 
     Args:
         lf (pl.LazyFrame): dataset containing the merged employment status count
@@ -182,8 +184,8 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     was never recorded at all, not because it's unchanged since last time.
 
     Args:
-        lf (pl.LazyFrame): merged employment status data, already processed by
-            deduplicate_employment_status_counts.
+        lf (pl.LazyFrame): the raw merged employment status data - no
+            dependency on deduplicate_employment_status_counts having run.
 
     Returns:
         pl.LazyFrame: lf with a _clean column per raw count column (the raw

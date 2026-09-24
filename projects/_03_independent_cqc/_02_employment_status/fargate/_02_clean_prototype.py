@@ -32,14 +32,14 @@ def main(merged_data_source: str, cleaned_data_destination: str) -> None:
         lf = utils.scan_parquet(merged_data_source)
         diagnostics.checkpoint("start", lf)
 
-        lf = cUtils.deduplicate_employment_status_counts(lf)
-        diagnostics.checkpoint("after_dedup", lf)
-
         lf = cUtils.null_counts_for_low_org_ratio(lf)
         diagnostics.checkpoint("after_org_ratio", lf)
 
         lf = cUtils.null_counts_for_low_location_ratio(lf)
         diagnostics.checkpoint("after_location_ratio", lf)
+
+        lf = cUtils.deduplicate_employment_status_counts(lf)
+        diagnostics.checkpoint("after_dedup", lf)
 
         lf = cUtils.create_employment_status_percentage_columns(lf)
         diagnostics.checkpoint("after_percentage", lf)
