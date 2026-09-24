@@ -4,6 +4,9 @@ from unittest.mock import Mock, call, patch
 import polars as pl
 
 import projects._03_independent_cqc._02_employment_status.fargate.validate_02_clean as job
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
 PATCH_PATH = (
@@ -15,9 +18,19 @@ class TestMain:
     def setup_method(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
+            EmpStatus.permanent_count_dedup: pl.Int64,
+            EmpStatus.temporary_count_dedup: pl.Int64,
+            EmpStatus.bank_or_pool_count_dedup: pl.Int64,
+            EmpStatus.agency_count_dedup: pl.Int64,
+            EmpStatus.other_count_dedup: pl.Int64,
+            EmpStatus.permanent_percentage: pl.Float32,
+            EmpStatus.temporary_percentage: pl.Float32,
+            EmpStatus.bank_or_pool_percentage: pl.Float32,
+            EmpStatus.agency_percentage: pl.Float32,
+            EmpStatus.other_percentage: pl.Float32,
         }
         source_rows = [
-            ("1-001",),
+            ("1-001", 2, 1, 0, 1, 0, 0.5, 0.25, 0.0, 0.25, 0.0),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
@@ -46,7 +59,7 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_report_includes_row_count_check_only(
+    def test_validation_report_includes_expected_validations(
         self,
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
@@ -60,4 +73,8 @@ class TestMain:
 
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
-        assert assertion_types_present == {"row_count_match"}
+        assert assertion_types_present == {
+            "row_count_match",
+            "col_vals_ge",
+            "col_vals_between",
+        }

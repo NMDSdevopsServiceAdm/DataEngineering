@@ -46,6 +46,11 @@ def main(
             expected_row_count,
             brief=f"Merged DPR data file has {source_df.height} rows but expecting {expected_row_count} rows",
         )
+        # distinct rows
+        .rows_distinct(
+            [DP.LA_AREA, DP.YEAR_AS_INTEGER],
+            brief=f"Duplicate rows found for {DP.LA_AREA} and {DP.YEAR_AS_INTEGER}",
+        )
         # complete columns
         .col_vals_not_null(
             [

@@ -42,7 +42,7 @@ class TestCalculateEstimatedFilledPostsByJobRole(unittest.TestCase):
         test_lf = expected_lf.drop(
             [
                 IndCQC.ascwds_job_role_ratios_merged,
-                IndCQC.estimate_filled_posts_by_job_role,
+                IndCQC.estimate_filled_posts_by_job_role_unadjusted,
             ]
         )
         returned_lf = job.calculate_estimated_filled_posts_by_job_role(test_lf)
@@ -165,7 +165,7 @@ class TestDistributeRmDifference:
             orient="row",
         )
         input_lf = expected_lf.drop(
-            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+            IndCQC.estimate_filled_posts_by_job_role_pre_reallocation
         )
         returned_lf = job.distribute_rm_difference(
             input_lf,
@@ -175,21 +175,20 @@ class TestDistributeRmDifference:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestCalcDiffEstimateFilledPostsAndFromAllJobRoles:
+class TestCalcDifferenceBetweenEstimateFilledPostsAndSummedJobRoles:
     def test_function_returns_expected_values(self):
         expected_lf = pl.LazyFrame(
-            Data.expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_rows,
-            Schemas.expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_schema,
+            Data.expected_calc_difference_between_estimate_filled_posts_and_summed_job_roles_rows,
+            Schemas.expected_calc_difference_between_estimate_filled_posts_and_summed_job_roles_schema,
             orient="row",
         )
         test_lf = expected_lf.drop(
-            [
-                IndCQC.estimate_filled_posts_from_all_job_roles,
-                IndCQC.difference_estimate_filled_posts_and_from_all_job_roles,
-            ]
+            IndCQC.difference_between_estimate_filled_posts_and_summed_job_roles
         )
-        returned_lf = job.calc_diff_estimate_filled_posts_and_from_all_job_roles(
-            test_lf
+        returned_lf = (
+            job.calc_difference_between_estimate_filled_posts_and_summed_job_roles(
+                test_lf
+            )
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
@@ -211,9 +210,7 @@ class TestReallocateHistoricalFilledPostsByJobRoleReturnsExpectedValues:
             Schemas.expected_reallocate_historical_filled_posts_by_job_role_schema,
             orient="row",
         )
-        input_lf = expected_lf.drop(
-            IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
-        )
+        input_lf = expected_lf.drop(IndCQC.estimate_filled_posts_by_job_role)
         returned_lf = job.reallocate_historical_filled_posts_by_job_role(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

@@ -362,54 +362,6 @@ class MergeIndCQCSchemas:
 
 
 @dataclass
-class MergeUtilsSchemas:
-    clean_cqc_location_for_merge_schema = pl.Schema(
-        [
-            (CQCLClean.location_id, pl.String()),
-            (CQCLClean.cqc_location_import_date, pl.Date()),
-            (CQCLClean.cqc_sector, pl.String()),
-            (CQCLClean.care_home, pl.String()),
-            (CQCLClean.number_of_beds, pl.Int64()),
-        ]
-    )
-
-    data_to_merge_without_care_home_col_schema = pl.Schema(
-        [
-            (AWPClean.location_id, pl.String()),
-            (AWPClean.ascwds_workplace_import_date, pl.Date()),
-            (AWPClean.establishment_id, pl.String()),
-            (AWPClean.total_staff, pl.Int64()),
-        ]
-    )
-
-    expected_merged_without_care_home_col_schema = pl.Schema(
-        list(clean_cqc_location_for_merge_schema.items())
-        + [
-            (AWPClean.ascwds_workplace_import_date, pl.Date()),
-            (AWPClean.establishment_id, pl.String()),
-            (AWPClean.total_staff, pl.Int64()),
-        ]
-    )
-
-    data_to_merge_with_care_home_col_schema = pl.Schema(
-        [
-            (CQCPIRClean.location_id, pl.String()),
-            (CQCPIRClean.care_home, pl.String()),
-            (CQCPIRClean.cqc_pir_import_date, pl.Date()),
-            (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
-        ]
-    )
-
-    expected_merged_with_care_home_col_schema = pl.Schema(
-        list(clean_cqc_location_for_merge_schema.items())
-        + [
-            (CQCPIRClean.cqc_pir_import_date, pl.Date()),
-            (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
-        ]
-    )
-
-
-@dataclass
 class ValidateMergeIndCQCSchemas:
     merged_ind_cqc_schema = pl.Schema(
         [
@@ -1409,7 +1361,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
             IndCQC.ascwds_job_role_ratios_merged_source: CatColType.AscwdsJobRoleRatiosMergedSourceEnumType,
             IndCQC.ascwds_job_role_ratios_merged: pl.Float32,
-            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_unadjusted: pl.Float32,
         }
     )
 
@@ -1426,7 +1378,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 CatVals.main_job_role_labels_column_values.categorical_values
             ),
-            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_unadjusted: pl.Float32,
             IndCQC.registered_manager_count: pl.UInt32,
         }
     )
@@ -1436,8 +1388,8 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 CatVals.main_job_role_labels_column_values.categorical_values
             ),
-            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
-            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_unadjusted: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_pre_reallocation: pl.Float32,
         }
     )
 
@@ -1447,7 +1399,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 CatVals.main_job_role_labels_column_values.categorical_values
             ),
-            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_unadjusted: pl.Float32,
             IndCQC.registered_manager_count: pl.UInt32,
             IndCQC.difference_between_estimate_and_cqc_registered_managers: pl.Float32,
         }
@@ -1459,7 +1411,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 CatVals.main_job_role_labels_column_values.categorical_values
             ),
-            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_unadjusted: pl.Float32,
             IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role: pl.Float32,
         }
     )
@@ -1470,24 +1422,23 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 CatVals.main_job_role_labels_column_values.categorical_values
             ),
-            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_unadjusted: pl.Float32,
             IndCQC.registered_manager_count: pl.Int32,
             IndCQC.difference_between_estimate_and_cqc_registered_managers: pl.Float32,
             IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role: pl.Float32,
-            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_pre_reallocation: pl.Float32,
         }
     )
 
-    expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_schema = pl.Schema(
+    expected_calc_difference_between_estimate_filled_posts_and_summed_job_roles_schema = pl.Schema(
         {
             IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.estimate_filled_posts: pl.Float32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 CatVals.main_job_role_labels_column_values.categorical_values
             ),
-            IndCQC.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
-            IndCQC.estimate_filled_posts_from_all_job_roles: pl.Float32,
-            IndCQC.difference_estimate_filled_posts_and_from_all_job_roles: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+            IndCQC.difference_between_estimate_filled_posts_and_summed_job_roles: pl.Float32,
         }
     )
 
@@ -1497,8 +1448,8 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.location_id: pl.String,
             IndCQC.cqc_location_import_date: pl.Date,
             IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
-            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
-            IndCQC.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_pre_reallocation: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
         }
     )
 

@@ -49,7 +49,7 @@ def main(
 
     lf = eUtils.reallocate_historical_filled_posts_by_job_role(lf)
 
-    lf = eUtils.calc_diff_estimate_filled_posts_and_from_all_job_roles(lf)
+    lf = eUtils.calc_difference_between_estimate_filled_posts_and_summed_job_roles(lf)
 
     lf = add_job_role_groups_column(lf, IndCQC.main_job_group_labelled)
 

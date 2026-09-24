@@ -339,63 +339,6 @@ class MergeIndCQCData:
 
 
 @dataclass
-class MergeUtilsData:
-
-    clean_cqc_location_for_merge_rows = [
-        ("1-001", date(2024, 1, 1), Sector.independent, "Y", 10),
-        ("1-002", date(2024, 1, 1), Sector.independent, "N", None),
-        ("1-003", date(2024, 1, 1), Sector.independent, "N", None),
-        ("1-001", date(2024, 2, 1), Sector.independent, "Y", 10),
-        ("1-002", date(2024, 2, 1), Sector.independent, "N", None),
-        ("1-003", date(2024, 2, 1), Sector.independent, "N", None),
-        ("1-001", date(2024, 3, 1), Sector.independent, "Y", 10),
-        ("1-002", date(2024, 3, 1), Sector.independent, "N", None),
-        ("1-003", date(2024, 3, 1), Sector.independent, "N", None),
-    ] # fmt: skip
-
-    data_to_merge_without_care_home_col_rows = [
-        ("1-001", date(2024, 1, 1), "1", 1),
-        ("1-003", date(2024, 1, 1), "3", 2),
-        ("1-001", date(2024, 1, 5), "1", 3),
-        ("1-001", date(2024, 1, 9), "1", 4),
-        ("1-003", date(2024, 1, 9), "3", 5),
-        ("1-003", date(2024, 3, 1), "4", 6),
-    ]
-
-    expected_merged_without_care_home_col_rows = [
-        ("1-001", date(2024, 1, 1), Sector.independent, "Y", 10, date(2024, 1, 1), "1", 1),
-        ("1-002", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), None, None),
-        ("1-003", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), "3", 2),
-        ("1-001", date(2024, 2, 1), Sector.independent, "Y", 10, date(2024, 1, 9), "1", 4),
-        ("1-002", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 1, 9), None, None),
-        ("1-003", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 1, 9), "3", 5),
-        ("1-001", date(2024, 3, 1), Sector.independent, "Y", 10, date(2024, 3, 1), None, None),
-        ("1-002", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 3, 1), None, None),
-        ("1-003", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 3, 1), "4", 6),
-    ] # fmt: skip
-
-    data_to_merge_with_care_home_col_rows = [
-        ("1-001", "Y", date(2024, 1, 1), 10),
-        ("1-002", "N", date(2024, 1, 1), 20),
-        ("1-003", "Y", date(2024, 1, 1), 30),
-        ("1-001", "Y", date(2024, 2, 1), 1),
-        ("1-002", "N", date(2024, 2, 1), 4),
-    ]
-
-    expected_merged_with_care_home_col_rows = [
-        ("1-001", date(2024, 1, 1), Sector.independent, "Y", 10, date(2024, 1, 1), 10),
-        ("1-002", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), 20),
-        ("1-003", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), None),
-        ("1-001", date(2024, 2, 1), Sector.independent, "Y", 10, date(2024, 2, 1), 1),
-        ("1-002", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 2, 1), 4),
-        ("1-003", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 2, 1), None),
-        ("1-001", date(2024, 3, 1), Sector.independent, "Y", 10, date(2024, 2, 1), 1),
-        ("1-002", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 2, 1), 4),
-        ("1-003", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 2, 1), None),
-    ] # fmt: skip
-
-
-@dataclass
 class ValidateMergeIndCQCData:
 
     merged_ind_cqc_data_rows = [
@@ -2359,13 +2302,13 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
         ),
     ]
 
-    expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_rows = [
-        (0, 10.0, MainJobRoleLabels.care_worker, 5.0, 10.0, 0.0), # All job roles have filled posts.
-        (0, 10.0, MainJobRoleLabels.senior_care_worker, 5.0, 10.0, 0.0),
-        (1, 10.0, MainJobRoleLabels.care_worker, 5.0, 5.0, -5.0), # Job roles have mix of value and null.
-        (1, 10.0, MainJobRoleLabels.senior_care_worker, None, 5.0, -5.0),
-        (2, 10.0, MainJobRoleLabels.care_worker, None, None, None), # All job role posts are null.
-        (2, 10.0, MainJobRoleLabels.senior_care_worker, None, None, None),
+    expected_calc_difference_between_estimate_filled_posts_and_summed_job_roles_rows = [
+        (0, 10.0, MainJobRoleLabels.care_worker, 5.0, 0.0), # All job roles have filled posts.
+        (0, 10.0, MainJobRoleLabels.senior_care_worker, 5.0, 0.0),
+        (1, 10.0, MainJobRoleLabels.care_worker, 5.0, -5.0), # Job roles have mix of value and null.
+        (1, 10.0, MainJobRoleLabels.senior_care_worker, None, -5.0),
+        (2, 10.0, MainJobRoleLabels.care_worker, None, None), # All job role posts are null.
+        (2, 10.0, MainJobRoleLabels.senior_care_worker, None, None),
     ]  # fmt: skip
 
     reallocate_historical_filled_posts_by_job_role_test_cases = [

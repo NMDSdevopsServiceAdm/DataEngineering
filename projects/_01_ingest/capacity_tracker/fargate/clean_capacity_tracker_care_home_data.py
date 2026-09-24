@@ -23,6 +23,7 @@ CAPACITY_TRACKER_CARE_HOME_COLUMNS = [
     CTCH.agency_nurses_employed,
     CTCH.agency_care_workers_employed,
     CTCH.agency_non_care_workers_employed,
+    CTCH.hours_agency,
     Keys.import_date,
 ]
 COLUMNS_TO_CAST_TO_INT = [
@@ -68,6 +69,10 @@ def main(
 
     care_home_lf = care_home_lf.with_columns(
         pl.col(COLUMNS_TO_CAST_TO_INT).cast(pl.Int32, strict=False)
+    )
+
+    care_home_lf = care_home_lf.with_columns(
+        pl.col(CTCH.hours_agency).cast(pl.Float32, strict=False)
     )
 
     care_home_lf = column_to_date(

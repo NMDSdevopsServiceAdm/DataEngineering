@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
 - Added an aggregation step to the publication clean job that collapses location-level rows up to one row per import date, job role, region and service type, summing filled posts and counting distinct locations. It also produces three independent assessment aggregates (one per long/medium/short term sampling window) over only the rows passing that window's consistent service, dispersion and has-data filters, summing filled posts, counting distinct locations, and summing capacity tracker total employed. This aggregated output is now the publication clean job's sink target.
 - Added period-on-period and cumulative percentage change columns for capacity tracker total employed to the publication clean job, calculated per region, job role and service type over each of the long, medium and short term assessment windows.
 - Added rollup rows to the publication clean job for "England", "All CQC locations", "All CQC care homes" and "All job roles", so the Tableau and Excel downloads can offer them as top-level filter options.
+- Added a clean step to the employment status pipeline that deduplicates the 5 employment status count columns as a single unit (a row is only treated as repeated if all 5 are unchanged) and adds a percentage-share column per employment status, via two new reusable `_03_independent_cqc` project-level utilities intended for future gender/ethnicity breakdowns too. Extended its validation from a row-count-only check to also cover the 10 new columns.
+- Added display-formatted columns to the publication clean job: each filled posts aggregate gets a comma-formatted or millions-abbreviated string (e.g. "800,000" or "1.175m"), and the import date gets abbreviated and full month-year string formats (e.g. "Jan 2026" and "January 2026").
+- Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
+- Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
 
 
 ### Changed
@@ -28,16 +32,23 @@ All notable changes to this project will be documented in this file.
 - Removed 18 unused helper functions across `utils/`, `polars_utils/` and a couple of project-specific `fargate/utils` modules that had no call sites outside their own tests, along with their dedicated tests and any fixture data/schemas used only by those tests. Also removed 50 orphaned test fixture rows/schemas across the repo's `unittest_data` files that were no longer referenced by any test.
 - Sourced the SLV clean job's employees column from the ASC-WDS worker file (permanent plus temporary employment status counts) instead of the workplace job-role data, and narrowed the ingest job-role selector/bounding to only starters/leavers/vacancies now that employees no longer needs bounding there (it's a mandatory field with no -1/-2 "not known" sentinel); added explicit null handling in the SLV clean job's rate calculations for employees-is-zero cases.
 - Removed the unused `student` employment status value from `EmploymentStatusLabels`/`EmploymentStatusID`, confirmed absent from production ASC-WDS worker data, consolidated the SLV employment-status pivot onto a single label list, and added a full-coverage validation check for the cleaned employment status columns.
+- Renamed the job role filled posts estimate columns so the final, most-accurate estimate has the short canonical name.
+- Moved the temporary employment-status-rates split from the employment status pipeline's merge stage to its estimate stage, along with its validation checks, so it runs closer to where its output is used.
 - Consolidated and reorganised the SLV/employment-status column-name classes in `ind_cqc_pipeline_columns.py`.
+- Moved `EmploymentStatusRatesColumns` (renamed `EmploymentStatusMagicNumberRateColumns`) into the shared `ind_cqc_pipeline_columns.py`, alongside the other column-name classes.
+- Replaced the job role archive validation's single "at least 1 row" check with schema, row-count-against-source, and primary-key uniqueness/completeness checks scoped to just the newly-written partition for each output (estimates and metadata), plus a cross-output check confirming both outputs received the same run's partition.
 
 
 ### Improved
+- Confirmed the DPR extrapolation ratio model doesn't depend on input row order, with tests that feed it reversed and interleaved rows, and added a validation check that estimated DPR data has one row per LA area and year, which the model relies on.
 
 
 ### Fixed
+- Fixed the IND CQC filled posts model's `get_run_number` to paginate through all S3 objects under a model root instead of only the first page, so it no longer silently undercounts (and risks reusing/overwriting a run number) once a model root passes 1000 objects.
 - Fixed the Glue crawler module's `table_prefix` so Athena table names no longer start with a digit (which Athena/Presto can't query unquoted), by adding a leading underscore ahead of the numbered domain prefix.
 - Fixed the `_02_employment_status`/`_03_starters_leavers_vacancies` pipelines' `_00_prepare_worker`/`_00_prepare_workplace` and their validate jobs to reduce ASCWDS import dates to those already CQC-matched in the job role metadata, instead of an independent hardcoded quarterly/earliest-file-per-month rule that could disagree with the metadata match and cause the merge step to silently miss rows.
 - Fixed the SLV clean job computing turnover/starter/vacancy rates before deduplicating starters, leavers and vacancies, which could change a location's rate even when the underlying deduplicated figure hadn't changed; rates are now calculated from the deduplicated columns.
+- Fixed `care_home` being downgraded from its `CareHomeEnumType` to a generic `Categorical` in the job role estimates merge metadata, an oversight from when the metadata schema was set up; it's now cast to the correct type at source, and its validation schema check updated to match.
 
 
 ## [v2026.08.1] - 11/09/2026
