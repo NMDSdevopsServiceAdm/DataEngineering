@@ -40,6 +40,8 @@ COPY projects/_03_independent_cqc/_01_filled_posts/_03_impute/fargate/validate_i
 COPY projects/_03_independent_cqc/_01_filled_posts/_05_workplace_estimates/fargate/estimate_ind_cqc_filled_posts.py /app/estimate_ind_cqc_filled_posts.py
 COPY projects/_03_independent_cqc/_01_filled_posts/_05_workplace_estimates/fargate/validate_estimated_ind_cqc_filled_posts_data.py /app/validate_estimated_ind_cqc_filled_posts_data.py
 COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/_01_merge.py /app/_01_merge.py
+# Throwaway, for the 2102 monthly-data spike. Remove with _01_merge_prototype.py.
+COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/_01_merge_prototype.py /app/_01_merge_prototype.py
 COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/_02_clean.py /app/_02_clean.py
 COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/_03_impute.py /app/_03_impute.py
 COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/_04_estimate.py /app/_04_estimate.py
