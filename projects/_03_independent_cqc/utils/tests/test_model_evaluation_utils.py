@@ -35,8 +35,11 @@ class TestAssignLocationFolds:
         folds_per_location = returned_df.group_by(IndCQC.location_id).agg(
             pl.col(ModelEvaluation.fold).n_unique()
         )
+        # No rows gained or lost: the fold join mustn't fan out or drop rows.
         assert returned_df.height == len(case.location_ids)
+        # Every row got a fold: each location found a match in the join.
         assert returned_df[ModelEvaluation.fold].null_count() == 0
+        # Each location sits in one fold, so it's never in both training and test.
         assert (folds_per_location[ModelEvaluation.fold] == 1).all()
 
     @pytest.mark.parametrize(
@@ -50,7 +53,9 @@ class TestAssignLocationFolds:
             .collect()[IndCQC.location_id]
         )
 
+        # Every fold is used, so none is empty.
         assert locations_per_fold.len() == case.n_folds
+        # Location counts per fold differ by at most one.
         assert locations_per_fold.max() - locations_per_fold.min() <= 1
 
     def test_folds_repeat_for_same_seed(self):
