@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Added display-formatted columns to the publication clean job: each filled posts aggregate gets a comma-formatted or millions-abbreviated string (e.g. "800,000" or "1.175m"), and the import date gets abbreviated and full month-year string formats (e.g. "Jan 2026" and "January 2026").
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
 - Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
+- Added project-level model evaluation utilities to `_03_independent_cqc` (location cross-validation folds, a never-submitted flag and a period-to-period jumpiness measure) for the filled posts and employment status models to share.
 
 
 ### Changed
