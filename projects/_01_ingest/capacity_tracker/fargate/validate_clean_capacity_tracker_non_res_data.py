@@ -8,6 +8,7 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
+from utils.column_values.categorical_column_values import CareHome
 
 
 def main(
@@ -49,6 +50,8 @@ def main(
         .col_vals_not_null([CTNRClean.cqc_id, CTNRClean.ct_non_res_import_date])
         # index columns
         .rows_distinct([CTNRClean.cqc_id, CTNRClean.ct_non_res_import_date])
+        # categorical
+        .col_vals_in_set(CTNRClean.care_home, [CareHome.not_care_home])
         # numeric column values are between (inclusive); nulls pass since the
         # clean job nulls out-of-range values rather than dropping the row
         .col_vals_between(CTNRClean.cqc_care_workers_employed, 1, 3000, na_pass=True)

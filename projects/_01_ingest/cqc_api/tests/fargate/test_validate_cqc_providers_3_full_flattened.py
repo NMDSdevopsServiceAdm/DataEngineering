@@ -16,17 +16,20 @@ class ValidateLocationsFullFlattened(unittest.TestCase):
     def setUp(self) -> None:
         self.validate_df = pl.DataFrame(
             [
-                ("1-00001", "20240101", date(2024, 1, 1)),
-                ("1-00002", "20240101", date(2024, 1, 1)),
-                ("1-00001", "20240201", date(2024, 2, 1)),
-                ("1-00002", "20240201", date(2024, 2, 1)),
-                ("1-00002", "20240201", date(2024, 2, 1)),
+                ("1-00001", "20240101", date(2024, 1, 1), "2024", "01", "01"),
+                ("1-00002", "20240101", date(2024, 1, 1), "2024", "01", "01"),
+                ("1-00001", "20240201", date(2024, 2, 1), "2024", "02", "01"),
+                ("1-00002", "20240201", date(2024, 2, 1), "2024", "02", "01"),
+                ("1-00002", "20240201", date(2024, 2, 1), "2024", "02", "01"),
             ],
             schema=pl.Schema(
                 [
                     ("providerId", pl.String),
                     ("import_date", pl.String),
                     ("cqc_location_import_date", pl.Date),
+                    ("year", pl.String),
+                    ("month", pl.String),
+                    ("day", pl.String),
                 ]
             ),
             orient="row",

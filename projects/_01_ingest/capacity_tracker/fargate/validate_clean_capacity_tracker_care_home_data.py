@@ -14,6 +14,7 @@ from utils.column_names.capacity_tracker_columns import (
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
 )
+from utils.column_values.categorical_column_values import CareHome
 
 compare_columns_to_import = [
     CTCH.nurses_employed,
@@ -66,6 +67,8 @@ def main(
         .col_vals_not_null([CTCHClean.cqc_id, CTCHClean.ct_care_home_import_date])
         # index columns
         .rows_distinct([CTCHClean.cqc_id, CTCHClean.ct_care_home_import_date])
+        # categorical
+        .col_vals_in_set(CTCHClean.care_home, [CareHome.care_home])
         # numeric column values are between (inclusive); nulls pass since the
         # clean job nulls out-of-range values rather than dropping the row
         .col_vals_between(CTCHClean.nurses_employed, 0, 1000, na_pass=True)
