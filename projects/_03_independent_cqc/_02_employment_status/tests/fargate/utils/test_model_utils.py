@@ -149,6 +149,7 @@ class TestAddLatestOverallRating:
             to_lf(case.input_data).with_columns(AS_LOCATION_TYPE),
             to_ratings_lf(case.ratings_data),
             location_column=IndCQC.location_id,
+            date_column=IndCQC.cqc_location_import_date,
         )
 
         return returned_lf, to_lf(case.expected_data).with_columns(AS_LOCATION_TYPE)
@@ -161,6 +162,18 @@ class TestAddLatestOverallRating:
         ],
     )
     def test_latest_rating_joined_per_location(self, case):
+        returned_lf, expected_lf = self.returned_and_expected_lfs(case)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.rating_as_of_import_date_test_cases
+        ],
+    )
+    def test_rating_as_of_each_import_date(self, case):
         returned_lf, expected_lf = self.returned_and_expected_lfs(case)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)

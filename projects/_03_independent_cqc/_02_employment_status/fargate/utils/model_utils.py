@@ -140,53 +140,79 @@ def add_provider_location_count(
 
 
 def add_latest_overall_rating(
-    lf: pl.LazyFrame, ratings_lf: pl.LazyFrame, location_column: str
+    lf: pl.LazyFrame, ratings_lf: pl.LazyFrame, location_column: str, date_column: str
 ) -> pl.LazyFrame:
     """
-    Add each location's latest real overall CQC rating to all of its rows, or "Not yet rated"
-    when it has none.
+    Add each location's latest real overall CQC rating as of each row's date, or "Not yet rated"
+    when it has none by then.
 
-    Blank ratings (such as "Inspected but not rated", which the ratings job blanks) are skipped,
-    so a location whose latest rating is blank gets its most recent real one. Ratings are
-    ordered the way the ratings job picks its latest rating, by rating date then assessment
-    date, with its latest rating flag breaking any tie. The ratings dataset has a row per
-    rating, so taking one per location before joining keeps the join to one match per location.
-    Any existing "latest_overall_rating" column is replaced.
+    A rating counts from its rating date, so each row only gets a rating from on or before its
+    own date. Ratings with no rating date can't be placed in time, so they're left out. Blank
+    ratings (such as "Inspected but not rated", which the ratings job blanks) are skipped, so a
+    location whose latest rating is blank gets its most recent real one. Ratings on the same date
+    are ordered the way the ratings job picks its latest rating: by assessment date, with its
+    latest rating flag breaking any tie.
+
+    The rating is found once per location and date, rather than for every row (such as every job
+    role), then joined back on. Any existing "latest_overall_rating" column is replaced.
 
     Args:
-        lf (pl.LazyFrame): dataset containing the location ID
+        lf (pl.LazyFrame): dataset containing the location ID and date
         ratings_lf (pl.LazyFrame): CQC ratings dataset, with the location ID in a column of the
             same name
         location_column (str): the location ID
+        date_column (str): the date each row's rating must be in place by
 
     Returns:
         pl.LazyFrame: dataset with the categorical "latest_overall_rating" column added
     """
     # The ratings dataset stores location IDs as plain strings, so they're cast to this
-    # dataset's type (categorical in the pipeline) to allow the join.
+    # dataset's type (categorical in the pipeline) to allow the joins.
     location_type = lf.collect_schema()[location_column]
 
-    latest_ratings_lf = (
-        ratings_lf.filter(pl.col(CQCRatings.overall_rating).is_not_null())
-        .group_by(location_column)
+    ratings_by_date_lf = (
+        ratings_lf.filter(
+            pl.col(CQCRatings.overall_rating).is_not_null()
+            & pl.col(CQCRatings.date).is_not_null()
+        )
+        .group_by(location_column, CQCRatings.date)
         .agg(
             pl.col(CQCRatings.overall_rating)
             .sort_by(
-                [CQCRatings.date, CQCL.assessment_date, CQCRatings.latest_rating_flag],
+                [CQCL.assessment_date, CQCRatings.latest_rating_flag],
                 descending=True,
                 nulls_last=True,
             )
             .first()
+            .cast(pl.Categorical)
             .alias(ShareModel.latest_overall_rating)
         )
         .with_columns(
             pl.col(location_column).cast(location_type),
-            pl.col(ShareModel.latest_overall_rating).cast(pl.Categorical),
+            pl.col(CQCRatings.date).str.to_date("%Y-%m-%d"),
         )
+        .sort(CQCRatings.date)
+    )
+
+    # join_asof needs both sides sorted by date (the ratings are sorted above). Polars can't
+    # check that when also joining by location, so its check is switched off.
+    location_date_ratings_lf = (
+        lf.select(location_column, date_column)
+        .unique()
+        .sort(date_column)
+        .join_asof(
+            ratings_by_date_lf,
+            left_on=date_column,
+            right_on=CQCRatings.date,
+            by=location_column,
+            strategy="backward",
+            check_sortedness=False,
+        )
+        .drop(CQCRatings.date)
     )
 
     lf = lf.drop(ShareModel.latest_overall_rating, strict=False).join(
-        latest_ratings_lf, on=location_column, how="left"
+        location_date_ratings_lf, on=[location_column, date_column], how="left"
     )
 
     return lf.with_columns(
@@ -209,8 +235,8 @@ def build_modelling_dataset(
 
     Both source datasets are wide, so only the columns the models need are selected, straight
     away. The estimates columns are joined on location and import date, which the estimates
-    dataset has one row for each of, and the ratings are filtered to one per location, so
-    neither join duplicates rows.
+    dataset has one row for each of, and the ratings are reduced to one per location and import
+    date, so neither join duplicates rows.
 
     Build this before filtering out any rows, so each location's flags and counts reflect all of
     its data.
@@ -276,7 +302,9 @@ def build_modelling_dataset(
         location_column=IndCQC.location_id,
         date_column=date_column,
     )
-    lf = add_latest_overall_rating(lf, ratings_lf, location_column=IndCQC.location_id)
+    lf = add_latest_overall_rating(
+        lf, ratings_lf, location_column=IndCQC.location_id, date_column=date_column
+    )
 
     return lf
 

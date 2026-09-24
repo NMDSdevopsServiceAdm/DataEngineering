@@ -69,13 +69,13 @@ def one_location_rating_case(
     expected_rating: str,
 ) -> AddLatestOverallRatingTestCase:
     """
-    Build a case for one location on one date, listing its ratings as (overall rating, rating
-    date, assessment date, latest rating flag) rows.
+    Build a case for one location on a date after all of its ratings, listing the ratings as
+    (overall rating, rating date, assessment date, latest rating flag) rows.
     """
     overall_ratings, rating_dates, assessment_dates, flags = map(list, zip(*ratings))
     location = {
         IndCQC.location_id: ["loc1"],
-        IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
+        IndCQC.cqc_location_import_date: [date(2025, 1, 1)],
     }
     return AddLatestOverallRatingTestCase(
         id=id,
@@ -368,6 +368,44 @@ class TestModelUtilsData:
                 ShareModel.latest_overall_rating: [
                     CQCRatingsValues.good,
                     CQCRatingsValues.outstanding,
+                ],
+            },
+        ),
+    ]
+
+    # A rating counts from its own date, so the 2023-01-01 row gets it.
+    rating_as_of_import_date_test_cases = [
+        AddLatestOverallRatingTestCase(
+            id="uses_the_rating_in_place_on_each_date",
+            input_data={
+                IndCQC.location_id: ["loc1"] * 3,
+                IndCQC.cqc_location_import_date: [
+                    date(2022, 6, 1),
+                    date(2023, 1, 1),
+                    date(2024, 6, 1),
+                ],
+            },
+            ratings_data={
+                IndCQC.location_id: ["loc1", "loc1"],
+                CQCRatings.overall_rating: [
+                    CQCRatingsValues.requires_improvement,
+                    CQCRatingsValues.good,
+                ],
+                CQCRatings.date: ["2023-01-01", "2024-01-01"],
+                CQCL.assessment_date: [None, None],
+                CQCRatings.latest_rating_flag: [NOT_LATEST, LATEST],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1"] * 3,
+                IndCQC.cqc_location_import_date: [
+                    date(2022, 6, 1),
+                    date(2023, 1, 1),
+                    date(2024, 6, 1),
+                ],
+                ShareModel.latest_overall_rating: [
+                    CQCRatingsValues.not_yet_rated,
+                    CQCRatingsValues.requires_improvement,
+                    CQCRatingsValues.good,
                 ],
             },
         ),
