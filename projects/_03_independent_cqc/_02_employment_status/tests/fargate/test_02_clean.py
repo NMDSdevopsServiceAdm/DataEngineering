@@ -13,14 +13,12 @@ class TestMain:
     @patch(f"{PATCH_PATH}.cUtils.create_employment_status_percentage_columns")
     @patch(f"{PATCH_PATH}.cUtils.null_counts_for_low_location_ratio")
     @patch(f"{PATCH_PATH}.cUtils.null_counts_for_low_org_ratio")
-    @patch(f"{PATCH_PATH}.cUtils.join_ratio_too_low_flags")
     @patch(f"{PATCH_PATH}.cUtils.deduplicate_employment_status_counts")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         deduplicate_employment_status_counts_mock: Mock,
-        join_ratio_too_low_flags_mock: Mock,
         null_org_ratio_mock: Mock,
         null_location_ratio_mock: Mock,
         create_employment_status_percentage_columns_mock: Mock,
@@ -35,11 +33,8 @@ class TestMain:
         deduplicate_employment_status_counts_mock.assert_called_once_with(
             scan_parquet_mock.return_value
         )
-        join_ratio_too_low_flags_mock.assert_called_once_with(
-            deduplicate_employment_status_counts_mock.return_value
-        )
         null_org_ratio_mock.assert_called_once_with(
-            join_ratio_too_low_flags_mock.return_value
+            deduplicate_employment_status_counts_mock.return_value
         )
         null_location_ratio_mock.assert_called_once_with(
             null_org_ratio_mock.return_value

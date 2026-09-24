@@ -1,10 +1,10 @@
 """THROWAWAY diagnostics prototype - not part of the real pipeline.
 
-Wraps the aggregate-then-join-back EmpStat ratio-filter clean job with
-RunDiagnostics to measure peak memory, for comparison against the
-.over()-based variant's equivalent prototype on the 2094-empstat branch.
-Delete this file (and its terraform/Dockerfile/Step Function wiring) once
-that comparison concludes.
+Wraps this branch's raw-counts EmpStat ratio-filter clean job (still
+.over()-based, like 2094-empstat, but sourced from raw counts instead of
+_dedup) with RunDiagnostics to measure peak memory, for comparison against
+2094-empstat's dedup-based equivalent prototype. Delete this file (and its
+terraform/Dockerfile/Step Function wiring) once that comparison concludes.
 """
 
 from polars_utils import utils
@@ -17,7 +17,7 @@ from utils.file_utils import split_s3_uri
 
 def main(merged_data_source: str, cleaned_data_destination: str) -> None:
     """
-    Runs the aggregate-then-join-back EmpStat clean job under RunDiagnostics.
+    Runs this branch's raw-counts EmpStat clean job under RunDiagnostics.
 
     Args:
         merged_data_source (str): path to the merged data
@@ -25,7 +25,7 @@ def main(merged_data_source: str, cleaned_data_destination: str) -> None:
             path - never the real pipeline's destination
     """
     data_bucket, _ = split_s3_uri(merged_data_source)
-    diagnostics = RunDiagnostics("empstat_02_clean_join", data_bucket).start()
+    diagnostics = RunDiagnostics("empstat_02_clean_raw", data_bucket).start()
     print(f"Run diagnostics: s3://{diagnostics.bucket}/{diagnostics.prefix}")
 
     try:
@@ -34,9 +34,6 @@ def main(merged_data_source: str, cleaned_data_destination: str) -> None:
 
         lf = cUtils.deduplicate_employment_status_counts(lf)
         diagnostics.checkpoint("after_dedup", lf)
-
-        lf = cUtils.join_ratio_too_low_flags(lf)
-        diagnostics.checkpoint("after_join_ratio_flags", lf)
 
         lf = cUtils.null_counts_for_low_org_ratio(lf)
         diagnostics.checkpoint("after_org_ratio", lf)

@@ -62,12 +62,13 @@ module "_03_independent_cqc" {
   tag_name = terraform.workspace
 }
 
-# THROWAWAY - for the 2094 EmpStat ratio-filter memory comparison
-# (.over() vs aggregate-then-join-back). Reuses the real _03_independent_cqc
-# image (same ecr_repo_name), sized to match it (cpu_size/ram_size default to
-# the same 8192/61440), but with its own task definition so POLARS_VERBOSE=1
-# only applies here, not to the real job. Delete this module (and its 3
-# wiring points in step-function.tf) once the comparison concludes.
+# THROWAWAY - for the 2094 EmpStat ratio-filter memory comparison (dedup
+# counts, on 2094-empstat, vs raw counts, this branch - both .over()-based).
+# Reuses the real _03_independent_cqc image (same ecr_repo_name), sized to
+# match it (cpu_size/ram_size default to the same 8192/61440), but with its
+# own task definition so POLARS_VERBOSE=1 only applies here, not to the real
+# job. Delete this module (and its 3 wiring points in step-function.tf) once
+# the comparison concludes.
 module "_03_independent_cqc_empstat_diagnostics" {
   source        = "../modules/fargate-task"
   task_name     = "empstat-diagnostics"

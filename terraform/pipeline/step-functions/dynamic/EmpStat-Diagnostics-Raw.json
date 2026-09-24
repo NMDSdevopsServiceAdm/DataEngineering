@@ -1,8 +1,8 @@
 {
-  "Comment": "THROWAWAY - manually-started diagnostics run for the 2094 EmpStat ratio-filter memory comparison (aggregate-then-join-back variant, this branch). Reads this branch's already-produced 02_employment_status_01_merge output and writes to a distinctly-named diagnostics destination - never the real pipeline's output. Delete this state machine (and its fargate.tf module / step-function.tf wiring / _02_clean_prototype.py) once the comparison concludes.",
-  "StartAt": "Run EmpStat clean (join) with diagnostics",
+  "Comment": "THROWAWAY - manually-started diagnostics run for the 2094 EmpStat ratio-filter memory comparison (raw-counts variant, this branch - still .over()-based like 2094-empstat's dedup-counts variant). Reads this branch's already-produced 02_employment_status_01_merge output and writes to a distinctly-named diagnostics destination - never the real pipeline's output. Delete this state machine (and its fargate.tf module / step-function.tf wiring / _02_clean_prototype.py) once the comparison concludes.",
+  "StartAt": "Run EmpStat clean (raw) with diagnostics",
   "States": {
-    "Run EmpStat clean (join) with diagnostics": {
+    "Run EmpStat clean (raw) with diagnostics": {
       "Type": "Task",
       "Resource": "arn:aws:states:::ecs:runTask.sync",
       "Parameters": {
@@ -25,7 +25,7 @@
                 "--merged_data_source",
                 "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_01_merge/",
                 "--cleaned_data_destination",
-                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_02_clean_diagnostics_join/"
+                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_02_clean_diagnostics_raw/"
               ]
             }
           ]

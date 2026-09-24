@@ -18,12 +18,12 @@ PATCH_PATH = (
     "projects._03_independent_cqc._02_employment_status.fargate.utils.clean_utils"
 )
 
-DEDUP_COUNT_COLUMNS = [
-    EmpStatus.permanent_count_dedup,
-    EmpStatus.temporary_count_dedup,
-    EmpStatus.bank_or_pool_count_dedup,
-    EmpStatus.agency_count_dedup,
-    EmpStatus.other_count_dedup,
+RAW_COUNT_COLUMNS = [
+    EmpStatus.permanent_count,
+    EmpStatus.temporary_count,
+    EmpStatus.bank_or_pool_count,
+    EmpStatus.agency_count,
+    EmpStatus.other_count,
 ]
 
 CLEAN_COUNT_COLUMNS = [
@@ -46,7 +46,7 @@ PERCENTAGE_COLUMNS = [
 def _schema_overrides(data: dict) -> dict:
     overrides = {
         column: pl.Int64
-        for column in [*DEDUP_COUNT_COLUMNS, *CLEAN_COUNT_COLUMNS]
+        for column in [*RAW_COUNT_COLUMNS, *CLEAN_COUNT_COLUMNS]
         if column in data
     }
     overrides.update(
@@ -60,14 +60,13 @@ def build_input_lf(input_data: dict) -> pl.LazyFrame:
 
 
 def build_expected_lf(expected_data: dict) -> pl.LazyFrame:
-    lf = pl.LazyFrame(expected_data, schema_overrides=_schema_overrides(expected_data))
-    if EmpStatus.filtering_rule in expected_data:
-        lf = lf.with_columns(
-            pl.col(EmpStatus.filtering_rule).cast(
-                CatColType.EmploymentStatusFilteringRuleCatType
-            )
+    return pl.LazyFrame(
+        expected_data, schema_overrides=_schema_overrides(expected_data)
+    ).with_columns(
+        pl.col(EmpStatus.filtering_rule).cast(
+            CatColType.EmploymentStatusFilteringRuleCatType
         )
-    return lf
+    )
 
 
 class TestDeduplicateEmploymentStatusCounts:
@@ -130,19 +129,19 @@ class TestCreateEmploymentStatusPercentageColumns:
         assert returned_lf == percentage_share_horizontal_mock.return_value
 
 
-class TestJoinRatioTooLowFlags:
+class TestNullCountsForLowLocationRatio:
     @pytest.mark.parametrize(
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.join_ratio_too_low_flags_test_cases
+            for case in Data.null_counts_for_low_location_ratio_test_cases
         ],
     )
-    def test_joins_org_and_location_ratio_too_low_flags(self, case):
+    def test_nulls_clean_counts_only_where_location_ratio_is_too_low(self, case):
         test_lf = build_input_lf(case.input_data)
         expected_lf = build_expected_lf(case.expected_data)
 
-        returned_lf = job.join_ratio_too_low_flags(test_lf)
+        returned_lf = job.null_counts_for_low_location_ratio(test_lf)
 
         pl_testing.assert_frame_equal(
             returned_lf,
@@ -160,33 +159,11 @@ class TestNullCountsForLowOrgRatio:
             for case in Data.null_counts_for_low_org_ratio_test_cases
         ],
     )
-    def test_nulls_clean_counts_only_where_org_ratio_flag_is_true(self, case):
+    def test_nulls_clean_counts_only_where_org_ratio_is_too_low(self, case):
         test_lf = build_input_lf(case.input_data)
         expected_lf = build_expected_lf(case.expected_data)
 
         returned_lf = job.null_counts_for_low_org_ratio(test_lf)
-
-        pl_testing.assert_frame_equal(
-            returned_lf,
-            expected_lf,
-            check_row_order=False,
-            check_column_order=False,
-        )
-
-
-class TestNullCountsForLowLocationRatio:
-    @pytest.mark.parametrize(
-        "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.null_counts_for_low_location_ratio_test_cases
-        ],
-    )
-    def test_nulls_clean_counts_only_where_location_ratio_flag_is_true(self, case):
-        test_lf = build_input_lf(case.input_data)
-        expected_lf = build_expected_lf(case.expected_data)
-
-        returned_lf = job.null_counts_for_low_location_ratio(test_lf)
 
         pl_testing.assert_frame_equal(
             returned_lf,
