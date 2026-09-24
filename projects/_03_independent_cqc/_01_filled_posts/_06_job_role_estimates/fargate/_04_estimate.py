@@ -51,6 +51,20 @@ def main(
 
     # A job role row with an exactly-zero final estimate has no posts to split
     # into further breakdowns (e.g. employment status, gender) downstream.
+    # The counts below force an extra pass over the data purely to report how
+    # many rows this drops for the 2102 spike - remove if this filter is kept
+    # permanently.
+    zero_estimate_counts = lf.select(
+        pl.len().alias("total_rows"),
+        (pl.col(IndCQC.estimate_filled_posts_by_job_role) == 0.0)
+        .sum()
+        .alias("zero_estimate_rows"),
+    ).collect()
+    print(
+        f"Dropping {zero_estimate_counts['zero_estimate_rows'][0]} of "
+        f"{zero_estimate_counts['total_rows'][0]} rows with an exactly-zero "
+        "final job role estimate"
+    )
     lf = lf.filter(pl.col(IndCQC.estimate_filled_posts_by_job_role) != 0.0)
 
     lf = eUtils.calc_difference_between_estimate_filled_posts_and_summed_job_roles(lf)
