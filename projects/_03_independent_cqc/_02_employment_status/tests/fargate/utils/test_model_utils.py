@@ -195,6 +195,13 @@ class TestAddLatestOverallRating:
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
+    def test_existing_rating_is_replaced(self):
+        returned_lf, expected_lf = self.returned_and_expected_lfs(
+            Data.existing_rating_replaced_test_case
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
 
 class TestBuildModellingDataset:
     def test_builder_does_not_duplicate_rows(self):
@@ -270,6 +277,30 @@ class TestAssignLocationFolds:
 
         pl_testing.assert_frame_equal(
             first_lf.unique(), reordered_lf.unique(), check_row_order=False
+        )
+
+    def test_existing_folds_are_replaced(self):
+        case = Data.existing_folds_replaced_test_case
+        # Folds are numbered from 0, so n_folds is a fold number no new assignment gives.
+        earlier_folds_lf = pl.LazyFrame(
+            {
+                IndCQC.location_id: case.location_ids,
+                ShareModel.fold: [case.n_folds] * len(case.location_ids),
+            },
+            schema_overrides={ShareModel.fold: pl.UInt8},
+        )
+
+        returned_lf = job.assign_location_folds(
+            earlier_folds_lf,
+            location_column=IndCQC.location_id,
+            n_folds=case.n_folds,
+            seed=FOLD_SEED,
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            self.assign_folds(case.location_ids, case.n_folds),
+            check_row_order=False,
         )
 
 

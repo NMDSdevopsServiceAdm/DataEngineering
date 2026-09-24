@@ -151,6 +151,7 @@ def add_latest_overall_rating(
     ordered the way the ratings job picks its latest rating, by rating date then assessment
     date, with its latest rating flag breaking any tie. The ratings dataset has a row per
     rating, so taking one per location before joining keeps the join to one match per location.
+    Any existing "latest_overall_rating" column is replaced.
 
     Args:
         lf (pl.LazyFrame): dataset containing the location ID
@@ -184,7 +185,9 @@ def add_latest_overall_rating(
         )
     )
 
-    lf = lf.join(latest_ratings_lf, on=location_column, how="left")
+    lf = lf.drop(ShareModel.latest_overall_rating, strict=False).join(
+        latest_ratings_lf, on=location_column, how="left"
+    )
 
     return lf.with_columns(
         pl.col(ShareModel.latest_overall_rating).fill_null(
@@ -287,7 +290,8 @@ def assign_location_folds(
 
     Folds are dealt out in turn down a shuffled list of the unique location IDs, so fold sizes
     differ by at most one location. The IDs are sorted before shuffling, so the same seed gives
-    the same folds whatever order the rows are in.
+    the same folds whatever order the rows are in. Any existing "fold" column is replaced, such
+    as when folds are assigned again with another seed.
 
     Args:
         lf (pl.LazyFrame): dataset containing the location ID
@@ -298,6 +302,8 @@ def assign_location_folds(
     Returns:
         pl.LazyFrame: dataset with the "fold" column added, numbered from 0
     """
+    lf = lf.drop(ShareModel.fold, strict=False)
+
     location_folds_lf = (
         lf.select(pl.col(location_column).unique())
         .sort(location_column)
@@ -330,7 +336,10 @@ def add_fold_safe_rolling_average(
     change. Any `output_columns` already in `lf`, such as averages made from all folds, are
     replaced, rather than being kept alongside the fold-safe ones.
 
-    This runs `rolling_average_function` once per fold, over every row each time.
+    This runs `rolling_average_function` once per fold, over every row each time. The folds run
+    one after another rather than all at once, so memory peaks at one fold's working data rather
+    than all of them. Pass a collected frame (as `df.lazy()`) so the steps that built `lf` aren't
+    repeated for every fold.
 
     Args:
         lf (pl.LazyFrame): dataset containing the input share, fold and key columns
@@ -360,4 +369,6 @@ def add_fold_safe_rolling_average(
             .select(*key_columns, *output_columns)
         )
 
-    return lf.join(pl.concat(fold_output_lfs), on=key_columns, how="left")
+    return lf.join(
+        pl.concat(fold_output_lfs, parallel=False), on=key_columns, how="left"
+    )

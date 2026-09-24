@@ -113,6 +113,18 @@ class TestScoreCellShares:
         "case",
         [
             pytest.param(case, id=case.id)
+            for case in Data.cells_missing_a_share_test_cases
+        ],
+    )
+    def test_cells_missing_a_share_are_not_scored(self, case):
+        pl_testing.assert_frame_equal(
+            self.score(case, share_count=1), pl.LazyFrame(case.expected_data)
+        )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
             for case in Data.scores_split_by_fold_test_cases
         ],
     )

@@ -16,10 +16,12 @@ def aggregate_shares_by_cell(
     """
     Aggregate predicted and actual shares into cells, such as service, CSSR, job role and year.
 
-    Only rows with known actual shares are used, so predictions are compared with actual shares
-    for the same workers. Each cell's share is the average of its rows' shares weighted by their
-    workers, Σ(share × weight) / Σ weight, so it matches the share of all the cell's workers. The
-    sums are in Float64, since a cell can sum a lot of rows and the aggregated result is small.
+    Only rows with both known actual shares and predictions are used, so each cell compares
+    predictions and actual shares for the same workers. When comparing models, give them all
+    the same rows, so a model isn't scored on fewer rows because it left some unpredicted.
+    Each cell's share is the average of its rows' shares weighted by their workers,
+    Σ(share × weight) / Σ weight, so it matches the share of all the cell's workers. The sums are
+    in Float64, since a cell can sum a lot of rows and the aggregated result is small.
 
     Args:
         lf (pl.LazyFrame): dataset containing the share, weight and cell columns
@@ -29,12 +31,14 @@ def aggregate_shares_by_cell(
         cell_columns (list[str]): the columns that define each cell
 
     Returns:
-        pl.LazyFrame: one row per cell with any known actual shares, with its weighted shares
-            (keeping their column names) and its total weight in "cell_weight"
+        pl.LazyFrame: one row per cell with any usable rows, with its weighted shares (keeping
+            their column names) and its total weight in "cell_weight"
     """
     weight = pl.col(weight_column).cast(pl.Float64)
 
-    lf = lf.filter(pl.all_horizontal(pl.col(actual_columns).is_not_null()))
+    lf = lf.filter(
+        pl.all_horizontal(pl.col([*predicted_columns, *actual_columns]).is_not_null())
+    )
 
     return lf.group_by(cell_columns).agg(
         *[
@@ -59,7 +63,8 @@ def score_cell_shares(
 
     R² and mean absolute error are both weighted by each cell's weight, so bigger cells count
     for more: R² = 1 - Σ w(actual - predicted)² / Σ w(actual - weighted mean actual)², and the
-    error is Σ w|actual - predicted| / Σ w, in percentage points.
+    error is Σ w|actual - predicted| / Σ w, in percentage points. Cells missing either share are
+    left out.
 
     Args:
         cells_lf (pl.LazyFrame): one row per cell, such as from `aggregate_shares_by_cell`
@@ -86,6 +91,9 @@ def score_cell_shares(
         actual = pl.col(actual_column).cast(pl.Float64)
         error = actual - predicted
         weighted_mean_actual = (weight * actual).sum() / weight.sum()
+        scored_cells_lf = cells_lf.filter(
+            predicted.is_not_null() & actual.is_not_null()
+        )
 
         scores = [
             (
@@ -98,9 +106,9 @@ def score_cell_shares(
             ),
         ]
         scores_lf = (
-            cells_lf.group_by(by_columns).agg(scores)
+            scored_cells_lf.group_by(by_columns).agg(scores)
             if by_columns
-            else cells_lf.select(scores)
+            else scored_cells_lf.select(scores)
         )
 
         share_scores_lfs.append(

@@ -437,6 +437,27 @@ class TestModelUtilsData:
         ),
     ]
 
+    existing_rating_replaced_test_case = AddLatestOverallRatingTestCase(
+        id="rating_from_an_earlier_run",
+        input_data={
+            IndCQC.location_id: ["loc1"],
+            IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
+            ShareModel.latest_overall_rating: [CQCRatingsValues.inadequate],
+        },
+        ratings_data={
+            IndCQC.location_id: ["loc1"],
+            CQCRatings.overall_rating: [CQCRatingsValues.good],
+            CQCRatings.date: ["2024-01-01"],
+            CQCL.assessment_date: [None],
+            CQCRatings.latest_rating_flag: [LATEST],
+        },
+        expected_data={
+            IndCQC.location_id: ["loc1"],
+            IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
+            ShareModel.latest_overall_rating: [CQCRatingsValues.good],
+        },
+    )
+
     # loc1 has two job roles on each of two dates, and more than one rating, so a join that
     # isn't one match per location and date would duplicate its rows.
     build_modelling_dataset_shares_data = {
@@ -508,6 +529,12 @@ class TestModelUtilsData:
         id="rows_in_a_different_order",
         location_ids=[f"loc{i}" for i in range(10)] * 2,
         n_folds=3,
+    )
+
+    existing_folds_replaced_test_case = AssignLocationFoldsTestCase(
+        id="folds_from_an_earlier_run",
+        location_ids=[f"loc{i}" for i in range(6)],
+        n_folds=2,
     )
 
     # Averaging all 3 shares would give 0.5 on every row.
@@ -599,6 +626,23 @@ class TestModelMetricsUtilsData:
                 ShareModel.cell_weight: [2.0],
             },
         ),
+        # Counting the row's workers but not its missing prediction would give a predicted
+        # share of 0.1.
+        ModelMetricsUtilsTestCase(
+            id="row_without_a_prediction_left_out_of_its_cells_shares_and_weight",
+            input_data={
+                IndCQC.primary_service_type: [NON_RES, NON_RES],
+                PREDICTED_SHARES[0]: [0.5, None],
+                ACTUAL_SHARES[0]: [0.4, 0.9],
+                IndCQC.estimate_filled_posts_by_job_role: [2.0, 8.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [NON_RES],
+                PREDICTED_SHARES[0]: [0.5],
+                ACTUAL_SHARES[0]: [0.4],
+                ShareModel.cell_weight: [2.0],
+            },
+        ),
         ModelMetricsUtilsTestCase(
             id="cell_without_any_known_rows_is_left_out",
             input_data={
@@ -661,6 +705,24 @@ class TestModelMetricsUtilsData:
                 ShareModel.share: ACTUAL_SHARES[:1],
                 IndCQC.r2: [0.0],
                 ShareModel.mean_absolute_error: [15.0],
+            },
+        ),
+    ]
+
+    # Counting the last cell's weight but not its missing error would give an R² of 0.94 and
+    # an error of 5 points.
+    cells_missing_a_share_test_cases = [
+        ModelMetricsUtilsTestCase(
+            id="cell_without_a_prediction_left_out",
+            input_data={
+                PREDICTED_SHARES[0]: [0.3, 0.5, None],
+                ACTUAL_SHARES[0]: [0.2, 0.6, 0.9],
+                ShareModel.cell_weight: [1.0, 1.0, 2.0],
+            },
+            expected_data={
+                ShareModel.share: ACTUAL_SHARES[:1],
+                IndCQC.r2: [0.75],
+                ShareModel.mean_absolute_error: [10.0],
             },
         ),
     ]
