@@ -478,6 +478,11 @@ class EmploymentStatusColumns:
     estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
     estimated_emp_stat_other: str = "estimated_emp_stat_other"
     estimated_employees: str = "estimated_employees"
+    permanent_percentage_clean: str = "emplstat_permanent_percentage_clean"
+    temporary_percentage_clean: str = "emplstat_temporary_percentage_clean"
+    bank_or_pool_percentage_clean: str = "emplstat_bank_or_pool_percentage_clean"
+    agency_percentage_clean: str = "emplstat_agency_percentage_clean"
+    other_percentage_clean: str = "emplstat_other_percentage_clean"
 
 
 @dataclass
@@ -511,3 +516,26 @@ class EmploymentStatusMagicNumberRateColumns:
     emp_stat_bank_or_pool: str = "emp_stat_bank_or_pool"
     emp_stat_agency: str = "emp_stat_agency"
     emp_stat_other: str = "emp_stat_other"
+
+
+@dataclass
+class ModelEvaluationColumns:
+    """The names of the columns added when evaluating models, such as filled posts."""
+
+    fold: str = "fold"
+    never_submitted: str = "never_submitted"
+    column_name: str = "column_name"
+    mean_period_to_period_change: str = "mean_period_to_period_change"
+
+
+@dataclass
+class ShareModelColumns:
+    """The names of the columns added when modelling and scoring share breakdowns."""
+
+    elapsed_months: str = "elapsed_months"
+    imputation_row_kind: str = "imputation_row_kind"
+    provider_location_count: str = "provider_location_count"
+    latest_overall_rating: str = "latest_overall_rating"
+    cell_weight: str = "cell_weight"
+    share: str = "share"
+    mean_absolute_error: str = "mean_absolute_error"
