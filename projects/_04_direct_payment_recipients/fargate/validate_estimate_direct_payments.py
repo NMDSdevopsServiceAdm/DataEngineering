@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 
 import pointblank as pb
 import polars as pl
@@ -51,12 +52,23 @@ def main(
             [
                 DP.YEAR_AS_INTEGER,
                 DP.LA_AREA,
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
             ]
         )
         # categorical
         .col_vals_in_set(
             DP.LA_AREA,
             CatValues.contemporary_cssr_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE,
+            [
+                DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+                DP.ESTIMATE_USING_EXTRAPOLATION_RATIO,
+                DP.ESTIMATE_USING_INTERPOLATION,
+                DP.ESTIMATE_USING_MEAN,
+            ],
         )
         # distinct values
         .specially(
@@ -65,7 +77,45 @@ def main(
                 CatValues.contemporary_cssr_column_values.count_of_categorical_values,
             ),
             brief=f"{DP.LA_AREA} needs to be one of {CatValues.contemporary_cssr_column_values.categorical_values} or {CatValues.current_cssr_column_values.categorical_values}",
-        ).interrogate()
+        )
+        # numeric - year plausibility (mirrors the 2013-current-year check used
+        # elsewhere in the repo for similar year columns)
+        .col_vals_between(
+            DP.FIRST_YEAR_WITH_DATA, 2013, int(datetime.now().year), na_pass=True
+        )
+        .col_vals_between(
+            DP.LAST_YEAR_WITH_DATA, 2013, int(datetime.now().year), na_pass=True
+        )
+        # numeric - proportions (bounded 0-1 by construction: means/interpolation
+        # of a 0-1 proportion stay within it; extrapolation is not bounded so is
+        # excluded)
+        .col_vals_between(DP.ESTIMATE_USING_MEAN, 0.0, 1.0, na_pass=True)
+        .col_vals_between(DP.ESTIMATE_USING_INTERPOLATION, 0.0, 1.0, na_pass=True)
+        .col_vals_between(
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, 0.0, 1.0
+        )
+        .col_vals_between(
+            DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+            0.0,
+            1.0,
+        )
+        # numeric - non-negative counts derived from the proportions/rates above
+        .col_vals_ge(
+            DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
+            0.0,
+            na_pass=True,
+        )
+        .col_vals_ge(
+            DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF, 0.0, na_pass=True
+        )
+        .col_vals_ge(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF, 0.0, na_pass=True)
+        .col_vals_ge(
+            DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, 0.0, na_pass=True
+        )
+        .col_vals_ge(
+            DP.ESTIMATED_PROPORTION_OF_TOTAL_DPR_EMPLOYING_STAFF, 0.0, na_pass=True
+        )
+        .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 

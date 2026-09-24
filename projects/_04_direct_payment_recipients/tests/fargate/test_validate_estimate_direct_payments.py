@@ -29,13 +29,63 @@ class Schemas:
             (DP.FILLED_POSTS_PER_EMPLOYER, pl.Float32),
         ]
     )
-    estimates_schema = merged_schema
+    estimates_schema = pl.Schema(
+        [
+            *merged_schema.items(),
+            (DP.ESTIMATE_USING_MEAN, pl.Float32),
+            (DP.FIRST_YEAR_WITH_DATA, pl.Int32),
+            (DP.LAST_YEAR_WITH_DATA, pl.Int32),
+            (DP.ESTIMATE_USING_EXTRAPOLATION_RATIO, pl.Float32),
+            (DP.ESTIMATE_USING_INTERPOLATION, pl.Float32),
+            (DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, pl.Float32),
+            (
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE,
+                pl.String,
+            ),
+            (
+                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+                pl.Float32,
+            ),
+            (
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
+                pl.Float32,
+            ),
+            (DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF, pl.Float32),
+            (DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF, pl.Float32),
+            (DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, pl.Float32),
+            (DP.ESTIMATED_PROPORTION_OF_TOTAL_DPR_EMPLOYING_STAFF, pl.Float32),
+        ]
+    )
 
 
 @dataclass
 class Data:
     merged_rows = [("area", "2020", 2020, 10.0, 0.5, 0.5, 20.0, 1.9)]
-    estimates_rows = merged_rows
+    estimates_rows = [
+        (
+            "area",
+            "2020",
+            2020,
+            10.0,
+            0.5,
+            0.5,
+            20.0,
+            1.9,
+            0.5,
+            2020,
+            2020,
+            None,
+            0.5,
+            0.5,
+            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+            0.5,
+            5.0,
+            0.2,
+            5.2,
+            9.88,
+            0.26,
+        )
+    ]
 
 
 class ValidateEstimateDirectPaymentsTests(unittest.TestCase):
