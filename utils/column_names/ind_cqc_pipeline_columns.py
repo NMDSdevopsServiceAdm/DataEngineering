@@ -511,3 +511,13 @@ class EmploymentStatusMagicNumberRateColumns:
     emp_stat_bank_or_pool: str = "emp_stat_bank_or_pool"
     emp_stat_agency: str = "emp_stat_agency"
     emp_stat_other: str = "emp_stat_other"
+
+
+@dataclass
+class ModelEvaluationColumns:
+    """The names of the columns added when evaluating models, such as filled posts."""
+
+    fold: str = "fold"
+    never_submitted: str = "never_submitted"
+    column_name: str = "column_name"
+    mean_period_to_period_change: str = "mean_period_to_period_change"
