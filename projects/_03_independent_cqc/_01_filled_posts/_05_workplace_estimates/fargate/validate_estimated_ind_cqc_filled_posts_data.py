@@ -38,8 +38,11 @@ EXPECTED_SCHEMA = pb.Schema(
         ),
         IndCqcColumns.posts_rolling_average_model: "Float32",
         IndCqcColumns.care_home_model: "Float32",
+        IndCqcColumns.care_home_model_run_id: "String",
         IndCqcColumns.non_res_with_dormancy_model: "Float32",
+        IndCqcColumns.non_res_with_dormancy_model_run_id: "String",
         IndCqcColumns.non_res_without_dormancy_model: "Float32",
+        IndCqcColumns.non_res_without_dormancy_model_run_id: "String",
         IndCqcColumns.imputed_pir_filled_posts_model: "Float32",
     }
 )
@@ -123,10 +126,16 @@ def main(
         .col_vals_between(IndCqcColumns.ascwds_pir_merged, 1.0, 3000.0, na_pass=True)
         .col_vals_between(IndCqcColumns.care_home_model, -100.0, 3000.0, na_pass=True)
         .col_vals_between(
+            IndCqcColumns.imputed_posts_care_home_model, -100.0, 3000.0, na_pass=True
+        )
+        .col_vals_between(
             IndCqcColumns.imputed_posts_non_res_combined_model,
             -100.0,
             3000.0,
             na_pass=True,
+        )
+        .col_vals_between(
+            IndCqcColumns.non_res_combined_model, -100.0, 3000.0, na_pass=True
         )
         .col_vals_between(
             IndCqcColumns.estimate_filled_posts, 1.0, 3000.0, na_pass=True
@@ -145,6 +154,8 @@ def main(
             IndCqcColumns.imputed_pir_filled_posts_model, -100.0, 3000.0, na_pass=True
         )
         .col_vals_between(IndCqcColumns.posts_rolling_average_model, 1.0, 3000.0)
+        .col_vals_ge(IndCqcColumns.ct_non_res_all_posts, 0.0, na_pass=True)
+        .col_vals_ge(IndCqcColumns.ct_non_res_filled_post_estimate, 1.0, na_pass=True)
         # categorical
         .col_vals_in_set(
             IndCqcColumns.care_home,
@@ -176,6 +187,14 @@ def main(
         .col_vals_in_set(
             IndCqcColumns.estimate_filled_posts_source,
             CatValues.estimate_filled_posts_source_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            IndCqcColumns.ct_non_res_filled_post_estimate_source,
+            [
+                IndCqcColumns.ct_non_res_all_posts,
+                IndCqcColumns.estimate_filled_posts,
+                None,
+            ],
         )
         # distinct values
         .specially(
