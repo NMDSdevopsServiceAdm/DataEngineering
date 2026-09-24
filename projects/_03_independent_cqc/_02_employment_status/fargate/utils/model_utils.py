@@ -111,9 +111,9 @@ def add_latest_overall_rating(
     Add each location's latest real overall CQC rating as of each row's date.
 
     Blank (e.g. "Inspected but not rated") and undated ratings are skipped, and locations
-    with no rating yet get "Not yet rated". Same-date ratings are ordered as the ratings job
-    does: by assessment date, then its latest rating flag. Found once per location and date,
-    then joined on. Replaces any existing rating.
+    with no rating yet get "Not yet rated". Same-date ratings are ordered by assessment date,
+    then the ratings job's latest rating flag, then the best rating. Found once per location
+    and date, then joined on. Replaces any existing rating.
 
     Args:
         lf (pl.LazyFrame): dataset containing the location and date columns
@@ -127,6 +127,21 @@ def add_latest_overall_rating(
     # Ratings store location IDs as strings, so match this dataset's type for the as-of join.
     location_type = lf.collect_schema()[location_column]
 
+    # The ratings job's numerical values, so the best rating wins any remaining tie.
+    rating_value = (
+        pl.col(CQCRatings.overall_rating)
+        .str.to_lowercase()
+        .replace_strict(
+            {
+                CQCRatingsValues.outstanding.lower(): 4,
+                CQCRatingsValues.good.lower(): 3,
+                CQCRatingsValues.requires_improvement.lower(): 2,
+                CQCRatingsValues.inadequate.lower(): 1,
+            },
+            default=0,
+        )
+    )
+
     ratings_by_date_lf = (
         ratings_lf.filter(
             pl.col(CQCRatings.overall_rating).is_not_null()
@@ -136,7 +151,7 @@ def add_latest_overall_rating(
         .agg(
             pl.col(CQCRatings.overall_rating)
             .sort_by(
-                [CQCL.assessment_date, CQCRatings.latest_rating_flag],
+                [CQCL.assessment_date, CQCRatings.latest_rating_flag, rating_value],
                 descending=True,
                 nulls_last=True,
             )

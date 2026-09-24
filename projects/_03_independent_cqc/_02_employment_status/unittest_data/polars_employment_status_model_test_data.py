@@ -440,10 +440,24 @@ class TestModelUtilsData:
         one_location_rating_case(
             id="latest_rating_flag_breaks_a_tie",
             ratings=[
-                (CQCRatingsValues.good, "2024-06-01", "2024-04-01", NOT_LATEST),
-                (CQCRatingsValues.outstanding, "2024-06-01", "2024-04-01", LATEST),
+                (CQCRatingsValues.outstanding, "2024-06-01", "2024-04-01", NOT_LATEST),
+                (CQCRatingsValues.good, "2024-06-01", "2024-04-01", LATEST),
             ],
-            expected_rating=CQCRatingsValues.outstanding,
+            expected_rating=CQCRatingsValues.good,
+        ),
+        one_location_rating_case(
+            id="best_rating_breaks_any_remaining_tie",
+            ratings=[
+                (
+                    CQCRatingsValues.requires_improvement,
+                    "2024-06-01",
+                    "2024-04-01",
+                    NOT_LATEST,
+                ),
+                (CQCRatingsValues.good, "2024-06-01", "2024-04-01", NOT_LATEST),
+                (None, "2024-07-01", None, LATEST),
+            ],
+            expected_rating=CQCRatingsValues.good,
         ),
     ]
 

@@ -186,7 +186,7 @@ class TestAddLatestOverallRating:
         "case",
         [pytest.param(case, id=case.id) for case in Data.same_date_ratings_test_cases],
     )
-    def test_same_date_ratings_ordered_like_the_ratings_job(self, case):
+    def test_same_date_rating_tie_breaks(self, case):
         returned_lf, expected_lf = self.returned_and_expected_lfs(case)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
