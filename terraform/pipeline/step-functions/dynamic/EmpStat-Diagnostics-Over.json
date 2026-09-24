@@ -1,0 +1,37 @@
+{
+  "Comment": "THROWAWAY - manually-started diagnostics run for the 2094 EmpStat ratio-filter memory comparison (.over() variant, this branch). Reads this branch's already-produced 02_employment_status_01_merge output and writes to a distinctly-named diagnostics destination - never the real pipeline's output. Delete this state machine (and its fargate.tf module / step-function.tf wiring / _02_clean_prototype.py) once the comparison concludes.",
+  "StartAt": "Run EmpStat clean (.over()) with diagnostics",
+  "States": {
+    "Run EmpStat clean (.over()) with diagnostics": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "LaunchType": "FARGATE",
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${empstat_diagnostics_task_arn}",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${empstat_diagnostics_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "empstat-diagnostics-container",
+              "Command": [
+                "_02_employment_status/fargate/_02_clean_prototype.py",
+                "--merged_data_source",
+                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_01_merge/",
+                "--cleaned_data_destination",
+                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_02_clean_diagnostics_over/"
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}

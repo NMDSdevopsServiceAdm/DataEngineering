@@ -478,6 +478,12 @@ class EmploymentStatusColumns:
     estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
     estimated_emp_stat_other: str = "estimated_emp_stat_other"
     estimated_employees: str = "estimated_employees"
+    permanent_count_clean: str = "emplstat_permanent_count_clean"
+    temporary_count_clean: str = "emplstat_temporary_count_clean"
+    bank_or_pool_count_clean: str = "emplstat_bank_or_pool_count_clean"
+    agency_count_clean: str = "emplstat_agency_count_clean"
+    other_count_clean: str = "emplstat_other_count_clean"
+    filtering_rule: str = "employment_status_filtering_rule"
 
 
 @dataclass

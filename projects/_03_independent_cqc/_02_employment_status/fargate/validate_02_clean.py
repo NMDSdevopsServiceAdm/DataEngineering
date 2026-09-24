@@ -1,6 +1,7 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
@@ -9,6 +10,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_values.categorical_column_values import EmploymentStatusFilteringRule
+from utils.column_values.categorical_columns_by_dataset import (
+    EmploymentStatusCleanCategoricalValues as CatValues,
+)
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
@@ -30,6 +35,27 @@ PERCENTAGE_COLUMNS = [
     EmpStatus.other_percentage,
 ]
 
+CLEAN_COUNT_COLUMNS = [
+    EmpStatus.permanent_count_clean,
+    EmpStatus.temporary_count_clean,
+    EmpStatus.bank_or_pool_count_clean,
+    EmpStatus.agency_count_clean,
+    EmpStatus.other_count_clean,
+]
+
+
+def _matches_filtering_rule_expr(column: str) -> pl.Expr:
+    """Builds the "column is null iff filtering_rule isn't 'populated'" check.
+
+    Holds for both the _clean count columns and the percentage columns:
+    percentages are now computed from the _clean counts, so they're null
+    for exactly the same rows.
+    """
+    populated = pl.lit(EmploymentStatusFilteringRule.populated)
+    return (
+        (pl.col(EmpStatus.filtering_rule) != populated) & pl.col(column).is_null()
+    ) | ((pl.col(EmpStatus.filtering_rule) == populated) & pl.col(column).is_not_null())
+
 
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
@@ -45,7 +71,10 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
-    source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        exclude_complex_types=True,
+    )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,
@@ -78,8 +107,25 @@ def main(
             na_pass=True,
             brief="employment status percentages are between 0 and 1",
         )
-        .interrogate()
+        # complete columns
+        .col_vals_not_null(
+            [
+                EmpStatus.filtering_rule,
+            ]
+        )
+        # categorical
+        .col_vals_in_set(
+            EmpStatus.filtering_rule,
+            CatValues.filtering_rule_column_values.categorical_values,
+            brief="employment_status_filtering_rule is a known reason",
+        )
     )
+    for column in [*CLEAN_COUNT_COLUMNS, *PERCENTAGE_COLUMNS]:
+        validation = validation.col_vals_expr(
+            expr=_matches_filtering_rule_expr(column),
+            brief=f"{column} must be null when {EmpStatus.filtering_rule} isn't 'populated', and non-null when it is",
+        )
+    validation = validation.interrogate()
     vl.write_reports(validation, bucket_name, reports_path)
 
 
