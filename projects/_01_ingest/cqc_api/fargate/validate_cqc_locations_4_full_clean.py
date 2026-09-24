@@ -105,6 +105,7 @@ def main(
                 CQCLClean.specialism_dementia,
                 CQCLClean.specialism_learning_disabilities,
                 CQCLClean.specialism_mental_health,
+                CQCLClean.postal_code,
                 CQCLClean.postcode_cleaned,
             ]
         )

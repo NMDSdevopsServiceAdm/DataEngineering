@@ -1544,6 +1544,7 @@ class ValidateCqcLocations4FullCleanTest:
         ("E01000001",),
         ("E02000001",),
         ("Barking and Dagenham",),
+        ("AB1 2CD",),
     ]
 
 

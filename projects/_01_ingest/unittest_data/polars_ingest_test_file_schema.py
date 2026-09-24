@@ -449,6 +449,7 @@ class ValidateCqcLocations4FullCleanTest:
             (CQCLClean.current_lsoa21, pl.String()),
             (CQCLClean.current_msoa21, pl.String()),
             (CQCLClean.current_constituency, pl.String()),
+            (CQCLClean.postal_code, pl.String()),
         ]
     )
 
