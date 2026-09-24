@@ -5,6 +5,9 @@ import polars as pl
 import pytest
 
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_02_clean as job
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
@@ -19,6 +22,13 @@ class TestMain:
     def setup(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
+            EmpStatus.employee_count: pl.Int64,
+            SLVCols.starters_cleaned: pl.Int64,
+            SLVCols.leavers_cleaned: pl.Int64,
+            SLVCols.vacancies_cleaned: pl.Int64,
+            SLVCols.starters_cleaned_dedup: pl.Int64,
+            SLVCols.leavers_cleaned_dedup: pl.Int64,
+            SLVCols.vacancies_cleaned_dedup: pl.Int64,
             SLVCols.turnover_rate: pl.Float32,
             SLVCols.starter_rate: pl.Float32,
             SLVCols.vacancy_rate: pl.Float32,
@@ -29,6 +39,13 @@ class TestMain:
         source_rows = [
             (
                 "1-001",
+                2,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
                 0.1,
                 0.2,
                 0.3,

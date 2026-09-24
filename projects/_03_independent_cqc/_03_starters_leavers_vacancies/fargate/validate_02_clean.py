@@ -5,6 +5,9 @@ import pointblank as pb
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
@@ -51,6 +54,48 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
+        )
+        .col_vals_ge(
+            EmpStatus.employee_count,
+            0,
+            na_pass=True,
+            brief="emplstat_employee_count is greater than or equal to 0",
+        )
+        .col_vals_ge(
+            SLVCols.starters_cleaned,
+            0,
+            na_pass=True,
+            brief="starters_cleaned is greater than or equal to 0",
+        )
+        .col_vals_ge(
+            SLVCols.leavers_cleaned,
+            0,
+            na_pass=True,
+            brief="leavers_cleaned is greater than or equal to 0",
+        )
+        .col_vals_ge(
+            SLVCols.vacancies_cleaned,
+            0,
+            na_pass=True,
+            brief="vacancies_cleaned is greater than or equal to 0",
+        )
+        .col_vals_ge(
+            SLVCols.starters_cleaned_dedup,
+            0,
+            na_pass=True,
+            brief="starters_cleaned_dedup is greater than or equal to 0",
+        )
+        .col_vals_ge(
+            SLVCols.leavers_cleaned_dedup,
+            0,
+            na_pass=True,
+            brief="leavers_cleaned_dedup is greater than or equal to 0",
+        )
+        .col_vals_ge(
+            SLVCols.vacancies_cleaned_dedup,
+            0,
+            na_pass=True,
+            brief="vacancies_cleaned_dedup is greater than or equal to 0",
         )
         .col_vals_ge(
             SLVCols.turnover_rate,
