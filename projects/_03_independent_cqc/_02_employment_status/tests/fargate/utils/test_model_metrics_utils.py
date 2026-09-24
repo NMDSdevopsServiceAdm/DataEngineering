@@ -14,6 +14,9 @@ from projects._03_independent_cqc._02_employment_status.unittest_data.polars_emp
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
+    ModelEvaluationColumns as ModelEvaluation,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
     ShareModelColumns as ShareModel,
 )
 
@@ -130,39 +133,7 @@ class TestScoreCellShares:
     )
     def test_scores_split_by_fold(self, case):
         pl_testing.assert_frame_equal(
-            self.score(case, share_count=1, by_columns=[ShareModel.fold]),
+            self.score(case, share_count=1, by_columns=[ModelEvaluation.fold]),
             pl.LazyFrame(case.expected_data),
             check_row_order=False,
-        )
-
-
-class TestMeanPeriodToPeriodChange:
-    @staticmethod
-    def mean_change(case, share_count: int) -> pl.LazyFrame:
-        return job.mean_period_to_period_change(
-            pl.LazyFrame(case.input_data),
-            share_columns=PREDICTED_SHARES[:share_count],
-            partition_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
-            date_column=IndCQC.cqc_location_import_date,
-        )
-
-    @pytest.mark.parametrize(
-        "case",
-        [pytest.param(case, id=case.id) for case in Data.steady_predictions_test_cases],
-    )
-    def test_steady_predictions_have_zero_change(self, case):
-        pl_testing.assert_frame_equal(
-            self.mean_change(case, share_count=2), pl.LazyFrame(case.expected_data)
-        )
-
-    @pytest.mark.parametrize(
-        "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.change_within_location_role_test_cases
-        ],
-    )
-    def test_change_measured_within_location_role(self, case):
-        pl_testing.assert_frame_equal(
-            self.mean_change(case, share_count=1), pl.LazyFrame(case.expected_data)
         )

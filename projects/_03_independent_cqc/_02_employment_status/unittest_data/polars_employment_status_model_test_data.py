@@ -8,6 +8,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
+    ModelEvaluationColumns as ModelEvaluation,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
     ShareModelColumns as ShareModel,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
@@ -44,8 +47,6 @@ JAN_TO_MAR = JAN_TO_JUN[:3]
 
 LATEST = CQCLatestRating.is_latest_rating
 NOT_LATEST = CQCLatestRating.not_latest_rating
-
-FOLD_SEED = 42
 
 
 @dataclass
@@ -88,52 +89,6 @@ def one_location_rating_case(
             CQCRatings.latest_rating_flag: flags,
         },
         expected_data={**location, ShareModel.latest_overall_rating: [expected_rating]},
-    )
-
-
-@dataclass
-class AssignLocationFoldsTestCase:
-    id: str
-    location_ids: list[str]
-    n_folds: int
-
-
-@dataclass
-class FoldSafeRollingAverageTestCase:
-    id: str
-    n_folds: int
-    input_data: dict[str, Any]
-    expected_data: dict[str, Any]
-
-
-def fold_safe_case(
-    id: str,
-    folds: list[int],
-    shares: list[float | None],
-    expected_averages: list[float],
-    n_folds: int = 2,
-    existing_averages: list[float] | None = None,
-) -> FoldSafeRollingAverageTestCase:
-    """
-    Build a case of one location per row, all in the same service and date, so each row's
-    average comes from the other folds' shares in that one group.
-    """
-    rows = {
-        IndCQC.location_id: [f"loc{i}" for i in range(len(folds))],
-        IndCQC.published_job_role_label: [CARE_WORKER] * len(folds),
-        IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * len(folds),
-        IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * len(folds),
-        ShareModel.fold: folds,
-        IMPUTED_SHARE: shares,
-    }
-    existing = (
-        {} if existing_averages is None else {ROLLING_AVERAGE_SHARE: existing_averages}
-    )
-    return FoldSafeRollingAverageTestCase(
-        id=id,
-        n_folds=n_folds,
-        input_data={**rows, **existing},
-        expected_data={**rows, ROLLING_AVERAGE_SHARE: expected_averages},
     )
 
 
@@ -536,79 +491,6 @@ class TestModelUtilsData:
         CQCRatings.latest_rating_flag: [NOT_LATEST, LATEST, LATEST],
     }
 
-    location_rows_share_a_fold_test_cases = [
-        AssignLocationFoldsTestCase(
-            id="three_rows_per_location",
-            location_ids=["loc1", "loc2", "loc3", "loc4"] * 3,
-            n_folds=2,
-        ),
-        AssignLocationFoldsTestCase(
-            id="different_numbers_of_rows_per_location",
-            location_ids=["loc1"] * 4 + ["loc2"] * 3 + ["loc3", "loc4", "loc5", "loc6"],
-            n_folds=5,
-        ),
-    ]
-
-    folds_are_balanced_test_cases = [
-        AssignLocationFoldsTestCase(
-            id="locations_that_dont_divide_evenly_into_folds",
-            location_ids=[f"loc{i}" for i in range(7)],
-            n_folds=3,
-        ),
-        # loc0 has far more rows than the others, so folds balanced by rows would differ.
-        AssignLocationFoldsTestCase(
-            id="balanced_by_locations_not_rows",
-            location_ids=["loc0"] * 20 + [f"loc{i}" for i in range(1, 10)],
-            n_folds=5,
-        ),
-    ]
-
-    folds_repeat_for_same_seed_test_case = AssignLocationFoldsTestCase(
-        id="rows_in_a_different_order",
-        location_ids=[f"loc{i}" for i in range(10)] * 2,
-        n_folds=3,
-    )
-
-    existing_folds_replaced_test_case = AssignLocationFoldsTestCase(
-        id="folds_from_an_earlier_run",
-        location_ids=[f"loc{i}" for i in range(6)],
-        n_folds=2,
-    )
-
-    # Averaging all 3 shares would give 0.5 on every row.
-    tested_fold_excluded_test_cases = [
-        fold_safe_case(
-            id="leaves_out_only_the_tested_fold",
-            folds=[0, 1, 2],
-            shares=[0.2, 0.4, 0.9],
-            expected_averages=[0.65, 0.55, 0.3],
-            n_folds=3,
-        ),
-        fold_safe_case(
-            id="leaves_out_every_location_in_the_tested_fold",
-            folds=[0, 1, 1],
-            shares=[0.2, 0.4, 0.9],
-            expected_averages=[0.65, 0.2, 0.2],
-        ),
-    ]
-
-    tested_fold_gets_group_value_test_cases = [
-        fold_safe_case(
-            id="location_without_its_own_share_gets_its_groups_value",
-            folds=[0, 1, 1],
-            shares=[0.2, 0.6, None],
-            expected_averages=[0.6, 0.2, 0.2],
-        ),
-    ]
-
-    existing_averages_replaced_test_case = fold_safe_case(
-        id="averages_from_all_folds_are_replaced",
-        folds=[0, 1, 1],
-        shares=[0.2, 0.4, 0.9],
-        expected_averages=[0.65, 0.2, 0.2],
-        existing_averages=[0.5, 0.5, 0.5],
-    )
-
 
 ACTUAL_SHARES = [
     EmpStatus.permanent_percentage_clean,
@@ -769,80 +651,16 @@ class TestModelMetricsUtilsData:
         ModelMetricsUtilsTestCase(
             id="each_fold_scored_on_its_own_cells",
             input_data={
-                ShareModel.fold: [0, 0, 1, 1],
+                ModelEvaluation.fold: [0, 0, 1, 1],
                 PREDICTED_SHARES[0]: [0.2, 0.6, 0.3, 0.5],
                 ACTUAL_SHARES[0]: [0.2, 0.6, 0.2, 0.6],
                 ShareModel.cell_weight: [1.0, 1.0, 1.0, 1.0],
             },
             expected_data={
-                ShareModel.fold: [0, 1],
+                ModelEvaluation.fold: [0, 1],
                 ShareModel.share: ACTUAL_SHARES[:1] * 2,
                 IndCQC.r2: [1.0, 0.75],
                 ShareModel.mean_absolute_error: [0.0, 10.0],
-            },
-        ),
-    ]
-
-    steady_predictions_test_cases = [
-        ModelMetricsUtilsTestCase(
-            id="shares_that_stay_the_same_every_period",
-            input_data={
-                IndCQC.location_id: ["loc1"] * 3,
-                IndCQC.published_job_role_label: [CARE_WORKER] * 3,
-                IndCQC.cqc_location_import_date: JAN_TO_MAR,
-                PREDICTED_SHARES[0]: [0.4] * 3,
-                PREDICTED_SHARES[1]: [0.6] * 3,
-            },
-            expected_data={
-                ShareModel.share: PREDICTED_SHARES,
-                ShareModel.mean_period_to_period_change: [0.0, 0.0],
-            },
-        ),
-    ]
-
-    # Rows are in date order across location-roles, so a change measured from one row to the
-    # next, ignoring location-role, would jump between their different shares.
-    change_within_location_role_test_cases = [
-        ModelMetricsUtilsTestCase(
-            id="not_measured_across_job_roles",
-            input_data={
-                IndCQC.location_id: ["loc1"] * 4,
-                IndCQC.published_job_role_label: [
-                    CARE_WORKER,
-                    REGISTERED_NURSE,
-                    CARE_WORKER,
-                    REGISTERED_NURSE,
-                ],
-                IndCQC.cqc_location_import_date: [
-                    date(2024, 1, 1),
-                    date(2024, 1, 1),
-                    date(2024, 2, 1),
-                    date(2024, 2, 1),
-                ],
-                PREDICTED_SHARES[0]: [0.2, 0.8, 0.2, 0.8],
-            },
-            expected_data={
-                ShareModel.share: PREDICTED_SHARES[:1],
-                ShareModel.mean_period_to_period_change: [0.0],
-            },
-        ),
-        # loc1 changes by 10 points and loc2 doesn't change, so the mean change is 5 points.
-        ModelMetricsUtilsTestCase(
-            id="not_measured_across_locations",
-            input_data={
-                IndCQC.location_id: ["loc1", "loc2", "loc1", "loc2"],
-                IndCQC.published_job_role_label: [CARE_WORKER] * 4,
-                IndCQC.cqc_location_import_date: [
-                    date(2024, 1, 1),
-                    date(2024, 1, 1),
-                    date(2024, 2, 1),
-                    date(2024, 2, 1),
-                ],
-                PREDICTED_SHARES[0]: [0.2, 0.8, 0.3, 0.8],
-            },
-            expected_data={
-                ShareModel.share: PREDICTED_SHARES[:1],
-                ShareModel.mean_period_to_period_change: [5.0],
             },
         ),
     ]

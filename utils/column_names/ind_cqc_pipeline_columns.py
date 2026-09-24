@@ -519,6 +519,18 @@ class EmploymentStatusMagicNumberRateColumns:
 
 
 @dataclass
+class ModelEvaluationColumns:
+    """
+    The names of the columns added while evaluating models, such as the filled posts and
+    employment status models.
+    """
+
+    fold: str = "fold"
+    column_name: str = "column_name"
+    mean_period_to_period_change: str = "mean_period_to_period_change"
+
+
+@dataclass
 class ShareModelColumns:
     """
     The names of the columns added while modelling a percentage-share breakdown (such as
@@ -530,8 +542,6 @@ class ShareModelColumns:
     never_submitted: str = "never_submitted"
     provider_location_count: str = "provider_location_count"
     latest_overall_rating: str = "latest_overall_rating"
-    fold: str = "fold"
     cell_weight: str = "cell_weight"
     share: str = "share"
     mean_absolute_error: str = "mean_absolute_error"
-    mean_period_to_period_change: str = "mean_period_to_period_change"
