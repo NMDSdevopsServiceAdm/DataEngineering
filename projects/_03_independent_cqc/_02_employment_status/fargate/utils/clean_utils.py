@@ -141,6 +141,13 @@ def _dedup_total_staff_expr() -> pl.Expr:
     )
 
 
+def _dedup_permanent_temporary_total_expr() -> pl.Expr:
+    """Sums a job-role row's permanent+temporary deduplicated counts."""
+    return pl.col(EmpStatus.permanent_count_dedup) + pl.col(
+        EmpStatus.temporary_count_dedup
+    )
+
+
 def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Nulls an org's employment status clean counts where too few of its staff
@@ -150,10 +157,15 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     Must run before null_counts_for_low_location_ratio, which narrows the
     columns created here.
 
-    Both staff and permanent+temporary are summed from the _dedup columns
-    (see _dedup_total_staff_expr) across the org's job-role rows via
-    `.over()`, not a join, which costs more peak memory for this kind of
-    broadcast (see the over-vs-join skill). A repeated job-role row (the
+    The ticket's org rule is defined at org grain, but this data is at
+    (location, published_job_role_label) grain - about 15 rows per
+    location. This computes the equivalent of aggregating staff and
+    permanent+temporary up to org grain, deciding org_ratio_too_low there,
+    then joining that decision back onto every job-role row of the org -
+    but as a broadcast window function (`.over()`) rather than an actual
+    group_by + join, which costs several GB more peak memory for this kind
+    of "attach one aggregate to every row" broadcast on a comparably-sized
+    real frame (see the over-vs-join skill). A repeated job-role row (the
     same underlying ASCWDS submission seen through more than one CQC
     snapshot) is an exact duplicate, so it's already nulled by dedup's
     unchanged-since-prior-snapshot check - no separate distinct-row filter
@@ -181,12 +193,7 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     org_total_staff = _dedup_total_staff_expr().sum().over(org_partition)
     org_permanent_temporary_total = (
-        (
-            pl.col(EmpStatus.permanent_count_dedup)
-            + pl.col(EmpStatus.temporary_count_dedup)
-        )
-        .sum()
-        .over(org_partition)
+        _dedup_permanent_temporary_total_expr().sum().over(org_partition)
     )
 
     org_ratio_too_low = (
@@ -231,10 +238,11 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     employment_status_filtering_rule where it's still 'populated'.
 
     Must run after null_counts_for_low_org_ratio, which creates the columns
-    this narrows further. Sums staff and permanent+temporary from the
-    _dedup columns (see _dedup_total_staff_expr) across a location's
-    job-role rows via `.over()`, for the same reason as the org rule (see
-    its docstring).
+    this narrows further. Same shape as the org rule (see its docstring):
+    aggregates staff and permanent+temporary up to location grain, decides
+    location_ratio_too_low there, and broadcasts it back onto every
+    job-role row of the location via `.over()` instead of a join, for the
+    same peak-memory reason.
 
     Args:
         lf (pl.LazyFrame): merged employment status data, already processed by
@@ -253,12 +261,7 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     location_total_staff = _dedup_total_staff_expr().sum().over(location_partition)
     location_permanent_temporary_total = (
-        (
-            pl.col(EmpStatus.permanent_count_dedup)
-            + pl.col(EmpStatus.temporary_count_dedup)
-        )
-        .sum()
-        .over(location_partition)
+        _dedup_permanent_temporary_total_expr().sum().over(location_partition)
     )
 
     location_ratio_too_low = (location_total_staff >= LOCATION_STAFF_THRESHOLD) & (
