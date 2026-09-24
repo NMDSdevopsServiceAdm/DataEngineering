@@ -16,7 +16,13 @@ from projects._03_independent_cqc.utils.filtering_utils import get_matched_ascwd
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_columns_by_dataset import (
+    SLVPrepareCategoricalValues,
+)
 
 
 def main(
@@ -83,6 +89,38 @@ def main(
                 f"Expects {expected_row_count} rows (one per unique group in "
                 f"{compare_path})"
             ),
+        )
+        # complete columns (pivot fills groups with no workers of a status as 0,
+        # so these are never null)
+        .col_vals_not_null(
+            [
+                IndCQC.published_job_role_label,
+                EmpStatus.permanent_count,
+                EmpStatus.temporary_count,
+                EmpStatus.bank_or_pool_count,
+                EmpStatus.agency_count,
+                EmpStatus.other_count,
+            ]
+        )
+        # numeric
+        .col_vals_ge(EmpStatus.permanent_count, 0)
+        .col_vals_ge(EmpStatus.temporary_count, 0)
+        .col_vals_ge(EmpStatus.bank_or_pool_count, 0)
+        .col_vals_ge(EmpStatus.agency_count, 0)
+        .col_vals_ge(EmpStatus.other_count, 0)
+        # categorical
+        .col_vals_in_set(
+            IndCQC.published_job_role_label,
+            SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values,
+        )
+        # distinct values
+        .specially(
+            vl.is_unique_count_equal(
+                IndCQC.published_job_role_label,
+                SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCQC.published_job_role_label} should have exactly "
+            f"{SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values} distinct values",
         )
         .interrogate()
     )

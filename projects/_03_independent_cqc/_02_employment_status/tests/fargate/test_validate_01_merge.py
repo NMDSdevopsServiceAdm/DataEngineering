@@ -68,6 +68,9 @@ class TestMain:
         self.source_df = pl.DataFrame(
             {
                 IndCqcColumns.location_id: ["1-001"] * PUBLISHED_ROLE_COUNT,
+                IndCqcColumns.published_job_role_label: (
+                    SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+                ),
             }
         )
 
@@ -110,4 +113,9 @@ class TestMain:
 
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
-        assert assertion_types_present == {"row_count_match"}
+        assert assertion_types_present == {
+            "row_count_match",
+            "col_vals_not_null",
+            "col_vals_in_set",
+            "specially",
+        }
