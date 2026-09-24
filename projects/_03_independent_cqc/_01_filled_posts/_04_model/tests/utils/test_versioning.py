@@ -213,3 +213,26 @@ class LoadModelTests(unittest.TestCase):
         )
 
         self.assertEqual(loaded_model, self.test_model)
+
+
+class TestLoadMetadata:
+    @mock_aws
+    def test_loads_metadata_for_given_run_number(self):
+        s3 = boto3.client("s3", region_name="eu-west-2")
+        s3.create_bucket(
+            Bucket="pipeline-resources",
+            CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+        )
+        metadata = {"metric": 0.99, "run_number": 7}
+        s3.put_object(
+            Bucket="pipeline-resources",
+            Key="models/model_A/7/metadata.json",
+            Body=json.dumps(metadata).encode("utf-8"),
+        )
+
+        loaded_metadata = job.load_metadata(
+            s3_root="s3://pipeline-resources/models/model_A/",
+            run_number=7,
+        )
+
+        assert loaded_metadata == metadata

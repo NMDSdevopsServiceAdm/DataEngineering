@@ -18,6 +18,7 @@ from projects._03_independent_cqc._01_filled_posts._04_model.utils.validate_mode
     validate_model_definition,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import ModelMetadataKeys as MMKeys
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
 
@@ -115,7 +116,7 @@ def main(bucket_name: str, model_name: str) -> None:
         "type": model_type,
         "parameters": model_params,
         "version": model_version,
-        "feature_columns": feature_cols,
+        MMKeys.feature_columns: feature_cols,
         "dependent_column": dependent_col,
         "metrics": metrics,
     }

@@ -1,7 +1,9 @@
-import unittest
 from unittest.mock import Mock, patch
 
+import pytest
+
 import projects._03_independent_cqc._01_filled_posts._04_model.fargate.model_03_predict as job
+from utils.column_names.ind_cqc_pipeline_columns import ModelMetadataKeys as MMKeys
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
 PATCH_PATH = (
@@ -9,14 +11,15 @@ PATCH_PATH = (
 )
 
 
-class ModelPredictTests(unittest.TestCase):
+class TestMain:
     TEST_BUCKET_NAME = "some_bucket"
     TEST_MODEL_NAME = "my_model"
+    TEST_FEATURES = ["feat1", "feat2"]
     TEST_MODEL_REGISTRY = {
         "my_model": {
             MRKeys.version: "1.0.0",
             MRKeys.dependent: "dependent_col",
-            MRKeys.features: ["feat1", "feat2"],
+            MRKeys.features: TEST_FEATURES,
         }
     }
 
@@ -28,10 +31,11 @@ class ModelPredictTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.paths.generate_predictions_path")
     @patch(f"{PATCH_PATH}.add_predictions_into_df")
     @patch(f"{PATCH_PATH}.vUtils.load_model")
-    @patch(f"{PATCH_PATH}.vUtils.get_run_number", return_value=3)
-    @patch(f"{PATCH_PATH}.paths.generate_model_path")
     @patch(f"{PATCH_PATH}.convert_dataframe_to_numpy")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_feature_data)
+    @patch(f"{PATCH_PATH}.vUtils.load_metadata")
+    @patch(f"{PATCH_PATH}.vUtils.get_run_number", return_value=3)
+    @patch(f"{PATCH_PATH}.paths.generate_model_path")
     @patch(f"{PATCH_PATH}.validate_model_definition")
     @patch(f"{PATCH_PATH}.paths.generate_features_path")
     @patch(f"{PATCH_PATH}.model_registry", TEST_MODEL_REGISTRY)
@@ -39,26 +43,67 @@ class ModelPredictTests(unittest.TestCase):
         self,
         generate_features_path_mock: Mock,
         validate_model_definition_mock: Mock,
-        scan_parquet_mock: Mock,
-        convert_dataframe_to_numpy_mock: Mock,
         generate_model_path_mock: Mock,
         get_run_number_mock: Mock,
+        load_metadata_mock: Mock,
+        scan_parquet_mock: Mock,
+        convert_dataframe_to_numpy_mock: Mock,
         load_model_mock: Mock,
         add_predictions_into_df_mock: Mock,
         generate_predictions_path_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
-        convert_dataframe_to_numpy_mock.side_effect = [(self.mock_X, self.mock_y)]
+        load_metadata_mock.return_value = {MMKeys.feature_columns: self.TEST_FEATURES}
+        convert_dataframe_to_numpy_mock.return_value = (self.mock_X, self.mock_y)
 
         job.main(self.TEST_BUCKET_NAME, self.TEST_MODEL_NAME)
 
         generate_features_path_mock.assert_called_once()
         validate_model_definition_mock.assert_called_once()
-        scan_parquet_mock.assert_called_once()
-        convert_dataframe_to_numpy_mock.assert_called_once()
         generate_model_path_mock.assert_called_once()
         get_run_number_mock.assert_called_once()
+        load_metadata_mock.assert_called_once()
+        scan_parquet_mock.assert_called_once()
+        convert_dataframe_to_numpy_mock.assert_called_once()
         load_model_mock.assert_called_once()
         add_predictions_into_df_mock.assert_called_once()
         generate_predictions_path_mock.assert_called_once()
         write_to_parquet_mock.assert_called_once()
+
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.paths.generate_predictions_path")
+    @patch(f"{PATCH_PATH}.add_predictions_into_df")
+    @patch(f"{PATCH_PATH}.vUtils.load_model")
+    @patch(f"{PATCH_PATH}.convert_dataframe_to_numpy")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_feature_data)
+    @patch(f"{PATCH_PATH}.vUtils.load_metadata")
+    @patch(f"{PATCH_PATH}.vUtils.get_run_number", return_value=3)
+    @patch(f"{PATCH_PATH}.paths.generate_model_path")
+    @patch(f"{PATCH_PATH}.validate_model_definition")
+    @patch(f"{PATCH_PATH}.paths.generate_features_path")
+    @patch(f"{PATCH_PATH}.model_registry", TEST_MODEL_REGISTRY)
+    def test_predict_stops_when_saved_features_differ(
+        self,
+        generate_features_path_mock: Mock,
+        validate_model_definition_mock: Mock,
+        generate_model_path_mock: Mock,
+        get_run_number_mock: Mock,
+        load_metadata_mock: Mock,
+        scan_parquet_mock: Mock,
+        convert_dataframe_to_numpy_mock: Mock,
+        load_model_mock: Mock,
+        add_predictions_into_df_mock: Mock,
+        generate_predictions_path_mock: Mock,
+        write_to_parquet_mock: Mock,
+    ):
+        saved_features = ["feat1", "old_feat"]
+        load_metadata_mock.return_value = {MMKeys.feature_columns: saved_features}
+
+        with pytest.raises(ValueError) as error:
+            job.main(self.TEST_BUCKET_NAME, self.TEST_MODEL_NAME)
+
+        assert str(saved_features) in str(error.value)
+        assert str(self.TEST_FEATURES) in str(error.value)
+        scan_parquet_mock.assert_not_called()
+        load_model_mock.assert_not_called()
+        write_to_parquet_mock.assert_not_called()

@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, MagicMock, Mock, patch
 
 import numpy as np
@@ -12,7 +11,7 @@ PATCH_PATH = (
 )
 
 
-class ModelTrainTests(unittest.TestCase):
+class TestMain:
     TEST_BUCKET_NAME = "some_bucket"
     TEST_MODEL_NAME = "my_model"
     TEST_CARE_HOME_NAME = IndCQC.care_home_model
@@ -64,7 +63,7 @@ class ModelTrainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.validate_model_definition")
     @patch(f"{PATCH_PATH}.paths.generate_features_path")
     @patch(f"{PATCH_PATH}.model_registry", TEST_MODEL_REGISTRY_RETRAIN_CH)
-    def test_main_runs_successfully_when_model_is_auto_retrained_and_model_is_care_home(
+    def test_runs_successfully_for_care_home_model(
         self,
         generate_features_path_mock: Mock,
         validate_model_definition_mock: Mock,
@@ -91,7 +90,7 @@ class ModelTrainTests(unittest.TestCase):
         validate_model_definition_mock.assert_called_once()
         scan_parquet_mock.assert_called_once()
         split_train_test_mock.assert_called_once()
-        self.assertEqual(convert_dataframe_to_numpy_mock.call_count, 2)
+        assert convert_dataframe_to_numpy_mock.call_count == 2
         build_model_mock.assert_called_once()
         calculate_metrics_mock.assert_called_once_with(
             ANY, ANY, self.TEST_CARE_HOME_NAME, ANY
@@ -111,7 +110,7 @@ class ModelTrainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.validate_model_definition")
     @patch(f"{PATCH_PATH}.paths.generate_features_path")
     @patch(f"{PATCH_PATH}.model_registry", TEST_MODEL_REGISTRY_RETRAIN_OTHER)
-    def test_main_runs_successfully_when_model_is_auto_retrained_and_model_is_not_care_home(
+    def test_runs_successfully_for_non_care_home_model(
         self,
         generate_features_path_mock: Mock,
         validate_model_definition_mock: Mock,
@@ -138,7 +137,7 @@ class ModelTrainTests(unittest.TestCase):
         validate_model_definition_mock.assert_called_once()
         scan_parquet_mock.assert_called_once()
         split_train_test_mock.assert_called_once()
-        self.assertEqual(convert_dataframe_to_numpy_mock.call_count, 2)
+        assert convert_dataframe_to_numpy_mock.call_count == 2
         build_model_mock.assert_called_once()
         calculate_metrics_mock.assert_called_once_with(ANY, ANY, self.TEST_MODEL_NAME)
         generate_model_path_mock.assert_called_once()
@@ -156,7 +155,7 @@ class ModelTrainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.validate_model_definition")
     @patch(f"{PATCH_PATH}.paths.generate_features_path")
     @patch(f"{PATCH_PATH}.model_registry", TEST_MODEL_REGISTRY_NO_RETRAIN)
-    def test_main_skips_when_auto_retrain_false(
+    def test_skips_training_when_auto_retrain_is_false(
         self,
         generate_features_path_mock: Mock,
         validate_model_definition_mock: Mock,
