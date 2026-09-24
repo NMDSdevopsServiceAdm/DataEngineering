@@ -16,9 +16,9 @@ from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_
     ValidateJobRoleRatiosMergedSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns, PartitionKeys
+from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
-    MainJobRoleLabels,
     PrimaryServiceType,
 )
 

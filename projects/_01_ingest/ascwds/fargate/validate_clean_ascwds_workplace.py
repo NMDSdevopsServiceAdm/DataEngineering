@@ -145,6 +145,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             ASCWPClean.registration_type,
             [*CatValues.registration_type_column_values.categorical_values, None],
         )
+        .col_vals_in_set(
+            ASCWPClean.region_id,
+            [*CatValues.region_id_column_values.categorical_values, None],
+        )
         # distinct values
         .specially(
             vl.is_unique_count_equal(
@@ -166,6 +170,13 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 CatValues.registration_type_column_values.count_of_categorical_values,
             ),
             brief=f"{ASCWPClean.registration_type} should have exactly {CatValues.registration_type_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                ASCWPClean.region_id,
+                CatValues.region_id_column_values.count_of_categorical_values,
+            ),
+            brief=f"{ASCWPClean.region_id} should have exactly {CatValues.region_id_column_values.count_of_categorical_values} distinct values",
         )
         .interrogate()
     )

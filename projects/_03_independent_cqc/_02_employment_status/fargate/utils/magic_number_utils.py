@@ -8,10 +8,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusMagicNumberRateColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import (
-    PrimaryServiceType,
-    PublishedJobRoleLabels,
-)
+from utils.column_values.ascwds_labelled_vocab import PublishedJobRoleLabels
+from utils.column_values.categorical_column_values import PrimaryServiceType
 
 CSV_SERVICE_TO_PRIMARY_SERVICE_TYPE: dict[str, str] = {
     "CQC Care only home": PrimaryServiceType.care_home_only,

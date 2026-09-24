@@ -6,11 +6,8 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
 )
-from utils.column_values.categorical_column_values import (
-    IsParent,
-    ParentPermission,
-    ParentsOrSinglesAndSubs,
-)
+from utils.column_values.ascwds_labelled_vocab import IsParent, ParentPermission
+from utils.column_values.categorical_column_values import ParentsOrSinglesAndSubs
 
 
 def add_parents_or_singles_and_subs_column(

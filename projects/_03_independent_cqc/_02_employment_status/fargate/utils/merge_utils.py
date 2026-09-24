@@ -2,10 +2,8 @@ import polars as pl
 
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import (
-    JobGroupLabels,
-    PublishedJobRoleLabels,
-)
+from utils.column_values.ascwds_labelled_vocab import PublishedJobRoleLabels
+from utils.column_values.categorical_column_values import JobGroupLabels
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
 )
