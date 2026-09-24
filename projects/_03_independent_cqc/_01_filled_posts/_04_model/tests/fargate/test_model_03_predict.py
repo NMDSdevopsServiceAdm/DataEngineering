@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from unittest.mock import Mock, patch
 
 import pytest
@@ -9,6 +10,27 @@ from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRK
 PATCH_PATH = (
     "projects._03_independent_cqc._01_filled_posts._04_model.fargate.model_03_predict"
 )
+
+
+@dataclass
+class SavedFeaturesDifferTestCase:
+    id: str
+    saved_features: list[str]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+saved_features_differ_cases = [
+    SavedFeaturesDifferTestCase(
+        id="different_features",
+        saved_features=["feat1", "old_feat"],
+    ),
+    SavedFeaturesDifferTestCase(
+        id="same_features_in_different_order",
+        saved_features=["feat2", "feat1"],
+    ),
+]
 
 
 class TestMain:
@@ -70,6 +92,9 @@ class TestMain:
         generate_predictions_path_mock.assert_called_once()
         write_to_parquet_mock.assert_called_once()
 
+    @pytest.mark.parametrize(
+        "test_case", [c.as_pytest_param() for c in saved_features_differ_cases]
+    )
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.paths.generate_predictions_path")
     @patch(f"{PATCH_PATH}.add_predictions_into_df")
@@ -95,14 +120,16 @@ class TestMain:
         add_predictions_into_df_mock: Mock,
         generate_predictions_path_mock: Mock,
         write_to_parquet_mock: Mock,
+        test_case: SavedFeaturesDifferTestCase,
     ):
-        saved_features = ["feat1", "old_feat"]
-        load_metadata_mock.return_value = {MMKeys.feature_columns: saved_features}
+        load_metadata_mock.return_value = {
+            MMKeys.feature_columns: test_case.saved_features
+        }
 
         with pytest.raises(ValueError) as error:
             job.main(self.TEST_BUCKET_NAME, self.TEST_MODEL_NAME)
 
-        assert str(saved_features) in str(error.value)
+        assert str(test_case.saved_features) in str(error.value)
         assert str(self.TEST_FEATURES) in str(error.value)
         scan_parquet_mock.assert_not_called()
         load_model_mock.assert_not_called()
