@@ -20,10 +20,8 @@ from utils.column_values.categorical_column_values import (
     RegistrationStatus,
 )
 
-# Internal, transient column used only to preserve raw explode order before the
-# assessment ratings pivot below - not a shared column, so not worth a
-# utils/column_names entry (mirrors the "max_value" precedent in
-# polars_utils.utils.filter_to_maximum_value_in_column).
+# Transient column preserving raw explode order for the deterministic pivot
+# tiebreak in prepare_assessment_ratings below.
 EXPLODE_ORDER = "explode_order_index"
 
 assessment_grain_columns = [
@@ -102,10 +100,8 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     Flattens the current ratings struct into one row per location, recoded and labelled.
 
     The five key questions are picked out of `keyQuestionRatings` by fixed position
-    (Safe, Well-led, Caring, Responsive, Effective, in that order), matching Spark's
-    array indexing. `null_on_oob=True` is required on every `.list.get()` here since
-    Spark's out-of-range array index returns null, while Polars raises by default -
-    a location with fewer than 5 key questions would otherwise crash the job.
+    (Safe, Well-led, Caring, Responsive, Effective). `null_on_oob=True` handles
+    locations with fewer than 5 key questions.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
@@ -147,12 +143,10 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Flattens the historic ratings list into one row per location/report date/key question.
 
-    The nested `historicRatings` list (one entry per historic report) and each entry's
-    `keyQuestionRatings` list are exploded, then pivoted so each key question rating
-    becomes its own column. `.pivot()` is only available on an eager DataFrame in
-    Polars, so this requires a `.collect()` - the result is small (one row per
-    location/report date grain), so this sits within the "aggregation-sized collect"
-    allowance rather than an unintentionally broken lazy chain.
+    Explodes `historicRatings` and each entry's `keyQuestionRatings`, then pivots so
+    each key question becomes its own column. `.pivot()` is eager-only in Polars,
+    hence the `.collect()` - the result is small (one row per location/report date),
+    so this is an acceptable aggregation-sized collect.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
@@ -225,11 +219,9 @@ def extract_assessment_base(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Explodes the raw `assessment` list so each row is one assessment plan.
 
-    Every `.explode()` in this module passes both `empty_as_null=False` and
-    `keep_nulls=False` to match Spark's `F.explode()`, which drops the row
-    entirely for both an empty list and a null list - Polars only does that
-    for an empty list by default; a null list value is kept as a null row
-    unless `keep_nulls=False` is also set.
+    Every `.explode()` in this module passes `empty_as_null=False, keep_nulls=False`
+    to match Spark's `F.explode()`, which drops the row for both an empty and a null
+    list (Polars only does that for empty lists by default).
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
@@ -362,14 +354,10 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Flattens overall and ASG ratings within the assessment field into a pivoted LazyFrame.
 
-    CQC's assessment `keyQuestionRatings` are stored as arrays with no upstream
-    guarantee of exactly one entry per (location, assessment plan, key question) -
-    if the feed ever publishes 2+ entries sharing that grain, picking one row is
-    otherwise arbitrary. `overall`/`asg_ratings` are each given an explode-order
-    index (`EXPLODE_ORDER`) capturing their raw array position, and the combined
-    data is sorted by grain + that index immediately before the pivot, so
-    `aggregate_function="first"` deterministically keeps the row that appeared
-    first in the raw feed, rather than depending on incidental execution order.
+    CQC's `keyQuestionRatings` have no upstream guarantee of exactly one entry per
+    (location, assessment plan, key question). Sorting by grain + `EXPLODE_ORDER`
+    (each row's raw array position) before the pivot makes `aggregate_function="first"`
+    deterministically keep whichever entry appeared first in the raw feed.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data, with nested
