@@ -547,17 +547,21 @@ def raise_error_when_assessment_df_contains_overall_data(
     Raises:
         ValueError: If the LazyFrame contains overall assessments data.
     """
-    rows_where_overall_has_value = (
-        assessment_ratings_lf.filter(
-            (pl.col(CQCL.source_path) == "assessment.ratings.overall")
-            & pl.col(CQCL.rating).is_not_null()
-        )
-        .select(pl.len())
-        .collect()
-        .item()
-    )
+    rows_with_overall_value_df = assessment_ratings_lf.filter(
+        (pl.col(CQCL.source_path) == "assessment.ratings.overall")
+        & pl.col(CQCL.rating).is_not_null()
+    ).collect()
+
+    rows_where_overall_has_value = rows_with_overall_value_df.height
 
     if rows_where_overall_has_value > 0:
+        # TEMP (ticket 2089): print the offending rows to identify the
+        # PySpark-vs-Polars divergence during output comparison. Revert once
+        # the divergence is found.
+        print(
+            "TEMP DEBUG (2089): rows tripping the overall-ratings guard:\n"
+            f"{rows_with_overall_value_df}"
+        )
         raise ValueError(
             f"The overall object within the assessments column contains {rows_where_overall_has_value} values for social care locations."
         )
