@@ -1,4 +1,3 @@
-# TEMP (2054): comment-only change to trip the cqc-integration-tests gate. Revert before the PR.
 import json
 import re
 import unittest
