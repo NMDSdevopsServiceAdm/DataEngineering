@@ -11,7 +11,7 @@ from projects._03_independent_cqc._01_filled_posts.utils.imputation.interpolatio
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
+from projects._03_independent_cqc._02_employment_status.fargate.utils.spike_columns import (
     EmploymentStatusSpikeColumns as SpikeCols,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC

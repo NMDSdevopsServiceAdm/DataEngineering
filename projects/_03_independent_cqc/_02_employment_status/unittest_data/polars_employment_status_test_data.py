@@ -12,7 +12,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusMagicNumberRateColumns as EmpStatRates,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
+from projects._03_independent_cqc._02_employment_status.fargate.utils.spike_columns import (
     EmploymentStatusSpikeColumns as SpikeCols,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
