@@ -285,7 +285,7 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.registration_status,
             CQCL.historic_ratings,
         )
-        .explode(CQCL.historic_ratings, empty_as_null=False)
+        .explode(CQCL.historic_ratings, empty_as_null=False, keep_nulls=False)
         .with_columns(
             pl.col(CQCL.historic_ratings)
             .struct.field(CQCL.report_date)
@@ -300,7 +300,7 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             .alias(CQCL.key_question_ratings),
         )
         .drop(CQCL.historic_ratings)
-        .explode(CQCL.key_question_ratings, empty_as_null=False)
+        .explode(CQCL.key_question_ratings, empty_as_null=False, keep_nulls=False)
         .with_columns(
             pl.col(CQCL.key_question_ratings).struct.field(CQCL.name).alias(CQCL.name),
             pl.col(CQCL.key_question_ratings)
@@ -344,6 +344,12 @@ def extract_assessment_base(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Explodes the raw `assessment` list so each row is one assessment plan.
 
+    Every `.explode()` in this module passes both `empty_as_null=False` and
+    `keep_nulls=False` to match Spark's `F.explode()`, which drops the row
+    entirely for both an empty list and a null list - Polars only does that
+    for an empty list by default; a null list value is kept as a null row
+    unless `keep_nulls=False` is also set.
+
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
 
@@ -357,7 +363,7 @@ def extract_assessment_base(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.registration_status,
             CQCL.assessment,
         )
-        .explode(CQCL.assessment, empty_as_null=False)
+        .explode(CQCL.assessment, empty_as_null=False, keep_nulls=False)
         .with_columns(
             pl.col(CQCL.assessment)
             .struct.field(CQCL.assessment_plan_published_datetime)
@@ -390,7 +396,7 @@ def extract_overall(assessment_lf: pl.LazyFrame) -> pl.LazyFrame:
             .struct.field(CQCL.overall)
             .alias(CQCL.overall),
         )
-        .explode(CQCL.overall, empty_as_null=False)
+        .explode(CQCL.overall, empty_as_null=False, keep_nulls=False)
         .with_columns(
             pl.col(CQCL.overall).struct.field(CQCL.rating).alias(CQCL.rating),
             pl.col(CQCL.overall).struct.field(CQCL.status).alias(CQCL.status),
@@ -399,7 +405,7 @@ def extract_overall(assessment_lf: pl.LazyFrame) -> pl.LazyFrame:
             .alias(CQCL.key_question_ratings),
         )
         .drop(CQCL.overall)
-        .explode(CQCL.key_question_ratings, empty_as_null=False)
+        .explode(CQCL.key_question_ratings, empty_as_null=False, keep_nulls=False)
         .with_columns(
             pl.col(CQCL.key_question_ratings)
             .struct.field(CQCL.name)
@@ -435,7 +441,7 @@ def extract_asg(assessment_lf: pl.LazyFrame) -> pl.LazyFrame:
             .struct.field(CQCL.asg_ratings)
             .alias(CQCL.asg_ratings),
         )
-        .explode(CQCL.asg_ratings, empty_as_null=False)
+        .explode(CQCL.asg_ratings, empty_as_null=False, keep_nulls=False)
         .with_columns(
             pl.col(CQCL.asg_ratings)
             .struct.field(CQCL.assessment_plan_id)
@@ -455,7 +461,7 @@ def extract_asg(assessment_lf: pl.LazyFrame) -> pl.LazyFrame:
             .alias(CQCL.key_question_ratings),
         )
         .drop(CQCL.asg_ratings)
-        .explode(CQCL.key_question_ratings, empty_as_null=False)
+        .explode(CQCL.key_question_ratings, empty_as_null=False, keep_nulls=False)
         .with_columns(
             pl.col(CQCL.key_question_ratings)
             .struct.field(CQCL.name)
@@ -547,21 +553,17 @@ def raise_error_when_assessment_df_contains_overall_data(
     Raises:
         ValueError: If the LazyFrame contains overall assessments data.
     """
-    rows_with_overall_value_df = assessment_ratings_lf.filter(
-        (pl.col(CQCL.source_path) == "assessment.ratings.overall")
-        & pl.col(CQCL.rating).is_not_null()
-    ).collect()
-
-    rows_where_overall_has_value = rows_with_overall_value_df.height
+    rows_where_overall_has_value = (
+        assessment_ratings_lf.filter(
+            (pl.col(CQCL.source_path) == "assessment.ratings.overall")
+            & pl.col(CQCL.rating).is_not_null()
+        )
+        .select(pl.len())
+        .collect()
+        .item()
+    )
 
     if rows_where_overall_has_value > 0:
-        # TEMP (ticket 2089): print the offending rows to identify the
-        # PySpark-vs-Polars divergence during output comparison. Revert once
-        # the divergence is found.
-        print(
-            "TEMP DEBUG (2089): rows tripping the overall-ratings guard:\n"
-            f"{rows_with_overall_value_df}"
-        )
         raise ValueError(
             f"The overall object within the assessments column contains {rows_where_overall_has_value} values for social care locations."
         )

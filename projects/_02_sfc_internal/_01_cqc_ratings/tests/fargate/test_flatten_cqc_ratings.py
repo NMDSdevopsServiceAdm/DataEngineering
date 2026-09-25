@@ -151,6 +151,11 @@ prepare_assessment_ratings_cases = [
         rows=Data.prepare_assessment_ratings_tiebreaker_rows,
         expected_rows=Data.expected_prepare_assessment_ratings_tiebreaker_rows,
     ),
+    PrepareAssessmentRatingsCase(
+        id="drops_row_when_key_question_ratings_is_null_not_empty",
+        rows=Data.prepare_assessment_ratings_null_key_question_ratings_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_null_key_question_ratings_rows,
+    ),
 ]
 
 

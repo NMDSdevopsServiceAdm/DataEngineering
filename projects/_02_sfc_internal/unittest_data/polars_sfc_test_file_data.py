@@ -493,6 +493,43 @@ class FlattenCQCRatings:
         ),
     ]
 
+    # A second location alongside one with real ratings: its raw feed has an
+    # "overall" rating populated but its keyQuestionRatings is genuinely null
+    # (not an empty list). Spark's F.explode() drops the row entirely for
+    # both an empty list and a null list; in Polars this needs
+    # keep_nulls=False as well as empty_as_null=False on every explode, or
+    # the row survives with a non-null "rating" and no key question
+    # breakdown, wrongly tripping the overall-ratings guard downstream. The
+    # other, unaffected location is included so the pivot still has rows to
+    # produce its key-question columns from - this scenario can't be tested
+    # in isolation, since a pivot over zero rows lacks those columns
+    # entirely regardless of engine.
+    prepare_assessment_ratings_null_key_question_ratings_rows = [
+        *prepare_assessment_ratings_rows,
+        (
+            "1-002",
+            "Registered",
+            [
+                {
+                    "assessmentPlanPublishedDateTime": "2024-01-01 00:00:00",
+                    "ratings": {
+                        "overall": [
+                            {
+                                "rating": "Good",
+                                "status": "Assessed",
+                                "keyQuestionRatings": None,
+                            }
+                        ],
+                        "asgRatings": [],
+                    },
+                }
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_null_key_question_ratings_rows = (
+        expected_prepare_assessment_ratings_rows
+    )
+
     raise_error_overall_populated_rows = [
         (
             "1-001",
