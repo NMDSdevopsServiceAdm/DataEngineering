@@ -5,8 +5,10 @@ locals {
     substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
   })
 
-  ind_cqc_job_role_estimates_dataset_name     = terraform.workspace == "main" ? "01_filled_posts_06_job_roles_04_estimate" : "main_01_filled_posts_06_job_roles_04_estimate"
-  ind_cqc_job_role_metadata_dataset_name      = terraform.workspace == "main" ? "01_filled_posts_06_job_roles_01_merge_metadata" : "main_01_filled_posts_06_job_roles_01_merge_metadata"
+  # Ticket 2110 spike (-full branches only): read this branch's own unreduced job
+  # role outputs (built by EmpStat-Spike-Full-Upstream) instead of main's synced copy.
+  ind_cqc_job_role_estimates_dataset_name     = "01_filled_posts_06_job_roles_04_estimate"
+  ind_cqc_job_role_metadata_dataset_name      = "01_filled_posts_06_job_roles_01_merge_metadata"
   ind_cqc_estimated_filled_posts_dataset_name = terraform.workspace == "main" ? "01_filled_posts_05_estimated" : "main_01_filled_posts_05_estimated"
 
   # Max polling attempts and per-attempt wait (seconds) for the "Wait For Worker"/

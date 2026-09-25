@@ -1,0 +1,682 @@
+{
+  "Comment": "THROWAWAY ticket-2110 spike (-full branches only): rebuilds job role estimates without reduced_data_filter_expr from the synced main estimates, then employment status prepare/merge/clean, so the EmpStat-Spike step function can run on full (unreduced) data. Manual-start only. See ticket_2110_zero_jr.md. Delete once measured.",
+  "StartAt": "Prepare ASCWDS Job Role Counts",
+  "States": {
+    "Prepare ASCWDS Job Role Counts": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${independent_cqc_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": [
+              "${independent_cqc_security_group_id}"
+            ],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_03_independent_cqc-container",
+              "Command": [
+                "prepare_job_role_counts.py",
+                "--cleaned_ascwds_worker_source",
+                "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/",
+                "--prepared_ascwds_job_role_counts_destination",
+                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_00_ascwds_prepared_counts/"
+              ]
+            }
+          ]
+        }
+      },
+      "Next": "Estimate filled posts by job role"
+    },
+    "Estimate filled posts by job role": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Merge data",
+          "States": {
+            "Merge data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${independent_cqc_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "_01_merge.py",
+                        "--estimates_source",
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_estimated_filled_posts}/",
+                        "--ascwds_job_role_counts_source",
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_00_ascwds_prepared_counts/",
+                        "--merged_data_destination",
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge/",
+                        "--metadata_destination",
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Clean and Validate Merged Data"
+            },
+            "Clean and Validate Merged Data": {
+              "Type": "Parallel",
+              "Next": "Impute and Validate Cleaned Data",
+              "Branches": [
+                {
+                  "StartAt": "Clean data",
+                  "States": {
+                    "Clean data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${independent_cqc_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "_02_clean.py",
+                                "--merged_data_source",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge/",
+                                "--merged_metadata_source",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/",
+                                "--cleaned_data_destination",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_02_clean/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate Merged Data",
+                  "States": {
+                    "Validate Merged Data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${independent_cqc_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "validate_01_merge.py",
+                                "--bucket_name",
+                                "${dataset_bucket_name}",
+                                "--source_path",
+                                "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge/",
+                                "--compare_path",
+                                "domain=03_ind_cqc/dataset=${ind_cqc_estimated_filled_posts}/",
+                                "--reports_path",
+                                "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_validation/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate Merged Metadata",
+                  "States": {
+                    "Validate Merged Metadata": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${independent_cqc_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "validate_01_merge_metadata.py",
+                                "--bucket_name",
+                                "${dataset_bucket_name}",
+                                "--source_path",
+                                "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/",
+                                "--compare_path",
+                                "domain=03_ind_cqc/dataset=${ind_cqc_estimated_filled_posts}/",
+                                "--reports_path",
+                                "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata_validation/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                }
+              ]
+            },
+            "Impute and Validate Cleaned Data": {
+              "Type": "Parallel",
+              "Next": "Estimate and Validate Imputed Data",
+              "Branches": [
+                {
+                  "StartAt": "Impute data",
+                  "States": {
+                    "Impute data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${independent_cqc_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "_03_impute.py",
+                                "--cleaned_data_source",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_02_clean/",
+                                "--imputed_data_destination",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_03_impute/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate Cleaned Data",
+                  "States": {
+                    "Validate Cleaned Data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${independent_cqc_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "validate_02_clean.py",
+                                "--bucket_name",
+                                "${dataset_bucket_name}",
+                                "--source_path",
+                                "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_02_clean/",
+                                "--compare_path",
+                                "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge/",
+                                "--reports_path",
+                                "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_02_clean_validation/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                }
+              ]
+            },
+            "Estimate and Validate Imputed Data": {
+              "Type": "Parallel",
+              "Next": "Validate Job Role Estimates",
+              "Branches": [
+                {
+                  "StartAt": "Estimate data",
+                  "States": {
+                    "Estimate data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${independent_cqc_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "_04_estimate.py",
+                                "--imputed_data_source",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_03_impute/",
+                                "--estimated_data_destination",
+                                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate Imputed Data",
+                  "States": {
+                    "Validate Imputed Data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${independent_cqc_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "validate_03_impute.py",
+                                "--bucket_name",
+                                "${dataset_bucket_name}",
+                                "--source_path",
+                                "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_03_impute/",
+                                "--compare_path",
+                                "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_02_clean/",
+                                "--reports_path",
+                                "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_03_impute_validation/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                }
+              ]
+            },
+            "Validate Job Role Estimates": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${independent_cqc_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "validate_04_estimates.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate/",
+                        "--compare_path",
+                        "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_03_impute/",
+                        "--reports_path",
+                        "domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate_validation/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "Prepare worker data"
+    },
+    "Prepare worker data": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${independent_cqc_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": [
+              "${independent_cqc_security_group_id}"
+            ],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_03_independent_cqc-container",
+              "Command": [
+                "_02_employment_status/fargate/_00_prepare_worker.py",
+                "--cleaned_ascwds_worker_source",
+                "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/",
+                "--metadata_source",
+                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
+                "--prepared_data_destination",
+                "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_00_prepare_worker/"
+              ]
+            }
+          ]
+        }
+      },
+      "Next": "Merge and Validate Prepared Worker Data"
+    },
+    "Merge and Validate Prepared Worker Data": {
+      "Type": "Parallel",
+      "Next": "Clean and Validate Merged Employment Status Data",
+      "Branches": [
+        {
+          "StartAt": "Merge employment status data",
+          "States": {
+            "Merge employment status data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${independent_cqc_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "_02_employment_status/fargate/_01_merge.py",
+                        "--metadata_source",
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
+                        "--job_role_estimates_source",
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
+                        "--prepared_worker_source",
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_00_prepare_worker/",
+                        "--cleaned_cqc_pir_source",
+                        "${dataset_bucket_uri}/domain=01_cqc/dataset=pir_cleaned/",
+                        "--cleaned_ct_care_home_source",
+                        "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=care_home_cleaned/",
+                        "--cleaned_ct_non_res_source",
+                        "${dataset_bucket_uri}/domain=01_capacity_tracker/dataset=non_residential_cleaned/",
+                        "--merged_data_destination",
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_01_merge/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Validate Prepared Worker Data",
+          "States": {
+            "Validate Prepared Worker Data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${independent_cqc_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "_02_employment_status/fargate/validate_00_prepare_worker.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=03_ind_cqc/dataset=02_employment_status_00_prepare_worker/",
+                        "--compare_path",
+                        "domain=01_ascwds/dataset=worker_cleaned/",
+                        "--metadata_source",
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
+                        "--reports_path",
+                        "domain=03_ind_cqc/dataset=02_employment_status_00_prepare_worker_validation/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "Clean and Validate Merged Employment Status Data": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Clean employment status data",
+          "States": {
+            "Clean employment status data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${independent_cqc_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "_02_employment_status/fargate/_02_clean.py",
+                        "--merged_data_source",
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_01_merge/",
+                        "--cleaned_data_destination",
+                        "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_02_clean/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Validate Merged Employment Status Data",
+          "States": {
+            "Validate Merged Employment Status Data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${independent_cqc_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "_02_employment_status/fargate/validate_01_merge.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=03_ind_cqc/dataset=02_employment_status_01_merge/",
+                        "--compare_path",
+                        "domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
+                        "--reports_path",
+                        "domain=03_ind_cqc/dataset=02_employment_status_01_merge_validation/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "Validate Cleaned Employment Status Data"
+    },
+    "Validate Cleaned Employment Status Data": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${independent_cqc_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": [
+              "${independent_cqc_security_group_id}"
+            ],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_03_independent_cqc-container",
+              "Command": [
+                "_02_employment_status/fargate/validate_02_clean.py",
+                "--bucket_name",
+                "${dataset_bucket_name}",
+                "--source_path",
+                "domain=03_ind_cqc/dataset=02_employment_status_02_clean/",
+                "--compare_path",
+                "domain=03_ind_cqc/dataset=02_employment_status_01_merge/",
+                "--reports_path",
+                "domain=03_ind_cqc/dataset=02_employment_status_02_clean_validation/"
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}
