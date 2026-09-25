@@ -12,6 +12,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusMagicNumberRateColumns as EmpStatRates,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusSpikeColumns as SpikeCols,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.ascwds_labelled_vocab import (
     EmploymentStatusID,
@@ -739,6 +742,151 @@ class TestSpikeFilterUtilsData:
             expected_data={
                 IndCQC.location_id: ["loc1", "loc2"],
                 IndCQC.estimate_filled_posts_by_job_role: [0.5, 3.0],
+            },
+        ),
+    ]
+
+
+@dataclass
+class SpikeImputeTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+SPIKE_STATUS_LABELS = [
+    EmploymentStatusLabels.permanent,
+    EmploymentStatusLabels.temporary,
+    EmploymentStatusLabels.bank_or_pool,
+    EmploymentStatusLabels.agency,
+    EmploymentStatusLabels.other,
+]
+
+
+@dataclass
+class TestSpikeImputeUtilsL1Data:
+    reshape_test_cases = [
+        SpikeImputeTestCase(
+            id="reshapes_employment_status_percentages_into_crossed_long_rows",
+            input_data={
+                IndCQC.location_id: ["loc1"],
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
+                EmpStatus.permanent_percentage: [0.5],
+                EmpStatus.temporary_percentage: [0.2],
+                EmpStatus.bank_or_pool_percentage: [0.1],
+                EmpStatus.agency_percentage: [0.15],
+                EmpStatus.other_percentage: [0.05],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1"] * 5,
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 5,
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker]
+                * 5,
+                SpikeCols.employment_status_label: SPIKE_STATUS_LABELS,
+                SpikeCols.employment_status_rate: [0.5, 0.2, 0.1, 0.15, 0.05],
+            },
+        ),
+        SpikeImputeTestCase(
+            id="carries_partition_columns_through_long_reshape",
+            input_data={
+                IndCQC.location_id: ["loc1"],
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
+                IndCQC.estimate_filled_posts_by_job_role: [10.0],
+                EmpStatus.permanent_percentage: [None],
+                EmpStatus.temporary_percentage: [None],
+                EmpStatus.bank_or_pool_percentage: [None],
+                EmpStatus.agency_percentage: [None],
+                EmpStatus.other_percentage: [None],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1"] * 5,
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 5,
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker]
+                * 5,
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * 5,
+                IndCQC.estimate_filled_posts_by_job_role: [10.0] * 5,
+                SpikeCols.employment_status_label: SPIKE_STATUS_LABELS,
+                SpikeCols.employment_status_rate: [None] * 5,
+            },
+        ),
+    ]
+
+    add_fill_boundaries_test_cases = [
+        SpikeImputeTestCase(
+            id="imputes_within_location_job_role_and_status_partition",
+            input_data={
+                IndCQC.location_id: ["loc1"] * 4,
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker]
+                * 4,
+                SpikeCols.employment_status_label: [
+                    EmploymentStatusLabels.permanent,
+                    EmploymentStatusLabels.permanent,
+                    EmploymentStatusLabels.temporary,
+                    EmploymentStatusLabels.temporary,
+                ],
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
+                SpikeCols.employment_status_rate: [0.6, None, 0.3, None],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1"] * 4,
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker]
+                * 4,
+                SpikeCols.employment_status_label: [
+                    EmploymentStatusLabels.permanent,
+                    EmploymentStatusLabels.permanent,
+                    EmploymentStatusLabels.temporary,
+                    EmploymentStatusLabels.temporary,
+                ],
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
+                SpikeCols.employment_status_rate: [0.6, None, 0.3, None],
+                SpikeCols.first_known_date: [date(2024, 1, 1)] * 4,
+                SpikeCols.last_known_date: [date(2024, 1, 1)] * 4,
+                SpikeCols.previous_known_date: [date(2024, 1, 1)] * 4,
+                SpikeCols.next_known_date: [date(2024, 1, 1), None] * 2,
+                SpikeCols.first_known_value: [0.6, 0.6, 0.3, 0.3],
+                SpikeCols.last_known_value: [0.6, 0.6, 0.3, 0.3],
+            },
+        ),
+    ]
+
+    normalise_test_cases = [
+        SpikeImputeTestCase(
+            id="normalises_employment_status_shares_to_sum_to_one_within_job_role_group",
+            input_data={
+                IndCQC.location_id: ["loc1"] * 5,
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker]
+                * 5,
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 5,
+                SpikeCols.employment_status_label: SPIKE_STATUS_LABELS,
+                SpikeCols.unnormalised_rate: [0.6, 0.3, 0.2, 0.1, 0.05],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1"] * 5,
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker]
+                * 5,
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 5,
+                SpikeCols.employment_status_label: SPIKE_STATUS_LABELS,
+                SpikeCols.unnormalised_rate: [0.6, 0.3, 0.2, 0.1, 0.05],
+                SpikeCols.imputed_employment_status_rate: [
+                    0.48,
+                    0.24,
+                    0.16,
+                    0.08,
+                    0.04,
+                ],
             },
         ),
     ]
