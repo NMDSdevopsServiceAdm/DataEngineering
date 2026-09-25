@@ -26,6 +26,9 @@ class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
         )
         self.grouped_providers_lf = pl.LazyFrame()
 
+    @unittest.skip(
+        "DO NOT MERGE (ticket 2107): BD214 filter call disabled for the back-test"
+    )
     @patch(f"{PATCH_PATH}.add_filtering_rule_column")
     @patch(
         f"{PATCH_PATH}.null_filled_posts_where_locations_use_invalid_missing_data_code"
@@ -55,6 +58,9 @@ class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
         add_filtering_rule_column_mock.assert_called_once()
         non_res_brand_id_filter_mock.assert_called_once()
 
+    @unittest.skip(
+        "DO NOT MERGE (ticket 2107): BD214 filter call disabled for the back-test"
+    )
     @patch(f"{PATCH_PATH}.add_filtering_rule_column")
     @patch(
         f"{PATCH_PATH}.null_filled_posts_where_locations_use_invalid_missing_data_code"

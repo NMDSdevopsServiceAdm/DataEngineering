@@ -56,7 +56,9 @@ def clean_ascwds_filled_post_outliers(
     lf = null_filled_posts_where_locations_use_invalid_missing_data_code(lf)
     lf, grouped_providers = null_grouped_providers(lf, grouped_providers_lf)
     lf = winsorize_care_home_filled_posts_per_bed_ratio_outliers(lf)
-    lf = non_res_brand_id_filter(lf)
+    # DO NOT MERGE (ticket 2107 back-test): BD214 filter disabled to reproduce
+    # the original ASC-WDS drop.
+    # lf = non_res_brand_id_filter(lf)
 
     lf = lf.with_columns(
         pl.col(IndCQC.ascwds_filled_posts_dedup_clean).cast(pl.Float32)
