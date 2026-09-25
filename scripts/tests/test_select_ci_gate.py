@@ -6,8 +6,8 @@ import scripts.select_ci_gate as job
 
 RAW_BUCKET_DOMAINS = ["ascwds", "capacity_tracker", "cqc_pir", "ons_pd"]
 
-# Old trigger paths plus one non-trigger file per domain, guarding against
-# the trigger list silently widening back to a directory prefix.
+# Includes a non-trigger file beside each domain's triggers, so the list can't
+# silently widen back to a directory prefix.
 RAW_BUCKET_UNRELATED_PATHS = [
     "README.md",
     "projects/_07_workforce_characteristics/foo.py",
@@ -22,8 +22,7 @@ RAW_BUCKET_UNRELATED_PATHS = [
     "projects/_01_ingest/ons_pd/fargate/clean_ons_data.py",
 ]
 
-# Per-gate lists of paths that must not trigger it, guarding against a trigger
-# list silently widening (e.g. back to a directory prefix).
+# Paths that must not trigger each gate.
 UNRELATED_PATHS: dict[str, list[str]] = {
     **{
         f"raw-bucket-{domain}": RAW_BUCKET_UNRELATED_PATHS

@@ -34,15 +34,11 @@ SHARED_RAW_BUCKET_TRIGGER_PATHS: tuple[str, ...] = (
     "terraform/pipeline/eventbridge.tf",
 )
 
-# To add a gate: add an entry here, plus its trigger and unrelated-path cases in
-# scripts/tests/test_select_ci_gate.py.
+# To add a gate: add an entry here, plus its trigger and unrelated-path test cases.
 GATE_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
-    # Seeds one ingest domain's slice of the branch's non-prod raw data bucket,
-    # split per domain so a push touching one doesn't reseed and re-trigger the
-    # others' Step Functions. Lists the files that actually read/write/validate
-    # each domain's raw data. `cqc_api` is excluded (reads the CQC API, not the
-    # raw bucket); `capacity_tracker` has no raw-validate job. Uses `fargate/`
-    # uniformly, ahead of each domain's migration there.
+    # Split per domain so a push touching one doesn't reseed and re-trigger the
+    # others' Step Functions. `cqc_api` has no gate: it reads the CQC API, not
+    # the raw bucket.
     "raw-bucket-ascwds": (
         "projects/_01_ingest/ascwds/fargate/ingest_ascwds_dataset.py",
         "projects/_01_ingest/ascwds/fargate/validate_ascwds_worker_raw_data.py",
@@ -71,10 +67,8 @@ GATE_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
         "projects/_03_independent_cqc/_01_filled_posts/_07_archive",
         "projects/_99_publication",
     ),
-    # Runs the live CQC API integration tests on a dev branch. Anything that
-    # could plausibly change their behaviour: the client itself, the test file,
-    # its column-name dependencies, and the shared secrets helper it uses to
-    # fetch the API key.
+    # Anything that could change the live CQC API tests' behaviour, including
+    # the shared secrets helper that fetches the API key.
     "cqc-integration-tests": (
         "projects/_01_ingest/cqc_api",
         "tests/integration/test_cqc_api_integration.py",
