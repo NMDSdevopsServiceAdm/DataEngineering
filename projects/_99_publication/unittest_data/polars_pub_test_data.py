@@ -4,6 +4,9 @@ from typing import Any
 
 import pytest
 
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
+    diagnostic_thresholds as DT,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import PrimaryServiceType
@@ -1038,5 +1041,835 @@ format_large_number_test_cases = [
         column_name=Pub.assessment_filled_posts_long_term,
         column_alias=Pub.assessment_filled_posts_long_term_formatted,
         expected_data=[(3500000.0, "3.500m")],
+    ),
+]
+
+
+# --- Ticket 2107 spike: diagnostic thresholds ---
+_FP = DT.Metric.filled_posts
+_NR = DT.WorkbookServiceType.non_residential
+_CHN = DT.WorkbookServiceType.care_home_with_nursing
+_CH = DT.WorkbookServiceType.care_homes
+_MONTHLY = DT.IntervalType.monthly
+_QUARTERLY = DT.IntervalType.quarterly
+
+
+@dataclass
+class DiagnosticExpectedDataTestCase:
+    id: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+add_interval_type_test_cases = [
+    DiagnosticExpectedDataTestCase(
+        id="labels_step_monthly_when_previous_period_is_one_month_earlier",
+        expected_data=[
+            (_FP, _NR, date(2024, 4, 1), 100.0, None),
+            (_FP, _NR, date(2024, 5, 1), 101.0, _MONTHLY),
+            (_FP, _NR, date(2024, 6, 1), 102.0, _MONTHLY),
+        ],
+    ),
+    DiagnosticExpectedDataTestCase(
+        id="labels_step_quarterly_when_previous_period_is_three_months_earlier",
+        expected_data=[
+            (_FP, _NR, date(2023, 10, 1), 100.0, None),
+            (_FP, _NR, date(2024, 1, 1), 101.0, _QUARTERLY),
+            (_FP, _NR, date(2024, 4, 1), 102.0, _QUARTERLY),
+        ],
+    ),
+    DiagnosticExpectedDataTestCase(
+        id="leaves_first_period_in_series_unlabelled",
+        expected_data=[
+            (_FP, _NR, date(2024, 5, 1), 100.0, None),
+            (_FP, _CHN, date(2024, 5, 1), 50.0, None),
+            (_FP, _NR, date(2024, 6, 1), 101.0, _MONTHLY),
+        ],
+    ),
+]
+
+add_period_on_period_change_test_cases = [
+    DiagnosticExpectedDataTestCase(
+        id="calculates_pct_change_from_previous_period_within_series",
+        expected_data=[
+            (_FP, _NR, date(2024, 4, 1), 100.0, None),
+            (_FP, _NR, date(2024, 5, 1), 110.0, 0.1),
+            (_FP, _NR, date(2024, 6, 1), 99.0, -0.1),
+        ],
+    ),
+    DiagnosticExpectedDataTestCase(
+        id="returns_null_for_first_period_in_series",
+        expected_data=[
+            (_FP, _NR, date(2024, 4, 1), 100.0, None),
+            (_FP, _CHN, date(2024, 4, 1), 50.0, None),
+            (_FP, _CHN, date(2024, 5, 1), 55.0, 0.1),
+        ],
+    ),
+    DiagnosticExpectedDataTestCase(
+        id="returns_null_when_previous_value_is_zero",
+        expected_data=[
+            (_FP, _NR, date(2024, 4, 1), 0.0, None),
+            (_FP, _NR, date(2024, 5, 1), 10.0, None),
+            (_FP, _NR, date(2024, 6, 1), 15.0, 0.5),
+        ],
+    ),
+]
+
+add_change_since_march_test_cases = [
+    DiagnosticExpectedDataTestCase(
+        id="calculates_pct_change_from_march_of_same_financial_year",
+        expected_data=[
+            (_FP, _NR, date(2026, 3, 1), 100.0, 0.0),
+            (_FP, _NR, date(2026, 4, 1), 110.0, 0.1),
+            (_FP, _NR, date(2026, 5, 1), 105.0, 0.05),
+        ],
+    ),
+    DiagnosticExpectedDataTestCase(
+        id="uses_april_as_baseline_when_march_not_retained",
+        expected_data=[
+            (_FP, _NR, date(2023, 4, 1), 200.0, 0.0),
+            (_FP, _NR, date(2023, 7, 1), 210.0, 0.05),
+            (_FP, _NR, date(2023, 10, 1), 220.0, 0.1),
+            (_FP, _NR, date(2024, 1, 1), 190.0, -0.05),
+        ],
+    ),
+    DiagnosticExpectedDataTestCase(
+        id="resets_baseline_each_financial_year",
+        expected_data=[
+            (_FP, _NR, date(2025, 3, 1), 100.0, 0.0),
+            (_FP, _NR, date(2026, 2, 1), 120.0, 0.2),
+            (_FP, _NR, date(2026, 3, 1), 150.0, 0.0),
+            (_FP, _NR, date(2026, 4, 1), 165.0, 0.1),
+        ],
+    ),
+    DiagnosticExpectedDataTestCase(
+        id="returns_zero_for_baseline_period",
+        expected_data=[
+            (_FP, _NR, date(2026, 3, 1), 80.0, 0.0),
+            (_FP, _CHN, date(2026, 3, 1), 50.0, 0.0),
+        ],
+    ),
+]
+
+
+@dataclass
+class DiagnosticInputExpectedTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+_SFC_LONG = DT.sfc_filled_posts_metric("long_term")
+_CT_LONG = DT.ct_total_employed_metric("long_term")
+_GAP_LONG = DT.sfc_minus_ct_metric("long_term")
+_SFC_MEDIUM = DT.sfc_filled_posts_metric("medium_term")
+_CT_MEDIUM = DT.ct_total_employed_metric("medium_term")
+_GAP_MEDIUM = DT.sfc_minus_ct_metric("medium_term")
+
+add_sfc_ct_gap_test_cases = [
+    DiagnosticInputExpectedTestCase(
+        id="subtracts_ct_step_change_from_sfc_step_change",
+        input_data=[
+            (_SFC_LONG, _NR, date(2024, 5, 1), _MONTHLY, 0.02),
+            (_CT_LONG, _NR, date(2024, 5, 1), _MONTHLY, 0.005),
+            (_FP, _NR, date(2024, 5, 1), _MONTHLY, 0.5),
+        ],
+        expected_data=[
+            (_GAP_LONG, _NR, date(2024, 5, 1), _MONTHLY, 0.015),
+        ],
+    ),
+    DiagnosticInputExpectedTestCase(
+        id="calculates_gap_separately_per_window_and_service_type",
+        input_data=[
+            (_SFC_LONG, _CH, date(2024, 5, 1), _MONTHLY, 0.01),
+            (_CT_LONG, _CH, date(2024, 5, 1), _MONTHLY, 0.03),
+            (_SFC_MEDIUM, _CH, date(2024, 5, 1), _MONTHLY, 0.04),
+            (_CT_MEDIUM, _CH, date(2024, 5, 1), _MONTHLY, 0.01),
+            (_SFC_LONG, _NR, date(2024, 5, 1), _MONTHLY, 0.0),
+            (_CT_LONG, _NR, date(2024, 5, 1), _MONTHLY, -0.02),
+        ],
+        expected_data=[
+            (_GAP_LONG, _CH, date(2024, 5, 1), _MONTHLY, -0.02),
+            (_GAP_LONG, _NR, date(2024, 5, 1), _MONTHLY, 0.02),
+            (_GAP_MEDIUM, _CH, date(2024, 5, 1), _MONTHLY, 0.03),
+        ],
+    ),
+    DiagnosticInputExpectedTestCase(
+        id="returns_null_gap_when_either_side_is_null",
+        input_data=[
+            (_SFC_LONG, _NR, date(2024, 5, 1), _MONTHLY, None),
+            (_CT_LONG, _NR, date(2024, 5, 1), _MONTHLY, 0.01),
+            (_SFC_LONG, _NR, date(2024, 6, 1), _MONTHLY, 0.01),
+            (_CT_LONG, _NR, date(2024, 6, 1), _MONTHLY, None),
+        ],
+        expected_data=[
+            (_GAP_LONG, _NR, date(2024, 5, 1), _MONTHLY, None),
+            (_GAP_LONG, _NR, date(2024, 6, 1), _MONTHLY, None),
+        ],
+    ),
+]
+
+
+@dataclass
+class ToMetricLongFormatTestCase:
+    id: str
+    input_data: list[Any]
+    metrics: list[str]
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+_LC = DT.Metric.location_count
+_CHWO = DT.WorkbookServiceType.care_home_without_nursing
+_ALL = DT.WorkbookServiceType.all_cqc_locations
+_ASSESSMENT_METRICS = [
+    metric_name(term)
+    for term in DT.ASSESSMENT_TERMS
+    for metric_name in (DT.sfc_filled_posts_metric, DT.ct_total_employed_metric)
+]
+_SFC_SHORT = DT.sfc_filled_posts_metric("short_term")
+_CT_SHORT = DT.ct_total_employed_metric("short_term")
+
+# Input rows: import date, job role, region, service type, publication filled
+# posts, publication location count, then assessment filled posts and CT
+# employed for the long, medium and short terms.
+to_metric_long_format_test_cases = [
+    ToMetricLongFormatTestCase(
+        id="keeps_only_england_all_job_roles_rows",
+        input_data=[
+            (
+                date(2026, 5, 1),
+                "All job roles",
+                "England",
+                PrimaryServiceType.non_residential,
+                100.0,
+                10,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ),
+            (
+                date(2026, 5, 1),
+                "Care Worker",
+                "England",
+                PrimaryServiceType.non_residential,
+                200.0,
+                10,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ),
+            (
+                date(2026, 5, 1),
+                "All job roles",
+                "London",
+                PrimaryServiceType.non_residential,
+                300.0,
+                10,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ),
+        ],
+        metrics=[_FP],
+        expected_data=[(_FP, _NR, date(2026, 5, 1), 100.0)],
+    ),
+    ToMetricLongFormatTestCase(
+        id="maps_publication_groups_to_the_five_workbook_service_types",
+        input_data=[
+            (
+                date(2026, 5, 1),
+                "All job roles",
+                "England",
+                "All CQC locations",
+                500.0,
+                50,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ),
+            (
+                date(2026, 5, 1),
+                "All job roles",
+                "England",
+                "All CQC care homes",
+                400.0,
+                40,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ),
+            (
+                date(2026, 5, 1),
+                "All job roles",
+                "England",
+                PrimaryServiceType.care_home_with_nursing,
+                300.0,
+                30,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ),
+            (
+                date(2026, 5, 1),
+                "All job roles",
+                "England",
+                PrimaryServiceType.care_home_only,
+                100.0,
+                10,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ),
+            (
+                date(2026, 5, 1),
+                "All job roles",
+                "England",
+                PrimaryServiceType.non_residential,
+                100.0,
+                10,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ),
+        ],
+        metrics=[_FP],
+        expected_data=[
+            (_FP, _ALL, date(2026, 5, 1), 500.0),
+            (_FP, _CH, date(2026, 5, 1), 400.0),
+            (_FP, _CHN, date(2026, 5, 1), 300.0),
+            (_FP, _CHWO, date(2026, 5, 1), 100.0),
+            (_FP, _NR, date(2026, 5, 1), 100.0),
+        ],
+    ),
+    ToMetricLongFormatTestCase(
+        id="outputs_filled_posts_and_location_count_metrics",
+        input_data=[
+            (
+                date(2026, 5, 1),
+                "All job roles",
+                "England",
+                PrimaryServiceType.non_residential,
+                100.0,
+                10,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ),
+        ],
+        metrics=[_FP, _LC],
+        expected_data=[
+            (_FP, _NR, date(2026, 5, 1), 100.0),
+            (_LC, _NR, date(2026, 5, 1), 10.0),
+        ],
+    ),
+    ToMetricLongFormatTestCase(
+        id="outputs_sfc_and_ct_series_per_assessment_window_for_care_homes_and_non_res",
+        input_data=[
+            (
+                date(2026, 5, 1),
+                "All job roles",
+                "England",
+                PrimaryServiceType.non_residential,
+                100.0,
+                10,
+                10.0,
+                11.0,
+                20.0,
+                21.0,
+                30.0,
+                31.0,
+            ),
+            (
+                date(2026, 5, 1),
+                "All job roles",
+                "England",
+                "All CQC care homes",
+                100.0,
+                10,
+                40.0,
+                41.0,
+                50.0,
+                51.0,
+                60.0,
+                61.0,
+            ),
+            (
+                date(2026, 5, 1),
+                "All job roles",
+                "England",
+                PrimaryServiceType.care_home_with_nursing,
+                100.0,
+                10,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ),
+            (
+                date(2025, 1, 1),
+                "All job roles",
+                "England",
+                PrimaryServiceType.non_residential,
+                100.0,
+                10,
+                70.0,
+                71.0,
+                80.0,
+                81.0,
+                90.0,
+                91.0,
+            ),
+        ],
+        metrics=_ASSESSMENT_METRICS,
+        expected_data=[
+            (_SFC_LONG, _NR, date(2026, 5, 1), 10.0),
+            (_CT_LONG, _NR, date(2026, 5, 1), 11.0),
+            (_SFC_MEDIUM, _NR, date(2026, 5, 1), 20.0),
+            (_CT_MEDIUM, _NR, date(2026, 5, 1), 21.0),
+            (_SFC_SHORT, _NR, date(2026, 5, 1), 30.0),
+            (_CT_SHORT, _NR, date(2026, 5, 1), 31.0),
+            (_SFC_LONG, _CH, date(2026, 5, 1), 40.0),
+            (_CT_LONG, _CH, date(2026, 5, 1), 41.0),
+            (_SFC_MEDIUM, _CH, date(2026, 5, 1), 50.0),
+            (_CT_MEDIUM, _CH, date(2026, 5, 1), 51.0),
+            (_SFC_SHORT, _CH, date(2026, 5, 1), 60.0),
+            (_CT_SHORT, _CH, date(2026, 5, 1), 61.0),
+            (_SFC_LONG, _NR, date(2025, 1, 1), 70.0),
+            (_CT_LONG, _NR, date(2025, 1, 1), 71.0),
+        ],
+    ),
+]
+
+
+def _monthly_periods(start: date, count: int) -> list[date]:
+    periods = []
+    year, month = start.year, start.month
+    for _ in range(count):
+        periods.append(date(year, month, 1))
+        year, month = (year + 1, 1) if month == 12 else (year, month + 1)
+    return periods
+
+
+def _series_rows(
+    metric: str,
+    service_type: str,
+    periods: list[date],
+    interval_type: str,
+    values: list[float | None],
+    expected: list[tuple[bool | None, bool]],
+) -> list[tuple]:
+    # Rows of (metric, service_type, period, interval_type, value, breached,
+    # insufficient_history).
+    return [
+        (metric, service_type, period, interval_type, value, *flags)
+        for period, value, flags in zip(periods, values, expected)
+    ]
+
+
+@dataclass
+class HistoryMethodTestCase:
+    id: str
+    k: float
+    value_col: str
+    rows: list[tuple]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+_SIX_INSUFFICIENT = [(None, True)] * 6
+_ALTERNATING_SMALL = [0.01, -0.01] * 3
+_ALTERNATING_LARGE = [0.05, -0.05] * 3
+_APR_2024 = date(2024, 4, 1)
+_POP = DT.Cols.period_on_period_change
+_CSM = DT.Cols.change_since_march
+_QUARTERS_TO_JAN_2024 = [
+    date(2022, 10, 1),
+    date(2023, 1, 1),
+    date(2023, 4, 1),
+    date(2023, 7, 1),
+    date(2023, 10, 1),
+    date(2024, 1, 1),
+]
+
+flag_mean_std_test_cases = [
+    HistoryMethodTestCase(
+        id="flags_change_outside_mean_plus_or_minus_k_std_of_prior_steps",
+        k=2,
+        value_col=_POP,
+        rows=_series_rows(
+            _FP,
+            _NR,
+            _monthly_periods(_APR_2024, 7),
+            _MONTHLY,
+            _ALTERNATING_SMALL + [0.05],
+            _SIX_INSUFFICIENT + [(True, False)],
+        ),
+    ),
+    HistoryMethodTestCase(
+        id="does_not_flag_change_inside_band",
+        k=2,
+        value_col=_POP,
+        rows=_series_rows(
+            _FP,
+            _NR,
+            _monthly_periods(_APR_2024, 7),
+            _MONTHLY,
+            _ALTERNATING_SMALL + [0.02],
+            _SIX_INSUFFICIENT + [(False, False)],
+        ),
+    ),
+    HistoryMethodTestCase(
+        id="uses_only_prior_periods_to_set_band",
+        k=2,
+        value_col=_POP,
+        rows=list(
+            reversed(
+                _series_rows(
+                    _FP,
+                    _NR,
+                    _monthly_periods(_APR_2024, 8),
+                    _MONTHLY,
+                    _ALTERNATING_SMALL + [0.05, 5.0],
+                    _SIX_INSUFFICIENT + [(True, False), (True, False)],
+                )
+            )
+        ),
+    ),
+    HistoryMethodTestCase(
+        id="returns_insufficient_history_when_fewer_than_six_prior_steps",
+        k=2,
+        value_col=_POP,
+        rows=_series_rows(
+            _FP,
+            _NR,
+            _monthly_periods(_APR_2024, 6),
+            _MONTHLY,
+            _ALTERNATING_SMALL[:5] + [5.0],
+            _SIX_INSUFFICIENT,
+        ),
+    ),
+    HistoryMethodTestCase(
+        id="sets_bands_separately_per_interval_type",
+        k=2,
+        value_col=_POP,
+        rows=_series_rows(
+            _FP,
+            _NR,
+            _QUARTERS_TO_JAN_2024,
+            _QUARTERLY,
+            _ALTERNATING_LARGE,
+            _SIX_INSUFFICIENT,
+        )
+        + _series_rows(
+            _FP,
+            _NR,
+            _monthly_periods(_APR_2024, 7),
+            _MONTHLY,
+            _ALTERNATING_SMALL + [0.04],
+            _SIX_INSUFFICIENT + [(True, False)],
+        ),
+    ),
+    HistoryMethodTestCase(
+        id="sets_bands_separately_per_metric_and_service_type",
+        k=2,
+        value_col=_POP,
+        rows=_series_rows(
+            _FP,
+            _NR,
+            _monthly_periods(_APR_2024, 7),
+            _MONTHLY,
+            _ALTERNATING_SMALL + [0.04],
+            _SIX_INSUFFICIENT + [(True, False)],
+        )
+        + _series_rows(
+            _FP,
+            _CHN,
+            _monthly_periods(_APR_2024, 7),
+            _MONTHLY,
+            _ALTERNATING_LARGE + [0.04],
+            _SIX_INSUFFICIENT + [(False, False)],
+        )
+        + _series_rows(
+            _LC,
+            _NR,
+            _monthly_periods(_APR_2024, 7),
+            _MONTHLY,
+            _ALTERNATING_LARGE + [0.04],
+            _SIX_INSUFFICIENT + [(False, False)],
+        ),
+    ),
+    HistoryMethodTestCase(
+        id="compares_since_march_values_only_against_same_month_in_prior_years",
+        k=2,
+        value_col=_CSM,
+        rows=_series_rows(
+            _FP,
+            _NR,
+            [date(year, 5, 1) for year in range(2019, 2026)],
+            _MONTHLY,
+            _ALTERNATING_SMALL + [0.04],
+            _SIX_INSUFFICIENT + [(True, False)],
+        )
+        + _series_rows(
+            _FP,
+            _NR,
+            [date(year, 8, 1) for year in range(2019, 2025)],
+            _MONTHLY,
+            [0.2, -0.2] * 3,
+            _SIX_INSUFFICIENT,
+        ),
+    ),
+]
+
+flag_median_mad_test_cases = [
+    HistoryMethodTestCase(
+        id="flags_change_outside_median_plus_or_minus_k_mad_of_prior_steps",
+        k=2,
+        value_col=_POP,
+        rows=_series_rows(
+            _FP,
+            _NR,
+            _monthly_periods(_APR_2024, 8),
+            _MONTHLY,
+            [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.04],
+            _SIX_INSUFFICIENT + [(True, False), (False, False)],
+        ),
+    ),
+    HistoryMethodTestCase(
+        id="single_prior_outlier_does_not_widen_band",
+        k=2,
+        value_col=_POP,
+        rows=_series_rows(
+            _FP,
+            _NR,
+            _monthly_periods(_APR_2024, 7),
+            _MONTHLY,
+            [0.01, 0.02, 0.03, 0.04, 0.05, 1.0, 0.08],
+            _SIX_INSUFFICIENT + [(True, False)],
+        ),
+    ),
+    HistoryMethodTestCase(
+        id="returns_insufficient_history_when_fewer_than_six_prior_steps",
+        k=2,
+        value_col=_POP,
+        rows=_series_rows(
+            _FP,
+            _NR,
+            _monthly_periods(_APR_2024, 6),
+            _MONTHLY,
+            [0.01, 0.02, 0.03, 0.04, 0.05, 5.0],
+            _SIX_INSUFFICIENT,
+        ),
+    ),
+    HistoryMethodTestCase(
+        id="flags_any_deviation_when_prior_steps_are_all_identical",
+        k=2,
+        value_col=_POP,
+        rows=_series_rows(
+            _FP,
+            _NR,
+            _monthly_periods(_APR_2024, 8),
+            _MONTHLY,
+            [0.01] * 6 + [0.011, 0.01],
+            _SIX_INSUFFICIENT + [(True, False), (False, False)],
+        ),
+    ),
+]
+
+
+@dataclass
+class BandMethodTestCase:
+    id: str
+    rows: list[tuple]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+# Fixed band / cross-sectional rows: (metric, service_type, period,
+# interval_type, value, lower, upper, breached). Monthly limit 0.02,
+# quarterly 0.05.
+_MAY_2026 = date(2026, 5, 1)
+_JAN_2024 = date(2024, 1, 1)
+
+flag_fixed_band_test_cases = [
+    BandMethodTestCase(
+        id="flags_monthly_change_outside_monthly_tolerance",
+        rows=[
+            (_FP, _NR, date(2024, 5, 1), _MONTHLY, 0.03, -0.02, 0.02, True),
+            (_FP, _NR, date(2024, 6, 1), _MONTHLY, -0.03, -0.02, 0.02, True),
+            (_FP, _NR, date(2024, 7, 1), _MONTHLY, 0.01, -0.02, 0.02, False),
+        ],
+    ),
+    BandMethodTestCase(
+        id="applies_quarterly_tolerance_to_quarterly_steps",
+        rows=[
+            (_FP, _NR, date(2023, 10, 1), _QUARTERLY, 0.03, -0.05, 0.05, False),
+            (_FP, _NR, _JAN_2024, _QUARTERLY, 0.06, -0.05, 0.05, True),
+        ],
+    ),
+    BandMethodTestCase(
+        id="does_not_flag_change_exactly_on_tolerance",
+        rows=[
+            (_FP, _NR, date(2024, 5, 1), _MONTHLY, 0.02, -0.02, 0.02, False),
+            (_FP, _NR, _JAN_2024, _QUARTERLY, -0.05, -0.05, 0.05, False),
+        ],
+    ),
+]
+
+flag_cross_sectional_test_cases = [
+    BandMethodTestCase(
+        id="flags_base_type_whose_gap_from_median_of_others_exceeds_limit",
+        rows=[
+            (_FP, _CHN, _MAY_2026, _MONTHLY, 0.002, -0.034, 0.006, False),
+            (_FP, _CHWO, _MAY_2026, _MONTHLY, 0.002, -0.034, 0.006, False),
+            (_FP, _NR, _MAY_2026, _MONTHLY, -0.03, -0.018, 0.022, True),
+        ],
+    ),
+    BandMethodTestCase(
+        id="does_not_flag_when_all_base_types_move_together",
+        rows=[
+            (_FP, _CHN, _JAN_2024, _QUARTERLY, -0.03, -0.08, 0.02, False),
+            (_FP, _CHWO, _JAN_2024, _QUARTERLY, -0.03, -0.08, 0.02, False),
+            (_FP, _NR, _JAN_2024, _QUARTERLY, -0.03, -0.08, 0.02, False),
+        ],
+    ),
+    BandMethodTestCase(
+        id="excludes_rollup_service_types_from_comparison",
+        rows=[
+            (_FP, _ALL, _MAY_2026, _MONTHLY, -0.5, None, None, None),
+            (_FP, _CH, _MAY_2026, _MONTHLY, -0.5, None, None, None),
+            (_FP, _CHN, _MAY_2026, _MONTHLY, 0.0, -0.02, 0.02, False),
+            (_FP, _CHWO, _MAY_2026, _MONTHLY, 0.0, -0.02, 0.02, False),
+            (_FP, _NR, _MAY_2026, _MONTHLY, 0.0, -0.02, 0.02, False),
+        ],
+    ),
+    BandMethodTestCase(
+        id="returns_null_when_other_base_types_missing_for_period",
+        rows=[
+            (_FP, _NR, _MAY_2026, _MONTHLY, 0.01, None, None, None),
+            (_LC, _NR, _MAY_2026, _MONTHLY, 0.01, None, None, None),
+            (_LC, _CHN, _MAY_2026, _MONTHLY, None, None, None, None),
+        ],
+    ),
+]
+
+
+# Rows: (warn setting breached, error setting breached, expected tier)
+assign_tier_test_cases = [
+    DiagnosticExpectedDataTestCase(
+        id="returns_error_when_error_setting_breached",
+        expected_data=[(True, True, DT.Tier.error)],
+    ),
+    DiagnosticExpectedDataTestCase(
+        id="returns_warn_when_only_warn_setting_breached",
+        expected_data=[(True, False, DT.Tier.warn)],
+    ),
+    DiagnosticExpectedDataTestCase(
+        id="returns_none_when_neither_breached",
+        expected_data=[(False, False, DT.Tier.none)],
+    ),
+    DiagnosticExpectedDataTestCase(
+        id="passes_through_insufficient_history",
+        expected_data=[(None, None, DT.Tier.insufficient_history)],
+    ),
+]
+
+
+@dataclass
+class SummariseBacktestTestCase:
+    id: str
+    filter_on_flags: list[tuple]
+    filter_off_flags: list[tuple]
+    expected_breaks: list[tuple]
+    expected_data: list[tuple]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+# Flag rows: (method, setting, basis, metric, service_type, period, value,
+# breached). Summary rows: (method, setting, basis, metric, service_type,
+# evaluated_periods, false_alarms, expected_breaks, detected_breaks).
+_KEY = ("median_mad", "k=2", _POP, _FP, _NR)
+_BD214_BREAKS = [(_FP, _NR, date(2024, 4, 1)), (_FP, _NR, date(2026, 5, 1))]
+
+summarise_backtest_test_cases = [
+    SummariseBacktestTestCase(
+        id="counts_flags_on_filter_on_data_as_false_alarms",
+        filter_on_flags=[
+            (*_KEY, date(2025, 1, 1), 0.1, True),
+            (*_KEY, date(2025, 2, 1), 0.0, False),
+            (*_KEY, date(2025, 3, 1), 0.1, True),
+            (*_KEY, date(2025, 4, 1), 0.0, None),
+        ],
+        filter_off_flags=[(*_KEY, date(2025, 1, 1), 0.1, True)],
+        expected_breaks=[],
+        expected_data=[(*_KEY, 3, 2, 0, 0)],
+    ),
+    SummariseBacktestTestCase(
+        id="marks_detected_when_expected_break_period_flagged_on_filter_off_data",
+        filter_on_flags=[
+            (*_KEY, date(2024, 4, 1), 0.0, False),
+            (*_KEY, date(2026, 5, 1), 0.0, False),
+        ],
+        filter_off_flags=[
+            (*_KEY, date(2024, 4, 1), -0.1, True),
+            (*_KEY, date(2025, 1, 1), 0.1, True),
+            (*_KEY, date(2026, 5, 1), 0.1, True),
+        ],
+        expected_breaks=_BD214_BREAKS,
+        expected_data=[(*_KEY, 2, 0, 2, 2)],
+    ),
+    SummariseBacktestTestCase(
+        id="reports_not_detected_when_break_period_not_flagged",
+        filter_on_flags=[
+            (*_KEY, date(2024, 4, 1), 0.0, False),
+            (*_KEY, date(2026, 5, 1), 0.0, False),
+        ],
+        filter_off_flags=[
+            (*_KEY, date(2024, 4, 1), -0.1, False),
+            (*_KEY, date(2026, 5, 1), 0.1, None),
+        ],
+        expected_breaks=_BD214_BREAKS,
+        expected_data=[(*_KEY, 2, 0, 2, 0)],
     ),
 ]
