@@ -1,0 +1,39 @@
+{
+  "Comment": "THROWAWAY ticket-2110 N=20 stress test: runs candidate L1's _03_impute_spike_stress_prototype.py (zero job role filled posts rows dropped, 15 dummy statuses added) against real employment status clean data, instrumented with RunDiagnostics. Manual-start only - never wired into Ind-CQC-SLV. See ticket_2110_zero_jr.md. Delete once measured.",
+  "StartAt": "Spike L1 stress impute (N=20)",
+  "States": {
+    "Spike L1 stress impute (N=20)": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${independent_cqc_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_03_independent_cqc-container",
+              "Environment": [
+                { "Name": "POLARS_VERBOSE", "Value": "1" }
+              ],
+              "Command": [
+                "_02_employment_status/fargate/_03_impute_spike_stress_prototype.py",
+                "--cleaned_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_02_clean/",
+                "--spike_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_03_impute_spike_stress_l1/",
+                "--diagnostics_job_name", "empstat_spike_l1_red_n20"
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}
