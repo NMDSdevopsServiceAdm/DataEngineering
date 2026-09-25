@@ -19,6 +19,7 @@ COPY utils/column_values /app/utils/column_values/
 COPY utils/value_labels /app/utils/value_labels
 COPY schemas/cqc_locations_schema_polars.py /app/schemas/cqc_locations_schema_polars.py
 COPY projects/_02_sfc_internal/utils /app/projects/_02_sfc_internal/utils
+COPY projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils /app/projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils
 
 # Copy python jobs to WORKDIR
 COPY projects/_02_sfc_internal/cqc_coverage/fargate/*.py .
