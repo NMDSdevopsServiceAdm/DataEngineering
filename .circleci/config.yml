@@ -131,31 +131,6 @@ jobs:
             mkdir -p /tmp/bake
             python scripts/select_ci_gate.py --gate cqc-integration-tests > /tmp/bake/run-cqc-integration-tests
             echo "Run CQC integration tests: $(cat /tmp/bake/run-cqc-integration-tests)"
-      # TEMP (2054): proves every gate's positive path inside this job's real
-      # image, without seeding S3 or calling the CQC API. Revert before the PR.
-      - run:
-          name: TEMP dry-run gate check
-          command: |
-            failures=0
-            check() {
-              result=$(python scripts/select_ci_gate.py --gate "$1" --changed-path "$2")
-              echo "$1 <- $2: $result"
-              [ "$result" = "true" ] || failures=1
-            }
-            check raw-bucket-ascwds projects/_01_ingest/ascwds/fargate/ingest_ascwds_dataset.py
-            check raw-bucket-capacity_tracker projects/_01_ingest/capacity_tracker/fargate/ingest_capacity_tracker_data.py
-            check raw-bucket-cqc_pir projects/_01_ingest/cqc_pir/fargate/ingest_cqc_pir_data.py
-            check raw-bucket-ons_pd projects/_01_ingest/ons_pd/fargate/ingest_ons_data.py
-            check raw-bucket-ons_pd terraform/pipeline/eventbridge.tf
-            check archive-sample projects/_99_publication/monthly_tracker_filled_posts/fargate/_01_merge.py
-            check cqc-integration-tests tests/integration/test_cqc_api_integration.py
-            if python scripts/select_ci_gate.py --gate not-a-real-gate --changed-path README.md; then
-              echo "Unknown gate should have exited non-zero." >&2
-              failures=1
-            else
-              echo "Unknown gate rejected, as expected."
-            fi
-            exit $failures
       - persist_to_workspace:
           # Namespaced, because later jobs attach this same workspace at the
           # repo root and a bare "targets" file there reads as repo content.
