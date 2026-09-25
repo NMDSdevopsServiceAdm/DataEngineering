@@ -62,6 +62,7 @@ COPY projects/_03_independent_cqc/_02_employment_status/fargate/_02_clean.py /ap
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/_03_impute.py /app/_02_employment_status/fargate/_03_impute.py
 # Ticket 2110 spike only - remove before any real build.
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/_03_impute_spike_prototype.py /app/_02_employment_status/fargate/_03_impute_spike_prototype.py
+COPY projects/_03_independent_cqc/_02_employment_status/fargate/_03_impute_spike_stress_prototype.py /app/_02_employment_status/fargate/_03_impute_spike_stress_prototype.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/_04_estimate.py /app/_02_employment_status/fargate/_04_estimate.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/validate_00_prepare_worker.py /app/_02_employment_status/fargate/validate_00_prepare_worker.py
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/validate_01_merge.py /app/_02_employment_status/fargate/validate_01_merge.py
