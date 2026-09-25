@@ -40,6 +40,9 @@ grain_columns = [
     CQCL.source_path,
     CQCL.dataset,
     CQCRatings.current_or_historic,
+    # prepare_historic_ratings' own pivot index includes overall_rating,
+    # since two historic reports can share a date but differ in this value.
+    CQCRatings.overall_rating,
 ]
 
 rating_values = CQCRatingsValues(CQCRatings.overall_rating, contains_null_values=True)
