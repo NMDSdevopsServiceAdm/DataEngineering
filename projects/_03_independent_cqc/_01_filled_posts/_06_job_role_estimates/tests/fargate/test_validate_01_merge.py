@@ -101,3 +101,44 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
+
+
+class TestValidateJobRoleEstimatesFullDataSpike:
+    """Ticket 2110 spike: the -full branches validate unreduced job role estimates."""
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_expected_row_count_includes_dates_outside_reduced_window(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        tests = ValidateJobRoleEstimatesTests()
+        tests.setUp()
+        # February 2015 would be dropped by reduced_data_filter_expr.
+        compare_df = pl.DataFrame(
+            {
+                IndCqcColumns.location_id: ["1-001", "1-001"],
+                IndCqcColumns.cqc_location_import_date: [
+                    date(2026, 1, 1),
+                    date(2015, 2, 1),
+                ],
+            },
+            schema_overrides={
+                IndCqcColumns.location_id: CategoricalColumnTypes.LocationCatType
+            },
+        )
+        mock_read_parquet.side_effect = [tests.source_df, compare_df]
+
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+
+        job_role_count = len(
+            job.CatValues.main_job_role_labels_column_values.categorical_values
+        )
+        report_json = json.loads(mock_write_reports.call_args[0][0].get_json_report())
+        row_count_briefs = [
+            item["brief"]
+            for item in report_json
+            if item["assertion_type"] == "row_count_match"
+        ]
+        assert row_count_briefs == [f"Expects {2 * job_role_count} rows"]

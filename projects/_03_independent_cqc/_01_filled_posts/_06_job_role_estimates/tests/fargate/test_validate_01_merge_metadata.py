@@ -127,3 +127,45 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
+
+
+class TestValidateMergedMetadataFullDataSpike:
+    """Ticket 2110 spike: the -full branches validate unreduced job role metadata."""
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.add_list_column_validation_check_flags")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_expected_row_count_includes_dates_outside_reduced_window(
+        self,
+        mock_read_parquet: Mock,
+        mock_add_flags: Mock,
+        mock_write_reports: Mock,
+    ):
+        tests = ValidateJobRoleEstimatesTests()
+        tests.setUp()
+        source_df = tests.source_df
+        # February 2015 would be dropped by reduced_data_filter_expr.
+        compare_df = pl.DataFrame(
+            {
+                IndCqcColumns.location_id: ["1-001", "2-002", "3-003"],
+                IndCqcColumns.cqc_location_import_date: [
+                    date(2025, 1, 1),
+                    date(2025, 1, 2),
+                    date(2015, 2, 1),
+                ],
+            }
+        )
+        mock_read_parquet.side_effect = [source_df, compare_df]
+        mock_add_flags.return_value = source_df
+
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+
+        report_json = json.loads(mock_write_reports.call_args[0][0].get_json_report())
+        row_count_briefs = [
+            item["brief"]
+            for item in report_json
+            if item["assertion_type"] == "row_count_match"
+        ]
+        assert row_count_briefs == [
+            "Source file has 2 rows but expecting 3 rows to match estimates dataset"
+        ]

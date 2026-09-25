@@ -1,9 +1,11 @@
 import unittest
+from datetime import date
 from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
 
 import projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate._01_merge as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH = "projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate._01_merge"
 
@@ -62,3 +64,32 @@ class MainTests(unittest.TestCase):
                 ),
             ]
         )
+
+
+class TestMainFullDataSpike:
+    """Ticket 2110 spike: the -full branches run job role estimates unreduced."""
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.join_estimates_to_ascwds")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_keeps_estimates_outside_reduced_window(
+        self,
+        scan_parquet_mock: Mock,
+        join_estimates_to_ascwds_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
+        # February 2015 is before the full-retention window and not a quarter month,
+        # so reduced_data_filter_expr would drop it.
+        old_estimate_lf = pl.LazyFrame(
+            [{IndCQC.cqc_location_import_date: date(2015, 2, 1)}],
+            schema=job.transformation_columns | job.metadata_columns,
+        )
+        scan_parquet_mock.side_effect = [
+            old_estimate_lf,
+            pl.LazyFrame(schema=job.ascwds_columns_to_import),
+        ]
+
+        job.main("some/source", "some/other/source", "some/dest", "some/other/dest")
+
+        estimates_passed_to_join_lf = join_estimates_to_ascwds_mock.call_args.args[0]
+        assert estimates_passed_to_join_lf.collect().height == 1
