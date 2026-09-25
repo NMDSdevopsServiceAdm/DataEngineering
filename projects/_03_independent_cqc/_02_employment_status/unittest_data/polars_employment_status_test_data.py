@@ -752,6 +752,7 @@ class SpikeImputeTestCase:
     id: str
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
+    percentage_columns: dict[str, str] | None = None
 
 
 SPIKE_STATUS_LABELS = [
@@ -810,6 +811,31 @@ class TestSpikeImputeUtilsL1Data:
                 IndCQC.estimate_filled_posts_by_job_role: [10.0] * 5,
                 SpikeCols.employment_status_label: SPIKE_STATUS_LABELS,
                 SpikeCols.employment_status_rate: [None] * 5,
+            },
+        ),
+        SpikeImputeTestCase(
+            id="reshapes_custom_percentage_columns_into_one_row_per_label",
+            percentage_columns={
+                EmploymentStatusLabels.permanent: EmpStatus.permanent_percentage,
+                "dummy_status_01": "dummy_status_01_percentage",
+                "dummy_status_02": "dummy_status_02_percentage",
+            },
+            input_data={
+                IndCQC.location_id: ["loc1"],
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
+                EmpStatus.permanent_percentage: [0.5],
+                "dummy_status_01_percentage": [0.3],
+                "dummy_status_02_percentage": [0.2],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1"] * 3,
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 3,
+                SpikeCols.employment_status_label: [
+                    EmploymentStatusLabels.permanent,
+                    "dummy_status_01",
+                    "dummy_status_02",
+                ],
+                SpikeCols.employment_status_rate: [0.5, 0.3, 0.2],
             },
         ),
     ]
