@@ -752,6 +752,7 @@ class SpikeImputeTestCase:
     id: str
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
+    percentage_columns: dict[str, str] | None = None
 
 
 def _spike_status_column(base: str, label: str) -> str:
@@ -796,6 +797,15 @@ class TestSpikeImputeUtilsL2Data:
         EmpStatus.other_percentage: [0.05, None, 0.1, None, None, None],
     }
 
+    # The N=20 stress test passes dummy statuses alongside the real 5.
+    custom_percentage_columns = {
+        **dict(zip(SPIKE_STATUS_LABELS, SPIKE_PERCENTAGE_COLUMNS)),
+        "dummy_status_01": "dummy_status_01_percentage",
+    }
+    impute_chain_rows_with_dummy = impute_chain_rows | {
+        "dummy_status_01_percentage": [0.1, None, 0.2, None, None, None],
+    }
+
     normalise_test_cases = [
         SpikeImputeTestCase(
             id="normalises_employment_status_columns_to_sum_to_one_row_wise",
@@ -835,6 +845,37 @@ class TestSpikeImputeUtilsL2Data:
                         [0.5, 0.2, 0.1, 0.15, 0.05],
                     )
                 },
+            },
+        ),
+        SpikeImputeTestCase(
+            id="normalises_custom_percentage_columns_to_sum_to_one_row_wise",
+            percentage_columns={
+                EmploymentStatusLabels.permanent: EmpStatus.permanent_percentage,
+                "dummy_status_01": "dummy_status_01_percentage",
+            },
+            input_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                EmpStatus.permanent_percentage: [None, 0.7],
+                "dummy_status_01_percentage": [None, 0.3],
+                _spike_status_column(
+                    SpikeCols.unnormalised_rate, EmploymentStatusLabels.permanent
+                ): [0.6, None],
+                _spike_status_column(SpikeCols.unnormalised_rate, "dummy_status_01"): [
+                    0.2,
+                    None,
+                ],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                EmpStatus.permanent_percentage: [None, 0.7],
+                "dummy_status_01_percentage": [None, 0.3],
+                _spike_status_column(
+                    SpikeCols.imputed_employment_status_rate,
+                    EmploymentStatusLabels.permanent,
+                ): [0.75, 0.7],
+                _spike_status_column(
+                    SpikeCols.imputed_employment_status_rate, "dummy_status_01"
+                ): [0.25, 0.3],
             },
         ),
     ]
