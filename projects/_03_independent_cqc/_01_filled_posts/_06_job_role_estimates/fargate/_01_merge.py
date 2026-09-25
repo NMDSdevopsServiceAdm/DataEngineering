@@ -2,7 +2,6 @@ import polars as pl
 
 from polars_utils import utils
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
-from polars_utils.filtering_utils import reduced_data_filter_expr
 from projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate.utils.merge_utils import (
     join_estimates_to_ascwds,
 )
@@ -86,7 +85,7 @@ def main(
     combined_schema = transformation_columns | metadata_columns
     full_estimates_lf = (
         utils.scan_parquet(estimates_source)
-        .filter(reduced_data_filter_expr())
+        # Ticket 2110 spike (-full branches): reduced_data_filter_expr removed.
         .select(list(combined_schema))
         .with_row_index(name=IndCQC.id_per_locationid_import_date)
         .with_columns(utils.cast_to_schema(combined_schema))
