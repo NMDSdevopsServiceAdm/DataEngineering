@@ -6,7 +6,7 @@ import polars.selectors as cs
 
 from polars_utils import utils
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
-from polars_utils.expressions import str_length_cols
+from polars_utils.expressions import is_care_home, str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._03_independent_cqc._01_filled_posts._05_workplace_estimates.fargate.utils import (
@@ -135,9 +135,6 @@ def main(
             na_pass=True,
         )
         .col_vals_between(
-            IndCqcColumns.non_res_combined_model, -100.0, 3000.0, na_pass=True
-        )
-        .col_vals_between(
             IndCqcColumns.estimate_filled_posts, 1.0, 3000.0, na_pass=True
         )
         .col_vals_between(
@@ -262,6 +259,13 @@ def main(
         .col_vals_expr(
             vUtils.care_home_without_nursing_services_offered_expr(),
             brief="If primary_service_type_second_level is 'Care home without nursing', services_offered must contain 'Care home service without nursing' and must not contain 'Shared Lives' or 'Care home service with nursing'.",
+        )
+        .col_vals_expr(
+            expr=(
+                is_care_home()
+                | pl.col(IndCqcColumns.non_res_combined_model).is_not_null()
+            ),
+            brief=f"{IndCqcColumns.non_res_combined_model} is only expected to be null for care homes",
         )
         .interrogate()
     )

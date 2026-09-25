@@ -87,18 +87,14 @@ def main(
             DP.LAST_YEAR_WITH_DATA, 2013, int(datetime.now().year), na_pass=True
         )
         # numeric - proportions (bounded 0-1 by construction: means/interpolation
-        # of a 0-1 proportion stay within it; extrapolation is not bounded so is
-        # excluded)
+        # of the 0-1-bounded raw proportion stay within it - confirmed via
+        # remove_outliers.py, which nulls the raw value outside 0-1 upstream).
+        # ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF and its rolling
+        # average are excluded: their coalesce chain can take its value from
+        # ESTIMATE_USING_EXTRAPOLATION_RATIO, which is not bounded, so only
+        # completeness (col_vals_not_null above) is checked for those two.
         .col_vals_between(DP.ESTIMATE_USING_MEAN, 0.0, 1.0, na_pass=True)
         .col_vals_between(DP.ESTIMATE_USING_INTERPOLATION, 0.0, 1.0, na_pass=True)
-        .col_vals_between(
-            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, 0.0, 1.0
-        )
-        .col_vals_between(
-            DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-            0.0,
-            1.0,
-        )
         # numeric - non-negative counts derived from the proportions/rates above
         .col_vals_ge(
             DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
