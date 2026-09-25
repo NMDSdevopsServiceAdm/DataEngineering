@@ -45,6 +45,7 @@ GATE_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
         "projects/_01_ingest/ascwds/fargate/validate_ascwds_workplace_raw_data.py",
         *SHARED_RAW_BUCKET_TRIGGER_PATHS,
     ),
+    # Just the ingest job: capacity_tracker has no raw-validate job.
     "raw-bucket-capacity_tracker": (
         "projects/_01_ingest/capacity_tracker/fargate/ingest_capacity_tracker_data.py",
         *SHARED_RAW_BUCKET_TRIGGER_PATHS,
