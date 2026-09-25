@@ -113,47 +113,28 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: Flattened current ratings, recoded and flagged as current.
     """
+    overall = pl.col(CQCL.current_ratings).struct.field(CQCL.overall)
+    key_question_ratings = overall.struct.field(CQCL.key_question_ratings)
+    # Position in keyQuestionRatings -> target column, per the docstring above.
+    key_question_aliases = [
+        CQCRatings.safe_rating,
+        CQCRatings.well_led_rating,
+        CQCRatings.caring_rating,
+        CQCRatings.responsive_rating,
+        CQCRatings.effective_rating,
+    ]
+
     current_ratings_lf = cqc_location_lf.select(
         CQCL.location_id,
         CQCL.registration_status,
-        pl.col(CQCL.current_ratings)
-        .struct.field(CQCL.overall)
-        .struct.field(CQCL.report_date)
-        .alias(CQCRatings.date),
-        pl.col(CQCL.current_ratings)
-        .struct.field(CQCL.overall)
-        .struct.field(CQCL.rating)
-        .alias(CQCRatings.overall_rating),
-        pl.col(CQCL.current_ratings)
-        .struct.field(CQCL.overall)
-        .struct.field(CQCL.key_question_ratings)
-        .list.get(0, null_on_oob=True)
-        .struct.field(CQCL.rating)
-        .alias(CQCRatings.safe_rating),
-        pl.col(CQCL.current_ratings)
-        .struct.field(CQCL.overall)
-        .struct.field(CQCL.key_question_ratings)
-        .list.get(1, null_on_oob=True)
-        .struct.field(CQCL.rating)
-        .alias(CQCRatings.well_led_rating),
-        pl.col(CQCL.current_ratings)
-        .struct.field(CQCL.overall)
-        .struct.field(CQCL.key_question_ratings)
-        .list.get(2, null_on_oob=True)
-        .struct.field(CQCL.rating)
-        .alias(CQCRatings.caring_rating),
-        pl.col(CQCL.current_ratings)
-        .struct.field(CQCL.overall)
-        .struct.field(CQCL.key_question_ratings)
-        .list.get(3, null_on_oob=True)
-        .struct.field(CQCL.rating)
-        .alias(CQCRatings.responsive_rating),
-        pl.col(CQCL.current_ratings)
-        .struct.field(CQCL.overall)
-        .struct.field(CQCL.key_question_ratings)
-        .list.get(4, null_on_oob=True)
-        .struct.field(CQCL.rating)
-        .alias(CQCRatings.effective_rating),
+        overall.struct.field(CQCL.report_date).alias(CQCRatings.date),
+        overall.struct.field(CQCL.rating).alias(CQCRatings.overall_rating),
+        *[
+            key_question_ratings.list.get(position, null_on_oob=True)
+            .struct.field(CQCL.rating)
+            .alias(alias)
+            for position, alias in enumerate(key_question_aliases)
+        ],
     )
     current_ratings_lf = recode_unknown_codes_to_null(current_ratings_lf)
     current_ratings_lf = add_current_or_historic_column(
