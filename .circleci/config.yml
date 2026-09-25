@@ -503,6 +503,8 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_04_estimate/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_01_merge_metadata/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" --delete
+            # DO NOT MERGE (ticket 2107): main's published monthly tracker output as the back-test's filter-on baseline.
+            aws s3 sync "s3://sfc-main-datasets/domain=99_publication/dataset=monthly_tracker_filled_posts_02_clean/" "s3://$BRANCH_DATASET_BUCKET/domain=99_publication/dataset=monthly_tracker_filled_posts_02_clean_filter_on/" --delete
       - run:
           name: Copy models to non-prod dataset
           command: |

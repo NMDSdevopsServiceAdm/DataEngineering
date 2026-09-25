@@ -35,8 +35,8 @@
                       "Name": "_99_publication-container",
                       "Command": [
                         "_01_merge.py",
-                        "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2026-09-22/run_number=1/",
-                        "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-09-22/run_number=1/",
+                        "--jr_archive_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=TBC-2107/run_number=2/",
+                        "--jr_archive_metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=TBC-2107/run_number=2/",
                         "--merge_data_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge/"
                       ]
                     }
@@ -67,6 +67,37 @@
                         "_02_clean.py",
                         "--merge_data_source", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge/",
                         "--clean_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_clean/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Back-test thresholds"
+            },
+            "Back-test thresholds": {
+              "Comment": "DO NOT MERGE (ticket 2107): back-tests the diagnostic threshold prototype",
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${publication_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${publication_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_99_publication-container",
+                      "Command": [
+                        "backtest_thresholds_prototype.py",
+                        "--filter_on_source", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_clean_filter_on/",
+                        "--filter_off_source", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_clean/",
+                        "--summary_destination", "${pipeline_resources_bucket_uri}/diagnostics/2107_backtest/"
                       ]
                     }
                   ]

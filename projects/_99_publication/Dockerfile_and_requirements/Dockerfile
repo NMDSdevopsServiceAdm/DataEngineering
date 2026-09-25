@@ -17,5 +17,7 @@ COPY projects/_99_publication/monthly_tracker_filled_posts/fargate/utils /app/pr
 # Copy python jobs to WORKDIR
 COPY projects/_99_publication/monthly_tracker_filled_posts/fargate/_01_merge.py /app/_01_merge.py
 COPY projects/_99_publication/monthly_tracker_filled_posts/fargate/_02_clean.py /app/_02_clean.py
+# DO NOT MERGE (ticket 2107 back-test)
+COPY projects/_99_publication/monthly_tracker_filled_posts/fargate/backtest_thresholds_prototype.py /app/backtest_thresholds_prototype.py
 
 ENTRYPOINT ["python"]
