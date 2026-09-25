@@ -106,6 +106,45 @@
               "End": true
             }
           }
+        },
+        {
+          "StartAt": "Flatten CQC Ratings (Polars comparison)",
+          "States": {
+            "Flatten CQC Ratings (Polars comparison)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${model_cluster_arn}",
+                "TaskDefinition": "${sfc_internal_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${sfc_internal_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_02_sfc_internal-container",
+                      "Command": [
+                        "flatten_cqc_ratings.py",
+                        "--cqc_full_snapshot_source", "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_04_latest_snapshot/",
+                        "--cqc_locations_api_delta_source", "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/",
+                        "--ascwds_workplace_source", "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace/",
+                        "--cqc_ratings_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_data_requests_polars_comparison/",
+                        "--benchmark_ratings_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_benchmarks_polars_comparison/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
         }
       ],
       "Next": "Handle Error and Run Crawlers",
