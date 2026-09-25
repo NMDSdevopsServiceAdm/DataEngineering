@@ -1,12 +1,47 @@
 import json
 from typing import Callable
 
+import functools
+
 import boto3
 import pointblank as pb
+import pointblank.validate as _pb_validate
 import polars as pl
 
 from polars_utils import utils
 from utils import file_utils
+
+
+# TODO(2082): throwaway PoC shim -- remove before merging anything.
+# pointblank 0.26.0 builds col_schema_match step reports with
+# pl.concat(how="horizontal") on frames of unequal height, which Polars 2.0 turns
+# from null-padding into a ShapeError, crashing interrogate(). pointblank imports
+# polars inside each function, so wrap just the two step-report builders and swap
+# pl.concat for "horizontal_extend" (1.x's padding behaviour; valid on 1.42.1+)
+# only for the duration of those calls.
+_original_concat = pl.concat
+
+
+def _concat_horizontal_extend(items, *args, how="vertical", **kwargs):
+    if how == "horizontal":
+        how = "horizontal_extend"
+    return _original_concat(items, *args, how=how, **kwargs)
+
+
+def _with_horizontal_extend(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        pl.concat = _concat_horizontal_extend
+        try:
+            return func(*args, **kwargs)
+        finally:
+            pl.concat = _original_concat
+
+    return wrapper
+
+
+for _name in ("_step_report_schema_in_order", "_step_report_schema_any_order"):
+    setattr(_pb_validate, _name, _with_horizontal_extend(getattr(_pb_validate, _name)))
 
 
 def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) -> None:

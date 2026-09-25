@@ -133,6 +133,13 @@ col_schema_match_cases = [
         in_order=False,
         expected_to_pass=True,
     ),
+    # Mirrors validate_01_merge_metadata.py / validate_archive_job_role_estimates.py.
+    ColSchemaMatchTestCase(
+        id="records_passing_partial_col_schema_match_without_raising_in_order",
+        schema=pb.Schema(columns={"a": "String", "b": "Int64"}),
+        in_order=True,
+        expected_to_pass=True,
+    ),
     ColSchemaMatchTestCase(
         id="records_failed_col_schema_match_step_without_raising_any_order",
         schema=pb.Schema(columns={"a": "String", "missing": "String"}),

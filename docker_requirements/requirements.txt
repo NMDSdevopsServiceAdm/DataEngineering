@@ -4,6 +4,7 @@
 #   - projects/_03_independent_cqc/_01_filled_posts/_04_model/fargate/requirements-extra.txt
 boto3==1.40.21
 css_inline==0.17.0
+narwhals==2.26.0
 pointblank==0.26.0
-polars==1.44.1
+polars==2.0.0rc2
 psutil==7.2.2
