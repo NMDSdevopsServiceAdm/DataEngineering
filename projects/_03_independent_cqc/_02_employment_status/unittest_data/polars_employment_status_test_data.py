@@ -696,3 +696,49 @@ class TestPrepareMainData:
         AWKClean.establishment_id: ["1-001", "1-001"],
         AWKClean.ascwds_worker_import_date: [date(2024, 10, 1), date(2024, 10, 8)],
     }
+
+
+@dataclass
+class FilterOutZeroJobRoleFilledPostsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
+class TestSpikeFilterUtilsData:
+    filter_out_zero_job_role_filled_posts_test_cases = [
+        FilterOutZeroJobRoleFilledPostsTestCase(
+            id="removes_rows_with_zero_job_role_filled_posts",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.estimate_filled_posts_by_job_role: [0.0, 2.0],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc2"],
+                IndCQC.estimate_filled_posts_by_job_role: [2.0],
+            },
+        ),
+        FilterOutZeroJobRoleFilledPostsTestCase(
+            id="keeps_rows_with_null_job_role_filled_posts",
+            input_data={
+                IndCQC.location_id: ["loc1"],
+                IndCQC.estimate_filled_posts_by_job_role: [None],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1"],
+                IndCQC.estimate_filled_posts_by_job_role: [None],
+            },
+        ),
+        FilterOutZeroJobRoleFilledPostsTestCase(
+            id="keeps_rows_with_positive_job_role_filled_posts",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.estimate_filled_posts_by_job_role: [0.5, 3.0],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.estimate_filled_posts_by_job_role: [0.5, 3.0],
+            },
+        ),
+    ]
