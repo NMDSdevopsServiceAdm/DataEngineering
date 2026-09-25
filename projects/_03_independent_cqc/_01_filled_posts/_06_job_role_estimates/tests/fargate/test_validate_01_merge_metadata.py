@@ -10,6 +10,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedNewValidationColumns as CQCLVal,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 PATCH_PATH = "projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate.validate_01_merge_metadata"
 
@@ -169,3 +170,57 @@ class TestValidateMergedMetadataFullDataSpike:
         assert row_count_briefs == [
             "Source file has 2 rows but expecting 3 rows to match estimates dataset"
         ]
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.add_list_column_validation_check_flags")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_accepts_contained_invalid_missing_data_code_filtering_rule(
+        self,
+        mock_read_parquet: Mock,
+        mock_add_flags: Mock,
+        mock_write_reports: Mock,
+    ):
+        tests = ValidateJobRoleEstimatesTests()
+        tests.setUp()
+        # Only the reduced data lacked this value, so full data can contain it.
+        source_df = tests.source_df.with_columns(
+            pl.lit(AscwdsFilteringRule.contained_invalid_missing_data_code).alias(
+                IndCqcColumns.ascwds_filtering_rule
+            )
+        )
+        mock_read_parquet.side_effect = [source_df, tests.compare_df]
+        mock_add_flags.return_value = source_df
+
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+
+        report_json = json.loads(mock_write_reports.call_args[0][0].get_json_report())
+        filtering_rule_in_set_failures = [
+            item["n_failed"]
+            for item in report_json
+            if item["assertion_type"] == "col_vals_in_set"
+            and item["column"] == IndCqcColumns.ascwds_filtering_rule
+        ]
+        assert filtering_rule_in_set_failures == [0]
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.add_list_column_validation_check_flags")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_expects_every_filtering_rule_value(
+        self,
+        mock_read_parquet: Mock,
+        mock_add_flags: Mock,
+        mock_write_reports: Mock,
+    ):
+        tests = ValidateJobRoleEstimatesTests()
+        tests.setUp()
+        mock_read_parquet.side_effect = [tests.source_df, tests.compare_df]
+        mock_add_flags.return_value = tests.source_df
+
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+
+        all_rules = job.CatValues.ascwds_filtering_rule_column_values.categorical_values
+        report_json = json.loads(mock_write_reports.call_args[0][0].get_json_report())
+        assert (
+            f"{IndCqcColumns.ascwds_filtering_rule} should have exactly "
+            f"{len(all_rules)} distinct values"
+        ) in [item["brief"] for item in report_json]

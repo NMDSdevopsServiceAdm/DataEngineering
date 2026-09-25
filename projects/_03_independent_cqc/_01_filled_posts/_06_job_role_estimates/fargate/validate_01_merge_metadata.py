@@ -15,10 +15,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedNewValidationColumns as CQCLVal,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_values.categorical_column_values import (
-    AscwdsFilteringRule,
-    NumericTrueFalse,
-)
+from utils.column_values.categorical_column_values import NumericTrueFalse
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
@@ -145,15 +142,12 @@ def main(
 
     print(f"source df schema: {source_df.schema}")
 
-    # With the reduced data, validation of ascwds_filtering_rule was failing as the data now did not have records with
-    # ascwds_filtering_rule column set to 'contained_invalid_missing_data_code'. So this is now handled by subtracting
-    # it in allowed_ascwds_filtering_rule_column_values. the dataclass 'AscwdsFilteringRule'is not updated directly as
-    # 'contained_invalid_missing_data_code' value is still needed in IND CQC pipeline.
-    allowed_ascwds_filtering_rule_column_values = [
-        v
-        for v in CatValues.ascwds_filtering_rule_column_values.categorical_values
-        if v != AscwdsFilteringRule.contained_invalid_missing_data_code
-    ]
+    # Ticket 2110 spike (-full branches): the reduced data never contained
+    # 'contained_invalid_missing_data_code', so main excludes it here. The full data
+    # can, so every filtering rule value is allowed again.
+    allowed_ascwds_filtering_rule_column_values = (
+        CatValues.ascwds_filtering_rule_column_values.categorical_values
+    )
 
     validation = (
         pb.Validate(
