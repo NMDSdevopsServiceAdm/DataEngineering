@@ -223,3 +223,747 @@ class ReconciliationData:
     ]
 
     main_expected_single_and_subs_nmds_ids = ["10"]
+
+
+@dataclass
+class FlattenCQCRatings:
+    cqc_locations_rows = [
+        (
+            "1-001",
+            "Registered",
+            "Social Care Org",
+            {
+                "overall": {
+                    "reportDate": "2024-01-01",
+                    "rating": "Good",
+                    "keyQuestionRatings": [
+                        {"name": "Safe", "rating": "Good"},
+                        {"name": "Well-led", "rating": "Good"},
+                        {"name": "Caring", "rating": "Good"},
+                        {"name": "Responsive", "rating": "Good"},
+                        {"name": "Effective", "rating": "Good"},
+                    ],
+                }
+            },
+            [],
+            [],
+        ),
+    ]
+
+    ascwds_workplace_rows = [
+        ("20240101", "2024", "01", "01", "estab-1", "1-001"),
+    ]
+
+    current_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            {
+                "overall": {
+                    "reportDate": "2024-01-01",
+                    "rating": "Good",
+                    "keyQuestionRatings": [
+                        {"name": "Safe", "rating": "Good"},
+                        {"name": "Well-led", "rating": "Good"},
+                        {"name": "Caring", "rating": "Outstanding"},
+                        {"name": "Responsive", "rating": "Inspected but not rated"},
+                        {"name": "Effective", "rating": "Requires improvement"},
+                    ],
+                }
+            },
+        ),
+    ]
+    expected_flatten_current_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Outstanding",
+            None,
+            "Requires improvement",
+        ),
+    ]
+    expected_prepare_current_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Outstanding",
+            None,
+            "Requires improvement",
+            "Current",
+        ),
+    ]
+
+    # A location with fewer than 5 keyQuestionRatings entries. Spark's
+    # out-of-range array index returns null; Polars' .list.get() raises unless
+    # null_on_oob=True is passed, so the missing Caring/Responsive/Effective
+    # positions must come back as null rather than crashing the job.
+    current_ratings_short_key_question_list_rows = [
+        (
+            "1-002",
+            "Registered",
+            {
+                "overall": {
+                    "reportDate": "2024-01-01",
+                    "rating": "Good",
+                    "keyQuestionRatings": [
+                        {"name": "Safe", "rating": "Good"},
+                        {"name": "Well-led", "rating": "Good"},
+                    ],
+                }
+            },
+        ),
+    ]
+    expected_prepare_current_ratings_short_key_question_list_rows = [
+        (
+            "1-002",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            None,
+            None,
+            None,
+            "Current",
+        ),
+    ]
+
+    historic_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                {
+                    "reportDate": "2023-01-01",
+                    "overall": {
+                        "rating": "Good",
+                        "keyQuestionRatings": [
+                            {"name": "Safe", "rating": "Good"},
+                            {"name": "Well-led", "rating": "Good"},
+                            {"name": "Caring", "rating": "Good"},
+                            {"name": "Responsive", "rating": "Good"},
+                            {"name": "Effective", "rating": "Good"},
+                        ],
+                    },
+                },
+            ],
+        ),
+    ]
+    expected_prepare_historic_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2023-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Historic",
+        ),
+    ]
+
+    def _asg_rating(assessment_plan_id, key_question_ratings):
+        return {
+            "assessmentPlanId": assessment_plan_id,
+            "title": "Care Home Assessment",
+            "assessmentDate": "2024-01-02",
+            "assessmentPlanStatus": "Assessed",
+            "name": "Care Homes",
+            "rating": "Good",
+            "status": "Current",
+            "keyQuestionRatings": key_question_ratings,
+        }
+
+    prepare_assessment_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                {
+                    "assessmentPlanPublishedDateTime": "2024-01-01 00:00:00",
+                    "ratings": {
+                        "overall": [],
+                        "asgRatings": [
+                            _asg_rating(
+                                "AP1",
+                                [
+                                    {
+                                        "name": "Safe",
+                                        "rating": "Good",
+                                        "status": "Assessed",
+                                    },
+                                    {
+                                        "name": "Well-led",
+                                        "rating": "Good",
+                                        "status": "Assessed",
+                                    },
+                                    {
+                                        "name": "Caring",
+                                        "rating": "Good",
+                                        "status": "Assessed",
+                                    },
+                                    {
+                                        "name": "Responsive",
+                                        "rating": "Good",
+                                        "status": "Assessed",
+                                    },
+                                    {
+                                        "name": "Effective",
+                                        "rating": "Good",
+                                        "status": "Assessed",
+                                    },
+                                ],
+                            ),
+                        ],
+                    },
+                }
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "SAF",
+            "Care Homes",
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    # Two `keyQuestionRatings` entries share the same key question ("Safe") within a
+    # single asg_ratings entry - i.e. duplicate the full pivot grain. The first entry
+    # in raw array order ("Good") must always win, regardless of engine/internal order.
+    prepare_assessment_ratings_tiebreaker_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                {
+                    "assessmentPlanPublishedDateTime": "2024-02-01 00:00:00",
+                    "ratings": {
+                        "overall": [],
+                        "asgRatings": [
+                            _asg_rating(
+                                "AP2",
+                                [
+                                    {
+                                        "name": "Safe",
+                                        "rating": "Good",
+                                        "status": "Assessed",
+                                    },
+                                    {
+                                        "name": "Safe",
+                                        "rating": "Requires improvement",
+                                        "status": "Assessed",
+                                    },
+                                    {
+                                        "name": "Well-led",
+                                        "rating": "Good",
+                                        "status": "Assessed",
+                                    },
+                                    {
+                                        "name": "Caring",
+                                        "rating": "Good",
+                                        "status": "Assessed",
+                                    },
+                                    {
+                                        "name": "Responsive",
+                                        "rating": "Good",
+                                        "status": "Assessed",
+                                    },
+                                    {
+                                        "name": "Effective",
+                                        "rating": "Good",
+                                        "status": "Assessed",
+                                    },
+                                ],
+                            ),
+                        ],
+                    },
+                }
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_tiebreaker_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-02-01 00:00:00",
+            "AP2",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "SAF",
+            "Care Homes",
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    # A second location alongside one with real ratings: its raw feed has an
+    # "overall" rating populated but its keyQuestionRatings is genuinely null
+    # (not an empty list). Spark's F.explode() drops the row entirely for
+    # both an empty list and a null list; in Polars this needs
+    # keep_nulls=False as well as empty_as_null=False on every explode, or
+    # the row survives with a non-null "rating" and no key question
+    # breakdown, wrongly tripping the overall-ratings guard downstream. The
+    # other, unaffected location is included so the pivot still has rows to
+    # produce its key-question columns from - this scenario can't be tested
+    # in isolation, since a pivot over zero rows lacks those columns
+    # entirely regardless of engine.
+    prepare_assessment_ratings_null_key_question_ratings_rows = [
+        *prepare_assessment_ratings_rows,
+        (
+            "1-002",
+            "Registered",
+            [
+                {
+                    "assessmentPlanPublishedDateTime": "2024-01-01 00:00:00",
+                    "ratings": {
+                        "overall": [
+                            {
+                                "rating": "Good",
+                                "status": "Assessed",
+                                "keyQuestionRatings": None,
+                            }
+                        ],
+                        "asgRatings": [],
+                    },
+                }
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_null_key_question_ratings_rows = (
+        expected_prepare_assessment_ratings_rows
+    )
+
+    raise_error_overall_populated_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Current",
+            "Good",
+            "assessment.ratings.overall",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+    raise_error_overall_empty_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Current",
+            None,
+            "assessment.ratings.overall",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+
+    assessment_ratings_for_merging_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "SAF",
+            "Care Homes",
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+    standard_ratings_for_merging_rows = [
+        (
+            "1-002",
+            "Registered",
+            date(2023, 6, 1),
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Historic",
+        ),
+    ]
+    expected_merge_cqc_ratings_rows = [
+        (
+            "1-002",
+            "Registered",
+            date(2023, 6, 1),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            "Pre SAF",
+            "Historic",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "1-001",
+            "Registered",
+            date(2024, 1, 1),
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "Care Homes",
+            "assessment.ratings.asg_ratings",
+            "SAF",
+            "Current",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    recode_unknown_to_null_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "No published rating",
+            "Insufficient evidence to rate",
+            "Good",
+            "",
+            "Good",
+        ),
+    ]
+    expected_recode_unknown_to_null_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            None,
+            None,
+            "Good",
+            None,
+            "Good",
+        ),
+    ]
+
+    remove_blank_rows_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        ("1-002", "Registered", "2024-01-01", None, None, None, None, None, None),
+    ]
+    expected_remove_blank_rows_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    add_current_or_historic_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+    expected_add_current_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Current",
+        ),
+    ]
+    expected_add_historic_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Historic",
+        ),
+    ]
+
+    add_rating_sequence_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Current",
+            "2024-01-02",
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2023-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Historic",
+            "2023-01-02",
+        ),
+    ]
+
+    add_latest_rating_flag_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Current",
+            "2024-01-02",
+            1,
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2023-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Historic",
+            "2023-01-02",
+            2,
+        ),
+    ]
+
+    add_numerical_ratings_rows = [
+        (
+            "Outstanding",
+            "Good",
+            "Requires improvement",
+            "Inadequate",
+            "Outstanding",
+            "Good",
+        ),
+        (None, None, None, None, None, None),
+    ]
+    expected_add_numerical_ratings_rows = [
+        (
+            "Outstanding",
+            "Good",
+            "Requires improvement",
+            "Inadequate",
+            "Outstanding",
+            "Good",
+            4,
+            3,
+            2,
+            1,
+            4,
+            3,
+            13,
+        ),
+        (None, None, None, None, None, None, 0, 0, 0, 0, 0, 0, 0),
+    ]
+
+    create_standard_ratings_dataset_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "Care Homes",
+            "assessment.ratings.asg_ratings",
+            "SAF",
+            1,
+            "Current",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            4,
+            4,
+            4,
+            4,
+            4,
+            20,
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "Care Homes",
+            "assessment.ratings.asg_ratings",
+            "SAF",
+            1,
+            "Current",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            4,
+            4,
+            4,
+            4,
+            4,
+            20,
+        ),
+    ]
+
+    location_id_hash_rows = [
+        ("1-001",),
+        ("12345678901",),
+    ]
+
+    select_ratings_for_benchmarks_rows = [
+        ("1-001", "Registered", "Current", 4),
+        ("1-002", "Registered", "Historic", 4),
+        ("1-003", "Deregistered", "Current", 4),
+    ]
+    expected_select_ratings_for_benchmarks_rows = [
+        ("1-001", "Registered", "Current", 4),
+    ]
+
+    add_good_or_outstanding_flag_rows = [
+        ("1-001", 3),
+        ("1-001", 4),
+        ("1-002", 2),
+        ("1-002", 4),
+    ]
+
+    ratings_join_establishment_ids_rows = [
+        ("1-001",),
+        ("1-002",),
+    ]
+    ascwds_join_establishment_ids_rows = [
+        ("estab-1", "1-001"),
+    ]
+    expected_join_establishment_ids_rows = [
+        ("1-001", "estab-1"),
+        ("1-002", None),
+    ]
+
+    create_benchmark_ratings_dataset_rows = [
+        ("1-001", "estab-1", "Care Homes", "SAF", 1, "Good", "2024-01-01"),
+        ("1-002", None, "Care Homes", "SAF", 1, "Good", "2024-01-01"),
+        ("1-003", "estab-3", "Care Homes", "SAF", 1, None, "2024-01-01"),
+    ]
+    expected_create_benchmark_ratings_dataset_rows = [
+        ("1-001", "estab-1", "Care Homes", "SAF", 1, "Good", "2024-01-01"),
+    ]

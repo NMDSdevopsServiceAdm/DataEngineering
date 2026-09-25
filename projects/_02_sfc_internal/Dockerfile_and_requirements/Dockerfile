@@ -17,10 +17,13 @@ COPY utils/file_utils.py /app/utils/file_utils.py
 COPY utils/column_names /app/utils/column_names/
 COPY utils/column_values /app/utils/column_values/
 COPY utils/value_labels /app/utils/value_labels
+COPY schemas/cqc_locations_schema_polars.py /app/schemas/cqc_locations_schema_polars.py
 COPY projects/_02_sfc_internal/utils /app/projects/_02_sfc_internal/utils
+COPY projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils /app/projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils
 
 # Copy python jobs to WORKDIR
 COPY projects/_02_sfc_internal/cqc_coverage/fargate/*.py .
 COPY projects/_02_sfc_internal/_03_reconciliation/fargate/*.py .
+COPY projects/_02_sfc_internal/_01_cqc_ratings/fargate/*.py .
 
 ENTRYPOINT ["python"]
