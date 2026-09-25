@@ -24,7 +24,7 @@
                 "_02_employment_status/fargate/_03_impute_spike_prototype.py",
                 "--cleaned_data_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_02_clean/",
                 "--spike_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_03_impute_spike_l1/",
-                "--diagnostics_job_name", "empstat_spike_l1_red"
+                "--diagnostics_job_name", "empstat_spike_l1_full"
               ]
             }
           ]
