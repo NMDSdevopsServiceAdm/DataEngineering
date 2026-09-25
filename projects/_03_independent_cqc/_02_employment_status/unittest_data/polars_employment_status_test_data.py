@@ -3,6 +3,9 @@ from datetime import date
 from typing import Any
 
 import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_worker_utils as prepare_worker_job
+from projects._03_independent_cqc._02_employment_status.fargate.utils.spike_columns import (
+    EmploymentStatusSpikeColumns as SpikeCols,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -739,6 +742,99 @@ class TestSpikeFilterUtilsData:
             expected_data={
                 IndCQC.location_id: ["loc1", "loc2"],
                 IndCQC.estimate_filled_posts_by_job_role: [0.5, 3.0],
+            },
+        ),
+    ]
+
+
+@dataclass
+class SpikeImputeTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+def _spike_status_column(base: str, label: str) -> str:
+    """Mirrors spike_impute_utils.status_column, kept separate from the code under test."""
+    return f"{base}_{label}"
+
+
+SPIKE_STATUS_LABELS = [
+    EmploymentStatusLabels.permanent,
+    EmploymentStatusLabels.temporary,
+    EmploymentStatusLabels.bank_or_pool,
+    EmploymentStatusLabels.agency,
+    EmploymentStatusLabels.other,
+]
+SPIKE_PERCENTAGE_COLUMNS = [
+    EmpStatus.permanent_percentage,
+    EmpStatus.temporary_percentage,
+    EmpStatus.bank_or_pool_percentage,
+    EmpStatus.agency_percentage,
+    EmpStatus.other_percentage,
+]
+
+
+@dataclass
+class TestSpikeImputeUtilsL2Data:
+    # loc1 has a known, missing, known pattern; loc2 is never known.
+    impute_chain_rows = {
+        IndCQC.location_id: ["loc1"] * 3 + ["loc2"] * 3,
+        IndCQC.cqc_location_import_date: [
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 3, 1),
+        ]
+        * 2,
+        IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker] * 6,
+        IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * 6,
+        IndCQC.estimate_filled_posts_by_job_role: [5.0] * 6,
+        EmpStatus.permanent_percentage: [0.5, None, 0.4, None, None, None],
+        EmpStatus.temporary_percentage: [0.2, None, 0.3, None, None, None],
+        EmpStatus.bank_or_pool_percentage: [0.1, None, 0.1, None, None, None],
+        EmpStatus.agency_percentage: [0.15, None, 0.1, None, None, None],
+        EmpStatus.other_percentage: [0.05, None, 0.1, None, None, None],
+    }
+
+    normalise_test_cases = [
+        SpikeImputeTestCase(
+            id="normalises_employment_status_columns_to_sum_to_one_row_wise",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                **{
+                    column: [None, known]
+                    for column, known in zip(
+                        SPIKE_PERCENTAGE_COLUMNS, [0.5, 0.2, 0.1, 0.15, 0.05]
+                    )
+                },
+                **{
+                    _spike_status_column(SpikeCols.unnormalised_rate, label): [
+                        unnormalised,
+                        None,
+                    ]
+                    for label, unnormalised in zip(
+                        SPIKE_STATUS_LABELS, [0.6, 0.3, 0.2, 0.1, 0.05]
+                    )
+                },
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                **{
+                    column: [None, known]
+                    for column, known in zip(
+                        SPIKE_PERCENTAGE_COLUMNS, [0.5, 0.2, 0.1, 0.15, 0.05]
+                    )
+                },
+                **{
+                    _spike_status_column(
+                        SpikeCols.imputed_employment_status_rate, label
+                    ): [normalised, known]
+                    for label, normalised, known in zip(
+                        SPIKE_STATUS_LABELS,
+                        [0.48, 0.24, 0.16, 0.08, 0.04],
+                        [0.5, 0.2, 0.1, 0.15, 0.05],
+                    )
+                },
             },
         ),
     ]
