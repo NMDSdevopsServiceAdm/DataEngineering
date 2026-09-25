@@ -1,6 +1,7 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
@@ -88,9 +89,14 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         )
         .col_vals_in_set(
             CQCRatings.current_or_historic,
-            CQCCurrentOrHistoricValues(
-                CQCRatings.current_or_historic
-            ).categorical_values,
+            # A small number of assessment-sourced rows have an unpopulated
+            # status field, coming through as "" rather than null.
+            [
+                *CQCCurrentOrHistoricValues(
+                    CQCRatings.current_or_historic
+                ).categorical_values,
+                "",
+            ],
         )
         .col_vals_in_set(
             CQCL.dataset,
@@ -98,7 +104,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         )
         .col_vals_in_set(
             rating_columns,
-            [*rating_values.categorical_values, None],
+            [*(v.lower() for v in rating_values.categorical_values), None],
+            pre=lambda df: df.with_columns(
+                [pl.col(c).str.to_lowercase() for c in rating_columns]
+            ),
         )
         # between (inclusive)
         .col_vals_between(CQCRatings.overall_rating_value, 0, 4)
