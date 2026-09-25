@@ -55,21 +55,29 @@ def status_column(base: str, label: str) -> str:
     return f"{base}_{label}"
 
 
-def add_fill_boundaries(wide_lf: pl.LazyFrame) -> pl.LazyFrame:
+def add_fill_boundaries(
+    wide_lf: pl.LazyFrame, percentage_columns: dict[str, str] | None = None
+) -> pl.LazyFrame:
     """
     Adds the first/last known rate and date, and the nearest known date either side
-    of every row, for each of the 5 percentage columns.
+    of every row, for each percentage column.
 
     Args:
-        wide_lf (pl.LazyFrame): Data with the 5 `emplstat_*_percentage` columns.
+        wide_lf (pl.LazyFrame): Data with one percentage column per status.
+        percentage_columns (dict[str, str] | None): Status label to percentage
+            column. Defaults to the 5 real statuses; the N=20 stress test passes
+            extra dummy statuses.
 
     Returns:
         pl.LazyFrame: `wide_lf` with the boundary columns added, once per status.
     """
+    if percentage_columns is None:
+        percentage_columns = EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS
+
     order_key = IndCQC.cqc_location_import_date
 
     boundary_exprs = []
-    for label, rate_col in EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS.items():
+    for label, rate_col in percentage_columns.items():
         known_date = pl.when(pl.col(rate_col).is_not_null()).then(pl.col(order_key))
         boundary_exprs.extend(
             [
@@ -90,7 +98,7 @@ def add_fill_boundaries(wide_lf: pl.LazyFrame) -> pl.LazyFrame:
     wide_lf = wide_lf.with_columns(boundary_exprs)
 
     value_exprs = []
-    for label, rate_col in EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS.items():
+    for label, rate_col in percentage_columns.items():
         is_known = pl.col(rate_col).is_not_null()
         for date_base, value_base in [
             (SpikeCols.first_known_date, SpikeCols.first_known_value),
@@ -111,6 +119,7 @@ def add_imputed_rates_for_trendline(
     wide_lf: pl.LazyFrame,
     extrapolation_period: str,
     interpolation_cap_period: str,
+    percentage_columns: dict[str, str] | None = None,
 ) -> pl.LazyFrame:
     """
     Imputes each percentage column within time limits, for the trendline only.
@@ -119,20 +128,25 @@ def add_imputed_rates_for_trendline(
     the first/last known value up to `extrapolation_period` outside the known range.
 
     Args:
-        wide_lf (pl.LazyFrame): Data with the 5 `emplstat_*_percentage` columns.
+        wide_lf (pl.LazyFrame): Data with one percentage column per status.
         extrapolation_period (str): Polars offset string, e.g. "2y".
         interpolation_cap_period (str): Polars offset string, e.g. "5y".
+        percentage_columns (dict[str, str] | None): Status label to percentage
+            column. Defaults to the 5 real statuses; the N=20 stress test passes
+            extra dummy statuses.
 
     Returns:
-        pl.LazyFrame: `wide_lf` with the boundary columns and 5
-            `imputed_rate_for_trendline_*` columns added.
+        pl.LazyFrame: `wide_lf` with the boundary columns and one
+            `imputed_rate_for_trendline_*` column per status added.
     """
+    if percentage_columns is None:
+        percentage_columns = EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS
     order_key = IndCQC.cqc_location_import_date
 
-    wide_lf = add_fill_boundaries(wide_lf)
+    wide_lf = add_fill_boundaries(wide_lf, percentage_columns=percentage_columns)
 
     exprs = []
-    for label, rate_col in EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS.items():
+    for label, rate_col in percentage_columns.items():
         first_date = pl.col(status_column(SpikeCols.first_known_date, label))
         last_date = pl.col(status_column(SpikeCols.last_known_date, label))
         previous_date = pl.col(status_column(SpikeCols.previous_known_date, label))
@@ -173,31 +187,40 @@ def add_rolling_employment_status_ratios(
     wide_lf: pl.LazyFrame,
     extrapolation_period: str,
     interpolation_cap_period: str,
+    percentage_columns: dict[str, str] | None = None,
 ) -> pl.LazyFrame:
     """
-    Adds a rolling 6-month trendline for each of the 5 percentage columns.
+    Adds a rolling 6-month trendline for each percentage column.
 
     One group_by + rolling + join over ROLLING_GROUPS covers all 5 statuses at once,
     since they share the job role grouping. L1 has to key the same step by job role
     and status, so it runs over 5x as many groups.
 
     Args:
-        wide_lf (pl.LazyFrame): Data with the 5 `emplstat_*_percentage` columns.
+        wide_lf (pl.LazyFrame): Data with one percentage column per status.
         extrapolation_period (str): Passed to `add_imputed_rates_for_trendline`.
         interpolation_cap_period (str): Passed to `add_imputed_rates_for_trendline`.
+        percentage_columns (dict[str, str] | None): Status label to percentage
+            column. Defaults to the 5 real statuses; the N=20 stress test passes
+            extra dummy statuses.
 
     Returns:
-        pl.LazyFrame: `wide_lf` with 5 `employment_status_rolling_ratio_*` columns.
+        pl.LazyFrame: `wide_lf` with one `employment_status_rolling_ratio_*` column
+            per status.
     """
+    if percentage_columns is None:
+        percentage_columns = EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS
+
     wide_lf = add_imputed_rates_for_trendline(
         wide_lf,
         extrapolation_period=extrapolation_period,
         interpolation_cap_period=interpolation_cap_period,
+        percentage_columns=percentage_columns,
     )
 
     order_key = IndCQC.cqc_location_import_date
     monthly_groups = ROLLING_GROUPS + [order_key]
-    labels = list(EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS)
+    labels = list(percentage_columns)
 
     agg_exprs = []
     for label in labels:
@@ -262,9 +285,11 @@ def add_rolling_employment_status_ratios(
     )
 
 
-def normalise_employment_status_rates_row_wise(wide_lf: pl.LazyFrame) -> pl.LazyFrame:
+def normalise_employment_status_rates_row_wise(
+    wide_lf: pl.LazyFrame, percentage_columns: dict[str, str] | None = None
+) -> pl.LazyFrame:
     """
-    Rescales the 5 unnormalised rate columns to sum to 1 within each row.
+    Rescales the unnormalised rate columns to sum to 1 within each row.
 
     All 5 statuses share a row, so this is a plain row-wise sum and divide - no
     group_by or `.over()`, unlike L1. Known percentages are coalesced back in.
@@ -274,16 +299,21 @@ def normalise_employment_status_rates_row_wise(wide_lf: pl.LazyFrame) -> pl.Lazy
     together (true for this data, as clean nulls them together).
 
     Args:
-        wide_lf (pl.LazyFrame): Data with the 5 `es_spike_unnormalised_rate_*` and
-            the 5 `emplstat_*_percentage` columns.
+        wide_lf (pl.LazyFrame): Data with an `es_spike_unnormalised_rate_*` and a
+            percentage column per status.
+        percentage_columns (dict[str, str] | None): Status label to percentage
+            column. Defaults to the 5 real statuses; the N=20 stress test passes
+            extra dummy statuses.
 
     Returns:
-        pl.LazyFrame: `wide_lf` with 5 `imputed_employment_status_rate_*` columns,
-            and the unnormalised columns dropped.
+        pl.LazyFrame: `wide_lf` with one `imputed_employment_status_rate_*` column
+            per status, and the unnormalised columns dropped.
     """
+    if percentage_columns is None:
+        percentage_columns = EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS
     unnormalised_columns = [
         status_column(SpikeCols.unnormalised_rate, label)
-        for label in EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS
+        for label in percentage_columns
     ]
     total = pl.sum_horizontal(unnormalised_columns)
 
@@ -294,13 +324,15 @@ def normalise_employment_status_rates_row_wise(wide_lf: pl.LazyFrame) -> pl.Lazy
         )
         .cast(pl.Float32)
         .alias(status_column(SpikeCols.imputed_employment_status_rate, label))
-        for label, rate_col in EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS.items()
+        for label, rate_col in percentage_columns.items()
     )
 
     return wide_lf.drop(*unnormalised_columns)
 
 
-def add_imputed_employment_status_rates(wide_lf: pl.LazyFrame) -> pl.LazyFrame:
+def add_imputed_employment_status_rates(
+    wide_lf: pl.LazyFrame, percentage_columns: dict[str, str] | None = None
+) -> pl.LazyFrame:
     """
     Imputes each percentage column along its rolling trendline, then re-normalises.
 
@@ -309,13 +341,19 @@ def add_imputed_employment_status_rates(wide_lf: pl.LazyFrame) -> pl.LazyFrame:
     each status's result is renamed before the next call overwrites it.
 
     Args:
-        wide_lf (pl.LazyFrame): Data with the 5 `emplstat_*_percentage` and 5
-            `employment_status_rolling_ratio_*` columns.
+        wide_lf (pl.LazyFrame): Data with a percentage and an
+            `employment_status_rolling_ratio_*` column per status.
+        percentage_columns (dict[str, str] | None): Status label to percentage
+            column. Defaults to the 5 real statuses; the N=20 stress test passes
+            extra dummy statuses.
 
     Returns:
-        pl.LazyFrame: `wide_lf` with 5 `imputed_employment_status_rate_*` columns.
+        pl.LazyFrame: `wide_lf` with one `imputed_employment_status_rate_*` column
+            per status.
     """
-    for label, rate_col in EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS.items():
+    if percentage_columns is None:
+        percentage_columns = EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS
+    for label, rate_col in percentage_columns.items():
         rolling_col = status_column(SpikeCols.employment_status_rolling_ratio, label)
         interpolation_col = status_column(IndCQC.interpolation_model, label)
         extrapolation_col = status_column(IndCQC.extrapolation_model, label)
@@ -345,4 +383,6 @@ def add_imputed_employment_status_rates(wide_lf: pl.LazyFrame) -> pl.LazyFrame:
             .alias(status_column(SpikeCols.unnormalised_rate, label))
         ).drop(extrapolation_col, interpolation_col)
 
-    return normalise_employment_status_rates_row_wise(wide_lf)
+    return normalise_employment_status_rates_row_wise(
+        wide_lf, percentage_columns=percentage_columns
+    )

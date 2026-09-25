@@ -33,12 +33,19 @@ def schema_for(data: dict) -> dict:
     }
 
 
-def run_impute_chain(input_lf: pl.LazyFrame) -> pl.DataFrame:
+def run_impute_chain(
+    input_lf: pl.LazyFrame, percentage_columns: dict[str, str] | None = None
+) -> pl.DataFrame:
     """Runs the full L2 rolling-ratio and impute chain with ticket 2000's periods."""
     wide_lf = job.add_rolling_employment_status_ratios(
-        input_lf, extrapolation_period="2y", interpolation_cap_period="5y"
+        input_lf,
+        extrapolation_period="2y",
+        interpolation_cap_period="5y",
+        percentage_columns=percentage_columns,
     )
-    return job.add_imputed_employment_status_rates(wide_lf).collect()
+    return job.add_imputed_employment_status_rates(
+        wide_lf, percentage_columns=percentage_columns
+    ).collect()
 
 
 class TestAddImputedEmploymentStatusRates:
@@ -69,6 +76,30 @@ class TestAddImputedEmploymentStatusRates:
             pytest.approx(1.0, abs=1e-6)
         )
 
+    def test_imputes_all_columns_in_custom_percentage_mapping(self):
+        input_lf = pl.LazyFrame(
+            Data.impute_chain_rows_with_dummy,
+            schema_overrides=schema_for(Data.impute_chain_rows_with_dummy),
+        )
+        imputed_columns = [
+            job.status_column(SpikeCols.imputed_employment_status_rate, label)
+            for label in Data.custom_percentage_columns
+        ]
+
+        returned_df = run_impute_chain(input_lf, Data.custom_percentage_columns)
+
+        gap_row = returned_df.filter(
+            (pl.col(IndCQC.location_id) == "loc1")
+            & (pl.col(IndCQC.cqc_location_import_date) == pl.date(2024, 2, 1))
+        )
+        assert len(imputed_columns) == 6
+        assert gap_row.select(pl.col(imputed_columns).is_not_null().all()).row(0) == (
+            True,
+        ) * len(imputed_columns)
+        assert gap_row.select(pl.sum_horizontal(imputed_columns)).item() == (
+            pytest.approx(1.0, abs=1e-6)
+        )
+
 
 class TestNormaliseEmploymentStatusRatesRowWise:
     @pytest.mark.parametrize(
@@ -83,7 +114,9 @@ class TestNormaliseEmploymentStatusRatesRowWise:
             case.expected_data, schema_overrides=schema_for(case.expected_data)
         )
 
-        returned_lf = job.normalise_employment_status_rates_row_wise(test_lf)
+        returned_lf = job.normalise_employment_status_rates_row_wise(
+            test_lf, percentage_columns=case.percentage_columns
+        )
 
         pl_testing.assert_frame_equal(
             returned_lf, expected_lf, check_row_order=False, check_column_order=False
