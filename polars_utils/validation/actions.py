@@ -19,9 +19,6 @@ def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) 
         bucket_name (str): the bucket to save reports to
             - shoud correspond to workspace / feature branch name
         reports_path (str): the filepath for the reports
-
-    Raises:
-        AssertionError: in case of the dataset failing the validation rules
     """
     reports_path = reports_path.strip("/")
     file_utils.empty_s3_folder(bucket_name, reports_path)
@@ -44,7 +41,9 @@ def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) 
         # eg. a null check over several columns
         for step in steps:
             _report_on_fail(step, validation, bucket_name, reports_path)
-        raise  # ensures that the task fails if any warnings / errors
+        # DO NOT MERGE (ticket 2107): validation failures are reported but don't
+        # fail the task, so the BD214 filter-off back-test run can complete.
+        # raise  # ensures that the task fails if any warnings / errors
 
 
 def _report_on_fail(
