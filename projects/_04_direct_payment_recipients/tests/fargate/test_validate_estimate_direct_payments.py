@@ -6,6 +6,9 @@ from unittest.mock import Mock, call, patch
 import polars as pl
 
 import projects._04_direct_payment_recipients.fargate.validate_estimate_direct_payments as job
+from projects._04_direct_payment_recipients.direct_payments_config_polars import (
+    DirectPaymentConfiguration as Config,
+)
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
@@ -149,3 +152,43 @@ class ValidateEstimateDirectPaymentsTests(unittest.TestCase):
                 assertion_types_present,
                 f"{assertion} not found in validation report",
             )
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_first_and_last_year_with_data_accepts_the_dataset_s_own_earliest_year(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        # Config.FIRST_YEAR (2011) predates 2013, the hardcoded lower bound this
+        # check used before being corrected to use the dataset's own config.
+        earliest_year_row = list(Data.estimates_rows[0])
+        first_year_with_data_index = list(Schemas.estimates_schema.names()).index(
+            DP.FIRST_YEAR_WITH_DATA
+        )
+        last_year_with_data_index = list(Schemas.estimates_schema.names()).index(
+            DP.LAST_YEAR_WITH_DATA
+        )
+        earliest_year_row[first_year_with_data_index] = Config.FIRST_YEAR
+        earliest_year_row[last_year_with_data_index] = Config.FIRST_YEAR
+
+        source_df = pl.DataFrame(
+            data=[tuple(earliest_year_row)],
+            schema=Schemas.estimates_schema,
+            orient="row",
+        )
+        mock_read_parquet.side_effect = [source_df, self.compare_df]
+
+        job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        year_bound_steps = [
+            item
+            for item in report_json
+            if item["assertion_type"] == "col_vals_between"
+            and item["column"] in (DP.FIRST_YEAR_WITH_DATA, DP.LAST_YEAR_WITH_DATA)
+        ]
+
+        assert len(year_bound_steps) == 2
+        assert all(step["all_passed"] for step in year_bound_steps)

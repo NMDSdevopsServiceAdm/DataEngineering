@@ -116,6 +116,37 @@ class TestWriteReports(TestValidate):
         )
 
 
+class TestWriteReportsSurvivesTabularReportCrash:
+    @patch(f"{SRC_PATH}._report_on_fail")
+    @patch("boto3.client", autospec=True)
+    def test_failure_is_logged_before_tabular_report_can_mask_it(
+        self, mock_s3_client, mock_report_on_fail, capsys
+    ):
+        # Given: a failing validation, and a tabular report that crashes - this
+        # mirrors pointblank failing to serialise a failing extract containing
+        # a List/Struct column to CSV (see get_tabular_report internals).
+        df = pl.DataFrame({"name": ["a", None]})
+        validation = (
+            pb.Validate(df, thresholds=pb.Thresholds(error=1))
+            .col_vals_not_null(["name"])
+            .interrogate()
+        )
+
+        # When
+        with patch.object(
+            type(validation), "get_tabular_report", side_effect=RuntimeError("boom")
+        ):
+            with pytest.raises(RuntimeError, match="boom"):
+                vl.write_reports(validation, "bucket", "reports")
+
+        # Then: the informative failure message reached stdout, and the failed
+        # step's extract was still written, despite the later crash.
+        captured = capsys.readouterr()
+        assert "ERROR: Data validation failed." in captured.out
+        assert "should not be Null" in captured.out
+        mock_report_on_fail.assert_called_once()
+
+
 class TestReportOnFail(TestValidate):
     @patch("polars_utils.utils.write_to_parquet", autospec=True)
     @patch("pointblank.Validate")

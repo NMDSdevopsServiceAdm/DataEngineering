@@ -7,6 +7,9 @@ import polars as pl
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._04_direct_payment_recipients.direct_payments_config_polars import (
+    DirectPaymentConfiguration as Config,
+)
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
@@ -78,13 +81,19 @@ def main(
             ),
             brief=f"{DP.LA_AREA} needs to be one of {CatValues.contemporary_cssr_column_values.categorical_values} or {CatValues.current_cssr_column_values.categorical_values}",
         )
-        # numeric - year plausibility (mirrors the 2013-current-year check used
-        # elsewhere in the repo for similar year columns)
+        # numeric - year plausibility (Config.FIRST_YEAR is this dataset's own
+        # documented earliest year, not a value borrowed from elsewhere)
         .col_vals_between(
-            DP.FIRST_YEAR_WITH_DATA, 2013, int(datetime.now().year), na_pass=True
+            DP.FIRST_YEAR_WITH_DATA,
+            Config.FIRST_YEAR,
+            int(datetime.now().year),
+            na_pass=True,
         )
         .col_vals_between(
-            DP.LAST_YEAR_WITH_DATA, 2013, int(datetime.now().year), na_pass=True
+            DP.LAST_YEAR_WITH_DATA,
+            Config.FIRST_YEAR,
+            int(datetime.now().year),
+            na_pass=True,
         )
         # numeric - proportions (bounded 0-1 by construction: means/interpolation
         # of the 0-1-bounded raw proportion stay within it - confirmed via

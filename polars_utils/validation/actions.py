@@ -26,25 +26,46 @@ def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) 
     reports_path = reports_path.strip("/")
     file_utils.empty_s3_folder(bucket_name, reports_path)
 
-    report = validation.get_tabular_report()
-
     s3_client = boto3.client("s3")
-    s3_client.put_object(
-        Body=report.as_raw_html(inline_css=True, make_page=True),
-        Bucket=bucket_name,
-        Key=f"{reports_path}/summary.html",
-    )
+
+    # Log which steps failed (if any) before attempting the HTML tabular report
+    # below - that report can itself raise (e.g. it can't serialise a failing
+    # extract that includes a List/Struct column to CSV), which would
+    # otherwise mask which validation step actually failed.
     try:
         validation.assert_below_threshold(level="error")
-    except AssertionError:
-        print("ERROR: Data validation failed. See report for details.")
+    except AssertionError as error:
+        print(f"ERROR: Data validation failed. {error}")
         steps = json.loads(validation.get_json_report())
         # JSON report includes a detailed list of each validation step, including failures
         # Note that some 'steps' result in several steps in the execution
         # eg. a null check over several columns
         for step in steps:
             _report_on_fail(step, validation, bucket_name, reports_path)
+
+        _write_tabular_report(validation, s3_client, bucket_name, reports_path)
         raise  # ensures that the task fails if any warnings / errors
+
+    _write_tabular_report(validation, s3_client, bucket_name, reports_path)
+
+
+def _write_tabular_report(
+    validation: pb.Validate, s3_client: object, bucket_name: str, reports_path: str
+) -> None:
+    """Builds and writes the HTML tabular report for a validation to S3.
+
+    Args:
+        validation (pb.Validate): the interrogated validation to report on
+        s3_client (object): a boto3 S3 client
+        bucket_name (str): the bucket to save the report to
+        reports_path (str): the filepath for the report
+    """
+    report = validation.get_tabular_report()
+    s3_client.put_object(
+        Body=report.as_raw_html(inline_css=True, make_page=True),
+        Bucket=bucket_name,
+        Key=f"{reports_path}/summary.html",
+    )
 
 
 def _report_on_fail(
