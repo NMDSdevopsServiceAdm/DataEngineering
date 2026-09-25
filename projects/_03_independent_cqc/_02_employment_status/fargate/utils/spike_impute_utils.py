@@ -50,34 +50,41 @@ ROLLING_PERIOD = "6mo"
 
 def reshape_employment_status_percentages_to_long_rows(
     lf: pl.LazyFrame,
+    percentage_columns: dict[str, str] | None = None,
 ) -> pl.LazyFrame:
     """
-    Converts the 5 wide employment status percentage columns into one row per status.
+    Converts the wide employment status percentage columns into one row per status.
 
-    Every other column is carried through onto all 5 rows, so callers should select
-    only the columns they need before calling this - each carried column is
-    multiplied 5 times by the explode.
+    Every other column is carried through onto every status row, so callers should
+    select only the columns they need before calling this - each carried column is
+    multiplied once per status by the explode.
 
     Args:
         lf (pl.LazyFrame): Employment status clean output, one row per location,
-            job role and import date, with the 5 `emplstat_*_percentage` columns.
+            job role and import date, with one percentage column per status.
+        percentage_columns (dict[str, str] | None): Status label to percentage
+            column. Defaults to the 5 real statuses; the N=20 stress test passes
+            extra dummy statuses.
 
     Returns:
-        pl.LazyFrame: `lf` with the 5 percentage columns replaced by
+        pl.LazyFrame: `lf` with the percentage columns replaced by
             `employment_status_label` and `employment_status_rate`, one row per status.
     """
+    if percentage_columns is None:
+        percentage_columns = EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS
+
     struct_list_column = "_employment_status_struct_list"
     label_structs = [
         pl.struct(
             pl.lit(label).alias(SpikeCols.employment_status_label),
             pl.col(column).alias(SpikeCols.employment_status_rate),
         )
-        for label, column in EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS.items()
+        for label, column in percentage_columns.items()
     ]
 
     return (
         lf.select(
-            pl.exclude(EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS.values()),
+            pl.exclude(percentage_columns.values()),
             pl.concat_list(label_structs).alias(struct_list_column),
         )
         .explode(struct_list_column, empty_as_null=True)

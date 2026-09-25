@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 import polars.testing as pl_testing
 import pytest
@@ -14,6 +16,11 @@ from projects._03_independent_cqc._02_employment_status.fargate.utils.spike_colu
     EmploymentStatusSpikeColumns as SpikeCols,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.ascwds_labelled_vocab import (
+    EmploymentStatusLabels,
+    PublishedJobRoleLabels,
+)
+from utils.column_values.categorical_column_values import PrimaryServiceType
 
 KEY_SCHEMA = {
     IndCQC.location_id: CatColType.LocationCatType,
@@ -60,7 +67,9 @@ class TestReshapeEmploymentStatusPercentagesToLongRows:
             case.expected_data, schema_overrides=schema_for(case.expected_data)
         )
 
-        returned_lf = job.reshape_employment_status_percentages_to_long_rows(test_lf)
+        returned_lf = job.reshape_employment_status_percentages_to_long_rows(
+            test_lf, percentage_columns=case.percentage_columns
+        )
 
         pl_testing.assert_frame_equal(
             returned_lf, expected_lf, check_row_order=False, check_column_order=False
@@ -112,3 +121,53 @@ class TestNormaliseEmploymentStatusRatesWithinJobRole:
         pl_testing.assert_frame_equal(
             returned_lf, expected_lf, check_row_order=False, check_column_order=False
         )
+
+
+class TestL1ChainWithCustomLabels:
+    def test_runs_full_chain_with_more_than_five_labels(self):
+        percentage_columns = job.EMPLOYMENT_STATUS_PERCENTAGE_COLUMNS | {
+            "dummy_status_01": "dummy_status_01_percentage",
+        }
+        # Known, all-null, known: the middle date is imputed for all 6 labels.
+        known_first = [0.5, 0.1, 0.1, 0.1, 0.1, 0.1]
+        known_last = [0.4, 0.2, 0.1, 0.1, 0.1, 0.1]
+        test_lf = pl.LazyFrame(
+            {
+                IndCQC.location_id: ["loc1"] * 3,
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 3, 1),
+                ],
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker]
+                * 3,
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * 3,
+                **{
+                    column: [first, None, last]
+                    for column, first, last in zip(
+                        percentage_columns.values(), known_first, known_last
+                    )
+                },
+            },
+            schema_overrides=KEY_SCHEMA
+            | {column: pl.Float32 for column in percentage_columns.values()},
+        )
+
+        long_lf = job.reshape_employment_status_percentages_to_long_rows(
+            test_lf, percentage_columns=percentage_columns
+        )
+        long_lf = job.add_rolling_employment_status_ratio(
+            long_lf, extrapolation_period="2y", interpolation_cap_period="5y"
+        )
+        returned_df = job.add_imputed_employment_status_rates(long_lf).collect()
+
+        assert returned_df.height == 3 * len(percentage_columns)
+        assert set(returned_df[SpikeCols.employment_status_label].cast(pl.String)) == (
+            set(percentage_columns)
+        )
+        assert returned_df[SpikeCols.imputed_employment_status_rate].null_count() == 0
+        totals = returned_df.group_by(IndCQC.cqc_location_import_date).agg(
+            pl.col(SpikeCols.imputed_employment_status_rate).sum()
+        )
+        for total in totals[SpikeCols.imputed_employment_status_rate]:
+            assert total == pytest.approx(1.0, abs=1e-5)
