@@ -504,6 +504,15 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_01_merge_metadata/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" --delete
       - run:
+          # TEMPORARY (ticket 2089): seeds the source data the Flatten CQC
+          # Ratings PySpark-vs-Polars comparison needs, since neither dataset
+          # is in the "Copy main datasets" list above. Remove this step once
+          # the output comparison is done and the branch no longer needs it.
+          name: "TEMP (2089): copy cqc_ratings comparison source data"
+          command: |
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_04_latest_snapshot/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_04_latest_snapshot/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/" --delete
+      - run:
           name: Copy models to non-prod dataset
           command: |
             aws s3 sync "s3://sfc-main-pipeline-resources/models/" "s3://$BRANCH_RESOURCES_BUCKET/models/"
