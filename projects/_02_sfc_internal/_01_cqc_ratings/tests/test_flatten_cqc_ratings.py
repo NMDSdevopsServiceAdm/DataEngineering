@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import ANY, Mock, call, patch
 
-import projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings as job
+import projects._02_sfc_internal._01_cqc_ratings.jobs.flatten_cqc_ratings as job
 from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
     FlattenCQCRatings as Data,
 )
@@ -15,7 +15,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_values.categorical_column_values import CQCCurrentOrHistoricValues
 
-PATCH_PATH = "projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings"
+PATCH_PATH = "projects._02_sfc_internal._01_cqc_ratings.jobs.flatten_cqc_ratings"
 
 
 class FlattenCQCRatingsTests(SparkBaseTest):
