@@ -94,10 +94,38 @@ class TestFilterToFirstImportOfMostRecentMonth:
         pl_testing.assert_frame_equal(expected_df, returned_df)
 
 
+@dataclass
+class PrepareCurrentRatingsCase:
+    id: str
+    rows: list
+    expected_rows: list
+
+    def as_pytest_param(self):
+        return pytest.param(self.rows, self.expected_rows, id=self.id)
+
+
+prepare_current_ratings_cases = [
+    PrepareCurrentRatingsCase(
+        id="flattens_recodes_and_labels_as_current",
+        rows=Data.current_ratings_rows,
+        expected_rows=Data.expected_prepare_current_ratings_rows,
+    ),
+    PrepareCurrentRatingsCase(
+        id="fills_missing_key_questions_with_null_when_fewer_than_five_present",
+        rows=Data.current_ratings_short_key_question_list_rows,
+        expected_rows=Data.expected_prepare_current_ratings_short_key_question_list_rows,
+    ),
+]
+
+
 class TestPrepareCurrentRatings:
-    def test_prepare_current_ratings_flattens_recodes_and_labels_as_current(self):
+    @pytest.mark.parametrize(
+        "rows,expected_rows",
+        [case.as_pytest_param() for case in prepare_current_ratings_cases],
+    )
+    def test_prepare_current_ratings_returns_expected_values(self, rows, expected_rows):
         input_lf = pl.LazyFrame(
-            Data.current_ratings_rows,
+            rows,
             schema=Schemas.current_ratings_schema,
             orient="row",
         )
@@ -105,7 +133,7 @@ class TestPrepareCurrentRatings:
         returned_df = job.prepare_current_ratings(input_lf).collect()
 
         expected_df = pl.LazyFrame(
-            Data.expected_prepare_current_ratings_rows,
+            expected_rows,
             schema=Schemas.flattened_ratings_with_current_or_historic_schema,
             orient="row",
         ).collect()

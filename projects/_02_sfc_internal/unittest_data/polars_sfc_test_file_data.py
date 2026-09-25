@@ -301,6 +301,41 @@ class FlattenCQCRatings:
         ),
     ]
 
+    # A location with fewer than 5 keyQuestionRatings entries. Spark's
+    # out-of-range array index returns null; Polars' .list.get() raises unless
+    # null_on_oob=True is passed, so the missing Caring/Responsive/Effective
+    # positions must come back as null rather than crashing the job.
+    current_ratings_short_key_question_list_rows = [
+        (
+            "1-002",
+            "Registered",
+            {
+                "overall": {
+                    "reportDate": "2024-01-01",
+                    "rating": "Good",
+                    "keyQuestionRatings": [
+                        {"name": "Safe", "rating": "Good"},
+                        {"name": "Well-led", "rating": "Good"},
+                    ],
+                }
+            },
+        ),
+    ]
+    expected_prepare_current_ratings_short_key_question_list_rows = [
+        (
+            "1-002",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            None,
+            None,
+            None,
+            "Current",
+        ),
+    ]
+
     historic_ratings_rows = [
         (
             "1-001",

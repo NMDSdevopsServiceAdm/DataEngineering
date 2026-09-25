@@ -207,6 +207,12 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Flattens the current ratings struct into one row per location, recoded and labelled.
 
+    The five key questions are picked out of `keyQuestionRatings` by fixed position
+    (Safe, Well-led, Caring, Responsive, Effective, in that order), matching Spark's
+    array indexing. `null_on_oob=True` is required on every `.list.get()` here since
+    Spark's out-of-range array index returns null, while Polars raises by default -
+    a location with fewer than 5 key questions would otherwise crash the job.
+
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
 
@@ -227,31 +233,31 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.col(CQCL.current_ratings)
         .struct.field(CQCL.overall)
         .struct.field(CQCL.key_question_ratings)
-        .list.get(0)
+        .list.get(0, null_on_oob=True)
         .struct.field(CQCL.rating)
         .alias(CQCRatings.safe_rating),
         pl.col(CQCL.current_ratings)
         .struct.field(CQCL.overall)
         .struct.field(CQCL.key_question_ratings)
-        .list.get(1)
+        .list.get(1, null_on_oob=True)
         .struct.field(CQCL.rating)
         .alias(CQCRatings.well_led_rating),
         pl.col(CQCL.current_ratings)
         .struct.field(CQCL.overall)
         .struct.field(CQCL.key_question_ratings)
-        .list.get(2)
+        .list.get(2, null_on_oob=True)
         .struct.field(CQCL.rating)
         .alias(CQCRatings.caring_rating),
         pl.col(CQCL.current_ratings)
         .struct.field(CQCL.overall)
         .struct.field(CQCL.key_question_ratings)
-        .list.get(3)
+        .list.get(3, null_on_oob=True)
         .struct.field(CQCL.rating)
         .alias(CQCRatings.responsive_rating),
         pl.col(CQCL.current_ratings)
         .struct.field(CQCL.overall)
         .struct.field(CQCL.key_question_ratings)
-        .list.get(4)
+        .list.get(4, null_on_oob=True)
         .struct.field(CQCL.rating)
         .alias(CQCRatings.effective_rating),
     )
