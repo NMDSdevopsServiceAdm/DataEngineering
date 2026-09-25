@@ -28,8 +28,8 @@
                       "Name": "_03_independent_cqc-container",
                       "Command": [
                         "archive_job_role_estimates.py",
-                        "--job_role_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_04_estimate/",
-                        "--job_role_metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_01_merge_metadata/",
+                        "--job_role_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
+                        "--job_role_metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
                         "--job_role_estimates_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/",
                         "--job_role_metadata_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/"
                       ]
@@ -68,7 +68,7 @@
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--dataset", "estimates",
                                 "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/",
-                                "--compare_path", "domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_04_estimate/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
                                 "--other_output_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/",
                                 "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_validation/"
                               ]
@@ -106,7 +106,7 @@
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--dataset", "metadata",
                                 "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/",
-                                "--compare_path", "domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_01_merge_metadata/",
+                                "--compare_path", "domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
                                 "--other_output_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/",
                                 "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata_validation/"
                               ]
