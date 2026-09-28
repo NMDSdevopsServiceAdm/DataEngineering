@@ -532,7 +532,6 @@ class ModelEvaluationColumns:
 class ShareModelColumns:
     """The names of the columns added when modelling and scoring share breakdowns."""
 
-    elapsed_months: str = "elapsed_months"
     imputation_row_kind: str = "imputation_row_kind"
     provider_location_count: str = "provider_location_count"
     latest_overall_rating: str = "latest_overall_rating"

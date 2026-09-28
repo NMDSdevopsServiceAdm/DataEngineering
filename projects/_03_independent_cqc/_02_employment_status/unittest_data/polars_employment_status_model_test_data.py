@@ -126,29 +126,29 @@ def fold_safe_case(
 
 @dataclass
 class TestModelUtilsData:
-    add_elapsed_months_test_cases = [
+    add_date_index_test_cases = [
         ModelUtilsTestCase(
-            id="quarterly_step_counts_as_three_months",
+            id="repeated_dates_share_an_index",
             input_data={
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 4, 1)],
+                IndCQC.location_id: ["loc1", "loc1", "loc1"],
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
             },
             expected_data={
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 4, 1)],
-                ShareModel.elapsed_months: [0, 3],
+                IndCQC.location_id: ["loc1", "loc1", "loc1"],
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
+                IndCQC.cqc_location_import_date_indexed: [1, 1, 2],
             },
         ),
         ModelUtilsTestCase(
-            id="counts_across_the_year_end",
-            input_data={
-                IndCQC.cqc_location_import_date: [date(2023, 11, 1), date(2024, 2, 1)],
-            },
-            expected_data={
-                IndCQC.cqc_location_import_date: [date(2023, 11, 1), date(2024, 2, 1)],
-                ShareModel.elapsed_months: [0, 3],
-            },
-        ),
-        ModelUtilsTestCase(
-            id="counts_from_the_earliest_date_across_all_locations",
+            id="index_is_partitioned_by_location",
             input_data={
                 IndCQC.location_id: ["loc1", "loc2"],
                 IndCQC.cqc_location_import_date: [date(2024, 3, 1), date(2024, 1, 1)],
@@ -156,7 +156,7 @@ class TestModelUtilsData:
             expected_data={
                 IndCQC.location_id: ["loc1", "loc2"],
                 IndCQC.cqc_location_import_date: [date(2024, 3, 1), date(2024, 1, 1)],
-                ShareModel.elapsed_months: [2, 0],
+                IndCQC.cqc_location_import_date_indexed: [1, 1],
             },
         ),
     ]

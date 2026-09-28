@@ -17,21 +17,27 @@ from utils.column_values.categorical_column_values import (
 )
 
 
-def add_elapsed_months(lf: pl.LazyFrame, date_column: str) -> pl.LazyFrame:
+def add_date_index(
+    lf: pl.LazyFrame, partition_columns: list[str], date_column: str
+) -> pl.LazyFrame:
     """
-    Add calendar months since the dataset's earliest date, so a quarterly step counts as 3.
+    Add each row's index among its partition's distinct dates, as the filled posts models do.
+
+    A dense rank is used, so repeated dates share an index and no dates are skipped.
 
     Args:
-        lf (pl.LazyFrame): dataset containing `date_column`
+        lf (pl.LazyFrame): dataset containing the partition and date columns
+        partition_columns (list[str]): the columns identifying each timeline
         date_column (str): the date column
 
     Returns:
-        pl.LazyFrame: dataset with "elapsed_months" added
+        pl.LazyFrame: dataset with "cqc_location_import_date_indexed" added
     """
-    month_number = pl.col(date_column).dt.year() * 12 + pl.col(date_column).dt.month()
-
     return lf.with_columns(
-        (month_number - month_number.min()).alias(ShareModel.elapsed_months)
+        pl.col(date_column)
+        .rank(method="dense")
+        .over(partition_columns)
+        .alias(IndCQC.cqc_location_import_date_indexed)
     )
 
 
@@ -251,7 +257,9 @@ def build_modelling_dataset(
     )
     lf = lf.join(estimates_lf, on=[IndCQC.location_id, date_column], how="left")
 
-    lf = add_elapsed_months(lf, date_column)
+    lf = add_date_index(
+        lf, partition_columns=location_role_columns, date_column=date_column
+    )
     lf = add_imputation_row_kind(
         lf,
         known_column=known_share_columns[0],

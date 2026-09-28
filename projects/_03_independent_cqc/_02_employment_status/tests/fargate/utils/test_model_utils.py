@@ -36,7 +36,7 @@ SCHEMA_OVERRIDES = {
     IMPUTED_SHARE: pl.Float32,
     ROLLING_AVERAGE_SHARE: pl.Float32,
     ModelEvaluation.fold: pl.UInt8,
-    ShareModel.elapsed_months: pl.Int32,
+    IndCQC.cqc_location_import_date_indexed: pl.UInt32,
     ShareModel.provider_location_count: pl.UInt32,
     ShareModel.latest_overall_rating: pl.Categorical,
     ShareModel.imputation_row_kind: pl.Enum(
@@ -70,14 +70,16 @@ def to_ratings_lf(data: dict[str, Any]) -> pl.LazyFrame:
     )
 
 
-class TestAddElapsedMonths:
+class TestAddDateIndex:
     @pytest.mark.parametrize(
         "case",
-        [pytest.param(case, id=case.id) for case in Data.add_elapsed_months_test_cases],
+        [pytest.param(case, id=case.id) for case in Data.add_date_index_test_cases],
     )
-    def test_elapsed_months_follow_calendar_gaps(self, case):
-        returned_lf = job.add_elapsed_months(
-            to_lf(case.input_data), date_column=IndCQC.cqc_location_import_date
+    def test_dates_are_densely_ranked_per_partition(self, case):
+        returned_lf = job.add_date_index(
+            to_lf(case.input_data),
+            partition_columns=[IndCQC.location_id],
+            date_column=IndCQC.cqc_location_import_date,
         )
 
         pl_testing.assert_frame_equal(returned_lf, to_lf(case.expected_data))
