@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt -r requirements-extra.txt
 # Shared libraries
 COPY polars_utils /app/polars_utils
 COPY utils/file_utils.py /app/utils/file_utils.py
+COPY projects/_03_independent_cqc/utils /app/projects/_03_independent_cqc/utils
 COPY projects/_03_independent_cqc/_01_filled_posts/_04_model/utils /app/projects/_03_independent_cqc/_01_filled_posts/_04_model/utils
 COPY projects/_03_independent_cqc/_01_filled_posts/_04_model/registry/model_registry.py /app/projects/_03_independent_cqc/_01_filled_posts/_04_model/registry/model_registry.py
 COPY utils/column_names /app/utils/column_names/
