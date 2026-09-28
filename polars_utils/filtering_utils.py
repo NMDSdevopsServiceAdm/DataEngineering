@@ -106,7 +106,7 @@ def lookback_cap_filter_expr(
     Build a Polars expression capping a dataset to a historic financial-year lookback window.
 
     Keeps rows on or after the start of the financial year `lookback_fy_years` before the
-    current one; no quarterly sampling of older rows, unlike `reduced_data_filter_expr`.
+    current one; older rows are dropped entirely, with no quarterly sampling tier.
 
     Args:
         today (date | None): Reference date for financial year boundaries. Defaults to today.
