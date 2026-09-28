@@ -3,10 +3,10 @@ from unittest.mock import Mock, call, patch
 
 import polars as pl
 
-import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_05_estimate_count as job
+import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_05_estimate_counts as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
-PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_05_estimate_count"
+PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_05_estimate_counts"
 
 
 class TestMain:
