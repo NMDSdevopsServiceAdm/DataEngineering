@@ -42,6 +42,7 @@ All notable changes to this project will be documented in this file.
 
 ### Improved
 - Confirmed the DPR extrapolation ratio model doesn't depend on input row order, with tests that feed it reversed and interleaved rows, and added a validation check that estimated DPR data has one row per LA area and year, which the model relies on.
+- Combined the three near-identical CI scripts that decide whether a push should seed the raw bucket, seed the archive sample data or run the CQC integration tests into one `scripts/select_ci_gate.py`, so adding a new gate is one entry in its list of trigger paths. Added a test that fails if a trigger path no longer exists in the repo, so a renamed file can't leave a gate silently never firing.
 - Reduced the IND CQC filled posts model features validation's memory use by scanning the wide imputed comparison dataset lazily, so only the columns its expected row count needs are read.
 
 
@@ -52,6 +53,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the SLV clean job computing turnover/starter/vacancy rates before deduplicating starters, leavers and vacancies, which could change a location's rate even when the underlying deduplicated figure hadn't changed; rates are now calculated from the deduplicated columns.
 - Fixed `care_home` being downgraded from its `CareHomeEnumType` to a generic `Categorical` in the job role estimates merge metadata, an oversight from when the metadata schema was set up; it's now cast to the correct type at source, and its validation schema check updated to match.
 - Fixed the Ind-CQC-Archive step function hardcoding the branch-bucket-only `main_`-prefixed job role estimates/metadata dataset names, which would have broken it in production; it now uses the same workspace-aware dataset name locals as the other step functions.
+- Fixed stale Capacity Tracker S3 upload trigger prefixes that no longer matched the real raw dataset names, which meant the pipeline could never be triggered automatically by a new upload.
 - Fixed the IND CQC filled posts model's predict step to stop with an error showing both feature lists when the saved model's features differ from the model registry, rather than risk silently misaligned predictions. Also stopped its features validation requiring `posts_rolling_average_model` for the non-res with dormancy model, which doesn't use it, and made the care home check name the bed features that column was standing in for.
 
 
