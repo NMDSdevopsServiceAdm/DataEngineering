@@ -244,7 +244,7 @@
             },
             "Continue SLV and Employment Status Pipelines": {
               "Type": "Parallel",
-              "End": true,
+              "Next": "Estimate SLV counts",
               "Branches": [
                 {
                   "StartAt": "Merge and Validate Prepared SLV Data",
@@ -778,6 +778,67 @@
                   }
                 }
               ]
+            },
+            "Estimate SLV counts": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "_03_starters_leavers_vacancies/fargate/_05_estimate_counts.py",
+                        "--slv_estimate_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_04_estimate/",
+                        "--employment_status_estimate_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=02_employment_status_04_estimate/",
+                        "--estimated_data_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_05_estimate_counts/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Validate SLV Counts"
+            },
+            "Validate SLV Counts": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "_03_starters_leavers_vacancies/fargate/validate_05_estimate_counts.py",
+                        "--bucket_name", "${dataset_bucket_name}",
+                        "--source_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_05_estimate_counts/",
+                        "--compare_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_04_estimate/",
+                        "--reports_path", "domain=03_ind_cqc/dataset=03_starters_leavers_vacancies_05_estimate_counts_validation/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
             }
           }
         }
