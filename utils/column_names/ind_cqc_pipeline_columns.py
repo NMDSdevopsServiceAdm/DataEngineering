@@ -454,6 +454,11 @@ class ModelRegistryKeys:
 
 
 @dataclass
+class ModelMetadataKeys:
+    feature_columns: str = "feature_columns"
+
+
+@dataclass
 class EmploymentStatusColumns:
     employment_status_count: str = "emplstat_count"
     permanent_count: str = "emplstat_permanent_count"
