@@ -432,6 +432,7 @@ class CQCRatingsValues(ColumnValues):
     good: str = "Good"
     requires_improvement: str = "Requires improvement"
     inadequate: str = "Inadequate"
+    not_yet_rated: str = "Not yet rated"
 
 
 @dataclass
@@ -556,3 +557,12 @@ class AscwdsJobRoleRatiosMergedSource(ColumnValues):
     imputed_ascwds_job_role_ratios: str = IndCQC.imputed_ascwds_job_role_ratios
     ascwds_job_role_rolling_ratio: str = IndCQC.ascwds_job_role_rolling_ratio
     ascwds_job_role_ratios: str = IndCQC.ascwds_job_role_ratios
+
+
+@dataclass
+class ImputationRowKind(ColumnValues):
+    """The possible values of the imputation row kind column"""
+
+    known: str = "known"
+    interpolated: str = "interpolated"
+    carried: str = "carried"

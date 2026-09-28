@@ -526,3 +526,12 @@ class ModelEvaluationColumns:
     never_submitted: str = "never_submitted"
     column_name: str = "column_name"
     mean_period_to_period_change: str = "mean_period_to_period_change"
+
+
+@dataclass
+class ShareModelColumns:
+    """The names of the columns added when modelling and scoring share breakdowns."""
+
+    imputation_row_kind: str = "imputation_row_kind"
+    provider_location_count: str = "provider_location_count"
+    latest_overall_rating: str = "latest_overall_rating"
