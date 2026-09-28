@@ -1210,9 +1210,7 @@ class NullGroupedProvidersData:
         (date(2026, 2, 1), "prov-3", 2, "1-004", "nmds_4", "Location Four", "N", 40.0, 0, None, "problem", date(2026, 2, 1), None), # New — first time seen, added with "problem" status.
     ]  # fmt: skip
 
-    # select_locations_populated_this_month_test_cases: input rows use the same
-    # shape as select_grouped_providers_input_schema (location_id + ascwds_filtering_rule
-    # + import date, plus unused columns kept for shape consistency across this file).
+    # Input rows reuse select_grouped_providers_input_schema's shape for consistency.
     select_locations_populated_this_month_test_cases = [
         SelectGroupedProvidersCase(
             id="includes_location_populated_at_latest_snapshot",
