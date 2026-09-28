@@ -1,7 +1,16 @@
 """
-Decide, per ingest domain, whether a push needs to seed that domain's slice of
-the branch's non-prod raw data bucket -- so a push touching one domain doesn't
-reseed and re-trigger the others' Step Functions.
+Decide whether a push touches the paths behind one CI gate, printing "true" or
+"false" for `decide-bake-and-seed` to hand on to the job it gates.
+
+Each gate narrows an expensive or side-effecting dev-branch step -- seeding the
+branch's raw or dataset bucket, or running the live CQC API integration tests
+-- to pushes that genuinely touch it, so an unrelated branch doesn't pay for
+it. Main never consults these gates: a merge-base diff against main is empty by
+definition there.
+
+Trigger paths are fixed lists rather than derived (unlike
+`select_bake_targets`), because no single manifest already enumerates
+"everything that reads this data".
 """
 
 import argparse
@@ -20,61 +29,81 @@ from scripts.select_bake_targets import (  # noqa: E402
     path_triggers_rebuild,
 )
 
-# Files that actually read/write/validate each domain's raw data. `cqc_api`
-# is excluded (reads the CQC API, not the raw bucket); `capacity_tracker` has
-# no raw-validate job. Uses `fargate/` uniformly, ahead of each domain's
-# migration there.
-DOMAIN_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
-    "ascwds": (
+# Cross-cutting raw bucket trigger -- a change here seeds every domain.
+SHARED_RAW_BUCKET_TRIGGER_PATHS: tuple[str, ...] = (
+    "terraform/pipeline/eventbridge.tf",
+)
+
+# To add a gate: add an entry here, plus its trigger and unrelated-path test cases.
+GATE_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
+    # Split per domain so a push touching one doesn't reseed and re-trigger the
+    # others' Step Functions. `cqc_api` has no gate: it reads the CQC API, not
+    # the raw bucket.
+    "raw-bucket-ascwds": (
         "projects/_01_ingest/ascwds/fargate/ingest_ascwds_dataset.py",
         "projects/_01_ingest/ascwds/fargate/validate_ascwds_worker_raw_data.py",
         "projects/_01_ingest/ascwds/fargate/validate_ascwds_workplace_raw_data.py",
+        *SHARED_RAW_BUCKET_TRIGGER_PATHS,
     ),
-    "capacity_tracker": (
+    # Just the ingest job: capacity_tracker has no raw-validate job.
+    "raw-bucket-capacity_tracker": (
         "projects/_01_ingest/capacity_tracker/fargate/ingest_capacity_tracker_data.py",
+        *SHARED_RAW_BUCKET_TRIGGER_PATHS,
     ),
-    "cqc_pir": (
+    "raw-bucket-cqc_pir": (
         "projects/_01_ingest/cqc_pir/fargate/ingest_cqc_pir_data.py",
         "projects/_01_ingest/cqc_pir/fargate/validate_cqc_pir_raw_data.py",
         "projects/_01_ingest/cqc_pir/fargate/clean_cqc_pir_data.py",
         "projects/_01_ingest/cqc_pir/fargate/validate_clean_cqc_pir_data.py",
+        *SHARED_RAW_BUCKET_TRIGGER_PATHS,
     ),
-    "ons_pd": (
+    "raw-bucket-ons_pd": (
         "projects/_01_ingest/ons_pd/fargate/ingest_ons_data.py",
         "projects/_01_ingest/ons_pd/fargate/validate_postcode_directory_raw_data.py",
+        *SHARED_RAW_BUCKET_TRIGGER_PATHS,
+    ),
+    # Seeds the branch's dataset bucket with `sfc-main-datasets`' job role
+    # archive datasets.
+    "archive-sample": (
+        "projects/_03_independent_cqc/_01_filled_posts/_07_archive",
+        "projects/_99_publication",
+    ),
+    # Anything that could change the live CQC API tests' behaviour, including
+    # the shared secrets helper that fetches the API key.
+    "cqc-integration-tests": (
+        "projects/_01_ingest/cqc_api",
+        "tests/integration/test_cqc_api_integration.py",
+        "utils/column_names/raw_data_files/cqc_location_api_columns.py",
+        "utils/column_names/raw_data_files/cqc_provider_api_columns.py",
+        "utils/aws_secrets_manager_utilities.py",
     ),
 }
 
-# Cross-cutting trigger -- a change here seeds every domain.
-SHARED_TRIGGER_PATHS: tuple[str, ...] = ("terraform/pipeline/eventbridge.tf",)
 
-
-def should_seed_domain(domain: str, changed_paths: Iterable[str]) -> bool:
+def gate_triggered(gate: str, changed_paths: Iterable[str]) -> bool:
     """
-    Decide whether any changed path warrants seeding one domain's raw data.
+    Decide whether any changed path falls under one gate's trigger paths.
 
     Args:
-        domain (str): Domain name, a key of DOMAIN_TRIGGER_PATHS.
+        gate (str): Gate name, a key of GATE_TRIGGER_PATHS.
         changed_paths (Iterable[str]): Repo-relative paths of changed files.
 
     Returns:
-        bool: True if at least one changed path falls under that domain's
-            trigger paths or a shared trigger path.
+        bool: True if at least one changed path falls under a trigger path.
     """
     normalised_paths = [_normalise_path(path) for path in changed_paths]
-    trigger_paths = DOMAIN_TRIGGER_PATHS[domain] + SHARED_TRIGGER_PATHS
 
     return any(
         path_triggers_rebuild(changed_path, trigger_path)
         for changed_path in normalised_paths
-        for trigger_path in trigger_paths
+        for trigger_path in GATE_TRIGGER_PATHS[gate]
     )
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     """
-    Print "true" or "false" depending on whether this push should seed the
-    given domain's raw data.
+    Print "true" or "false" depending on whether this push triggers the given
+    gate.
 
     Args:
         argv (Optional[Sequence[str]]): Argument list, or None to read sys.argv.
@@ -89,7 +118,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         else changed_paths_since(arguments.diff_base, arguments.repo_root)
     )
 
-    print("true" if should_seed_domain(arguments.domain, changed_paths) else "false")
+    print("true" if gate_triggered(arguments.gate, changed_paths) else "false")
     return 0
 
 
@@ -104,13 +133,13 @@ def _parse_arguments(argv: Optional[Sequence[str]]) -> argparse.Namespace:
         argparse.Namespace: The parsed arguments.
     """
     parser = argparse.ArgumentParser(
-        description="Decide whether this push should seed one domain's non-prod raw data."
+        description="Decide whether this push triggers one CI gate."
     )
     parser.add_argument(
-        "--domain",
+        "--gate",
         required=True,
-        choices=list(DOMAIN_TRIGGER_PATHS),
-        help="Ingest domain to decide the seed flag for.",
+        choices=list(GATE_TRIGGER_PATHS),
+        help="Gate to decide the flag for.",
     )
     parser.add_argument(
         "--diff-base",
