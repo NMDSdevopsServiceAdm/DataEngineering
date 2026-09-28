@@ -110,37 +110,6 @@ class FeaturesEngineeringUtilsData:
         ("1-001", None, 0),
     ]
 
-    add_date_index_column_same_index_for_same_date_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
-    ]
-    expected_add_date_index_column_same_index_for_same_date_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 1),
-    ]
-
-    add_date_index_column_applies_incremental_index_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0003", CareHome.not_care_home, date(2025, 2, 1)),
-    ]
-    expected_add_date_index_column_applies_incremental_index_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0003", CareHome.not_care_home, date(2025, 2, 1), 2),
-    ]
-
-    add_date_index_column_indexes_by_care_home_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0002", CareHome.not_care_home, date(2025, 2, 1)),
-        ("1-0003", CareHome.care_home, date(2025, 2, 1)),
-    ]
-    expected_add_date_index_column_indexes_by_care_home_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0002", CareHome.not_care_home, date(2025, 2, 1), 2),
-        ("1-0003", CareHome.care_home, date(2025, 2, 1), 1),
-    ]
-
     cap_integer_at_max_value_rows = [
         ("1-0001", 1),
         ("1-0002", 2),

@@ -4,14 +4,14 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._03_independent_cqc._02_employment_status.fargate.utils.model_utils as job
+import projects._03_independent_cqc.utils.model_utils as job
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
-from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_model_test_data import (
+from projects._03_independent_cqc.unittest_data.polars_independent_cqc_test_data import (
     IMPUTED_SHARE,
     KNOWN_SHARE,
     ROLLING_AVERAGE_SHARE,
 )
-from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_model_test_data import (
+from projects._03_independent_cqc.unittest_data.polars_independent_cqc_test_data import (
     TestModelUtilsData as Data,
 )
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
@@ -73,7 +73,7 @@ def to_ratings_lf(data: dict[str, Any]) -> pl.LazyFrame:
 class TestAddDateIndex:
     @pytest.mark.parametrize(
         "case",
-        [pytest.param(case, id=case.id) for case in Data.add_date_index_test_cases],
+        [case.as_pytest_param() for case in Data.add_date_index_test_cases],
     )
     def test_dates_are_densely_ranked_per_partition(self, case):
         returned_lf = job.add_date_index(
@@ -88,10 +88,7 @@ class TestAddDateIndex:
 class TestAddImputationRowKind:
     @pytest.mark.parametrize(
         "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.add_imputation_row_kind_test_cases
-        ],
+        [case.as_pytest_param() for case in Data.add_imputation_row_kind_test_cases],
     )
     def test_row_kind_labels_known_interpolated_and_carried(self, case):
         returned_lf = job.add_imputation_row_kind(
@@ -109,7 +106,7 @@ class TestAddProviderLocationCount:
     @pytest.mark.parametrize(
         "case",
         [
-            pytest.param(case, id=case.id)
+            case.as_pytest_param()
             for case in Data.add_provider_location_count_test_cases
         ],
     )
@@ -143,7 +140,7 @@ class TestAddLatestOverallRating:
     @pytest.mark.parametrize(
         "case",
         [
-            pytest.param(case, id=case.id)
+            case.as_pytest_param()
             for case in Data.latest_rating_joined_per_location_test_cases
         ],
     )
@@ -154,10 +151,7 @@ class TestAddLatestOverallRating:
 
     @pytest.mark.parametrize(
         "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.rating_as_of_import_date_test_cases
-        ],
+        [case.as_pytest_param() for case in Data.rating_as_of_import_date_test_cases],
     )
     # Polars' as-of join takes a different path for categorical keys, so test both.
     @pytest.mark.parametrize(
@@ -174,10 +168,7 @@ class TestAddLatestOverallRating:
 
     @pytest.mark.parametrize(
         "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.blank_latest_rating_test_cases
-        ],
+        [case.as_pytest_param() for case in Data.blank_latest_rating_test_cases],
     )
     def test_blank_latest_rating_uses_latest_real_rating(self, case):
         returned_lf, expected_lf = self.returned_and_expected_lfs(case)
@@ -186,7 +177,7 @@ class TestAddLatestOverallRating:
 
     @pytest.mark.parametrize(
         "case",
-        [pytest.param(case, id=case.id) for case in Data.same_date_ratings_test_cases],
+        [case.as_pytest_param() for case in Data.same_date_ratings_test_cases],
     )
     def test_same_date_rating_tie_breaks(self, case):
         returned_lf, expected_lf = self.returned_and_expected_lfs(case)
@@ -195,7 +186,7 @@ class TestAddLatestOverallRating:
 
     @pytest.mark.parametrize(
         "case",
-        [pytest.param(case, id=case.id) for case in Data.unrated_location_test_cases],
+        [case.as_pytest_param() for case in Data.unrated_location_test_cases],
     )
     def test_unrated_location_gets_not_yet_rated(self, case):
         returned_lf, expected_lf = self.returned_and_expected_lfs(case)
@@ -257,10 +248,7 @@ class TestAddFoldSafeRollingAverage:
 
     @pytest.mark.parametrize(
         "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.tested_fold_excluded_test_cases
-        ],
+        [case.as_pytest_param() for case in Data.tested_fold_excluded_test_cases],
     )
     def test_tested_fold_excluded_from_its_rolling_average(self, case):
         returned_lf = self.add_fold_safe_average(case)
@@ -275,7 +263,7 @@ class TestAddFoldSafeRollingAverage:
     @pytest.mark.parametrize(
         "case",
         [
-            pytest.param(case, id=case.id)
+            case.as_pytest_param()
             for case in Data.tested_fold_gets_group_value_test_cases
         ],
     )
