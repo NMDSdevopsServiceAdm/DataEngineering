@@ -593,18 +593,18 @@ class FilteringUtilsData:
 
     lookback_cap_filter_test_cases = [
         LookbackCapFilterCase(
-            id="rows_before_lookback_start_are_excluded",
+            id="rows_before_the_buffered_lookback_start_are_excluded",
             today=date(2024, 6, 15),
             fy_start_month=4,
             lookback_fy_years=2,
             input_data=[
-                date(2021, 4, 1), # before lookback_start -> excluded
-                date(2021, 5, 1), # before lookback_start -> excluded
-                date(2022, 3, 31), # before lookback_start -> excluded
-                date(2022, 4, 1), # at boundary (lookback_start) -> included
+                date(2021, 9, 30), # just before the buffered lookback start -> excluded
+                date(2021, 10, 1), # at the buffered lookback start (6 months before the FY boundary) -> included
+                date(2022, 3, 31), # within the 6-month buffer, before the FY boundary -> included
+                date(2022, 4, 1), # at the financial-year boundary -> included
                 date(2023, 6, 1), # within range -> included
             ],
-            expected=[False, False, False, True, True],
+            expected=[False, True, True, True, True],
         ),
         LookbackCapFilterCase(
             id="non_default_args",
@@ -612,13 +612,13 @@ class FilteringUtilsData:
             fy_start_month=1,
             lookback_fy_years=1,
             input_data=[
-                date(2022, 1, 1), # before lookback_start -> excluded
-                date(2022, 12, 1), # before lookback_start -> excluded
-                date(2023, 1, 1), # at boundary (lookback_start) -> included
+                date(2022, 1, 1), # before the buffered lookback start -> excluded
+                date(2022, 12, 1), # within the 6-month buffer, before the FY boundary -> included
+                date(2023, 1, 1), # at the financial-year boundary -> included
                 date(2023, 3, 1), # within range -> included
                 date(2024, 6, 1), # within range -> included
             ],
-            expected=[False, False, True, True, True],
+            expected=[False, True, True, True, True],
         ),
         LookbackCapFilterCase(
             id="today_defaults_to_current_date",

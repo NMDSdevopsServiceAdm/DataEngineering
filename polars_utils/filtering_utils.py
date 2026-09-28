@@ -1,6 +1,7 @@
 from datetime import date
 
 import polars as pl
+from dateutil.relativedelta import relativedelta
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -105,8 +106,11 @@ def lookback_cap_filter_expr(
     """
     Build a Polars expression capping a dataset to a historic financial-year lookback window.
 
-    Keeps rows on or after the start of the financial year `lookback_fy_years` before the
-    current one; older rows are dropped entirely, with no quarterly sampling tier.
+    Keeps rows on or after 6 months before the start of the financial year
+    `lookback_fy_years` before the current one; older rows are dropped entirely, with no
+    quarterly sampling tier. The 6-month lead-in gives rolling/windowed calculations a full
+    window at the earliest date this otherwise retains - nothing currently publishes that
+    far back, but it's there should a future model need to look that close to the cap.
 
     Args:
         today (date | None): Reference date for financial year boundaries. Defaults to today.
@@ -121,7 +125,10 @@ def lookback_cap_filter_expr(
 
     fy_year = today.year if today.month >= fy_start_month else today.year - 1
 
-    lookback_start = date(fy_year - lookback_fy_years, fy_start_month, 1)
+    rolling_window_warm_up_months = 6
+    lookback_start = date(
+        fy_year - lookback_fy_years, fy_start_month, 1
+    ) - relativedelta(months=rolling_window_warm_up_months)
 
     dt = pl.col(IndCQC.cqc_location_import_date)
 
