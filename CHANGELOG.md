@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Added display-formatted columns to the publication clean job: each filled posts aggregate gets a comma-formatted or millions-abbreviated string (e.g. "800,000" or "1.175m"), and the import date gets abbreviated and full month-year string formats (e.g. "Jan 2026" and "January 2026").
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
 - Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
+- Added project-level model evaluation utilities to `_03_independent_cqc` (location cross-validation folds, a never-submitted flag and a period-to-period jumpiness measure) for the filled posts and employment status models to share.
 
 
 ### Changed
@@ -42,6 +43,7 @@ All notable changes to this project will be documented in this file.
 ### Improved
 - Confirmed the DPR extrapolation ratio model doesn't depend on input row order, with tests that feed it reversed and interleaved rows, and added a validation check that estimated DPR data has one row per LA area and year, which the model relies on.
 - Combined the three near-identical CI scripts that decide whether a push should seed the raw bucket, seed the archive sample data or run the CQC integration tests into one `scripts/select_ci_gate.py`, so adding a new gate is one entry in its list of trigger paths. Added a test that fails if a trigger path no longer exists in the repo, so a renamed file can't leave a gate silently never firing.
+- Reduced the IND CQC filled posts model features validation's memory use by scanning the wide imputed comparison dataset lazily, so only the columns its expected row count needs are read.
 
 
 ### Fixed
@@ -50,6 +52,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the `_02_employment_status`/`_03_starters_leavers_vacancies` pipelines' `_00_prepare_worker`/`_00_prepare_workplace` and their validate jobs to reduce ASCWDS import dates to those already CQC-matched in the job role metadata, instead of an independent hardcoded quarterly/earliest-file-per-month rule that could disagree with the metadata match and cause the merge step to silently miss rows.
 - Fixed the SLV clean job computing turnover/starter/vacancy rates before deduplicating starters, leavers and vacancies, which could change a location's rate even when the underlying deduplicated figure hadn't changed; rates are now calculated from the deduplicated columns.
 - Fixed `care_home` being downgraded from its `CareHomeEnumType` to a generic `Categorical` in the job role estimates merge metadata, an oversight from when the metadata schema was set up; it's now cast to the correct type at source, and its validation schema check updated to match.
+- Fixed the IND CQC filled posts model's predict step to stop with an error showing both feature lists when the saved model's features differ from the model registry, rather than risk silently misaligned predictions. Also stopped its features validation requiring `posts_rolling_average_model` for the non-res with dormancy model, which doesn't use it, and made the care home check name the bed features that column was standing in for.
 
 
 ## [v2026.08.1] - 11/09/2026

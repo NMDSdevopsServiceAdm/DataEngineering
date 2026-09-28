@@ -131,3 +131,27 @@ def load_model(s3_root: str, run_number: int) -> LinearRegression | Pipeline:
     buffer.seek(0)
 
     return joblib.load(buffer)
+
+
+def load_metadata(s3_root: str, run_number: int) -> dict:
+    """
+    Loads the metadata saved alongside a specified model run from S3.
+
+    Structure:
+        s3_root/<run_number>/
+            ├── model.pkl
+            └── metadata.json
+
+    Args:
+        s3_root (str): S3 directory prefix for a saved model (e.g. "s3://pipeline-resources/models/model_A/")
+        run_number (int): The run number to load the metadata from.
+
+    Returns:
+        dict: The metadata saved for the model run.
+    """
+    s3 = boto3.client("s3")
+    bucket, prefix = split_s3_uri(s3_root)
+
+    response = s3.get_object(Bucket=bucket, Key=f"{prefix}{run_number}/metadata.json")
+
+    return json.loads(response["Body"].read())

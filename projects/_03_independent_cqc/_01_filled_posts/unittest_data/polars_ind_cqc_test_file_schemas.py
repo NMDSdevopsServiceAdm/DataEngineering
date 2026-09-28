@@ -247,6 +247,8 @@ class ValidateModelsSchemas:
             (IndCQC.related_location, pl.String()),
             (IndCQC.time_registered, pl.Int32()),
             (IndCQC.time_since_dormant, pl.Int32),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.banded_bed_ratio_rolling_average_model, pl.Float32()),
         ]
     )
 
