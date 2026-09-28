@@ -30,9 +30,9 @@ from utils.column_values.categorical_column_values import (
     Specialisms,
 )
 
-KNOWN_SHARE = EmpStatus.permanent_percentage_clean
+KNOWN_SHARE = EmpStatus.permanent_percentage
 # Existing columns stand in for the imputed and rolling average shares.
-IMPUTED_SHARE = EmpStatus.permanent_percentage
+IMPUTED_SHARE = EmpStatus.temporary_percentage
 ROLLING_AVERAGE_SHARE = IndCQC.posts_rolling_average_model
 
 CARE_WORKER = PublishedJobRoleLabels.care_worker
@@ -586,11 +586,8 @@ class TestModelUtilsData:
     )
 
 
-ACTUAL_SHARES = [
-    EmpStatus.permanent_percentage_clean,
-    EmpStatus.temporary_percentage_clean,
-]
-# Existing share columns stand in for model predictions.
+# Existing share columns stand in for actuals and model predictions.
+ACTUAL_SHARES = [EmpStatus.bank_or_pool_percentage, EmpStatus.agency_percentage]
 PREDICTED_SHARES = [EmpStatus.permanent_percentage, EmpStatus.temporary_percentage]
 NON_RES = PrimaryServiceType.non_residential
 CARE_HOME = PrimaryServiceType.care_home_only

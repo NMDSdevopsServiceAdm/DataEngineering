@@ -10,8 +10,7 @@ def main(
     Cleans the merged employment status data.
 
     Deduplicates the 5 employment status count columns as a single unit, and
-    adds a percentage-share column per employment status, copied into stand-in
-    "_clean" columns until the cleaning filters are added.
+    adds a percentage-share column per employment status.
 
     Args:
         merged_data_source (str): path to the merged data
@@ -20,7 +19,6 @@ def main(
     lf = utils.scan_parquet(merged_data_source)
 
     lf = cUtils.create_employment_status_percentage_columns(lf)
-    lf = cUtils.copy_percentages_to_clean_columns(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,
