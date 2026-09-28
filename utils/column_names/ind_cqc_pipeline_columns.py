@@ -535,6 +535,3 @@ class ShareModelColumns:
     imputation_row_kind: str = "imputation_row_kind"
     provider_location_count: str = "provider_location_count"
     latest_overall_rating: str = "latest_overall_rating"
-    cell_weight: str = "cell_weight"
-    share: str = "share"
-    mean_absolute_error: str = "mean_absolute_error"
