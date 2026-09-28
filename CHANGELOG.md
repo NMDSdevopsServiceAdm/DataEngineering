@@ -40,6 +40,7 @@ All notable changes to this project will be documented in this file.
 - Consolidated and reorganised the SLV/employment-status column-name classes in `ind_cqc_pipeline_columns.py`.
 - Moved `EmploymentStatusRatesColumns` (renamed `EmploymentStatusMagicNumberRateColumns`) into the shared `ind_cqc_pipeline_columns.py`, alongside the other column-name classes.
 - Replaced the job role archive validation's single "at least 1 row" check with schema, row-count-against-source, and primary-key uniqueness/completeness checks scoped to just the newly-written partition for each output (estimates and metadata), plus a cross-output check confirming both outputs received the same run's partition.
+- Moved the filled posts models' date-index step into a shared `_03_independent_cqc` utility (`add_date_index`), generalised to take its partition and date columns as arguments, ready for other models to reuse.
 
 
 ### Improved
