@@ -106,11 +106,9 @@ def lookback_cap_filter_expr(
     """
     Build a Polars expression capping a dataset to a historic financial-year lookback window.
 
-    Keeps rows on or after 6 months before the start of the financial year
-    `lookback_fy_years` before the current one; older rows are dropped entirely, with no
-    quarterly sampling tier. The 6-month lead-in gives rolling/windowed calculations a full
-    window at the earliest date this otherwise retains - nothing currently publishes that
-    far back, but it's there should a future model need to look that close to the cap.
+    Retains roughly `lookback_fy_years` years of history, measured back from the start of
+    the current financial year, plus an extra 6-month lead-in so rolling/windowed
+    calculations still have a full window at the earliest date this retains.
 
     Args:
         today (date | None): Reference date for financial year boundaries. Defaults to today.
