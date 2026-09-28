@@ -87,6 +87,18 @@ class FeaturesEngineeringUtilsSchemas:
         + [(IndCQC.service_count, pl.UInt32())]
     )
 
+    add_date_index_column_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.DataType()),
+        ]
+    )
+    expected_add_date_index_column_schema = pl.Schema(
+        list(add_date_index_column_schema.items())
+        + [(IndCQC.cqc_location_import_date_indexed, pl.UInt32())]
+    )
+
     cap_integer_at_max_value_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
