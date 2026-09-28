@@ -4,12 +4,12 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._03_independent_cqc._02_employment_status.fargate.utils.model_metrics_utils as job
-from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_model_test_data import (
+import projects._03_independent_cqc.utils.model_metrics_utils as job
+from projects._03_independent_cqc.unittest_data.polars_independent_cqc_test_data import (
     ACTUAL_SHARES,
     PREDICTED_SHARES,
 )
-from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_model_test_data import (
+from projects._03_independent_cqc.unittest_data.polars_independent_cqc_test_data import (
     TestModelMetricsUtilsData as Data,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
