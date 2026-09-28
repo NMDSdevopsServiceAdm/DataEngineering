@@ -1,5 +1,6 @@
 import polars as pl
 
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     ModelEvaluationColumns as ModelEvaluation,
 )
@@ -65,7 +66,7 @@ def add_never_submitted_flag(
 
 def mean_period_to_period_change(
     lf: pl.LazyFrame,
-    columns: list[str],
+    value_columns: list[str],
     partition_columns: list[str],
     date_column: str,
 ) -> pl.LazyFrame:
@@ -79,7 +80,7 @@ def mean_period_to_period_change(
 
     Args:
         lf (pl.LazyFrame): dataset containing the measured, partition and date columns
-        columns (list[str]): the columns to measure, such as predictions
+        value_columns (list[str]): the columns to measure, such as predictions
         partition_columns (list[str]): the columns identifying each timeline
         date_column (str): the date column
 
@@ -95,8 +96,78 @@ def mean_period_to_period_change(
         .abs()
         .mean()
         .alias(column)
-        for column in columns
+        for column in value_columns
     ).unpivot(
         variable_name=ModelEvaluation.column_name,
         value_name=ModelEvaluation.mean_period_to_period_change,
+    )
+
+
+def aggregate_totals_by_cell(
+    lf: pl.LazyFrame,
+    predicted_column: str,
+    actual_column: str,
+    cell_columns: list[str],
+) -> pl.LazyFrame:
+    """
+    Sum predicted and known filled posts into cells.
+
+    Only rows with a known value are used, so predicted and known totals cover the same rows.
+
+    Args:
+        lf (pl.LazyFrame): dataset containing the predicted, known and cell columns
+        predicted_column (str): the predicted filled posts column
+        actual_column (str): the known filled posts column
+        cell_columns (list[str]): the columns defining each cell
+
+    Returns:
+        pl.LazyFrame: a row per cell, with its summed predicted and known filled posts
+    """
+    lf = lf.filter(pl.col(actual_column).is_not_null())
+
+    return lf.group_by(cell_columns).agg(
+        pl.col(predicted_column).cast(pl.Float64).sum(),
+        pl.col(actual_column).cast(pl.Float64).sum(),
+    )
+
+
+def score_cell_totals(
+    cells_lf: pl.LazyFrame,
+    predicted_column: str,
+    actual_column: str,
+    by_columns: list[str] | None = None,
+) -> pl.LazyFrame:
+    """
+    Score predicted against known cell totals with R² and weighted absolute % error.
+
+    R² is unweighted across cells. The error weights each cell by its known total, so bigger
+    cells count for more: sum(|predicted - known|) / sum(known).
+
+    Args:
+        cells_lf (pl.LazyFrame): a row per cell, such as from `aggregate_totals_by_cell`
+        predicted_column (str): the predicted total column
+        actual_column (str): the known total column
+        by_columns (list[str] | None): columns to score separately by, such as the fold.
+            Defaults to scoring all cells together.
+
+    Returns:
+        pl.LazyFrame: a row (per group), with its "r2" and "weighted_absolute_percentage_error"
+    """
+    by_columns = by_columns or []
+    predicted = pl.col(predicted_column)
+    actual = pl.col(actual_column)
+    error = actual - predicted
+    mean_actual = actual.mean()
+
+    scores = [
+        (1 - (error**2).sum() / ((actual - mean_actual) ** 2).sum()).alias(IndCQC.r2),
+        (error.abs().sum() / actual.sum()).alias(
+            ModelEvaluation.weighted_absolute_percentage_error
+        ),
+    ]
+
+    return (
+        cells_lf.group_by(by_columns).agg(scores)
+        if by_columns
+        else cells_lf.select(scores)
     )
