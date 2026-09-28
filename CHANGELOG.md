@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
 - Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
 - Added project-level model evaluation utilities to `_03_independent_cqc` (location cross-validation folds, a never-submitted flag and a period-to-period jumpiness measure) for the filled posts and employment status models to share.
+- Added a new "Estimate SLV counts" stage to the Ind-CQC-SLV state machine (`_05_estimate_count`), with its own row-count validation step. The stage is currently a placeholder pass-through pending the starters/leavers/vacancies count derivation logic.
 
 
 ### Changed
