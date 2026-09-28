@@ -7,11 +7,11 @@ def main(
     estimated_data_destination: str,
 ) -> None:
     """
-    Placeholder for deriving estimated headcount counts of starters, leavers
+    Placeholder for deriving estimated counts of starters, leavers
     and vacancies.
 
     Args:
-        slv_estimate_source (str): path to the SLV estimated data (rates)
+        slv_estimate_source (str): path to the estimated SLV estimated rates
         employment_status_estimate_source (str): path to the employment
             status estimated data (headcount)
         estimated_data_destination (str): destination for output
@@ -23,10 +23,10 @@ def main(
 
     # TODO: join slv_estimate_lf and employment_status_estimate_lf on shared keys
 
-    # TODO: calculate estimated starters/leavers/vacancies as estimated
-    # employees * estimated starter rate, estimated employees * estimated
-    # turnover rate and (estimated employees * estimated vacancy rate) / (1 -
-    # estimated vacancy rate)
+    # TODO: calculate estimated starters/leavers/vacancies as
+    # estimated employees * estimated starter rate
+    # estimated employees * estimated turnover rate
+    # (estimated employees * estimated vacancy rate) / (1 - estimated vacancy rate)
 
     utils.sink_to_parquet(
         lazy_df=slv_estimate_lf,
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     args = utils.get_args(
         (
             "--slv_estimate_source",
-            "Source s3 directory for SLV estimated data",
+            "Source s3 directory for estimated SLV rates",
         ),
         (
             "--employment_status_estimate_source",
