@@ -119,8 +119,8 @@ construct_destination_path_test_cases = [
     ),
     ConstructDestinationPathTestCase(
         id="renames_capacity_tracker_raw_domain_to_numbered_datasets_domain",
-        key="domain=capacity_tracker/dataset=capacity_tracker_care_home/file.csv",
-        expected_path="s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=capacity_tracker_care_home",
+        key="domain=capacity_tracker/dataset=care_home/file.csv",
+        expected_path="s3://sfc-main-datasets/domain=01_capacity_tracker/dataset=care_home",
     ),
 ]
 
