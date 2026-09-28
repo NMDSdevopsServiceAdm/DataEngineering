@@ -25,7 +25,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
-    @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
+    @patch(f"{PATCH_PATH}.clean_utils.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
@@ -289,7 +289,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
-    @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
+    @patch(f"{PATCH_PATH}.clean_utils.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_uses_retention_cutoff_date_for_long_term_once_it_is_later_than_the_earliest_ct_data_date(

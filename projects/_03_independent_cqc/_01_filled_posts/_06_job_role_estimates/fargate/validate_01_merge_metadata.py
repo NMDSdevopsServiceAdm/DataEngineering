@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 
 from polars_utils import utils
 from polars_utils.column_types import CategoricalColumnTypes
-from polars_utils.filtering_utils import reduced_data_filter_expr
+from polars_utils.filtering_utils import lookback_cap_filter_expr
 from polars_utils.validation import actions as vl
 from polars_utils.validation.actions import (
     add_list_column_validation_check_flags,
@@ -138,7 +138,7 @@ def main(
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
-    ).filter(reduced_data_filter_expr())
+    ).filter(lookback_cap_filter_expr())
 
     source_df = add_list_column_validation_check_flags(
         source_df, [IndCqcColumns.services_offered]

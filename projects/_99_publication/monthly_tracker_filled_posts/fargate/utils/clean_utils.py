@@ -18,6 +18,79 @@ _ALL_CQC_LOCATIONS: str = "All CQC locations"
 _ENGLAND: str = "England"
 
 
+def reduced_data_filter_expr(
+    today: date | None = None,
+    fy_start_month: int = 4,
+    lookback_fy_years: int = 2,
+    quarter_months: tuple[int, ...] = (1, 4, 7, 10),
+    date_col: str = IndCQC.cqc_location_import_date,
+    cutoff_date: date | None = None,
+) -> pl.Expr:
+    """
+    Build a Polars expression for filtering a reduced dataset using financial-year
+    windowing with quarterly sampling for older data.
+
+    The filter implements a two-tier retention strategy:
+
+    1. Full retention window:
+       Rows with dates greater than or equal to the start of the current financial
+       year minus `lookback_fy_years` are always included.
+
+    2. Historical sampling window:
+       Rows older than the full retention window are only included if their month
+       falls within `quarter_months` (e.g. quarterly snapshots).
+
+    This allows recent data to be fully retained while reducing storage and
+    processing cost for older data via periodic sampling.
+
+    Returning an expression rather than a filtered LazyFrame lets callers attach it
+    directly to a `scan_parquet`, so the predicate is pushed down to the parquet
+    source instead of running over a materialised frame.
+
+    Args:
+        today (date | None): Reference date used to compute financial year boundaries.
+            If None, defaults to the current system date.
+
+        fy_start_month (int): Month in which the financial year starts
+            (default is 4 for April).
+
+        lookback_fy_years (int): Number of financial years to retain in full before
+            applying sampling.
+
+        quarter_months (tuple[int, ...]): Months considered valid for quarterly sampling
+            of historical data (Defaults to Jan, Apr, Jul, and Oct).
+
+        date_col (str): Name of the date column the filter is applied to. Defaults to
+            the CQC location import date; datasets keyed on a different date column
+            pass their own.
+
+        cutoff_date (date | None, optional): If given, acts as a hard floor: rows
+            earlier than this date are always excluded, even if their month falls
+            within `quarter_months`. Defaults to None (the historical sampling
+            window is unbounded).
+
+    Returns:
+        pl.Expr: A Polars boolean expression that can be used inside `.filter()` or
+            `.with_columns()` to select rows based on the reduced data strategy.
+    """
+    today: date = today or date.today()
+
+    fy_year = today.year if today.month >= fy_start_month else today.year - 1
+
+    monthly_start = date(fy_year - lookback_fy_years, fy_start_month, 1)
+
+    dt = pl.col(date_col)
+
+    expr = (dt >= monthly_start) | (
+        (dt < monthly_start) & (dt.dt.month().is_in(quarter_months))
+    )
+
+    if cutoff_date is not None:
+        expr = expr & (dt >= cutoff_date)
+
+    return expr
+
+
 def has_continuous_data_since_date(
     column_name: str, from_date: date, column_alias: str
 ) -> pl.Expr:

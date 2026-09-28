@@ -96,72 +96,36 @@ def update_filtering_rule(
     return lf.with_columns(expr.alias(filter_rule_col_name))
 
 
-def reduced_data_filter_expr(
+def lookback_cap_filter_expr(
     today: date | None = None,
     fy_start_month: int = 4,
-    lookback_fy_years: int = 2,
-    quarter_months: tuple[int, ...] = (1, 4, 7, 10),
-    date_col: str = IndCQC.cqc_location_import_date,
+    lookback_fy_years: int = 12,
     cutoff_date: date | None = None,
 ) -> pl.Expr:
     """
-    Build a Polars expression for filtering a reduced dataset using financial-year
-    windowing with quarterly sampling for older data.
+    Build a Polars expression capping a dataset to a historic financial-year lookback window.
 
-    The filter implements a two-tier retention strategy:
-
-    1. Full retention window:
-       Rows with dates greater than or equal to the start of the current financial
-       year minus `lookback_fy_years` are always included.
-
-    2. Historical sampling window:
-       Rows older than the full retention window are only included if their month
-       falls within `quarter_months` (e.g. quarterly snapshots).
-
-    This allows recent data to be fully retained while reducing storage and
-    processing cost for older data via periodic sampling.
-
-    Returning an expression rather than a filtered LazyFrame lets callers attach it
-    directly to a `scan_parquet`, so the predicate is pushed down to the parquet
-    source instead of running over a materialised frame.
+    Keeps rows on or after the start of the financial year `lookback_fy_years` before the
+    current one; no quarterly sampling of older rows, unlike `reduced_data_filter_expr`.
 
     Args:
-        today (date | None): Reference date used to compute financial year boundaries.
-            If None, defaults to the current system date.
-
-        fy_start_month (int): Month in which the financial year starts
-            (default is 4 for April).
-
-        lookback_fy_years (int): Number of financial years to retain in full before
-            applying sampling.
-
-        quarter_months (tuple[int, ...]): Months considered valid for quarterly sampling
-            of historical data (Defaults to Jan, Apr, Jul, and Oct).
-
-        date_col (str): Name of the date column the filter is applied to. Defaults to
-            the CQC location import date; datasets keyed on a different date column
-            (e.g. the SLV pipeline's ASCWDS workplace import date) pass their own.
-
-        cutoff_date (date | None, optional): If given, acts as a hard floor: rows
-            earlier than this date are always excluded, even if their month falls
-            within `quarter_months`. Defaults to None (the historical sampling
-            window is unbounded).
+        today (date | None): Reference date for financial year boundaries. Defaults to today.
+        fy_start_month (int): Month the financial year starts in. Defaults to April.
+        lookback_fy_years (int): Financial years to retain before the current one.
+        cutoff_date (date | None): Optional hard floor below the lookback window.
 
     Returns:
-        pl.Expr: A Polars boolean expression that can be used inside `.filter()` or
-            `.with_columns()` to select rows based on the reduced data strategy.
+        pl.Expr: Boolean expression for `.filter()`.
     """
     today: date = today or date.today()
 
     fy_year = today.year if today.month >= fy_start_month else today.year - 1
 
-    monthly_start = date(fy_year - lookback_fy_years, fy_start_month, 1)
+    lookback_start = date(fy_year - lookback_fy_years, fy_start_month, 1)
 
-    dt = pl.col(date_col)
+    dt = pl.col(IndCQC.cqc_location_import_date)
 
-    expr = (dt >= monthly_start) | (
-        (dt < monthly_start) & (dt.dt.month().is_in(quarter_months))
-    )
+    expr = dt >= lookback_start
 
     if cutoff_date is not None:
         expr = expr & (dt >= cutoff_date)
@@ -179,7 +143,7 @@ def earliest_file_per_month_filter_expr(
     matching that date, reducing a dataset carrying multiple files per month down to one.
 
     Returning an expression rather than a filtered LazyFrame lets callers attach it
-    directly to a `.filter()` chain alongside other predicates (e.g. reduced_data_filter_expr),
+    directly to a `.filter()` chain alongside other predicates (e.g. lookback_cap_filter_expr),
     keeping the query lazy end-to-end.
 
     Args:
@@ -202,7 +166,7 @@ def not_null_filter_expr(column: str) -> pl.Expr:
 
     Returning an expression rather than a filtered LazyFrame lets callers attach it
     directly to a `.filter()` chain alongside other predicates (e.g.
-    reduced_data_filter_expr), keeping the query lazy end-to-end.
+    lookback_cap_filter_expr), keeping the query lazy end-to-end.
 
     Args:
         column (str): Name of the column to check for non-null values.
