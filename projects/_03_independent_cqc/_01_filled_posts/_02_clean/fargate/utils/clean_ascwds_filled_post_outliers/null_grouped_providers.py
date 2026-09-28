@@ -146,7 +146,7 @@ def calculate_data_for_grouped_provider_identification(
         NGPcol.count_of_awcwds_locations_with_data_in_provider: pl.count(
             IndCQC.ascwds_filled_posts_dedup_clean
         ),
-        NGPcol.number_of_beds_at_provider: pl.sum(IndCQC.number_of_beds),
+        IndCQC.number_of_beds_at_provider: pl.sum(IndCQC.number_of_beds),
         NGPcol.provider_pir_count: pl.count(NGPcol.location_pir_average),
         NGPcol.provider_pir_sum: pl.sum(NGPcol.location_pir_average),
     }
@@ -225,7 +225,7 @@ def null_care_home_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     ascwds_filled_posts_above_provider_threshold = pl.col(
         IndCQC.ascwds_filled_posts_dedup_clean
     ) >= NullGroupedProvidersConfig.POSTS_PER_BED_AT_PROVIDER_MULTIPLIER * pl.col(
-        NGPcol.number_of_beds_at_provider
+        IndCQC.number_of_beds_at_provider
     )
 
     lf = lf.with_columns(

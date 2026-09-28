@@ -125,6 +125,9 @@ def main(
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(IndCqcColumns.number_of_beds, 0, 500, na_pass=True)
         .col_vals_between(
+            IndCqcColumns.number_of_beds_at_provider, 0, 500, na_pass=True
+        )
+        .col_vals_between(
             IndCqcColumns.pir_people_directly_employed_cleaned, 1, 1500, na_pass=True
         )
         .col_vals_between(IndCqcColumns.total_staff_bounded, 1, 3000, na_pass=True)

@@ -256,6 +256,7 @@ class IndCqcColumns:
         "national_percentage_other_filled_posts"
     )
     number_of_beds: str = CQCLClean.number_of_beds
+    number_of_beds_at_provider: str = "number_of_beds_at_provider"
     number_of_beds_banded: str = "number_of_beds_banded"
     number_of_beds_banded_for_rolling_avg: str = (
         number_of_beds_banded + "_for_rolling_avg"
@@ -413,7 +414,6 @@ class NullGroupedProviderColumns:
     )
     count_of_cqc_locations_in_provider: str = "count_of_cqc_locations_in_provider"
     location_pir_average: str = "location_pir_average"
-    number_of_beds_at_provider: str = "number_of_beds_at_provider"
     potential_grouped_provider: str = "potential_grouped_provider"
     provider_pir_count: str = "provider_pir_count"
     provider_pir_sum: str = "provider_pir_sum"
