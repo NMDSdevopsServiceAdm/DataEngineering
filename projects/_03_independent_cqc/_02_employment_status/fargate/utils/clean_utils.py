@@ -148,7 +148,7 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
         total_columns=RAW_COUNT_COLUMNS,
         share_columns=[EmpStatus.permanent_count, EmpStatus.temporary_count],
         columns_to_null=CLEAN_COUNT_COLUMNS,
-        minimum_total=ORG_STAFF_THRESHOLD,
+        minimum_group_size=ORG_STAFF_THRESHOLD,
         maximum_share=ORG_PERMANENT_TEMPORARY_RATIO_THRESHOLD,
     )
     lf = filtering_utils.add_filtering_rule_column(
