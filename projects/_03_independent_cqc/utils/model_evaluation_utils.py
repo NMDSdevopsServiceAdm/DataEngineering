@@ -103,52 +103,52 @@ def mean_period_to_period_change(
     )
 
 
-def aggregate_totals_by_cell(
+def aggregate_totals_by_group(
     lf: pl.LazyFrame,
     predicted_column: str,
     actual_column: str,
-    cell_columns: list[str],
+    grouping_columns: list[str],
 ) -> pl.LazyFrame:
     """
-    Sum predicted and known filled posts into cells.
+    Sum predicted and known filled posts into groups.
 
     Only rows with a known value are used, so predicted and known totals cover the same rows.
 
     Args:
-        lf (pl.LazyFrame): dataset containing the predicted, known and cell columns
+        lf (pl.LazyFrame): dataset containing the predicted, known and grouping columns
         predicted_column (str): the predicted filled posts column
         actual_column (str): the known filled posts column
-        cell_columns (list[str]): the columns defining each cell
+        grouping_columns (list[str]): the columns defining each group
 
     Returns:
-        pl.LazyFrame: a row per cell, with its summed predicted and known filled posts
+        pl.LazyFrame: a row per group, with its summed predicted and known filled posts
     """
     lf = lf.filter(pl.col(actual_column).is_not_null())
 
-    return lf.group_by(cell_columns).agg(
+    return lf.group_by(grouping_columns).agg(
         pl.col(predicted_column).cast(pl.Float64).sum(),
         pl.col(actual_column).cast(pl.Float64).sum(),
     )
 
 
-def score_cell_totals(
-    cells_lf: pl.LazyFrame,
+def score_group_totals(
+    groups_lf: pl.LazyFrame,
     predicted_column: str,
     actual_column: str,
     by_columns: list[str] | None = None,
 ) -> pl.LazyFrame:
     """
-    Score predicted against known cell totals with R² and weighted absolute % error.
+    Score predicted against known group totals with R² and weighted absolute % error.
 
-    R² is unweighted across cells. The error weights each cell by its known total, so bigger
-    cells count for more: sum(|predicted - known|) / sum(known).
+    R² is unweighted across groups. The error weights each group by its known total, so bigger
+    groups count for more: sum(|predicted - known|) / sum(known).
 
     Args:
-        cells_lf (pl.LazyFrame): a row per cell, such as from `aggregate_totals_by_cell`
+        groups_lf (pl.LazyFrame): a row per group, such as from `aggregate_totals_by_group`
         predicted_column (str): the predicted total column
         actual_column (str): the known total column
         by_columns (list[str] | None): columns to score separately by, such as the fold.
-            Defaults to scoring all cells together.
+            Defaults to scoring all groups together.
 
     Returns:
         pl.LazyFrame: a row (per group), with its "r2" and "weighted_absolute_percentage_error"
@@ -167,7 +167,7 @@ def score_cell_totals(
     ]
 
     return (
-        cells_lf.group_by(by_columns).agg(scores)
+        groups_lf.group_by(by_columns).agg(scores)
         if by_columns
-        else cells_lf.select(scores)
+        else groups_lf.select(scores)
     )

@@ -142,24 +142,24 @@ class TestMeanPeriodToPeriodChange:
         )
 
 
-class TestAggregateTotalsByCell:
+class TestAggregateTotalsByGroup:
     @staticmethod
     def aggregate(case) -> pl.LazyFrame:
-        return job.aggregate_totals_by_cell(
+        return job.aggregate_totals_by_group(
             pl.LazyFrame(case.input_data),
             predicted_column=IndCQC.estimate_filled_posts,
             actual_column=IndCQC.ascwds_filled_posts_dedup_clean,
-            cell_columns=[IndCQC.primary_service_type],
+            grouping_columns=[IndCQC.primary_service_type],
         )
 
     @pytest.mark.parametrize(
         "case",
         [
             c.as_pytest_param()
-            for c in Data.cell_totals_sum_predicted_and_known_posts_test_cases
+            for c in Data.group_totals_sum_predicted_and_known_posts_test_cases
         ],
     )
-    def test_cell_totals_sum_predicted_and_known_posts(self, case):
+    def test_group_totals_sum_predicted_and_known_posts(self, case):
         pl_testing.assert_frame_equal(
             self.aggregate(case),
             pl.LazyFrame(case.expected_data),
@@ -181,10 +181,10 @@ class TestAggregateTotalsByCell:
         )
 
 
-class TestScoreCellTotals:
+class TestScoreGroupTotals:
     @staticmethod
     def score(case) -> pl.LazyFrame:
-        return job.score_cell_totals(
+        return job.score_group_totals(
             pl.LazyFrame(case.input_data),
             predicted_column=IndCQC.estimate_filled_posts,
             actual_column=IndCQC.ascwds_filled_posts_dedup_clean,

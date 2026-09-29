@@ -255,7 +255,7 @@ class MeanPeriodToPeriodChangeTestCase:
 
 
 @dataclass
-class AggregateTotalsByCellTestCase:
+class AggregateTotalsByGroupTestCase:
     id: str
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
@@ -265,7 +265,7 @@ class AggregateTotalsByCellTestCase:
 
 
 @dataclass
-class ScoreCellTotalsTestCase:
+class ScoreGroupTotalsTestCase:
     id: str
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
@@ -438,9 +438,9 @@ class TestModelEvaluationUtilsData:
         },
     )
 
-    cell_totals_sum_predicted_and_known_posts_test_cases = [
-        AggregateTotalsByCellTestCase(
-            id="two_rows_in_a_cell_are_summed",
+    group_totals_sum_predicted_and_known_posts_test_cases = [
+        AggregateTotalsByGroupTestCase(
+            id="two_rows_in_a_group_are_summed",
             input_data={
                 IndCQC.primary_service_type: [
                     PrimaryServiceType.non_residential,
@@ -462,8 +462,8 @@ class TestModelEvaluationUtilsData:
     ]
 
     rows_without_known_posts_excluded_from_totals_test_cases = [
-        AggregateTotalsByCellTestCase(
-            id="row_missing_a_known_value_left_out_of_its_cell_totals",
+        AggregateTotalsByGroupTestCase(
+            id="row_missing_a_known_value_left_out_of_its_group_totals",
             input_data={
                 IndCQC.primary_service_type: [
                     PrimaryServiceType.non_residential,
@@ -481,8 +481,8 @@ class TestModelEvaluationUtilsData:
     ]
 
     perfect_totals_test_cases = [
-        ScoreCellTotalsTestCase(
-            id="every_cell_total_predicted_exactly",
+        ScoreGroupTotalsTestCase(
+            id="every_group_total_predicted_exactly",
             input_data={
                 IndCQC.estimate_filled_posts: [10.0, 20.0, 30.0],
                 IndCQC.ascwds_filled_posts_dedup_clean: [10.0, 20.0, 30.0],
@@ -494,10 +494,10 @@ class TestModelEvaluationUtilsData:
         ),
     ]
 
-    # Fold 0 is predicted exactly; fold 1 misses every cell by 10, a fifth of its total.
+    # Fold 0 is predicted exactly; fold 1 misses every group by 10, a fifth of its total.
     total_scores_split_by_fold_test_cases = [
-        ScoreCellTotalsTestCase(
-            id="each_fold_scored_on_its_own_cells",
+        ScoreGroupTotalsTestCase(
+            id="each_fold_scored_on_its_own_groups",
             input_data={
                 ModelEvaluation.fold: [0, 0, 1, 1],
                 IndCQC.estimate_filled_posts: [10.0, 30.0, 20.0, 20.0],
