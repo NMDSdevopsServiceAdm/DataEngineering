@@ -9,10 +9,10 @@ from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns, PartitionKeys
+from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     JobRoleFilteringRule,
-    MainJobRoleLabels,
 )
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,

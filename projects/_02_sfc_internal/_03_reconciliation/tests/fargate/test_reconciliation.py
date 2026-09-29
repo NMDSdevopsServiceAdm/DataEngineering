@@ -156,7 +156,7 @@ class TestPrepareLatestCleanedAscwdsWorkforceData:
         returned_ids = set(
             cqc_registered_lf.collect()[AWPClean.establishment_id].to_list()
         )
-        assert returned_ids == {"100", "103", "201", "202"}
+        assert returned_ids == {"100", "103", "104", "201", "202"}
 
     def test_returns_only_parent_accounts_in_the_parent_lookup(self):
         _, parent_accounts_lf = job.prepare_latest_cleaned_ascwds_workforce_data(
@@ -185,6 +185,18 @@ class TestPrepareLatestCleanedAscwdsWorkforceData:
             .item()
         )
         assert region == "I - Eastern"
+
+    def test_applies_region_id_labels_for_the_not_known_sentinel(self):
+        cqc_registered_lf, _ = job.prepare_latest_cleaned_ascwds_workforce_data(
+            self.input_lf()
+        )
+
+        region = (
+            cqc_registered_lf.filter(pl.col(AWPClean.establishment_id) == "104")
+            .collect()[AWPClean.region_id]
+            .item()
+        )
+        assert region == "Not known"
 
 
 FIRST_OF_MOST_RECENT_MONTH = date(2024, 4, 1)

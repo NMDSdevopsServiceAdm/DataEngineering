@@ -116,20 +116,20 @@ jobs:
           command: |
             mkdir -p /tmp/bake
             for domain in ascwds capacity_tracker cqc_pir ons_pd; do
-              python scripts/select_raw_bucket_seed.py --domain "$domain" > "/tmp/bake/seed-$domain"
+              python scripts/select_ci_gate.py --gate "raw-bucket-$domain" > "/tmp/bake/seed-$domain"
               echo "Seed $domain: $(cat /tmp/bake/seed-$domain)"
             done
       - run:
           name: Decide whether to seed archive sample data
           command: |
             mkdir -p /tmp/bake
-            python scripts/select_archive_sample_seed.py > /tmp/bake/seed-archive-sample
+            python scripts/select_ci_gate.py --gate archive-sample > /tmp/bake/seed-archive-sample
             echo "Seed archive sample: $(cat /tmp/bake/seed-archive-sample)"
       - run:
           name: Decide whether to run CQC integration tests
           command: |
             mkdir -p /tmp/bake
-            python scripts/select_cqc_integration_test_seed.py > /tmp/bake/run-cqc-integration-tests
+            python scripts/select_ci_gate.py --gate cqc-integration-tests > /tmp/bake/run-cqc-integration-tests
             echo "Run CQC integration tests: $(cat /tmp/bake/run-cqc-integration-tests)"
       - persist_to_workspace:
           # Namespaced, because later jobs attach this same workspace at the

@@ -13,7 +13,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import (
+from utils.column_values.ascwds_labelled_vocab import (
     MainJobRoleLabels,
     PublishedJobRoleLabels,
 )
