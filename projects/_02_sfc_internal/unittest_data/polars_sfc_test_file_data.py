@@ -254,23 +254,32 @@ class FlattenCQCRatings:
         ("20240101", "2024", "01", "01", "estab-1", "1-001"),
     ]
 
-    current_ratings_rows = [
-        (
-            "1-001",
+    def _current_ratings(location_id, key_question_ratings):
+        return (
+            location_id,
             "Registered",
             {
                 "overall": {
                     "reportDate": "2024-01-01",
                     "rating": "Good",
-                    "keyQuestionRatings": [
-                        {"name": "Safe", "rating": "Good"},
-                        {"name": "Well-led", "rating": "Good"},
-                        {"name": "Caring", "rating": "Outstanding"},
-                        {"name": "Responsive", "rating": "Inspected but not rated"},
-                        {"name": "Effective", "rating": "Requires improvement"},
-                    ],
+                    "keyQuestionRatings": key_question_ratings,
                 }
             },
+        )
+
+    def _kq(name, rating="Good"):
+        return {"name": name, "rating": rating}
+
+    current_ratings_rows = [
+        _current_ratings(
+            "1-001",
+            [
+                _kq("Safe"),
+                _kq("Well-led"),
+                _kq("Caring", "Outstanding"),
+                _kq("Responsive", "Inspected but not rated"),
+                _kq("Effective", "Requires improvement"),
+            ],
         ),
     ]
     expected_flatten_current_ratings_rows = [
@@ -301,25 +310,9 @@ class FlattenCQCRatings:
         ),
     ]
 
-    # A location with fewer than 5 keyQuestionRatings entries. Spark's
-    # out-of-range array index returns null; Polars' .list.get() raises unless
-    # null_on_oob=True is passed, so the missing Caring/Responsive/Effective
-    # positions must come back as null rather than crashing the job.
+    # Fewer than 5 key questions: missing positions must be null, not an error
     current_ratings_short_key_question_list_rows = [
-        (
-            "1-002",
-            "Registered",
-            {
-                "overall": {
-                    "reportDate": "2024-01-01",
-                    "rating": "Good",
-                    "keyQuestionRatings": [
-                        {"name": "Safe", "rating": "Good"},
-                        {"name": "Well-led", "rating": "Good"},
-                    ],
-                }
-            },
-        ),
+        _current_ratings("1-002", [_kq("Safe"), _kq("Well-led")]),
     ]
     expected_prepare_current_ratings_short_key_question_list_rows = [
         (
@@ -336,24 +329,27 @@ class FlattenCQCRatings:
         ),
     ]
 
+    def _historic_entry(report_date, key_question_ratings):
+        return {
+            "reportDate": report_date,
+            "overall": {"rating": "Good", "keyQuestionRatings": key_question_ratings},
+        }
+
     historic_ratings_rows = [
         (
             "1-001",
             "Registered",
             [
-                {
-                    "reportDate": "2023-01-01",
-                    "overall": {
-                        "rating": "Good",
-                        "keyQuestionRatings": [
-                            {"name": "Safe", "rating": "Good"},
-                            {"name": "Well-led", "rating": "Good"},
-                            {"name": "Caring", "rating": "Good"},
-                            {"name": "Responsive", "rating": "Good"},
-                            {"name": "Effective", "rating": "Good"},
-                        ],
-                    },
-                },
+                _historic_entry(
+                    "2023-01-01",
+                    [
+                        _kq("Safe"),
+                        _kq("Well-led"),
+                        _kq("Caring"),
+                        _kq("Responsive"),
+                        _kq("Effective"),
+                    ],
+                )
             ],
         ),
     ]
@@ -372,25 +368,15 @@ class FlattenCQCRatings:
         ),
     ]
 
-    def _historic_entry(report_date, safe_rating):
-        return {
-            "reportDate": report_date,
-            "overall": {
-                "rating": "Good",
-                "keyQuestionRatings": [
-                    {"name": "Safe", "rating": safe_rating},
-                    {"name": "Well-led", "rating": "Good"},
-                ],
-            },
-        }
-
     historic_ratings_duplicate_date_rows = [
         (
             "1-001",
             "Registered",
             [
-                _historic_entry("2023-01-01", "Good"),
-                _historic_entry("2023-01-01", "Inadequate"),
+                _historic_entry("2023-01-01", [_kq("Safe"), _kq("Well-led")]),
+                _historic_entry(
+                    "2023-01-01", [_kq("Safe", "Inadequate"), _kq("Well-led")]
+                ),
             ],
         ),
     ]
@@ -421,16 +407,27 @@ class FlattenCQCRatings:
         ),
     ]
 
-    def _asg_rating(assessment_plan_id, key_question_ratings):
+    def _asg_kq(name, rating="Good"):
+        return {"name": name, "rating": rating, "status": "Assessed"}
+
+    def _asg_entry(published_datetime, assessment_plan_id, key_question_ratings):
         return {
-            "assessmentPlanId": assessment_plan_id,
-            "title": "Care Home Assessment",
-            "assessmentDate": "2024-01-02",
-            "assessmentPlanStatus": "Assessed",
-            "name": "Care Homes",
-            "rating": "Good",
-            "status": "Current",
-            "keyQuestionRatings": key_question_ratings,
+            "assessmentPlanPublishedDateTime": published_datetime,
+            "ratings": {
+                "overall": [],
+                "asgRatings": [
+                    {
+                        "assessmentPlanId": assessment_plan_id,
+                        "title": "Care Home Assessment",
+                        "assessmentDate": "2024-01-02",
+                        "assessmentPlanStatus": "Assessed",
+                        "name": "Care Homes",
+                        "rating": "Good",
+                        "status": "Current",
+                        "keyQuestionRatings": key_question_ratings,
+                    }
+                ],
+            },
         }
 
     prepare_assessment_ratings_rows = [
@@ -438,44 +435,17 @@ class FlattenCQCRatings:
             "1-001",
             "Registered",
             [
-                {
-                    "assessmentPlanPublishedDateTime": "2024-01-01 00:00:00",
-                    "ratings": {
-                        "overall": [],
-                        "asgRatings": [
-                            _asg_rating(
-                                "AP1",
-                                [
-                                    {
-                                        "name": "Safe",
-                                        "rating": "Good",
-                                        "status": "Assessed",
-                                    },
-                                    {
-                                        "name": "Well-led",
-                                        "rating": "Good",
-                                        "status": "Assessed",
-                                    },
-                                    {
-                                        "name": "Caring",
-                                        "rating": "Good",
-                                        "status": "Assessed",
-                                    },
-                                    {
-                                        "name": "Responsive",
-                                        "rating": "Good",
-                                        "status": "Assessed",
-                                    },
-                                    {
-                                        "name": "Effective",
-                                        "rating": "Good",
-                                        "status": "Assessed",
-                                    },
-                                ],
-                            ),
-                        ],
-                    },
-                }
+                _asg_entry(
+                    "2024-01-01 00:00:00",
+                    "AP1",
+                    [
+                        _asg_kq("Safe"),
+                        _asg_kq("Well-led"),
+                        _asg_kq("Caring"),
+                        _asg_kq("Responsive"),
+                        _asg_kq("Effective"),
+                    ],
+                )
             ],
         ),
     ]
@@ -501,57 +471,24 @@ class FlattenCQCRatings:
         ),
     ]
 
-    # Two `keyQuestionRatings` entries share the same key question ("Safe") within a
-    # single asg_ratings entry - i.e. duplicate the full pivot grain. The first entry
-    # in raw array order ("Good") must always win, regardless of engine/internal order.
+    # "Safe" appears twice; the first in raw array order must win
     prepare_assessment_ratings_tiebreaker_rows = [
         (
             "1-001",
             "Registered",
             [
-                {
-                    "assessmentPlanPublishedDateTime": "2024-02-01 00:00:00",
-                    "ratings": {
-                        "overall": [],
-                        "asgRatings": [
-                            _asg_rating(
-                                "AP2",
-                                [
-                                    {
-                                        "name": "Safe",
-                                        "rating": "Good",
-                                        "status": "Assessed",
-                                    },
-                                    {
-                                        "name": "Safe",
-                                        "rating": "Requires improvement",
-                                        "status": "Assessed",
-                                    },
-                                    {
-                                        "name": "Well-led",
-                                        "rating": "Good",
-                                        "status": "Assessed",
-                                    },
-                                    {
-                                        "name": "Caring",
-                                        "rating": "Good",
-                                        "status": "Assessed",
-                                    },
-                                    {
-                                        "name": "Responsive",
-                                        "rating": "Good",
-                                        "status": "Assessed",
-                                    },
-                                    {
-                                        "name": "Effective",
-                                        "rating": "Good",
-                                        "status": "Assessed",
-                                    },
-                                ],
-                            ),
-                        ],
-                    },
-                }
+                _asg_entry(
+                    "2024-02-01 00:00:00",
+                    "AP2",
+                    [
+                        _asg_kq("Safe"),
+                        _asg_kq("Safe", "Requires improvement"),
+                        _asg_kq("Well-led"),
+                        _asg_kq("Caring"),
+                        _asg_kq("Responsive"),
+                        _asg_kq("Effective"),
+                    ],
+                )
             ],
         ),
     ]
@@ -577,17 +514,8 @@ class FlattenCQCRatings:
         ),
     ]
 
-    # A second location alongside one with real ratings: its raw feed has an
-    # "overall" rating populated but its keyQuestionRatings is genuinely null
-    # (not an empty list). Spark's F.explode() drops the row entirely for
-    # both an empty list and a null list; in Polars this needs
-    # keep_nulls=False as well as empty_as_null=False on every explode, or
-    # the row survives with a non-null "rating" and no key question
-    # breakdown, wrongly tripping the overall-ratings guard downstream. The
-    # other, unaffected location is included so the pivot still has rows to
-    # produce its key-question columns from - this scenario can't be tested
-    # in isolation, since a pivot over zero rows lacks those columns
-    # entirely regardless of engine.
+    # 1-002 has null (not empty) keyQuestionRatings and must be dropped. 1-001 is
+    # included as a pivot over zero rows would lack the key question columns.
     prepare_assessment_ratings_null_key_question_ratings_rows = [
         *prepare_assessment_ratings_rows,
         (

@@ -108,7 +108,7 @@ prepare_current_ratings_cases = [
         expected_rows=Data.expected_prepare_current_ratings_rows,
     ),
     PrepareCurrentRatingsCase(
-        id="fills_missing_key_questions_with_null_when_fewer_than_five_present",
+        id="fills_missing_key_questions_with_null_when_fewer_than_five",
         rows=Data.current_ratings_short_key_question_list_rows,
         expected_rows=Data.expected_prepare_current_ratings_short_key_question_list_rows,
     ),
@@ -122,9 +122,7 @@ class TestPrepareCurrentRatings:
     )
     def test_prepare_current_ratings_returns_expected_values(self, rows, expected_rows):
         input_lf = pl.LazyFrame(
-            rows,
-            schema=Schemas.current_ratings_schema,
-            orient="row",
+            rows, schema=Schemas.current_ratings_schema, orient="row"
         )
 
         returned_df = job.prepare_current_ratings(input_lf).collect()
@@ -154,7 +152,7 @@ prepare_historic_ratings_cases = [
         expected_rows=Data.expected_prepare_historic_ratings_rows,
     ),
     PrepareHistoricRatingsCase(
-        id="keeps_separate_rows_for_entries_with_the_same_date",
+        id="keeps_separate_rows_for_entries_with_same_date",
         rows=Data.historic_ratings_duplicate_date_rows,
         expected_rows=Data.expected_prepare_historic_ratings_duplicate_date_rows,
     ),
@@ -170,9 +168,7 @@ class TestPrepareHistoricRatings:
         self, rows, expected_rows
     ):
         input_lf = pl.LazyFrame(
-            rows,
-            schema=Schemas.historic_ratings_schema,
-            orient="row",
+            rows, schema=Schemas.historic_ratings_schema, orient="row"
         )
 
         returned_df = job.prepare_historic_ratings(input_lf).collect()
@@ -202,7 +198,7 @@ prepare_assessment_ratings_cases = [
         expected_rows=Data.expected_prepare_assessment_ratings_rows,
     ),
     PrepareAssessmentRatingsCase(
-        id="duplicate_key_question_in_raw_array_keeps_first_explode_order_deterministically",
+        id="duplicate_key_question_keeps_first_in_raw_order",
         rows=Data.prepare_assessment_ratings_tiebreaker_rows,
         expected_rows=Data.expected_prepare_assessment_ratings_tiebreaker_rows,
     ),
@@ -229,9 +225,7 @@ class TestPrepareAssessmentRatings:
         returned_df = job.prepare_assessment_ratings(input_lf).collect()
 
         expected_df = pl.LazyFrame(
-            expected_rows,
-            schema=Schemas.assessment_ratings_output_schema,
-            orient="row",
+            expected_rows, schema=Schemas.assessment_ratings_output_schema, orient="row"
         ).collect()
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
 
