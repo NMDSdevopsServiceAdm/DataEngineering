@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - Added a new "Estimate SLV counts" stage to the Ind-CQC-SLV state machine (`_05_estimate_counts`), with its own row-count validation step. The stage is currently a placeholder pass-through pending the starters/leavers/vacancies count derivation logic.
 - Added project-level group-share aggregation and R²/MAE scoring utilities to `_03_independent_cqc`, for any categorical breakdown model.
 - Added group-level totals scoring (R² and weighted absolute % error) to the project-level model evaluation utilities, for scoring filled posts model predictions.
+- Added a project-level utility that nulls chosen columns for groups where a subset's share of the group total is too low, for reuse across categorical breakdowns.
 
 
 ### Changed
