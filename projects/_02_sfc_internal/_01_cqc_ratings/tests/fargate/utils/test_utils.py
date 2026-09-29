@@ -11,6 +11,7 @@ from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import (
     FlattenCQCRatings as Schemas,
 )
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 
 
 class TestKeepLatestPerKey:
@@ -103,7 +104,7 @@ class PrepareCurrentRatingsCase:
 
 prepare_current_ratings_cases = [
     PrepareCurrentRatingsCase(
-        id="flattens_recodes_and_labels_as_current",
+        id="flattens_and_labels_as_current",
         rows=Data.current_ratings_rows,
         expected_rows=Data.expected_prepare_current_ratings_rows,
     ),
@@ -275,6 +276,20 @@ class TestMergeCqcRatings:
         ).collect()
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
 
+    def test_returns_null_date_when_assessment_datetime_is_unparseable(self):
+        assessment_lf = pl.LazyFrame(
+            Data.assessment_ratings_unparseable_date_rows,
+            schema=Schemas.merge_assessment_ratings_schema,
+            orient="row",
+        )
+        standard_lf = pl.LazyFrame(
+            [], schema=Schemas.merge_standard_ratings_schema, orient="row"
+        )
+
+        returned_df = job.merge_cqc_ratings(assessment_lf, standard_lf).collect()
+
+        assert returned_df[CQCRatings.date].to_list() == [None]
+
 
 class TestRecodeUnknownCodesToNull:
     def test_recodes_non_rating_labels_to_null(self):
@@ -425,7 +440,7 @@ class TestAddNumericalRatings:
 
 
 class TestCreateStandardRatingsDataset:
-    def test_selects_columns_and_deduplicates_rows(self):
+    def test_selects_only_the_standard_ratings_columns(self):
         input_lf = pl.LazyFrame(
             Data.create_standard_ratings_dataset_rows,
             schema=Schemas.full_ratings_schema,
@@ -434,7 +449,7 @@ class TestCreateStandardRatingsDataset:
 
         returned_df = job.create_standard_ratings_dataset(input_lf).collect()
 
-        assert returned_df.height == 1
+        assert returned_df.columns == list(Schemas.full_ratings_schema.names())
 
 
 class TestAddLocationIdHash:

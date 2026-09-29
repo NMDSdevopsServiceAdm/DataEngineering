@@ -62,8 +62,10 @@ def keep_latest_per_key(lf: pl.LazyFrame, key_col: str, order_col: str) -> pl.La
     """
     Retains only the latest row for each unique key, based on a specified ordering column.
 
-    Sorts descending by `order_col` and keeps the first row seen per `key_col`, i.e.
-    the row with the highest `order_col` value per key.
+    Finds the highest `order_col` value per key from those two columns alone, then
+    semi-joins back to the full frame. This avoids sorting every row (including wide
+    nested columns) just to discard all but one per key. A final `unique` on the key
+    guarantees one row per key if the highest `order_col` value is tied.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame.
@@ -74,7 +76,10 @@ def keep_latest_per_key(lf: pl.LazyFrame, key_col: str, order_col: str) -> pl.La
     Returns:
         pl.LazyFrame: A LazyFrame containing only the latest row per key.
     """
-    return lf.sort(order_col, descending=True).unique(subset=[key_col], keep="first")
+    latest_lf = lf.group_by(key_col).agg(pl.col(order_col).max())
+    return lf.join(latest_lf, on=[key_col, order_col], how="semi").unique(
+        subset=[key_col]
+    )
 
 
 def filter_to_first_import_of_most_recent_month(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -97,7 +102,7 @@ def filter_to_first_import_of_most_recent_month(lf: pl.LazyFrame) -> pl.LazyFram
 
 def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Flattens the current ratings struct into one row per location, recoded and labelled.
+    Flattens the current ratings struct into one row per location, labelled as current.
 
     The five key questions are picked out of `keyQuestionRatings` by fixed position
     (Safe, Well-led, Caring, Responsive, Effective). `null_on_oob=True` handles
@@ -107,7 +112,7 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
 
     Returns:
-        pl.LazyFrame: Flattened current ratings, recoded and flagged as current.
+        pl.LazyFrame: Flattened current ratings, flagged as current.
     """
     overall = pl.col(CQCL.current_ratings).struct.field(CQCL.overall)
     key_question_ratings = overall.struct.field(CQCL.key_question_ratings)
@@ -132,7 +137,6 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             for position, alias in enumerate(key_question_aliases)
         ],
     )
-    current_ratings_lf = recode_unknown_codes_to_null(current_ratings_lf)
     current_ratings_lf = add_current_or_historic_column(
         current_ratings_lf, CQCCurrentOrHistoricValues.current
     )
@@ -152,7 +156,7 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
 
     Returns:
-        pl.LazyFrame: Flattened historic ratings, recoded and flagged as historic.
+        pl.LazyFrame: Flattened historic ratings, flagged as historic.
     """
     key_question_aliases = {
         CQCL.safe: CQCRatings.safe_rating,
@@ -196,7 +200,6 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         )
     )
 
-    historic_ratings_lf = recode_unknown_codes_to_null(historic_ratings_lf)
     historic_ratings_lf = add_current_or_historic_column(
         historic_ratings_lf, CQCCurrentOrHistoricValues.historic
     )
@@ -343,9 +346,10 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     Flattens overall and ASG ratings within the assessment field into a pivoted LazyFrame.
 
     CQC's `keyQuestionRatings` have no upstream guarantee of exactly one entry per
-    (location, assessment plan, key question). Sorting by grain + `EXPLODE_ORDER`
-    (each row's raw array position) before the pivot makes `aggregate_function="first"`
-    deterministically keep whichever entry appeared first in the raw feed.
+    (location, assessment plan, key question). Taking each key question's rating
+    ordered by `EXPLODE_ORDER` (each row's raw array position) deterministically keeps
+    whichever entry appeared first in the raw feed. A conditional `group_by` aggregation
+    is used instead of a pivot so the whole function stays lazy.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data, with nested
@@ -360,21 +364,7 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     overall_lf = extract_overall(assessment_lf)
     asg_lf = extract_asg(assessment_lf)
 
-    union_df = (
-        pl.concat([overall_lf, asg_lf], how="diagonal_relaxed")
-        .sort([*assessment_grain_columns, EXPLODE_ORDER])
-        .collect()
-    )
-
-    assessment_ratings_df = union_df.pivot(
-        on=CQCL.key_question_name,
-        index=assessment_grain_columns,
-        values=CQCL.key_question_rating,
-        aggregate_function="first",
-    ).sort(CQCL.assessment_date)
-
-    desired_column_order = [
-        *assessment_grain_columns,
+    key_question_names = [
         CQCL.safe,
         CQCL.effective,
         CQCL.caring,
@@ -382,7 +372,20 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         CQCL.well_led,
     ]
 
-    return assessment_ratings_df.select(desired_column_order).lazy()
+    return (
+        pl.concat([overall_lf, asg_lf], how="diagonal_relaxed")
+        .group_by(assessment_grain_columns)
+        .agg(
+            pl.col(CQCL.key_question_rating)
+            .filter(pl.col(CQCL.key_question_name) == name)
+            .sort_by(
+                pl.col(EXPLODE_ORDER).filter(pl.col(CQCL.key_question_name) == name)
+            )
+            .first()
+            .alias(name)
+            for name in key_question_names
+        )
+    )
 
 
 def raise_error_when_assessment_df_contains_overall_data(
@@ -481,7 +484,7 @@ def merge_cqc_ratings(
         CQCL.location_id,
         CQCL.registration_status,
         pl.col(CQCL.assessment_plan_published_datetime)
-        .str.strptime(pl.Datetime, "%Y-%m-%d %H:%M:%S")
+        .str.strptime(pl.Datetime, "%Y-%m-%d %H:%M:%S", strict=False)
         .cast(pl.Date)
         .alias(CQCRatings.date),
         CQCL.assessment_plan_id,
@@ -511,10 +514,9 @@ def recode_unknown_codes_to_null(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
         ratings_lf (pl.LazyFrame): A LazyFrame of CQC ratings.
 
     Returns:
-        pl.LazyFrame: The same LazyFrame with unknown codes recoded to null and
-            duplicate rows removed.
+        pl.LazyFrame: The same LazyFrame with unknown codes recoded to null.
     """
-    ratings_lf = ratings_lf.with_columns(
+    return ratings_lf.with_columns(
         [
             pl.when(pl.col(col_name).is_in(labels_to_nullify))
             .then(None)
@@ -523,7 +525,6 @@ def recode_unknown_codes_to_null(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
             for col_name in rating_columns_to_clean
         ]
     )
-    return ratings_lf.unique()
 
 
 def add_current_or_historic_column(
@@ -536,7 +537,12 @@ def add_current_or_historic_column(
 
 
 def remove_blank_and_duplicate_rows(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Removes rows with no rating values populated at all, and de-duplicates the rest."""
+    """
+    Removes rows with no rating values populated at all, and de-duplicates the rest.
+
+    This is the only full-row `unique` in the pipeline. Recoding unknown labels to
+    null is what creates duplicates, so de-duplicating once after it is enough.
+    """
     return ratings_lf.filter(
         pl.col(CQCRatings.overall_rating).is_not_null()
         | pl.col(CQCRatings.safe_rating).is_not_null()
@@ -655,13 +661,13 @@ def add_numerical_ratings(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def create_standard_ratings_dataset(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Selects the standard ratings columns and removes duplicate rows.
+    Selects the standard ratings columns.
 
     Args:
         ratings_lf (pl.LazyFrame): A LazyFrame of CQC ratings and assessments.
 
     Returns:
-        pl.LazyFrame: The input LazyFrame with selected columns and duplicate rows removed.
+        pl.LazyFrame: The input LazyFrame with the selected columns.
     """
     return ratings_lf.select(
         CQCL.location_id,
@@ -688,7 +694,7 @@ def create_standard_ratings_dataset(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
         CQCRatings.responsive_rating_value,
         CQCRatings.effective_rating_value,
         CQCRatings.total_rating_value,
-    ).unique()
+    )
 
 
 def add_location_id_hash(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:

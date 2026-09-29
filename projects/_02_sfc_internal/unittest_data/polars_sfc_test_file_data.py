@@ -304,7 +304,7 @@ class FlattenCQCRatings:
             "Good",
             "Good",
             "Outstanding",
-            None,
+            "Inspected but not rated",
             "Requires improvement",
             "Current",
         ),
@@ -606,6 +606,12 @@ class FlattenCQCRatings:
             "Good",
         ),
     ]
+    assessment_ratings_unparseable_date_rows = [
+        assessment_ratings_for_merging_rows[0][:2]
+        + ("2024-01-01T00:00:00.123Z",)
+        + assessment_ratings_for_merging_rows[0][3:],
+    ]
+
     standard_ratings_for_merging_rows = [
         (
             "1-002",
@@ -849,32 +855,6 @@ class FlattenCQCRatings:
     ]
 
     create_standard_ratings_dataset_rows = [
-        (
-            "1-001",
-            "Registered",
-            "2024-01-01",
-            "AP1",
-            "Care Home Assessment",
-            "2024-01-02",
-            "Assessed",
-            "Care Homes",
-            "assessment.ratings.asg_ratings",
-            "SAF",
-            1,
-            "Current",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            4,
-            4,
-            4,
-            4,
-            4,
-            20,
-        ),
         (
             "1-001",
             "Registered",
