@@ -14,8 +14,8 @@ from utils.column_values.categorical_column_values import CQCCurrentOrHistoricVa
 # (Polars only drops empty ones by default).
 SPARK_EXPLODE = {"empty_as_null": False, "keep_nulls": False}
 
-# Transient column preserving raw explode order for the deterministic tiebreak
-# in prepare_assessment_ratings below.
+# Raw array position of each exploded row, so duplicate key question entries are
+# resolved deterministically.
 EXPLODE_ORDER = "explode_order_index"
 
 assessment_grain_columns = [
