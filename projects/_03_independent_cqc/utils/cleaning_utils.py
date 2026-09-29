@@ -128,7 +128,6 @@ def null_columns_where_group_share_too_low(
     total_columns: list[str],
     share_columns: list[str],
     columns_to_null: list[str],
-    minimum_group_size: int,
     maximum_share: float,
 ) -> pl.LazyFrame:
     """
@@ -136,13 +135,11 @@ def null_columns_where_group_share_too_low(
     up too small a share of the group's total.
 
     Per group (`partition_by_columns`), sums `total_columns` across all rows for
-    the total, and `share_columns` for the numerator. Groups with a total below
-    `minimum_group_size` are never nulled, as there is too little data to judge.
-    Of the rest, a group is nulled when numerator / total is at most
-    `maximum_share`. The decision is made at group grain and broadcast to every
-    row of the group with `.over()` rather than a group_by + join, which costs
-    more peak memory for this kind of "attach one aggregate to every row"
-    broadcast.
+    the total, and `share_columns` for the numerator. A group is nulled when
+    numerator / total is at most `maximum_share`. The decision is made at group
+    grain and broadcast to every row of the group with `.over()` rather than a
+    group_by + join, which costs more peak memory for this kind of "attach one
+    aggregate to every row" broadcast.
 
     A row's per-row total is null if any of `total_columns` is null, so such rows
     drop out of the group sums entirely instead of counting as zero.
@@ -157,8 +154,6 @@ def null_columns_where_group_share_too_low(
             include `share_columns`.
         share_columns (list[str]): Columns summed for the numerator.
         columns_to_null (list[str]): Columns to null for flagged groups.
-        minimum_group_size (int): Smallest group total that can be nulled;
-            smaller groups are left as they are.
         maximum_share (float): Largest numerator / total share that is nulled.
 
     Returns:
@@ -179,14 +174,10 @@ def null_columns_where_group_share_too_low(
         [pl.col(c).is_not_null() for c in partition_by_columns]
     )
 
-    share_too_low = (
-        partition_is_not_null
-        & (group_total.over(partition_by_columns) >= minimum_group_size)
-        & (
-            group_share_total.over(partition_by_columns)
-            / group_total.over(partition_by_columns)
-            <= maximum_share
-        )
+    share_too_low = partition_is_not_null & (
+        group_share_total.over(partition_by_columns)
+        / group_total.over(partition_by_columns)
+        <= maximum_share
     )
 
     # Computed once into a flag column, so each `when` below reads it rather than
