@@ -4,9 +4,6 @@ from typing import Any
 
 import pytest
 
-from utils.column_names.ind_cqc_pipeline_columns import (
-    EmploymentStatusColumns as EmpStatus,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     ModelEvaluationColumns as ModelEvaluation,
@@ -519,10 +516,8 @@ class TestModelEvaluationUtilsData:
     ]
 
 
-# Employment status share columns stand in for actuals and model predictions, as any
-# predicted/actual pair of categorical shares would do.
-ACTUAL_SHARES = [EmpStatus.bank_or_pool_percentage, EmpStatus.agency_percentage]
-PREDICTED_SHARES = [EmpStatus.permanent_percentage, EmpStatus.temporary_percentage]
+ACTUAL_SHARES = ["actual_1", "actual_2"]
+PREDICTED_SHARES = ["predicted_1", "predicted_2"]
 NON_RES = PrimaryServiceType.non_residential
 CARE_HOME = PrimaryServiceType.care_home_only
 

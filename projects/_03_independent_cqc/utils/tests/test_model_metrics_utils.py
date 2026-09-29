@@ -26,7 +26,7 @@ SCHEMA_OVERRIDES = {
 
 
 def to_lf(data: dict[str, Any]) -> pl.LazyFrame:
-    """Build a LazyFrame, typing the share columns as in the pipeline."""
+    """Build a LazyFrame, typing the share columns as Float32 like the pipeline's are."""
     return pl.LazyFrame(
         data,
         schema_overrides={
