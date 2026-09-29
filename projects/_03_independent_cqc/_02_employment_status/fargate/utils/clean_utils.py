@@ -9,7 +9,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import EmploymentStatusFilteringRule
 
-ORG_STAFF_THRESHOLD = 10
 ORG_PERMANENT_TEMPORARY_RATIO_THRESHOLD = 0.05
 
 DEDUP_TO_CLEAN_COUNT_COLUMNS: dict[str, str] = {
@@ -130,8 +129,8 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: lf with a _clean column per deduplicated count column
             (the _dedup columns themselves are left untouched), plus
             employment_status_filtering_rule. The _clean columns are nulled
-            for orgs with 10+ staff whose permanent+temporary workers make
-            up 5% or less of that staff.
+            for orgs whose permanent+temporary workers make up 5% or less
+            of their staff.
     """
     lf = lf.with_columns(
         [
@@ -148,7 +147,6 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
         total_columns=RAW_COUNT_COLUMNS,
         share_columns=[EmpStatus.permanent_count, EmpStatus.temporary_count],
         columns_to_null=CLEAN_COUNT_COLUMNS,
-        minimum_group_size=ORG_STAFF_THRESHOLD,
         maximum_share=ORG_PERMANENT_TEMPORARY_RATIO_THRESHOLD,
     )
     lf = filtering_utils.add_filtering_rule_column(

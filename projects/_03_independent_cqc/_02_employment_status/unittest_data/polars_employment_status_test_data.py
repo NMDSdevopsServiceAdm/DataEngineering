@@ -757,9 +757,9 @@ class TestCleanUtilsData:
             },
         ),
         CleanUtilsTestCase(
-            id="sums_staff_and_permanent_temporary_across_every_row_in_the_org",
+            id="nulls_small_org_with_no_permanent_or_temporary_staff",
             input_data={
-                # Sums every job-role row's raw total, across both locations.
+                # No minimum size: 4 staff and none permanent/temporary fails.
                 IndCQC.organisation_id: ["org2"] * 4,
                 IndCQC.location_id: ["loc1", "loc1", "loc2", "loc2"],
                 IndCQC.establishment_id: ["est1", "est1", "est2", "est2"],
@@ -790,14 +790,15 @@ class TestCleanUtilsData:
                 EmpStatus.agency_count_dedup: [0, 0, 0, 0],
                 EmpStatus.other_count: [1, 1, 1, 1],
                 EmpStatus.other_count_dedup: [1, 1, 1, 1],
-                # Total staff sums to 4 (below the 10 threshold), so it isn't
-                # nulled despite a 0 ratio - proves the sum wasn't inflated.
-                EmpStatus.permanent_count_clean: [0, 0, 0, 0],
-                EmpStatus.temporary_count_clean: [0, 0, 0, 0],
-                EmpStatus.bank_or_pool_count_clean: [0, 0, 0, 0],
-                EmpStatus.agency_count_clean: [0, 0, 0, 0],
-                EmpStatus.other_count_clean: [1, 1, 1, 1],
-                EmpStatus.filtering_rule: [EmploymentStatusFilteringRule.populated] * 4,
+                EmpStatus.permanent_count_clean: [None] * 4,
+                EmpStatus.temporary_count_clean: [None] * 4,
+                EmpStatus.bank_or_pool_count_clean: [None] * 4,
+                EmpStatus.agency_count_clean: [None] * 4,
+                EmpStatus.other_count_clean: [None] * 4,
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio
+                ]
+                * 4,
             },
         ),
         CleanUtilsTestCase(
