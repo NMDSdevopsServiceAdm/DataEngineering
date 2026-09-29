@@ -17,6 +17,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import ONScol as ONS
 from utils.column_names.coverage_columns import CoverageColumns
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
@@ -44,6 +47,7 @@ from utils.column_values.categorical_column_values import (
     ContemporaryCSSR,
     CurrentCSSR,
     Dormancy,
+    EmploymentStatusFilteringRule,
     EstimateFilledPostsSource,
     InAscwds,
     JobGroupLabels,
@@ -322,4 +326,11 @@ class SLVCleanCategoricalValues:
     )
     vacancies_filtering_rule_column_values = SLVFilteringRule(
         SLVCols.vacancies_filtering_rule
+    )
+
+
+@dataclass
+class EmploymentStatusCleanCategoricalValues:
+    filtering_rule_column_values = EmploymentStatusFilteringRule(
+        EmpStatus.filtering_rule
     )
