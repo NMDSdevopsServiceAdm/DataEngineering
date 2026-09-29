@@ -21,40 +21,14 @@ DEDUP_TO_CLEAN_COUNT_COLUMNS: dict[str, str] = {
     EmpStatus.agency_count_dedup: EmpStatus.agency_count_clean,
     EmpStatus.other_count_dedup: EmpStatus.other_count_clean,
 }
-
-RATIO_TOO_LOW_COLUMN = "_ratio_too_low"
-
-
-def _create_clean_columns_where_ratio_too_low(
-    lf: pl.LazyFrame, source_to_clean: dict[str, str]
-) -> pl.LazyFrame:
-    """Creates each clean column from its source, nulled wherever RATIO_TOO_LOW_COLUMN
-    is True and copied from the source otherwise - leaving the source untouched."""
-    return lf.with_columns(
-        [
-            pl.when(pl.col(RATIO_TOO_LOW_COLUMN))
-            .then(None)
-            .otherwise(pl.col(source))
-            .alias(clean)
-            for source, clean in source_to_clean.items()
-        ]
-    )
-
-
-def _null_clean_columns_where_ratio_too_low(
-    lf: pl.LazyFrame, clean_columns: list[str]
-) -> pl.LazyFrame:
-    """Further nulls each already-created clean column wherever RATIO_TOO_LOW_COLUMN
-    is True, leaving it as-is otherwise."""
-    return lf.with_columns(
-        [
-            pl.when(pl.col(RATIO_TOO_LOW_COLUMN))
-            .then(None)
-            .otherwise(pl.col(clean))
-            .alias(clean)
-            for clean in clean_columns
-        ]
-    )
+RAW_COUNT_COLUMNS = [
+    EmpStatus.permanent_count,
+    EmpStatus.temporary_count,
+    EmpStatus.bank_or_pool_count,
+    EmpStatus.agency_count,
+    EmpStatus.other_count,
+]
+CLEAN_COUNT_COLUMNS = list(DEDUP_TO_CLEAN_COUNT_COLUMNS.values())
 
 
 def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -124,52 +98,6 @@ def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFram
     )
 
 
-def _dedup_total_staff_expr() -> pl.Expr:
-    """Sums a job-role row's 5 deduplicated employment status counts.
-
-    Reconciles to worker_records_bounded for a populated row, but the 5
-    _dedup columns are nulled together as a group for a row that's an
-    unchanged repeat of its prior snapshot (see
-    deduplicate_employment_status_counts), so a stale row's sum is
-    null and drops out of any later `.sum()` over it entirely - unlike
-    worker_records_bounded, which stays populated regardless. Using
-    worker_records_bounded as the staff denominator let a stale row's
-    numerator (permanent+temporary) shrink to null/0 while its share of the
-    denominator stayed full, producing false positives for locations with
-    genuinely stable, accurate staffing.
-    """
-    return (
-        pl.col(EmpStatus.permanent_count_dedup)
-        + pl.col(EmpStatus.temporary_count_dedup)
-        + pl.col(EmpStatus.bank_or_pool_count_dedup)
-        + pl.col(EmpStatus.agency_count_dedup)
-        + pl.col(EmpStatus.other_count_dedup)
-    )
-
-
-def _dedup_permanent_temporary_total_expr() -> pl.Expr:
-    """Sums a job-role row's permanent+temporary deduplicated counts."""
-    return pl.col(EmpStatus.permanent_count_dedup) + pl.col(
-        EmpStatus.temporary_count_dedup
-    )
-
-
-def _raw_total_staff_expr() -> pl.Expr:
-    """Sums a job-role row's 5 raw employment status counts."""
-    return (
-        pl.col(EmpStatus.permanent_count)
-        + pl.col(EmpStatus.temporary_count)
-        + pl.col(EmpStatus.bank_or_pool_count)
-        + pl.col(EmpStatus.agency_count)
-        + pl.col(EmpStatus.other_count)
-    )
-
-
-def _raw_permanent_temporary_total_expr() -> pl.Expr:
-    """Sums a job-role row's raw permanent+temporary counts."""
-    return pl.col(EmpStatus.permanent_count) + pl.col(EmpStatus.temporary_count)
-
-
 def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Nulls an org's employment status clean counts where too few of its staff
@@ -180,14 +108,9 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     columns created here.
 
     The ticket's org rule is defined at org grain, but this data is at
-    (location, published_job_role_label) grain - about 15 rows per
-    location. This computes the equivalent of aggregating staff and
-    permanent+temporary up to org grain, deciding org_ratio_too_low there,
-    then joining that decision back onto every job-role row of the org -
-    but as a broadcast window function (`.over()`) rather than an actual
-    group_by + join, which costs several GB more peak memory for this kind
-    of "attach one aggregate to every row" broadcast on a comparably-sized
-    real frame (see the over-vs-join skill).
+    (location, published_job_role_label) grain - see
+    cleaningUtils.null_columns_where_group_share_too_low, which sums up to org
+    grain and broadcasts the decision back to every job-role row of the org.
 
     The ratio uses raw counts, not _dedup: _dedup nulls a job-role row that is
     unchanged since its prior snapshot, so summing it across an org would only
@@ -196,9 +119,6 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     ascwds_workplace_import_date) is a unique key, so summing raw counts can't
     double-count. The _clean columns are still created from _dedup, so
     unchanged rows stay null.
-
-    organisation_id can be null, so the rule is gated explicitly on it -
-    otherwise `.over()` would pool unrelated null-org locations into one group.
 
     The 5 _dedup columns are confirmed null/populated together as a group
     (see percentage_share_horizontal's docstring), so permanent_count_dedup
@@ -215,28 +135,24 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
             for orgs with 10+ staff whose permanent+temporary workers make
             up 5% or less of that staff.
     """
-    org_partition = [IndCQC.organisation_id, IndCQC.ascwds_workplace_import_date]
-
-    org_total_staff = _raw_total_staff_expr().sum().over(org_partition)
-    org_permanent_temporary_total = (
-        _raw_permanent_temporary_total_expr().sum().over(org_partition)
+    lf = lf.with_columns(
+        [
+            pl.col(dedup).alias(clean)
+            for dedup, clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.items()
+        ]
     )
-
-    org_ratio_too_low = (
-        pl.col(IndCQC.organisation_id).is_not_null()
-        & (org_total_staff >= ORG_STAFF_THRESHOLD)
-        & (
-            org_permanent_temporary_total / org_total_staff
-            <= ORG_PERMANENT_TEMPORARY_RATIO_THRESHOLD
-        )
+    lf = cleaningUtils.null_columns_where_group_share_too_low(
+        lf,
+        partition_by_columns=[
+            IndCQC.organisation_id,
+            IndCQC.ascwds_workplace_import_date,
+        ],
+        total_columns=RAW_COUNT_COLUMNS,
+        share_columns=[EmpStatus.permanent_count, EmpStatus.temporary_count],
+        columns_to_null=CLEAN_COUNT_COLUMNS,
+        minimum_total=ORG_STAFF_THRESHOLD,
+        maximum_share=ORG_PERMANENT_TEMPORARY_RATIO_THRESHOLD,
     )
-
-    # Materialised once: each window aggregation above would otherwise be
-    # recomputed per clean column, since it's used in several expressions.
-    lf = lf.with_columns(org_ratio_too_low.alias(RATIO_TOO_LOW_COLUMN))
-    lf = _create_clean_columns_where_ratio_too_low(
-        lf, DEDUP_TO_CLEAN_COUNT_COLUMNS
-    ).drop(RATIO_TOO_LOW_COLUMN)
     lf = filtering_utils.add_filtering_rule_column(
         lf,
         EmpStatus.filtering_rule,
@@ -263,11 +179,8 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     employment_status_filtering_rule where it's still 'populated'.
 
     Must run after null_counts_for_low_org_ratio, which creates the columns
-    this narrows further. Same shape as the org rule (see its docstring):
-    aggregates staff and permanent+temporary up to location grain, decides
-    location_ratio_too_low there, and broadcasts it back onto every
-    job-role row of the location via `.over()` instead of a join, for the
-    same peak-memory reason.
+    this narrows further. Same shape as the org rule, but the ratio uses the
+    _dedup counts (see that docstring).
 
     Args:
         lf (pl.LazyFrame): merged employment status data, already processed by
@@ -279,26 +192,21 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
             10+ staff whose permanent+temporary workers make up 1% or less
             of that staff.
     """
-    location_partition = [
-        IndCQC.location_id,
-        IndCQC.ascwds_workplace_import_date,
-    ]
-
-    location_total_staff = _dedup_total_staff_expr().sum().over(location_partition)
-    location_permanent_temporary_total = (
-        _dedup_permanent_temporary_total_expr().sum().over(location_partition)
+    lf = cleaningUtils.null_columns_where_group_share_too_low(
+        lf,
+        partition_by_columns=[
+            IndCQC.location_id,
+            IndCQC.ascwds_workplace_import_date,
+        ],
+        total_columns=list(DEDUP_TO_CLEAN_COUNT_COLUMNS),
+        share_columns=[
+            EmpStatus.permanent_count_dedup,
+            EmpStatus.temporary_count_dedup,
+        ],
+        columns_to_null=CLEAN_COUNT_COLUMNS,
+        minimum_total=LOCATION_STAFF_THRESHOLD,
+        maximum_share=LOCATION_PERMANENT_TEMPORARY_RATIO_THRESHOLD,
     )
-
-    location_ratio_too_low = (location_total_staff >= LOCATION_STAFF_THRESHOLD) & (
-        location_permanent_temporary_total / location_total_staff
-        <= LOCATION_PERMANENT_TEMPORARY_RATIO_THRESHOLD
-    )
-
-    # Materialised once: see null_counts_for_low_org_ratio for why.
-    lf = lf.with_columns(location_ratio_too_low.alias(RATIO_TOO_LOW_COLUMN))
-    lf = _null_clean_columns_where_ratio_too_low(
-        lf, list(DEDUP_TO_CLEAN_COUNT_COLUMNS.values())
-    ).drop(RATIO_TOO_LOW_COLUMN)
     return filtering_utils.update_filtering_rule(
         lf,
         EmpStatus.filtering_rule,
