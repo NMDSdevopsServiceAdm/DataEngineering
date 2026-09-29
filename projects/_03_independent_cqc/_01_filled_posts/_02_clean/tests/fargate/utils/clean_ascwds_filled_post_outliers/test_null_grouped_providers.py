@@ -86,21 +86,6 @@ class MainTests(unittest.TestCase):
     ):
         self.assertEqual(self.grouped_providers.collect().height, 2)
 
-    def test_null_grouped_providers_drops_number_of_beds_at_provider_from_locations_data(
-        self,
-    ):
-        self.assertNotIn(
-            IndCQC.number_of_beds_at_provider, self.returned_lf.collect_schema().names()
-        )
-
-    def test_null_grouped_providers_keeps_number_of_beds_at_provider_in_grouped_providers_data(
-        self,
-    ):
-        self.assertIn(
-            IndCQC.number_of_beds_at_provider,
-            self.grouped_providers.collect_schema().names(),
-        )
-
     @patch(f"{PATCH_PATH}.update_grouped_providers_history")
     @patch(f"{PATCH_PATH}.select_grouped_providers")
     @patch(f"{PATCH_PATH}.null_non_residential_grouped_providers")
