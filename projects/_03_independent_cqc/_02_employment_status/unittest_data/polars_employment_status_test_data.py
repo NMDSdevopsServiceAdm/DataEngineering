@@ -22,11 +22,11 @@ from utils.column_values.ascwds_labelled_vocab import (
     MainJobRoleID,
     MainJobRoleLabels,
     PublishedJobRoleLabels,
-    Region,
 )
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     PrimaryServiceType,
+    Region,
 )
 
 

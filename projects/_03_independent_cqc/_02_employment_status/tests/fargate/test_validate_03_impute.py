@@ -72,4 +72,5 @@ class TestMain:
             "row_count_match",
             "col_vals_between",
             "col_vals_expr",
+            "col_vals_not_null",
         }

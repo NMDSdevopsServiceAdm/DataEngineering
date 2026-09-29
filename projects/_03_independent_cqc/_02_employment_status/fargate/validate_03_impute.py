@@ -105,6 +105,15 @@ def main(
             ),
             brief="imputed percentages sum to 1 where populated",
         )
+        .col_vals_not_null(
+            ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
+            brief="rolling average percentage columns have no nulls",
+        )
+        .col_vals_expr(
+            (pl.sum_horizontal(ROLLING_AVERAGE_PERCENTAGE_COLUMNS) - 1).abs()
+            <= PERCENTAGE_SUM_TOLERANCE,
+            brief="rolling average percentages sum to 1",
+        )
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
