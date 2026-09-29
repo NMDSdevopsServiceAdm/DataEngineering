@@ -11,6 +11,30 @@ from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
+class TestReducedDataFilterExpr:
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.reduced_data_filter_test_cases],
+    )
+    def test_function_returns_expected_values(self, case):
+        date_col = IndCQC.cqc_location_import_date
+
+        expr = job.reduced_data_filter_expr(
+            today=case.today,
+            fy_start_month=case.fy_start_month,
+            lookback_fy_years=case.lookback_fy_years,
+            quarter_months=case.quarter_months,
+            date_col=date_col,
+            cutoff_date=case.cutoff_date,
+        )
+
+        df = pl.DataFrame({date_col: case.input_data})
+
+        result = df.with_columns(expr.alias("keep"))
+
+        assert result["keep"].to_list() == case.expected
+
+
 class TestHasContinuousDataSinceDate:
     has_continuous_data_since_data_schema = pl.Schema(
         [

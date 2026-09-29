@@ -8,6 +8,9 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     ModelEvaluationColumns as ModelEvaluation,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ShareModelColumns as ShareModel,
+)
 from utils.column_values.ascwds_labelled_vocab import PublishedJobRoleLabels
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
@@ -611,6 +614,19 @@ class TestModelEvaluationUtilsData:
     ]
 
 
+ACTUAL_SHARES = ["actual_1", "actual_2"]
+PREDICTED_SHARES = ["predicted_1", "predicted_2"]
+NON_RES = PrimaryServiceType.non_residential
+CARE_HOME = PrimaryServiceType.care_home_only
+
+
+@dataclass
+class ModelMetricsUtilsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
 @dataclass
 class ModelUtilsTestCase:
     id: str
@@ -619,6 +635,159 @@ class ModelUtilsTestCase:
 
     def as_pytest_param(self):
         return pytest.param(self, id=self.id)
+
+
+class TestModelMetricsUtilsData:
+    group_shares_are_worker_weighted_test_cases = [
+        # Unweighted, non-res would be 0.4 for both.
+        ModelMetricsUtilsTestCase(
+            id="weights_each_row_by_its_workers",
+            input_data={
+                IndCQC.primary_service_type: [NON_RES, NON_RES, CARE_HOME],
+                PREDICTED_SHARES[0]: [0.3, 0.5, 0.7],
+                ACTUAL_SHARES[0]: [0.2, 0.6, 0.8],
+                IndCQC.estimate_filled_posts_by_job_role: [3.0, 1.0, 2.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [NON_RES, CARE_HOME],
+                PREDICTED_SHARES[0]: [0.35, 0.7],
+                ACTUAL_SHARES[0]: [0.3, 0.8],
+                ShareModel.group_weight: [4.0, 2.0],
+            },
+        ),
+    ]
+
+    unknown_rows_excluded_from_groups_test_cases = [
+        ModelMetricsUtilsTestCase(
+            id="unknown_row_left_out_of_its_groups_shares_and_weight",
+            input_data={
+                IndCQC.primary_service_type: [NON_RES, NON_RES],
+                PREDICTED_SHARES[0]: [0.5, 0.9],
+                ACTUAL_SHARES[0]: [0.4, None],
+                IndCQC.estimate_filled_posts_by_job_role: [2.0, 8.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [NON_RES],
+                PREDICTED_SHARES[0]: [0.5],
+                ACTUAL_SHARES[0]: [0.4],
+                ShareModel.group_weight: [2.0],
+            },
+        ),
+        # Keeping the row's workers without its prediction would give 0.1.
+        ModelMetricsUtilsTestCase(
+            id="row_without_a_prediction_left_out_of_its_groups_shares_and_weight",
+            input_data={
+                IndCQC.primary_service_type: [NON_RES, NON_RES],
+                PREDICTED_SHARES[0]: [0.5, None],
+                ACTUAL_SHARES[0]: [0.4, 0.9],
+                IndCQC.estimate_filled_posts_by_job_role: [2.0, 8.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [NON_RES],
+                PREDICTED_SHARES[0]: [0.5],
+                ACTUAL_SHARES[0]: [0.4],
+                ShareModel.group_weight: [2.0],
+            },
+        ),
+        ModelMetricsUtilsTestCase(
+            id="group_without_any_known_rows_is_left_out",
+            input_data={
+                IndCQC.primary_service_type: [NON_RES, CARE_HOME],
+                PREDICTED_SHARES[0]: [0.5, 0.9],
+                ACTUAL_SHARES[0]: [0.4, None],
+                IndCQC.estimate_filled_posts_by_job_role: [2.0, 8.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [NON_RES],
+                PREDICTED_SHARES[0]: [0.5],
+                ACTUAL_SHARES[0]: [0.4],
+                ShareModel.group_weight: [2.0],
+            },
+        ),
+    ]
+
+    perfect_predictions_test_cases = [
+        ModelMetricsUtilsTestCase(
+            id="every_share_predicted_exactly",
+            input_data={
+                PREDICTED_SHARES[0]: [0.2, 0.5, 0.7],
+                PREDICTED_SHARES[1]: [0.3, 0.1, 0.2],
+                ACTUAL_SHARES[0]: [0.2, 0.5, 0.7],
+                ACTUAL_SHARES[1]: [0.3, 0.1, 0.2],
+                ShareModel.group_weight: [1.0, 2.0, 3.0],
+            },
+            expected_data={
+                ShareModel.share: ACTUAL_SHARES,
+                IndCQC.r2: [1.0, 1.0],
+                ShareModel.mean_absolute_error: [0.0, 0.0],
+            },
+        ),
+    ]
+
+    # One exact group and one 20 point miss: unweighted, that's R² 0.5 and error 10.
+    larger_groups_weigh_more_test_cases = [
+        ModelMetricsUtilsTestCase(
+            id="miss_in_the_smaller_group_counts_for_less",
+            input_data={
+                PREDICTED_SHARES[0]: [0.5, 0.7],
+                ACTUAL_SHARES[0]: [0.5, 0.9],
+                ShareModel.group_weight: [3.0, 1.0],
+            },
+            expected_data={
+                ShareModel.share: ACTUAL_SHARES[:1],
+                IndCQC.r2: [2 / 3],
+                ShareModel.mean_absolute_error: [5.0],
+            },
+        ),
+        ModelMetricsUtilsTestCase(
+            id="miss_in_the_larger_group_counts_for_more",
+            input_data={
+                PREDICTED_SHARES[0]: [0.5, 0.7],
+                ACTUAL_SHARES[0]: [0.5, 0.9],
+                ShareModel.group_weight: [1.0, 3.0],
+            },
+            expected_data={
+                ShareModel.share: ACTUAL_SHARES[:1],
+                IndCQC.r2: [0.0],
+                ShareModel.mean_absolute_error: [15.0],
+            },
+        ),
+    ]
+
+    # Keeping the last group's weight without its error would give R² 0.94 and error 5.
+    groups_missing_a_share_test_cases = [
+        ModelMetricsUtilsTestCase(
+            id="group_without_a_prediction_left_out",
+            input_data={
+                PREDICTED_SHARES[0]: [0.3, 0.5, None],
+                ACTUAL_SHARES[0]: [0.2, 0.6, 0.9],
+                ShareModel.group_weight: [1.0, 1.0, 2.0],
+            },
+            expected_data={
+                ShareModel.share: ACTUAL_SHARES[:1],
+                IndCQC.r2: [0.75],
+                ShareModel.mean_absolute_error: [10.0],
+            },
+        ),
+    ]
+
+    scores_split_by_fold_test_cases = [
+        ModelMetricsUtilsTestCase(
+            id="each_fold_scored_on_its_own_groups",
+            input_data={
+                ModelEvaluation.fold: [0, 0, 1, 1],
+                PREDICTED_SHARES[0]: [0.2, 0.6, 0.3, 0.5],
+                ACTUAL_SHARES[0]: [0.2, 0.6, 0.2, 0.6],
+                ShareModel.group_weight: [1.0, 1.0, 1.0, 1.0],
+            },
+            expected_data={
+                ModelEvaluation.fold: [0, 1],
+                ShareModel.share: ACTUAL_SHARES[:1] * 2,
+                IndCQC.r2: [1.0, 0.75],
+                ShareModel.mean_absolute_error: [0.0, 10.0],
+            },
+        ),
+    ]
 
 
 class TestModelUtilsData:
