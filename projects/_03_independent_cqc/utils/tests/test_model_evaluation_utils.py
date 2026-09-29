@@ -112,7 +112,7 @@ class TestMeanPeriodToPeriodChange:
     def mean_change(case) -> pl.LazyFrame:
         return job.mean_period_to_period_change(
             pl.LazyFrame(case.input_data),
-            columns=case.columns,
+            value_columns=case.columns,
             partition_columns=case.partition_columns,
             date_column=IndCQC.cqc_location_import_date,
         )
@@ -139,4 +139,71 @@ class TestMeanPeriodToPeriodChange:
 
         pl_testing.assert_frame_equal(
             self.mean_change(case), pl.LazyFrame(case.expected_data)
+        )
+
+
+class TestAggregateTotalsByGroup:
+    @staticmethod
+    def aggregate(case) -> pl.LazyFrame:
+        return job.aggregate_totals_by_group(
+            pl.LazyFrame(case.input_data),
+            predicted_column=IndCQC.estimate_filled_posts,
+            actual_column=IndCQC.ascwds_filled_posts_dedup_clean,
+            grouping_columns=[IndCQC.primary_service_type],
+        )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            c.as_pytest_param()
+            for c in Data.group_totals_sum_predicted_and_known_posts_test_cases
+        ],
+    )
+    def test_group_totals_sum_predicted_and_known_posts(self, case):
+        pl_testing.assert_frame_equal(
+            self.aggregate(case),
+            pl.LazyFrame(case.expected_data),
+            check_row_order=False,
+        )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            c.as_pytest_param()
+            for c in Data.rows_without_known_posts_excluded_from_totals_test_cases
+        ],
+    )
+    def test_rows_without_known_posts_excluded_from_totals(self, case):
+        pl_testing.assert_frame_equal(
+            self.aggregate(case),
+            pl.LazyFrame(case.expected_data),
+            check_row_order=False,
+        )
+
+
+class TestScoreGroupTotals:
+    @staticmethod
+    def score(case) -> pl.LazyFrame:
+        return job.score_group_totals(
+            pl.LazyFrame(case.input_data),
+            predicted_column=IndCQC.estimate_filled_posts,
+            actual_column=IndCQC.ascwds_filled_posts_dedup_clean,
+            by_columns=case.by_columns,
+        )
+
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in Data.perfect_totals_test_cases]
+    )
+    def test_perfect_totals_score_one_and_zero(self, case):
+        pl_testing.assert_frame_equal(
+            self.score(case), pl.LazyFrame(case.expected_data)
+        )
+
+    @pytest.mark.parametrize(
+        "case",
+        [c.as_pytest_param() for c in Data.total_scores_split_by_fold_test_cases],
+    )
+    def test_total_scores_split_by_fold(self, case):
+        pl_testing.assert_frame_equal(
+            self.score(case), pl.LazyFrame(case.expected_data), check_row_order=False
         )
