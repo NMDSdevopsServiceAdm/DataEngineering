@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from unittest.mock import Mock, call, patch
 
 import polars as pl
+import pytest
 
 import projects._04_direct_payment_recipients.fargate.validate_estimate_direct_payments as job
 from projects._04_direct_payment_recipients.direct_payments_config_polars import (
@@ -181,3 +182,84 @@ class TestMain:
 
         assert len(year_bound_steps) == 2
         assert all(step["all_passed"] for step in year_bound_steps)
+
+    @pytest.mark.parametrize("year", [2011, 2014])
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_estimate_checks_pass_for_nulls_and_unbounded_values_before_2015(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+        year: int,
+    ):
+        early_year_df = self.source_df.with_columns(
+            pl.lit(year).alias(DP.YEAR_AS_INTEGER),
+            pl.lit(None, dtype=pl.Float32).alias(
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+            ),
+            pl.lit(None, dtype=pl.Float32).alias(
+                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+            ),
+            pl.lit(None, dtype=pl.String).alias(
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE
+            ),
+            pl.lit(1.5, dtype=pl.Float32).alias(DP.ESTIMATE_USING_INTERPOLATION),
+        )
+        source_df = pl.concat([early_year_df, self.source_df], how="vertical_relaxed")
+        mock_read_parquet.side_effect = [source_df, self.compare_df]
+
+        job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        estimate_columns = (
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+            DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE,
+            DP.ESTIMATE_USING_INTERPOLATION,
+        )
+        estimate_steps = [
+            item for item in report_json if item["column"] in estimate_columns
+        ]
+
+        assert len(estimate_steps) == len(estimate_columns)
+        assert all(step["all_passed"] for step in estimate_steps)
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_estimate_checks_fail_for_nulls_and_unbounded_values_from_2015(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        recent_year_df = self.source_df.with_columns(
+            pl.lit(2015).alias(DP.YEAR_AS_INTEGER),
+            pl.lit(None, dtype=pl.Float32).alias(
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+            ),
+            pl.lit(None, dtype=pl.Float32).alias(
+                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+            ),
+            pl.lit(None, dtype=pl.String).alias(
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE
+            ),
+            pl.lit(1.5, dtype=pl.Float32).alias(DP.ESTIMATE_USING_INTERPOLATION),
+        )
+        mock_read_parquet.side_effect = [recent_year_df, self.compare_df]
+
+        job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        estimate_columns = (
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+            DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE,
+            DP.ESTIMATE_USING_INTERPOLATION,
+        )
+        estimate_steps = [
+            item for item in report_json if item["column"] in estimate_columns
+        ]
+
+        assert len(estimate_steps) == len(estimate_columns)
+        assert not any(step["all_passed"] for step in estimate_steps)

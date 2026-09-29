@@ -17,6 +17,23 @@ from utils.column_values.categorical_columns_by_dataset import (
     PostcodeDirectoryCleanedCategoricalValues as CatValues,
 )
 
+# Proportions are only known from 2015 (2013 is filled by mean imputation, 2014 by
+# interpolation, and 2011-2012 have no estimate), so estimates are legitimately
+# null before this year - confirmed against the main pipeline's output.
+FIRST_YEAR_WITH_COMPLETE_ESTIMATES = 2015
+
+
+def filter_to_complete_estimate_years(df: pl.DataFrame) -> pl.DataFrame:
+    """Filters to the years in which the estimated proportions are expected.
+
+    Args:
+        df (pl.DataFrame): the dataset being validated.
+
+    Returns:
+        pl.DataFrame: rows from `FIRST_YEAR_WITH_COMPLETE_ESTIMATES` onwards.
+    """
+    return df.filter(pl.col(DP.YEAR_AS_INTEGER) >= FIRST_YEAR_WITH_COMPLETE_ESTIMATES)
+
 
 def main(
     bucket_name: str, source_path: str, reports_path: str, compare_path: str
@@ -57,12 +74,15 @@ def main(
         )
         # complete columns
         .col_vals_not_null(
+            [DP.YEAR_AS_INTEGER, DP.LA_AREA],
+        )
+        .col_vals_not_null(
             [
-                DP.YEAR_AS_INTEGER,
-                DP.LA_AREA,
                 DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
                 DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-            ]
+            ],
+            pre=filter_to_complete_estimate_years,
+            brief=f"Estimated proportions should be complete from {FIRST_YEAR_WITH_COMPLETE_ESTIMATES}",
         )
         # categorical
         .col_vals_in_set(
@@ -77,6 +97,7 @@ def main(
                 DP.ESTIMATE_USING_INTERPOLATION,
                 DP.ESTIMATE_USING_MEAN,
             ],
+            pre=filter_to_complete_estimate_years,
         )
         # distinct values
         .specially(
@@ -107,8 +128,18 @@ def main(
         # average are excluded: their coalesce chain can take its value from
         # ESTIMATE_USING_EXTRAPOLATION_RATIO, which is not bounded, so only
         # completeness (col_vals_not_null above) is checked for those two.
+        # ESTIMATE_USING_INTERPOLATION is re-run over that same coalesced column,
+        # so before FIRST_YEAR_WITH_COMPLETE_ESTIMATES it can interpolate through
+        # unbounded extrapolated values (seen above 1 in 2011-2014) and is only
+        # bounded from that year onwards.
         .col_vals_between(DP.ESTIMATE_USING_MEAN, 0.0, 1.0, na_pass=True)
-        .col_vals_between(DP.ESTIMATE_USING_INTERPOLATION, 0.0, 1.0, na_pass=True)
+        .col_vals_between(
+            DP.ESTIMATE_USING_INTERPOLATION,
+            0.0,
+            1.0,
+            na_pass=True,
+            pre=filter_to_complete_estimate_years,
+        )
         # numeric - non-negative counts derived from the proportions/rates above
         .col_vals_ge(
             DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
