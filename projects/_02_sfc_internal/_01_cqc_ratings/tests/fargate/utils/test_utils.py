@@ -137,10 +137,40 @@ class TestPrepareCurrentRatings:
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
 
 
+@dataclass
+class PrepareHistoricRatingsCase:
+    id: str
+    rows: list
+    expected_rows: list
+
+    def as_pytest_param(self):
+        return pytest.param(self.rows, self.expected_rows, id=self.id)
+
+
+prepare_historic_ratings_cases = [
+    PrepareHistoricRatingsCase(
+        id="flattens_recodes_and_labels_as_historic",
+        rows=Data.historic_ratings_rows,
+        expected_rows=Data.expected_prepare_historic_ratings_rows,
+    ),
+    PrepareHistoricRatingsCase(
+        id="keeps_separate_rows_for_entries_with_the_same_date",
+        rows=Data.historic_ratings_duplicate_date_rows,
+        expected_rows=Data.expected_prepare_historic_ratings_duplicate_date_rows,
+    ),
+]
+
+
 class TestPrepareHistoricRatings:
-    def test_prepare_historic_ratings_pivots_recodes_and_labels_as_historic(self):
+    @pytest.mark.parametrize(
+        "rows,expected_rows",
+        [case.as_pytest_param() for case in prepare_historic_ratings_cases],
+    )
+    def test_prepare_historic_ratings_returns_expected_values(
+        self, rows, expected_rows
+    ):
         input_lf = pl.LazyFrame(
-            Data.historic_ratings_rows,
+            rows,
             schema=Schemas.historic_ratings_schema,
             orient="row",
         )
@@ -148,7 +178,7 @@ class TestPrepareHistoricRatings:
         returned_df = job.prepare_historic_ratings(input_lf).collect()
 
         expected_df = pl.LazyFrame(
-            Data.expected_prepare_historic_ratings_rows,
+            expected_rows,
             schema=Schemas.flattened_ratings_with_current_or_historic_schema,
             orient="row",
         ).collect()

@@ -141,12 +141,12 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Flattens the historic ratings list into one row per location/report date/key question.
+    Flattens the historic ratings list into one row per location historic rating entry.
 
-    Explodes `historicRatings` and each entry's `keyQuestionRatings`, then pivots so
-    each key question becomes its own column. `.pivot()` is eager-only in Polars,
-    hence the `.collect()` - the result is small (one row per location/report date),
-    so this is an acceptable aggregation-sized collect.
+    Explodes `historicRatings`, then picks each key question's rating out of the
+    entry's `keyQuestionRatings` list by name. Every entry stays its own row, so
+    entries sharing a location and report date are kept rather than collapsed. This
+    avoids a pivot, so the whole function stays lazy.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
@@ -154,14 +154,29 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: Flattened historic ratings, recoded and flagged as historic.
     """
-    exploded_lf = (
+    key_question_aliases = {
+        CQCL.safe: CQCRatings.safe_rating,
+        CQCL.well_led: CQCRatings.well_led_rating,
+        CQCL.caring: CQCRatings.caring_rating,
+        CQCL.responsive: CQCRatings.responsive_rating,
+        CQCL.effective: CQCRatings.effective_rating,
+    }
+    key_question_ratings = (
+        pl.col(CQCL.historic_ratings)
+        .struct.field(CQCL.overall)
+        .struct.field(CQCL.key_question_ratings)
+    )
+
+    historic_ratings_lf = (
         cqc_location_lf.select(
             CQCL.location_id,
             CQCL.registration_status,
             CQCL.historic_ratings,
         )
         .explode(CQCL.historic_ratings, empty_as_null=False, keep_nulls=False)
-        .with_columns(
+        .select(
+            CQCL.location_id,
+            CQCL.registration_status,
             pl.col(CQCL.historic_ratings)
             .struct.field(CQCL.report_date)
             .alias(CQCRatings.date),
@@ -169,46 +184,19 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             .struct.field(CQCL.overall)
             .struct.field(CQCL.rating)
             .alias(CQCRatings.overall_rating),
-            pl.col(CQCL.historic_ratings)
-            .struct.field(CQCL.overall)
-            .struct.field(CQCL.key_question_ratings)
-            .alias(CQCL.key_question_ratings),
+            *[
+                key_question_ratings.list.eval(
+                    pl.element().filter(pl.element().struct.field(CQCL.name) == name)
+                )
+                .list.first()
+                .struct.field(CQCL.rating)
+                .alias(alias)
+                for name, alias in key_question_aliases.items()
+            ],
         )
-        .drop(CQCL.historic_ratings)
-        .explode(CQCL.key_question_ratings, empty_as_null=False, keep_nulls=False)
-        .with_columns(
-            pl.col(CQCL.key_question_ratings).struct.field(CQCL.name).alias(CQCL.name),
-            pl.col(CQCL.key_question_ratings)
-            .struct.field(CQCL.rating)
-            .alias(CQCL.rating),
-        )
-        .drop(CQCL.key_question_ratings)
     )
 
-    grain_columns = [
-        CQCL.location_id,
-        CQCL.registration_status,
-        CQCRatings.date,
-        CQCRatings.overall_rating,
-    ]
-
-    historic_ratings_df = exploded_lf.collect().pivot(
-        on=CQCL.name,
-        index=grain_columns,
-        values=CQCL.rating,
-        aggregate_function="first",
-    )
-    historic_ratings_df = historic_ratings_df.rename(
-        {
-            CQCL.safe: CQCRatings.safe_rating,
-            CQCL.well_led: CQCRatings.well_led_rating,
-            CQCL.caring: CQCRatings.caring_rating,
-            CQCL.responsive: CQCRatings.responsive_rating,
-            CQCL.effective: CQCRatings.effective_rating,
-        }
-    )
-
-    historic_ratings_lf = recode_unknown_codes_to_null(historic_ratings_df.lazy())
+    historic_ratings_lf = recode_unknown_codes_to_null(historic_ratings_lf)
     historic_ratings_lf = add_current_or_historic_column(
         historic_ratings_lf, CQCCurrentOrHistoricValues.historic
     )

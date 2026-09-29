@@ -372,6 +372,55 @@ class FlattenCQCRatings:
         ),
     ]
 
+    def _historic_entry(report_date, safe_rating):
+        return {
+            "reportDate": report_date,
+            "overall": {
+                "rating": "Good",
+                "keyQuestionRatings": [
+                    {"name": "Safe", "rating": safe_rating},
+                    {"name": "Well-led", "rating": "Good"},
+                ],
+            },
+        }
+
+    historic_ratings_duplicate_date_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _historic_entry("2023-01-01", "Good"),
+                _historic_entry("2023-01-01", "Inadequate"),
+            ],
+        ),
+    ]
+    expected_prepare_historic_ratings_duplicate_date_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2023-01-01",
+            "Good",
+            "Good",
+            "Good",
+            None,
+            None,
+            None,
+            "Historic",
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2023-01-01",
+            "Good",
+            "Inadequate",
+            "Good",
+            None,
+            None,
+            None,
+            "Historic",
+        ),
+    ]
+
     def _asg_rating(assessment_plan_id, key_question_ratings):
         return {
             "assessmentPlanId": assessment_plan_id,
