@@ -104,8 +104,11 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     have a recorded permanent/temporary status, and sets
     employment_status_filtering_rule.
 
-    Must run before null_counts_for_low_location_ratio, which narrows the
-    columns created here.
+    Should run before null_counts_for_low_location_ratio: the two ratio
+    calculations are independent (each reads source counts, not the _clean
+    columns), but only the first rule to fail a row records its reason, so
+    running org first records the org-level reason when both fail. This
+    function also creates the _clean columns the location rule narrows.
 
     The ticket's org rule is defined at org grain, but this data is at
     (location, published_job_role_label) grain - see
@@ -178,9 +181,10 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     of its staff have a recorded permanent/temporary status, updating
     employment_status_filtering_rule where it's still 'populated'.
 
-    Must run after null_counts_for_low_org_ratio, which creates the columns
-    this narrows further. Same shape as the org rule, but the ratio uses the
-    _dedup counts (see that docstring).
+    Run after null_counts_for_low_org_ratio, which creates the _clean columns
+    this narrows further. The ratio doesn't depend on the org rule's result
+    (it reads the _dedup counts), but running second means the org-level reason
+    wins when a row fails both. Same shape as the org rule otherwise.
 
     Args:
         lf (pl.LazyFrame): merged employment status data, already processed by

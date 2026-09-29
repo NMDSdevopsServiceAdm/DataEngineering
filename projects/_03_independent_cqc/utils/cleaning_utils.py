@@ -162,7 +162,13 @@ def null_columns_where_group_share_too_low(
     Returns:
         pl.LazyFrame: The input LazyFrame with `columns_to_null` nulled for
             flagged groups.
+
+    Raises:
+        ValueError: If `share_columns` isn't a subset of `total_columns`.
     """
+    if not set(share_columns) <= set(total_columns):
+        raise ValueError("share_columns must be a subset of total_columns")
+
     flag_column = "_share_too_low"
 
     group_total = reduce(operator.add, map(pl.col, total_columns)).sum()

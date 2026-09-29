@@ -107,3 +107,17 @@ class TestNullColumnsWhereGroupShareTooLow:
             check_row_order=False,
             check_column_order=False,
         )
+
+    def test_raises_when_share_columns_are_not_a_subset_of_total_columns(self):
+        input_lf = pl.LazyFrame({"grp": ["g"], "a": [1], "b": [1]})
+
+        with pytest.raises(ValueError, match="subset"):
+            job.null_columns_where_group_share_too_low(
+                input_lf,
+                partition_by_columns=["grp"],
+                total_columns=["a"],
+                share_columns=["a", "b"],
+                columns_to_null=["a"],
+                minimum_total=10,
+                maximum_share=0.05,
+            )
