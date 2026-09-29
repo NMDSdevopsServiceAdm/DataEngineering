@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
 - Added project-level model evaluation utilities to `_03_independent_cqc` (location cross-validation folds, a never-submitted flag and a period-to-period jumpiness measure) for the filled posts and employment status models to share.
 - Added a new "Estimate SLV counts" stage to the Ind-CQC-SLV state machine (`_05_estimate_counts`), with its own row-count validation step. The stage is currently a placeholder pass-through pending the starters/leavers/vacancies count derivation logic.
+- Added project-level group-share aggregation and R²/MAE scoring utilities to `_03_independent_cqc`, for any categorical breakdown model.
 - Added group-level totals scoring (R² and weighted absolute % error) to the project-level model evaluation utilities, for scoring filled posts model predictions.
 
 
