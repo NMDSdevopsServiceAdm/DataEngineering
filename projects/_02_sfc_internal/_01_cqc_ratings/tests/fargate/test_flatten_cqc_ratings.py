@@ -15,7 +15,6 @@ class TestMain:
     @patch(f"{PATCH_PATH}.ratings_utils.create_standard_ratings_dataset")
     @patch(f"{PATCH_PATH}.ratings_utils.add_numerical_ratings")
     @patch(f"{PATCH_PATH}.ratings_utils.add_latest_rating_flag_column")
-    @patch(f"{PATCH_PATH}.ratings_utils.add_rating_sequence_column")
     @patch(f"{PATCH_PATH}.ratings_utils.remove_blank_and_duplicate_rows")
     @patch(f"{PATCH_PATH}.ratings_utils.recode_unknown_codes_to_null")
     @patch(f"{PATCH_PATH}.ratings_utils.merge_cqc_ratings")
@@ -42,7 +41,6 @@ class TestMain:
         merge_cqc_ratings_mock: Mock,
         recode_unknown_codes_to_null_mock: Mock,
         remove_blank_and_duplicate_rows_mock: Mock,
-        add_rating_sequence_column_mock: Mock,
         add_latest_rating_flag_column_mock: Mock,
         add_numerical_ratings_mock: Mock,
         create_standard_ratings_dataset_mock: Mock,
@@ -74,7 +72,6 @@ class TestMain:
         merge_cqc_ratings_mock.assert_called_once()
         recode_unknown_codes_to_null_mock.assert_called_once()
         remove_blank_and_duplicate_rows_mock.assert_called_once()
-        assert add_rating_sequence_column_mock.call_count == 2
         add_latest_rating_flag_column_mock.assert_called_once()
         add_numerical_ratings_mock.assert_called_once()
         create_standard_ratings_dataset_mock.assert_called_once()

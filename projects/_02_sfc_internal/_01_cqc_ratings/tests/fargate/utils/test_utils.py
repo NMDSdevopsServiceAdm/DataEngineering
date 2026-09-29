@@ -5,13 +5,12 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._02_sfc_internal._01_cqc_ratings.fargate.utils.utils as job
-from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import (
-    FlattenCQCRatings as Data,
-)
-from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import (
-    FlattenCQCRatings as Schemas,
-)
-from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
+from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import \
+    FlattenCQCRatings as Data
+from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import \
+    FlattenCQCRatings as Schemas
+from utils.column_names.cqc_ratings_columns import \
+    CQCRatingsColumns as CQCRatings
 
 
 class TestKeepLatestPerKey:
@@ -309,40 +308,6 @@ class TestRecodeUnknownCodesToNull:
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
 
 
-class TestAddCurrentOrHistoricColumn:
-    def test_adds_current_label(self):
-        input_lf = pl.LazyFrame(
-            Data.add_current_or_historic_rows,
-            schema=Schemas.flattened_ratings_schema,
-            orient="row",
-        )
-
-        returned_df = job.add_current_or_historic_column(input_lf, "Current").collect()
-
-        expected_df = pl.LazyFrame(
-            Data.expected_add_current_rows,
-            schema=Schemas.flattened_ratings_with_current_or_historic_schema,
-            orient="row",
-        ).collect()
-        pl_testing.assert_frame_equal(expected_df, returned_df)
-
-    def test_adds_historic_label(self):
-        input_lf = pl.LazyFrame(
-            Data.add_current_or_historic_rows,
-            schema=Schemas.flattened_ratings_schema,
-            orient="row",
-        )
-
-        returned_df = job.add_current_or_historic_column(input_lf, "Historic").collect()
-
-        expected_df = pl.LazyFrame(
-            Data.expected_add_historic_rows,
-            schema=Schemas.flattened_ratings_with_current_or_historic_schema,
-            orient="row",
-        ).collect()
-        pl_testing.assert_frame_equal(expected_df, returned_df)
-
-
 class TestRemoveBlankAndDuplicateRows:
     def test_removes_rows_with_no_ratings_populated(self):
         input_lf = pl.LazyFrame(
@@ -361,64 +326,42 @@ class TestRemoveBlankAndDuplicateRows:
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
 
 
-class TestAddRatingSequenceColumn:
-    def test_adds_ascending_sequence_ordered_oldest_to_newest(self):
-        input_lf = pl.LazyFrame(
-            Data.add_rating_sequence_rows,
-            schema=Schemas.ratings_with_assessment_date_schema,
-            orient="row",
-        )
-
-        returned_df = job.add_rating_sequence_column(input_lf).collect()
-
-        assert job.CQCRatings.rating_sequence in returned_df.columns
-
-        sequence_by_date = dict(
-            zip(
-                returned_df[job.CQCRatings.date].to_list(),
-                returned_df[job.CQCRatings.rating_sequence].to_list(),
-            )
-        )
-        assert sequence_by_date["2023-01-01"] < sequence_by_date["2024-01-01"]
-
-    def test_adds_descending_sequence_ordered_newest_to_oldest_when_reversed(self):
-        input_lf = pl.LazyFrame(
-            Data.add_rating_sequence_rows,
-            schema=Schemas.ratings_with_assessment_date_schema,
-            orient="row",
-        )
-
-        returned_df = job.add_rating_sequence_column(input_lf, reversed=True).collect()
-
-        assert job.CQCRatings.reversed_rating_sequence in returned_df.columns
-
-        sequence_by_date = dict(
-            zip(
-                returned_df[job.CQCRatings.date].to_list(),
-                returned_df[job.CQCRatings.reversed_rating_sequence].to_list(),
-            )
-        )
-        assert sequence_by_date["2024-01-01"] < sequence_by_date["2023-01-01"]
-
-
 class TestAddLatestRatingFlagColumn:
-    def test_flags_only_the_row_with_reversed_sequence_of_one(self):
+    def test_flags_only_the_most_recent_rating_per_location(self):
         input_lf = pl.LazyFrame(
             Data.add_latest_rating_flag_rows,
-            schema=Schemas.ratings_with_sequence_schema,
+            schema=Schemas.ratings_with_assessment_date_schema,
             orient="row",
         )
 
         returned_df = job.add_latest_rating_flag_column(input_lf).collect()
 
-        flag_by_sequence = dict(
+        flag_by_date = dict(
             zip(
-                returned_df[job.CQCRatings.reversed_rating_sequence].to_list(),
+                returned_df[job.CQCRatings.date].to_list(),
                 returned_df[job.CQCRatings.latest_rating_flag].to_list(),
             )
         )
-        assert flag_by_sequence[1] == 1
-        assert flag_by_sequence[2] == 0
+        assert flag_by_date == {"2024-01-01": 1, "2023-01-01": 0}
+
+    def test_flags_assessment_rating_over_pre_saf_rating_published_on_same_date(self):
+        rows = [
+            Data.add_latest_rating_flag_rows[0][:-1] + (None,),
+            Data.add_latest_rating_flag_rows[0][:-1] + ("2024-02-01",),
+        ]
+        input_lf = pl.LazyFrame(
+            rows, schema=Schemas.ratings_with_assessment_date_schema, orient="row"
+        )
+
+        returned_df = job.add_latest_rating_flag_column(input_lf).collect()
+
+        flag_by_assessment_date = dict(
+            zip(
+                returned_df[job.CQCL.assessment_date].to_list(),
+                returned_df[job.CQCRatings.latest_rating_flag].to_list(),
+            )
+        )
+        assert flag_by_assessment_date == {None: 0, "2024-02-01": 1}
 
 
 class TestAddNumericalRatings:

@@ -3,26 +3,25 @@ import hashlib
 import polars as pl
 
 from polars_utils import utils as polars_utils
-from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    AscwdsWorkplaceColumns as AWP,
-)
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    PartitionKeys as Keys,
-)
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
+from utils.column_names.cqc_ratings_columns import \
+    CQCRatingsColumns as CQCRatings
+from utils.column_names.raw_data_files.ascwds_workplace_columns import \
+    AscwdsWorkplaceColumns as AWP
+from utils.column_names.raw_data_files.ascwds_workplace_columns import \
+    PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import \
+    NewCqcLocationApiColumns as CQCL
 from utils.column_values.categorical_column_values import (
-    CQCCurrentOrHistoricValues,
-    CQCRatingsValues,
-    LocationType,
-    RegistrationStatus,
-)
+    CQCCurrentOrHistoricValues, CQCRatingsValues, LocationType,
+    RegistrationStatus)
 
 # Transient column preserving raw explode order for the deterministic pivot
 # tiebreak in prepare_assessment_ratings below.
 EXPLODE_ORDER = "explode_order_index"
+
+# Match Spark's `F.explode()`, which drops the row for both an empty and a null list
+# (Polars only does that for empty lists by default). Unpack into every `.explode()`.
+SPARK_EXPLODE = {"empty_as_null": False, "keep_nulls": False}
 
 assessment_grain_columns = [
     CQCL.location_id,
@@ -94,10 +93,7 @@ def filter_to_first_import_of_most_recent_month(lf: pl.LazyFrame) -> pl.LazyFram
     """
     lf = polars_utils.filter_to_maximum_value_in_column(lf, Keys.year)
     lf = polars_utils.filter_to_maximum_value_in_column(lf, Keys.month)
-    lf = lf.with_columns(pl.col(Keys.day).min().alias("min_day")).filter(
-        pl.col(Keys.day) == pl.col("min_day")
-    )
-    return lf.drop("min_day")
+    return lf.filter(pl.col(Keys.day) == pl.col(Keys.day).min())
 
 
 def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -116,7 +112,6 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     overall = pl.col(CQCL.current_ratings).struct.field(CQCL.overall)
     key_question_ratings = overall.struct.field(CQCL.key_question_ratings)
-    # Position in keyQuestionRatings -> target column, per the docstring above.
     key_question_aliases = [
         CQCRatings.safe_rating,
         CQCRatings.well_led_rating,
@@ -125,7 +120,7 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         CQCRatings.effective_rating,
     ]
 
-    current_ratings_lf = cqc_location_lf.select(
+    return cqc_location_lf.select(
         CQCL.location_id,
         CQCL.registration_status,
         overall.struct.field(CQCL.report_date).alias(CQCRatings.date),
@@ -136,11 +131,10 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             .alias(alias)
             for position, alias in enumerate(key_question_aliases)
         ],
+        pl.lit(CQCCurrentOrHistoricValues.current).alias(
+            CQCRatings.current_or_historic
+        ),
     )
-    current_ratings_lf = add_current_or_historic_column(
-        current_ratings_lf, CQCCurrentOrHistoricValues.current
-    )
-    return current_ratings_lf
 
 
 def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -171,13 +165,13 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         .struct.field(CQCL.key_question_ratings)
     )
 
-    historic_ratings_lf = (
+    return (
         cqc_location_lf.select(
             CQCL.location_id,
             CQCL.registration_status,
             CQCL.historic_ratings,
         )
-        .explode(CQCL.historic_ratings, empty_as_null=False, keep_nulls=False)
+        .explode(CQCL.historic_ratings, **SPARK_EXPLODE)
         .select(
             CQCL.location_id,
             CQCL.registration_status,
@@ -197,22 +191,16 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
                 .alias(alias)
                 for name, alias in key_question_aliases.items()
             ],
+            pl.lit(CQCCurrentOrHistoricValues.historic).alias(
+                CQCRatings.current_or_historic
+            ),
         )
     )
-
-    historic_ratings_lf = add_current_or_historic_column(
-        historic_ratings_lf, CQCCurrentOrHistoricValues.historic
-    )
-    return historic_ratings_lf
 
 
 def extract_assessment_base(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Explodes the raw `assessment` list so each row is one assessment plan.
-
-    Every `.explode()` in this module passes `empty_as_null=False, keep_nulls=False`
-    to match Spark's `F.explode()`, which drops the row for both an empty and a null
-    list (Polars only does that for empty lists by default).
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
@@ -227,25 +215,36 @@ def extract_assessment_base(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.registration_status,
             CQCL.assessment,
         )
-        .explode(CQCL.assessment, empty_as_null=False, keep_nulls=False)
-        .with_columns(
-            pl.col(CQCL.assessment)
-            .struct.field(CQCL.assessment_plan_published_datetime)
-            .alias(CQCL.assessment_plan_published_datetime),
+        .explode(CQCL.assessment, **SPARK_EXPLODE)
+        .select(
+            CQCL.location_id,
+            CQCL.registration_status,
+            pl.col(CQCL.assessment).struct.field(
+                CQCL.assessment_plan_published_datetime
+            ),
             pl.col(CQCL.assessment)
             .struct.field(CQCL.ratings)
             .alias(CQCL.assessments_ratings),
         )
-        .drop(CQCL.assessment)
     )
 
 
-def extract_overall(assessment_lf: pl.LazyFrame) -> pl.LazyFrame:
+def extract_key_question_ratings(
+    assessment_lf: pl.LazyFrame, ratings_field: str, source_path: str
+) -> pl.LazyFrame:
     """
-    Flattens the 'overall' ratings out of the assessment ratings struct.
+    Flattens one ratings list of the assessment ratings struct to one row per key question.
+
+    Used for both the `overall` and `asgRatings` (service-level) lists. Fields that
+    only exist in one of them (e.g. `assessment_plan_id`) are simply absent from the
+    other, and are aligned when the two are concatenated.
 
     Args:
         assessment_lf (pl.LazyFrame): Output of `extract_assessment_base`.
+        ratings_field (str): The list within the ratings struct to flatten
+            (`CQCL.overall` or `CQCL.asg_ratings`).
+        source_path (str): Value for the `source_path` column recording where the
+            ratings came from.
 
     Returns:
         pl.LazyFrame: One row per location/assessment plan/key question, with an
@@ -256,20 +255,11 @@ def extract_overall(assessment_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.location_id,
             CQCL.registration_status,
             CQCL.assessment_plan_published_datetime,
-            pl.col(CQCL.assessments_ratings)
-            .struct.field(CQCL.overall)
-            .alias(CQCL.overall),
+            pl.col(CQCL.assessments_ratings).struct.field(ratings_field),
         )
-        .explode(CQCL.overall, empty_as_null=False, keep_nulls=False)
-        .with_columns(
-            pl.col(CQCL.overall).struct.field(CQCL.rating).alias(CQCL.rating),
-            pl.col(CQCL.overall).struct.field(CQCL.status).alias(CQCL.status),
-            pl.col(CQCL.overall)
-            .struct.field(CQCL.key_question_ratings)
-            .alias(CQCL.key_question_ratings),
-        )
-        .drop(CQCL.overall)
-        .explode(CQCL.key_question_ratings, empty_as_null=False, keep_nulls=False)
+        .explode(ratings_field, **SPARK_EXPLODE)
+        .unnest(ratings_field)
+        .explode(CQCL.key_question_ratings, **SPARK_EXPLODE)
         .with_columns(
             pl.col(CQCL.key_question_ratings)
             .struct.field(CQCL.name)
@@ -278,63 +268,7 @@ def extract_overall(assessment_lf: pl.LazyFrame) -> pl.LazyFrame:
             .struct.field(CQCL.rating)
             .alias(CQCL.key_question_rating),
             pl.lit("SAF").alias(CQCL.dataset),
-            pl.lit("assessment.ratings.overall").alias(CQCL.source_path),
-        )
-        .drop(CQCL.key_question_ratings)
-        .with_row_index(EXPLODE_ORDER)
-    )
-
-
-def extract_asg(assessment_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Flattens the 'asgRatings' (service-level) ratings out of the assessment ratings struct.
-
-    Args:
-        assessment_lf (pl.LazyFrame): Output of `extract_assessment_base`.
-
-    Returns:
-        pl.LazyFrame: One row per location/assessment plan/key question, with an
-            explode-order index column preserving raw array order.
-    """
-    return (
-        assessment_lf.select(
-            CQCL.location_id,
-            CQCL.registration_status,
-            CQCL.assessment_plan_published_datetime,
-            pl.col(CQCL.assessments_ratings)
-            .struct.field(CQCL.asg_ratings)
-            .alias(CQCL.asg_ratings),
-        )
-        .explode(CQCL.asg_ratings, empty_as_null=False, keep_nulls=False)
-        .with_columns(
-            pl.col(CQCL.asg_ratings)
-            .struct.field(CQCL.assessment_plan_id)
-            .alias(CQCL.assessment_plan_id),
-            pl.col(CQCL.asg_ratings).struct.field(CQCL.title).alias(CQCL.title),
-            pl.col(CQCL.asg_ratings)
-            .struct.field(CQCL.assessment_date)
-            .alias(CQCL.assessment_date),
-            pl.col(CQCL.asg_ratings)
-            .struct.field(CQCL.assessment_plan_status)
-            .alias(CQCL.assessment_plan_status),
-            pl.col(CQCL.asg_ratings).struct.field(CQCL.name).alias(CQCL.name),
-            pl.col(CQCL.asg_ratings).struct.field(CQCL.rating).alias(CQCL.rating),
-            pl.col(CQCL.asg_ratings).struct.field(CQCL.status).alias(CQCL.status),
-            pl.col(CQCL.asg_ratings)
-            .struct.field(CQCL.key_question_ratings)
-            .alias(CQCL.key_question_ratings),
-        )
-        .drop(CQCL.asg_ratings)
-        .explode(CQCL.key_question_ratings, empty_as_null=False, keep_nulls=False)
-        .with_columns(
-            pl.col(CQCL.key_question_ratings)
-            .struct.field(CQCL.name)
-            .alias(CQCL.key_question_name),
-            pl.col(CQCL.key_question_ratings)
-            .struct.field(CQCL.rating)
-            .alias(CQCL.key_question_rating),
-            pl.lit("SAF").alias(CQCL.dataset),
-            pl.lit("assessment.ratings.asg_ratings").alias(CQCL.source_path),
+            pl.lit(source_path).alias(CQCL.source_path),
         )
         .drop(CQCL.key_question_ratings)
         .with_row_index(EXPLODE_ORDER)
@@ -361,8 +295,12 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             Responsive, Well-led).
     """
     assessment_lf = extract_assessment_base(cqc_location_lf)
-    overall_lf = extract_overall(assessment_lf)
-    asg_lf = extract_asg(assessment_lf)
+    overall_lf = extract_key_question_ratings(
+        assessment_lf, CQCL.overall, "assessment.ratings.overall"
+    )
+    asg_lf = extract_key_question_ratings(
+        assessment_lf, CQCL.asg_ratings, "assessment.ratings.asg_ratings"
+    )
 
     key_question_names = [
         CQCL.safe,
@@ -517,22 +455,9 @@ def recode_unknown_codes_to_null(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: The same LazyFrame with unknown codes recoded to null.
     """
     return ratings_lf.with_columns(
-        [
-            pl.when(pl.col(col_name).is_in(labels_to_nullify))
-            .then(None)
-            .otherwise(pl.col(col_name))
-            .alias(col_name)
-            for col_name in rating_columns_to_clean
-        ]
-    )
-
-
-def add_current_or_historic_column(
-    ratings_lf: pl.LazyFrame, current_or_historic: str
-) -> pl.LazyFrame:
-    """Adds a literal column flagging rows as current or historic ratings."""
-    return ratings_lf.with_columns(
-        pl.lit(current_or_historic).alias(CQCRatings.current_or_historic)
+        pl.when(~pl.col(rating_columns_to_clean).is_in(labels_to_nullify)).then(
+            pl.col(rating_columns_to_clean)
+        )
     )
 
 
@@ -544,38 +469,8 @@ def remove_blank_and_duplicate_rows(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
     null is what creates duplicates, so de-duplicating once after it is enough.
     """
     return ratings_lf.filter(
-        pl.col(CQCRatings.overall_rating).is_not_null()
-        | pl.col(CQCRatings.safe_rating).is_not_null()
-        | pl.col(CQCRatings.well_led_rating).is_not_null()
-        | pl.col(CQCRatings.caring_rating).is_not_null()
-        | pl.col(CQCRatings.responsive_rating).is_not_null()
-        | pl.col(CQCRatings.effective_rating).is_not_null()
+        pl.any_horizontal(pl.col(rating_columns_to_clean).is_not_null())
     ).unique()
-
-
-def add_rating_sequence_column(
-    ratings_lf: pl.LazyFrame, reversed: bool = False
-) -> pl.LazyFrame:
-    """
-    Adds a column with the ratings sequenced by publication date and assessment date.
-
-    Args:
-        ratings_lf (pl.LazyFrame): A LazyFrame of CQC ratings and assessments.
-        reversed (bool): Whether to sequence oldest to newest (False) or newest to
-            oldest (True). Defaults to False.
-
-    Returns:
-        pl.LazyFrame: The input LazyFrame with a column showing the desired sequence.
-    """
-    order_by = [pl.col(CQCRatings.date), pl.col(CQCL.assessment_date)]
-    new_column_name = (
-        CQCRatings.reversed_rating_sequence if reversed else CQCRatings.rating_sequence
-    )
-    return ratings_lf.with_columns(
-        pl.int_range(1, pl.len() + 1)
-        .over(CQCL.location_id, order_by=order_by, descending=reversed)
-        .alias(new_column_name)
-    )
 
 
 def add_latest_rating_flag_column(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -594,9 +489,15 @@ def add_latest_rating_flag_column(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: The given LazyFrame with an additional column to flag the latest rating.
     """
     return ratings_lf.with_columns(
-        pl.when(pl.col(CQCRatings.reversed_rating_sequence) == 1)
-        .then(1)
-        .otherwise(0)
+        (
+            pl.int_range(pl.len()).over(
+                CQCL.location_id,
+                order_by=[CQCRatings.date, CQCL.assessment_date],
+                descending=True,
+            )
+            == 0
+        )
+        .cast(pl.Int32)
         .alias(CQCRatings.latest_rating_flag)
     )
 
@@ -605,6 +506,9 @@ def add_numerical_ratings(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Adds numerical rating columns for each of the key ratings and a total column.
 
+    Ratings are matched case-insensitively; anything unrecognised (including null) is 0.
+    The total covers the five key questions only, not the overall rating.
+
     Args:
         ratings_lf (pl.LazyFrame): A LazyFrame with flattened CQC key ratings columns.
 
@@ -612,6 +516,12 @@ def add_numerical_ratings(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: The given LazyFrame with additional columns containing the key
             ratings as numerical values and a total of all the values.
     """
+    rating_values = {
+        CQCRatingsValues.outstanding.lower(): 4,
+        CQCRatingsValues.good.lower(): 3,
+        CQCRatingsValues.requires_improvement.lower(): 2,
+        CQCRatingsValues.inadequate.lower(): 1,
+    }
     rating_columns_dict = {
         CQCRatings.overall_rating: CQCRatings.overall_rating_value,
         CQCRatings.safe_rating: CQCRatings.safe_rating_value,
@@ -622,39 +532,19 @@ def add_numerical_ratings(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
     }
 
     ratings_lf = ratings_lf.with_columns(
-        [
-            pl.when(
-                pl.col(rating_column).str.to_lowercase()
-                == CQCRatingsValues.outstanding.lower()
-            )
-            .then(4)
-            .when(
-                pl.col(rating_column).str.to_lowercase()
-                == CQCRatingsValues.good.lower()
-            )
-            .then(3)
-            .when(
-                pl.col(rating_column).str.to_lowercase()
-                == CQCRatingsValues.requires_improvement.lower()
-            )
-            .then(2)
-            .when(
-                pl.col(rating_column).str.to_lowercase()
-                == CQCRatingsValues.inadequate.lower()
-            )
-            .then(1)
-            .otherwise(0)
-            .alias(new_column_name)
-            for rating_column, new_column_name in rating_columns_dict.items()
-        ]
+        pl.col(rating_column)
+        .str.to_lowercase()
+        .replace_strict(rating_values, default=0, return_dtype=pl.Int32)
+        .alias(new_column_name)
+        for rating_column, new_column_name in rating_columns_dict.items()
     )
     return ratings_lf.with_columns(
-        (
-            pl.col(CQCRatings.safe_rating_value)
-            + pl.col(CQCRatings.well_led_rating_value)
-            + pl.col(CQCRatings.caring_rating_value)
-            + pl.col(CQCRatings.responsive_rating_value)
-            + pl.col(CQCRatings.effective_rating_value)
+        pl.sum_horizontal(
+            CQCRatings.safe_rating_value,
+            CQCRatings.well_led_rating_value,
+            CQCRatings.caring_rating_value,
+            CQCRatings.responsive_rating_value,
+            CQCRatings.effective_rating_value,
         ).alias(CQCRatings.total_rating_value)
     )
 
@@ -756,11 +646,8 @@ def add_good_and_outstanding_flag_column(
             and outstanding current ratings.
     """
     return benchmark_ratings_lf.with_columns(
-        pl.when(
-            pl.col(CQCRatings.overall_rating_value).min().over(CQCL.location_id) >= 3
-        )
-        .then(1)
-        .otherwise(0)
+        (pl.col(CQCRatings.overall_rating_value).min().over(CQCL.location_id) >= 3)
+        .cast(pl.Int32)
         .alias(CQCRatings.good_or_outstanding_flag)
     )
 

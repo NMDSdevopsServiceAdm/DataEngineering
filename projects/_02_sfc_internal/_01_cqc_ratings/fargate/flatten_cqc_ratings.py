@@ -1,19 +1,15 @@
 import polars as pl
 
 from polars_utils import utils
-from projects._02_sfc_internal._01_cqc_ratings.fargate.utils import (
-    utils as ratings_utils,
-)
+from projects._02_sfc_internal._01_cqc_ratings.fargate.utils import \
+    utils as ratings_utils
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    AscwdsWorkplaceColumns as AWP,
-)
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    PartitionKeys as Keys,
-)
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
+from utils.column_names.raw_data_files.ascwds_workplace_columns import \
+    AscwdsWorkplaceColumns as AWP
+from utils.column_names.raw_data_files.ascwds_workplace_columns import \
+    PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import \
+    NewCqcLocationApiColumns as CQCL
 from utils.column_values.categorical_column_values import LocationType
 
 delta_columns = [
@@ -102,8 +98,6 @@ def main(
 
     ratings_lf = ratings_utils.recode_unknown_codes_to_null(ratings_lf)
     ratings_lf = ratings_utils.remove_blank_and_duplicate_rows(ratings_lf)
-    ratings_lf = ratings_utils.add_rating_sequence_column(ratings_lf)
-    ratings_lf = ratings_utils.add_rating_sequence_column(ratings_lf, reversed=True)
     ratings_lf = ratings_utils.add_latest_rating_flag_column(ratings_lf)
     ratings_lf = ratings_utils.add_numerical_ratings(ratings_lf)
 

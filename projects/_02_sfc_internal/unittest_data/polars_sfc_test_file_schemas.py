@@ -305,13 +305,6 @@ class FlattenCQCRatings:
         ]
     )
 
-    ratings_with_sequence_schema = pl.Schema(
-        [
-            *ratings_with_assessment_date_schema.items(),
-            (CQCRatingsColumns.reversed_rating_sequence, pl.Int64),
-        ]
-    )
-
     full_ratings_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String),

@@ -722,77 +722,6 @@ class FlattenCQCRatings:
         ),
     ]
 
-    add_current_or_historic_rows = [
-        (
-            "1-001",
-            "Registered",
-            "2024-01-01",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-        ),
-    ]
-    expected_add_current_rows = [
-        (
-            "1-001",
-            "Registered",
-            "2024-01-01",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Current",
-        ),
-    ]
-    expected_add_historic_rows = [
-        (
-            "1-001",
-            "Registered",
-            "2024-01-01",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Historic",
-        ),
-    ]
-
-    add_rating_sequence_rows = [
-        (
-            "1-001",
-            "Registered",
-            "2024-01-01",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Current",
-            "2024-01-02",
-        ),
-        (
-            "1-001",
-            "Registered",
-            "2023-01-01",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Historic",
-            "2023-01-02",
-        ),
-    ]
-
     add_latest_rating_flag_rows = [
         (
             "1-001",
@@ -806,7 +735,6 @@ class FlattenCQCRatings:
             "Good",
             "Current",
             "2024-01-02",
-            1,
         ),
         (
             "1-001",
@@ -820,7 +748,6 @@ class FlattenCQCRatings:
             "Good",
             "Historic",
             "2023-01-02",
-            2,
         ),
     ]
 
