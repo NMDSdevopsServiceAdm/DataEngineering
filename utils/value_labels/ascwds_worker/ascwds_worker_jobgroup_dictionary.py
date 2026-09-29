@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 
-from utils.column_values.categorical_column_values import (
-    JobGroupLabels,
-    MainJobRoleLabels,
-)
+from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
+from utils.column_values.categorical_column_values import JobGroupLabels
 
 
 @dataclass

@@ -10,7 +10,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
 
 PATCH_PATH = "projects._03_independent_cqc._02_employment_status.fargate.validate_00_prepare_worker"
 

@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
 from utils.column_values.categorical_column_values import (
     RUI,
     ASCWDSFilledPostsSource,
@@ -18,7 +19,6 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
     JobRoleFilteringRule,
-    MainJobRoleLabels,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
     Region,
@@ -108,37 +108,6 @@ class FeaturesEngineeringUtilsData:
     ]
     expected_add_array_column_count_with_null_value_rows = [
         ("1-001", None, 0),
-    ]
-
-    add_date_index_column_same_index_for_same_date_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
-    ]
-    expected_add_date_index_column_same_index_for_same_date_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 1),
-    ]
-
-    add_date_index_column_applies_incremental_index_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0003", CareHome.not_care_home, date(2025, 2, 1)),
-    ]
-    expected_add_date_index_column_applies_incremental_index_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0003", CareHome.not_care_home, date(2025, 2, 1), 2),
-    ]
-
-    add_date_index_column_indexes_by_care_home_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0002", CareHome.not_care_home, date(2025, 2, 1)),
-        ("1-0003", CareHome.care_home, date(2025, 2, 1)),
-    ]
-    expected_add_date_index_column_indexes_by_care_home_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0002", CareHome.not_care_home, date(2025, 2, 1), 2),
-        ("1-0003", CareHome.care_home, date(2025, 2, 1), 1),
     ]
 
     cap_integer_at_max_value_rows = [
@@ -291,13 +260,25 @@ class ModelUtilsData:
 @dataclass
 class ValidateModelsData:
     validate_model_feature_rows = [
-        ("1-001", date(2025, 1, 1), "N", None, ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, None),
-        ("1-002", date(2025, 1, 1), "Y", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5),
-        ("1-003", date(2025, 1, 1), "N", "Y", ["activity 1"], 12.0, None, ["specialism 1"], "rui", "region", "Y", 10, 5),
-        ("1-004", date(2025, 1, 1), "N", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5),
-        ("1-005", date(2024, 1, 1), "N", None, ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, None),
+        ("1-001", date(2025, 1, 1), "N", None, ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, None, None, None),
+        ("1-002", date(2025, 1, 1), "Y", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, 10, 1.2),
+        ("1-003", date(2025, 1, 1), "N", "Y", ["activity 1"], 12.0, None, ["specialism 1"], "rui", "region", "Y", 10, 5, None, None),
+        ("1-004", date(2025, 1, 1), "N", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, None, None),
+        ("1-005", date(2024, 1, 1), "N", None, ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, None, None, None),
     ] # fmt: skip
     expected_get_expected_row_count_rows = 1
+
+    null_posts_rolling_average_rows = [
+        ("1-001", date(2025, 1, 1), "N", "Y", ["activity 1"], None, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, None, None),
+    ] # fmt: skip
+    expected_null_posts_rolling_average_row_count = 1
+
+    care_home_missing_bed_feature_rows = [
+        ("1-001", date(2025, 1, 1), "Y", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, 10, 1.2),
+        ("1-002", date(2025, 1, 1), "Y", "Y", ["activity 1"], None, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, None, 1.2),
+        ("1-003", date(2025, 1, 1), "Y", "Y", ["activity 1"], None, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5, 10, None),
+    ] # fmt: skip
+    expected_care_home_missing_bed_feature_row_count = 1
 
 
 @dataclass
@@ -360,10 +341,10 @@ class ValidateMergeIndCQCData:
 class ValidateCleanIndCQCData:
 
     cleaned_ind_cqc_data_rows = [
-        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
-        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
-        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
-        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, 10, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, 10, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
+        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, 10, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
+        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, 10, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
     ] # fmt: skip
 
     merged_ind_cqc_data_rows = [

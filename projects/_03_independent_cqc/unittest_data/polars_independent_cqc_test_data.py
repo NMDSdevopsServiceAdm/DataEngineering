@@ -4,6 +4,13 @@ from typing import Any
 
 import pytest
 
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ModelEvaluationColumns as ModelEvaluation,
+)
+from utils.column_values.ascwds_labelled_vocab import PublishedJobRoleLabels
+from utils.column_values.categorical_column_values import PrimaryServiceType
+
 
 @dataclass
 class RemoveRepeatedValuesOverTimeAsGroupTestCase:
@@ -208,5 +215,346 @@ class TestCleaningUtilsData:
             columns=["a", "b"],
             output_columns=["z_share", "y_share"],
             expected_data={"z_share": [0.25], "y_share": [0.75]},
+        ),
+    ]
+
+
+FOLD_SEED = 42
+
+
+@dataclass
+class AssignLocationFoldsTestCase:
+    id: str
+    location_ids: list[str]
+    n_folds: int
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class AddNeverSubmittedFlagTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class MeanPeriodToPeriodChangeTestCase:
+    id: str
+    input_data: dict[str, Any]
+    columns: list[str]
+    partition_columns: list[str]
+    expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class AggregateTotalsByGroupTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class ScoreGroupTotalsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+    by_columns: list[str] | None = None
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+class TestModelEvaluationUtilsData:
+    location_rows_share_a_fold_test_cases = [
+        AssignLocationFoldsTestCase(
+            id="three_rows_per_location",
+            location_ids=["loc1", "loc2", "loc3", "loc4"] * 3,
+            n_folds=2,
+        ),
+        AssignLocationFoldsTestCase(
+            id="different_numbers_of_rows_per_location",
+            location_ids=["loc1"] * 4 + ["loc2"] * 3 + ["loc3", "loc4", "loc5", "loc6"],
+            n_folds=5,
+        ),
+    ]
+
+    folds_are_balanced_test_cases = [
+        AssignLocationFoldsTestCase(
+            id="locations_that_dont_divide_evenly_into_folds",
+            location_ids=[f"loc{i}" for i in range(7)],
+            n_folds=3,
+        ),
+        # loc0 has most of the rows, so balancing by rows would differ.
+        AssignLocationFoldsTestCase(
+            id="balanced_by_locations_not_rows",
+            location_ids=["loc0"] * 20 + [f"loc{i}" for i in range(1, 10)],
+            n_folds=5,
+        ),
+    ]
+
+    folds_repeat_for_same_seed_test_case = AssignLocationFoldsTestCase(
+        id="rows_in_a_different_order",
+        location_ids=[f"loc{i}" for i in range(10)] * 2,
+        n_folds=3,
+    )
+
+    existing_folds_replaced_test_case = AssignLocationFoldsTestCase(
+        id="folds_from_an_earlier_run",
+        location_ids=[f"loc{i}" for i in range(6)],
+        n_folds=2,
+    )
+
+    never_submitted_test_cases = [
+        AddNeverSubmittedFlagTestCase(
+            id="one_known_value_counts_for_the_whole_location",
+            input_data={
+                IndCQC.location_id: ["loc1"] * 3,
+                IndCQC.ascwds_filled_posts_dedup_clean: [None, 5.0, None],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1"] * 3,
+                IndCQC.ascwds_filled_posts_dedup_clean: [None, 5.0, None],
+                ModelEvaluation.never_submitted: [False] * 3,
+            },
+        ),
+        AddNeverSubmittedFlagTestCase(
+            id="location_without_any_known_value_is_never_submitted",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc2", "loc2"],
+                IndCQC.ascwds_filled_posts_dedup_clean: [5.0, None, None],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc2", "loc2"],
+                IndCQC.ascwds_filled_posts_dedup_clean: [5.0, None, None],
+                ModelEvaluation.never_submitted: [False, True, True],
+            },
+        ),
+    ]
+
+    steady_predictions_test_cases = [
+        MeanPeriodToPeriodChangeTestCase(
+            id="values_that_stay_the_same_every_period",
+            input_data={
+                IndCQC.location_id: ["loc1"] * 3,
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 3, 1),
+                ],
+                IndCQC.estimate_filled_posts: [10.0] * 3,
+                IndCQC.posts_rolling_average_model: [12.0] * 3,
+            },
+            columns=[
+                IndCQC.estimate_filled_posts,
+                IndCQC.posts_rolling_average_model,
+            ],
+            partition_columns=[IndCQC.location_id],
+            expected_data={
+                ModelEvaluation.column_name: [
+                    IndCQC.estimate_filled_posts,
+                    IndCQC.posts_rolling_average_model,
+                ],
+                ModelEvaluation.mean_period_to_period_change: [0.0, 0.0],
+            },
+        ),
+    ]
+
+    # Rows alternate between partitions, so changes across them would show as jumps.
+    change_within_partition_test_cases = [
+        MeanPeriodToPeriodChangeTestCase(
+            id="not_measured_across_job_roles",
+            input_data={
+                IndCQC.location_id: ["loc1"] * 4,
+                IndCQC.published_job_role_label: [
+                    PublishedJobRoleLabels.care_worker,
+                    PublishedJobRoleLabels.registered_nurse,
+                ]
+                * 2,
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                IndCQC.estimate_filled_posts_by_job_role: [2.0, 8.0, 2.0, 8.0],
+            },
+            columns=[IndCQC.estimate_filled_posts_by_job_role],
+            partition_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
+            expected_data={
+                ModelEvaluation.column_name: [IndCQC.estimate_filled_posts_by_job_role],
+                ModelEvaluation.mean_period_to_period_change: [0.0],
+            },
+        ),
+        # loc1 changes by 10 and loc2 by 0, so the mean change is 5.
+        MeanPeriodToPeriodChangeTestCase(
+            id="not_measured_across_locations",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc2", "loc1", "loc2"],
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                IndCQC.estimate_filled_posts: [20.0, 80.0, 30.0, 80.0],
+            },
+            columns=[IndCQC.estimate_filled_posts],
+            partition_columns=[IndCQC.location_id],
+            expected_data={
+                ModelEvaluation.column_name: [IndCQC.estimate_filled_posts],
+                ModelEvaluation.mean_period_to_period_change: [5.0],
+            },
+        ),
+    ]
+
+    # In date order the changes are 10 and 10; in row order they'd be 20 and 10.
+    unordered_dates_test_case = MeanPeriodToPeriodChangeTestCase(
+        id="rows_out_of_date_order",
+        input_data={
+            IndCQC.location_id: ["loc1"] * 3,
+            IndCQC.cqc_location_import_date: [
+                date(2024, 3, 1),
+                date(2024, 1, 1),
+                date(2024, 2, 1),
+            ],
+            IndCQC.estimate_filled_posts: [30.0, 10.0, 20.0],
+        },
+        columns=[IndCQC.estimate_filled_posts],
+        partition_columns=[IndCQC.location_id],
+        expected_data={
+            ModelEvaluation.column_name: [IndCQC.estimate_filled_posts],
+            ModelEvaluation.mean_period_to_period_change: [10.0],
+        },
+    )
+
+    group_totals_sum_predicted_and_known_posts_test_cases = [
+        AggregateTotalsByGroupTestCase(
+            id="two_rows_in_a_group_are_summed",
+            input_data={
+                IndCQC.primary_service_type: [
+                    PrimaryServiceType.non_residential,
+                    PrimaryServiceType.non_residential,
+                    PrimaryServiceType.care_home_only,
+                ],
+                IndCQC.estimate_filled_posts: [10.0, 20.0, 5.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [12.0, 18.0, 6.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [
+                    PrimaryServiceType.non_residential,
+                    PrimaryServiceType.care_home_only,
+                ],
+                IndCQC.estimate_filled_posts: [30.0, 5.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [30.0, 6.0],
+            },
+        ),
+    ]
+
+    rows_without_known_posts_excluded_from_totals_test_cases = [
+        AggregateTotalsByGroupTestCase(
+            id="row_missing_a_known_value_left_out_of_its_group_totals",
+            input_data={
+                IndCQC.primary_service_type: [
+                    PrimaryServiceType.non_residential,
+                    PrimaryServiceType.non_residential,
+                ],
+                IndCQC.estimate_filled_posts: [10.0, 20.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [12.0, None],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
+                IndCQC.estimate_filled_posts: [10.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [12.0],
+            },
+        ),
+    ]
+
+    perfect_totals_test_cases = [
+        ScoreGroupTotalsTestCase(
+            id="every_group_total_predicted_exactly",
+            input_data={
+                IndCQC.estimate_filled_posts: [10.0, 20.0, 30.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [10.0, 20.0, 30.0],
+            },
+            expected_data={
+                IndCQC.r2: [1.0],
+                ModelEvaluation.weighted_absolute_percentage_error: [0.0],
+            },
+        ),
+    ]
+
+    # Fold 0 is predicted exactly; fold 1 misses every group by 10, a fifth of its total.
+    total_scores_split_by_fold_test_cases = [
+        ScoreGroupTotalsTestCase(
+            id="each_fold_scored_on_its_own_groups",
+            input_data={
+                ModelEvaluation.fold: [0, 0, 1, 1],
+                IndCQC.estimate_filled_posts: [10.0, 30.0, 20.0, 20.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [10.0, 30.0, 10.0, 30.0],
+            },
+            expected_data={
+                ModelEvaluation.fold: [0, 1],
+                IndCQC.r2: [1.0, 0.0],
+                ModelEvaluation.weighted_absolute_percentage_error: [0.0, 0.5],
+            },
+            by_columns=[ModelEvaluation.fold],
+        ),
+    ]
+
+
+@dataclass
+class ModelUtilsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+class TestModelUtilsData:
+    add_date_index_test_cases = [
+        ModelUtilsTestCase(
+            id="repeated_dates_share_an_index",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc1", "loc1"],
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc1", "loc1"],
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
+                IndCQC.cqc_location_import_date_indexed: [1, 1, 2],
+            },
+        ),
+        ModelUtilsTestCase(
+            id="index_is_partitioned_by_location",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.cqc_location_import_date: [date(2024, 3, 1), date(2024, 1, 1)],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.cqc_location_import_date: [date(2024, 3, 1), date(2024, 1, 1)],
+                IndCQC.cqc_location_import_date_indexed: [1, 1],
+            },
         ),
     ]

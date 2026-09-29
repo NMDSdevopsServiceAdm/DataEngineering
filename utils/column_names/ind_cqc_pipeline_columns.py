@@ -256,6 +256,7 @@ class IndCqcColumns:
         "national_percentage_other_filled_posts"
     )
     number_of_beds: str = CQCLClean.number_of_beds
+    number_of_beds_at_provider: str = "number_of_beds_at_provider"
     number_of_beds_banded: str = "number_of_beds_banded"
     number_of_beds_banded_for_rolling_avg: str = (
         number_of_beds_banded + "_for_rolling_avg"
@@ -413,7 +414,6 @@ class NullGroupedProviderColumns:
     )
     count_of_cqc_locations_in_provider: str = "count_of_cqc_locations_in_provider"
     location_pir_average: str = "location_pir_average"
-    number_of_beds_at_provider: str = "number_of_beds_at_provider"
     potential_grouped_provider: str = "potential_grouped_provider"
     provider_pir_count: str = "provider_pir_count"
     provider_pir_sum: str = "provider_pir_sum"
@@ -451,6 +451,11 @@ class ModelRegistryKeys:
     model_params: str = "model_params"
     model_type: str = "model_type"
     version: str = "version"
+
+
+@dataclass
+class ModelMetadataKeys:
+    feature_columns: str = "feature_columns"
 
 
 @dataclass
@@ -517,3 +522,14 @@ class EmploymentStatusMagicNumberRateColumns:
     emp_stat_bank_or_pool: str = "emp_stat_bank_or_pool"
     emp_stat_agency: str = "emp_stat_agency"
     emp_stat_other: str = "emp_stat_other"
+
+
+@dataclass
+class ModelEvaluationColumns:
+    """The names of the columns added when evaluating models, such as filled posts."""
+
+    fold: str = "fold"
+    never_submitted: str = "never_submitted"
+    column_name: str = "column_name"
+    mean_period_to_period_change: str = "mean_period_to_period_change"
+    weighted_absolute_percentage_error: str = "weighted_absolute_percentage_error"

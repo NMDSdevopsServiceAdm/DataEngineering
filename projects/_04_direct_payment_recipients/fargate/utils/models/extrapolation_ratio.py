@@ -15,6 +15,10 @@ def model_extrapolation(direct_payments_lf: pl.LazyFrame) -> pl.LazyFrame:
     by scaling the boundary data point by how much the mean estimate has moved relative
     to the mean at that boundary year (ratio extrapolation).
 
+    Assumes one row per LA area and year. The result does not depend on row order
+    under that assumption, but duplicate LA area/year rows would make the boundary
+    values depend on which duplicate comes first.
+
     Args:
         direct_payments_lf (pl.LazyFrame): Input Polars LazyFrame
 

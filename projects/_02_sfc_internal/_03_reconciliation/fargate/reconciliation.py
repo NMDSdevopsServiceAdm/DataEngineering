@@ -18,18 +18,20 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
 )
-from utils.column_values.categorical_column_values import (
+from utils.column_values.ascwds_labelled_vocab import (
+    REGION_ID_CODE_TO_LABEL,
     IsParent,
     MainServiceID,
+    RegistrationType,
+)
+from utils.column_values.categorical_column_values import (
     ParentsOrSinglesAndSubs,
     RegistrationStatus,
-    RegistrationType,
     SingleSubDescription,
     Subject,
 )
-from utils.value_labels.reconciliation.label_dictionary import (
-    labels_dict as reconciliation_labels_dict,
-)
+
+reconciliation_labels_dict = {AWPClean.region_id: REGION_ID_CODE_TO_LABEL}
 
 
 def main(

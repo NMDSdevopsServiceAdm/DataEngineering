@@ -4,7 +4,7 @@ import polars as pl
 
 from polars_utils.column_types import CategoricalColumnTypes
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
