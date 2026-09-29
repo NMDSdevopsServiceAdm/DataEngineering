@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
@@ -42,6 +42,7 @@ class NullColumnsWhereGroupShareTooLowTestCase:
     id: str
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
+    partition_by_columns: list[str] = field(default_factory=lambda: ["grp"])
 
     def as_pytest_param(self):
         return pytest.param(self, id=self.id)
@@ -268,6 +269,24 @@ class TestCleaningUtilsData:
                 "a": [None, 5],
                 "b": [None, 5],
                 "c": [None, 0],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="groups_by_every_partition_column",
+            partition_by_columns=["grp", "period"],
+            input_data={
+                "grp": ["g", "g"],
+                "period": ["p1", "p2"],
+                "a": [0, 15],
+                "b": [0, 0],
+                "c": [20, 5],
+            },
+            expected_data={
+                "grp": ["g", "g"],
+                "period": ["p1", "p2"],
+                "a": [None, 15],
+                "b": [None, 0],
+                "c": [None, 5],
             },
         ),
         NullColumnsWhereGroupShareTooLowTestCase(

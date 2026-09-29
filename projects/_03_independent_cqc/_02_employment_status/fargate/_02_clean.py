@@ -1,6 +1,4 @@
-from projects._03_independent_cqc._02_employment_status.fargate.utils import (
-    clean_utils as cUtils,
-)
+import projects._03_independent_cqc._02_employment_status.fargate.utils.clean_utils as cUtils
 from polars_utils import utils
 
 

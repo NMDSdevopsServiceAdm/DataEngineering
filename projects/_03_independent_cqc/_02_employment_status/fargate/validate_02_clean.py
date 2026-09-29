@@ -4,6 +4,9 @@ import pointblank as pb
 import polars as pl
 
 from polars_utils import utils
+from projects._03_independent_cqc._02_employment_status.fargate.utils.clean_utils import (
+    CLEAN_COUNT_COLUMNS,
+)
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -33,14 +36,6 @@ PERCENTAGE_COLUMNS = [
     EmpStatus.bank_or_pool_percentage,
     EmpStatus.agency_percentage,
     EmpStatus.other_percentage,
-]
-
-CLEAN_COUNT_COLUMNS = [
-    EmpStatus.permanent_count_clean,
-    EmpStatus.temporary_count_clean,
-    EmpStatus.bank_or_pool_count_clean,
-    EmpStatus.agency_count_clean,
-    EmpStatus.other_count_clean,
 ]
 
 

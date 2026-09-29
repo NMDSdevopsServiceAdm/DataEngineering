@@ -84,7 +84,7 @@ class TestNullColumnsWhereGroupShareTooLow:
     def test_nulls_columns_only_for_groups_with_low_share(self, case):
         schema_overrides = {
             **{column: pl.Int64 for column in ["a", "b", "c"]},
-            "grp": pl.String,
+            **{column: pl.String for column in ["grp", "period"]},
         }
         input_lf = pl.LazyFrame(case.input_data, schema_overrides=schema_overrides)
         expected_lf = pl.LazyFrame(
@@ -93,7 +93,7 @@ class TestNullColumnsWhereGroupShareTooLow:
 
         returned_lf = job.null_columns_where_group_share_too_low(
             input_lf,
-            partition_by_columns=["grp"],
+            partition_by_columns=case.partition_by_columns,
             total_columns=["a", "b", "c"],
             share_columns=["a", "b"],
             columns_to_null=["a", "b", "c"],

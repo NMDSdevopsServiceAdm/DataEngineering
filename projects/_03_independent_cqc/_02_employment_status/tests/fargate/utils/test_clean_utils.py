@@ -18,14 +18,6 @@ PATCH_PATH = (
     "projects._03_independent_cqc._02_employment_status.fargate.utils.clean_utils"
 )
 
-CLEAN_COUNT_COLUMNS = [
-    EmpStatus.permanent_count_clean,
-    EmpStatus.temporary_count_clean,
-    EmpStatus.bank_or_pool_count_clean,
-    EmpStatus.agency_count_clean,
-    EmpStatus.other_count_clean,
-]
-
 PERCENTAGE_COLUMNS = [
     EmpStatus.permanent_percentage,
     EmpStatus.temporary_percentage,
@@ -36,7 +28,9 @@ PERCENTAGE_COLUMNS = [
 
 
 def _schema_overrides(data: dict) -> dict:
-    overrides = {column: pl.Int64 for column in CLEAN_COUNT_COLUMNS if column in data}
+    overrides = {
+        column: pl.Int64 for column in job.CLEAN_COUNT_COLUMNS if column in data
+    }
     overrides.update(
         {column: pl.Float32 for column in PERCENTAGE_COLUMNS if column in data}
     )
