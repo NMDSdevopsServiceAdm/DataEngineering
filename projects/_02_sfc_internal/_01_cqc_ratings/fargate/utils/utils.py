@@ -10,8 +10,8 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_values.categorical_column_values import CQCCurrentOrHistoricValues
 
-# Match Spark's `F.explode()`, which drops the row for both an empty and a null list
-# (Polars only does that for empty lists by default). Unpack into every `.explode()`.
+# Match Spark's `F.explode()`, which drops rows for both empty and null lists
+# (Polars only drops empty ones by default).
 SPARK_EXPLODE = {"empty_as_null": False, "keep_nulls": False}
 
 # Transient column preserving raw explode order for the deterministic tiebreak
