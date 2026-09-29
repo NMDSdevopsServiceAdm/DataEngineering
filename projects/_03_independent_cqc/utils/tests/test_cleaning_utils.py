@@ -97,7 +97,7 @@ class TestNullColumnsWhereGroupShareTooLow:
             total_columns=["a", "b", "c"],
             share_columns=["a", "b"],
             columns_to_null=["a", "b", "c"],
-            minimum_total=10,
+            minimum_group_size=10,
             maximum_share=0.05,
         )
 
@@ -118,6 +118,6 @@ class TestNullColumnsWhereGroupShareTooLow:
                 total_columns=["a"],
                 share_columns=["a", "b"],
                 columns_to_null=["a"],
-                minimum_total=10,
+                minimum_group_size=10,
                 maximum_share=0.05,
             )
