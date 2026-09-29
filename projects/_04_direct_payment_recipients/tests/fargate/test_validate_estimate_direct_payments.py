@@ -150,8 +150,8 @@ class TestMain:
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
-        # Config.FIRST_YEAR (2011) predates 2013, the hardcoded lower bound this
-        # check used before being corrected to use the dataset's own config.
+        # The dataset's own earliest year must be accepted, even though it
+        # predates the years with known proportions.
         earliest_year_row = list(Data.estimates_rows[0])
         first_year_with_data_index = list(Schemas.estimates_schema.names()).index(
             DP.FIRST_YEAR_WITH_DATA

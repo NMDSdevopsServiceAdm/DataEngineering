@@ -17,9 +17,8 @@ from utils.column_values.categorical_columns_by_dataset import (
     PostcodeDirectoryCleanedCategoricalValues as CatValues,
 )
 
-# Proportions are only known from 2015 (2013 is filled by mean imputation, 2014 by
-# interpolation, and 2011-2012 have no estimate), so estimates are legitimately
-# null before this year - confirmed against the main pipeline's output.
+# Estimates are legitimately null before this year (also true of the main
+# pipeline's output), so completeness and bounds are only checked from it.
 FIRST_YEAR_WITH_COMPLETE_ESTIMATES = 2015
 
 
@@ -107,8 +106,7 @@ def main(
             ),
             brief=f"{DP.LA_AREA} needs to be one of {CatValues.contemporary_cssr_column_values.categorical_values} or {CatValues.current_cssr_column_values.categorical_values}",
         )
-        # numeric - year plausibility (Config.FIRST_YEAR is this dataset's own
-        # documented earliest year, not a value borrowed from elsewhere)
+        # numeric - year plausibility, from this dataset's own earliest year
         .col_vals_between(
             DP.FIRST_YEAR_WITH_DATA,
             Config.FIRST_YEAR,
@@ -121,17 +119,12 @@ def main(
             int(datetime.now().year),
             na_pass=True,
         )
-        # numeric - proportions (bounded 0-1 by construction: means/interpolation
-        # of the 0-1-bounded raw proportion stay within it - confirmed via
-        # remove_outliers.py, which nulls the raw value outside 0-1 upstream).
-        # ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF and its rolling
-        # average are excluded: their coalesce chain can take its value from
-        # ESTIMATE_USING_EXTRAPOLATION_RATIO, which is not bounded, so only
-        # completeness (col_vals_not_null above) is checked for those two.
-        # ESTIMATE_USING_INTERPOLATION is re-run over that same coalesced column,
-        # so before FIRST_YEAR_WITH_COMPLETE_ESTIMATES it can interpolate through
-        # unbounded extrapolated values (seen above 1 in 2011-2014) and is only
-        # bounded from that year onwards.
+        # numeric - proportions: means/interpolation of the raw proportion stay
+        # within 0-1 because remove_outliers.py nulls raw values outside it.
+        # The estimated proportion and its rolling average are only checked for
+        # completeness, as they can take an unbounded extrapolation-ratio value.
+        # Interpolation is re-run over that same column, so it can exceed 1 before
+        # FIRST_YEAR_WITH_COMPLETE_ESTIMATES and is only bounded from then.
         .col_vals_between(DP.ESTIMATE_USING_MEAN, 0.0, 1.0, na_pass=True)
         .col_vals_between(
             DP.ESTIMATE_USING_INTERPOLATION,
