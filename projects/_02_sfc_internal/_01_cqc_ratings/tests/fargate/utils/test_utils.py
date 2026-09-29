@@ -179,3 +179,80 @@ class TestPrepareHistoricRatings:
             orient="row",
         ).collect()
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+
+@dataclass
+class PrepareAssessmentRatingsCase:
+    id: str
+    rows: list
+    expected_rows: list
+
+    def as_pytest_param(self):
+        return pytest.param(self.rows, self.expected_rows, id=self.id)
+
+
+prepare_assessment_ratings_cases = [
+    PrepareAssessmentRatingsCase(
+        id="single_asg_rating_pivots_key_questions_into_columns",
+        rows=Data.prepare_assessment_ratings_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_rows,
+    ),
+    PrepareAssessmentRatingsCase(
+        id="overall_rating_is_flattened_with_overall_source_path",
+        rows=Data.prepare_assessment_ratings_overall_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_overall_rows,
+    ),
+    PrepareAssessmentRatingsCase(
+        id="duplicate_key_question_keeps_first_in_raw_order",
+        rows=Data.prepare_assessment_ratings_tiebreaker_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_tiebreaker_rows,
+    ),
+    PrepareAssessmentRatingsCase(
+        id="drops_row_when_key_question_ratings_is_null_not_empty",
+        rows=Data.prepare_assessment_ratings_null_key_question_ratings_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_null_key_question_ratings_rows,
+    ),
+]
+
+
+class TestPrepareAssessmentRatings:
+    @pytest.mark.parametrize(
+        "rows,expected_rows",
+        [case.as_pytest_param() for case in prepare_assessment_ratings_cases],
+    )
+    def test_prepare_assessment_ratings_returns_expected_values(
+        self, rows, expected_rows
+    ):
+        input_lf = pl.LazyFrame(
+            rows, schema=Schemas.assessment_ratings_input_schema, orient="row"
+        )
+
+        returned_df = job.prepare_assessment_ratings(input_lf).collect()
+
+        expected_df = pl.LazyFrame(
+            expected_rows, schema=Schemas.assessment_ratings_output_schema, orient="row"
+        ).collect()
+        pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+
+class TestRaiseErrorWhenAssessmentDfContainsOverallData:
+    def test_raises_error_when_overall_object_is_populated(self):
+        input_lf = pl.LazyFrame(
+            Data.raise_error_overall_populated_rows,
+            schema=Schemas.assessment_ratings_output_schema,
+            orient="row",
+        )
+
+        with pytest.raises(ValueError, match="contains 1 values"):
+            job.raise_error_when_assessment_df_contains_overall_data(input_lf)
+
+    def test_does_not_raise_when_overall_object_is_empty(self):
+        input_lf = pl.LazyFrame(
+            Data.raise_error_overall_empty_rows,
+            schema=Schemas.assessment_ratings_output_schema,
+            orient="row",
+        )
+
+        result = job.raise_error_when_assessment_df_contains_overall_data(input_lf)
+
+        assert result is None

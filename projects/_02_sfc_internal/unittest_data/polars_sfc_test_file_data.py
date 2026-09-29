@@ -369,3 +369,226 @@ class FlattenCQCRatings:
             "Historic",
         ),
     ]
+
+    def _asg_kq(name, rating="Good"):
+        return {"name": name, "rating": rating, "status": "Assessed"}
+
+    def _asg_entry(published_datetime, assessment_plan_id, key_question_ratings):
+        return {
+            "assessmentPlanPublishedDateTime": published_datetime,
+            "ratings": {
+                "overall": [],
+                "asgRatings": [
+                    {
+                        "assessmentPlanId": assessment_plan_id,
+                        "title": "Care Home Assessment",
+                        "assessmentDate": "2024-01-02",
+                        "assessmentPlanStatus": "Assessed",
+                        "name": "Care Homes",
+                        "rating": "Good",
+                        "status": "Current",
+                        "keyQuestionRatings": key_question_ratings,
+                    }
+                ],
+            },
+        }
+
+    prepare_assessment_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _asg_entry(
+                    "2024-01-01 00:00:00",
+                    "AP1",
+                    [
+                        _asg_kq("Safe"),
+                        _asg_kq("Well-led"),
+                        _asg_kq("Caring"),
+                        _asg_kq("Responsive"),
+                        _asg_kq("Effective"),
+                    ],
+                )
+            ],
+        ),
+    ]
+
+    expected_prepare_assessment_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "SAF",
+            "Care Homes",
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    prepare_assessment_ratings_overall_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                {
+                    "assessmentPlanPublishedDateTime": "2024-01-01 00:00:00",
+                    "ratings": {
+                        "overall": [
+                            {
+                                "rating": "Good",
+                                "status": "Assessed",
+                                "keyQuestionRatings": [_asg_kq("Safe")],
+                            }
+                        ],
+                        "asgRatings": [],
+                    },
+                }
+            ],
+        ),
+    ]
+
+    expected_prepare_assessment_ratings_overall_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Assessed",
+            "Good",
+            "assessment.ratings.overall",
+            "Good",
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+
+    prepare_assessment_ratings_tiebreaker_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _asg_entry(
+                    "2024-02-01 00:00:00",
+                    "AP2",
+                    [
+                        _asg_kq("Safe"),
+                        _asg_kq("Safe", "Requires improvement"),
+                        _asg_kq("Well-led"),
+                        _asg_kq("Caring"),
+                        _asg_kq("Responsive"),
+                        _asg_kq("Effective"),
+                    ],
+                )
+            ],
+        ),
+    ]
+
+    expected_prepare_assessment_ratings_tiebreaker_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-02-01 00:00:00",
+            "AP2",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "SAF",
+            "Care Homes",
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    prepare_assessment_ratings_null_key_question_ratings_rows = [
+        *prepare_assessment_ratings_rows,
+        (
+            "1-002",
+            "Registered",
+            [
+                {
+                    "assessmentPlanPublishedDateTime": "2024-01-01 00:00:00",
+                    "ratings": {
+                        "overall": [
+                            {
+                                "rating": "Good",
+                                "status": "Assessed",
+                                "keyQuestionRatings": None,
+                            }
+                        ],
+                        "asgRatings": [],
+                    },
+                }
+            ],
+        ),
+    ]
+
+    expected_prepare_assessment_ratings_null_key_question_ratings_rows = (
+        expected_prepare_assessment_ratings_rows
+    )
+
+    raise_error_overall_populated_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Current",
+            "Good",
+            "assessment.ratings.overall",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+
+    raise_error_overall_empty_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Current",
+            None,
+            "assessment.ratings.overall",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
