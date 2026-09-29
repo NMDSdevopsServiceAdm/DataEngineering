@@ -119,8 +119,10 @@ def main(
             int(datetime.now().year),
             na_pass=True,
         )
-        # numeric - proportions: means/interpolation of the raw proportion stay
-        # within 0-1 because remove_outliers.py nulls raw values outside it.
+        # numeric - proportions: interpolation of the raw proportion stays within
+        # 0-1 because remove_outliers.py nulls raw values outside it. The mean is
+        # also coalesced with the historic estimate, which is assumed to be a
+        # proportion but is not bounded by anything upstream.
         # The estimated proportion and its rolling average are only checked for
         # completeness, as they can take an unbounded extrapolation-ratio value.
         # Interpolation is re-run over that same column, so it can exceed 1 before

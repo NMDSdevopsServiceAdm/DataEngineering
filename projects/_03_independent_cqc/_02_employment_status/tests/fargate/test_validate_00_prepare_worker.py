@@ -109,6 +109,35 @@ class TestMain:
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.get_matched_ascwds_dates")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_validation_report_includes_expected_validations(
+        self,
+        mock_read_parquet: Mock,
+        mock_get_matched_ascwds_dates: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+        mock_get_matched_ascwds_dates.return_value = self.matched_dates
+
+        job.main(
+            "bucket", "my/source/", "my/compare/", self.METADATA_SOURCE, "my/reports/"
+        )
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+
+        assert assertion_types_present == {
+            "row_count_match",
+            "col_vals_not_null",
+            "col_vals_ge",
+            "col_vals_in_set",
+            "specially",
+        }
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.get_matched_ascwds_dates")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_row_count_match_expects_unique_group_count_not_raw_compare_row_count(
         self,
         mock_read_parquet: Mock,
