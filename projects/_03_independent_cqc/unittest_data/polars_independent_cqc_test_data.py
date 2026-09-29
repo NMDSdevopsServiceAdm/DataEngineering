@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
@@ -35,6 +35,17 @@ class PercentageShareHorizontalTestCase:
     columns: list[str]
     output_columns: list[str]
     expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class NullColumnsWhereGroupShareTooLowTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+    partition_by_columns: list[str] = field(default_factory=lambda: ["grp"])
 
     def as_pytest_param(self):
         return pytest.param(self, id=self.id)
@@ -218,6 +229,93 @@ class TestCleaningUtilsData:
             columns=["a", "b"],
             output_columns=["z_share", "y_share"],
             expected_data={"z_share": [0.25], "y_share": [0.75]},
+        ),
+    ]
+
+    # Groups are keyed on "grp"; totals are a + b + c, share is a + b.
+    null_columns_where_group_share_too_low_test_cases = [
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="nulls_group_at_boundary_share",
+            input_data={"grp": ["g", "g"], "a": [1, 0], "b": [0, 0], "c": [9, 10]},
+            expected_data={
+                "grp": ["g", "g"],
+                "a": [None, None],
+                "b": [None, None],
+                "c": [None, None],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="keeps_group_with_share_above_maximum",
+            input_data={"grp": ["g"], "a": [1], "b": [1], "c": [8]},
+            expected_data={"grp": ["g"], "a": [1], "b": [1], "c": [8]},
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="nulls_small_group_with_zero_share",
+            input_data={"grp": ["g"], "a": [0], "b": [0], "c": [9]},
+            expected_data={"grp": ["g"], "a": [None], "b": [None], "c": [None]},
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="sums_across_all_rows_in_the_group",
+            input_data={"grp": ["g", "g"], "a": [1, 0], "b": [0, 0], "c": [4, 15]},
+            expected_data={
+                "grp": ["g", "g"],
+                "a": [None, None],
+                "b": [None, None],
+                "c": [None, None],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="only_nulls_the_flagged_group",
+            input_data={"grp": ["low", "ok"], "a": [0, 5], "b": [0, 5], "c": [10, 0]},
+            expected_data={
+                "grp": ["low", "ok"],
+                "a": [None, 5],
+                "b": [None, 5],
+                "c": [None, 0],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="groups_by_every_partition_column",
+            partition_by_columns=["grp", "period"],
+            input_data={
+                "grp": ["g", "g"],
+                "period": ["p1", "p2"],
+                "a": [0, 15],
+                "b": [0, 0],
+                "c": [20, 5],
+            },
+            expected_data={
+                "grp": ["g", "g"],
+                "period": ["p1", "p2"],
+                "a": [None, 15],
+                "b": [None, 0],
+                "c": [None, 5],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="null_row_drops_out_of_group_total",
+            input_data={
+                "grp": ["g", "g"],
+                "a": [10, None],
+                "b": [0, None],
+                "c": [0, None],
+            },
+            expected_data={
+                "grp": ["g", "g"],
+                "a": [10, None],
+                "b": [0, None],
+                "c": [0, None],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="does_not_pool_null_partition_keys_into_one_group",
+            input_data={"grp": [None, None], "a": [0, 0], "b": [0, 0], "c": [20, 20]},
+            expected_data={
+                "grp": [None, None],
+                "a": [0, 0],
+                "b": [0, 0],
+                "c": [20, 20],
+            },
         ),
     ]
 
