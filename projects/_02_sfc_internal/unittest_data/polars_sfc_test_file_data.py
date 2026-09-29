@@ -223,3 +223,149 @@ class ReconciliationData:
     ]
 
     main_expected_single_and_subs_nmds_ids = ["10"]
+
+
+@dataclass
+class FlattenCQCRatings:
+    def _current_ratings(location_id, key_question_ratings):
+        return (
+            location_id,
+            "Registered",
+            {
+                "overall": {
+                    "reportDate": "2024-01-01",
+                    "rating": "Good",
+                    "keyQuestionRatings": key_question_ratings,
+                }
+            },
+        )
+
+    def _kq(name, rating="Good"):
+        return {"name": name, "rating": rating}
+
+    current_ratings_rows = [
+        _current_ratings(
+            "1-001",
+            [
+                _kq("Safe"),
+                _kq("Well-led"),
+                _kq("Caring", "Outstanding"),
+                _kq("Responsive", "Inspected but not rated"),
+                _kq("Effective", "Requires improvement"),
+            ],
+        ),
+    ]
+
+    expected_prepare_current_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Outstanding",
+            "Inspected but not rated",
+            "Requires improvement",
+            "Current",
+        ),
+    ]
+
+    current_ratings_short_key_question_list_rows = [
+        _current_ratings("1-002", [_kq("Safe"), _kq("Well-led")]),
+    ]
+
+    expected_prepare_current_ratings_short_key_question_list_rows = [
+        (
+            "1-002",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            None,
+            None,
+            None,
+            "Current",
+        ),
+    ]
+
+    def _historic_entry(report_date, key_question_ratings):
+        return {
+            "reportDate": report_date,
+            "overall": {"rating": "Good", "keyQuestionRatings": key_question_ratings},
+        }
+
+    historic_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _historic_entry(
+                    "2023-01-01",
+                    [
+                        _kq("Safe"),
+                        _kq("Well-led"),
+                        _kq("Caring"),
+                        _kq("Responsive"),
+                        _kq("Effective"),
+                    ],
+                )
+            ],
+        ),
+    ]
+
+    expected_prepare_historic_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2023-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Historic",
+        ),
+    ]
+
+    historic_ratings_duplicate_date_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _historic_entry("2023-01-01", [_kq("Safe"), _kq("Well-led")]),
+                _historic_entry(
+                    "2023-01-01", [_kq("Safe", "Inadequate"), _kq("Well-led")]
+                ),
+            ],
+        ),
+    ]
+
+    expected_prepare_historic_ratings_duplicate_date_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2023-01-01",
+            "Good",
+            "Good",
+            "Good",
+            None,
+            None,
+            None,
+            "Historic",
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2023-01-01",
+            "Good",
+            "Inadequate",
+            "Good",
+            None,
+            None,
+            None,
+            "Historic",
+        ),
+    ]
