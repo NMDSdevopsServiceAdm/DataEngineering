@@ -35,25 +35,25 @@ def to_lf(data: dict[str, Any]) -> pl.LazyFrame:
     )
 
 
-class TestAggregateSharesByCell:
+class TestAggregateSharesByGroup:
     @staticmethod
     def aggregate(case) -> pl.LazyFrame:
-        return job.aggregate_shares_by_cell(
+        return job.aggregate_shares_by_group(
             to_lf(case.input_data),
             predicted_columns=PREDICTED_SHARES[:1],
             actual_columns=ACTUAL_SHARES[:1],
             weight_column=IndCQC.estimate_filled_posts_by_job_role,
-            cell_columns=[IndCQC.primary_service_type],
+            grouping_columns=[IndCQC.primary_service_type],
         )
 
     @pytest.mark.parametrize(
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.cell_shares_are_worker_weighted_test_cases
+            for case in Data.group_shares_are_worker_weighted_test_cases
         ],
     )
-    def test_cell_shares_are_worker_weighted(self, case):
+    def test_group_shares_are_worker_weighted(self, case):
         pl_testing.assert_frame_equal(
             self.aggregate(case),
             pl.LazyFrame(case.expected_data),
@@ -64,10 +64,10 @@ class TestAggregateSharesByCell:
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.unknown_rows_excluded_from_cells_test_cases
+            for case in Data.unknown_rows_excluded_from_groups_test_cases
         ],
     )
-    def test_unknown_rows_excluded_from_cells(self, case):
+    def test_unknown_rows_excluded_from_groups(self, case):
         pl_testing.assert_frame_equal(
             self.aggregate(case),
             pl.LazyFrame(case.expected_data),
@@ -75,14 +75,14 @@ class TestAggregateSharesByCell:
         )
 
 
-class TestScoreCellShares:
+class TestScoreGroupShares:
     @staticmethod
     def score(case, share_count: int, by_columns: list[str] | None = None):
-        return job.score_cell_shares(
+        return job.score_group_shares(
             pl.LazyFrame(case.input_data),
             predicted_columns=PREDICTED_SHARES[:share_count],
             actual_columns=ACTUAL_SHARES[:share_count],
-            weight_column=ShareModel.cell_weight,
+            weight_column=ShareModel.group_weight,
             by_columns=by_columns,
         )
 
@@ -104,10 +104,10 @@ class TestScoreCellShares:
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.larger_cells_weigh_more_test_cases
+            for case in Data.larger_groups_weigh_more_test_cases
         ],
     )
-    def test_larger_cells_weigh_more(self, case):
+    def test_larger_groups_weigh_more(self, case):
         pl_testing.assert_frame_equal(
             self.score(case, share_count=1), pl.LazyFrame(case.expected_data)
         )
@@ -116,10 +116,10 @@ class TestScoreCellShares:
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.cells_missing_a_share_test_cases
+            for case in Data.groups_missing_a_share_test_cases
         ],
     )
-    def test_cells_missing_a_share_are_not_scored(self, case):
+    def test_groups_missing_a_share_are_not_scored(self, case):
         pl_testing.assert_frame_equal(
             self.score(case, share_count=1), pl.LazyFrame(case.expected_data)
         )

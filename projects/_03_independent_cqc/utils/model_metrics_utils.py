@@ -6,28 +6,28 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 
-def aggregate_shares_by_cell(
+def aggregate_shares_by_group(
     lf: pl.LazyFrame,
     predicted_columns: list[str],
     actual_columns: list[str],
     weight_column: str,
-    cell_columns: list[str],
+    grouping_columns: list[str],
 ) -> pl.LazyFrame:
     """
-    Aggregate predicted and actual shares into cells, weighting rows by their workers.
+    Aggregate predicted and actual shares into groups, weighting rows by their workers.
 
     Only rows with both shares are used, so compare models on the same rows. Sums are Float64,
-    as a cell can sum many rows.
+    as a group can sum many rows.
 
     Args:
-        lf (pl.LazyFrame): dataset containing the share, weight and cell columns
+        lf (pl.LazyFrame): dataset containing the share, weight and grouping columns
         predicted_columns (list[str]): the predicted share columns
         actual_columns (list[str]): the actual share columns
         weight_column (str): each row's number of workers
-        cell_columns (list[str]): the columns defining each cell
+        grouping_columns (list[str]): the columns defining each group
 
     Returns:
-        pl.LazyFrame: a row per cell, with its weighted shares and total "cell_weight"
+        pl.LazyFrame: a row per group, with its weighted shares and total "group_weight"
     """
     weight = pl.col(weight_column).cast(pl.Float64)
 
@@ -35,37 +35,37 @@ def aggregate_shares_by_cell(
         pl.all_horizontal(pl.col([*predicted_columns, *actual_columns]).is_not_null())
     )
 
-    return lf.group_by(cell_columns).agg(
+    return lf.group_by(grouping_columns).agg(
         *[
             ((pl.col(column).cast(pl.Float64) * weight).sum() / weight.sum()).alias(
                 column
             )
             for column in [*predicted_columns, *actual_columns]
         ],
-        weight.sum().alias(ShareModel.cell_weight),
+        weight.sum().alias(ShareModel.group_weight),
     )
 
 
-def score_cell_shares(
-    cells_lf: pl.LazyFrame,
+def score_group_shares(
+    groups_lf: pl.LazyFrame,
     predicted_columns: list[str],
     actual_columns: list[str],
     weight_column: str,
     by_columns: list[str] | None = None,
 ) -> pl.LazyFrame:
     """
-    Score predicted against actual cell shares with weighted R² and mean absolute error.
+    Score predicted against actual group shares with weighted R² and mean absolute error.
 
-    Bigger cells count for more, the error is in percentage points, and cells missing either
+    Bigger groups count for more, the error is in percentage points, and groups missing either
     share are skipped.
 
     Args:
-        cells_lf (pl.LazyFrame): a row per cell, such as from `aggregate_shares_by_cell`
+        groups_lf (pl.LazyFrame): a row per group, such as from `aggregate_shares_by_group`
         predicted_columns (list[str]): the predicted share columns
         actual_columns (list[str]): the actual share columns, in the same order
-        weight_column (str): each cell's weight
+        weight_column (str): each group's weight
         by_columns (list[str] | None): columns to score separately by, such as the fold.
-            Defaults to scoring all cells together.
+            Defaults to scoring all groups together.
 
     Returns:
         pl.LazyFrame: a row per share (and group), with its "r2" and "mean_absolute_error"
@@ -81,7 +81,7 @@ def score_cell_shares(
         actual = pl.col(actual_column).cast(pl.Float64)
         error = actual - predicted
         weighted_mean_actual = (weight * actual).sum() / weight.sum()
-        scored_cells_lf = cells_lf.filter(
+        scored_groups_lf = groups_lf.filter(
             predicted.is_not_null() & actual.is_not_null()
         )
 
@@ -96,9 +96,9 @@ def score_cell_shares(
             ),
         ]
         scores_lf = (
-            scored_cells_lf.group_by(by_columns).agg(scores)
+            scored_groups_lf.group_by(by_columns).agg(scores)
             if by_columns
-            else scored_cells_lf.select(scores)
+            else scored_groups_lf.select(scores)
         )
 
         share_scores_lfs.append(

@@ -532,6 +532,6 @@ class ModelEvaluationColumns:
 class ShareModelColumns:
     """The names of the columns added when modelling and scoring share breakdowns."""
 
-    cell_weight: str = "cell_weight"
+    group_weight: str = "group_weight"
     share: str = "share"
     mean_absolute_error: str = "mean_absolute_error"

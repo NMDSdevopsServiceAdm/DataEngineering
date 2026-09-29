@@ -440,7 +440,7 @@ class ModelMetricsUtilsTestCase:
 
 
 class TestModelMetricsUtilsData:
-    cell_shares_are_worker_weighted_test_cases = [
+    group_shares_are_worker_weighted_test_cases = [
         # Unweighted, non-res would be 0.4 for both.
         ModelMetricsUtilsTestCase(
             id="weights_each_row_by_its_workers",
@@ -454,14 +454,14 @@ class TestModelMetricsUtilsData:
                 IndCQC.primary_service_type: [NON_RES, CARE_HOME],
                 PREDICTED_SHARES[0]: [0.35, 0.7],
                 ACTUAL_SHARES[0]: [0.3, 0.8],
-                ShareModel.cell_weight: [4.0, 2.0],
+                ShareModel.group_weight: [4.0, 2.0],
             },
         ),
     ]
 
-    unknown_rows_excluded_from_cells_test_cases = [
+    unknown_rows_excluded_from_groups_test_cases = [
         ModelMetricsUtilsTestCase(
-            id="unknown_row_left_out_of_its_cells_shares_and_weight",
+            id="unknown_row_left_out_of_its_groups_shares_and_weight",
             input_data={
                 IndCQC.primary_service_type: [NON_RES, NON_RES],
                 PREDICTED_SHARES[0]: [0.5, 0.9],
@@ -472,12 +472,12 @@ class TestModelMetricsUtilsData:
                 IndCQC.primary_service_type: [NON_RES],
                 PREDICTED_SHARES[0]: [0.5],
                 ACTUAL_SHARES[0]: [0.4],
-                ShareModel.cell_weight: [2.0],
+                ShareModel.group_weight: [2.0],
             },
         ),
         # Keeping the row's workers without its prediction would give 0.1.
         ModelMetricsUtilsTestCase(
-            id="row_without_a_prediction_left_out_of_its_cells_shares_and_weight",
+            id="row_without_a_prediction_left_out_of_its_groups_shares_and_weight",
             input_data={
                 IndCQC.primary_service_type: [NON_RES, NON_RES],
                 PREDICTED_SHARES[0]: [0.5, None],
@@ -488,11 +488,11 @@ class TestModelMetricsUtilsData:
                 IndCQC.primary_service_type: [NON_RES],
                 PREDICTED_SHARES[0]: [0.5],
                 ACTUAL_SHARES[0]: [0.4],
-                ShareModel.cell_weight: [2.0],
+                ShareModel.group_weight: [2.0],
             },
         ),
         ModelMetricsUtilsTestCase(
-            id="cell_without_any_known_rows_is_left_out",
+            id="group_without_any_known_rows_is_left_out",
             input_data={
                 IndCQC.primary_service_type: [NON_RES, CARE_HOME],
                 PREDICTED_SHARES[0]: [0.5, 0.9],
@@ -503,7 +503,7 @@ class TestModelMetricsUtilsData:
                 IndCQC.primary_service_type: [NON_RES],
                 PREDICTED_SHARES[0]: [0.5],
                 ACTUAL_SHARES[0]: [0.4],
-                ShareModel.cell_weight: [2.0],
+                ShareModel.group_weight: [2.0],
             },
         ),
     ]
@@ -516,7 +516,7 @@ class TestModelMetricsUtilsData:
                 PREDICTED_SHARES[1]: [0.3, 0.1, 0.2],
                 ACTUAL_SHARES[0]: [0.2, 0.5, 0.7],
                 ACTUAL_SHARES[1]: [0.3, 0.1, 0.2],
-                ShareModel.cell_weight: [1.0, 2.0, 3.0],
+                ShareModel.group_weight: [1.0, 2.0, 3.0],
             },
             expected_data={
                 ShareModel.share: ACTUAL_SHARES,
@@ -526,14 +526,14 @@ class TestModelMetricsUtilsData:
         ),
     ]
 
-    # One exact cell and one 20 point miss: unweighted, that's R² 0.5 and error 10.
-    larger_cells_weigh_more_test_cases = [
+    # One exact group and one 20 point miss: unweighted, that's R² 0.5 and error 10.
+    larger_groups_weigh_more_test_cases = [
         ModelMetricsUtilsTestCase(
-            id="miss_in_the_smaller_cell_counts_for_less",
+            id="miss_in_the_smaller_group_counts_for_less",
             input_data={
                 PREDICTED_SHARES[0]: [0.5, 0.7],
                 ACTUAL_SHARES[0]: [0.5, 0.9],
-                ShareModel.cell_weight: [3.0, 1.0],
+                ShareModel.group_weight: [3.0, 1.0],
             },
             expected_data={
                 ShareModel.share: ACTUAL_SHARES[:1],
@@ -542,11 +542,11 @@ class TestModelMetricsUtilsData:
             },
         ),
         ModelMetricsUtilsTestCase(
-            id="miss_in_the_larger_cell_counts_for_more",
+            id="miss_in_the_larger_group_counts_for_more",
             input_data={
                 PREDICTED_SHARES[0]: [0.5, 0.7],
                 ACTUAL_SHARES[0]: [0.5, 0.9],
-                ShareModel.cell_weight: [1.0, 3.0],
+                ShareModel.group_weight: [1.0, 3.0],
             },
             expected_data={
                 ShareModel.share: ACTUAL_SHARES[:1],
@@ -556,14 +556,14 @@ class TestModelMetricsUtilsData:
         ),
     ]
 
-    # Keeping the last cell's weight without its error would give R² 0.94 and error 5.
-    cells_missing_a_share_test_cases = [
+    # Keeping the last group's weight without its error would give R² 0.94 and error 5.
+    groups_missing_a_share_test_cases = [
         ModelMetricsUtilsTestCase(
-            id="cell_without_a_prediction_left_out",
+            id="group_without_a_prediction_left_out",
             input_data={
                 PREDICTED_SHARES[0]: [0.3, 0.5, None],
                 ACTUAL_SHARES[0]: [0.2, 0.6, 0.9],
-                ShareModel.cell_weight: [1.0, 1.0, 2.0],
+                ShareModel.group_weight: [1.0, 1.0, 2.0],
             },
             expected_data={
                 ShareModel.share: ACTUAL_SHARES[:1],
@@ -575,12 +575,12 @@ class TestModelMetricsUtilsData:
 
     scores_split_by_fold_test_cases = [
         ModelMetricsUtilsTestCase(
-            id="each_fold_scored_on_its_own_cells",
+            id="each_fold_scored_on_its_own_groups",
             input_data={
                 ModelEvaluation.fold: [0, 0, 1, 1],
                 PREDICTED_SHARES[0]: [0.2, 0.6, 0.3, 0.5],
                 ACTUAL_SHARES[0]: [0.2, 0.6, 0.2, 0.6],
-                ShareModel.cell_weight: [1.0, 1.0, 1.0, 1.0],
+                ShareModel.group_weight: [1.0, 1.0, 1.0, 1.0],
             },
             expected_data={
                 ModelEvaluation.fold: [0, 1],
