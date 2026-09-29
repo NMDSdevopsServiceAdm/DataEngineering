@@ -508,6 +508,11 @@ jobs:
             # Direct-Payment-Recipients) end-to-end on this branch to get their
             # logs back; remove once that verification is done.
             aws s3 sync "s3://sfc-main-datasets/domain=04_dpr/dataset=direct_payments_merged/version=2026.02/" "s3://$BRANCH_DATASET_BUCKET/domain=04_dpr/dataset=direct_payments_merged/version=2026.02/" --delete
+            # Direct-Payment-Recipients starts by preparing these two inputs in
+            # parallel (the merged dataset above is rebuilt from them), so the
+            # branch needs them too.
+            aws s3 sync "s3://sfc-main-datasets/domain=04_dpr/dataset=direct_payments_survey/version=2026.02/" "s3://$BRANCH_DATASET_BUCKET/domain=04_dpr/dataset=direct_payments_survey/version=2026.02/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=04_dpr/dataset=direct_payments_external/version=2026.02/" "s3://$BRANCH_DATASET_BUCKET/domain=04_dpr/dataset=direct_payments_external/version=2026.02/" --delete
             # ons_pd and capacity_tracker's own bake/seed-* flags are false for
             # this branch (only their clean-stage validators changed, not their raw
             # ingest/validate-raw scripts, which is all those flags check), so
