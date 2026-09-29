@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a `col_vals_in_set`/distinct-count validation check for ASC-WDS workplace `region_id`, the one ASC-WDS-adjacent categorical column that previously had no validation backing it.
 - Joined worker-derived employment status counts into the SLV merge step, collapsing worker job roles to the published scheme already used by workplace and job-role-estimate data, and applying the same null-location and date-reduction filtering `_00_prepare_workplace` already uses so the worker and workplace import dates line up for the join.
 - Added has_continuous_data_since_date to publication cleaning utils. It flags locations with capacity tracker data as either a care home or non-res at all periods from a given date onwards. The two capacity tracker columns are coalesced then checked for completeness.
 - Added a capacity tracker dispersion filter to publication cleaning utils. It flags locations whose capacity tracker employee numbers swing more than two standard deviations from the national average swing over a given period, so unusually volatile locations can be excluded. Care home and non-residential locations are each compared only against locations of their own type, and locations with no capacity tracker data (or too few import dates to judge) in the period are excluded too.
@@ -17,10 +18,17 @@ All notable changes to this project will be documented in this file.
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
 - Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
 - Added short-term imputation to the employment status impute job: each location and job role's 5 employment status percentages are interpolated by date across gaps of up to 5 years, and the first and last known values are carried up to 2 years outside the known range. Also added a 6-month rolling average of those imputed percentages per primary service type, region and job role, counting each location equally. Region is now carried through from the job role metadata at the merge step, with validation checks that it has no nulls and holds only the expected regions; the impute validation now checks that the imputed and rolling average percentages are between 0 and 1 and that the imputed percentages sum to 1.
+- Added project-level model evaluation utilities to `_03_independent_cqc` (location cross-validation folds, a never-submitted flag and a period-to-period jumpiness measure) for the filled posts and employment status models to share.
+- Added `lookback_cap_filter_expr` (12-year cap, 6-month buffer) for job-role-estimates, replacing quarterly sampling; moved `reduced_data_filter_expr` to publication's own utils as its last remaining user.
+- Added a new "Estimate SLV counts" stage to the Ind-CQC-SLV state machine (`_05_estimate_counts`), with its own row-count validation step. The stage is currently a placeholder pass-through pending the starters/leavers/vacancies count derivation logic.
+- Added project-level group-share aggregation and R²/MAE scoring utilities to `_03_independent_cqc`, for any categorical breakdown model.
+- Added group-level totals scoring (R² and weighted absolute % error) to the project-level model evaluation utilities, for scoring filled posts model predictions.
 
 
 ### Changed
+- Stopped dropping `number_of_beds_at_provider` from the cleaned independent CQC filled posts output, reclassifying it from a temporary grouped-provider column to a permanent one, and added a non-negative validation check for it.
 - Consolidated ASC-WDS code-label vocabulary (7 workplace/worker columns) into a single Python source of truth, retiring `data_labels_lookup.csv`.
+- Moved the 9 ASC-WDS `ColumnValues` classes (main job role, employment status, establishment type, parent permission, is parent, main service id, registration type) plus `PublishedJobRoleLabels` (moved alongside them to avoid a circular import, since it subclasses `MainJobRoleLabels`) from `categorical_column_values.py` into `ascwds_labelled_vocab.py`, so that module owns the classes as well as their code-to-label dicts, and retired reconciliation's own hand-rolled `region_id` label dict in favour of the shared one, which also now labels the `-1` ("not known") region_id code that dict never covered - previously left as the raw `-1` in the reconciliation report. Also removed the unused `estimate_filled_posts_geography_labels_dict`.
 - Migrated the reconciliation job (CQC deregistration reports for ASC-WDS singles/subs and parent accounts) from PySpark/Glue to Polars on the `_02_sfc_internal` shared Fargate task, folding its Dockerfile into that project's shared `Dockerfile_and_requirements` image alongside `cqc_coverage`, renumbering its folder to `_03_reconciliation`, and removing the old Glue job, its PySpark code, and their tests/fixtures.
 - Moved the starters/leavers/vacancies (SLV) pipeline from its own `_07_workforce_characteristics` project into `_03_independent_cqc` as `_03_starters_leavers_vacancies`, and folded its deployment onto IND CQC's existing shared Fargate task, retiring the separate ECS task, ECR repo and Docker image it used to run on.
 - Split the SLV pipeline into two sibling pipelines under `_03_independent_cqc`: `_02_employment_status` (worker-derived data) and `_03_starters_leavers_vacancies` (workplace-derived data), each with their own prepare/merge/clean/impute/estimate stages, with SLV's merge consuming employment status's cleaned output.
@@ -35,9 +43,14 @@ All notable changes to this project will be documented in this file.
 - Moved the temporary employment-status-rates split from the employment status pipeline's merge stage to its estimate stage, along with its validation checks, so it runs closer to where its output is used.
 - Consolidated and reorganised the SLV/employment-status column-name classes in `ind_cqc_pipeline_columns.py`.
 - Moved `EmploymentStatusRatesColumns` (renamed `EmploymentStatusMagicNumberRateColumns`) into the shared `ind_cqc_pipeline_columns.py`, alongside the other column-name classes.
+- Replaced the job role archive validation's single "at least 1 row" check with schema, row-count-against-source, and primary-key uniqueness/completeness checks scoped to just the newly-written partition for each output (estimates and metadata), plus a cross-output check confirming both outputs received the same run's partition.
+- Moved the filled posts models' date-index step into a shared, reusable `_03_independent_cqc` utility (`add_date_index`).
 
 
 ### Improved
+- Confirmed the DPR extrapolation ratio model doesn't depend on input row order, with tests that feed it reversed and interleaved rows, and added a validation check that estimated DPR data has one row per LA area and year, which the model relies on.
+- Combined the three near-identical CI scripts that decide whether a push should seed the raw bucket, seed the archive sample data or run the CQC integration tests into one `scripts/select_ci_gate.py`, so adding a new gate is one entry in its list of trigger paths. Added a test that fails if a trigger path no longer exists in the repo, so a renamed file can't leave a gate silently never firing.
+- Reduced the IND CQC filled posts model features validation's memory use by scanning the wide imputed comparison dataset lazily, so only the columns its expected row count needs are read.
 
 
 ### Fixed
@@ -46,6 +59,10 @@ All notable changes to this project will be documented in this file.
 - Fixed the `_02_employment_status`/`_03_starters_leavers_vacancies` pipelines' `_00_prepare_worker`/`_00_prepare_workplace` and their validate jobs to reduce ASCWDS import dates to those already CQC-matched in the job role metadata, instead of an independent hardcoded quarterly/earliest-file-per-month rule that could disagree with the metadata match and cause the merge step to silently miss rows.
 - Fixed the SLV clean job computing turnover/starter/vacancy rates before deduplicating starters, leavers and vacancies, which could change a location's rate even when the underlying deduplicated figure hadn't changed; rates are now calculated from the deduplicated columns.
 - Fixed `care_home` being downgraded from its `CareHomeEnumType` to a generic `Categorical` in the job role estimates merge metadata, an oversight from when the metadata schema was set up; it's now cast to the correct type at source, and its validation schema check updated to match.
+- Fixed the Ind-CQC-Archive step function hardcoding the branch-bucket-only `main_`-prefixed job role estimates/metadata dataset names, which would have broken it in production; it now uses the same workspace-aware dataset name locals as the other step functions.
+- Fixed stale Capacity Tracker S3 upload trigger prefixes that no longer matched the real raw dataset names, which meant the pipeline could never be triggered automatically by a new upload.
+- Fixed job role estimates metadata validation to stop excluding `contained_invalid_missing_data_code`, a workaround for data the lookback cap now retains.
+- Fixed the IND CQC filled posts model's predict step to stop with an error showing both feature lists when the saved model's features differ from the model registry, rather than risk silently misaligned predictions. Also stopped its features validation requiring `posts_rolling_average_model` for the non-res with dormancy model, which doesn't use it, and made the care home check name the bed features that column was standing in for.
 
 
 ## [v2026.08.1] - 11/09/2026

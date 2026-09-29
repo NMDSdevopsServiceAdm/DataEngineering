@@ -21,6 +21,19 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
 )
+from utils.column_values.ascwds_labelled_vocab import (
+    EmploymentStatusID,
+    EmploymentStatusLabels,
+    EstablishmentType,
+    IsParent,
+    MainJobRoleID,
+    MainJobRoleLabels,
+    MainServiceID,
+    ParentPermission,
+    PublishedJobRoleLabels,
+    RegionID,
+    RegistrationType,
+)
 from utils.column_values.categorical_column_values import (
     RUI,
     RUI2021,
@@ -31,23 +44,13 @@ from utils.column_values.categorical_column_values import (
     ContemporaryCSSR,
     CurrentCSSR,
     Dormancy,
-    EmploymentStatusID,
-    EmploymentStatusLabels,
-    EstablishmentType,
     EstimateFilledPostsSource,
     InAscwds,
-    IsParent,
     JobGroupLabels,
-    MainJobRoleID,
-    MainJobRoleLabels,
-    MainServiceID,
-    ParentPermission,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
-    PublishedJobRoleLabels,
     Region,
     RegistrationStatus,
-    RegistrationType,
     RelatedLocation,
     Sector,
     Services,
@@ -95,6 +98,7 @@ class ASCWDSWorkplaceCleanedCategoricalValues:
         AWPClean.main_service_id, contains_null_values=True
     )
     registration_type_column_values = RegistrationType(AWPClean.registration_type)
+    region_id_column_values = RegionID(AWPClean.region_id, contains_null_values=True)
 
 
 @dataclass

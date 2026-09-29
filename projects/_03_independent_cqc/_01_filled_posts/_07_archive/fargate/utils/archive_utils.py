@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Callable
 
 import boto3
 import polars as pl
@@ -142,3 +143,33 @@ def get_run_number(s3_roots: list[str]) -> int:
         )
 
     return distinct_run_numbers.pop()
+
+
+def make_run_numbers_agree_validator(
+    s3_roots: list[str],
+) -> Callable[[pl.DataFrame], bool]:
+    """
+    Creates a validation function which checks that the given archive outputs all
+    agree on their highest existing run_number.
+
+    This function returns another Callable, for use in pointblank validations,
+    particularly `specially` which requires that the inner function accepts only a
+    single parameter (pl.DataFrame) as its arguments.
+
+    Args:
+        s3_roots (list[str]): S3 directories a set of related archive outputs are
+            written to, expected to share the same run_number (see get_run_number).
+
+    Returns:
+        Callable[[pl.DataFrame], bool]: the inner function, which returns False if
+        the given s3_roots disagree on the existing run_number rather than raising.
+    """
+
+    def validator(df: pl.DataFrame) -> bool:
+        try:
+            get_run_number(s3_roots)
+            return True
+        except ValueError:
+            return False
+
+    return validator

@@ -87,18 +87,6 @@ class FeaturesEngineeringUtilsSchemas:
         + [(IndCQC.service_count, pl.UInt32())]
     )
 
-    add_date_index_column_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.care_home, pl.String()),
-            (IndCQC.cqc_location_import_date, pl.DataType()),
-        ]
-    )
-    expected_add_date_index_column_schema = pl.Schema(
-        list(add_date_index_column_schema.items())
-        + [(IndCQC.cqc_location_import_date_indexed, pl.UInt32())]
-    )
-
     cap_integer_at_max_value_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
@@ -247,6 +235,8 @@ class ValidateModelsSchemas:
             (IndCQC.related_location, pl.String()),
             (IndCQC.time_registered, pl.Int32()),
             (IndCQC.time_since_dormant, pl.Int32),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.banded_bed_ratio_rolling_average_model, pl.Float32()),
         ]
     )
 
@@ -422,6 +412,7 @@ class ValidateCleanIndCQCSchemas:
             (IndCQC.imputed_registration_date, pl.Date()),
             (IndCQC.dormancy, pl.String()),
             (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.number_of_beds_at_provider, pl.Int64()),
             (IndCQC.services_offered, pl.List(pl.String())),
             (IndCQC.primary_service_type, pl.String()),
             (IndCQC.contemporary_ons_import_date, pl.Date()),
@@ -856,7 +847,7 @@ class NullGroupedProvidersSchema:
             (NGPcol.count_of_cqc_locations_in_provider, pl.UInt32()),
             (NGPcol.count_of_awcwds_locations_in_provider, pl.UInt32()),
             (NGPcol.count_of_awcwds_locations_with_data_in_provider, pl.UInt32()),
-            (NGPcol.number_of_beds_at_provider, pl.Int64()),
+            (IndCQC.number_of_beds_at_provider, pl.Int64()),
             (NGPcol.provider_pir_count, pl.UInt32()),
             (NGPcol.provider_pir_sum, pl.Float64()),
         ]
@@ -884,7 +875,7 @@ class NullGroupedProvidersSchema:
             (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
             (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
             (IndCQC.number_of_beds, pl.Int64()),
-            (NGPcol.number_of_beds_at_provider, pl.Int64()),
+            (IndCQC.number_of_beds_at_provider, pl.Int64()),
             (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
             (NGPcol.potential_grouped_provider, pl.Boolean()),
             (IndCQC.ascwds_filtering_rule, pl.String()),

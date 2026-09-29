@@ -17,7 +17,7 @@ from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_
     EstimateFilledPostsByJobRoleEstimateUtilsSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
 
 PATCH_PATH = "projects._03_independent_cqc._01_filled_posts._06_job_role_estimates.fargate.utils.estimate_utils"
 
