@@ -11,6 +11,7 @@ from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import (
     FlattenCQCRatings as Schemas,
 )
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 
 
 class TestKeepLatestPerKey:
@@ -256,3 +257,245 @@ class TestRaiseErrorWhenAssessmentDfContainsOverallData:
         result = job.raise_error_when_assessment_df_contains_overall_data(input_lf)
 
         assert result is None
+
+
+class TestMergeCqcRatings:
+    def test_merge_cqc_ratings_combines_assessment_and_standard_ratings(self):
+        assessment_lf = pl.LazyFrame(
+            Data.assessment_ratings_for_merging_rows,
+            schema=Schemas.merge_assessment_ratings_schema,
+            orient="row",
+        )
+        standard_lf = pl.LazyFrame(
+            Data.standard_ratings_for_merging_rows,
+            schema=Schemas.merge_standard_ratings_schema,
+            orient="row",
+        )
+
+        returned_df = job.merge_cqc_ratings(assessment_lf, standard_lf).collect()
+
+        expected_df = pl.LazyFrame(
+            Data.expected_merge_cqc_ratings_rows,
+            schema=Schemas.merge_expected_schema,
+            orient="row",
+        ).collect()
+        pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+    def test_returns_null_date_when_assessment_datetime_is_unparseable(self):
+        assessment_lf = pl.LazyFrame(
+            Data.assessment_ratings_unparseable_date_rows,
+            schema=Schemas.merge_assessment_ratings_schema,
+            orient="row",
+        )
+        standard_lf = pl.LazyFrame(
+            [], schema=Schemas.merge_standard_ratings_schema, orient="row"
+        )
+
+        returned_df = job.merge_cqc_ratings(assessment_lf, standard_lf).collect()
+
+        assert returned_df[CQCRatings.date].to_list() == [None]
+
+
+class TestRecodeUnknownCodesToNull:
+    def test_recodes_non_rating_labels_to_null(self):
+        input_lf = pl.LazyFrame(
+            Data.recode_unknown_to_null_rows,
+            schema=Schemas.flattened_ratings_schema,
+            orient="row",
+        )
+
+        returned_df = job.recode_unknown_codes_to_null(input_lf).collect()
+
+        expected_df = pl.LazyFrame(
+            Data.expected_recode_unknown_to_null_rows,
+            schema=Schemas.flattened_ratings_schema,
+            orient="row",
+        ).collect()
+        pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+
+class TestRemoveBlankAndDuplicateRows:
+    def test_removes_rows_with_no_ratings_populated(self):
+        input_lf = pl.LazyFrame(
+            Data.remove_blank_rows_rows,
+            schema=Schemas.flattened_ratings_schema,
+            orient="row",
+        )
+
+        returned_df = job.remove_blank_and_duplicate_rows(input_lf).collect()
+
+        expected_df = pl.LazyFrame(
+            Data.expected_remove_blank_rows_rows,
+            schema=Schemas.flattened_ratings_schema,
+            orient="row",
+        ).collect()
+        pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+
+class TestAddLatestRatingFlagColumn:
+    def test_flags_only_the_most_recent_rating_per_location(self):
+        input_lf = pl.LazyFrame(
+            Data.add_latest_rating_flag_rows,
+            schema=Schemas.ratings_with_assessment_date_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_latest_rating_flag_column(input_lf).collect()
+
+        flag_by_date = dict(
+            zip(
+                returned_df[job.CQCRatings.date].to_list(),
+                returned_df[job.CQCRatings.latest_rating_flag].to_list(),
+            )
+        )
+        assert flag_by_date == {"2024-01-01": 1, "2023-01-01": 0}
+
+    def test_flags_assessment_rating_over_pre_saf_rating_published_on_same_date(self):
+        rows = [
+            Data.add_latest_rating_flag_rows[0][:-1] + (None,),
+            Data.add_latest_rating_flag_rows[0][:-1] + ("2024-02-01",),
+        ]
+        input_lf = pl.LazyFrame(
+            rows, schema=Schemas.ratings_with_assessment_date_schema, orient="row"
+        )
+
+        returned_df = job.add_latest_rating_flag_column(input_lf).collect()
+
+        flag_by_assessment_date = dict(
+            zip(
+                returned_df[job.CQCL.assessment_date].to_list(),
+                returned_df[job.CQCRatings.latest_rating_flag].to_list(),
+            )
+        )
+        assert flag_by_assessment_date == {None: 0, "2024-02-01": 1}
+
+
+class TestAddNumericalRatings:
+    def test_add_numerical_ratings_returns_expected_values(self):
+        input_lf = pl.LazyFrame(
+            Data.add_numerical_ratings_rows,
+            schema=Schemas.numerical_ratings_input_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_numerical_ratings(input_lf).collect()
+
+        expected_df = pl.LazyFrame(
+            Data.expected_add_numerical_ratings_rows,
+            schema=Schemas.expected_numerical_ratings_schema,
+            orient="row",
+        ).collect()
+        pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+
+class TestCreateStandardRatingsDataset:
+    def test_selects_only_the_standard_ratings_columns(self):
+        input_lf = pl.LazyFrame(
+            Data.create_standard_ratings_dataset_rows,
+            schema=Schemas.full_ratings_schema,
+            orient="row",
+        )
+
+        returned_df = job.create_standard_ratings_dataset(input_lf).collect()
+
+        assert returned_df.columns == list(Schemas.full_ratings_schema.names())
+
+
+class TestAddLocationIdHash:
+    def test_adds_a_twenty_character_hash_of_the_location_id(self):
+        input_lf = pl.LazyFrame(
+            Data.location_id_hash_rows,
+            schema=Schemas.location_id_hash_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_location_id_hash(input_lf).collect()
+
+        assert job.CQCRatings.location_id_hash in returned_df.columns
+        for location_id, location_hash in zip(
+            returned_df[job.CQCL.location_id].to_list(),
+            returned_df[job.CQCRatings.location_id_hash].to_list(),
+        ):
+            assert len(location_hash) == 20
+            assert (
+                location_hash
+                == job.hashlib.sha256(location_id.encode()).hexdigest()[:20]
+            )
+
+
+class TestSelectRatingsForBenchmarks:
+    def test_filters_to_registered_and_current_rating_only(self):
+        input_lf = pl.LazyFrame(
+            Data.select_ratings_for_benchmarks_rows,
+            schema=Schemas.benchmarks_ratings_schema,
+            orient="row",
+        )
+
+        returned_df = job.select_ratings_for_benchmarks(input_lf).collect()
+
+        expected_df = pl.LazyFrame(
+            Data.expected_select_ratings_for_benchmarks_rows,
+            schema=Schemas.benchmarks_ratings_schema,
+            orient="row",
+        ).collect()
+        pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+
+class TestAddGoodAndOutstandingFlagColumn:
+    def test_flags_locations_whose_minimum_overall_rating_value_is_at_least_good(self):
+        input_lf = pl.LazyFrame(
+            Data.add_good_or_outstanding_flag_rows,
+            schema=Schemas.good_and_outstanding_input_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_good_and_outstanding_flag_column(input_lf).collect()
+
+        flag_by_location = dict(
+            zip(
+                returned_df[job.CQCL.location_id].to_list(),
+                returned_df[job.CQCRatings.good_or_outstanding_flag].to_list(),
+            )
+        )
+        assert flag_by_location["1-001"] == 1
+        assert flag_by_location["1-002"] == 0
+
+
+class TestJoinEstablishmentIds:
+    def test_joins_ascwds_establishment_id_onto_ratings_by_location_id(self):
+        ratings_lf = pl.LazyFrame(
+            Data.ratings_join_establishment_ids_rows,
+            schema=Schemas.join_establishment_ids_input_schema,
+            orient="row",
+        )
+        ascwds_lf = pl.LazyFrame(
+            Data.ascwds_join_establishment_ids_rows,
+            schema=Schemas.ascwds_join_establishment_ids_schema,
+            orient="row",
+        )
+
+        returned_df = job.join_establishment_ids(ratings_lf, ascwds_lf).collect()
+
+        expected_df = pl.LazyFrame(
+            Data.expected_join_establishment_ids_rows,
+            schema=Schemas.expected_join_establishment_ids_schema,
+            orient="row",
+        ).collect()
+        pl_testing.assert_frame_equal(
+            expected_df.sort(job.CQCL.location_id),
+            returned_df.select(expected_df.columns).sort(job.CQCL.location_id),
+        )
+
+
+class TestCreateBenchmarkRatingsDataset:
+    def test_selects_and_renames_columns_and_removes_incomplete_rows(self):
+        input_lf = pl.LazyFrame(
+            Data.create_benchmark_ratings_dataset_rows,
+            schema=Schemas.create_benchmark_ratings_dataset_input_schema,
+            orient="row",
+        )
+
+        returned_df = job.create_benchmark_ratings_dataset(input_lf).collect()
+
+        assert returned_df.height == 1
+        assert returned_df[job.CQCRatings.benchmarks_location_id].to_list() == ["1-001"]

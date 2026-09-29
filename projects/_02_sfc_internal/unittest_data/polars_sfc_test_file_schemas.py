@@ -10,6 +10,9 @@ from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+)
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -235,5 +238,154 @@ class FlattenCQCRatings:
             (CQCL.caring, pl.String),
             (CQCL.responsive, pl.String),
             (CQCL.well_led, pl.String),
+        ]
+    )
+
+    merge_assessment_ratings_schema = assessment_ratings_output_schema
+
+    merge_standard_ratings_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCRatingsColumns.date, pl.Date),
+            (CQCRatingsColumns.overall_rating, pl.String),
+            (CQCRatingsColumns.safe_rating, pl.String),
+            (CQCRatingsColumns.well_led_rating, pl.String),
+            (CQCRatingsColumns.caring_rating, pl.String),
+            (CQCRatingsColumns.responsive_rating, pl.String),
+            (CQCRatingsColumns.effective_rating, pl.String),
+            (CQCRatingsColumns.current_or_historic, pl.String),
+        ]
+    )
+
+    merge_expected_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCRatingsColumns.date, pl.Date),
+            (CQCL.assessment_plan_id, pl.String),
+            (CQCL.title, pl.String),
+            (CQCL.assessment_date, pl.String),
+            (CQCL.assessment_plan_status, pl.String),
+            (CQCL.name, pl.String),
+            (CQCL.source_path, pl.String),
+            (CQCL.dataset, pl.String),
+            (CQCRatingsColumns.current_or_historic, pl.String),
+            (CQCRatingsColumns.overall_rating, pl.String),
+            (CQCRatingsColumns.safe_rating, pl.String),
+            (CQCRatingsColumns.well_led_rating, pl.String),
+            (CQCRatingsColumns.caring_rating, pl.String),
+            (CQCRatingsColumns.responsive_rating, pl.String),
+            (CQCRatingsColumns.effective_rating, pl.String),
+        ]
+    )
+
+    ratings_with_assessment_date_schema = pl.Schema(
+        [
+            *flattened_ratings_with_current_or_historic_schema.items(),
+            (CQCL.assessment_date, pl.String),
+        ]
+    )
+
+    full_ratings_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCRatingsColumns.date, pl.String),
+            (CQCL.assessment_plan_id, pl.String),
+            (CQCL.title, pl.String),
+            (CQCL.assessment_date, pl.String),
+            (CQCL.assessment_plan_status, pl.String),
+            (CQCL.name, pl.String),
+            (CQCL.source_path, pl.String),
+            (CQCL.dataset, pl.String),
+            (CQCRatingsColumns.latest_rating_flag, pl.Int32),
+            (CQCRatingsColumns.current_or_historic, pl.String),
+            (CQCRatingsColumns.overall_rating, pl.String),
+            (CQCRatingsColumns.safe_rating, pl.String),
+            (CQCRatingsColumns.well_led_rating, pl.String),
+            (CQCRatingsColumns.caring_rating, pl.String),
+            (CQCRatingsColumns.responsive_rating, pl.String),
+            (CQCRatingsColumns.effective_rating, pl.String),
+            (CQCRatingsColumns.safe_rating_value, pl.Int32),
+            (CQCRatingsColumns.well_led_rating_value, pl.Int32),
+            (CQCRatingsColumns.caring_rating_value, pl.Int32),
+            (CQCRatingsColumns.responsive_rating_value, pl.Int32),
+            (CQCRatingsColumns.effective_rating_value, pl.Int32),
+            (CQCRatingsColumns.total_rating_value, pl.Int32),
+        ]
+    )
+
+    numerical_ratings_input_schema = pl.Schema(
+        [
+            (CQCRatingsColumns.overall_rating, pl.String),
+            (CQCRatingsColumns.safe_rating, pl.String),
+            (CQCRatingsColumns.well_led_rating, pl.String),
+            (CQCRatingsColumns.caring_rating, pl.String),
+            (CQCRatingsColumns.responsive_rating, pl.String),
+            (CQCRatingsColumns.effective_rating, pl.String),
+        ]
+    )
+
+    expected_numerical_ratings_schema = pl.Schema(
+        [
+            *numerical_ratings_input_schema.items(),
+            (CQCRatingsColumns.overall_rating_value, pl.Int32),
+            (CQCRatingsColumns.safe_rating_value, pl.Int32),
+            (CQCRatingsColumns.well_led_rating_value, pl.Int32),
+            (CQCRatingsColumns.caring_rating_value, pl.Int32),
+            (CQCRatingsColumns.responsive_rating_value, pl.Int32),
+            (CQCRatingsColumns.effective_rating_value, pl.Int32),
+            (CQCRatingsColumns.total_rating_value, pl.Int32),
+        ]
+    )
+
+    location_id_hash_schema = pl.Schema([(CQCL.location_id, pl.String)])
+
+    benchmarks_ratings_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCRatingsColumns.current_or_historic, pl.String),
+            (CQCRatingsColumns.overall_rating_value, pl.Int32),
+        ]
+    )
+
+    good_and_outstanding_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCRatingsColumns.overall_rating_value, pl.Int32),
+        ]
+    )
+
+    join_establishment_ids_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+        ]
+    )
+
+    ascwds_join_establishment_ids_schema = pl.Schema(
+        [
+            (AWP.establishment_id, pl.String),
+            (AWP.location_id, pl.String),
+        ]
+    )
+
+    expected_join_establishment_ids_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (AWP.establishment_id, pl.String),
+        ]
+    )
+
+    create_benchmark_ratings_dataset_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (AWP.establishment_id, pl.String),
+            (CQCL.name, pl.String),
+            (CQCL.dataset, pl.String),
+            (CQCRatingsColumns.good_or_outstanding_flag, pl.Int32),
+            (CQCRatingsColumns.overall_rating, pl.String),
+            (CQCRatingsColumns.date, pl.String),
         ]
     )

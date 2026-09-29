@@ -592,3 +592,275 @@ class FlattenCQCRatings:
             None,
         ),
     ]
+
+    assessment_ratings_for_merging_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "SAF",
+            "Care Homes",
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    assessment_ratings_unparseable_date_rows = [
+        assessment_ratings_for_merging_rows[0][:2]
+        + ("2024-01-01T00:00:00.123Z",)
+        + assessment_ratings_for_merging_rows[0][3:],
+    ]
+
+    standard_ratings_for_merging_rows = [
+        (
+            "1-002",
+            "Registered",
+            date(2023, 6, 1),
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Historic",
+        ),
+    ]
+
+    expected_merge_cqc_ratings_rows = [
+        (
+            "1-002",
+            "Registered",
+            date(2023, 6, 1),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            "Pre SAF",
+            "Historic",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "1-001",
+            "Registered",
+            date(2024, 1, 1),
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "Care Homes",
+            "assessment.ratings.asg_ratings",
+            "SAF",
+            "Current",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    recode_unknown_to_null_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "No published rating",
+            "Insufficient evidence to rate",
+            "Good",
+            "",
+            "Good",
+        ),
+    ]
+
+    expected_recode_unknown_to_null_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            None,
+            None,
+            "Good",
+            None,
+            "Good",
+        ),
+    ]
+
+    remove_blank_rows_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        ("1-002", "Registered", "2024-01-01", None, None, None, None, None, None),
+    ]
+
+    expected_remove_blank_rows_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    add_latest_rating_flag_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Current",
+            "2024-01-02",
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2023-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Historic",
+            "2023-01-02",
+        ),
+    ]
+
+    add_numerical_ratings_rows = [
+        (
+            "Outstanding",
+            "Good",
+            "Requires improvement",
+            "Inadequate",
+            "Outstanding",
+            "Good",
+        ),
+        (None, None, None, None, None, None),
+    ]
+
+    expected_add_numerical_ratings_rows = [
+        (
+            "Outstanding",
+            "Good",
+            "Requires improvement",
+            "Inadequate",
+            "Outstanding",
+            "Good",
+            4,
+            3,
+            2,
+            1,
+            4,
+            3,
+            13,
+        ),
+        (None, None, None, None, None, None, 0, 0, 0, 0, 0, 0, 0),
+    ]
+
+    create_standard_ratings_dataset_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "Care Homes",
+            "assessment.ratings.asg_ratings",
+            "SAF",
+            1,
+            "Current",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            4,
+            4,
+            4,
+            4,
+            4,
+            20,
+        ),
+    ]
+
+    location_id_hash_rows = [
+        ("1-001",),
+        ("12345678901",),
+    ]
+
+    select_ratings_for_benchmarks_rows = [
+        ("1-001", "Registered", "Current", 4),
+        ("1-002", "Registered", "Historic", 4),
+        ("1-003", "Deregistered", "Current", 4),
+    ]
+
+    expected_select_ratings_for_benchmarks_rows = [
+        ("1-001", "Registered", "Current", 4),
+    ]
+
+    add_good_or_outstanding_flag_rows = [
+        ("1-001", 3),
+        ("1-001", 4),
+        ("1-002", 2),
+        ("1-002", 4),
+    ]
+
+    ratings_join_establishment_ids_rows = [
+        ("1-001",),
+        ("1-002",),
+    ]
+
+    ascwds_join_establishment_ids_rows = [
+        ("estab-1", "1-001"),
+    ]
+
+    expected_join_establishment_ids_rows = [
+        ("1-001", "estab-1"),
+        ("1-002", None),
+    ]
+
+    create_benchmark_ratings_dataset_rows = [
+        ("1-001", "estab-1", "Care Homes", "SAF", 1, "Good", "2024-01-01"),
+        ("1-002", None, "Care Homes", "SAF", 1, "Good", "2024-01-01"),
+        ("1-003", "estab-3", "Care Homes", "SAF", 1, None, "2024-01-01"),
+    ]
