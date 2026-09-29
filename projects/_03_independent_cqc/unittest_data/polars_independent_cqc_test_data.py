@@ -9,6 +9,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     ModelEvaluationColumns as ModelEvaluation,
 )
 from utils.column_values.ascwds_labelled_vocab import PublishedJobRoleLabels
+from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
 @dataclass
@@ -253,6 +254,27 @@ class MeanPeriodToPeriodChangeTestCase:
         return pytest.param(self, id=self.id)
 
 
+@dataclass
+class AggregateTotalsByGroupTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class ScoreGroupTotalsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+    by_columns: list[str] | None = None
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
 class TestModelEvaluationUtilsData:
     location_rows_share_a_fold_test_cases = [
         AssignLocationFoldsTestCase(
@@ -415,3 +437,77 @@ class TestModelEvaluationUtilsData:
             ModelEvaluation.mean_period_to_period_change: [10.0],
         },
     )
+
+    group_totals_sum_predicted_and_known_posts_test_cases = [
+        AggregateTotalsByGroupTestCase(
+            id="two_rows_in_a_group_are_summed",
+            input_data={
+                IndCQC.primary_service_type: [
+                    PrimaryServiceType.non_residential,
+                    PrimaryServiceType.non_residential,
+                    PrimaryServiceType.care_home_only,
+                ],
+                IndCQC.estimate_filled_posts: [10.0, 20.0, 5.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [12.0, 18.0, 6.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [
+                    PrimaryServiceType.non_residential,
+                    PrimaryServiceType.care_home_only,
+                ],
+                IndCQC.estimate_filled_posts: [30.0, 5.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [30.0, 6.0],
+            },
+        ),
+    ]
+
+    rows_without_known_posts_excluded_from_totals_test_cases = [
+        AggregateTotalsByGroupTestCase(
+            id="row_missing_a_known_value_left_out_of_its_group_totals",
+            input_data={
+                IndCQC.primary_service_type: [
+                    PrimaryServiceType.non_residential,
+                    PrimaryServiceType.non_residential,
+                ],
+                IndCQC.estimate_filled_posts: [10.0, 20.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [12.0, None],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
+                IndCQC.estimate_filled_posts: [10.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [12.0],
+            },
+        ),
+    ]
+
+    perfect_totals_test_cases = [
+        ScoreGroupTotalsTestCase(
+            id="every_group_total_predicted_exactly",
+            input_data={
+                IndCQC.estimate_filled_posts: [10.0, 20.0, 30.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [10.0, 20.0, 30.0],
+            },
+            expected_data={
+                IndCQC.r2: [1.0],
+                ModelEvaluation.weighted_absolute_percentage_error: [0.0],
+            },
+        ),
+    ]
+
+    # Fold 0 is predicted exactly; fold 1 misses every group by 10, a fifth of its total.
+    total_scores_split_by_fold_test_cases = [
+        ScoreGroupTotalsTestCase(
+            id="each_fold_scored_on_its_own_groups",
+            input_data={
+                ModelEvaluation.fold: [0, 0, 1, 1],
+                IndCQC.estimate_filled_posts: [10.0, 30.0, 20.0, 20.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [10.0, 30.0, 10.0, 30.0],
+            },
+            expected_data={
+                ModelEvaluation.fold: [0, 1],
+                IndCQC.r2: [1.0, 0.0],
+                ModelEvaluation.weighted_absolute_percentage_error: [0.0, 0.5],
+            },
+            by_columns=[ModelEvaluation.fold],
+        ),
+    ]
