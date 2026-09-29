@@ -154,6 +154,22 @@ def _dedup_permanent_temporary_total_expr() -> pl.Expr:
     )
 
 
+def _raw_total_staff_expr() -> pl.Expr:
+    """Sums a job-role row's 5 raw employment status counts."""
+    return (
+        pl.col(EmpStatus.permanent_count)
+        + pl.col(EmpStatus.temporary_count)
+        + pl.col(EmpStatus.bank_or_pool_count)
+        + pl.col(EmpStatus.agency_count)
+        + pl.col(EmpStatus.other_count)
+    )
+
+
+def _raw_permanent_temporary_total_expr() -> pl.Expr:
+    """Sums a job-role row's raw permanent+temporary counts."""
+    return pl.col(EmpStatus.permanent_count) + pl.col(EmpStatus.temporary_count)
+
+
 def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Nulls an org's employment status clean counts where too few of its staff
@@ -171,11 +187,15 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     but as a broadcast window function (`.over()`) rather than an actual
     group_by + join, which costs several GB more peak memory for this kind
     of "attach one aggregate to every row" broadcast on a comparably-sized
-    real frame (see the over-vs-join skill). A repeated job-role row (the
-    same underlying ASCWDS submission seen through more than one CQC
-    snapshot) is an exact duplicate, so it's already nulled by dedup's
-    unchanged-since-prior-snapshot check - no separate distinct-row filter
-    is needed to avoid double-counting it here.
+    real frame (see the over-vs-join skill).
+
+    The ratio uses raw counts, not _dedup: _dedup nulls a job-role row that is
+    unchanged since its prior snapshot, so summing it across an org would only
+    count the locations that changed this period, and a small stable location
+    would drop out of the org total. (location_id, published_job_role_label,
+    ascwds_workplace_import_date) is a unique key, so summing raw counts can't
+    double-count. The _clean columns are still created from _dedup, so
+    unchanged rows stay null.
 
     organisation_id can be null, so the rule is gated explicitly on it -
     otherwise `.over()` would pool unrelated null-org locations into one group.
@@ -197,9 +217,9 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     org_partition = [IndCQC.organisation_id, IndCQC.ascwds_workplace_import_date]
 
-    org_total_staff = _dedup_total_staff_expr().sum().over(org_partition)
+    org_total_staff = _raw_total_staff_expr().sum().over(org_partition)
     org_permanent_temporary_total = (
-        _dedup_permanent_temporary_total_expr().sum().over(org_partition)
+        _raw_permanent_temporary_total_expr().sum().over(org_partition)
     )
 
     org_ratio_too_low = (
