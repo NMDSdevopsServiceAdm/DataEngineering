@@ -534,6 +534,16 @@ class ModelMetricsUtilsTestCase:
     expected_data: dict[str, Any]
 
 
+@dataclass
+class ModelUtilsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
 class TestModelMetricsUtilsData:
     group_shares_are_worker_weighted_test_cases = [
         # Unweighted, non-res would be 0.4 for both.
@@ -682,6 +692,43 @@ class TestModelMetricsUtilsData:
                 ShareModel.share: ACTUAL_SHARES[:1] * 2,
                 IndCQC.r2: [1.0, 0.75],
                 ShareModel.mean_absolute_error: [0.0, 10.0],
+            },
+        ),
+    ]
+
+
+class TestModelUtilsData:
+    add_date_index_test_cases = [
+        ModelUtilsTestCase(
+            id="repeated_dates_share_an_index",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc1", "loc1"],
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc1", "loc1"],
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
+                IndCQC.cqc_location_import_date_indexed: [1, 1, 2],
+            },
+        ),
+        ModelUtilsTestCase(
+            id="index_is_partitioned_by_location",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.cqc_location_import_date: [date(2024, 3, 1), date(2024, 1, 1)],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.cqc_location_import_date: [date(2024, 3, 1), date(2024, 1, 1)],
+                IndCQC.cqc_location_import_date_indexed: [1, 1],
             },
         ),
     ]

@@ -27,29 +27,6 @@ def add_array_column_count(
     )
 
 
-def add_date_index_column(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Adds an index column ordered by `cqc_location_import_date` and grouped by `care_home`.
-
-    A "dense" rank is used as it assigns the same index to identical dates but does not leave gaps in the sequence.
-    For example, if three rows share the same date, they all receive the same index value, and the next distinct
-    date receives the next integer, such as 1, 1, 1, 2.
-    This differs from standard ranking, which would assign ranks 1, 1, 1, 4 for the same scenario.
-
-    Args:
-        lf (pl.LazyFrame): Input DataFrame.
-
-    Returns:
-        pl.LazyFrame: LazyFrame with an added index column.
-    """
-    return lf.with_columns(
-        pl.col(IndCQC.cqc_location_import_date)
-        .rank(method="dense")
-        .over(IndCQC.care_home)
-        .alias(IndCQC.cqc_location_import_date_indexed)
-    )
-
-
 def cap_integer_at_max_value(
     lf: pl.LazyFrame, col_name: str, max_value: pl.Int32, new_col_name: str
 ) -> pl.LazyFrame:
