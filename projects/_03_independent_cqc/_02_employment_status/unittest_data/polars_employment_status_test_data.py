@@ -720,29 +720,26 @@ class TestCleanUtilsData:
                     "loc_low_ratio",
                     "loc_high_ratio",
                     "loc_high_ratio",
-                    "loc_low_staff",
+                    "loc_small_ok",
                 ],
                 IndCQC.establishment_id: [
                     "est_low_ratio",
                     "est_low_ratio",
                     "est_high_ratio",
                     "est_high_ratio",
-                    "est_low_staff",
+                    "est_small_ok",
                 ],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 5,
-                # "other" fills each row's dedup total up to the intended
-                # per-location staff figure, since staff is now the 5 dedup
-                # counts summed rather than a separate worker_records_bounded.
-                EmpStatus.permanent_count_dedup: [0, 0, 1, 0, 0],
+                EmpStatus.permanent_count_dedup: [0, 0, 1, 0, 1],
                 EmpStatus.temporary_count_dedup: [0, 0, 0, 0, 0],
                 EmpStatus.bank_or_pool_count_dedup: [0, 0, 0, 0, 0],
                 EmpStatus.agency_count_dedup: [0, 0, 0, 0, 0],
-                EmpStatus.other_count_dedup: [10, 10, 9, 10, 5],
-                EmpStatus.permanent_count_clean: [0, 0, 1, 0, 0],
+                EmpStatus.other_count_dedup: [10, 10, 9, 10, 4],
+                EmpStatus.permanent_count_clean: [0, 0, 1, 0, 1],
                 EmpStatus.temporary_count_clean: [0, 0, 0, 0, 0],
                 EmpStatus.bank_or_pool_count_clean: [0, 0, 0, 0, 0],
                 EmpStatus.agency_count_clean: [0, 0, 0, 0, 0],
-                EmpStatus.other_count_clean: [10, 10, 9, 10, 5],
+                EmpStatus.other_count_clean: [10, 10, 9, 10, 4],
                 EmpStatus.filtering_rule: [EmploymentStatusFilteringRule.populated] * 5,
             },
             expected_data={
@@ -751,26 +748,26 @@ class TestCleanUtilsData:
                     "loc_low_ratio",
                     "loc_high_ratio",
                     "loc_high_ratio",
-                    "loc_low_staff",
+                    "loc_small_ok",
                 ],
                 IndCQC.establishment_id: [
                     "est_low_ratio",
                     "est_low_ratio",
                     "est_high_ratio",
                     "est_high_ratio",
-                    "est_low_staff",
+                    "est_small_ok",
                 ],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 5,
-                EmpStatus.permanent_count_dedup: [0, 0, 1, 0, 0],
+                EmpStatus.permanent_count_dedup: [0, 0, 1, 0, 1],
                 EmpStatus.temporary_count_dedup: [0, 0, 0, 0, 0],
                 EmpStatus.bank_or_pool_count_dedup: [0, 0, 0, 0, 0],
                 EmpStatus.agency_count_dedup: [0, 0, 0, 0, 0],
-                EmpStatus.other_count_dedup: [10, 10, 9, 10, 5],
-                EmpStatus.permanent_count_clean: [None, None, 1, 0, 0],
+                EmpStatus.other_count_dedup: [10, 10, 9, 10, 4],
+                EmpStatus.permanent_count_clean: [None, None, 1, 0, 1],
                 EmpStatus.temporary_count_clean: [None, None, 0, 0, 0],
                 EmpStatus.bank_or_pool_count_clean: [None, None, 0, 0, 0],
                 EmpStatus.agency_count_clean: [None, None, 0, 0, 0],
-                EmpStatus.other_count_clean: [None, None, 9, 10, 5],
+                EmpStatus.other_count_clean: [None, None, 9, 10, 4],
                 EmpStatus.filtering_rule: [
                     EmploymentStatusFilteringRule.location_level_low_permanent_temporary_ratio,
                     EmploymentStatusFilteringRule.location_level_low_permanent_temporary_ratio,
@@ -917,9 +914,9 @@ class TestCleanUtilsData:
             },
         ),
         CleanUtilsTestCase(
-            id="sums_staff_and_permanent_temporary_across_every_row_in_the_org",
+            id="nulls_small_org_with_no_permanent_or_temporary_staff",
             input_data={
-                # Sums every job-role row's raw total, across both locations.
+                # No minimum size: 4 staff and none permanent/temporary fails.
                 IndCQC.organisation_id: ["org2"] * 4,
                 IndCQC.location_id: ["loc1", "loc1", "loc2", "loc2"],
                 IndCQC.establishment_id: ["est1", "est1", "est2", "est2"],
@@ -950,14 +947,15 @@ class TestCleanUtilsData:
                 EmpStatus.agency_count_dedup: [0, 0, 0, 0],
                 EmpStatus.other_count: [1, 1, 1, 1],
                 EmpStatus.other_count_dedup: [1, 1, 1, 1],
-                # Total staff sums to 4 (below the 10 threshold), so it isn't
-                # nulled despite a 0 ratio - proves the sum wasn't inflated.
-                EmpStatus.permanent_count_clean: [0, 0, 0, 0],
-                EmpStatus.temporary_count_clean: [0, 0, 0, 0],
-                EmpStatus.bank_or_pool_count_clean: [0, 0, 0, 0],
-                EmpStatus.agency_count_clean: [0, 0, 0, 0],
-                EmpStatus.other_count_clean: [1, 1, 1, 1],
-                EmpStatus.filtering_rule: [EmploymentStatusFilteringRule.populated] * 4,
+                EmpStatus.permanent_count_clean: [None] * 4,
+                EmpStatus.temporary_count_clean: [None] * 4,
+                EmpStatus.bank_or_pool_count_clean: [None] * 4,
+                EmpStatus.agency_count_clean: [None] * 4,
+                EmpStatus.other_count_clean: [None] * 4,
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio
+                ]
+                * 4,
             },
         ),
         CleanUtilsTestCase(
