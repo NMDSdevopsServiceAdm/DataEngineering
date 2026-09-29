@@ -235,7 +235,7 @@ class TestCleaningUtilsData:
     # Groups are keyed on "grp"; totals are a + b + c, share is a + b.
     null_columns_where_group_share_too_low_test_cases = [
         NullColumnsWhereGroupShareTooLowTestCase(
-            id="nulls_group_at_boundary_share_and_minimum_total",
+            id="nulls_group_at_boundary_share_and_minimum_group_size",
             input_data={"grp": ["g", "g"], "a": [1, 0], "b": [0, 0], "c": [9, 10]},
             expected_data={
                 "grp": ["g", "g"],
