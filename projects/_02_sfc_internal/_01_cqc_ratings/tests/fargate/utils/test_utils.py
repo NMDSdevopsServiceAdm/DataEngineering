@@ -5,12 +5,13 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._02_sfc_internal._01_cqc_ratings.fargate.utils.utils as job
-from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import \
-    FlattenCQCRatings as Data
-from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import \
-    FlattenCQCRatings as Schemas
-from utils.column_names.cqc_ratings_columns import \
-    CQCRatingsColumns as CQCRatings
+from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import (
+    FlattenCQCRatings as Data,
+)
+from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import (
+    FlattenCQCRatings as Schemas,
+)
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 
 
 class TestKeepLatestPerKey:

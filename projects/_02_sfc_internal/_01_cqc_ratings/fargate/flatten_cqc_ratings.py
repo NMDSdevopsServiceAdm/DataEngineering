@@ -1,15 +1,19 @@
 import polars as pl
 
 from polars_utils import utils
-from projects._02_sfc_internal._01_cqc_ratings.fargate.utils import \
-    utils as ratings_utils
+from projects._02_sfc_internal._01_cqc_ratings.fargate.utils import (
+    utils as ratings_utils,
+)
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
-from utils.column_names.raw_data_files.ascwds_workplace_columns import \
-    AscwdsWorkplaceColumns as AWP
-from utils.column_names.raw_data_files.ascwds_workplace_columns import \
-    PartitionKeys as Keys
-from utils.column_names.raw_data_files.cqc_location_api_columns import \
-    NewCqcLocationApiColumns as CQCL
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+)
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    PartitionKeys as Keys,
+)
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_values.categorical_column_values import LocationType
 
 delta_columns = [

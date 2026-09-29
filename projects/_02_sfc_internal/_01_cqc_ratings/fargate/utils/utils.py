@@ -3,17 +3,22 @@ import hashlib
 import polars as pl
 
 from polars_utils import utils as polars_utils
-from utils.column_names.cqc_ratings_columns import \
-    CQCRatingsColumns as CQCRatings
-from utils.column_names.raw_data_files.ascwds_workplace_columns import \
-    AscwdsWorkplaceColumns as AWP
-from utils.column_names.raw_data_files.ascwds_workplace_columns import \
-    PartitionKeys as Keys
-from utils.column_names.raw_data_files.cqc_location_api_columns import \
-    NewCqcLocationApiColumns as CQCL
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+)
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    PartitionKeys as Keys,
+)
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_values.categorical_column_values import (
-    CQCCurrentOrHistoricValues, CQCRatingsValues, LocationType,
-    RegistrationStatus)
+    CQCCurrentOrHistoricValues,
+    CQCRatingsValues,
+    LocationType,
+    RegistrationStatus,
+)
 
 # Transient column preserving raw explode order for the deterministic pivot
 # tiebreak in prepare_assessment_ratings below.
