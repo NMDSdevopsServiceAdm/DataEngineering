@@ -244,7 +244,6 @@ class TestLookbackCapFilterExpr:
             today=case.today,
             fy_start_month=case.fy_start_month,
             lookback_fy_years=case.lookback_fy_years,
-            cutoff_date=case.cutoff_date,
         )
 
         df = pl.DataFrame({date_col: case.input_data})

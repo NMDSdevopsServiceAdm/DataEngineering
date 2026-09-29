@@ -101,7 +101,6 @@ def lookback_cap_filter_expr(
     today: date | None = None,
     fy_start_month: int = 4,
     lookback_fy_years: int = 12,
-    cutoff_date: date | None = None,
 ) -> pl.Expr:
     """
     Build a Polars expression capping a dataset to a historic financial-year lookback window.
@@ -114,7 +113,6 @@ def lookback_cap_filter_expr(
         today (date | None): Reference date for financial year boundaries. Defaults to today.
         fy_start_month (int): Month the financial year starts in. Defaults to April.
         lookback_fy_years (int): Financial years to retain before the current one.
-        cutoff_date (date | None): Optional hard floor below the lookback window.
 
     Returns:
         pl.Expr: Boolean expression for `.filter()`.
@@ -128,14 +126,7 @@ def lookback_cap_filter_expr(
         fy_year - lookback_fy_years, fy_start_month, 1
     ) - relativedelta(months=rolling_window_warm_up_months)
 
-    dt = pl.col(IndCQC.cqc_location_import_date)
-
-    expr = dt >= lookback_start
-
-    if cutoff_date is not None:
-        expr = expr & (dt >= cutoff_date)
-
-    return expr
+    return pl.col(IndCQC.cqc_location_import_date) >= lookback_start
 
 
 def earliest_file_per_month_filter_expr(

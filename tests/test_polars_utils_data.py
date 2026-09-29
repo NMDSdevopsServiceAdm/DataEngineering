@@ -537,7 +537,6 @@ class LookbackCapFilterCase:
     lookback_fy_years: int
     input_data: list[date]
     expected: list[bool]
-    cutoff_date: date | None = None
 
 
 @dataclass
@@ -631,21 +630,6 @@ class FilteringUtilsData:
                 date(2021, 5, 1), # before lookback_start -> excluded
             ],
             expected=[True, False, False],
-        ),
-        LookbackCapFilterCase(
-            id="cutoff_date_tightens_window_beyond_lookback_cap",
-            today=date(2024, 6, 15),
-            fy_start_month=4,
-            lookback_fy_years=2,
-            cutoff_date=date(2023, 1, 1),
-            input_data=[
-                date(2021, 4, 1), # before lookback_start -> excluded
-                date(2022, 4, 1), # within lookback but before cutoff_date -> excluded
-                date(2022, 12, 31), # within lookback but before cutoff_date -> excluded
-                date(2023, 1, 1), # at cutoff_date -> included
-                date(2023, 6, 1), # within range -> included
-            ],
-            expected=[False, False, False, True, True],
         ),
     ]  # fmt: skip
 
