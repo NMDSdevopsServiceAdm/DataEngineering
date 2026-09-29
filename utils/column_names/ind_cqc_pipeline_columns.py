@@ -526,6 +526,7 @@ class ModelEvaluationColumns:
     never_submitted: str = "never_submitted"
     column_name: str = "column_name"
     mean_period_to_period_change: str = "mean_period_to_period_change"
+    weighted_absolute_percentage_error: str = "weighted_absolute_percentage_error"
 
 
 @dataclass
