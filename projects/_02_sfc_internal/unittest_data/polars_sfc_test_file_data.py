@@ -234,14 +234,17 @@ class FlattenCQCRatings:
             {
                 "overall": {
                     "reportDate": "2024-01-01",
-                    "rating": "Good",
+                    "rating": "overall_rating",
                     "keyQuestionRatings": key_question_ratings,
                 }
             },
         )
 
-    def _kq(name, rating="Good"):
-        return {"name": name, "rating": rating}
+    def _kq(name, rating=None):
+        return {
+            "name": name,
+            "rating": rating or f"{name.lower().replace('-', '_')}_rating",
+        }
 
     current_ratings_rows = [
         _current_ratings(
@@ -249,9 +252,9 @@ class FlattenCQCRatings:
             [
                 _kq("Safe"),
                 _kq("Well-led"),
-                _kq("Caring", "Outstanding"),
-                _kq("Responsive", "Inspected but not rated"),
-                _kq("Effective", "Requires improvement"),
+                _kq("Caring"),
+                _kq("Responsive"),
+                _kq("Effective"),
             ],
         ),
     ]
@@ -261,12 +264,12 @@ class FlattenCQCRatings:
             "1-001",
             "Registered",
             "2024-01-01",
-            "Good",
-            "Good",
-            "Good",
-            "Outstanding",
-            "Inspected but not rated",
-            "Requires improvement",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
             "Current",
         ),
     ]
@@ -280,9 +283,9 @@ class FlattenCQCRatings:
             "1-002",
             "Registered",
             "2024-01-01",
-            "Good",
-            "Good",
-            "Good",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
             None,
             None,
             None,
@@ -293,7 +296,10 @@ class FlattenCQCRatings:
     def _historic_entry(report_date, key_question_ratings):
         return {
             "reportDate": report_date,
-            "overall": {"rating": "Good", "keyQuestionRatings": key_question_ratings},
+            "overall": {
+                "rating": "overall_rating",
+                "keyQuestionRatings": key_question_ratings,
+            },
         }
 
     historic_ratings_rows = [
@@ -320,12 +326,12 @@ class FlattenCQCRatings:
             "1-001",
             "Registered",
             "2023-01-01",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
             "Historic",
         ),
     ]
@@ -337,7 +343,7 @@ class FlattenCQCRatings:
             [
                 _historic_entry("2023-01-01", [_kq("Safe"), _kq("Well-led")]),
                 _historic_entry(
-                    "2023-01-01", [_kq("Safe", "Inadequate"), _kq("Well-led")]
+                    "2023-01-01", [_kq("Safe", "safe_rating_second"), _kq("Well-led")]
                 ),
             ],
         ),
@@ -348,9 +354,9 @@ class FlattenCQCRatings:
             "1-001",
             "Registered",
             "2023-01-01",
-            "Good",
-            "Good",
-            "Good",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
             None,
             None,
             None,
@@ -360,9 +366,9 @@ class FlattenCQCRatings:
             "1-001",
             "Registered",
             "2023-01-01",
-            "Good",
-            "Inadequate",
-            "Good",
+            "overall_rating",
+            "safe_rating_second",
+            "well_led_rating",
             None,
             None,
             None,
@@ -370,8 +376,19 @@ class FlattenCQCRatings:
         ),
     ]
 
-    def _asg_kq(name, rating="Good"):
-        return {"name": name, "rating": rating, "status": "Assessed"}
+    def _asg_kq(name, rating=None):
+        return {
+            "name": name,
+            "rating": rating or f"{name.lower().replace('-', '_')}_rating",
+            "status": "key_question_status",
+        }
+
+    def _overall_entry(key_question_ratings):
+        return {
+            "rating": "overall_rating",
+            "status": "overall_status",
+            "keyQuestionRatings": key_question_ratings,
+        }
 
     def _asg_entry(
         published_datetime, assessment_plan_id, key_question_ratings, overall=None
@@ -383,12 +400,12 @@ class FlattenCQCRatings:
                 "asgRatings": [
                     {
                         "assessmentPlanId": assessment_plan_id,
-                        "title": "Care Home Assessment",
-                        "assessmentDate": "2024-01-02",
-                        "assessmentPlanStatus": "Assessed",
-                        "name": "Care Homes",
-                        "rating": "Good",
-                        "status": "Current",
+                        "title": "title",
+                        "assessmentDate": "assessment_date",
+                        "assessmentPlanStatus": "assessment_plan_status",
+                        "name": "name",
+                        "rating": "rating",
+                        "status": "status",
                         "keyQuestionRatings": key_question_ratings,
                     }
                 ],
@@ -421,19 +438,19 @@ class FlattenCQCRatings:
             "Registered",
             "2024-01-01 00:00:00",
             "AP1",
-            "Care Home Assessment",
-            "2024-01-02",
-            "Assessed",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
             "SAF",
-            "Care Homes",
-            "Current",
-            "Good",
+            "name",
+            "status",
+            "rating",
             "assessment.ratings.asg_ratings",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
+            "safe_rating",
+            "effective_rating",
+            "caring_rating",
+            "responsive_rating",
+            "well_led_rating",
         ),
     ]
 
@@ -445,13 +462,7 @@ class FlattenCQCRatings:
                 {
                     "assessmentPlanPublishedDateTime": "2024-01-01 00:00:00",
                     "ratings": {
-                        "overall": [
-                            {
-                                "rating": "Good",
-                                "status": "Assessed",
-                                "keyQuestionRatings": [_asg_kq("Safe")],
-                            }
-                        ],
+                        "overall": [_overall_entry([_asg_kq("Safe")])],
                         "asgRatings": [],
                     },
                 }
@@ -470,10 +481,10 @@ class FlattenCQCRatings:
             None,
             "SAF",
             None,
-            "Assessed",
-            "Good",
+            "overall_status",
+            "overall_rating",
             "assessment.ratings.overall",
-            "Good",
+            "safe_rating",
             None,
             None,
             None,
@@ -490,19 +501,13 @@ class FlattenCQCRatings:
                 _asg_entry(
                     "2024-01-01 00:00:00",
                     "AP1",
-                    [_asg_kq("Safe"), _asg_kq("Caring", "Outstanding")],
-                    overall=[
-                        {
-                            "rating": "Good",
-                            "status": "Assessed",
-                            "keyQuestionRatings": [_asg_kq("Safe", "Inadequate")],
-                        }
-                    ],
+                    [_asg_kq("Safe"), _asg_kq("Caring")],
+                    overall=[_overall_entry([_asg_kq("Safe", "overall_safe_rating")])],
                 ),
                 _asg_entry(
                     "2024-06-01 00:00:00",
                     "AP2",
-                    [_asg_kq("Safe", "Requires improvement")],
+                    [_asg_kq("Safe", "safe_rating_ap2")],
                 ),
             ],
         ),
@@ -513,7 +518,7 @@ class FlattenCQCRatings:
                 _asg_entry(
                     "2024-01-01 00:00:00",
                     "AP1",
-                    [_asg_kq("Safe", "Inadequate")],
+                    [_asg_kq("Safe", "safe_rating_location_2")],
                 )
             ],
         ),
@@ -525,17 +530,17 @@ class FlattenCQCRatings:
             "Registered",
             "2024-01-01 00:00:00",
             "AP1",
-            "Care Home Assessment",
-            "2024-01-02",
-            "Assessed",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
             "SAF",
-            "Care Homes",
-            "Current",
-            "Good",
+            "name",
+            "status",
+            "rating",
             "assessment.ratings.asg_ratings",
-            "Good",
+            "safe_rating",
             None,
-            "Outstanding",
+            "caring_rating",
             None,
             None,
         ),
@@ -549,10 +554,10 @@ class FlattenCQCRatings:
             None,
             "SAF",
             None,
-            "Assessed",
-            "Good",
+            "overall_status",
+            "overall_rating",
             "assessment.ratings.overall",
-            "Inadequate",
+            "overall_safe_rating",
             None,
             None,
             None,
@@ -563,15 +568,15 @@ class FlattenCQCRatings:
             "Registered",
             "2024-06-01 00:00:00",
             "AP2",
-            "Care Home Assessment",
-            "2024-01-02",
-            "Assessed",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
             "SAF",
-            "Care Homes",
-            "Current",
-            "Good",
+            "name",
+            "status",
+            "rating",
             "assessment.ratings.asg_ratings",
-            "Requires improvement",
+            "safe_rating_ap2",
             None,
             None,
             None,
@@ -582,15 +587,15 @@ class FlattenCQCRatings:
             "Registered",
             "2024-01-01 00:00:00",
             "AP1",
-            "Care Home Assessment",
-            "2024-01-02",
-            "Assessed",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
             "SAF",
-            "Care Homes",
-            "Current",
-            "Good",
+            "name",
+            "status",
+            "rating",
             "assessment.ratings.asg_ratings",
-            "Inadequate",
+            "safe_rating_location_2",
             None,
             None,
             None,
@@ -608,7 +613,7 @@ class FlattenCQCRatings:
                     "AP2",
                     [
                         _asg_kq("Safe"),
-                        _asg_kq("Safe", "Requires improvement"),
+                        _asg_kq("Safe", "safe_rating_second"),
                         _asg_kq("Well-led"),
                         _asg_kq("Caring"),
                         _asg_kq("Responsive"),
@@ -625,19 +630,19 @@ class FlattenCQCRatings:
             "Registered",
             "2024-02-01 00:00:00",
             "AP2",
-            "Care Home Assessment",
-            "2024-01-02",
-            "Assessed",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
             "SAF",
-            "Care Homes",
-            "Current",
-            "Good",
+            "name",
+            "status",
+            "rating",
             "assessment.ratings.asg_ratings",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
+            "safe_rating",
+            "effective_rating",
+            "caring_rating",
+            "responsive_rating",
+            "well_led_rating",
         ),
     ]
 
@@ -652,8 +657,8 @@ class FlattenCQCRatings:
                     "ratings": {
                         "overall": [
                             {
-                                "rating": "Good",
-                                "status": "Assessed",
+                                "rating": "overall_rating",
+                                "status": "overall_status",
                                 "keyQuestionRatings": None,
                             }
                         ],

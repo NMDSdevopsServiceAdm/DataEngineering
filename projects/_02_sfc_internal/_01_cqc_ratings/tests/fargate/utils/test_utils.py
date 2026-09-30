@@ -135,7 +135,7 @@ class PrepareHistoricRatingsCase:
 
 prepare_historic_ratings_cases = [
     PrepareHistoricRatingsCase(
-        id="flattens_recodes_and_labels_as_historic",
+        id="flattens_and_labels_as_historic",
         rows=Data.historic_ratings_rows,
         expected_rows=Data.expected_prepare_historic_ratings_rows,
     ),
