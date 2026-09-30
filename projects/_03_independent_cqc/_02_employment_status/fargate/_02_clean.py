@@ -13,8 +13,8 @@ def main(
     stale (unchanged since its prior snapshot), nulls a location's/org's counts
     where too few of its staff have a recorded permanent/temporary status
     (recording why in employment_status_filtering_rule), then adds a
-    percentage-share column
-    per employment status computed from those cleaned counts.
+    percentage-share column per employment status computed from those cleaned
+    counts.
 
     Args:
         merged_data_source (str): path to the merged data
