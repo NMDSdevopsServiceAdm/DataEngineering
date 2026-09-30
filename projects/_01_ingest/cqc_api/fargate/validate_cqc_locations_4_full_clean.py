@@ -30,6 +30,19 @@ from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
 
+# Excluded from the not-null geography checks below since these already have
+# their own col_vals_in_set check, which (having no na_pass parameter) also
+# rejects null - re-checking them for not-null would be a redundant full scan.
+CATEGORICAL_CONTEMPORARY_GEOGRAPHY_COLUMNS = [
+    CQCLClean.contemporary_cssr,
+    CQCLClean.contemporary_region,
+]
+CATEGORICAL_CURRENT_GEOGRAPHY_COLUMNS = [
+    CQCLClean.current_cssr,
+    CQCLClean.current_region,
+    CQCLClean.current_rural_urban_ind_11,
+]
+
 compare_columns_to_import = [
     CQCLClean.import_date,
     CQCLClean.location_id,
@@ -112,9 +125,24 @@ def main(
         # ONS postcode-match geography columns: a location either matches a single
         # ONS postcode row (populating every field below together) or the pipeline
         # raises before reaching this validator (see raise_error_if_unmatched),
-        # so these are always populated as one group.
-        .col_vals_not_null(contemporary_geography_columns)
-        .col_vals_not_null(current_geography_columns)
+        # so these are always populated as one group. The categorical columns in
+        # that group (contemporary/current cssr/region, current rural_urban_ind_11)
+        # are excluded here as their col_vals_in_set check below already covers
+        # not-null.
+        .col_vals_not_null(
+            [
+                c
+                for c in contemporary_geography_columns
+                if c not in CATEGORICAL_CONTEMPORARY_GEOGRAPHY_COLUMNS
+            ]
+        )
+        .col_vals_not_null(
+            [
+                c
+                for c in current_geography_columns
+                if c not in CATEGORICAL_CURRENT_GEOGRAPHY_COLUMNS
+            ]
+        )
         # index columns
         .rows_distinct([CQCLClean.location_id, CQCLClean.cqc_location_import_date])
         # Complex column validation for completeness

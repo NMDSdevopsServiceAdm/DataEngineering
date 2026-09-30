@@ -152,20 +152,9 @@ class TestMain:
     ):
         # The dataset's own earliest year must be accepted, even though it
         # predates the years with known proportions.
-        earliest_year_row = list(Data.estimates_rows[0])
-        first_year_with_data_index = list(Schemas.estimates_schema.names()).index(
-            DP.FIRST_YEAR_WITH_DATA
-        )
-        last_year_with_data_index = list(Schemas.estimates_schema.names()).index(
-            DP.LAST_YEAR_WITH_DATA
-        )
-        earliest_year_row[first_year_with_data_index] = Config.FIRST_YEAR
-        earliest_year_row[last_year_with_data_index] = Config.FIRST_YEAR
-
-        source_df = pl.DataFrame(
-            data=[tuple(earliest_year_row)],
-            schema=Schemas.estimates_schema,
-            orient="row",
+        source_df = self.source_df.with_columns(
+            pl.lit(Config.FIRST_YEAR, dtype=pl.Int32).alias(DP.FIRST_YEAR_WITH_DATA),
+            pl.lit(Config.FIRST_YEAR, dtype=pl.Int32).alias(DP.LAST_YEAR_WITH_DATA),
         )
         mock_read_parquet.side_effect = [source_df, self.compare_df]
 

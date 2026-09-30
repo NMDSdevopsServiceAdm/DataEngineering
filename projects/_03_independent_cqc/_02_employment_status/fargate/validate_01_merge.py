@@ -75,9 +75,8 @@ def main(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
         )
-        # complete columns
-        .col_vals_not_null(IndCqcColumns.published_job_role_label)
-        # categorical
+        # categorical (col_vals_in_set has no na_pass parameter, so this also
+        # enforces completeness)
         .col_vals_in_set(
             IndCqcColumns.published_job_role_label,
             SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values,

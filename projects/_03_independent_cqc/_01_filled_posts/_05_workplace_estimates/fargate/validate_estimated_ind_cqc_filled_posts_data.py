@@ -188,8 +188,7 @@ def main(
         .col_vals_in_set(
             IndCqcColumns.ct_non_res_filled_post_estimate_source,
             [
-                IndCqcColumns.ct_non_res_all_posts,
-                IndCqcColumns.estimate_filled_posts,
+                *CatValues.ct_non_res_filled_post_estimate_source_column_values.categorical_values,
                 None,
             ],
         )

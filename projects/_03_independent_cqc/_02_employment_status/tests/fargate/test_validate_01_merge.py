@@ -115,7 +115,6 @@ class TestMain:
 
         assert assertion_types_present == {
             "row_count_match",
-            "col_vals_not_null",
             "col_vals_in_set",
             "specially",
         }

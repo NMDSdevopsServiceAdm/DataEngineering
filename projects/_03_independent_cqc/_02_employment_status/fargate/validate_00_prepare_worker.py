@@ -90,19 +90,10 @@ def main(
                 f"{compare_path})"
             ),
         )
-        # complete columns (pivot fills groups with no workers of a status as 0,
-        # so these are never null)
-        .col_vals_not_null(
-            [
-                IndCQC.published_job_role_label,
-                EmpStatus.permanent_count,
-                EmpStatus.temporary_count,
-                EmpStatus.bank_or_pool_count,
-                EmpStatus.agency_count,
-                EmpStatus.other_count,
-            ]
-        )
-        # numeric
+        # numeric (col_vals_ge's default na_pass=False, and col_vals_in_set has no
+        # na_pass parameter at all, so these also enforce completeness - pivot
+        # fills groups with no workers of a status as 0, so none of these are
+        # ever null)
         .col_vals_ge(EmpStatus.permanent_count, 0)
         .col_vals_ge(EmpStatus.temporary_count, 0)
         .col_vals_ge(EmpStatus.bank_or_pool_count, 0)

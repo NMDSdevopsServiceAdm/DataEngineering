@@ -14,11 +14,18 @@ from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 from utils.column_values.categorical_columns_by_dataset import (
+    DirectPaymentRecipientsEstimateCategoricalValues as DPCatValues,
+)
+from utils.column_values.categorical_columns_by_dataset import (
     PostcodeDirectoryCleanedCategoricalValues as CatValues,
 )
 
-# Estimates are legitimately null before this year (also true of the main
-# pipeline's output), so completeness and bounds are only checked from it.
+# Estimates before this year draw on periods with incomplete/no survey data
+# (also true of the main pipeline's output), so completeness is only checked
+# from it. This is not a general safety cutoff: proportion-derived columns
+# built from the (per-LA-area) extrapolation ratio can still take an unbounded
+# value from this year onwards if an area's own known data doesn't reach the
+# present - see the completeness-only checks below for those columns.
 FIRST_YEAR_WITH_COMPLETE_ESTIMATES = 2015
 
 
@@ -90,12 +97,7 @@ def main(
         )
         .col_vals_in_set(
             DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE,
-            [
-                DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-                DP.ESTIMATE_USING_EXTRAPOLATION_RATIO,
-                DP.ESTIMATE_USING_INTERPOLATION,
-                DP.ESTIMATE_USING_MEAN,
-            ],
+            DPCatValues.estimated_proportion_of_service_users_employing_staff_source_column_values.categorical_values,
             pre=filter_to_complete_estimate_years,
         )
         # distinct values
@@ -120,14 +122,12 @@ def main(
             na_pass=True,
         )
         # numeric - proportions: interpolation of the raw proportion stays within
-        # 0-1 because remove_outliers.py nulls raw values outside it. The mean is
-        # also coalesced with the historic estimate, which is assumed to be a
-        # proportion but is not bounded by anything upstream.
-        # The estimated proportion and its rolling average are only checked for
-        # completeness, as they can take an unbounded extrapolation-ratio value.
-        # Interpolation is re-run over that same column, so it can exceed 1 before
-        # FIRST_YEAR_WITH_COMPLETE_ESTIMATES and is only bounded from then.
-        .col_vals_between(DP.ESTIMATE_USING_MEAN, 0.0, 1.0, na_pass=True)
+        # 0-1 because remove_outliers.py nulls raw values outside it, so it's
+        # bounded from FIRST_YEAR_WITH_COMPLETE_ESTIMATES. The mean is coalesced
+        # with the historic estimate, which is assumed to be a proportion but is
+        # not bounded by anything upstream, so - like the estimated proportion and
+        # its rolling average, which can take an unbounded extrapolation-ratio
+        # value - it is left unbounded and only checked for completeness.
         .col_vals_between(
             DP.ESTIMATE_USING_INTERPOLATION,
             0.0,
