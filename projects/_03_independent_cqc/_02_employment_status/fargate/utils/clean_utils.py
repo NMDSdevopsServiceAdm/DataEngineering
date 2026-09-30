@@ -40,24 +40,18 @@ def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Deduplicates the 5 employment status count columns, then adds a
-    percentage-share column per employment status.
+    Adds a percentage-share column per employment status.
 
-    Counts are nulled only when no job role changed for that workplace and date
-    (see `deduplicate_employment_status_counts`). Percentage-share columns are
-    computed from the deduplicated counts, so a stale (nulled) row's percentages
-    are also null rather than carrying forward a stale share.
+    Shares are computed from the deduplicated counts, so a stale (nulled) row's
+    percentages are also null rather than carrying forward a stale share. Run
+    `deduplicate_employment_status_counts` first.
 
     Args:
-        lf (pl.LazyFrame): dataset containing the merged employment status count
-            columns.
+        lf (pl.LazyFrame): dataset containing the 5 "<count>_dedup" columns.
 
     Returns:
-        pl.LazyFrame: dataset with 5 "<count>_dedup" and 5
-            "emplstat_<status>_percentage" columns added.
+        pl.LazyFrame: dataset with 5 "emplstat_<status>_percentage" columns added.
     """
-    lf = deduplicate_employment_status_counts(lf)
-
     lf = cleaningUtils.percentage_share_horizontal(
         lf,
         columns=[

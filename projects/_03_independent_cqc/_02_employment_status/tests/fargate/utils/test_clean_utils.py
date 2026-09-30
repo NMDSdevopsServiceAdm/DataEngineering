@@ -43,19 +43,16 @@ class TestDeduplicateEmploymentStatusCounts:
 
 class TestCreateEmploymentStatusPercentageColumns:
     @patch(f"{PATCH_PATH}.cleaningUtils.percentage_share_horizontal")
-    @patch(f"{PATCH_PATH}.deduplicate_employment_status_counts")
-    def test_calls_dedup_then_percentage_share_with_expected_args(
+    def test_calls_percentage_share_with_expected_args(
         self,
-        deduplicate_employment_status_counts_mock: Mock,
         percentage_share_horizontal_mock: Mock,
     ):
         input_lf = Mock()
 
         returned_lf = job.create_employment_status_percentage_columns(input_lf)
 
-        deduplicate_employment_status_counts_mock.assert_called_once_with(input_lf)
         percentage_share_horizontal_mock.assert_called_once_with(
-            deduplicate_employment_status_counts_mock.return_value,
+            input_lf,
             columns=[
                 EmpStatus.permanent_count_dedup,
                 EmpStatus.temporary_count_dedup,
