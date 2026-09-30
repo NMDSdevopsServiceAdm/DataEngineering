@@ -97,12 +97,10 @@ def main(
         .col_vals_ge(EmpStatus.bank_or_pool_count, 0)
         .col_vals_ge(EmpStatus.agency_count, 0)
         .col_vals_ge(EmpStatus.other_count, 0)
-        # categorical
         .col_vals_in_set(
             IndCQC.published_job_role_label,
             SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values,
         )
-        # distinct values
         .specially(
             vl.is_unique_count_equal(
                 IndCQC.published_job_role_label,

@@ -59,7 +59,6 @@ def main(
             IndCqcColumns.published_job_role_label,
             SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values,
         )
-        # distinct values
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.published_job_role_label,
@@ -67,7 +66,8 @@ def main(
             ),
             brief=f"{IndCqcColumns.published_job_role_label} should have exactly "
             f"{SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values} distinct values",
-        ).interrogate()
+        )
+        .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 

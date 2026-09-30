@@ -106,7 +106,6 @@ def main(
             ),
             brief=f"{DP.LA_AREA} needs to be one of {CatValues.contemporary_cssr_column_values.categorical_values} or {CatValues.current_cssr_column_values.categorical_values}",
         )
-        # numeric - year plausibility, from this dataset's own earliest year
         .col_vals_between(
             DP.FIRST_YEAR_WITH_DATA,
             Config.FIRST_YEAR,
@@ -130,7 +129,6 @@ def main(
             na_pass=True,
             pre=filter_to_complete_estimate_years,
         )
-        # numeric - non-negative counts derived from the proportions/rates above
         .col_vals_ge(
             DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
             0.0,
