@@ -15,7 +15,7 @@ def remove_repeated_values_over_time_as_group(
 ) -> pl.LazyFrame:
     """
     Replaces consecutive repeated values with null across a group of columns as a
-    single unit.
+    single unit, optionally judged at workplace level.
 
     Unlike `polars_utils.cleaning_utils.remove_repeated_values_over_time`, which
     dedups each column independently, this treats `columns_to_clean` as one
