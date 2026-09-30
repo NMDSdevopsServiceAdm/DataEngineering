@@ -95,3 +95,72 @@ class ReconciliationSchema:
         CQCL.registration_status: pl.String,
         CQCL.deregistration_date: pl.Date,
     }
+
+
+class FlattenCQCRatings:
+    key_question_rating_struct = pl.Struct(
+        {CQCL.name: pl.String, CQCL.rating: pl.String}
+    )
+
+    current_ratings_struct = pl.Struct(
+        {
+            CQCL.overall: pl.Struct(
+                {
+                    CQCL.report_date: pl.String,
+                    CQCL.rating: pl.String,
+                    CQCL.key_question_ratings: pl.List(key_question_rating_struct),
+                }
+            )
+        }
+    )
+
+    historic_ratings_struct = pl.List(
+        pl.Struct(
+            {
+                CQCL.report_date: pl.String,
+                CQCL.overall: pl.Struct(
+                    {
+                        CQCL.rating: pl.String,
+                        CQCL.key_question_ratings: pl.List(key_question_rating_struct),
+                    }
+                ),
+            }
+        )
+    )
+
+    current_ratings_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCL.current_ratings, current_ratings_struct),
+        ]
+    )
+
+    historic_ratings_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCL.historic_ratings, historic_ratings_struct),
+        ]
+    )
+
+    flattened_ratings_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCRatingsColumns.date, pl.String),
+            (CQCRatingsColumns.overall_rating, pl.String),
+            (CQCRatingsColumns.safe_rating, pl.String),
+            (CQCRatingsColumns.well_led_rating, pl.String),
+            (CQCRatingsColumns.caring_rating, pl.String),
+            (CQCRatingsColumns.responsive_rating, pl.String),
+            (CQCRatingsColumns.effective_rating, pl.String),
+        ]
+    )
+
+    flattened_ratings_with_current_or_historic_schema = pl.Schema(
+        [
+            *flattened_ratings_schema.items(),
+            (CQCRatingsColumns.current_or_historic, pl.String),
+        ]
+    )
