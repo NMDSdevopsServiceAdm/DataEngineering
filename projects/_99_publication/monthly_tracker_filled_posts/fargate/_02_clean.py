@@ -3,7 +3,6 @@ from datetime import date
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.filtering_utils import reduced_data_filter_expr
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     clean_utils,
 )
@@ -29,7 +28,9 @@ def main(
     today = date.today()
     fy_year = today.year if today.month >= 4 else today.year - 1
     cutoff_date = date(fy_year - 6, 4, 1)
-    cleaned_lf = merged_lf.filter(reduced_data_filter_expr(cutoff_date=cutoff_date))
+    cleaned_lf = merged_lf.filter(
+        clean_utils.reduced_data_filter_expr(cutoff_date=cutoff_date)
+    )
 
     cleaned_lf = cleaned_lf.with_columns(
         (pl.col(IndCQC.care_home_status_count) == 1).alias(Pub.consistent_service)

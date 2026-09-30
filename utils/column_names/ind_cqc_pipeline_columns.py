@@ -527,3 +527,12 @@ class ModelEvaluationColumns:
     column_name: str = "column_name"
     mean_period_to_period_change: str = "mean_period_to_period_change"
     weighted_absolute_percentage_error: str = "weighted_absolute_percentage_error"
+
+
+@dataclass
+class ShareModelColumns:
+    """The names of the columns added when modelling and scoring share breakdowns."""
+
+    group_weight: str = "group_weight"
+    share: str = "share"
+    mean_absolute_error: str = "mean_absolute_error"
