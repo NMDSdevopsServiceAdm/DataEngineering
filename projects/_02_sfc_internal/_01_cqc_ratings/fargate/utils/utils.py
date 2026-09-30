@@ -262,9 +262,6 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     A conditional `group_by` aggregation is used instead of a pivot so the aggregation
     stays lazy.
 
-    Raises:
-        ValueError: If a key question appears more than once in an assessment plan.
-
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data, with nested
             assessments and ratings.
