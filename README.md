@@ -66,7 +66,7 @@ terraform fmt -recursive  # Terraform
 - [NOTEBOOKS.md](./NOTEBOOKS.md) - Jupyter notebooks on Amazon Web Services EMR
 - [SETUP.md](./SETUP.md) - local environment and project setup
 - [STYLEGUIDE.md](./STYLEGUIDE.md) — naming, test writing, and docstring conventions
-- [WINDOWSSETUP.md](./WINDOWSSETUP.md) — instructions for setting up the project on Windows
+- [WINDOWS_SETUP.md](./WINDOWS_SETUP.md) — instructions for setting up the project on Windows
 
 ## Publications and Outputs
 The data and models produced by this repository feed into various reports, dashboards and monthly trackers and are available at:

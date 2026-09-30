@@ -1,12 +1,12 @@
 # Terraform Deployment Guide
 
-Amazon Web Services Command Line Interface is a prerequisite of Terraform. [See our windows setup guide for instructions on setting up AWS CLI and terraform for the first time](WindowsSetup.md)
+Amazon Web Services Command Line Interface is a prerequisite of Terraform. [See our windows setup guide for instructions on setting up AWS CLI and terraform for the first time](WINDOWS_SETUP.md)
 
 ## Deploying Terraform
 
-1. Set an environment variable for HOME:
+1. Set an environment variable for HOME (`aws-mfa` reads it to find your `.aws` folder, and Windows may not set it). This only applies to the current terminal, so repeat it in each new one:
 ```
-$Env:HOME = 'C:\Users\<username>' 
+$Env:HOME = $Env:USERPROFILE
 ```
 2. Provide your MFA token:
 ```
