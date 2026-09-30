@@ -373,11 +373,13 @@ class FlattenCQCRatings:
     def _asg_kq(name, rating="Good"):
         return {"name": name, "rating": rating, "status": "Assessed"}
 
-    def _asg_entry(published_datetime, assessment_plan_id, key_question_ratings):
+    def _asg_entry(
+        published_datetime, assessment_plan_id, key_question_ratings, overall=None
+    ):
         return {
             "assessmentPlanPublishedDateTime": published_datetime,
             "ratings": {
-                "overall": [],
+                "overall": overall or [],
                 "asgRatings": [
                     {
                         "assessmentPlanId": assessment_plan_id,
@@ -472,6 +474,123 @@ class FlattenCQCRatings:
             "Good",
             "assessment.ratings.overall",
             "Good",
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+
+    # 1-001 has two plans, and AP1 also has an overall entry. 1-002 reuses plan id AP1.
+    prepare_assessment_ratings_multiple_groups_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _asg_entry(
+                    "2024-01-01 00:00:00",
+                    "AP1",
+                    [_asg_kq("Safe"), _asg_kq("Caring", "Outstanding")],
+                    overall=[
+                        {
+                            "rating": "Good",
+                            "status": "Assessed",
+                            "keyQuestionRatings": [_asg_kq("Safe", "Inadequate")],
+                        }
+                    ],
+                ),
+                _asg_entry(
+                    "2024-06-01 00:00:00",
+                    "AP2",
+                    [_asg_kq("Safe", "Requires improvement")],
+                ),
+            ],
+        ),
+        (
+            "1-002",
+            "Registered",
+            [
+                _asg_entry(
+                    "2024-01-01 00:00:00",
+                    "AP1",
+                    [_asg_kq("Safe", "Inadequate")],
+                )
+            ],
+        ),
+    ]
+
+    expected_prepare_assessment_ratings_multiple_groups_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "SAF",
+            "Care Homes",
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            "Good",
+            None,
+            "Outstanding",
+            None,
+            None,
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Assessed",
+            "Good",
+            "assessment.ratings.overall",
+            "Inadequate",
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2024-06-01 00:00:00",
+            "AP2",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "SAF",
+            "Care Homes",
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            "Requires improvement",
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-002",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "SAF",
+            "Care Homes",
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            "Inadequate",
             None,
             None,
             None,

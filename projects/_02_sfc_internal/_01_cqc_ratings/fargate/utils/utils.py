@@ -41,6 +41,12 @@ ASSESSMENT_GRAIN_COLUMNS = [
     CQCL.source_path,
 ]
 
+# `dataset` and `source_path` values recording where each rating row came from.
+SAF_DATASET = "SAF"
+OVERALL_SOURCE_PATH = "assessment.ratings.overall"
+ASG_SOURCE_PATH = "assessment.ratings.asg_ratings"
+PRE_SAF_DATASET = "Pre SAF"
+
 rating_columns_to_clean = [
     CQCRatings.overall_rating,
     CQCRatings.safe_rating,
@@ -270,7 +276,7 @@ def extract_key_question_ratings(
             pl.col(CQCL.key_question_ratings)
             .struct.field(CQCL.rating)
             .alias(CQCL.key_question_rating),
-            pl.lit("SAF").alias(CQCL.dataset),
+            pl.lit(SAF_DATASET).alias(CQCL.dataset),
             pl.lit(source_path).alias(CQCL.source_path),
         )
         .drop(CQCL.key_question_ratings)
@@ -298,10 +304,10 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     assessment_lf = extract_assessment_base(cqc_location_lf)
     overall_lf = extract_key_question_ratings(
-        assessment_lf, CQCL.overall, "assessment.ratings.overall"
+        assessment_lf, CQCL.overall, OVERALL_SOURCE_PATH
     )
     asg_lf = extract_key_question_ratings(
-        assessment_lf, CQCL.asg_ratings, "assessment.ratings.asg_ratings"
+        assessment_lf, CQCL.asg_ratings, ASG_SOURCE_PATH
     )
 
     key_question_names = [
@@ -355,7 +361,7 @@ def raise_error_when_assessment_df_contains_overall_data(
     """
     rows_where_overall_has_value = (
         assessment_ratings_lf.filter(
-            (pl.col(CQCL.source_path) == "assessment.ratings.overall")
+            (pl.col(CQCL.source_path) == OVERALL_SOURCE_PATH)
             & pl.col(CQCL.rating).is_not_null()
         )
         .select(pl.len())
@@ -418,7 +424,7 @@ def merge_cqc_ratings(
         CQCRatings.caring_rating,
         CQCRatings.responsive_rating,
         CQCRatings.effective_rating,
-        pl.lit("Pre SAF").alias(CQCL.dataset),
+        pl.lit(PRE_SAF_DATASET).alias(CQCL.dataset),
     )
     assessment_lf = assessment_ratings_lf.select(
         CQCL.location_id,
