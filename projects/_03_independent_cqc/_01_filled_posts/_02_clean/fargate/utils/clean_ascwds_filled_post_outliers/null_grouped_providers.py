@@ -1,4 +1,5 @@
 from dataclasses import dataclass, fields
+from datetime import date
 
 import polars as pl
 
@@ -71,7 +72,11 @@ def null_grouped_providers(
     Null ascwds_filled_posts_dedup_clean where a provider has multiple
     locations, all their ascwds is under one location.
 
-    These providers are returned in a separate LazyFrame before being nulled.
+    These providers are returned in a separate LazyFrame before being nulled,
+    merged into the history of previously identified grouped providers. The
+    latest snapshot is the latest import month in lf, so a month in which no
+    location is flagged adds no new grouped providers but can still mark
+    earlier ones as fixed.
 
     Following analysis of ASCWDS data and contacting some providers, we
     discovered that some providers were submitting their entire workforce
@@ -93,6 +98,12 @@ def null_grouped_providers(
             providers' data nulled and a LazyFrame of grouped providers whose
             data was nulled.
     """
+    # Taken from the input frame, before the window-heavy steps below, so only the
+    # import date column is read to get one date rather than re-running those steps.
+    snapshot_date = (
+        lf.select(pl.col(IndCQC.cqc_location_import_date).max()).collect().item()
+    )
+
     lf = calculate_data_for_grouped_provider_identification(lf)
 
     lf = identify_potential_grouped_providers(lf)
@@ -100,9 +111,13 @@ def null_grouped_providers(
     lf = null_care_home_grouped_providers(lf)
     lf = null_non_residential_grouped_providers(lf)
 
+    populated_location_ids_lf = select_locations_populated_this_month(lf)
     new_grouped_providers = select_grouped_providers(lf)
     updated_grouped_providers_lf = update_grouped_providers_history(
-        new_grouped_providers, grouped_providers_lf
+        new_grouped_providers,
+        populated_location_ids_lf,
+        grouped_providers_lf,
+        snapshot_date,
     ).select(GROUPED_PROVIDER_SCHEMA.names())
 
     ngp_cols = {field.name for field in fields(NGPcol())}
@@ -336,7 +351,12 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     Filters the input LazyFrame to the following:
         - ASCWDS data was actually nulled by null_care_home_grouped_providers or
           null_non_residential_grouped_providers.
-        - cqc_location_import_date equal to max year/month across dataset.
+        - cqc_location_import_date equal to max year/month across all rows in
+          the dataset, not just the flagged rows, so a month with nothing
+          flagged returns no rows rather than falling back to an earlier month.
+
+    Months are compared rather than dates because the clean job keeps one
+    import date per calendar month, so both are equivalent here.
 
     A location can be a potential_grouped_provider without its data being
     nulled, since null_care_home_grouped_providers and
@@ -351,8 +371,10 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
             null_non_residential_grouped_providers.
 
     Returns:
-        pl.LazyFrame: The filtered input LazyFrame with
-            `grouped_provider_status` and `last_update_date` columns added.
+        pl.LazyFrame: The filtered input LazyFrame with the
+            `grouped_provider_status`, `grp_prov_identified_date` and
+            `grp_prov_fixed_date` columns added, selected to
+            GROUPED_PROVIDER_SCHEMA.
     """
     was_nulled_as_grouped_provider = pl.col(IndCQC.ascwds_filtering_rule).is_in(
         [
@@ -364,9 +386,11 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     date_col = pl.col(IndCQC.cqc_location_import_date)
     trunc_date_col = date_col.dt.truncate("1mo")  # E.g. 2026-01-05 becomes 2026-01-01.
 
+    # The latest month must be taken across all rows before filtering to flagged rows,
+    # otherwise a month with nothing flagged would fall back to the previous flagged month.
     return (
-        lf.filter(was_nulled_as_grouped_provider)
-        .filter(trunc_date_col == trunc_date_col.max())
+        lf.filter(trunc_date_col == trunc_date_col.max())
+        .filter(was_nulled_as_grouped_provider)
         .with_columns(
             pl.lit("problem").alias(NGPcol.grouped_provider_status),
             pl.col(IndCQC.cqc_location_import_date).alias(
@@ -378,9 +402,39 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
+def select_locations_populated_this_month(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Select location_ids whose ascwds_filtering_rule is "populated" at the latest
+    import date in lf.
+
+    Used to distinguish a location that has genuinely resolved its grouped-provider
+    issue from one that has simply gone quiet (e.g. deduplicated because its ASCWDS
+    submission was unchanged from the prior month) — only the former should count as
+    "fixed".
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with ascwds_filtering_rule already set for
+            the current run, covering one or more import dates.
+
+    Returns:
+        pl.LazyFrame: A single-column LazyFrame of location_id values that are
+            "populated" at the latest month in lf.
+    """
+    date_col = pl.col(IndCQC.cqc_location_import_date)
+    trunc_date_col = date_col.dt.truncate("1mo")
+
+    return (
+        lf.filter(trunc_date_col == trunc_date_col.max())
+        .filter(pl.col(IndCQC.ascwds_filtering_rule) == AscwdsFilteringRule.populated)
+        .select(IndCQC.location_id)
+    )
+
+
 def update_grouped_providers_history(
     new_grouped_providers_lf: pl.LazyFrame,
+    populated_location_ids_lf: pl.LazyFrame,
     grouped_providers_lf: pl.LazyFrame,
+    snapshot_date: date,
 ) -> pl.LazyFrame:
     """
     Merges newly identified grouped providers with the historical records,
@@ -388,17 +442,29 @@ def update_grouped_providers_history(
 
     On first run (empty grouped_providers_lf), returns only the new snapshot.
     On subsequent runs:
-        - Locations no longer in the new snapshot have grouped_provider_status set to
-          "fixed" and grp_prov_fixed_date set to the snapshot's import date.
-        - Locations still active are retained as-is with last_update_date unchanged.
+        - "problem" locations no longer in the new snapshot are only marked "fixed"
+          (with grp_prov_fixed_date set to snapshot_date) if they're actually
+          "populated" this month — i.e. their ASCWDS data has genuinely come back
+          healthy, not just gone quiet (deduplicated) or dropped out of the source
+          entirely. Otherwise they're retained unchanged, still "problem".
+        - "fixed" rows not in the new snapshot are never changed, so
+          grp_prov_fixed_date keeps the month the fix was first recorded rather than
+          moving forward on every run.
+        - Locations still in the new snapshot are retained as-is, keeping their
+          original identified date.
         - Duplicates on (location_id, grouped_provider_status) are dropped,
-          keeping the oldest import date.
+          keeping the oldest import date. A location flagged again after being
+          "fixed" therefore gets a new "problem" row alongside its "fixed" row.
 
     Args:
         new_grouped_providers_lf (pl.LazyFrame): Current snapshot of grouped
             providers, as returned by select_grouped_providers function.
+        populated_location_ids_lf (pl.LazyFrame): location_ids that are "populated"
+            this month, as returned by select_locations_populated_this_month.
         grouped_providers_lf (pl.LazyFrame): Historical grouped provider records.
             May be empty on first run.
+        snapshot_date (date): The current run's latest import date, used to stamp
+            grp_prov_fixed_date.
 
     Returns:
         pl.LazyFrame: Full history of grouped provider records with updated statuses.
@@ -409,28 +475,36 @@ def update_grouped_providers_history(
 
     new_grouped_provider_ids = new_grouped_providers_lf.select(IndCQC.location_id)
 
-    snapshot_date = (
-        new_grouped_providers_lf.select(pl.col(IndCQC.cqc_location_import_date).max())
-        .collect()
-        .item()
+    reappeared_grouped_providers_lf = grouped_providers_lf.join(
+        new_grouped_provider_ids, on=IndCQC.location_id, how="semi"
     )
 
-    fixed_grouped_providers_lf = grouped_providers_lf.join(
+    no_longer_grouped_provider_lf = grouped_providers_lf.join(
         new_grouped_provider_ids, on=IndCQC.location_id, how="anti"
+    )
+
+    is_problem = pl.col(NGPcol.grouped_provider_status) == "problem"
+    already_fixed_lf = no_longer_grouped_provider_lf.filter(~is_problem)
+    unflagged_problem_lf = no_longer_grouped_provider_lf.filter(is_problem)
+
+    confirmed_fixed_lf = unflagged_problem_lf.join(
+        populated_location_ids_lf, on=IndCQC.location_id, how="semi"
     ).with_columns(
         pl.lit("fixed").alias(NGPcol.grouped_provider_status),
         pl.lit(snapshot_date).alias(NGPcol.grp_prov_fixed_date),
     )
 
-    active_grouped_providers_lf = grouped_providers_lf.join(
-        new_grouped_provider_ids, on=IndCQC.location_id, how="semi"
+    still_unresolved_lf = unflagged_problem_lf.join(
+        populated_location_ids_lf, on=IndCQC.location_id, how="anti"
     )
 
     return (
         pl.concat(
             [
-                active_grouped_providers_lf,
-                fixed_grouped_providers_lf,
+                reappeared_grouped_providers_lf,
+                already_fixed_lf,
+                confirmed_fixed_lf,
+                still_unresolved_lf,
                 new_grouped_providers_lf,
             ]
         )
