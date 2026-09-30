@@ -11,9 +11,9 @@ def main(
 
     Nulls the 5 employment status count columns where a workplace's counts are
     stale (unchanged since its prior snapshot), nulls a location's/org's counts
-    where too few of its staff have a
-    recorded permanent/temporary status (recording why in
-    employment_status_filtering_rule), then adds a percentage-share column
+    where too few of its staff have a recorded permanent/temporary status
+    (recording why in employment_status_filtering_rule), then adds a
+    percentage-share column
     per employment status computed from those cleaned counts.
 
     Args:
