@@ -98,8 +98,8 @@ def null_grouped_providers(
             providers' data nulled and a LazyFrame of grouped providers whose
             data was nulled.
     """
-    # Taken from the input frame, before the window-heavy steps below, so only the
-    # import date column is read to get one date rather than re-running those steps.
+    # Read from the input frame, before the heavier steps below, so they aren't
+    # recomputed just to get one date.
     snapshot_date = (
         lf.select(pl.col(IndCQC.cqc_location_import_date).max()).collect().item()
     )
@@ -386,8 +386,8 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     date_col = pl.col(IndCQC.cqc_location_import_date)
     trunc_date_col = date_col.dt.truncate("1mo")  # E.g. 2026-01-05 becomes 2026-01-01.
 
-    # The latest month must be taken across all rows before filtering to flagged rows,
-    # otherwise a month with nothing flagged would fall back to the previous flagged month.
+    # The latest month comes from all rows, not just flagged ones, so a month with
+    # nothing flagged doesn't fall back to an earlier one.
     return (
         lf.filter(trunc_date_col == trunc_date_col.max())
         .filter(was_nulled_as_grouped_provider)

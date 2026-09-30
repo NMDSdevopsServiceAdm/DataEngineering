@@ -1037,9 +1037,8 @@ class NullGroupedProvidersData:
         ("loc 5", "prov 2", "Location Five", date(2024, 2, 1), "N", None, None, None, None, None, None, AscwdsFilteringRule.missing_data, None),
     ] # fmt: skip
 
-    # Feb 2024 (the max date) flags nothing: loc 1 is populated but below the
-    # minimum-size threshold at both dates, so a "problem" recorded for loc 1 earlier
-    # should become "fixed" with a fixed date even though no location is flagged.
+    # Feb 2024 (the max date) flags nothing: loc 1 stays below the minimum size, so its
+    # earlier "problem" should become "fixed" with a fixed date.
     null_grouped_providers_no_flags_in_latest_month_rows = [
         ("loc 1", "prov 1", "Location One", date(2024, 1, 1), "Y", "estab 1", "nmdsid_1", 13.0, 13.0, 4, 3.25, AscwdsFilteringRule.populated, 1.0),
         ("loc 2", "prov 1", "Location Two", date(2024, 1, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
@@ -1122,9 +1121,8 @@ class NullGroupedProvidersData:
         ("1-008", CareHome.not_care_home, True, 50.0, None, 10.0, 2, 25.0, AscwdsFilteringRule.contained_invalid_missing_data_code),  # already filtered
     ] # fmt: skip
 
-    # The latest snapshot is the latest month across all input rows, flagged or not.
-    # Most cases have a single flagged row at 2026-02-01 which is itself the latest month;
-    # cases that need a later month to be the latest include an unflagged row at that date.
+    # Most cases have one flagged row at 2026-02-01, which is itself the latest month;
+    # cases needing a later latest month include an unflagged row at that date.
     select_grouped_providers_test_cases = [
         SelectGroupedProvidersCase(
             id="keeps_care_home_location_actually_nulled_at_max_import_date",
@@ -1188,7 +1186,7 @@ class NullGroupedProvidersData:
         (date(2026, 2, 1), "prov-3", 2, "1-004", "nmds_4", "Location Four", "N", 40.0, 0, None, "problem", date(2026, 2, 1), None),
     ]  # fmt: skip
 
-    # Input rows reuse select_grouped_providers_input_schema's shape for consistency.
+    # Input rows use select_grouped_providers_input_schema's shape.
     select_locations_populated_this_month_test_cases = [
         SelectGroupedProvidersCase(
             id="includes_location_populated_at_latest_snapshot",
