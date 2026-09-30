@@ -61,18 +61,15 @@ def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def create_clean_count_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Creates a _clean column per count as a copy of its _dedup column, and starts
+    Creates a _clean copy of each _dedup count and starts
     employment_status_filtering_rule.
 
     The rule is 'populated' where the counts are present and 'missing_data'
-    where they're null. The 5 _dedup columns are confirmed null/populated
-    together as a group (see percentage_share_horizontal's docstring), so
-    permanent_count_dedup is used as a stand-in for "is this row missing data".
-    Later ratio rules null the _clean columns and update the rule.
+    where they're null. The 5 _dedup columns are null together, so
+    permanent_count_dedup stands in for all of them.
 
     Args:
-        lf (pl.LazyFrame): dataset already processed by
-            deduplicate_employment_status_counts.
+        lf (pl.LazyFrame): dataset with the 5 "<count>_dedup" columns.
 
     Returns:
         pl.LazyFrame: lf with 5 "<count>_clean" columns and
@@ -96,19 +93,13 @@ def create_clean_count_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Adds a percentage-share column per employment status, computed from the
-    _clean counts rather than the raw/dedup counts.
+    Adds a percentage-share column per employment status from the _clean counts.
 
-    Must run last, after both ratio rules: a row's percentages come out null
-    wherever its _clean counts are null, whether that's from the
-    pre-existing dedup-staleness reason or from this stage's own
-    ratio-too-low rules - so no separate _clean variant of the percentage
-    columns is needed.
+    Percentages are null wherever the _clean counts are null, so no separate
+    _clean variant is needed.
 
     Args:
-        lf (pl.LazyFrame): dataset already processed by
-            null_counts_for_low_org_ratio (has the 5 "<count>_clean"
-            columns).
+        lf (pl.LazyFrame): dataset with the 5 "<count>_clean" columns.
 
     Returns:
         pl.LazyFrame: dataset with 5 "emplstat_<status>_percentage" columns added.
@@ -134,33 +125,22 @@ def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFram
 
 def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Nulls an org's employment status clean counts where too few of its staff
-    have a recorded permanent/temporary status, and updates
-    employment_status_filtering_rule where it's still 'populated'.
+    Nulls an org's _clean counts where permanent+temporary is 5% or less of its
+    staff, and updates employment_status_filtering_rule where still 'populated'.
 
-    Must run after create_clean_count_columns.
-
-    The ticket's org rule is defined at org grain, but this data is at
-    (location, published_job_role_label) grain - see
-    cleaningUtils.null_columns_where_group_share_too_low, which sums up to org
-    grain and broadcasts the decision back to every job-role row of the org.
-
-    The ratio uses raw counts, not _dedup: _dedup nulls every row of a workplace
-    whose counts are unchanged since its prior snapshot, so summing it across an
-    org would only count the locations that changed this period, and a small
-    stable location would drop out of the org total. (location_id,
-    published_job_role_label, ascwds_workplace_import_date) is a unique key, so
-    summing raw counts can't double-count. The _clean columns are created from
-    _dedup, so unchanged rows stay null.
+    The ratio uses raw counts, not _dedup: dedup nulls every row of a workplace
+    whose counts are unchanged, so a small stable location would drop out of the
+    org total. (location_id, published_job_role_label,
+    ascwds_workplace_import_date) is a unique key, so raw counts can't
+    double-count.
 
     Args:
-        lf (pl.LazyFrame): merged employment status data, already processed by
-            create_clean_count_columns.
+        lf (pl.LazyFrame): dataset with the raw and _clean counts and
+            employment_status_filtering_rule.
 
     Returns:
-        pl.LazyFrame: lf with the _clean count columns nulled, and
-            employment_status_filtering_rule updated, for orgs whose
-            permanent+temporary workers make up 5% or less of their staff.
+        pl.LazyFrame: lf with the _clean counts nulled and the rule updated for
+            flagged orgs.
     """
     lf = cleaningUtils.null_columns_where_group_share_too_low(
         lf,
