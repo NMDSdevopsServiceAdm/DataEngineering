@@ -202,7 +202,12 @@ prepare_assessment_ratings_cases = [
         expected_rows=Data.expected_prepare_assessment_ratings_multiple_entries_rows,
     ),
     PrepareAssessmentRatingsCase(
-        id="drops_row_when_key_question_ratings_is_null_not_empty",
+        id="drops_key_questions_that_are_not_one_of_the_five",
+        rows=Data.prepare_assessment_ratings_unknown_key_question_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_unknown_key_question_rows,
+    ),
+    PrepareAssessmentRatingsCase(
+        id="drops_row_when_key_question_ratings_is_null_or_empty",
         rows=Data.prepare_assessment_ratings_null_key_question_ratings_rows,
         expected_rows=Data.expected_prepare_assessment_ratings_null_key_question_ratings_rows,
     ),
