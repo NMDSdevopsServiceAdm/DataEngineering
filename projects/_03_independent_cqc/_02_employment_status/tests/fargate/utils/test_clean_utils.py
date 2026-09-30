@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import Mock, patch
 
 import polars as pl
@@ -125,6 +126,35 @@ class TestNullCountsForLowOrgRatio:
         expected_lf = build_expected_lf(case.expected_data)
 
         returned_lf = job.null_counts_for_low_org_ratio(test_lf)
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+            check_column_order=False,
+        )
+
+
+class TestDedupThenRatioRules:
+    SECOND_IMPORT_DATE = date(2024, 2, 1)
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.dedup_then_org_ratio_test_cases
+        ],
+    )
+    def test_org_rule_on_workplace_level_dedup_output(self, case):
+        test_lf = build_input_lf(case.input_data)
+        expected_lf = build_expected_lf(case.expected_data)
+
+        returned_lf = job.null_counts_for_low_org_ratio(
+            job.deduplicate_employment_status_counts(test_lf)
+        )
+        returned_lf = returned_lf.filter(
+            pl.col(IndCQC.cqc_location_import_date) == self.SECOND_IMPORT_DATE
+        ).select(list(case.expected_data))
 
         pl_testing.assert_frame_equal(
             returned_lf,
