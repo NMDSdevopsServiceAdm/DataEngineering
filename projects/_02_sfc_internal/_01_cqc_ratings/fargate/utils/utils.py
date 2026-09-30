@@ -191,7 +191,7 @@ def extract_assessment_base(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.registration_status,
             CQCL.assessment,
         )
-        .explode(CQCL.assessment, **drop_empty_and_null)
+        .explode(CQCL.assessment, **DROP_EMPTY_AND_NULL)
         .select(
             CQCL.location_id,
             CQCL.registration_status,
@@ -233,9 +233,9 @@ def extract_key_question_ratings(
             CQCL.assessment_plan_published_datetime,
             pl.col(CQCL.assessments_ratings).struct.field(ratings_field),
         )
-        .explode(ratings_field, **drop_empty_and_null)
+        .explode(ratings_field, **DROP_EMPTY_AND_NULL)
         .unnest(ratings_field)
-        .explode(CQCL.key_question_ratings, **drop_empty_and_null)
+        .explode(CQCL.key_question_ratings, **DROP_EMPTY_AND_NULL)
         .with_columns(
             pl.col(CQCL.key_question_ratings)
             .struct.field(CQCL.name)
