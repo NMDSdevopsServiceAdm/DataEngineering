@@ -22,10 +22,12 @@ All notable changes to this project will be documented in this file.
 - Added a new "Estimate SLV counts" stage to the Ind-CQC-SLV state machine (`_05_estimate_counts`), with its own row-count validation step. The stage is currently a placeholder pass-through pending the starters/leavers/vacancies count derivation logic.
 - Added project-level group-share aggregation and R²/MAE scoring utilities to `_03_independent_cqc`, for any categorical breakdown model.
 - Added group-level totals scoring (R² and weighted absolute % error) to the project-level model evaluation utilities, for scoring filled posts model predictions.
+- Added a project-level utility that nulls chosen columns for groups where a subset's share of the group total is too low, for reuse across categorical breakdowns.
 
 
 ### Changed
 - Added `number_of_beds_at_provider` to the grouped providers output dataset.
+- Changed employment status count deduplication to judge staleness per workplace and import date rather than per job role: counts are only nulled when no job role changed.
 - Consolidated ASC-WDS code-label vocabulary (7 workplace/worker columns) into a single Python source of truth, retiring `data_labels_lookup.csv`.
 - Moved the 9 ASC-WDS `ColumnValues` classes (main job role, employment status, establishment type, parent permission, is parent, main service id, registration type) plus `PublishedJobRoleLabels` (moved alongside them to avoid a circular import, since it subclasses `MainJobRoleLabels`) from `categorical_column_values.py` into `ascwds_labelled_vocab.py`, so that module owns the classes as well as their code-to-label dicts, and retired reconciliation's own hand-rolled `region_id` label dict in favour of the shared one, which also now labels the `-1` ("not known") region_id code that dict never covered - previously left as the raw `-1` in the reconciliation report. Also removed the unused `estimate_filled_posts_geography_labels_dict`.
 - Migrated the reconciliation job (CQC deregistration reports for ASC-WDS singles/subs and parent accounts) from PySpark/Glue to Polars on the `_02_sfc_internal` shared Fargate task, folding its Dockerfile into that project's shared `Dockerfile_and_requirements` image alongside `cqc_coverage`, renumbering its folder to `_03_reconciliation`, and removing the old Glue job, its PySpark code, and their tests/fixtures.
@@ -62,6 +64,7 @@ All notable changes to this project will be documented in this file.
 - Fixed stale Capacity Tracker S3 upload trigger prefixes that no longer matched the real raw dataset names, which meant the pipeline could never be triggered automatically by a new upload.
 - Fixed job role estimates metadata validation to stop excluding `contained_invalid_missing_data_code`, a workaround for data the lookback cap now retains.
 - Fixed the IND CQC filled posts model's predict step to stop with an error showing both feature lists when the saved model's features differ from the model registry, rather than risk silently misaligned predictions. Also stopped its features validation requiring `posts_rolling_average_model` for the non-res with dormancy model, which doesn't use it, and made the care home check name the bed features that column was standing in for.
+- Fixed the Windows setup and deploy docs causing Terraform and MFA command-line errors: the `HOME` step no longer needs a hand-typed username, the two conflicting `non-prod` AWS profiles are now a single Terraform-compatible one (no `mfa_serial`), broken links to the setup guide are corrected, and the Terraform install step now matches the version CircleCI uses.
 
 
 ## [v2026.08.1] - 11/09/2026
