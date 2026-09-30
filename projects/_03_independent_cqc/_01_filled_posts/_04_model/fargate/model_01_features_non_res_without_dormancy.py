@@ -5,6 +5,7 @@ import polars as pl
 import projects._03_independent_cqc._01_filled_posts._04_model.utils.feature_utils as fUtils
 import projects._03_independent_cqc._01_filled_posts._04_model.utils.paths as pUtils
 import projects._03_independent_cqc._01_filled_posts._04_model.utils.validate_model_definitions as vUtils
+import projects._03_independent_cqc.utils.model_utils as modelUtils
 from polars_utils import utils
 from polars_utils.expressions import is_not_care_home
 from projects._03_independent_cqc._01_filled_posts._04_model.registry.model_registry import (
@@ -57,7 +58,11 @@ def main(bucket_name: str, model_name: str) -> None:
         is_not_care_home()
         & (pl.col(IndCQC.cqc_location_import_date) < date(2025, 1, 1))
     )
-    lf = fUtils.add_date_index_column(lf)
+    lf = modelUtils.add_date_index(
+        lf,
+        partition_columns=[IndCQC.care_home],
+        date_column=IndCQC.cqc_location_import_date,
+    )
 
     lf = fUtils.cap_integer_at_max_value(
         lf,

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
@@ -7,6 +7,9 @@ import pytest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     ModelEvaluationColumns as ModelEvaluation,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ShareModelColumns as ShareModel,
 )
 from utils.column_values.ascwds_labelled_vocab import PublishedJobRoleLabels
 from utils.column_values.categorical_column_values import PrimaryServiceType
@@ -32,6 +35,17 @@ class PercentageShareHorizontalTestCase:
     columns: list[str]
     output_columns: list[str]
     expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class NullColumnsWhereGroupShareTooLowTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+    partition_by_columns: list[str] = field(default_factory=lambda: ["grp"])
 
     def as_pytest_param(self):
         return pytest.param(self, id=self.id)
@@ -215,6 +229,93 @@ class TestCleaningUtilsData:
             columns=["a", "b"],
             output_columns=["z_share", "y_share"],
             expected_data={"z_share": [0.25], "y_share": [0.75]},
+        ),
+    ]
+
+    # Groups are keyed on "grp"; totals are a + b + c, share is a + b.
+    null_columns_where_group_share_too_low_test_cases = [
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="nulls_group_at_boundary_share",
+            input_data={"grp": ["g", "g"], "a": [1, 0], "b": [0, 0], "c": [9, 10]},
+            expected_data={
+                "grp": ["g", "g"],
+                "a": [None, None],
+                "b": [None, None],
+                "c": [None, None],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="keeps_group_with_share_above_maximum",
+            input_data={"grp": ["g"], "a": [1], "b": [1], "c": [8]},
+            expected_data={"grp": ["g"], "a": [1], "b": [1], "c": [8]},
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="nulls_small_group_with_zero_share",
+            input_data={"grp": ["g"], "a": [0], "b": [0], "c": [9]},
+            expected_data={"grp": ["g"], "a": [None], "b": [None], "c": [None]},
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="sums_across_all_rows_in_the_group",
+            input_data={"grp": ["g", "g"], "a": [1, 0], "b": [0, 0], "c": [4, 15]},
+            expected_data={
+                "grp": ["g", "g"],
+                "a": [None, None],
+                "b": [None, None],
+                "c": [None, None],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="only_nulls_the_flagged_group",
+            input_data={"grp": ["low", "ok"], "a": [0, 5], "b": [0, 5], "c": [10, 0]},
+            expected_data={
+                "grp": ["low", "ok"],
+                "a": [None, 5],
+                "b": [None, 5],
+                "c": [None, 0],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="groups_by_every_partition_column",
+            partition_by_columns=["grp", "period"],
+            input_data={
+                "grp": ["g", "g"],
+                "period": ["p1", "p2"],
+                "a": [0, 15],
+                "b": [0, 0],
+                "c": [20, 5],
+            },
+            expected_data={
+                "grp": ["g", "g"],
+                "period": ["p1", "p2"],
+                "a": [None, 15],
+                "b": [None, 0],
+                "c": [None, 5],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="null_row_drops_out_of_group_total",
+            input_data={
+                "grp": ["g", "g"],
+                "a": [10, None],
+                "b": [0, None],
+                "c": [0, None],
+            },
+            expected_data={
+                "grp": ["g", "g"],
+                "a": [10, None],
+                "b": [0, None],
+                "c": [0, None],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="does_not_pool_null_partition_keys_into_one_group",
+            input_data={"grp": [None, None], "a": [0, 0], "b": [0, 0], "c": [20, 20]},
+            expected_data={
+                "grp": [None, None],
+                "a": [0, 0],
+                "b": [0, 0],
+                "c": [20, 20],
+            },
         ),
     ]
 
@@ -509,5 +610,218 @@ class TestModelEvaluationUtilsData:
                 ModelEvaluation.weighted_absolute_percentage_error: [0.0, 0.5],
             },
             by_columns=[ModelEvaluation.fold],
+        ),
+    ]
+
+
+ACTUAL_SHARES = ["actual_1", "actual_2"]
+PREDICTED_SHARES = ["predicted_1", "predicted_2"]
+NON_RES = PrimaryServiceType.non_residential
+CARE_HOME = PrimaryServiceType.care_home_only
+
+
+@dataclass
+class ModelMetricsUtilsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
+class ModelUtilsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+class TestModelMetricsUtilsData:
+    group_shares_are_worker_weighted_test_cases = [
+        # Unweighted, non-res would be 0.4 for both.
+        ModelMetricsUtilsTestCase(
+            id="weights_each_row_by_its_workers",
+            input_data={
+                IndCQC.primary_service_type: [NON_RES, NON_RES, CARE_HOME],
+                PREDICTED_SHARES[0]: [0.3, 0.5, 0.7],
+                ACTUAL_SHARES[0]: [0.2, 0.6, 0.8],
+                IndCQC.estimate_filled_posts_by_job_role: [3.0, 1.0, 2.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [NON_RES, CARE_HOME],
+                PREDICTED_SHARES[0]: [0.35, 0.7],
+                ACTUAL_SHARES[0]: [0.3, 0.8],
+                ShareModel.group_weight: [4.0, 2.0],
+            },
+        ),
+    ]
+
+    unknown_rows_excluded_from_groups_test_cases = [
+        ModelMetricsUtilsTestCase(
+            id="unknown_row_left_out_of_its_groups_shares_and_weight",
+            input_data={
+                IndCQC.primary_service_type: [NON_RES, NON_RES],
+                PREDICTED_SHARES[0]: [0.5, 0.9],
+                ACTUAL_SHARES[0]: [0.4, None],
+                IndCQC.estimate_filled_posts_by_job_role: [2.0, 8.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [NON_RES],
+                PREDICTED_SHARES[0]: [0.5],
+                ACTUAL_SHARES[0]: [0.4],
+                ShareModel.group_weight: [2.0],
+            },
+        ),
+        # Keeping the row's workers without its prediction would give 0.1.
+        ModelMetricsUtilsTestCase(
+            id="row_without_a_prediction_left_out_of_its_groups_shares_and_weight",
+            input_data={
+                IndCQC.primary_service_type: [NON_RES, NON_RES],
+                PREDICTED_SHARES[0]: [0.5, None],
+                ACTUAL_SHARES[0]: [0.4, 0.9],
+                IndCQC.estimate_filled_posts_by_job_role: [2.0, 8.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [NON_RES],
+                PREDICTED_SHARES[0]: [0.5],
+                ACTUAL_SHARES[0]: [0.4],
+                ShareModel.group_weight: [2.0],
+            },
+        ),
+        ModelMetricsUtilsTestCase(
+            id="group_without_any_known_rows_is_left_out",
+            input_data={
+                IndCQC.primary_service_type: [NON_RES, CARE_HOME],
+                PREDICTED_SHARES[0]: [0.5, 0.9],
+                ACTUAL_SHARES[0]: [0.4, None],
+                IndCQC.estimate_filled_posts_by_job_role: [2.0, 8.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [NON_RES],
+                PREDICTED_SHARES[0]: [0.5],
+                ACTUAL_SHARES[0]: [0.4],
+                ShareModel.group_weight: [2.0],
+            },
+        ),
+    ]
+
+    perfect_predictions_test_cases = [
+        ModelMetricsUtilsTestCase(
+            id="every_share_predicted_exactly",
+            input_data={
+                PREDICTED_SHARES[0]: [0.2, 0.5, 0.7],
+                PREDICTED_SHARES[1]: [0.3, 0.1, 0.2],
+                ACTUAL_SHARES[0]: [0.2, 0.5, 0.7],
+                ACTUAL_SHARES[1]: [0.3, 0.1, 0.2],
+                ShareModel.group_weight: [1.0, 2.0, 3.0],
+            },
+            expected_data={
+                ShareModel.share: ACTUAL_SHARES,
+                IndCQC.r2: [1.0, 1.0],
+                ShareModel.mean_absolute_error: [0.0, 0.0],
+            },
+        ),
+    ]
+
+    # One exact group and one 20 point miss: unweighted, that's R² 0.5 and error 10.
+    larger_groups_weigh_more_test_cases = [
+        ModelMetricsUtilsTestCase(
+            id="miss_in_the_smaller_group_counts_for_less",
+            input_data={
+                PREDICTED_SHARES[0]: [0.5, 0.7],
+                ACTUAL_SHARES[0]: [0.5, 0.9],
+                ShareModel.group_weight: [3.0, 1.0],
+            },
+            expected_data={
+                ShareModel.share: ACTUAL_SHARES[:1],
+                IndCQC.r2: [2 / 3],
+                ShareModel.mean_absolute_error: [5.0],
+            },
+        ),
+        ModelMetricsUtilsTestCase(
+            id="miss_in_the_larger_group_counts_for_more",
+            input_data={
+                PREDICTED_SHARES[0]: [0.5, 0.7],
+                ACTUAL_SHARES[0]: [0.5, 0.9],
+                ShareModel.group_weight: [1.0, 3.0],
+            },
+            expected_data={
+                ShareModel.share: ACTUAL_SHARES[:1],
+                IndCQC.r2: [0.0],
+                ShareModel.mean_absolute_error: [15.0],
+            },
+        ),
+    ]
+
+    # Keeping the last group's weight without its error would give R² 0.94 and error 5.
+    groups_missing_a_share_test_cases = [
+        ModelMetricsUtilsTestCase(
+            id="group_without_a_prediction_left_out",
+            input_data={
+                PREDICTED_SHARES[0]: [0.3, 0.5, None],
+                ACTUAL_SHARES[0]: [0.2, 0.6, 0.9],
+                ShareModel.group_weight: [1.0, 1.0, 2.0],
+            },
+            expected_data={
+                ShareModel.share: ACTUAL_SHARES[:1],
+                IndCQC.r2: [0.75],
+                ShareModel.mean_absolute_error: [10.0],
+            },
+        ),
+    ]
+
+    scores_split_by_fold_test_cases = [
+        ModelMetricsUtilsTestCase(
+            id="each_fold_scored_on_its_own_groups",
+            input_data={
+                ModelEvaluation.fold: [0, 0, 1, 1],
+                PREDICTED_SHARES[0]: [0.2, 0.6, 0.3, 0.5],
+                ACTUAL_SHARES[0]: [0.2, 0.6, 0.2, 0.6],
+                ShareModel.group_weight: [1.0, 1.0, 1.0, 1.0],
+            },
+            expected_data={
+                ModelEvaluation.fold: [0, 1],
+                ShareModel.share: ACTUAL_SHARES[:1] * 2,
+                IndCQC.r2: [1.0, 0.75],
+                ShareModel.mean_absolute_error: [0.0, 10.0],
+            },
+        ),
+    ]
+
+
+class TestModelUtilsData:
+    add_date_index_test_cases = [
+        ModelUtilsTestCase(
+            id="repeated_dates_share_an_index",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc1", "loc1"],
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc1", "loc1"],
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
+                IndCQC.cqc_location_import_date_indexed: [1, 1, 2],
+            },
+        ),
+        ModelUtilsTestCase(
+            id="index_is_partitioned_by_location",
+            input_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.cqc_location_import_date: [date(2024, 3, 1), date(2024, 1, 1)],
+            },
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc2"],
+                IndCQC.cqc_location_import_date: [date(2024, 3, 1), date(2024, 1, 1)],
+                IndCQC.cqc_location_import_date_indexed: [1, 1],
+            },
         ),
     ]
