@@ -14,6 +14,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import EmploymentStatusFilteringRule
 
 PATCH_PATH = (
     "projects._03_independent_cqc._02_employment_status.fargate.utils.clean_utils"
@@ -83,6 +84,44 @@ class TestDeduplicateEmploymentStatusCounts:
         )
 
 
+class TestCreateCleanCountColumns:
+    def test_copies_dedup_counts_and_sets_filtering_rule(self):
+        input_lf = pl.LazyFrame(
+            {
+                EmpStatus.permanent_count_dedup: [3, None],
+                EmpStatus.temporary_count_dedup: [1, None],
+                EmpStatus.bank_or_pool_count_dedup: [0, None],
+                EmpStatus.agency_count_dedup: [2, None],
+                EmpStatus.other_count_dedup: [4, None],
+            },
+            schema_overrides={
+                column: pl.Int64 for column in job.DEDUP_TO_CLEAN_COUNT_COLUMNS
+            },
+        )
+        expected_lf = input_lf.with_columns(
+            [
+                pl.col(dedup).alias(clean)
+                for dedup, clean in job.DEDUP_TO_CLEAN_COUNT_COLUMNS.items()
+            ]
+        ).with_columns(
+            pl.Series(
+                EmpStatus.filtering_rule,
+                [
+                    EmploymentStatusFilteringRule.populated,
+                    EmploymentStatusFilteringRule.missing_data,
+                ],
+            ).cast(CatColType.EmploymentStatusFilteringRuleCatType)
+        )
+
+        returned_lf = job.create_clean_count_columns(input_lf)
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_column_order=False,
+        )
+
+
 class TestCreateEmploymentStatusPercentageColumns:
     @patch(f"{PATCH_PATH}.cleaningUtils.percentage_share_horizontal")
     def test_calls_percentage_share_horizontal_with_clean_counts(
@@ -147,7 +186,9 @@ class TestNullCountsForLowOrgRatio:
         test_lf = build_input_lf(case.input_data)
         expected_lf = build_expected_lf(case.expected_data)
 
-        returned_lf = job.null_counts_for_low_org_ratio(test_lf)
+        returned_lf = job.null_counts_for_low_org_ratio(
+            job.create_clean_count_columns(test_lf)
+        )
 
         pl_testing.assert_frame_equal(
             returned_lf,
@@ -172,7 +213,9 @@ class TestDedupThenRatioRules:
         expected_lf = build_expected_lf(case.expected_data)
 
         returned_lf = job.null_counts_for_low_org_ratio(
-            job.deduplicate_employment_status_counts(test_lf)
+            job.create_clean_count_columns(
+                job.deduplicate_employment_status_counts(test_lf)
+            )
         )
         returned_lf = returned_lf.filter(
             pl.col(IndCQC.cqc_location_import_date) == self.SECOND_IMPORT_DATE
@@ -198,7 +241,9 @@ class TestDedupThenRatioRules:
 
         returned_lf = job.null_counts_for_low_location_ratio(
             job.null_counts_for_low_org_ratio(
-                job.deduplicate_employment_status_counts(test_lf)
+                job.create_clean_count_columns(
+                    job.deduplicate_employment_status_counts(test_lf)
+                )
             )
         )
         returned_lf = returned_lf.filter(
