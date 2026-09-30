@@ -31,11 +31,12 @@ CLEAN_COUNT_COLUMNS = list(DEDUP_TO_CLEAN_COUNT_COLUMNS.values())
 
 def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Deduplicates the 5 employment status count columns as a single unit.
+    Nulls the 5 employment status count columns where a workplace's counts are stale.
 
-    A row's counts are only treated as a repeat of the prior row in its
-    location/job-role timeline (and nulled) if all 5 are unchanged; if any
-    one changes, all 5 survive.
+    Staleness is judged at workplace level (location_id + import date), not per
+    job role. Each role's counts are compared with its own prior row, and all
+    roles' rows for a workplace/date are kept if any role changed (a true repeat
+    = no role changed).
 
     Args:
         lf (pl.LazyFrame): dataset containing the merged employment status count
@@ -55,6 +56,7 @@ def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
         ],
         partition_by_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
         date_column=IndCQC.cqc_location_import_date,
+        workplace_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
     )
 
 
@@ -113,10 +115,10 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     cleaningUtils.null_columns_where_group_share_too_low, which sums up to org
     grain and broadcasts the decision back to every job-role row of the org.
 
-    The ratio uses raw counts, not _dedup: _dedup nulls a job-role row that is
-    unchanged since its prior snapshot, so summing it across an org would only
-    count the locations that changed this period, and a small stable location
-    would drop out of the org total. (location_id, published_job_role_label,
+    The ratio uses raw counts, not _dedup: _dedup nulls every row of a workplace
+    whose counts are unchanged since its prior snapshot, so summing it across an
+    org would only count the locations that changed this period, and a small
+    stable location would drop out of the org total. (location_id, published_job_role_label,
     ascwds_workplace_import_date) is a unique key, so summing raw counts can't
     double-count. The _clean columns are still created from _dedup, so
     unchanged rows stay null.

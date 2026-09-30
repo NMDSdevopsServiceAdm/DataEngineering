@@ -75,6 +75,7 @@ class TestDeduplicateEmploymentStatusCounts:
                 IndCQC.published_job_role_label,
             ],
             date_column=IndCQC.cqc_location_import_date,
+            workplace_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
         )
         assert (
             returned_lf == remove_repeated_values_over_time_as_group_mock.return_value
