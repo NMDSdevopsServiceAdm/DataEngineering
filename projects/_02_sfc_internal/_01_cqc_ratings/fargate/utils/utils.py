@@ -13,6 +13,14 @@ from utils.column_values.categorical_column_values import CQCCurrentOrHistoricVa
 # .explode() behaivour to drop empty and null lists.
 DROP_EMPTY_AND_NULL = {"empty_as_null": False, "keep_nulls": False}
 
+KEY_QUESTION_NAMES = [
+    CQCL.safe,
+    CQCL.effective,
+    CQCL.caring,
+    CQCL.responsive,
+    CQCL.well_led,
+]
+
 ASSESSMENT_GRAIN_COLUMNS = [
     CQCL.location_id,
     CQCL.registration_status,
@@ -255,12 +263,17 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Flattens overall and ASG ratings within the assessment field, one column per key question.
 
+    The flattened key question ratings are collected before pivoting, because `pivot`
+    is only available on a DataFrame. This is about 600,000 rows (as at 30/09/2026),
+    so a few hundred MB, which is small next to the Fargate task's memory. The pivot
+    output is one row per assessment plan and is returned as a LazyFrame.
+
     Each key question appears once per assessment plan (checked on real data as at
-    30/09/2026), so `first` is only there to turn the one-element list in each group
-    into a value, and row order does not matter. CQC give no guarantee of this, so
-    `raise_error_when_key_question_is_duplicated` fails the job if it stops being true.
-    A conditional `group_by` aggregation is used instead of a pivot so the aggregation
-    stays lazy.
+    30/09/2026). CQC give no guarantee of this, so the pivot uses
+    `aggregate_function=None`, which makes it fail with a `ComputeError` if a key
+    question is ever listed more than once in an assessment plan, rather than silently
+    picking one. `on_columns` keeps all five key question columns, as nulls, even if
+    one never appears.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data, with nested
@@ -278,65 +291,17 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         assessment_lf, CQCL.asg_ratings, ASG_SOURCE_PATH
     )
 
-    key_question_names = [
-        CQCL.safe,
-        CQCL.effective,
-        CQCL.caring,
-        CQCL.responsive,
-        CQCL.well_led,
-    ]
+    key_question_ratings_df = pl.concat(
+        [overall_lf, asg_lf], how="diagonal_relaxed"
+    ).collect()
 
-    key_question_ratings_lf = pl.concat([overall_lf, asg_lf], how="diagonal_relaxed")
-
-    raise_error_when_key_question_is_duplicated(key_question_ratings_lf)
-
-    return key_question_ratings_lf.group_by(ASSESSMENT_GRAIN_COLUMNS).agg(
-        pl.col(CQCL.key_question_rating)
-        .filter(pl.col(CQCL.key_question_name) == name)
-        .first()
-        .alias(name)
-        for name in key_question_names
-    )
-
-
-def raise_error_when_key_question_is_duplicated(
-    key_question_ratings_lf: pl.LazyFrame,
-) -> None:
-    """
-    Raise an error when a key question appears more than once in an assessment plan.
-
-    `prepare_assessment_ratings` takes the first rating for each key question, which
-    is only unambiguous while each appears once per assessment plan. If CQC start
-    publishing duplicates, the output would silently depend on row order, so fail
-    instead.
-
-    This collects a small count, so it runs the assessment flattening once more
-    before the final collect.
-
-    Args:
-        key_question_ratings_lf (pl.LazyFrame): One row per assessment plan and key
-            question, as built by `extract_key_question_ratings`.
-
-    Raises:
-        ValueError: If any key question appears more than once in an assessment plan.
-    """
-    duplicated_key_questions = (
-        key_question_ratings_lf.group_by(
-            [*ASSESSMENT_GRAIN_COLUMNS, CQCL.key_question_name]
-        )
-        .len()
-        .filter(pl.col("len") > 1)
-        .select(pl.len())
-        .collect()
-        .item()
-    )
-
-    if duplicated_key_questions > 0:
-        raise ValueError(
-            f"Found {duplicated_key_questions} key questions listed more than once "
-            "in an assessment plan. prepare_assessment_ratings needs each to appear "
-            "once."
-        )
+    return key_question_ratings_df.pivot(
+        on=CQCL.key_question_name,
+        on_columns=KEY_QUESTION_NAMES,
+        index=ASSESSMENT_GRAIN_COLUMNS,
+        values=CQCL.key_question_rating,
+        aggregate_function=None,
+    ).lazy()
 
 
 def raise_error_when_assessment_df_contains_overall_data(
