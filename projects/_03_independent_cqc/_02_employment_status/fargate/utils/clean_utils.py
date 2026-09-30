@@ -1,10 +1,21 @@
 import polars as pl
 
 import projects._03_independent_cqc.utils.cleaning_utils as cleaningUtils
+from polars_utils import filtering_utils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import EmploymentStatusFilteringRule
+
+DEDUP_TO_CLEAN_COUNT_COLUMNS: dict[str, str] = {
+    EmpStatus.permanent_count_dedup: EmpStatus.permanent_count_clean,
+    EmpStatus.temporary_count_dedup: EmpStatus.temporary_count_clean,
+    EmpStatus.bank_or_pool_count_dedup: EmpStatus.bank_or_pool_count_clean,
+    EmpStatus.agency_count_dedup: EmpStatus.agency_count_clean,
+    EmpStatus.other_count_dedup: EmpStatus.other_count_clean,
+}
 
 
 def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -35,6 +46,38 @@ def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
         partition_by_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
         date_column=IndCQC.cqc_location_import_date,
         workplace_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
+    )
+
+
+def create_clean_count_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Creates a _clean copy of each _dedup count and starts
+    employment_status_filtering_rule.
+
+    The rule is 'populated' where the counts are present and 'missing_data'
+    where they're null. The 5 _dedup columns are null together, so
+    permanent_count_dedup stands in for all of them.
+
+    Args:
+        lf (pl.LazyFrame): dataset with the 5 "<count>_dedup" columns.
+
+    Returns:
+        pl.LazyFrame: lf with 5 "<count>_clean" columns and
+            employment_status_filtering_rule added.
+    """
+    lf = lf.with_columns(
+        [
+            pl.col(dedup).alias(clean)
+            for dedup, clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.items()
+        ]
+    )
+    return filtering_utils.add_filtering_rule_column(
+        lf,
+        EmpStatus.filtering_rule,
+        EmpStatus.permanent_count_dedup,
+        EmploymentStatusFilteringRule.populated,
+        EmploymentStatusFilteringRule.missing_data,
+        categorical_type=CatColType.EmploymentStatusFilteringRuleCatType,
     )
 
 
