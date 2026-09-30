@@ -119,19 +119,13 @@ def percentage_share_horizontal(
     output_columns: list[str],
 ) -> pl.LazyFrame:
     """
-    Adds a row-wise percentage-share column per input column, across `columns`.
+    Adds a row-wise percentage-share column per input column.
 
-    `columns[i]`'s share is written to `output_columns[i]`. The denominator is the
-    row-wise sum of `columns`. A row's outputs are all null when the sum is null
-    or zero, or when ANY of `columns` is null for that row - a strict guard,
-    since `pl.sum_horizontal` treats null inputs as 0, so a partial-null row
-    (e.g. [null, 2, 2]) would otherwise silently produce a real, nonzero
-    denominator and non-null shares for the populated columns.
-
-    This is intentionally defensive even though no current caller can produce a
-    partial-null row (their upstream data is confirmed all-null-or-all-populated
-    as a group) - written for reuse by other row-wise breakdowns (e.g. gender,
-    ethnicity) that may not share that guarantee.
+    `columns[i]`'s share of the row-wise sum of `columns` is written to
+    `output_columns[i]`. A row's outputs are all null when the sum is null or
+    zero, or when ANY of `columns` is null (`pl.sum_horizontal` treats nulls as
+    0, so a partial-null row would otherwise get non-null shares). The guard is
+    deliberately strict for reuse by other breakdowns (e.g. gender, ethnicity).
 
     Args:
         lf (pl.LazyFrame): The LazyFrame to add percentage columns to.
@@ -181,20 +175,17 @@ def null_columns_where_group_share_too_low(
 ) -> pl.LazyFrame:
     """
     Nulls `columns_to_null` for every row in a group where `share_columns` make
-    up too small a share of the group's total.
+    up at most `maximum_share` of the group's total.
 
-    Per group (`partition_by_columns`), sums `total_columns` across all rows for
-    the total, and `share_columns` for the numerator. A group is nulled when
-    numerator / total is at most `maximum_share`. The decision is made at group
-    grain and broadcast to every row of the group with `.over()` rather than a
-    group_by + join, which costs more peak memory for this kind of "attach one
-    aggregate to every row" broadcast.
+    Per group, sums `total_columns` across all rows for the total and
+    `share_columns` for the numerator. The decision is broadcast to every row of
+    the group with `.over()` rather than a group_by + join, which costs more
+    peak memory.
 
-    A row's per-row total is null if any of `total_columns` is null, so such rows
-    drop out of the group sums entirely instead of counting as zero.
-
-    Rows where any partition column is null are never flagged, otherwise
-    `.over()` would pool unrelated null-keyed rows into one group.
+    A row's total is null if any of `total_columns` is null, so such rows drop
+    out of the group sums instead of counting as zero. Rows with a null
+    partition column are never flagged, so unrelated null-keyed rows aren't
+    pooled.
 
     Args:
         lf (pl.LazyFrame): The LazyFrame to clean.
