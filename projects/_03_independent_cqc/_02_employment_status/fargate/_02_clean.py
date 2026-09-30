@@ -9,7 +9,8 @@ def main(
     """
     Cleans the merged employment status data.
 
-    Deduplicates the 5 employment status count columns as a single unit,
+    Nulls the 5 employment status count columns where a workplace's counts are
+    stale (unchanged since its prior snapshot),
     nulls an org's counts where too few of its staff have a
     recorded permanent/temporary status (recording why in
     employment_status_filtering_rule), then adds a percentage-share column

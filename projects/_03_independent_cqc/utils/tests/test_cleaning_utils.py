@@ -32,6 +32,7 @@ class TestRemoveRepeatedValuesOverTimeAsGroup:
             columns_to_clean=case.columns_to_clean,
             partition_by_columns=case.partition_by_columns,
             date_column=case.date_column,
+            workplace_columns=case.workplace_columns,
         )
 
         pl_testing.assert_frame_equal(

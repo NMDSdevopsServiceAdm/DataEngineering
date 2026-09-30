@@ -11,10 +11,11 @@ def remove_repeated_values_over_time_as_group(
     columns_to_clean: list[str],
     partition_by_columns: str | list[str],
     date_column: str,
+    workplace_columns: list[str] | None = None,
 ) -> pl.LazyFrame:
     """
     Replaces consecutive repeated values with null across a group of columns as a
-    single unit.
+    single unit, optionally judged at workplace level.
 
     Unlike `polars_utils.cleaning_utils.remove_repeated_values_over_time`, which
     dedups each column independently, this treats `columns_to_clean` as one
@@ -28,17 +29,65 @@ def remove_repeated_values_over_time_as_group(
     compare as unchanged, rather than propagating null/unknown the way a plain
     nullable-column comparison would.
 
+    If `workplace_columns` is given, staleness is judged at workplace level: each
+    row is still compared with the prior row in its own `partition_by_columns`
+    timeline, but a row is only nulled when no row sharing its `workplace_columns`
+    values changed (true repeat = no timeline changed). The decision is broadcast
+    with `.over()` rather than a group_by + join, which costs more peak memory.
+    Rows where any workplace column is null are judged on their own row only, so
+    unrelated null-keyed rows aren't pooled.
+
     Args:
         lf (pl.LazyFrame): The LazyFrame to clean.
         columns_to_clean (list[str]): Column names to dedup as a single unit.
         partition_by_columns (str | list[str]): Column(s) identifying each
             entity's timeline.
         date_column (str): Column to order rows by within each partition.
+        workplace_columns (list[str] | None): Columns identifying a workplace on
+            a date. Defaults to None, which judges each timeline independently.
 
     Returns:
         pl.LazyFrame: The input LazyFrame with one new "<original>_dedup" column
             per input column.
     """
+    if workplace_columns is not None:
+        partition_columns = (
+            [partition_by_columns]
+            if isinstance(partition_by_columns, str)
+            else partition_by_columns
+        )
+        row_struct = pl.struct(columns_to_clean)
+        last_struct = row_struct.shift(1).over(
+            partition_by=partition_columns,
+            order_by=[*partition_columns, date_column],
+        )
+        row_changed = last_struct.is_null() | (row_struct != last_struct)
+        workplace_is_known = pl.all_horizontal(
+            [pl.col(c).is_not_null() for c in workplace_columns]
+        )
+        changed_column = "_row_changed"
+        keep_column = "_keep_row"
+
+        # Two steps: nesting the workplace `.over()` around the per-timeline
+        # `.over()` gives wrong results, so the per-row flag is materialised first.
+        lf = lf.with_columns(row_changed.alias(changed_column))
+        lf = lf.with_columns(
+            pl.when(workplace_is_known)
+            .then(pl.col(changed_column).any().over(workplace_columns))
+            .otherwise(pl.col(changed_column))
+            .alias(keep_column)
+        )
+        lf = lf.with_columns(
+            [
+                pl.when(pl.col(keep_column))
+                .then(pl.col(column))
+                .otherwise(None)
+                .alias(f"{column}_dedup")
+                for column in columns_to_clean
+            ]
+        )
+        return lf.drop(changed_column, keep_column)
+
     composite_dedup_struct_column = "_composite_dedup_struct"
 
     lf = lf.with_columns(
