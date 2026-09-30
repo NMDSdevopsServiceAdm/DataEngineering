@@ -10,9 +10,8 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_values.categorical_column_values import CQCCurrentOrHistoricValues
 
-# Match Spark's `F.explode()`, which drops rows for both empty and null lists
-# (Polars only drops empty ones by default).
-SPARK_EXPLODE = {"empty_as_null": False, "keep_nulls": False}
+# .explode() behaivour to drop empty and null lists.
+drop_empty_and_null = {"empty_as_null": False, "keep_nulls": False}
 
 
 def keep_latest_per_key(lf: pl.LazyFrame, key_col: str, order_col: str) -> pl.LazyFrame:
@@ -129,7 +128,7 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.registration_status,
             CQCL.historic_ratings,
         )
-        .explode(CQCL.historic_ratings, **SPARK_EXPLODE)
+        .explode(CQCL.historic_ratings, **drop_empty_and_null)
         .select(
             CQCL.location_id,
             CQCL.registration_status,

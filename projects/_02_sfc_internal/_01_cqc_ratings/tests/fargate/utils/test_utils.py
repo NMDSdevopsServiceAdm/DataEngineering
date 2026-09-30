@@ -23,12 +23,12 @@ class TestKeepLatestPerKey:
             }
         )
 
-        returned_df = job.keep_latest_per_key(input_lf, "key", "order").collect()
+        returned_lf = job.keep_latest_per_key(input_lf, "key", "order")
 
-        expected_df = pl.LazyFrame(
+        expected_lf = pl.LazyFrame(
             {"key": ["a", "b"], "order": ["2024-02-01", "2024-01-01"], "value": [2, 3]}
-        ).collect()
-        pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
 
 
 class TestFilterToFirstImportOfMostRecentMonth:
@@ -41,14 +41,10 @@ class TestFilterToFirstImportOfMostRecentMonth:
             }
         )
 
-        returned_df = job.filter_to_first_import_of_most_recent_month(
-            input_lf
-        ).collect()
+        returned_lf = job.filter_to_first_import_of_most_recent_month(input_lf)
 
-        expected_df = pl.LazyFrame(
-            {"year": ["2024"], "month": ["01"], "day": ["01"]}
-        ).collect()
-        pl_testing.assert_frame_equal(expected_df, returned_df)
+        expected_lf = pl.LazyFrame({"year": ["2024"], "month": ["01"], "day": ["01"]})
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
     def test_filters_to_earliest_day_of_most_recent_month_when_two_imports_that_month(
         self,
@@ -61,14 +57,10 @@ class TestFilterToFirstImportOfMostRecentMonth:
             }
         )
 
-        returned_df = job.filter_to_first_import_of_most_recent_month(
-            input_lf
-        ).collect()
+        returned_lf = job.filter_to_first_import_of_most_recent_month(input_lf)
 
-        expected_df = pl.LazyFrame(
-            {"year": ["2024"], "month": ["01"], "day": ["01"]}
-        ).collect()
-        pl_testing.assert_frame_equal(expected_df, returned_df)
+        expected_lf = pl.LazyFrame({"year": ["2024"], "month": ["01"], "day": ["01"]})
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
     def test_filters_to_earliest_day_when_earliest_day_is_not_the_1st_of_the_month(
         self,
@@ -81,14 +73,10 @@ class TestFilterToFirstImportOfMostRecentMonth:
             }
         )
 
-        returned_df = job.filter_to_first_import_of_most_recent_month(
-            input_lf
-        ).collect()
+        returned_lf = job.filter_to_first_import_of_most_recent_month(input_lf)
 
-        expected_df = pl.LazyFrame(
-            {"year": ["2024"], "month": ["01"], "day": ["02"]}
-        ).collect()
-        pl_testing.assert_frame_equal(expected_df, returned_df)
+        expected_lf = pl.LazyFrame({"year": ["2024"], "month": ["01"], "day": ["02"]})
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
 
 @dataclass
@@ -125,14 +113,14 @@ class TestPrepareCurrentRatings:
             rows, schema=Schemas.current_ratings_schema, orient="row"
         )
 
-        returned_df = job.prepare_current_ratings(input_lf).collect()
+        returned_lf = job.prepare_current_ratings(input_lf)
 
-        expected_df = pl.LazyFrame(
+        expected_lf = pl.LazyFrame(
             expected_rows,
             schema=Schemas.flattened_ratings_with_current_or_historic_schema,
             orient="row",
-        ).collect()
-        pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
 
 
 @dataclass
@@ -171,11 +159,11 @@ class TestPrepareHistoricRatings:
             rows, schema=Schemas.historic_ratings_schema, orient="row"
         )
 
-        returned_df = job.prepare_historic_ratings(input_lf).collect()
+        returned_lf = job.prepare_historic_ratings(input_lf)
 
-        expected_df = pl.LazyFrame(
+        expected_lf = pl.LazyFrame(
             expected_rows,
             schema=Schemas.flattened_ratings_with_current_or_historic_schema,
             orient="row",
-        ).collect()
-        pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
