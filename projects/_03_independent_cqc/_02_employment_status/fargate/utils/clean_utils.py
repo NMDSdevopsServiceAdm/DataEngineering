@@ -66,8 +66,9 @@ def create_clean_count_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     employment_status_filtering_rule.
 
     The rule is 'populated' where the counts are present and 'missing_data'
-    where they're null. The 5 _dedup columns are null together, so
-    permanent_count_dedup stands in for all of them.
+    where they're null, meaning the workplace hasn't submitted new data (ASC-WDS
+    repeats its last submission, which dedup nulls). The 5 _dedup columns are
+    null together, so permanent_count_dedup stands in for all of them.
 
     Args:
         lf (pl.LazyFrame): dataset with the 5 "<count>_dedup" columns.
