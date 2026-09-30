@@ -11,17 +11,14 @@ PATCH_PATH = (
 )
 
 
-class TestCreateEmploymentStatusPercentageColumns:
-    @patch(f"{PATCH_PATH}.cleaningUtils.percentage_share_horizontal")
+class TestDeduplicateEmploymentStatusCounts:
     @patch(f"{PATCH_PATH}.cleaningUtils.remove_repeated_values_over_time_as_group")
-    def test_calls_dedup_then_percentage_share_with_expected_args(
-        self,
-        remove_repeated_values_over_time_as_group_mock: Mock,
-        percentage_share_horizontal_mock: Mock,
+    def test_calls_remove_repeated_values_with_expected_args(
+        self, remove_repeated_values_over_time_as_group_mock: Mock
     ):
         input_lf = Mock()
 
-        returned_lf = job.create_employment_status_percentage_columns(input_lf)
+        returned_lf = job.deduplicate_employment_status_counts(input_lf)
 
         remove_repeated_values_over_time_as_group_mock.assert_called_once_with(
             input_lf,
@@ -37,9 +34,25 @@ class TestCreateEmploymentStatusPercentageColumns:
                 IndCQC.published_job_role_label,
             ],
             date_column=IndCQC.cqc_location_import_date,
+            workplace_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
         )
+        assert (
+            returned_lf == remove_repeated_values_over_time_as_group_mock.return_value
+        )
+
+
+class TestCreateEmploymentStatusPercentageColumns:
+    @patch(f"{PATCH_PATH}.cleaningUtils.percentage_share_horizontal")
+    def test_calls_percentage_share_with_expected_args(
+        self,
+        percentage_share_horizontal_mock: Mock,
+    ):
+        input_lf = Mock()
+
+        returned_lf = job.create_employment_status_percentage_columns(input_lf)
+
         percentage_share_horizontal_mock.assert_called_once_with(
-            remove_repeated_values_over_time_as_group_mock.return_value,
+            input_lf,
             columns=[
                 EmpStatus.permanent_count_dedup,
                 EmpStatus.temporary_count_dedup,
