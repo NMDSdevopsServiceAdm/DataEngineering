@@ -201,11 +201,6 @@ prepare_assessment_ratings_cases = [
         expected_rows=Data.expected_prepare_assessment_ratings_multiple_entries_rows,
     ),
     PrepareAssessmentRatingsCase(
-        id="duplicate_key_question_keeps_first_in_raw_order",
-        rows=Data.prepare_assessment_ratings_tiebreaker_rows,
-        expected_rows=Data.expected_prepare_assessment_ratings_tiebreaker_rows,
-    ),
-    PrepareAssessmentRatingsCase(
         id="drops_row_when_key_question_ratings_is_null_not_empty",
         rows=Data.prepare_assessment_ratings_null_key_question_ratings_rows,
         expected_rows=Data.expected_prepare_assessment_ratings_null_key_question_ratings_rows,
@@ -231,6 +226,43 @@ class TestPrepareAssessmentRatings:
             expected_rows, schema=Schemas.assessment_ratings_output_schema, orient="row"
         )
         pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
+
+
+class TestRaiseErrorWhenKeyQuestionIsDuplicated:
+    def test_raises_error_when_key_question_appears_twice_in_a_plan(self):
+        input_lf = pl.LazyFrame(
+            Data.raise_error_duplicated_key_question_rows,
+            schema=Schemas.key_question_ratings_schema,
+            orient="row",
+        )
+
+        with pytest.raises(
+            ValueError, match="Found 1 key questions listed more than once"
+        ):
+            job.raise_error_when_key_question_is_duplicated(input_lf)
+
+    def test_does_not_raise_when_each_key_question_appears_once_per_plan(self):
+        input_lf = pl.LazyFrame(
+            Data.raise_error_unique_key_question_rows,
+            schema=Schemas.key_question_ratings_schema,
+            orient="row",
+        )
+
+        result = job.raise_error_when_key_question_is_duplicated(input_lf)
+
+        assert result is None
+
+
+class TestPrepareAssessmentRatingsDuplicates:
+    def test_raises_error_when_key_question_is_duplicated_in_the_raw_data(self):
+        input_lf = pl.LazyFrame(
+            Data.prepare_assessment_ratings_duplicate_key_question_rows,
+            schema=Schemas.assessment_ratings_input_schema,
+            orient="row",
+        )
+
+        with pytest.raises(ValueError, match="listed more than once"):
+            job.prepare_assessment_ratings(input_lf).collect()
 
 
 class TestRaiseErrorWhenAssessmentDfContainsOverallData:
