@@ -11,7 +11,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_values.categorical_column_values import CQCCurrentOrHistoricValues
 
 # .explode() behaivour to drop empty and null lists.
-drop_empty_and_null = {"empty_as_null": False, "keep_nulls": False}
+DROP_EMPTY_AND_NULL = {"empty_as_null": False, "keep_nulls": False}
 
 # Raw array position of each exploded row, so duplicate key question entries are
 # resolved deterministically.
@@ -147,7 +147,7 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.registration_status,
             CQCL.historic_ratings,
         )
-        .explode(CQCL.historic_ratings, **drop_empty_and_null)
+        .explode(CQCL.historic_ratings, **DROP_EMPTY_AND_NULL)
         .select(
             CQCL.location_id,
             CQCL.registration_status,
