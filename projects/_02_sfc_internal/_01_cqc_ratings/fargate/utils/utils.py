@@ -19,15 +19,14 @@ from utils.column_values.categorical_column_values import (
     RegistrationStatus,
 )
 
-# Match Spark's `F.explode()`, which drops rows for both empty and null lists
-# (Polars only drops empty ones by default).
-SPARK_EXPLODE = {"empty_as_null": False, "keep_nulls": False}
+# .explode() behaivour to drop empty and null lists.
+DROP_EMPTY_AND_NULL = {"empty_as_null": False, "keep_nulls": False}
 
 # Raw array position of each exploded row, so duplicate key question entries are
 # resolved deterministically.
 EXPLODE_ORDER = "explode_order_index"
 
-assessment_grain_columns = [
+ASSESSMENT_GRAIN_COLUMNS = [
     CQCL.location_id,
     CQCL.registration_status,
     CQCL.assessment_plan_published_datetime,
@@ -175,7 +174,7 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.registration_status,
             CQCL.historic_ratings,
         )
-        .explode(CQCL.historic_ratings, **SPARK_EXPLODE)
+        .explode(CQCL.historic_ratings, **DROP_EMPTY_AND_NULL)
         .select(
             CQCL.location_id,
             CQCL.registration_status,
@@ -219,7 +218,7 @@ def extract_assessment_base(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.registration_status,
             CQCL.assessment,
         )
-        .explode(CQCL.assessment, **SPARK_EXPLODE)
+        .explode(CQCL.assessment, **DROP_EMPTY_AND_NULL)
         .select(
             CQCL.location_id,
             CQCL.registration_status,
@@ -261,9 +260,9 @@ def extract_key_question_ratings(
             CQCL.assessment_plan_published_datetime,
             pl.col(CQCL.assessments_ratings).struct.field(ratings_field),
         )
-        .explode(ratings_field, **SPARK_EXPLODE)
+        .explode(ratings_field, **DROP_EMPTY_AND_NULL)
         .unnest(ratings_field)
-        .explode(CQCL.key_question_ratings, **SPARK_EXPLODE)
+        .explode(CQCL.key_question_ratings, **DROP_EMPTY_AND_NULL)
         .with_columns(
             pl.col(CQCL.key_question_ratings)
             .struct.field(CQCL.name)
@@ -315,7 +314,7 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     return (
         pl.concat([overall_lf, asg_lf], how="diagonal_relaxed")
-        .group_by(assessment_grain_columns)
+        .group_by(ASSESSMENT_GRAIN_COLUMNS)
         .agg(
             pl.col(CQCL.key_question_rating)
             .filter(pl.col(CQCL.key_question_name) == name)
