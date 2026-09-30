@@ -709,8 +709,87 @@ class CleanUtilsTestCase:
     expected_data: dict[str, Any]
 
 
+def _raw_counts_input(rows: list[tuple]) -> dict:
+    """Builds raw-count input columns from (org, location, role, date, perm,
+    temp, bank_or_pool, agency, other) rows, using date for both import dates."""
+    columns = list(zip(*rows))
+    return {
+        IndCQC.organisation_id: list(columns[0]),
+        IndCQC.location_id: list(columns[1]),
+        IndCQC.published_job_role_label: list(columns[2]),
+        IndCQC.cqc_location_import_date: list(columns[3]),
+        IndCQC.ascwds_workplace_import_date: list(columns[3]),
+        EmpStatus.permanent_count: list(columns[4]),
+        EmpStatus.temporary_count: list(columns[5]),
+        EmpStatus.bank_or_pool_count: list(columns[6]),
+        EmpStatus.agency_count: list(columns[7]),
+        EmpStatus.other_count: list(columns[8]),
+    }
+
+
 @dataclass
 class TestCleanUtilsData:
+    dedup_then_org_ratio_test_cases = [
+        CleanUtilsTestCase(
+            id="org_uses_raw_counts_and_dedup_judges_whole_workplace_stale",
+            input_data=_raw_counts_input(
+                [
+                    # loc1 role A changes on the 2nd date but role B doesn't, so
+                    # the workplace isn't stale and both roles keep their counts.
+                    ("org1", "loc1", "A", CLEAN_UTILS_IMPORT_DATE, 0, 0, 0, 0, 4),
+                    ("org1", "loc1", "A", date(2024, 2, 1), 1, 0, 0, 0, 4),
+                    ("org1", "loc1", "B", CLEAN_UTILS_IMPORT_DATE, 0, 0, 0, 0, 5),
+                    ("org1", "loc1", "B", date(2024, 2, 1), 0, 0, 0, 0, 5),
+                    # loc2 is unchanged in every role, so it's stale (null dedup)
+                    # but its raw staff still count towards the org total.
+                    ("org1", "loc2", "A", CLEAN_UTILS_IMPORT_DATE, 0, 0, 0, 0, 5),
+                    ("org1", "loc2", "A", date(2024, 2, 1), 0, 0, 0, 0, 5),
+                    ("org1", "loc2", "B", CLEAN_UTILS_IMPORT_DATE, 0, 0, 0, 0, 5),
+                    ("org1", "loc2", "B", date(2024, 2, 1), 0, 0, 0, 0, 5),
+                ]
+            ),
+            # Raw org total on the 2nd date is 20 staff with 1 permanent (0.05),
+            # so the org fails. Dedup counts alone (loc1 only: 1/10) would pass.
+            expected_data={
+                IndCQC.location_id: ["loc1", "loc1", "loc2", "loc2"],
+                IndCQC.published_job_role_label: ["A", "B", "A", "B"],
+                EmpStatus.permanent_count_clean: [None] * 4,
+                EmpStatus.other_count_clean: [None] * 4,
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio,
+                    EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio,
+                    EmploymentStatusFilteringRule.missing_data,
+                    EmploymentStatusFilteringRule.missing_data,
+                ],
+            },
+        ),
+    ]
+
+    dedup_then_location_ratio_test_cases = [
+        CleanUtilsTestCase(
+            id="location_keeps_all_roles_when_any_role_changed_in_the_workplace",
+            input_data=_raw_counts_input(
+                [
+                    # Role A changes on the 2nd date, role B doesn't. Workplace
+                    # dedup keeps both roles, so the location ratio uses both
+                    # (10 of 20 permanent/temporary). Per-role dedup would null
+                    # role B and wrongly flag the location on role A alone.
+                    ("org2", "loc3", "A", CLEAN_UTILS_IMPORT_DATE, 0, 0, 0, 0, 9),
+                    ("org2", "loc3", "A", date(2024, 2, 1), 0, 0, 0, 0, 10),
+                    ("org2", "loc3", "B", CLEAN_UTILS_IMPORT_DATE, 5, 5, 0, 0, 0),
+                    ("org2", "loc3", "B", date(2024, 2, 1), 5, 5, 0, 0, 0),
+                ]
+            ),
+            expected_data={
+                IndCQC.location_id: ["loc3", "loc3"],
+                IndCQC.published_job_role_label: ["A", "B"],
+                EmpStatus.permanent_count_clean: [0, 5],
+                EmpStatus.other_count_clean: [10, 0],
+                EmpStatus.filtering_rule: [EmploymentStatusFilteringRule.populated] * 2,
+            },
+        ),
+    ]
+
     null_counts_for_low_location_ratio_test_cases = [
         CleanUtilsTestCase(
             id="sums_permanent_and_temporary_across_job_roles_before_comparing_to_location_staff",
