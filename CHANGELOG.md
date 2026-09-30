@@ -45,6 +45,7 @@ All notable changes to this project will be documented in this file.
 - Moved `EmploymentStatusRatesColumns` (renamed `EmploymentStatusMagicNumberRateColumns`) into the shared `ind_cqc_pipeline_columns.py`, alongside the other column-name classes.
 - Replaced the job role archive validation's single "at least 1 row" check with schema, row-count-against-source, and primary-key uniqueness/completeness checks scoped to just the newly-written partition for each output (estimates and metadata), plus a cross-output check confirming both outputs received the same run's partition.
 - Moved the filled posts models' date-index step into a shared, reusable `_03_independent_cqc` utility (`add_date_index`).
+- Serialised the dev-branch CircleCI `terraform-plan` and `terraform-apply` jobs per branch with a `serial-group`, so a newer push queues behind a running apply instead of cancelling it mid-apply, and an older queued run is skipped in favour of the newest. Requires "Auto-cancel redundant workflows" to be switched off in the CircleCI project settings.
 
 
 ### Improved

@@ -714,13 +714,20 @@ workflows:
           filters:
             branches:
               ignore: main
+      # plan and apply share one serial group per branch (terraform state is one
+      # workspace per branch). A running apply is never killed, and a newer
+      # plan waits instead of failing on its state lock. Needs "Auto-cancel
+      # redundant workflows" OFF in the CircleCI project settings, or auto-cancel
+      # still kills the running apply.
       - terraform-plan:
           context: non-prod
+          serial-group: << pipeline.project.slug >>/terraform-<< pipeline.git.branch >>
           requires:
             - lint-terraform
             - task-containerisation
       - terraform-apply:
           context: non-prod
+          serial-group: << pipeline.project.slug >>/terraform-<< pipeline.git.branch >>
           requires:
             - terraform-plan
       - deploy-dependencies:
