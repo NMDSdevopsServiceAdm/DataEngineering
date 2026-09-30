@@ -232,8 +232,9 @@ def extract_key_question_ratings(
             ratings came from.
 
     Returns:
-        pl.LazyFrame: One row per location/assessment plan/key question, with an
-            explode-order index column preserving raw array order.
+        pl.LazyFrame: One row per location/assessment plan/key question, with the
+            key question's name and rating in `key_question_name` and
+            `key_question_rating`.
     """
     return (
         assessment_lf.select(
@@ -274,6 +275,17 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     question is ever listed more than once in an assessment plan, rather than silently
     picking one. `on_columns` keeps all five key question columns, as nulls, even if
     one never appears.
+
+    Two caveats on what this covers:
+    - Only the five names in `KEY_QUESTION_NAMES` are kept. Any other key question
+      name is dropped without error, and a plan that only has other names still gets
+      a row, with all five key question columns null.
+    - The duplicate check applies at the pivot index, which is
+      `ASSESSMENT_GRAIN_COLUMNS` and includes `status` and `rating`. Two entries that
+      differ in those columns (e.g. two ASG entries with the same plan id but a
+      different `rating`) become separate rows and do not raise. Two overall entries
+      with the same status and rating would raise, even though they are distinct
+      entries.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data, with nested

@@ -771,11 +771,82 @@ class FlattenCQCRatings:
                 }
             ],
         ),
+        (
+            "1-003",
+            "Registered",
+            [
+                _assessment_entry(
+                    "2024-01-01 00:00:00", [], overall=[_overall_entry([])]
+                )
+            ],
+        ),
     ]
 
     expected_prepare_assessment_ratings_null_key_question_ratings_rows = (
         expected_prepare_assessment_ratings_rows
     )
+
+    # Only the five known key questions are kept. AP1 also lists "Other". AP2 lists
+    # nothing else, so it keeps a row with every key question column null.
+    prepare_assessment_ratings_unknown_key_question_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _asg_entry(
+                    "2024-01-01 00:00:00",
+                    "AP1",
+                    [_asg_kq("Safe"), _asg_kq("Other", "other_rating")],
+                ),
+                _asg_entry(
+                    "2024-06-01 00:00:00",
+                    "AP2",
+                    [_asg_kq("Other", "other_rating")],
+                ),
+            ],
+        ),
+    ]
+
+    expected_prepare_assessment_ratings_unknown_key_question_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "SAF",
+            "name",
+            "status",
+            "rating",
+            "assessment.ratings.asg_ratings",
+            "safe_rating",
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2024-06-01 00:00:00",
+            "AP2",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "SAF",
+            "name",
+            "status",
+            "rating",
+            "assessment.ratings.asg_ratings",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
 
     raise_error_overall_populated_rows = [
         (
