@@ -30,9 +30,8 @@ from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
 
-# Excluded from the not-null geography checks below since these already have
-# their own col_vals_in_set check, which (having no na_pass parameter) also
-# rejects null - re-checking them for not-null would be a redundant full scan.
+# Excluded from the not-null geography checks below: col_vals_in_set has no
+# na_pass parameter, so their own check further down already rejects null.
 CATEGORICAL_CONTEMPORARY_GEOGRAPHY_COLUMNS = [
     CQCLClean.contemporary_cssr,
     CQCLClean.contemporary_region,
@@ -124,11 +123,8 @@ def main(
         )
         # ONS postcode-match geography columns: a location either matches a single
         # ONS postcode row (populating every field below together) or the pipeline
-        # raises before reaching this validator (see raise_error_if_unmatched),
-        # so these are always populated as one group. The categorical columns in
-        # that group (contemporary/current cssr/region, current rural_urban_ind_11)
-        # are excluded here as their col_vals_in_set check below already covers
-        # not-null.
+        # raises before reaching this validator (see raise_error_if_unmatched).
+        # The categorical columns in the group are excluded - see comment above.
         .col_vals_not_null(
             [
                 c

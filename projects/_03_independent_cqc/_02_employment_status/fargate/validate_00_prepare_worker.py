@@ -90,10 +90,8 @@ def main(
                 f"{compare_path})"
             ),
         )
-        # numeric (col_vals_ge's default na_pass=False, and col_vals_in_set has no
-        # na_pass parameter at all, so these also enforce completeness - pivot
-        # fills groups with no workers of a status as 0, so none of these are
-        # ever null)
+        # numeric (na_pass=False by default, so these also enforce completeness -
+        # pivot fills empty groups with 0, so none of these are ever null)
         .col_vals_ge(EmpStatus.permanent_count, 0)
         .col_vals_ge(EmpStatus.temporary_count, 0)
         .col_vals_ge(EmpStatus.bank_or_pool_count, 0)

@@ -53,9 +53,8 @@ def main(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
         )
-        # categorical (col_vals_in_set has no na_pass parameter, so this also
-        # enforces completeness) - confirms published_job_role_label, one of
-        # this merge's join keys, retained valid values through the join
+        # categorical - confirms published_job_role_label, one of this merge's
+        # join keys, retained valid values through the join
         .col_vals_in_set(
             IndCqcColumns.published_job_role_label,
             SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values,
