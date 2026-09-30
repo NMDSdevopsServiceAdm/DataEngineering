@@ -40,7 +40,7 @@ PERCENTAGE_COLUMNS = [
 
 
 def _matches_filtering_rule_expr(column: str) -> pl.Expr:
-    """Builds the "column is null iff filtering_rule isn't 'populated'" check.
+    """Builds the "column is null if and only if filtering_rule isn't 'populated'" check.
 
     Holds for both the _clean count columns and the percentage columns:
     percentages are now computed from the _clean counts, so they're null
