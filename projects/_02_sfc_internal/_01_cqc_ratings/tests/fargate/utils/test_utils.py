@@ -182,7 +182,7 @@ class PrepareAssessmentRatingsCase:
 
 prepare_assessment_ratings_cases = [
     PrepareAssessmentRatingsCase(
-        id="single_asg_rating_pivots_key_questions_into_columns",
+        id="flattens_asg_key_questions_into_columns",
         rows=Data.prepare_assessment_ratings_rows,
         expected_rows=Data.expected_prepare_assessment_ratings_rows,
     ),
@@ -238,6 +238,16 @@ class TestRaiseErrorWhenAssessmentDfContainsOverallData:
         )
 
         with pytest.raises(ValueError, match="contains 1 values"):
+            job.raise_error_when_assessment_df_contains_overall_data(input_lf)
+
+    def test_reports_the_number_of_populated_overall_rows_in_the_error(self):
+        input_lf = pl.LazyFrame(
+            Data.raise_error_overall_populated_rows * 2,
+            schema=Schemas.assessment_ratings_output_schema,
+            orient="row",
+        )
+
+        with pytest.raises(ValueError, match="contains 2 values"):
             job.raise_error_when_assessment_df_contains_overall_data(input_lf)
 
     def test_does_not_raise_when_overall_object_is_empty(self):
