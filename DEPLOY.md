@@ -6,7 +6,7 @@ Amazon Web Services Command Line Interface is a prerequisite of Terraform. [See 
 
 1. Set an environment variable for HOME:
 ```
-$Env:HOME = 'C:\Users\<username>' 
+$Env:HOME = 'C:\Users\<username>'
 ```
 2. Provide your MFA token:
 ```
@@ -68,3 +68,6 @@ terraform workspace delete <workspace_name>
 - Automatically deploys infrastructure for each branch.
 - Requires manual approval when merging to main
 - You can find the full CircleCi configuration inside [.circleci/config.yml](.circleci/config.yml).
+- Each branch's image build, `terraform-plan` and `terraform-apply` run one at a time (`serial-group`), so a newer push waits for a running apply instead of cancelling it. An older pipeline's apply is skipped once a newer pipeline is waiting, and its `flag-incomplete-deploy` job fails (as it does when an earlier job failed), so don't rerun it.
+- This relies on **Auto-cancel redundant workflows** being switched OFF in the CircleCI project settings (Project Settings > Advanced). If it is switched on, CircleCI cancels a running apply again.
+- Keep branch names to letters, digits, `.`, `_`, `-` and `/`: CircleCI's `serial-group` key allows nothing else.

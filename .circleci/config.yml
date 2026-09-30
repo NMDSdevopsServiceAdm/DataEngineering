@@ -659,7 +659,7 @@ jobs:
       - run:
           name: Fail because terraform-apply did not run
           command: |
-            echo "terraform-apply did not run on this pipeline: a newer pipeline on this branch superseded it, or an earlier job failed. See the jobs above."
+            echo "terraform-apply did not run on this pipeline. If a newer pipeline exists on this branch it superseded this one: ignore it and do not rerun it. Otherwise an earlier job failed: see the jobs above."
             exit 1
 
 
@@ -730,10 +730,12 @@ workflows:
           filters:
             branches:
               ignore: main
-      # One serial group per branch (one terraform workspace per branch), shared
-      # by plan and apply: a running apply is never killed and a newer plan waits
-      # instead of failing on its state lock. Needs "Auto-cancel redundant
-      # workflows" OFF in the CircleCI project settings.
+      # Per-branch key (one terraform workspace per branch) shared by plan and
+      # apply, so a running apply is never killed by a newer push and a newer plan
+      # waits instead of failing on its state lock. CircleCI documents reusing a
+      # key within a workflow as unsupported (it behaved correctly in testing;
+      # fallback: a job-group). Keep terraform-destroy's key in sync. Needs
+      # "Auto-cancel redundant workflows" OFF in the CircleCI project settings.
       - terraform-plan:
           context: non-prod
           serial-group: << pipeline.project.slug >>/terraform-<< pipeline.git.branch >>
