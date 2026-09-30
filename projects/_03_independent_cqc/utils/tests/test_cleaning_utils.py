@@ -32,6 +32,7 @@ class TestRemoveRepeatedValuesOverTimeAsGroup:
             columns_to_clean=case.columns_to_clean,
             partition_by_columns=case.partition_by_columns,
             date_column=case.date_column,
+            workplace_columns=case.workplace_columns,
         )
 
         pl_testing.assert_frame_equal(
@@ -71,3 +72,51 @@ class TestPercentageShareHorizontal:
             check_row_order=False,
             check_column_order=False,
         )
+
+
+class TestNullColumnsWhereGroupShareTooLow:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            c.as_pytest_param()
+            for c in Data.null_columns_where_group_share_too_low_test_cases
+        ],
+    )
+    def test_nulls_columns_only_for_groups_with_low_share(self, case):
+        schema_overrides = {
+            **{column: pl.Int64 for column in ["a", "b", "c"]},
+            **{column: pl.String for column in ["grp", "period"]},
+        }
+        input_lf = pl.LazyFrame(case.input_data, schema_overrides=schema_overrides)
+        expected_lf = pl.LazyFrame(
+            case.expected_data, schema_overrides=schema_overrides
+        )
+
+        returned_lf = job.null_columns_where_group_share_too_low(
+            input_lf,
+            partition_by_columns=case.partition_by_columns,
+            total_columns=["a", "b", "c"],
+            share_columns=["a", "b"],
+            columns_to_null=["a", "b", "c"],
+            maximum_share=0.05,
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+            check_column_order=False,
+        )
+
+    def test_raises_when_share_columns_are_not_a_subset_of_total_columns(self):
+        input_lf = pl.LazyFrame({"grp": ["g"], "a": [1], "b": [1]})
+
+        with pytest.raises(ValueError, match="subset"):
+            job.null_columns_where_group_share_too_low(
+                input_lf,
+                partition_by_columns=["grp"],
+                total_columns=["a"],
+                share_columns=["a", "b"],
+                columns_to_null=["a"],
+                maximum_share=0.05,
+            )

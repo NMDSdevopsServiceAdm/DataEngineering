@@ -8,11 +8,23 @@ from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
+)
+from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,
+]
+
+# Only what the checks need: the merged output is wide and includes list columns,
+# which pointblank can't write out when it extracts failing rows.
+SOURCE_COLS_TO_IMPORT = [
+    IndCqcColumns.location_id,
+    IndCqcColumns.cqc_location_import_date,
+    IndCqcColumns.current_region,
+    IndCqcColumns.published_job_role_label,
 ]
 
 
@@ -55,7 +67,10 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
-    source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        selected_columns=SOURCE_COLS_TO_IMPORT,
+    )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,
@@ -74,6 +89,16 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
+        )
+        # region, joined in from the job role metadata
+        .col_vals_not_null(
+            IndCqcColumns.current_region,
+            brief="current_region has no nulls",
+        )
+        .col_vals_in_set(
+            IndCqcColumns.current_region,
+            CatValues.current_region_column_values.categorical_values,
+            brief="current_region is one of the expected ONS regions",
         )
         # col_vals_in_set has no na_pass, so this also enforces completeness
         .col_vals_in_set(

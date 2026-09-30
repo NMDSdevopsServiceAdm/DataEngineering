@@ -136,9 +136,9 @@ https://github.com/cdarlint/winutils
 
 
 ### Install Terraform
-1.  Download Terraform from https://www.terraform.io/downloads (Amd64 version)
+1.  Download Terraform 1.13.5 from https://releases.hashicorp.com/terraform/1.13.5/ (Amd64 version). This must match `terraform_version` in `.circleci/config.yml`; versions before 1.10 fail on the `use_lockfile` and `ephemeral` settings.
 
-2. In your Downloads folder, right click on `terraform_1.3.3_windows_amd64`, select 7-Zip and Extract Here
+2. In your Downloads folder, right click on `terraform_1.13.5_windows_amd64`, select 7-Zip and Extract Here
 
 3. Copy the file named `terraform` and paste here `C:\Terraform` (you'll need to create this folder)
 
@@ -291,16 +291,24 @@ Python
 
 ### aws credentials
 
+Terraform can't prompt for an MFA code, so it uses temporary credentials that `aws-mfa` fetches for you. Set up both profiles below, then run the `aws-mfa` steps in "Terraform command line access".
+
 #### Prod (i.e. existing) aws account
 1. Open cmd
 
-2. Type `aws configure --profile prod`, where `prod` is whatever name you want to use to refer to prod
+2. Type `aws configure --profile prod` (use `prod` as the name, the later steps assume it)
 
-3. Add your aws access key and secret access key
+3. Add your aws access key and secret access key (if you do not have these you can generate new ones by following [these steps](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html))
 4. Region: eu-west-2
 5. Default output format: json
 6. In prod account AWS console, click on your name in the top right, and navigate to `Security Credentials` in the drop down. On the Security Credentials page, scroll down to Multi-factor Authentication. Copy the value of the `Identifier` field (it should look like `arn:aws:iam::344210435447:mfa/*********`i).
-7. Paste `mfa_serial=<mfa arn>` (where `mfa_arn` is the arn obtained in step 6) into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[prod]`)
+7. Add only the `mfa_serial = <mfa arn>` line (where `<mfa arn>` is the arn obtained in step 6) to the existing `[profile prod]` section of your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file. Don't add a second `[profile prod]` heading, as duplicate sections break `aws-mfa`. It should end up looking like:
+```
+[profile prod]
+region = eu-west-2
+output = json
+mfa_serial = <mfa arn>
+```
 8. Run `aws sts get-caller-identity --profile prod` and verify that the response looks like:
 ```
 {
@@ -316,21 +324,16 @@ If you've previously set up your AWS CLI to point to this environment, it is rec
 
 
 #### Non-prod (i.e. new) aws account
-1. Open cmd
+This profile assumes a role using the temporary `prod-mfa` credentials that `aws-mfa` writes to your `credentials` file (see "Terraform command line access" below). Don't add `mfa_serial` to it: Terraform fails with `assume role with MFA enabled, but AssumeRoleTokenProvider session option not set` if you do.
 
-2. Type `aws configure --profile non-prod`, where `non-prod` is whatever name you want to use to refer to non-prod
-
-3. Add the same aws access key and secret access key as you used above (you can find these in [`%USERPROFILE%\.aws\credentials`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) if you don't have them to hand
-4. Region: eu-west-2
-5. Default output format: json
-6. In *prod* account AWS console, click on your name in the top right, and navigate to `Security Credentials` in the drop down. On the Security Credentials page, scroll down to Multi-factor Authentication. Copy the value of the `Identifier` field (it should look like `arn:aws:iam::344210435447:mfa/*********`i).
-7. Paste the following into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[non-prod]`) (where `mfa_arn` is the arn obtained in step 6):
+1. Add the following to your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom. If you already have a `[profile non-prod]` section, replace it instead (delete the old `mfa_serial` and `source_profile = prod` lines), as duplicate sections break `aws-mfa`:
 ```
-     mfa_serial=<mfa arn>
-     source_profile=prod
-     role_arn=arn:aws:iam::856699698263:role/CrossAccountAccessRole
+[profile non-prod]
+region = eu-west-2
+source_profile = prod-mfa
+role_arn = arn:aws:iam::856699698263:role/CrossAccountAccessRole
 ```
-8. Run `aws sts get-caller-identity --profile non-prod` and verify that the response looks like:
+2. Once you have run `aws-mfa` (see below), run `aws sts get-caller-identity --profile non-prod` and verify that the response looks like:
 ```
 {
     "UserId": *****
@@ -339,52 +342,30 @@ If you've previously set up your AWS CLI to point to this environment, it is rec
 }
 ```
 
-Any command that you run via AWS CLI will need the `--profile non-prod` argument in order to run against this environment.
+Any command that you run via AWS CLI will need the `--profile non-prod` argument in order to run against this environment, and needs `aws-mfa` to have been run within the last 12 hours.
 
 
-### Set up your AWS crendentials for terraform command line access
-1. In "C:\Users\<username>\.aws\credentials", paste the following code and add your prod profile name, aws access key and secret access key.
+### Terraform command line access
+1. Set an environment variable for HOME (`aws-mfa` reads it to find your `.aws` folder, and Windows may not set it). This only applies to the current terminal, so repeat it in each new one:
 ```
-[prod]
-aws_access_key_id = xxx
-aws_secret_access_key = xxx
+$Env:HOME = $Env:USERPROFILE
 ```
-2. If you do not have these to hand you can generate new ones by following these steps:
-`https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html`
-
-3. In "C:\Users\<username>\.aws\config", paste the following code and add your profile names and mfa serial key.
-```
-# This is the user we use to obtain temporary credentials from AWS STS (Amazon Web Services Security Token Service)
-[profile prod]
-region = eu-west-2
-mfa_serial = xxx
-
-# A role (in this case in a different AWS account) which requires MFA
-[profile non-prod]
-region = eu-west-2
-source_profile = prod-mfa
-role_arn = arn:aws:iam::856699698263:role/CrossAccountAccessRole
-```
-4. Set an environment variable for HOME:
-```
-$Env:HOME = 'C:\Users\<username>'
-```
-5. Provide your MFA token:
+2. Provide your MFA token (the temporary credentials last 12 hours, so repeat this when they expire):
 ```
 aws-mfa --mfa-profile prod --token xxxxxx
 ```
-6. Test you've logged in successfully. Both commands should return a user ID, account and ARN.
+3. Test you've logged in successfully. Both commands should return a user ID, account and ARN.
 ```
 aws sts get-caller-identity --profile prod-mfa
 aws sts get-caller-identity --profile non-prod
 ```
-7. Ensure you're in the Terraform directory `cd terraform/pipeline`
+4. Ensure you're in the Terraform directory `cd terraform/pipeline`
 
-8. Set an environment variable for AWS_PROFILE:
+5. Set an environment variable for AWS_PROFILE:
 ```
 $Env:AWS_PROFILE="non-prod"
 ```
-9. Initialise terraform:
+6. Initialise terraform:
 ```
 terraform init -backend-config="../non_prod_local.s3.tfbackend"
 ```

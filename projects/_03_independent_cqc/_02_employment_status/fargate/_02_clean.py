@@ -18,6 +18,7 @@ def main(
     """
     lf = utils.scan_parquet(merged_data_source)
 
+    lf = cUtils.deduplicate_employment_status_counts(lf)
     lf = cUtils.create_employment_status_percentage_columns(lf)
 
     utils.sink_to_parquet(

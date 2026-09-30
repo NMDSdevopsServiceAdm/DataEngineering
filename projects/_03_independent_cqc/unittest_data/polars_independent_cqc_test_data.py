@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
@@ -23,6 +23,7 @@ class RemoveRepeatedValuesOverTimeAsGroupTestCase:
     partition_by_columns: str | list[str]
     date_column: str
     expected_data: dict[str, Any]
+    workplace_columns: list[str] | None = None
 
     def as_pytest_param(self):
         return pytest.param(self, id=self.id)
@@ -35,6 +36,17 @@ class PercentageShareHorizontalTestCase:
     columns: list[str]
     output_columns: list[str]
     expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class NullColumnsWhereGroupShareTooLowTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+    partition_by_columns: list[str] = field(default_factory=lambda: ["grp"])
 
     def as_pytest_param(self):
         return pytest.param(self, id=self.id)
@@ -174,6 +186,339 @@ class TestCleaningUtilsData:
                 "second_value_dedup": [2, None, 2, 2],
             },
         ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="one_role_changes_keeps_all_roles_for_the_workplace",
+            input_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 5],
+                "second_value": [2, 2, 2, 2],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            expected_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 5],
+                "second_value": [2, 2, 2, 2],
+                "first_value_dedup": [1, 1, 1, 5],
+                "second_value_dedup": [2, 2, 2, 2],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="no_role_changes_nulls_all_roles_for_the_workplace",
+            input_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 1],
+                "second_value": [2, 2, 2, 2],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            expected_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 1],
+                "second_value": [2, 2, 2, 2],
+                "first_value_dedup": [1, 1, None, None],
+                "second_value_dedup": [2, 2, None, None],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="null_to_value_counts_as_change",
+            input_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [None, None, 1, None],
+                "second_value": [None, None, 2, None],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            expected_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [None, None, 1, None],
+                "second_value": [None, None, 2, None],
+                "first_value_dedup": [None, None, 1, None],
+                "second_value_dedup": [None, None, 2, None],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="value_to_null_counts_as_change",
+            input_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, None, 1],
+                "second_value": [2, 2, None, 2],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            expected_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, None, 1],
+                "second_value": [2, 2, None, 2],
+                "first_value_dedup": [1, 1, None, 1],
+                "second_value_dedup": [2, 2, None, 2],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="all_null_workplace_is_unchanged_and_stays_null",
+            input_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [None] * 4,
+                "second_value": [None] * 4,
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            expected_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [None] * 4,
+                "second_value": [None] * 4,
+                "first_value_dedup": [None] * 4,
+                "second_value_dedup": [None] * 4,
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="changes_in_one_workplace_do_not_affect_another",
+            input_data={
+                "location_id": ["loc_1", "loc_2", "loc_1", "loc_2"],
+                "job_role": ["a"] * 4,
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 2],
+                "second_value": [2, 2, 2, 2],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            expected_data={
+                "location_id": ["loc_1", "loc_2", "loc_1", "loc_2"],
+                "job_role": ["a"] * 4,
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 2],
+                "second_value": [2, 2, 2, 2],
+                "first_value_dedup": [1, 1, None, 2],
+                "second_value_dedup": [2, 2, None, 2],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="null_location_rows_are_judged_individually",
+            input_data={
+                "location_id": [None, None, None, None],
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 5],
+                "second_value": [2, 2, 2, 2],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            expected_data={
+                "location_id": [None, None, None, None],
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 5],
+                "second_value": [2, 2, 2, 2],
+                "first_value_dedup": [1, 1, None, 5],
+                "second_value_dedup": [2, 2, None, 2],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="first_snapshot_is_kept",
+            input_data={
+                "location_id": ["loc_1"] * 2,
+                "job_role": ["a", "b"],
+                "date": [date(2024, 1, 1), date(2024, 1, 1)],
+                "first_value": [1, 3],
+                "second_value": [2, 4],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            expected_data={
+                "location_id": ["loc_1"] * 2,
+                "job_role": ["a", "b"],
+                "date": [date(2024, 1, 1), date(2024, 1, 1)],
+                "first_value": [1, 3],
+                "second_value": [2, 4],
+                "first_value_dedup": [1, 3],
+                "second_value_dedup": [2, 4],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="string_partition_column_nulls_repeat_at_workplace_level",
+            input_data={
+                "location_id": ["loc_1"] * 2,
+                "job_role": ["a"] * 2,
+                "date": [date(2024, 1, 1), date(2024, 2, 1)],
+                "first_value": [1, 1],
+                "second_value": [2, 2],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns="location_id",
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            expected_data={
+                "location_id": ["loc_1"] * 2,
+                "job_role": ["a"] * 2,
+                "date": [date(2024, 1, 1), date(2024, 2, 1)],
+                "first_value": [1, 1],
+                "second_value": [2, 2],
+                "first_value_dedup": [1, None],
+                "second_value_dedup": [2, None],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="unsorted_rows_are_ordered_by_date_within_timeline",
+            input_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "a", "b", "b"],
+                "date": [
+                    date(2024, 2, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 1, 1),
+                ],
+                "first_value": [1, 1, 7, 7],
+                "second_value": [2, 2, 8, 8],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            expected_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "a", "b", "b"],
+                "date": [
+                    date(2024, 2, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 1, 1),
+                ],
+                "first_value": [1, 1, 7, 7],
+                "second_value": [2, 2, 8, 8],
+                "first_value_dedup": [None, 1, None, 7],
+                "second_value_dedup": [None, 2, None, 8],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="role_present_in_one_snapshot_only_is_judged_on_its_own_timeline",
+            input_data={
+                "location_id": ["loc_1"] * 3,
+                "job_role": ["a", "b", "a"],
+                "date": [date(2024, 1, 1), date(2024, 1, 1), date(2024, 2, 1)],
+                "first_value": [1, 4, 1],
+                "second_value": [2, 5, 2],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            expected_data={
+                "location_id": ["loc_1"] * 3,
+                "job_role": ["a", "b", "a"],
+                "date": [date(2024, 1, 1), date(2024, 1, 1), date(2024, 2, 1)],
+                "first_value": [1, 4, 1],
+                "second_value": [2, 5, 2],
+                "first_value_dedup": [1, 4, None],
+                "second_value_dedup": [2, 5, None],
+            },
+        ),
     ]
 
     percentage_share_horizontal_test_cases = [
@@ -218,6 +563,93 @@ class TestCleaningUtilsData:
             columns=["a", "b"],
             output_columns=["z_share", "y_share"],
             expected_data={"z_share": [0.25], "y_share": [0.75]},
+        ),
+    ]
+
+    # Groups are keyed on "grp"; totals are a + b + c, share is a + b.
+    null_columns_where_group_share_too_low_test_cases = [
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="nulls_group_at_boundary_share",
+            input_data={"grp": ["g", "g"], "a": [1, 0], "b": [0, 0], "c": [9, 10]},
+            expected_data={
+                "grp": ["g", "g"],
+                "a": [None, None],
+                "b": [None, None],
+                "c": [None, None],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="keeps_group_with_share_above_maximum",
+            input_data={"grp": ["g"], "a": [1], "b": [1], "c": [8]},
+            expected_data={"grp": ["g"], "a": [1], "b": [1], "c": [8]},
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="nulls_small_group_with_zero_share",
+            input_data={"grp": ["g"], "a": [0], "b": [0], "c": [9]},
+            expected_data={"grp": ["g"], "a": [None], "b": [None], "c": [None]},
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="sums_across_all_rows_in_the_group",
+            input_data={"grp": ["g", "g"], "a": [1, 0], "b": [0, 0], "c": [4, 15]},
+            expected_data={
+                "grp": ["g", "g"],
+                "a": [None, None],
+                "b": [None, None],
+                "c": [None, None],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="only_nulls_the_flagged_group",
+            input_data={"grp": ["low", "ok"], "a": [0, 5], "b": [0, 5], "c": [10, 0]},
+            expected_data={
+                "grp": ["low", "ok"],
+                "a": [None, 5],
+                "b": [None, 5],
+                "c": [None, 0],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="groups_by_every_partition_column",
+            partition_by_columns=["grp", "period"],
+            input_data={
+                "grp": ["g", "g"],
+                "period": ["p1", "p2"],
+                "a": [0, 15],
+                "b": [0, 0],
+                "c": [20, 5],
+            },
+            expected_data={
+                "grp": ["g", "g"],
+                "period": ["p1", "p2"],
+                "a": [None, 15],
+                "b": [None, 0],
+                "c": [None, 5],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="null_row_drops_out_of_group_total",
+            input_data={
+                "grp": ["g", "g"],
+                "a": [10, None],
+                "b": [0, None],
+                "c": [0, None],
+            },
+            expected_data={
+                "grp": ["g", "g"],
+                "a": [10, None],
+                "b": [0, None],
+                "c": [0, None],
+            },
+        ),
+        NullColumnsWhereGroupShareTooLowTestCase(
+            id="does_not_pool_null_partition_keys_into_one_group",
+            input_data={"grp": [None, None], "a": [0, 0], "b": [0, 0], "c": [20, 20]},
+            expected_data={
+                "grp": [None, None],
+                "a": [0, 0],
+                "b": [0, 0],
+                "c": [20, 20],
+            },
         ),
     ]
 
