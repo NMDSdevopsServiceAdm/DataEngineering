@@ -110,13 +110,13 @@ def main(
         .col_vals_between(
             DP.FIRST_YEAR_WITH_DATA,
             Config.FIRST_YEAR,
-            int(datetime.now().year),
+            datetime.now().year,
             na_pass=True,
         )
         .col_vals_between(
             DP.LAST_YEAR_WITH_DATA,
             Config.FIRST_YEAR,
-            int(datetime.now().year),
+            datetime.now().year,
             na_pass=True,
         )
         # numeric - proportions: interpolation stays within 0-1 because
