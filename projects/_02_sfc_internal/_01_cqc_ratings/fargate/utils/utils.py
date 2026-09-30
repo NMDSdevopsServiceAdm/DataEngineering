@@ -17,7 +17,7 @@ DROP_EMPTY_AND_NULL = {"empty_as_null": False, "keep_nulls": False}
 # resolved deterministically.
 EXPLODE_ORDER = "explode_order_index"
 
-assessment_grain_columns = [
+ASSESSMENT_GRAIN_COLUMNS = [
     CQCL.location_id,
     CQCL.registration_status,
     CQCL.assessment_plan_published_datetime,
@@ -287,7 +287,7 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     return (
         pl.concat([overall_lf, asg_lf], how="diagonal_relaxed")
-        .group_by(assessment_grain_columns)
+        .group_by(ASSESSMENT_GRAIN_COLUMNS)
         .agg(
             pl.col(CQCL.key_question_rating)
             .filter(pl.col(CQCL.key_question_name) == name)
