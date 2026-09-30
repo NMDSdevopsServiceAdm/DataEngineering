@@ -649,8 +649,8 @@ jobs:
             terraform workspace select default
             terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
 
-  # Runs only when terraform-apply did not, so a pipeline that deployed and
-  # tested nothing can't look green.
+  # Fails a pipeline whose terraform-apply did not run, which CircleCI would
+  # otherwise report as success.
   flag-incomplete-deploy:
     docker:
       - image: cimg/base:current
@@ -659,7 +659,7 @@ jobs:
       - run:
           name: Fail because terraform-apply did not run
           command: |
-            echo "terraform-apply did not run on this pipeline. If a newer pipeline exists on this branch it superseded this one: ignore it and do not rerun it. Otherwise an earlier job failed: see the jobs above."
+            echo "terraform-apply did not run. If a newer pipeline exists on this branch, this one was superseded: don't rerun it. Otherwise an earlier job failed: see above."
             exit 1
 
 
@@ -707,8 +707,7 @@ workflows:
           filters:
             branches:
               ignore: main
-      # One image build per branch at a time, so the branch's image tag (tags are
-      # per branch) ends up holding the newest pipeline's build.
+      # One build per branch at a time, so the newest build wins the image tag.
       - task-containerisation:
           context: non-prod
           select_targets: true
@@ -730,12 +729,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      # Per-branch key (one terraform workspace per branch) shared by plan and
-      # apply, so a running apply is never killed by a newer push and a newer plan
-      # waits instead of failing on its state lock. CircleCI documents reusing a
-      # key within a workflow as unsupported (it behaved correctly in testing;
-      # fallback: a job-group). Keep terraform-destroy's key in sync. Needs
-      # "Auto-cancel redundant workflows" OFF in the CircleCI project settings.
+      # Shared per-branch key: a newer plan waits for a running apply instead
+      # of failing on the state lock. Reusing a key in one workflow is documented
+      # as unsupported but tested fine (fallback: job-groups). Keep
+      # terraform-destroy's key in sync. Needs auto-cancel OFF (see DEPLOY.md).
       - terraform-plan:
           context: non-prod
           serial-group: << pipeline.project.slug >>/terraform-<< pipeline.git.branch >>
@@ -747,7 +744,6 @@ workflows:
           serial-group: << pipeline.project.slug >>/terraform-<< pipeline.git.branch >>
           requires:
             - terraform-plan
-      # CircleCI reports a superseded pipeline as success. This fails it instead.
       - flag-incomplete-deploy:
           requires:
             - terraform-apply:
@@ -784,8 +780,7 @@ workflows:
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
     jobs:
-      # Same key as the branch's plan and apply, so a branch delete waits for a
-      # running apply instead of failing on its state lock.
+      # Same key as plan/apply, so a branch delete waits for a running apply.
       - terraform-destroy:
           context: non-prod
           serial-group: << pipeline.project.slug >>/terraform-<< pipeline.parameters.GHA_Meta >>
