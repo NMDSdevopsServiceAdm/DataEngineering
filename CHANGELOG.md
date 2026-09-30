@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Added display-formatted columns to the publication clean job: each filled posts aggregate gets a comma-formatted or millions-abbreviated string (e.g. "800,000" or "1.175m"), and the import date gets abbreviated and full month-year string formats (e.g. "Jan 2026" and "January 2026").
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
 - Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
+- Added short-term imputation and a rolling average to the employment status impute job: each location and job role's 5 employment status percentages are imputed by interpolating gaps of up to 5 years and carrying the first/last known value up to 2 years beyond the known range, then smoothed into a 6-month rolling average per primary service type, region and job role, with each location counted equally. Region is now carried through from the job role metadata at the merge step. Validation covers region completeness and expected values, that imputed and rolling average percentages fall between 0 and 1, that the rolling average has no nulls, and that both sum to 1.
 - Added project-level model evaluation utilities to `_03_independent_cqc` (location cross-validation folds, a never-submitted flag and a period-to-period jumpiness measure) for the filled posts and employment status models to share.
 - Added `lookback_cap_filter_expr` (12-year cap, 6-month buffer) for job-role-estimates, replacing quarterly sampling; moved `reduced_data_filter_expr` to publication's own utils as its last remaining user.
 - Added a new "Estimate SLV counts" stage to the Ind-CQC-SLV state machine (`_05_estimate_counts`), with its own row-count validation step. The stage is currently a placeholder pass-through pending the starters/leavers/vacancies count derivation logic.
@@ -24,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Added group-level totals scoring (R² and weighted absolute % error) to the project-level model evaluation utilities, for scoring filled posts model predictions.
 - Added a project-level utility that nulls chosen columns for groups where a subset's share of the group total is too low, for reuse across categorical breakdowns.
 - Added a data-quality cleaning step for the EmpStat clean job that nulls an org's permanent, temporary, bank-or-pool, agency and other employment status counts (and their percentage-share columns) where too few of its reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
+- Added a step to the EmpStat clean job that creates a `_clean` copy of each deduplicated employment status count, with a filtering-rule column recording whether each row is populated or missing data.
 
 
 ### Changed
@@ -65,6 +67,7 @@ All notable changes to this project will be documented in this file.
 - Fixed stale Capacity Tracker S3 upload trigger prefixes that no longer matched the real raw dataset names, which meant the pipeline could never be triggered automatically by a new upload.
 - Fixed job role estimates metadata validation to stop excluding `contained_invalid_missing_data_code`, a workaround for data the lookback cap now retains.
 - Fixed the IND CQC filled posts model's predict step to stop with an error showing both feature lists when the saved model's features differ from the model registry, rather than risk silently misaligned predictions. Also stopped its features validation requiring `posts_rolling_average_model` for the non-res with dormancy model, which doesn't use it, and made the care home check name the bed features that column was standing in for.
+- Fixed the Windows setup and deploy docs causing Terraform and MFA command-line errors: the `HOME` step no longer needs a hand-typed username, the two conflicting `non-prod` AWS profiles are now a single Terraform-compatible one (no `mfa_serial`), broken links to the setup guide are corrected, and the Terraform install step now matches the version CircleCI uses.
 
 
 ## [v2026.08.1] - 11/09/2026
