@@ -196,6 +196,11 @@ prepare_assessment_ratings_cases = [
         expected_rows=Data.expected_prepare_assessment_ratings_multiple_groups_rows,
     ),
     PrepareAssessmentRatingsCase(
+        id="keeps_every_overall_and_asg_entry_within_one_assessment",
+        rows=Data.prepare_assessment_ratings_multiple_entries_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_multiple_entries_rows,
+    ),
+    PrepareAssessmentRatingsCase(
         id="duplicate_key_question_keeps_first_in_raw_order",
         rows=Data.prepare_assessment_ratings_tiebreaker_rows,
         expected_rows=Data.expected_prepare_assessment_ratings_tiebreaker_rows,

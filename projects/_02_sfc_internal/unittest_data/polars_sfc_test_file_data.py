@@ -383,16 +383,36 @@ class FlattenCQCRatings:
             "status": "key_question_status",
         }
 
-    def _overall_entry(key_question_ratings):
+    def _overall_entry(key_question_ratings, status="overall_status"):
         return {
             "rating": "overall_rating",
-            "status": "overall_status",
+            "status": status,
             "keyQuestionRatings": key_question_ratings,
+        }
+
+    def _asg_rating(assessment_plan_id, key_question_ratings):
+        return {
+            "assessmentPlanId": assessment_plan_id,
+            "title": "title",
+            "assessmentDate": "assessment_date",
+            "assessmentPlanStatus": "assessment_plan_status",
+            "name": "name",
+            "rating": "rating",
+            "status": "status",
+            "keyQuestionRatings": key_question_ratings,
+        }
+
+    def _assessment_entry(published_datetime, asg_ratings, overall=None):
+        return {
+            "assessmentPlanPublishedDateTime": published_datetime,
+            "ratings": {"overall": overall or [], "asgRatings": asg_ratings},
         }
 
     def _asg_entry(
         published_datetime, assessment_plan_id, key_question_ratings, overall=None
     ):
+        # Class-body helpers are not visible inside functions, so this cannot call
+        # `_assessment_entry` or `_asg_rating`.
         return {
             "assessmentPlanPublishedDateTime": published_datetime,
             "ratings": {
@@ -596,6 +616,112 @@ class FlattenCQCRatings:
             "rating",
             "assessment.ratings.asg_ratings",
             "safe_rating_location_2",
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+
+    # One assessment holding two overall entries (Current and Historic) and two ASG plans.
+    prepare_assessment_ratings_multiple_entries_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _assessment_entry(
+                    "2024-01-01 00:00:00",
+                    [
+                        _asg_rating("AP1", [_asg_kq("Safe", "safe_rating_ap1")]),
+                        _asg_rating("AP2", [_asg_kq("Safe", "safe_rating_ap2")]),
+                    ],
+                    overall=[
+                        _overall_entry(
+                            [_asg_kq("Safe", "overall_safe_rating_current")],
+                            status="Current",
+                        ),
+                        _overall_entry(
+                            [_asg_kq("Safe", "overall_safe_rating_historic")],
+                            status="Historic",
+                        ),
+                    ],
+                )
+            ],
+        ),
+    ]
+
+    expected_prepare_assessment_ratings_multiple_entries_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Current",
+            "overall_rating",
+            "assessment.ratings.overall",
+            "overall_safe_rating_current",
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Historic",
+            "overall_rating",
+            "assessment.ratings.overall",
+            "overall_safe_rating_historic",
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "SAF",
+            "name",
+            "status",
+            "rating",
+            "assessment.ratings.asg_ratings",
+            "safe_rating_ap1",
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP2",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "SAF",
+            "name",
+            "status",
+            "rating",
+            "assessment.ratings.asg_ratings",
+            "safe_rating_ap2",
             None,
             None,
             None,
