@@ -10,9 +10,8 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_values.categorical_column_values import CQCCurrentOrHistoricValues
 
-# Match Spark's `F.explode()`, which drops rows for both empty and null lists
-# (Polars only drops empty ones by default).
-SPARK_EXPLODE = {"empty_as_null": False, "keep_nulls": False}
+# .explode() behaivour to drop empty and null lists.
+drop_empty_and_null = {"empty_as_null": False, "keep_nulls": False}
 
 # Raw array position of each exploded row, so duplicate key question entries are
 # resolved deterministically.
@@ -148,7 +147,7 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.registration_status,
             CQCL.historic_ratings,
         )
-        .explode(CQCL.historic_ratings, **SPARK_EXPLODE)
+        .explode(CQCL.historic_ratings, **drop_empty_and_null)
         .select(
             CQCL.location_id,
             CQCL.registration_status,
@@ -192,7 +191,7 @@ def extract_assessment_base(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.registration_status,
             CQCL.assessment,
         )
-        .explode(CQCL.assessment, **SPARK_EXPLODE)
+        .explode(CQCL.assessment, **drop_empty_and_null)
         .select(
             CQCL.location_id,
             CQCL.registration_status,
@@ -234,9 +233,9 @@ def extract_key_question_ratings(
             CQCL.assessment_plan_published_datetime,
             pl.col(CQCL.assessments_ratings).struct.field(ratings_field),
         )
-        .explode(ratings_field, **SPARK_EXPLODE)
+        .explode(ratings_field, **drop_empty_and_null)
         .unnest(ratings_field)
-        .explode(CQCL.key_question_ratings, **SPARK_EXPLODE)
+        .explode(CQCL.key_question_ratings, **drop_empty_and_null)
         .with_columns(
             pl.col(CQCL.key_question_ratings)
             .struct.field(CQCL.name)
