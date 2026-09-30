@@ -649,6 +649,19 @@ jobs:
             terraform workspace select default
             terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
 
+  # Runs only when terraform-apply did not, so a pipeline that deployed and
+  # tested nothing can't look green.
+  flag-incomplete-deploy:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: Fail because terraform-apply did not run
+          command: |
+            echo "terraform-apply did not run on this pipeline: a newer pipeline on this branch superseded it, or an earlier job failed. See the jobs above."
+            exit 1
+
 
 workflows:
   test-plan-approve-and-deploy-to-main:
@@ -694,9 +707,12 @@ workflows:
           filters:
             branches:
               ignore: main
+      # One image build per branch at a time, so the branch's image tag (tags are
+      # per branch) ends up holding the newest pipeline's build.
       - task-containerisation:
           context: non-prod
           select_targets: true
+          serial-group: << pipeline.project.slug >>/build-<< pipeline.git.branch >>
           requires:
             - decide-bake-and-seed
           filters:
@@ -729,6 +745,14 @@ workflows:
           serial-group: << pipeline.project.slug >>/terraform-<< pipeline.git.branch >>
           requires:
             - terraform-plan
+      # CircleCI reports a superseded pipeline as success. This fails it instead.
+      - flag-incomplete-deploy:
+          requires:
+            - terraform-apply:
+                - not_run
+          filters:
+            branches:
+              ignore: main
       - deploy-dependencies:
           context: non-prod
           requires:
@@ -758,5 +782,8 @@ workflows:
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
     jobs:
+      # Same key as the branch's plan and apply, so a branch delete waits for a
+      # running apply instead of failing on its state lock.
       - terraform-destroy:
           context: non-prod
+          serial-group: << pipeline.project.slug >>/terraform-<< pipeline.parameters.GHA_Meta >>
