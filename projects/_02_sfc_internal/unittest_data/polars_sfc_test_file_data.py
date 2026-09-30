@@ -729,7 +729,7 @@ class FlattenCQCRatings:
         ),
     ]
 
-    prepare_assessment_ratings_tiebreaker_rows = [
+    prepare_assessment_ratings_duplicate_key_question_rows = [
         (
             "1-001",
             "Registered",
@@ -747,28 +747,6 @@ class FlattenCQCRatings:
                     ],
                 )
             ],
-        ),
-    ]
-
-    expected_prepare_assessment_ratings_tiebreaker_rows = [
-        (
-            "1-001",
-            "Registered",
-            "2024-02-01 00:00:00",
-            "AP2",
-            "title",
-            "assessment_date",
-            "assessment_plan_status",
-            "SAF",
-            "name",
-            "status",
-            "rating",
-            "assessment.ratings.asg_ratings",
-            "safe_rating",
-            "effective_rating",
-            "caring_rating",
-            "responsive_rating",
-            "well_led_rating",
         ),
     ]
 
@@ -798,6 +776,87 @@ class FlattenCQCRatings:
     expected_prepare_assessment_ratings_null_key_question_ratings_rows = (
         expected_prepare_assessment_ratings_rows
     )
+
+    raise_error_duplicated_key_question_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "SAF",
+            "name",
+            "status",
+            "rating",
+            "assessment.ratings.asg_ratings",
+            "Safe",
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "SAF",
+            "name",
+            "status",
+            "rating",
+            "assessment.ratings.asg_ratings",
+            "Safe",
+        ),
+    ]
+
+    raise_error_unique_key_question_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "SAF",
+            "name",
+            "status",
+            "rating",
+            "assessment.ratings.asg_ratings",
+            "Safe",
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "SAF",
+            "name",
+            "status",
+            "rating",
+            "assessment.ratings.asg_ratings",
+            "Caring",
+        ),
+        (
+            "1-002",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "SAF",
+            "name",
+            "status",
+            "rating",
+            "assessment.ratings.asg_ratings",
+            "Safe",
+        ),
+    ]
 
     raise_error_overall_populated_rows = [
         (

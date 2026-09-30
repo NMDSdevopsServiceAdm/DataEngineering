@@ -219,6 +219,24 @@ class FlattenCQCRatings:
         ]
     )
 
+    key_question_ratings_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCL.assessment_plan_published_datetime, pl.String),
+            (CQCL.assessment_plan_id, pl.String),
+            (CQCL.title, pl.String),
+            (CQCL.assessment_date, pl.String),
+            (CQCL.assessment_plan_status, pl.String),
+            (CQCL.dataset, pl.String),
+            (CQCL.name, pl.String),
+            (CQCL.status, pl.String),
+            (CQCL.rating, pl.String),
+            (CQCL.source_path, pl.String),
+            (CQCL.key_question_name, pl.String),
+        ]
+    )
+
     assessment_ratings_output_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String),

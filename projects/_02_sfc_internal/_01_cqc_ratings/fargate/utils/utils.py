@@ -22,10 +22,6 @@ from utils.column_values.categorical_column_values import (
 # .explode() behaivour to drop empty and null lists.
 DROP_EMPTY_AND_NULL = {"empty_as_null": False, "keep_nulls": False}
 
-# Raw array position of each exploded row, so duplicate key question entries are
-# resolved deterministically.
-EXPLODE_ORDER = "explode_order_index"
-
 ASSESSMENT_GRAIN_COLUMNS = [
     CQCL.location_id,
     CQCL.registration_status,
@@ -280,7 +276,6 @@ def extract_key_question_ratings(
             pl.lit(source_path).alias(CQCL.source_path),
         )
         .drop(CQCL.key_question_ratings)
-        .with_row_index(EXPLODE_ORDER)
     )
 
 
@@ -288,11 +283,15 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Flattens overall and ASG ratings within the assessment field, one column per key question.
 
-    CQC's `keyQuestionRatings` have no upstream guarantee of exactly one entry per
-    (location, assessment plan, key question). Taking each key question's rating
-    ordered by `EXPLODE_ORDER` (each row's raw array position) deterministically keeps
-    whichever entry appeared first in the raw feed. A conditional `group_by` aggregation
-    is used instead of a pivot so the whole function stays lazy.
+    Each key question appears once per assessment plan (checked on real data as at
+    30/09/2026), so `first` is only there to turn the one-element list in each group
+    into a value, and row order does not matter. CQC give no guarantee of this, so
+    `raise_error_when_key_question_is_duplicated` fails the job if it stops being true.
+    A conditional `group_by` aggregation is used instead of a pivot so the aggregation
+    stays lazy.
+
+    Raises:
+        ValueError: If a key question appears more than once in an assessment plan.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data, with nested
@@ -318,20 +317,57 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         CQCL.well_led,
     ]
 
-    return (
-        pl.concat([overall_lf, asg_lf], how="diagonal_relaxed")
-        .group_by(ASSESSMENT_GRAIN_COLUMNS)
-        .agg(
-            pl.col(CQCL.key_question_rating)
-            .filter(pl.col(CQCL.key_question_name) == name)
-            .sort_by(
-                pl.col(EXPLODE_ORDER).filter(pl.col(CQCL.key_question_name) == name)
-            )
-            .first()
-            .alias(name)
-            for name in key_question_names
-        )
+    key_question_ratings_lf = pl.concat([overall_lf, asg_lf], how="diagonal_relaxed")
+
+    raise_error_when_key_question_is_duplicated(key_question_ratings_lf)
+
+    return key_question_ratings_lf.group_by(ASSESSMENT_GRAIN_COLUMNS).agg(
+        pl.col(CQCL.key_question_rating)
+        .filter(pl.col(CQCL.key_question_name) == name)
+        .first()
+        .alias(name)
+        for name in key_question_names
     )
+
+
+def raise_error_when_key_question_is_duplicated(
+    key_question_ratings_lf: pl.LazyFrame,
+) -> None:
+    """
+    Raise an error when a key question appears more than once in an assessment plan.
+
+    `prepare_assessment_ratings` takes the first rating for each key question, which
+    is only unambiguous while each appears once per assessment plan. If CQC start
+    publishing duplicates, the output would silently depend on row order, so fail
+    instead.
+
+    This collects a small count, so it runs the assessment flattening once more
+    before the final collect.
+
+    Args:
+        key_question_ratings_lf (pl.LazyFrame): One row per assessment plan and key
+            question, as built by `extract_key_question_ratings`.
+
+    Raises:
+        ValueError: If any key question appears more than once in an assessment plan.
+    """
+    duplicated_key_questions = (
+        key_question_ratings_lf.group_by(
+            [*ASSESSMENT_GRAIN_COLUMNS, CQCL.key_question_name]
+        )
+        .len()
+        .filter(pl.col("len") > 1)
+        .select(pl.len())
+        .collect()
+        .item()
+    )
+
+    if duplicated_key_questions > 0:
+        raise ValueError(
+            f"Found {duplicated_key_questions} key questions listed more than once "
+            "in an assessment plan. prepare_assessment_ratings needs each to appear "
+            "once."
+        )
 
 
 def raise_error_when_assessment_df_contains_overall_data(
