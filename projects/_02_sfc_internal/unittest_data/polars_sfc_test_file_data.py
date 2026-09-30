@@ -955,19 +955,99 @@ class FlattenCQCRatings:
         ),
     ]
 
+    # "No published rating" and "" outside the rating columns must be left alone.
+    recode_unknown_to_null_non_rating_columns_rows = [
+        (
+            "1-002",
+            "No published rating",
+            "",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
+        ),
+    ]
+
     remove_blank_rows_rows = [
         (
             "1-001",
             "Registered",
             "2024-01-01",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
+            "overall_rating",
+            None,
+            None,
+            None,
+            None,
+            None,
         ),
-        ("1-002", "Registered", "2024-01-01", None, None, None, None, None, None),
+        (
+            "1-002",
+            "Registered",
+            "2024-01-01",
+            None,
+            "safe_rating",
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-003",
+            "Registered",
+            "2024-01-01",
+            None,
+            None,
+            "well_led_rating",
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-004",
+            "Registered",
+            "2024-01-01",
+            None,
+            None,
+            None,
+            "caring_rating",
+            None,
+            None,
+        ),
+        (
+            "1-005",
+            "Registered",
+            "2024-01-01",
+            None,
+            None,
+            None,
+            None,
+            "responsive_rating",
+            None,
+        ),
+        (
+            "1-006",
+            "Registered",
+            "2024-01-01",
+            None,
+            None,
+            None,
+            None,
+            None,
+            "effective_rating",
+        ),
+        (
+            "1-007",
+            "Registered",
+            "2024-01-01",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
     ]
 
     expected_remove_blank_rows_rows = [
@@ -975,12 +1055,106 @@ class FlattenCQCRatings:
             "1-001",
             "Registered",
             "2024-01-01",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
+            "overall_rating",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-002",
+            "Registered",
+            "2024-01-01",
+            None,
+            "safe_rating",
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-003",
+            "Registered",
+            "2024-01-01",
+            None,
+            None,
+            "well_led_rating",
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-004",
+            "Registered",
+            "2024-01-01",
+            None,
+            None,
+            None,
+            "caring_rating",
+            None,
+            None,
+        ),
+        (
+            "1-005",
+            "Registered",
+            "2024-01-01",
+            None,
+            None,
+            None,
+            None,
+            "responsive_rating",
+            None,
+        ),
+        (
+            "1-006",
+            "Registered",
+            "2024-01-01",
+            None,
+            None,
+            None,
+            None,
+            None,
+            "effective_rating",
+        ),
+    ]
+
+    remove_blank_duplicate_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
+        ),
+    ]
+
+    expected_remove_blank_duplicate_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
         ),
     ]
 
@@ -1010,6 +1184,62 @@ class FlattenCQCRatings:
             "Good",
             "Historic",
             "2023-01-02",
+        ),
+    ]
+
+    # 1-002's latest rating is older than 1-001's, so the flag must be set per location.
+    add_latest_rating_flag_multiple_locations_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
+            "Current",
+            "2024-01-02",
+        ),
+        (
+            "1-001",
+            "Registered",
+            "2023-01-01",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
+            "Current",
+            "2023-01-02",
+        ),
+        (
+            "1-002",
+            "Registered",
+            "2022-01-01",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
+            "Current",
+            "2022-01-02",
+        ),
+        (
+            "1-002",
+            "Registered",
+            "2021-01-01",
+            "overall_rating",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
+            "Current",
+            "2021-01-02",
         ),
     ]
 
@@ -1074,8 +1304,20 @@ class FlattenCQCRatings:
     ]
 
     location_id_hash_rows = [
-        ("1-001",),
-        ("12345678901",),
+        ("1-123",),
+        ("1-1234567890",),
+    ]
+
+    # Hashes produced by the previous Spark implementation, used to link anonymised files.
+    expected_location_id_hash_rows = [
+        (
+            "1-123",
+            "b022a7e5cc45cf3dc578",
+        ),
+        (
+            "1-1234567890",
+            "133d74f156c4fba255e9",
+        ),
     ]
 
     select_ratings_for_benchmarks_rows = [
@@ -1100,8 +1342,16 @@ class FlattenCQCRatings:
         ("1-002",),
     ]
 
+    # 1-999 is not in the ratings data, so it must not add a row to the output.
     ascwds_join_establishment_ids_rows = [
-        ("estab-1", "1-001"),
+        (
+            "estab-1",
+            "1-001",
+        ),
+        (
+            "estab-9",
+            "1-999",
+        ),
     ]
 
     expected_join_establishment_ids_rows = [

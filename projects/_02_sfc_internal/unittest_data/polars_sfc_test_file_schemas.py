@@ -342,6 +342,13 @@ class FlattenCQCRatings:
 
     location_id_hash_schema = pl.Schema([(CQCL.location_id, pl.String)])
 
+    expected_location_id_hash_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCRatingsColumns.location_id_hash, pl.String),
+        ]
+    )
+
     benchmarks_ratings_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String),

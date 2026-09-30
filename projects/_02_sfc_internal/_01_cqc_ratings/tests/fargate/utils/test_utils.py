@@ -321,9 +321,25 @@ class TestRecodeUnknownCodesToNull:
         ).collect()
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
 
+    def test_leaves_columns_other_than_the_ratings_unchanged(self):
+        input_lf = pl.LazyFrame(
+            Data.recode_unknown_to_null_non_rating_columns_rows,
+            schema=Schemas.flattened_ratings_schema,
+            orient="row",
+        )
+
+        returned_df = job.recode_unknown_codes_to_null(input_lf).collect()
+
+        expected_df = pl.LazyFrame(
+            Data.recode_unknown_to_null_non_rating_columns_rows,
+            schema=Schemas.flattened_ratings_schema,
+            orient="row",
+        ).collect()
+        pl_testing.assert_frame_equal(expected_df, returned_df)
+
 
 class TestRemoveBlankAndDuplicateRows:
-    def test_removes_rows_with_no_ratings_populated(self):
+    def test_removes_rows_with_no_ratings_and_keeps_rows_with_any_single_rating(self):
         input_lf = pl.LazyFrame(
             Data.remove_blank_rows_rows,
             schema=Schemas.flattened_ratings_schema,
@@ -338,6 +354,22 @@ class TestRemoveBlankAndDuplicateRows:
             orient="row",
         ).collect()
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+    def test_removes_duplicate_rows(self):
+        input_lf = pl.LazyFrame(
+            Data.remove_blank_duplicate_rows,
+            schema=Schemas.flattened_ratings_schema,
+            orient="row",
+        )
+
+        returned_df = job.remove_blank_and_duplicate_rows(input_lf).collect()
+
+        expected_df = pl.LazyFrame(
+            Data.expected_remove_blank_duplicate_rows,
+            schema=Schemas.flattened_ratings_schema,
+            orient="row",
+        ).collect()
+        pl_testing.assert_frame_equal(expected_df, returned_df)
 
 
 class TestAddLatestRatingFlagColumn:
@@ -377,6 +409,30 @@ class TestAddLatestRatingFlagColumn:
         )
         assert flag_by_assessment_date == {None: 0, "2024-02-01": 1}
 
+    def test_flags_the_latest_rating_within_each_location(self):
+        input_lf = pl.LazyFrame(
+            Data.add_latest_rating_flag_multiple_locations_rows,
+            schema=Schemas.ratings_with_assessment_date_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_latest_rating_flag_column(input_lf).collect()
+
+        flag_by_location_and_date = {
+            (location_id, date): flag
+            for location_id, date, flag in zip(
+                returned_df[job.CQCL.location_id].to_list(),
+                returned_df[job.CQCRatings.date].to_list(),
+                returned_df[job.CQCRatings.latest_rating_flag].to_list(),
+            )
+        }
+        assert flag_by_location_and_date == {
+            ("1-001", "2024-01-01"): 1,
+            ("1-001", "2023-01-01"): 0,
+            ("1-002", "2022-01-01"): 1,
+            ("1-002", "2021-01-01"): 0,
+        }
+
 
 class TestAddNumericalRatings:
     def test_add_numerical_ratings_returns_expected_values(self):
@@ -410,7 +466,7 @@ class TestCreateStandardRatingsDataset:
 
 
 class TestAddLocationIdHash:
-    def test_adds_a_twenty_character_hash_of_the_location_id(self):
+    def test_adds_the_same_twenty_character_hash_as_the_previous_spark_job(self):
         input_lf = pl.LazyFrame(
             Data.location_id_hash_rows,
             schema=Schemas.location_id_hash_schema,
@@ -419,16 +475,12 @@ class TestAddLocationIdHash:
 
         returned_df = job.add_location_id_hash(input_lf).collect()
 
-        assert job.CQCRatings.location_id_hash in returned_df.columns
-        for location_id, location_hash in zip(
-            returned_df[job.CQCL.location_id].to_list(),
-            returned_df[job.CQCRatings.location_id_hash].to_list(),
-        ):
-            assert len(location_hash) == 20
-            assert (
-                location_hash
-                == job.hashlib.sha256(location_id.encode()).hexdigest()[:20]
-            )
+        expected_df = pl.LazyFrame(
+            Data.expected_location_id_hash_rows,
+            schema=Schemas.expected_location_id_hash_schema,
+            orient="row",
+        ).collect()
+        pl_testing.assert_frame_equal(expected_df, returned_df)
 
 
 class TestSelectRatingsForBenchmarks:
