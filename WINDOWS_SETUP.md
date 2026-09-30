@@ -296,16 +296,17 @@ Terraform can't prompt for an MFA code, so it uses temporary credentials that `a
 #### Prod (i.e. existing) aws account
 1. Open cmd
 
-2. Type `aws configure --profile prod`, where `prod` is whatever name you want to use to refer to prod
+2. Type `aws configure --profile prod` (use `prod` as the name, the later steps assume it)
 
 3. Add your aws access key and secret access key (if you do not have these you can generate new ones by following [these steps](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html))
 4. Region: eu-west-2
 5. Default output format: json
 6. In prod account AWS console, click on your name in the top right, and navigate to `Security Credentials` in the drop down. On the Security Credentials page, scroll down to Multi-factor Authentication. Copy the value of the `Identifier` field (it should look like `arn:aws:iam::344210435447:mfa/*********`i).
-7. Add `mfa_serial = <mfa arn>` (where `<mfa arn>` is the arn obtained in step 6) to your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file, under the `[profile prod]` heading:
+7. Add only the `mfa_serial = <mfa arn>` line (where `<mfa arn>` is the arn obtained in step 6) to the existing `[profile prod]` section of your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file. Don't add a second `[profile prod]` heading, as duplicate sections break `aws-mfa`. It should end up looking like:
 ```
 [profile prod]
 region = eu-west-2
+output = json
 mfa_serial = <mfa arn>
 ```
 8. Run `aws sts get-caller-identity --profile prod` and verify that the response looks like:
@@ -325,7 +326,7 @@ If you've previously set up your AWS CLI to point to this environment, it is rec
 #### Non-prod (i.e. new) aws account
 This profile assumes a role using the temporary `prod-mfa` credentials that `aws-mfa` writes to your `credentials` file (see "Terraform command line access" below). Don't add `mfa_serial` to it: Terraform fails with `assume role with MFA enabled, but AssumeRoleTokenProvider session option not set` if you do.
 
-1. Add the following to your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom:
+1. Add the following to your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom. If you already have a `[profile non-prod]` section, replace it instead (delete the old `mfa_serial` and `source_profile = prod` lines), as duplicate sections break `aws-mfa`:
 ```
 [profile non-prod]
 region = eu-west-2
