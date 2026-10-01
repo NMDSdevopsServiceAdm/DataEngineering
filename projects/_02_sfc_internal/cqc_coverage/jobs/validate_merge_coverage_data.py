@@ -1,3 +1,4 @@
+# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/validate_merge_coverage_data.py
 import os
 import sys
 
