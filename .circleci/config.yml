@@ -65,6 +65,14 @@ commands:
 
 
 jobs:
+  # THROWAWAY (ticket 2140). Remove.
+  stub-echo:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run: echo "stub job, pipeline << pipeline.number >>"
+
   # Works out which docker-bake targets this push needs, so
   # task-containerisation can skip setup_remote_docker entirely when nothing
   # changed, and whether this push should seed the non-prod raw data bucket,
@@ -664,6 +672,19 @@ jobs:
 
 
 job-groups:
+  # THROWAWAY (ticket 2140): proves an approval job works inside a serial-grouped job group. Remove.
+  stub-plan-approve-apply:
+    jobs:
+      - stub-echo:
+          name: stub-plan
+      - stub-approval:
+          type: approval
+          requires:
+            - stub-plan
+      - stub-echo:
+          name: stub-apply
+          requires:
+            - stub-approval
   # Prod plan -> manual approval -> apply, run as an atomic unit when invoked
   # with a serial-group (see test-plan-approve-and-deploy-to-main).
   plan-approve-and-apply:
@@ -684,6 +705,20 @@ job-groups:
             - terraform-apply
 
 workflows:
+  # THROWAWAY (ticket 2140). Remove.
+  throwaway-approval-test:
+    unless: << pipeline.parameters.GHA_Action >>
+    jobs:
+      - stub-echo:
+          name: stub-upstream
+          filters:
+            branches:
+              only: 2140-merge-queue
+      - stub-plan-approve-apply:
+          serial-group: << pipeline.project.slug >>/throwaway-2140
+          requires:
+            - stub-upstream
+
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
