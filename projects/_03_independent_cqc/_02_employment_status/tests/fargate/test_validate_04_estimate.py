@@ -24,9 +24,10 @@ class TestMain:
             EmpStatus.estimated_emp_stat_bank_or_pool: pl.Float64,
             EmpStatus.estimated_emp_stat_agency: pl.Float64,
             EmpStatus.estimated_emp_stat_other: pl.Float64,
+            EmpStatus.estimated_employees: pl.Float64,
         }
         source_rows = [
-            ("1-001", 10.0, 5.0, 2.0, 1.5, 1.0, 0.5),
+            ("1-001", 10.0, 5.0, 2.0, 1.5, 1.0, 0.5, 7.0),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])

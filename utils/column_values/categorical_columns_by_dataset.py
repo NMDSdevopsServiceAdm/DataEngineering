@@ -17,6 +17,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import ONScol as ONS
 from utils.column_names.coverage_columns import CoverageColumns
+from utils.column_names.direct_payments_column_names import (
+    DirectPaymentColumnNames as DP,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
@@ -42,8 +45,11 @@ from utils.column_values.categorical_column_values import (
     AscwdsJobRoleRatiosMergedSource,
     CareHome,
     ContemporaryCSSR,
+    CTFilteringRule,
+    CTNonResFilledPostEstimateSource,
     CurrentCSSR,
     Dormancy,
+    EstimatedProportionEmployingStaffSource,
     EstimateFilledPostsSource,
     InAscwds,
     JobGroupLabels,
@@ -202,6 +208,13 @@ class CleanedIndCQCCategoricalValues:
     ascwds_filtering_rule_column_values = AscwdsFilteringRule(
         IndCQC.ascwds_filtering_rule
     )
+    ct_care_home_filtering_rule_column_values = CTFilteringRule(
+        IndCQC.ct_care_home_filtering_rule
+    )
+    ct_non_res_filtering_rule_column_values = CTFilteringRule(
+        IndCQC.ct_non_res_filtering_rule,
+        value_to_remove=CTFilteringRule.beds_ratio_outlier,
+    )
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
     specialism_dementia_column_values = SpecialistGeneralistOther(
         IndCQC.specialism_dementia
@@ -266,6 +279,11 @@ class EstimatedIndCQCFilledPostsCategoricalValues:
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source
     )
+    ct_non_res_filled_post_estimate_source_column_values = (
+        CTNonResFilledPostEstimateSource(
+            IndCQC.ct_non_res_filled_post_estimate_source, contains_null_values=True
+        )
+    )
 
 
 @dataclass
@@ -302,6 +320,15 @@ class DiagnosticOnKnownFilledPostsCategoricalValues:
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source,
         value_to_remove=EstimateFilledPostsSource.ascwds_pir_merged,
+    )
+
+
+@dataclass
+class DirectPaymentRecipientsEstimateCategoricalValues:
+    estimated_proportion_of_service_users_employing_staff_source_column_values = (
+        EstimatedProportionEmployingStaffSource(
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE
+        )
     )
 
 

@@ -1,5 +1,8 @@
 from dataclasses import asdict, dataclass
 
+from utils.column_names.direct_payments_column_names import (
+    DirectPaymentColumnNames as DP,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
@@ -424,6 +427,26 @@ class EstimateFilledPostsSource(ColumnValues):
     non_res_combined_model: str = IndCQC.non_res_combined_model
     imputed_pir_filled_posts_model: str = IndCQC.imputed_pir_filled_posts_model
     posts_rolling_average_model: str = IndCQC.posts_rolling_average_model
+
+
+@dataclass
+class CTNonResFilledPostEstimateSource(ColumnValues):
+    """The possible values of the capacity tracker non-res filled post estimate source column in the independent CQC estimates pipeline"""
+
+    ct_non_res_all_posts: str = IndCQC.ct_non_res_all_posts
+    estimate_filled_posts: str = IndCQC.estimate_filled_posts
+
+
+@dataclass
+class EstimatedProportionEmployingStaffSource(ColumnValues):
+    """The possible values of the estimated proportion of service users employing staff source column in the direct payment recipients pipeline"""
+
+    proportion_of_service_users_employing_staff: str = (
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+    )
+    estimate_using_extrapolation_ratio: str = DP.ESTIMATE_USING_EXTRAPOLATION_RATIO
+    estimate_using_interpolation: str = DP.ESTIMATE_USING_INTERPOLATION
+    estimate_using_mean: str = DP.ESTIMATE_USING_MEAN
 
 
 @dataclass
