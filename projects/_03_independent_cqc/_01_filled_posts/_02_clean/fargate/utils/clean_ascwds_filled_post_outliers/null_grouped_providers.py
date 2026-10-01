@@ -29,6 +29,7 @@ GROUPED_PROVIDER_SCHEMA = pl.Schema(
         (IndCQC.care_home, CatColType.CareHomeEnumType),
         (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
         (IndCQC.number_of_beds, pl.Int64()),
+        (IndCQC.number_of_beds_at_provider, pl.Int64()),
         (NGPcol.location_pir_average, pl.Float64()),
         (NGPcol.grouped_provider_status, pl.String()),
         (NGPcol.grp_prov_identified_date, pl.Date()),
@@ -123,7 +124,9 @@ def null_grouped_providers(
     ngp_cols = {field.name for field in fields(NGPcol())}
     columns_to_drop = [c for c in lf.collect_schema().names() if c in ngp_cols]
 
-    lf = lf.drop(*columns_to_drop).drop(AWPClean.nmds_id)
+    lf = lf.drop(*columns_to_drop).drop(
+        AWPClean.nmds_id, IndCQC.number_of_beds_at_provider
+    )
 
     return lf, updated_grouped_providers_lf
 
@@ -351,12 +354,10 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     Filters the input LazyFrame to the following:
         - ASCWDS data was actually nulled by null_care_home_grouped_providers or
           null_non_residential_grouped_providers.
-        - cqc_location_import_date equal to max year/month across all rows in
-          the dataset, not just the flagged rows, so a month with nothing
-          flagged returns no rows rather than falling back to an earlier month.
-
-    Months are compared rather than dates because the clean job keeps one
-    import date per calendar month, so both are equivalent here.
+        - cqc_location_import_date equal to the latest import date across all
+          rows in the dataset, not just the flagged rows, so a month with
+          nothing flagged returns no rows rather than falling back to an
+          earlier month.
 
     A location can be a potential_grouped_provider without its data being
     nulled, since null_care_home_grouped_providers and
@@ -383,13 +384,12 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
         ]
     )
 
-    date_col = pl.col(IndCQC.cqc_location_import_date)
-    trunc_date_col = date_col.dt.truncate("1mo")  # E.g. 2026-01-05 becomes 2026-01-01.
+    import_date = pl.col(IndCQC.cqc_location_import_date)
 
-    # The latest month comes from all rows, not just flagged ones, so a month with
+    # The latest date comes from all rows, not just flagged ones, so a month with
     # nothing flagged doesn't fall back to an earlier one.
     return (
-        lf.filter(trunc_date_col == trunc_date_col.max())
+        lf.filter(import_date == import_date.max())
         .filter(was_nulled_as_grouped_provider)
         .with_columns(
             pl.lit("problem").alias(NGPcol.grouped_provider_status),
@@ -418,13 +418,12 @@ def select_locations_populated_this_month(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Returns:
         pl.LazyFrame: A single-column LazyFrame of location_id values that are
-            "populated" at the latest month in lf.
+            "populated" at the latest import date in lf.
     """
-    date_col = pl.col(IndCQC.cqc_location_import_date)
-    trunc_date_col = date_col.dt.truncate("1mo")
+    import_date = pl.col(IndCQC.cqc_location_import_date)
 
     return (
-        lf.filter(trunc_date_col == trunc_date_col.max())
+        lf.filter(import_date == import_date.max())
         .filter(pl.col(IndCQC.ascwds_filtering_rule) == AscwdsFilteringRule.populated)
         .select(IndCQC.location_id)
     )

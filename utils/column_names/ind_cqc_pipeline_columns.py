@@ -80,6 +80,7 @@ class IndCqcColumns:
     brand_id: str = CQCLClean.brand_id
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
+    care_home_model_run_id: str = care_home_model + "_run_id"
     care_home_status_count: str = "care_home_status_count"
     combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contemporary_constituency: str = ONSClean.contemporary_constituency
@@ -239,7 +240,11 @@ class IndCqcColumns:
     next_submission_time: str = "next_submission_time"
     non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
+    non_res_with_dormancy_model_run_id: str = non_res_with_dormancy_model + "_run_id"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
+    non_res_without_dormancy_model_run_id: str = (
+        non_res_without_dormancy_model + "_run_id"
+    )
     national_percentage_care_worker_filled_posts: str = (
         "national_percentage_care_worker_filled_posts"
     )
@@ -369,6 +374,25 @@ class JobRoleImputeTempColumns:
 
 
 @dataclass
+class EmploymentStatusImputeTempColumns:
+    """
+    The names of the temporary columns used while imputing employment status percentages.
+
+    The `_prefix` fields are joined to each percentage column's name, since first/last known
+    values and rolling totals are needed once per employment status.
+    """
+
+    first_known_date: str = "es_impute_first_known_date"
+    last_known_date: str = "es_impute_last_known_date"
+    previous_known_date: str = "es_impute_previous_known_date"
+    next_known_date: str = "es_impute_next_known_date"
+    contributing_locations: str = "es_impute_contributing_locations"
+    first_known_value_prefix: str = "es_impute_first_known_value_"
+    last_known_value_prefix: str = "es_impute_last_known_value_"
+    rolling_total_prefix: str = "es_impute_rolling_total_"
+
+
+@dataclass
 class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
@@ -476,6 +500,16 @@ class EmploymentStatusColumns:
     bank_or_pool_percentage: str = "emplstat_bank_or_pool_percentage"
     agency_percentage: str = "emplstat_agency_percentage"
     other_percentage: str = "emplstat_other_percentage"
+    permanent_percentage_imputed: str = permanent_percentage + "_imputed"
+    temporary_percentage_imputed: str = temporary_percentage + "_imputed"
+    bank_or_pool_percentage_imputed: str = bank_or_pool_percentage + "_imputed"
+    agency_percentage_imputed: str = agency_percentage + "_imputed"
+    other_percentage_imputed: str = other_percentage + "_imputed"
+    permanent_percentage_rolling_avg: str = permanent_percentage + "_rolling_avg"
+    temporary_percentage_rolling_avg: str = temporary_percentage + "_rolling_avg"
+    bank_or_pool_percentage_rolling_avg: str = bank_or_pool_percentage + "_rolling_avg"
+    agency_percentage_rolling_avg: str = agency_percentage + "_rolling_avg"
+    other_percentage_rolling_avg: str = other_percentage + "_rolling_avg"
     employee_count: str = "emplstat_employee_count"
     estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
     estimated_emp_stat_temp: str = "estimated_emp_stat_temp"
@@ -483,6 +517,12 @@ class EmploymentStatusColumns:
     estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
     estimated_emp_stat_other: str = "estimated_emp_stat_other"
     estimated_employees: str = "estimated_employees"
+    permanent_count_clean: str = "emplstat_permanent_count_clean"
+    temporary_count_clean: str = "emplstat_temporary_count_clean"
+    bank_or_pool_count_clean: str = "emplstat_bank_or_pool_count_clean"
+    agency_count_clean: str = "emplstat_agency_count_clean"
+    other_count_clean: str = "emplstat_other_count_clean"
+    filtering_rule: str = "employment_status_filtering_rule"
 
 
 @dataclass
