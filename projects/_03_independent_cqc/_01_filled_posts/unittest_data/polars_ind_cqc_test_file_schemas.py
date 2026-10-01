@@ -412,7 +412,6 @@ class ValidateCleanIndCQCSchemas:
             (IndCQC.imputed_registration_date, pl.Date()),
             (IndCQC.dormancy, pl.String()),
             (IndCQC.number_of_beds, pl.Int64()),
-            (IndCQC.number_of_beds_at_provider, pl.Int64()),
             (IndCQC.services_offered, pl.List(pl.String())),
             (IndCQC.primary_service_type, pl.String()),
             (IndCQC.contemporary_ons_import_date, pl.Date()),
@@ -924,6 +923,7 @@ class NullGroupedProvidersSchema:
             (IndCQC.care_home, pl.String()),
             (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
             (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.number_of_beds_at_provider, pl.Int64()),
             (NGPcol.location_pir_average, pl.Float64()),
         ]
     )

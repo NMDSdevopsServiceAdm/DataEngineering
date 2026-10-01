@@ -122,7 +122,6 @@ def main(
         # # above
         .col_vals_ge(IndCqcColumns.time_registered, 1)
         .col_vals_between(IndCqcColumns.care_home_status_count, 1, 2)
-        .col_vals_ge(IndCqcColumns.number_of_beds_at_provider, 0, na_pass=True)
         # between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(IndCqcColumns.number_of_beds, 0, 500, na_pass=True)
