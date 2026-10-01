@@ -17,24 +17,31 @@ from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
-survey_columns = [DP.YEAR, DP.TOTAL_STAFF_RECODED]
-external_columns = [
-    DP.LA_AREA,
-    DP.YEAR,
-    DP.DPRS_ADASS,
-    DP.DPRS_EMPLOYING_STAFF_ADASS,
-    DP.SERVICE_USER_DPRS_AT_YEAR_END,
-    DP.CARER_DPRS_AT_YEAR_END,
-    DP.SERVICE_USER_DPRS_DURING_YEAR,
-    DP.PROPORTION_IMPORTED,
-    DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
-]
-
 
 def main(survey_source: str, external_source: str, destination: str) -> None:
-    survey_lf = utils.scan_parquet(survey_source, selected_columns=survey_columns)
+    """Prepares and merges survey and external DPR data into one dataset.
+
+    Args:
+        survey_source (str): S3 URI of the ingested IE/PA survey data.
+        external_source (str): S3 URI of the external DPR data.
+        destination (str): S3 URI to write the merged data to.
+    """
+    survey_lf = utils.scan_parquet(
+        survey_source, selected_columns=[DP.YEAR, DP.TOTAL_STAFF_RECODED]
+    )
     direct_payments_lf = utils.scan_parquet(
-        external_source, selected_columns=external_columns
+        external_source,
+        selected_columns=[
+            DP.LA_AREA,
+            DP.YEAR,
+            DP.DPRS_ADASS,
+            DP.DPRS_EMPLOYING_STAFF_ADASS,
+            DP.SERVICE_USER_DPRS_AT_YEAR_END,
+            DP.CARER_DPRS_AT_YEAR_END,
+            DP.SERVICE_USER_DPRS_DURING_YEAR,
+            DP.PROPORTION_IMPORTED,
+            DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
+        ],
     )
 
     pa_ratio_lf = calculate_pa_ratio(survey_lf)
@@ -61,9 +68,9 @@ def main(survey_source: str, external_source: str, destination: str) -> None:
     ).with_columns(service_user_dprs.alias(DP.TOTAL_DPRS_DURING_YEAR))
 
     direct_payments_lf = direct_payments_lf.select(
+        DP.YEAR_AS_INTEGER,
         DP.LA_AREA,
         DP.YEAR,
-        DP.YEAR_AS_INTEGER,
         DP.SERVICE_USER_DPRS_DURING_YEAR,
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
