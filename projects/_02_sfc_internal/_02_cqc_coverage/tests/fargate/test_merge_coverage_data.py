@@ -1,4 +1,4 @@
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, patch
 
 import polars as pl
 
@@ -86,14 +86,13 @@ class TestMain:
             "reduced_dest/",
         )
 
-        scan_parquet_mock.assert_has_calls(
-            [
-                call("cqc_location_source/"),
-                call("ascwds_source/"),
-                call("cqc_ratings_source/"),
-                call("cqc_providers_source/"),
-            ]
-        )
+        scanned_sources = [c.args[0] for c in scan_parquet_mock.call_args_list]
+        assert scanned_sources == [
+            "cqc_location_source/",
+            "ascwds_source/",
+            "cqc_ratings_source/",
+            "cqc_providers_source/",
+        ]
 
         cov_utils_mock.add_removed_by_purge_date_filter_flag.assert_called_once()
         cov_utils_mock.deduplicate_ascwds_workplace_data.assert_called_once()
