@@ -4,9 +4,8 @@ on: [ delete ]
 
 jobs:
   trigger-circleci-delete:
-    # Only branch deletes have a dev environment to destroy, not tag deletes.
-    # GitHub's merge queue also deletes its gh-readonly-queue/* branches after
-    # each merge; they never had a dev environment either.
+    # Only branches have a dev environment to destroy: skip tag deletes and
+    # merge queue branches.
     if: ${{ github.event.ref_type == 'branch' && !startsWith(github.event.ref, 'gh-readonly-queue/') }}
     runs-on: ubuntu-latest
     steps:

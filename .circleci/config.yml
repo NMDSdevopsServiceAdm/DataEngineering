@@ -664,8 +664,7 @@ jobs:
 
 
 job-groups:
-  # Prod plan -> approval -> apply -> dependencies; atomic when invoked with a
-  # serial-group (see test-plan-approve-and-deploy-to-main).
+  # Run as one unit via serial-group (see test-plan-approve-and-deploy-to-main).
   plan-approve-and-apply:
     jobs:
       - terraform-plan:
@@ -700,21 +699,18 @@ workflows:
           filters:
             branches:
               only: main
-      # One unit so overlapping merges to main can't plan against the same
-      # state (state lock, stale plan): the next plan waits until this has
-      # applied, been rejected or failed. Includes deploy-dependencies so S3
-      # syncs can't land out of order. Waits at most 5 hours, then is cancelled
-      # and needs a re-run. Needs auto-cancel OFF (see DEPLOY.md).
+      # Overlapping main pipelines would hit the state lock or a stale plan, so
+      # the next one waits for this to finish. Cancelled after 5 hours waiting:
+      # re-run it. Needs auto-cancel OFF (see DEPLOY.md).
       - plan-approve-and-apply:
           serial-group: << pipeline.project.slug >>/terraform-main
           requires:
             - test
             - task-containerisation
 
-  # Checks for GitHub merge queue's temporary gh-readonly-queue/main/* branches:
-  # lint and tests only, no deploy. These four jobs are the required status
-  # checks in the main-merge-queue ruleset (ci/circleci: <job>). To disable the
-  # merge queue, delete that ruleset in GitHub; no code change is needed.
+  # Merge queue branches get lint and tests only, no deploy. These four jobs
+  # are the main-merge-queue ruleset's required checks; delete that ruleset to
+  # disable the queue.
   merge-queue-checks:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
@@ -736,10 +732,8 @@ workflows:
               only: /^gh-readonly-queue\/.*/
 
 
-  # Every job here that has a branch filter also ignores gh-readonly-queue/*:
-  # those are GitHub merge queue's temporary branches, which merge-queue-checks
-  # (above) tests instead. Without the exclusion each queued PR would deploy a
-  # dev environment. Jobs with no filter of their own only run via `requires`.
+  # Filtered jobs also ignore gh-readonly-queue/* (merge queue branches, tested
+  # by merge-queue-checks) so queued PRs don't deploy a dev environment.
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
