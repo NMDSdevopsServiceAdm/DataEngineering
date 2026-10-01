@@ -9,6 +9,9 @@ from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import (
     MergeCoverageSchema as Schemas,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
 )
@@ -168,7 +171,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.cov_utils")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_reduced_destination_currently_receives_same_data_as_merged_destination(
+    def test_reduced_destination_only_contains_the_latest_cqc_location_import_date(
         self, scan_parquet_mock: Mock, cov_utils_mock: Mock, sink_to_parquet_mock: Mock
     ):
         scan_parquet_mock.side_effect = [
@@ -196,8 +199,8 @@ class TestMain:
         )
         cov_utils_mock.add_flag_for_in_ascwds.side_effect = lambda lf: lf
         cov_utils_mock.deduplicate_merged_coverage_data.return_value = pl.LazyFrame(
-            Data.deduped_merged_coverage_rows,
-            schema=Schemas.deduped_merged_coverage_schema,
+            Data.merged_coverage_with_two_import_dates_rows,
+            schema=Schemas.merged_coverage_with_two_import_dates_schema,
             orient="row",
         )
         cov_utils_mock.join_latest_cqc_rating_into_coverage_df.side_effect = (
@@ -224,4 +227,7 @@ class TestMain:
 
         assert merged_args[1] == "merged_dest/"
         assert reduced_args[1] == "reduced_dest/"
-        assert merged_args[0].collect().equals(reduced_args[0].collect())
+        assert merged_args[0].collect().height == 2
+        reduced_df = reduced_args[0].collect()
+        assert reduced_df.height == 1
+        assert reduced_df[CQCLClean.location_id].to_list() == ["1-002"]

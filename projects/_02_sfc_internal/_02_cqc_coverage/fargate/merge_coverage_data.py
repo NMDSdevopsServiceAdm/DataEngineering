@@ -66,9 +66,9 @@ def main(
 
     utils.sink_to_parquet(merged_coverage_lf, merged_coverage_destination)
 
-    # TODO (ticket 2131b): filter to the latest import month instead of a
-    # straight pass-through.
-    reduced_coverage_lf = merged_coverage_lf
+    reduced_coverage_lf = utils.filter_to_maximum_value_in_column(
+        merged_coverage_lf, CQCLClean.cqc_location_import_date
+    )
     utils.sink_to_parquet(reduced_coverage_lf, reduced_coverage_destination)
 
 
