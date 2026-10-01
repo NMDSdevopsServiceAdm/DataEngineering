@@ -341,10 +341,10 @@ class ValidateMergeIndCQCData:
 class ValidateCleanIndCQCData:
 
     cleaned_ind_cqc_data_rows = [
-        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, 10, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
-        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, 10, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
-        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, 10, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
-        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, 10, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff, 1, 1.0, 1.0, CTFilteringRule.populated, CTFilteringRule.populated, 5, 5),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff, 1, 1.0, 1.0, CTFilteringRule.populated, CTFilteringRule.populated, 5, 5),
+        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff, 1, 1.0, 1.0, CTFilteringRule.populated, CTFilteringRule.populated, 5, 5),
+        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff, 1, 1.0, 1.0, CTFilteringRule.populated, CTFilteringRule.populated, 5, 5),
     ] # fmt: skip
 
     merged_ind_cqc_data_rows = [
@@ -375,10 +375,10 @@ class ValidateImputedIndCqcAscwdsAndPir:
     # columns null, covering the na_pass path. The imputed capacity tracker values are
     # deliberately below 1, which the cleaned columns they impute cannot be.
     imputed_ind_cqc_ascwds_and_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  1.0,  5.0,  5.0,  None, 1.0,  5.0,  5.0,  1.0,  0.5,  None),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, 5.0,  5.0,  5.0,  5.0,  None, 5.0,  5.0,  1.0,  None, 0.5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  None, None, None, None, None, None, None, None, None, None),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, None, None, None, None, None, None, None, None, None, None),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  1.0,  5.0,  5.0,  None, 1.0,  5.0,  0.0,  5.0,  5.0,  1.0,  0.5,  None),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, 5.0,  5.0,  5.0,  5.0,  None, 5.0,  0.0,  5.0,  5.0,  1.0,  None, 0.5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  None, None, None, None, None, None, None, None, None, None, None, None),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, None, None, None, None, None, None, None, None, None, None, None, None),
     ] # fmt: skip
 
 
@@ -392,10 +392,10 @@ class ValidateEstimatedIndCQCFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, "run_1", 5.0, 5.0, 5.0, 5.0, "run_1", 5.0, "run_1", 5.0, 5.0, 5.0, IndCQC.ct_non_res_all_posts, [Services.care_home_service_without_nursing]),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, "run_1", 5.0, 5.0, 5.0, 5.0, "run_1", 5.0, "run_1", 5.0, 5.0, 5.0, IndCQC.ct_non_res_all_posts, [Services.care_home_service_without_nursing]),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, "run_1", 5.0, 5.0, 5.0, 5.0, "run_1", 5.0, "run_1", 5.0, 5.0, 5.0, IndCQC.ct_non_res_all_posts, [Services.care_home_service_without_nursing]),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, "run_1", 5.0, 5.0, 5.0, 5.0, "run_1", 5.0, "run_1", 5.0, 5.0, 5.0, IndCQC.ct_non_res_all_posts, [Services.care_home_service_without_nursing]),
     ] # fmt: skip
 
 
@@ -1102,71 +1102,71 @@ class NullGroupedProvidersData:
         SelectGroupedProvidersCase(
             id="keeps_care_home_location_actually_nulled_at_max_import_date",
             input_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
             ],
             expected_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, "problem", date(2026, 2, 1), None),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, "problem", date(2026, 2, 1), None),
             ],
         ),
         SelectGroupedProvidersCase(
             id="keeps_non_res_location_actually_nulled_at_max_import_date",
             input_rows=[
-                (date(2026, 2, 1), "prov-2", 2, "1-005", "nmdsid_5", "Location Five", "N", 1.0, 0, None, AscwdsFilteringRule.non_res_location_was_grouped_provider),
+                (date(2026, 2, 1), "prov-2", 2, "1-005", "nmdsid_5", "Location Five", "N", 1.0, 0, 0, None, AscwdsFilteringRule.non_res_location_was_grouped_provider),
             ],
             expected_rows=[
-                (date(2026, 2, 1), "prov-2", 2, "1-005", "nmdsid_5", "Location Five", "N", 1.0, 0, None, "problem", date(2026, 2, 1), None),
+                (date(2026, 2, 1), "prov-2", 2, "1-005", "nmdsid_5", "Location Five", "N", 1.0, 0, 0, None, "problem", date(2026, 2, 1), None),
             ],
         ),
         SelectGroupedProvidersCase(
             id="excludes_potential_grouped_provider_that_was_not_actually_nulled",
             input_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-002", "nmdsid_2", "Location Two", "N", 1.0, 0, None, AscwdsFilteringRule.populated),
+                (date(2026, 2, 1), "prov-1", 2, "1-002", "nmdsid_2", "Location Two", "N", 1.0, 0, 0, None, AscwdsFilteringRule.populated),
             ],
             expected_rows=[],
         ),
         SelectGroupedProvidersCase(
             id="excludes_location_nulled_at_an_earlier_import_date_than_the_latest_snapshot",
             input_rows=[
-                (date(2026, 1, 1), "prov-1", 2, "1-001", "nmdsid_1", "Location One", "N", 1.0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                (date(2026, 1, 1), "prov-1", 2, "1-001", "nmdsid_1", "Location One", "N", 1.0, 0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
             ],
             expected_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, "problem", date(2026, 2, 1), None),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, "problem", date(2026, 2, 1), None),
             ],
         ),
         SelectGroupedProvidersCase(
             id="excludes_earlier_year_row_even_when_month_number_is_higher",
             input_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-                (date(2025, 3, 1), "prov-1", 2, "1-008", "nmdsid_7", "Location Eight", "N", 1.0, 0, None, AscwdsFilteringRule.non_res_location_was_grouped_provider),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                (date(2025, 3, 1), "prov-1", 2, "1-008", "nmdsid_7", "Location Eight", "N", 1.0, 0, 0, None, AscwdsFilteringRule.non_res_location_was_grouped_provider),
             ],
             expected_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, "problem", date(2026, 2, 1), None),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, "problem", date(2026, 2, 1), None),
             ],
         ),
     ]  # fmt: skip
 
     # All rows have grouped_provider_status = "problem" and last_update_date = their import date.
     new_grouped_providers_rows = [
-        (date(2026, 2, 1), "prov-1", 2, "1-001", "nmds_1", "Location One", "N", 10.0, 0, None, "problem", date(2026, 2, 1), None),
-        (date(2026, 2, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, None, "problem", date(2026, 2, 1), None),
-        (date(2026, 2, 1), "prov-3", 2, "1-004", "nmds_4", "Location Four", "N", 40.0, 0, None, "problem", date(2026, 2, 1), None),
+        (date(2026, 2, 1), "prov-1", 2, "1-001", "nmds_1", "Location One", "N", 10.0, 0, 0, None, "problem", date(2026, 2, 1), None),
+        (date(2026, 2, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, 0, None, "problem", date(2026, 2, 1), None),
+        (date(2026, 2, 1), "prov-3", 2, "1-004", "nmds_4", "Location Four", "N", 40.0, 0, 0, None, "problem", date(2026, 2, 1), None),
     ]  # fmt: skip
 
     # historical_grouped_providers_rows: what was previously saved to the grouped providers dataset.
     historical_grouped_providers_rows = [
-        (date(2026, 1, 1), "prov-1", 2, "1-001", "nmds_1", "Location One", "N", 10.0, 0, None, "problem", date(2026, 1, 1), None), # Still active problem — should be retained as-is (oldest kept, last_update_date stays same).
-        (date(2026, 1, 1), "prov-1", 2, "1-002", "nmds_2", "Location Two", "N", 20.0, 0, None, "problem", date(2026, 1, 1), None), # Dropped off — not in new snapshot, should be flipped to "fixed".
-        (date(2026, 1, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, None, "fixed", date(2026, 1, 1), date(2026, 1, 1)), # Re-appearing — was fixed, now back as "problem" in new snapshot; new row appended.
+        (date(2026, 1, 1), "prov-1", 2, "1-001", "nmds_1", "Location One", "N", 10.0, 0, 0, None, "problem", date(2026, 1, 1), None), # Still active problem — should be retained as-is (oldest kept, last_update_date stays same).
+        (date(2026, 1, 1), "prov-1", 2, "1-002", "nmds_2", "Location Two", "N", 20.0, 0, 0, None, "problem", date(2026, 1, 1), None), # Dropped off — not in new snapshot, should be flipped to "fixed".
+        (date(2026, 1, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 1, 1)), # Re-appearing — was fixed, now back as "problem" in new snapshot; new row appended.
     ]  # fmt: skip
 
     # expected_update_grouped_providers_history_rows: full history after update.
     expected_update_grouped_providers_history_rows = [
-        (date(2026, 1, 1), "prov-1", 2, "1-001", "nmds_1", "Location One", "N", 10.0, 0, None, "problem", date(2026, 1, 1), None), # Retained — oldest "problem" record kept, last_update_date unchanged.
-        (date(2026, 1, 1), "prov-1", 2, "1-002", "nmds_2", "Location Two", "N", 20.0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)), # Flipped — was "problem", now "fixed" with last_update_date = new snapshot date.
-        (date(2026, 1, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, None, "fixed", date(2026, 1, 1), date(2026, 1, 1)), # Preserved — old "fixed" row kept as part of full history.
-        (date(2026, 2, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, None, "problem", date(2026, 2, 1), None), # Re-appeared — new "problem" row appended alongside the old "fixed" row.
-        (date(2026, 2, 1), "prov-3", 2, "1-004", "nmds_4", "Location Four", "N", 40.0, 0, None, "problem", date(2026, 2, 1), None), # New — first time seen, added with "problem" status.
+        (date(2026, 1, 1), "prov-1", 2, "1-001", "nmds_1", "Location One", "N", 10.0, 0, 0, None, "problem", date(2026, 1, 1), None), # Retained — oldest "problem" record kept, last_update_date unchanged.
+        (date(2026, 1, 1), "prov-1", 2, "1-002", "nmds_2", "Location Two", "N", 20.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)), # Flipped — was "problem", now "fixed" with last_update_date = new snapshot date.
+        (date(2026, 1, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 1, 1)), # Preserved — old "fixed" row kept as part of full history.
+        (date(2026, 2, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, 0, None, "problem", date(2026, 2, 1), None), # Re-appeared — new "problem" row appended alongside the old "fixed" row.
+        (date(2026, 2, 1), "prov-3", 2, "1-004", "nmds_4", "Location Four", "N", 40.0, 0, 0, None, "problem", date(2026, 2, 1), None), # New — first time seen, added with "problem" status.
     ]  # fmt: skip
 
 

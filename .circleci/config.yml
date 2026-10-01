@@ -657,6 +657,19 @@ jobs:
             terraform workspace select default
             terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
 
+  # Fails a pipeline whose terraform-apply did not run, which CircleCI would
+  # otherwise report as success.
+  flag-incomplete-deploy:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: Fail because terraform-apply did not run
+          command: |
+            echo "terraform-apply did not run. If a newer pipeline exists on this branch, this one was superseded: don't rerun it. Otherwise an earlier job failed: see above."
+            exit 1
+
 
 workflows:
   test-plan-approve-and-deploy-to-main:
@@ -702,9 +715,11 @@ workflows:
           filters:
             branches:
               ignore: main
+      # One build per branch at a time, so the newest build wins the image tag.
       - task-containerisation:
           context: non-prod
           select_targets: true
+          serial-group: << pipeline.project.slug >>/build-<< pipeline.git.branch >>
           requires:
             - decide-bake-and-seed
           filters:
@@ -722,15 +737,28 @@ workflows:
           filters:
             branches:
               ignore: main
+      # Shared per-branch key: a newer plan waits for a running apply instead
+      # of failing on the state lock. Reusing a key in one workflow is documented
+      # as unsupported but tested fine (fallback: job-groups). Keep
+      # terraform-destroy's key in sync. Needs auto-cancel OFF (see DEPLOY.md).
       - terraform-plan:
           context: non-prod
+          serial-group: << pipeline.project.slug >>/terraform-<< pipeline.git.branch >>
           requires:
             - lint-terraform
             - task-containerisation
       - terraform-apply:
           context: non-prod
+          serial-group: << pipeline.project.slug >>/terraform-<< pipeline.git.branch >>
           requires:
             - terraform-plan
+      - flag-incomplete-deploy:
+          requires:
+            - terraform-apply:
+                - not_run
+          filters:
+            branches:
+              ignore: main
       - deploy-dependencies:
           context: non-prod
           requires:
@@ -760,5 +788,7 @@ workflows:
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
     jobs:
+      # Same key as plan/apply, so a branch delete waits for a running apply.
       - terraform-destroy:
           context: non-prod
+          serial-group: << pipeline.project.slug >>/terraform-<< pipeline.parameters.GHA_Meta >>
