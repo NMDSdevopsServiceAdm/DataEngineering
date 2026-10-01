@@ -662,13 +662,40 @@ jobs:
             echo "terraform-apply did not run. If a newer pipeline exists on this branch, this one was superseded: don't rerun it. Otherwise an earlier job failed: see above."
             exit 1
 
+  # The serial-group stops main pipelines overlapping but doesn't order them by
+  # commit: an older commit reaching the group second would apply its older plan
+  # and sync older code over the newer. Runs first in the group so it checks at
+  # this pipeline's turn, not when queued. cimg/base for git.
+  check-main-tip:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Fail unless this commit is the tip of main
+          command: |
+            MAIN_TIP=$(git ls-remote origin refs/heads/main | cut -f1) || MAIN_TIP=""
+            if [ -z "$MAIN_TIP" ]; then
+              echo "Could not read the tip of main from origin. Rerun the workflow from failed."
+              exit 1
+            fi
+            if [ "$MAIN_TIP" != "$CIRCLE_SHA1" ]; then
+              echo "Main has moved on to $MAIN_TIP, so this pipeline ($CIRCLE_SHA1) is superseded and must not deploy. Don't rerun it: that commit's pipeline carries these changes. If that one fails, fix or rerun it."
+              exit 1
+            fi
+            echo "$CIRCLE_SHA1 is the tip of main."
+
 
 job-groups:
   # Run as one unit via serial-group (see test-plan-approve-and-deploy-to-main).
   plan-approve-and-apply:
     jobs:
+      - check-main-tip
       - terraform-plan:
           context: prod
+          requires:
+            - check-main-tip
       - plan-approval:
           type: approval
           requires:

@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
 - Added a data-quality cleaning step for the EmpStat clean job that nulls an org's permanent, temporary, bank-or-pool, agency and other employment status counts (and their percentage-share columns) where too few of its reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
 - Added a step to the EmpStat clean job that creates a `_clean` copy of each deduplicated employment status count, with a filtering-rule column recording whether each row is populated or missing data.
 - Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock.
+- Added a `check-main-tip` job at the start of the prod plan, approval, apply and dependency deploy group that fails a main pipeline whose commit is no longer the tip of `main`, so an older pipeline reaching the group after a newer one cannot apply its older plan or sync older code.
 
 
 ### Changed
