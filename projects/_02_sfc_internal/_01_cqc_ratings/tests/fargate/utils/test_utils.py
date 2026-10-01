@@ -234,6 +234,31 @@ class TestPrepareAssessmentRatings:
         pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
 
 
+class TestRaiseErrorWhenKeyQuestionIsDuplicated:
+    def test_raises_error_when_key_question_appears_twice_in_a_plan(self):
+        input_lf = pl.LazyFrame(
+            Data.raise_error_duplicated_key_question_rows,
+            schema=Schemas.key_question_ratings_schema,
+            orient="row",
+        )
+
+        with pytest.raises(
+            ValueError, match="Found 1 key questions listed more than once"
+        ):
+            job.raise_error_when_key_question_is_duplicated(input_lf)
+
+    def test_does_not_raise_when_each_key_question_appears_once_per_plan(self):
+        input_lf = pl.LazyFrame(
+            Data.raise_error_unique_key_question_rows,
+            schema=Schemas.key_question_ratings_schema,
+            orient="row",
+        )
+
+        result = job.raise_error_when_key_question_is_duplicated(input_lf)
+
+        assert result is None
+
+
 class TestPrepareAssessmentRatingsEdgeCases:
     def test_raises_error_when_key_question_is_duplicated_in_the_raw_data(self):
         input_lf = pl.LazyFrame(
@@ -242,8 +267,8 @@ class TestPrepareAssessmentRatingsEdgeCases:
             orient="row",
         )
 
-        with pytest.raises(pl.exceptions.ComputeError):
-            job.prepare_assessment_ratings(input_lf)
+        with pytest.raises(ValueError, match="listed more than once"):
+            job.prepare_assessment_ratings(input_lf).collect()
 
     def test_returns_all_key_question_columns_when_there_are_no_assessments(self):
         input_lf = pl.LazyFrame(
