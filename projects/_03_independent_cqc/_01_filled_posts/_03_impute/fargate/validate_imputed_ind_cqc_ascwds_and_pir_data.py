@@ -119,7 +119,7 @@ def main(
         .col_vals_between(
             IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
             0.5,
-            2.0,
+            2.5,
             na_pass=True,
         )
         .col_vals_expr(
@@ -132,6 +132,12 @@ def main(
             brief=f"{IndCQC.combined_ratio_and_filled_posts} should be between 0 and 20 for care homes and between 0 and 3000 otherwise",
         )
         .col_vals_between(IndCQC.posts_rolling_average_model, 0.0, 3000.0, na_pass=True)
+        .col_vals_between(
+            IndCQC.number_of_beds_banded_for_rolling_avg, 0, 6, na_pass=True
+        )
+        .col_vals_between(
+            IndCQC.banded_bed_ratio_rolling_average_model, 0.0, 25.0, na_pass=True
+        )
         # categorical
         .col_vals_in_set(
             IndCQC.care_home,
