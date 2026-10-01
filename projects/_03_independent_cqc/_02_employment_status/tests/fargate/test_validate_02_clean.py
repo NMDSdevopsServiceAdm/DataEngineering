@@ -29,6 +29,11 @@ class TestMain:
             EmpStatus.bank_or_pool_percentage: pl.Float32,
             EmpStatus.agency_percentage: pl.Float32,
             EmpStatus.other_percentage: pl.Float32,
+            EmpStatus.permanent_count_clean: pl.Int64,
+            EmpStatus.temporary_count_clean: pl.Int64,
+            EmpStatus.bank_or_pool_count_clean: pl.Int64,
+            EmpStatus.agency_count_clean: pl.Int64,
+            EmpStatus.other_count_clean: pl.Int64,
             EmpStatus.filtering_rule: pl.String,
         }
         source_rows = [
@@ -44,6 +49,11 @@ class TestMain:
                 0.0,
                 0.25,
                 0.0,
+                2,
+                1,
+                0,
+                1,
+                0,
                 EmploymentStatusFilteringRule.populated,
             ),
         ]
@@ -74,7 +84,7 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_report_includes_expected_validations(
+    def test_validation_report_includes_expected_checks(
         self,
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
@@ -94,4 +104,5 @@ class TestMain:
             "col_vals_between",
             "col_vals_not_null",
             "col_vals_in_set",
+            "col_vals_expr",
         }

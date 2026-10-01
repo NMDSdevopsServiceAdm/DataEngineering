@@ -578,6 +578,9 @@ class EmploymentStatusFilteringRule(ColumnValues):
 
     populated: str = "populated"
     missing_data: str = "missing_data"
+    org_level_low_permanent_temporary_ratio: str = (
+        "org_level_low_permanent_temporary_ratio"
+    )
 
 
 @dataclass
