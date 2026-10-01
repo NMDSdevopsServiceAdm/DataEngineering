@@ -663,6 +663,25 @@ jobs:
             exit 1
 
 
+job-groups:
+  # Run as one unit via serial-group (see test-plan-approve-and-deploy-to-main).
+  plan-approve-and-apply:
+    jobs:
+      - terraform-plan:
+          context: prod
+      - plan-approval:
+          type: approval
+          requires:
+            - terraform-plan
+      - terraform-apply:
+          context: prod
+          requires:
+            - plan-approval
+      - deploy-dependencies:
+          context: prod
+          requires:
+            - terraform-apply
+
 workflows:
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
@@ -680,25 +699,41 @@ workflows:
           filters:
             branches:
               only: main
-      - terraform-plan:
-          context: prod
+      # Overlapping main pipelines would hit the state lock or a stale plan, so
+      # the next one waits for this to finish. Cancelled after 5 hours waiting:
+      # re-run it. Needs auto-cancel OFF (see DEPLOY.md).
+      - plan-approve-and-apply:
+          serial-group: << pipeline.project.slug >>/terraform-main
           requires:
             - test
             - task-containerisation
-      - plan-approval:
-          type: approval
-          requires:
-            - terraform-plan
-      - terraform-apply:
-          context: prod
-          requires:
-            - plan-approval
-      - deploy-dependencies:
-          context: prod
-          requires:
-            - terraform-apply
+
+  # Merge queue branches get lint and tests only, no deploy. These four jobs
+  # are the main-merge-queue ruleset's required checks; delete that ruleset to
+  # disable the queue.
+  merge-queue-checks:
+    unless: << pipeline.parameters.GHA_Action >>
+    jobs:
+      - lint-python:
+          filters:
+            branches:
+              only: /^gh-readonly-queue\/.*/
+      - lint-terraform:
+          filters:
+            branches:
+              only: /^gh-readonly-queue\/.*/
+      - lint-docstrings:
+          filters:
+            branches:
+              only: /^gh-readonly-queue\/.*/
+      - test:
+          filters:
+            branches:
+              only: /^gh-readonly-queue\/.*/
 
 
+  # Filtered jobs also ignore gh-readonly-queue/* (merge queue branches, tested
+  # by merge-queue-checks) so queued PRs don't deploy a dev environment.
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
@@ -706,7 +741,9 @@ workflows:
           context: non-prod
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       # One build per branch at a time, so the newest build wins the image tag.
       - task-containerisation:
           context: non-prod
@@ -716,19 +753,27 @@ workflows:
             - decide-bake-and-seed
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - lint-python:
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - lint-terraform:
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - lint-docstrings:
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       # Shared per-branch key: a newer plan waits for a running apply instead
       # of failing on the state lock. Reusing a key in one workflow is documented
       # as unsupported but tested fine (fallback: job-groups). Keep
@@ -750,7 +795,9 @@ workflows:
                 - not_run
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - deploy-dependencies:
           context: non-prod
           requires:
@@ -762,20 +809,26 @@ workflows:
             - decide-bake-and-seed
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - test:
           requires:
             - terraform-apply
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - test-cqc-integration:
           skip_if_unrelated: true
           requires:
             - decide-bake-and-seed
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
