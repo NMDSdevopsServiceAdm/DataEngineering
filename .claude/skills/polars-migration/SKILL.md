@@ -17,6 +17,7 @@ This repo is mid-migration from PySpark (`jobs/`) to Polars (`fargate/`). When m
 3. **Use `LazyFrame`** for test data, not eager `DataFrame`.
 4. **Add or port unit tests** in pytest style — see the `pytest-pattern` skill for the repo's dataclass+parametrize convention.
 5. **Add Google-style docstrings**, including non-obvious performance notes (why something stays lazy, why a `.collect()` happens where it does).
+   - Docstrings, comments and names describe the Polars function only — no PySpark references, even to explain a behaviour (state the requirement instead). Rename constants/variables that carry PySpark naming. Keep wording minimal.
    - You have **free rein to improve the function's name, docstring, and test names/structure** as part of the conversion — don't feel bound to preserve old PySpark-era naming just for continuity. This is scoped to the function(s) actually being migrated, not an excuse to rename untouched neighbours.
 6. **Tag the old PySpark function** with a comment pointing at its replacement:
    ```python

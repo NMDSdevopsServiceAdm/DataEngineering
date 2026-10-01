@@ -11,6 +11,7 @@ Review as a senior engineer, in this order of weight: **correctness, performance
 - Don't suggest renames or restructuring unless the current version is genuinely unclear or harmful to maintainability.
 - Explain impact concretely — e.g. "this skews the aggregation for X" / "this materialises the full frame before the filter, at N rows that's...", not vague style comments.
 - For Polars-specific scale concerns (laziness, `.over()` vs joins, streaming coverage), see `CLAUDE.md`'s scale-constraint section, or the `over-vs-join` / `polars-streaming-check` skills if the diff touches those areas.
+- Flag docstrings, comments or names that refer to previous code (e.g. PySpark), and docstrings that have grown wordy through accretion.
 
 ## Structure findings as
 

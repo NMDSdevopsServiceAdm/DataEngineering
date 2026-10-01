@@ -97,6 +97,8 @@ Don't add defensive zero-guards by default — upstream steps enforce that relev
 ## Docstrings & naming
 
 - Google-style docstrings (enforced via `pydoclint`, see `pyproject.toml`); document non-obvious performance considerations (e.g. why something is kept lazy, why a collect happens where it does).
+- Docstrings, comments and names describe what the code does *now*, never the code it replaced (no "previously", "as PySpark did", `SPARK_DEDUP`). Name by current purpose (`DEDUP_...`). The only exception is the `# converted to polars -> path` pointer on the old PySpark function.
+- Use as few words as possible. When editing a function, re-read its whole docstring and comments and rewrite them as one tight unit rather than appending sentences.
 - `snake_case` for variables/functions, `PascalCase` for classes.
 - Prefer concise, intent-revealing names over long ones that encode full logic or data values. This is a known growth area for the team — naming defaults to more literal, sentence-like names (e.g. `test_function_returns_one_when_this_column_is_one_and_that_column_is_one`). Nudging towards more concise names in review and explain why a shorter name still captures the intent rather than just flagging it as wrong.
 - Flag numeric literals whose business meaning isn't obvious; don't extract universally-understood values (0, 1, simple limits/indices) into named constants just for the sake of it.
