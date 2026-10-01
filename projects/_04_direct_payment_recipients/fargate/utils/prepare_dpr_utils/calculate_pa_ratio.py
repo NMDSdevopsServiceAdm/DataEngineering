@@ -11,7 +11,7 @@ from utils.column_names.direct_payments_column_names import (
 
 def calculate_pa_ratio(survey_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Calculates the rolling average of filled posts per employer for each year.
+    Calculates the rolling average of staff per survey response for each year.
 
     Survey totals outside 1 to 9 staff (inclusive) are excluded, then averaged
     per year. Historic ratios fill years the survey does not have. Years are
@@ -19,8 +19,8 @@ def calculate_pa_ratio(survey_lf: pl.LazyFrame) -> pl.LazyFrame:
     years (not rows), so gap years shrink the window.
 
     Args:
-        survey_lf (pl.LazyFrame): Survey data with columns 'YEAR' and
-            'TOTAL_STAFF_RECODED'.
+        survey_lf (pl.LazyFrame): Survey data with year and recoded
+            total staff columns.
 
     Returns:
         pl.LazyFrame: A LazyFrame with columns 'YEAR_AS_INTEGER' and

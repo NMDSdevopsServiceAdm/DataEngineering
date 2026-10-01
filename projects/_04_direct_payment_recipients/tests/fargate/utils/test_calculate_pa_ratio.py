@@ -10,6 +10,7 @@ from utils.column_names.direct_payments_column_names import (
 # Historic years are always in the output. Tests use years after them and
 # compare only from 2020 on, so historic ratios never enter a rolling window.
 FIRST_TEST_YEAR = 2020
+ALL_YEARS = 0
 
 
 def make_survey_lf(rows: list[tuple[int, float]]) -> pl.LazyFrame:
@@ -61,7 +62,7 @@ def test_survey_average_wins_over_historic_ratio_and_historic_fills_missing_year
     # Historic years are 2011-13, 2015, 2016 and 2018; survey 2013 overrides 1.98.
     survey_lf = make_survey_lf([(2013, 5.0)])
 
-    returned_df = run(survey_lf, from_year=0)
+    returned_df = run(survey_lf, from_year=ALL_YEARS)
 
     expected_df = make_expected_df(
         [
