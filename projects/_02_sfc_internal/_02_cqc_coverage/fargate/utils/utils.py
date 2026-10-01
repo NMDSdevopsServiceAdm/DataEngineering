@@ -125,7 +125,7 @@ def add_flag_for_in_ascwds(merged_coverage_lf: pl.LazyFrame) -> pl.LazyFrame:
     return merged_coverage_lf.with_columns(
         pl.when(
             pl.col(AWPClean.establishment_id).is_not_null()
-            & (pl.col(AWPClean.removed_by_purge_date_filter) == False)  # noqa: E712
+            & ~pl.col(AWPClean.removed_by_purge_date_filter)
         )
         .then(pl.lit(InAscwds.is_in_ascwds))
         .otherwise(pl.lit(InAscwds.not_in_ascwds))
