@@ -113,6 +113,7 @@ def main(
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
 
+    # converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:add_removed_by_purge_date_filter_flag
     ascwds_workplace_df = ascwds_workplace_df.withColumn(
         AWPClean.removed_by_purge_date_filter,
         F.col(AWPClean.workplace_last_active_date) < F.col(AWPClean.purge_date),
@@ -128,6 +129,7 @@ def main(
     )
     cqc_location_df = cUtils.reduce_dataset_to_earliest_file_per_month(cqc_location_df)
 
+    # converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:deduplicate_ascwds_workplace_data
     ascwds_workplace_df = cUtils.remove_duplicates_based_on_column_order(
         ascwds_workplace_df,
         [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
@@ -143,6 +145,7 @@ def main(
 
     merged_coverage_df = add_flag_for_in_ascwds(merged_coverage_df)
 
+    # converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:deduplicate_merged_coverage_data
     merged_coverage_df = cUtils.remove_duplicates_based_on_column_order(
         merged_coverage_df,
         [
@@ -174,6 +177,7 @@ def main(
         merged_coverage_df, merged_coverage_destination, mode="overwrite"
     )
 
+    # converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/merge_coverage_data.py:main
     reduced_coverage_df = utils.filter_df_to_maximum_value_in_column(
         merged_coverage_df, CQCLClean.cqc_location_import_date
     )
@@ -183,6 +187,7 @@ def main(
     )
 
 
+# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:join_ascwds_data_into_cqc_location_df
 def join_ascwds_data_into_cqc_location_df(
     cqc_location_df: DataFrame,
     ascwds_workplace_df: DataFrame,
@@ -225,6 +230,7 @@ def join_ascwds_data_into_cqc_location_df(
     )
 
 
+# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:add_flag_for_in_ascwds
 def add_flag_for_in_ascwds(merged_coverage_df: DataFrame) -> DataFrame:
     """
     Add a column to the merged coverage dataframe which flags if CQC location is in ASC-WDS
@@ -249,6 +255,7 @@ def add_flag_for_in_ascwds(merged_coverage_df: DataFrame) -> DataFrame:
     )
 
 
+# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:_filter_for_latest_cqc_ratings
 def filter_for_latest_cqc_ratings(cqc_ratings_df: DataFrame) -> DataFrame:
     """
     Filter the CQC ratings dataframe to latest rating per location only.
@@ -277,6 +284,7 @@ def filter_for_latest_cqc_ratings(cqc_ratings_df: DataFrame) -> DataFrame:
     )
 
 
+# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:join_latest_cqc_rating_into_coverage_df
 def join_latest_cqc_rating_into_coverage_df(
     merged_coverage_df: DataFrame, cqc_ratings_df: DataFrame
 ) -> DataFrame:
@@ -305,6 +313,7 @@ def join_latest_cqc_rating_into_coverage_df(
     ).drop(CQCRatingsColumns.latest_rating_flag, CQCRatingsColumns.current_or_historic)
 
 
+# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:join_provider_name_into_merged_coverage_df
 def join_provider_name_into_merged_coverage_df(
     coverage_df: DataFrame, providers_df: DataFrame
 ) -> DataFrame:
