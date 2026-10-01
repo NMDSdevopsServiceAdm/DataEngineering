@@ -18,6 +18,8 @@ from utils.column_values.categorical_column_values import (
     InAscwds,
 )
 
+YEAR_COLUMN = "_year"
+
 
 def _keep_first_row_per_group(
     lf: pl.LazyFrame,
@@ -202,6 +204,133 @@ def join_latest_cqc_rating_into_coverage_df(
     ).drop(CQCRatingsColumns.latest_rating_flag, CQCRatingsColumns.current_or_historic)
 
 
+def calculate_la_coverage_monthly(merged_coverage_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds each location's local authority's monthly ASC-WDS coverage ratio.
+
+    Args:
+        merged_coverage_lf (pl.LazyFrame): Coverage data with the `_year`
+            column and `in_ascwds` flag added.
+
+    Returns:
+        pl.LazyFrame: The same data with `la_monthly_coverage` added.
+    """
+    agg_partition = [CQCLClean.current_cssr, CQCLClean.cqc_location_import_date]
+    # The denominator is a count over the row's own partition, so it can never
+    # be zero - a partition only exists because it has at least one member row.
+    la_monthly_locations_count = (
+        pl.col(CQCLClean.location_id).count().over(agg_partition)
+    )
+    la_monthly_locations_in_ascwds_count = (
+        pl.col(CoverageColumns.in_ascwds).sum().over(agg_partition)
+    )
+    return merged_coverage_lf.with_columns(
+        (la_monthly_locations_in_ascwds_count / la_monthly_locations_count)
+        .cast(pl.Float32)
+        .alias(CoverageColumns.la_monthly_coverage)
+    )
+
+
+def calculate_coverage_monthly_change(merged_coverage_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds the month-on-month change in each location's local authority coverage.
+
+    Args:
+        merged_coverage_lf (pl.LazyFrame): Coverage data with `la_monthly_coverage`
+            added.
+
+    Returns:
+        pl.LazyFrame: The same data with `coverage_monthly_change` added.
+    """
+    previous_month_coverage = (
+        pl.col(CoverageColumns.la_monthly_coverage)
+        .shift(1)
+        .over(
+            partition_by=CQCLClean.location_id,
+            order_by=CQCLClean.cqc_location_import_date,
+        )
+    )
+    return merged_coverage_lf.with_columns(
+        (pl.col(CoverageColumns.la_monthly_coverage) - previous_month_coverage)
+        .cast(pl.Float32)
+        .alias(CoverageColumns.coverage_monthly_change)
+    )
+
+
+def calculate_locations_monthly_change(
+    merged_coverage_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """Adds the net change in ASC-WDS-active locations for each local authority.
+
+    Args:
+        merged_coverage_lf (pl.LazyFrame): Coverage data with `in_ascwds` added.
+
+    Returns:
+        pl.LazyFrame: The same data with `in_ascwds_last_month` and
+            `locations_monthly_change` added.
+    """
+    in_ascwds_last_month = (
+        pl.col(CoverageColumns.in_ascwds)
+        .shift(1)
+        .over(
+            partition_by=CQCLClean.location_id,
+            order_by=CQCLClean.cqc_location_import_date,
+        )
+        .fill_null(InAscwds.not_in_ascwds)
+    )
+    merged_coverage_lf = merged_coverage_lf.with_columns(
+        in_ascwds_last_month.alias(CoverageColumns.in_ascwds_last_month)
+    )
+
+    agg_partition = [CQCLClean.current_cssr, CQCLClean.cqc_location_import_date]
+    in_ascwds_change = pl.col(CoverageColumns.in_ascwds) - pl.col(
+        CoverageColumns.in_ascwds_last_month
+    )
+    return merged_coverage_lf.with_columns(
+        in_ascwds_change.sum()
+        .over(agg_partition)
+        .alias(CoverageColumns.locations_monthly_change)
+    )
+
+
+def calculate_new_registrations(merged_coverage_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds monthly and year-to-date new ASC-WDS registration counts per local authority.
+
+    New registrations only - de-registrations in the same month are not netted
+    off.
+
+    Args:
+        merged_coverage_lf (pl.LazyFrame): Coverage data with `in_ascwds`,
+            `in_ascwds_last_month` and `_year` added.
+
+    Returns:
+        pl.LazyFrame: The same data with `new_registrations_monthly` and
+            `new_registrations_ytd` added, and `in_ascwds_last_month` dropped.
+    """
+    new_registration = (
+        (pl.col(CoverageColumns.in_ascwds) == InAscwds.is_in_ascwds)
+        & (pl.col(CoverageColumns.in_ascwds_last_month) == InAscwds.not_in_ascwds)
+    ).cast(pl.Int32)
+
+    agg_partition = [CQCLClean.current_cssr, CQCLClean.cqc_location_import_date]
+    ytd_partition = [CQCLClean.current_cssr, YEAR_COLUMN]
+    merged_coverage_lf = merged_coverage_lf.with_columns(
+        new_registration.sum()
+        .over(agg_partition)
+        .alias(CoverageColumns.new_registrations_monthly),
+        new_registration.cum_sum()
+        .over(partition_by=ytd_partition, order_by=CQCLClean.cqc_location_import_date)
+        .alias(CoverageColumns.new_registrations_ytd),
+    )
+    # Rows sharing an import date are peers, not a sequence - `cum_sum` gives
+    # each one a different running total depending on its position within the
+    # tie, so broadcast the group's max (its final value) to every row in it.
+    return merged_coverage_lf.with_columns(
+        pl.col(CoverageColumns.new_registrations_ytd)
+        .max()
+        .over(agg_partition)
+        .alias(CoverageColumns.new_registrations_ytd)
+    ).drop(CoverageColumns.in_ascwds_last_month)
+
+
 def add_columns_for_locality_manager_dashboard(
     merged_coverage_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
@@ -214,9 +343,13 @@ def add_columns_for_locality_manager_dashboard(
         pl.LazyFrame: Coverage data with the locality manager dashboard columns
             added.
     """
-    # TODO (ticket 2131c): migrate the 6 functions currently in
-    # `lm_engagement_utils.py` (LA coverage, coverage monthly change, locations
-    # monthly change, new registrations) into this module and call them here.
+    merged_coverage_lf = merged_coverage_lf.with_columns(
+        pl.col(CQCLClean.cqc_location_import_date).dt.year().alias(YEAR_COLUMN)
+    )
+    merged_coverage_lf = calculate_la_coverage_monthly(merged_coverage_lf)
+    merged_coverage_lf = calculate_coverage_monthly_change(merged_coverage_lf)
+    merged_coverage_lf = calculate_locations_monthly_change(merged_coverage_lf)
+    merged_coverage_lf = calculate_new_registrations(merged_coverage_lf)
     return merged_coverage_lf
 
 

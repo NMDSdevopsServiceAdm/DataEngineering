@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Added a project-level utility that nulls chosen columns for groups where a subset's share of the group total is too low, for reuse across categorical breakdowns.
 - Added a Polars scaffold for the `_02_cqc_coverage` project (pass-through job plus placeholder helper functions) and wired it to run in parallel to the existing PySpark coverage pipeline for output comparison.
 - Ported the `_02_cqc_coverage` Polars job's core merge logic from its PySpark placeholders: ASC-WDS purge-date flagging and deduplication, the aligned-date join of ASC-WDS data onto CQC locations, the in-ASC-WDS flag, merged-coverage deduplication, the latest-current-CQC-rating join, the provider-name join, and the reduced (latest-import-month) output, which now really filters instead of passing the full dataset through.
+- Added the locality manager dashboard columns (LA coverage, month-on-month change, new registrations) to the `_02_cqc_coverage` Polars job, completing its PySpark-to-Polars port.
 
 
 ### Changed
