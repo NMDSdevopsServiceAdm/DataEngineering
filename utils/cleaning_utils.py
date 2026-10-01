@@ -296,7 +296,6 @@ def calculate_filled_posts_per_bed_ratio(
     return input_df
 
 
-# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:_keep_first_row_per_group
 def remove_duplicates_based_on_column_order(
     df: DataFrame,
     columns_to_identify_duplicates: List[str],
