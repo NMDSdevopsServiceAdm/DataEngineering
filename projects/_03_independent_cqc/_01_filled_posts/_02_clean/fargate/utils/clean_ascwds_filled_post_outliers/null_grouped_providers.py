@@ -28,6 +28,7 @@ GROUPED_PROVIDER_SCHEMA = pl.Schema(
         (IndCQC.care_home, CatColType.CareHomeEnumType),
         (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
         (IndCQC.number_of_beds, pl.Int64()),
+        (IndCQC.number_of_beds_at_provider, pl.Int64()),
         (NGPcol.location_pir_average, pl.Float64()),
         (NGPcol.grouped_provider_status, pl.String()),
         (NGPcol.grp_prov_identified_date, pl.Date()),
@@ -108,7 +109,9 @@ def null_grouped_providers(
     ngp_cols = {field.name for field in fields(NGPcol())}
     columns_to_drop = [c for c in lf.collect_schema().names() if c in ngp_cols]
 
-    lf = lf.drop(*columns_to_drop).drop(AWPClean.nmds_id)
+    lf = lf.drop(*columns_to_drop).drop(
+        AWPClean.nmds_id, IndCQC.number_of_beds_at_provider
+    )
 
     return lf, updated_grouped_providers_lf
 

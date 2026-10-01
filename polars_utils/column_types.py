@@ -57,6 +57,13 @@ class CategoricalColumnTypes:
     EmploymentStatusCatType = pl.Categorical(
         pl.Categories("employment_status", namespace="filled_posts")
     )
+    EmploymentStatusFilteringRuleCatType = pl.Categorical(
+        pl.Categories(
+            "employment_status_filtering_rule",
+            namespace="filled_posts",
+            physical=pl.UInt8,
+        )
+    )
     EmploymentStatusIdCatType = pl.Categorical(
         pl.Categories("employment_status_id", namespace="filled_posts")
     )

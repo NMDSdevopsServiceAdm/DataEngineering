@@ -46,6 +46,7 @@ metadata_columns = [
     IndCQC.ascwds_pir_merged,
     IndCQC.ascwds_filtering_rule,
     IndCQC.estimate_filled_posts_source,
+    IndCQC.current_region,
 ]
 
 job_role_estimates_columns = [
