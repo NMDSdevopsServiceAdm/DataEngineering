@@ -4,7 +4,7 @@ from polars_utils import utils
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-from projects._04_direct_payment_recipients.direct_payments_config_polars import (
+from projects._04_direct_payment_recipients.direct_payments_config import (
     DirectPaymentsMisspelledLaNames as LANameCorrections,
 )
 from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.calculate_remaining_variables import (
