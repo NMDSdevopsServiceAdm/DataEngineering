@@ -11,6 +11,7 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.cUtils.create_employment_status_percentage_columns")
+    @patch(f"{PATCH_PATH}.cUtils.null_counts_for_low_location_ratio")
     @patch(f"{PATCH_PATH}.cUtils.null_counts_for_low_org_ratio")
     @patch(f"{PATCH_PATH}.cUtils.create_clean_count_columns")
     @patch(f"{PATCH_PATH}.cUtils.deduplicate_employment_status_counts")
@@ -21,6 +22,7 @@ class TestMain:
         deduplicate_employment_status_counts_mock: Mock,
         create_clean_count_columns_mock: Mock,
         null_org_ratio_mock: Mock,
+        null_location_ratio_mock: Mock,
         create_employment_status_percentage_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -39,8 +41,11 @@ class TestMain:
         null_org_ratio_mock.assert_called_once_with(
             create_clean_count_columns_mock.return_value
         )
-        create_employment_status_percentage_columns_mock.assert_called_once_with(
+        null_location_ratio_mock.assert_called_once_with(
             null_org_ratio_mock.return_value
+        )
+        create_employment_status_percentage_columns_mock.assert_called_once_with(
+            null_location_ratio_mock.return_value
         )
 
         sink_to_parquet_mock.assert_called_once_with(
