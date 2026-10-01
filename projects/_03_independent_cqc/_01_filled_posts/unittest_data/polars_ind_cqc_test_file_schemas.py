@@ -942,6 +942,10 @@ class NullGroupedProvidersSchema:
         ]
     )
 
+    select_locations_populated_this_month_schema = pl.Schema(
+        [(IndCQC.location_id, pl.String())]
+    )
+
 
 @dataclass
 class CleanAscwdsFilledPostOutliersSchema:
