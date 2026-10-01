@@ -68,3 +68,6 @@ terraform workspace delete <workspace_name>
 - Automatically deploys infrastructure for each branch.
 - Requires manual approval when merging to main
 - You can find the full CircleCi configuration inside [.circleci/config.yml](.circleci/config.yml).
+- Per branch, the image build and `terraform-plan`/`terraform-apply` run one at a time (`serial-group`), so a newer push waits for a running apply. A superseded pipeline's apply is skipped and its `flag-incomplete-deploy` job fails: don't rerun it.
+- Needs **Auto-cancel redundant workflows** OFF in the CircleCI project settings (Project Settings > Advanced), or a running apply is cancelled again.
+- Branch names may only use letters, digits, `.`, `_`, `-` and `/` (the `serial-group` key allows nothing else).
