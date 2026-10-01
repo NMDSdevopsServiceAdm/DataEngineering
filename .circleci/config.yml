@@ -687,7 +687,63 @@ jobs:
             echo "$CIRCLE_SHA1 is the tip of main."
 
 
+  # THROWAWAY (ticket 2142). Remove.
+  stub-echo:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run: echo "stub job, pipeline << pipeline.number >>"
+
+  # THROWAWAY (ticket 2142): stands in for test/task-containerisation, slow on
+  # the older commit so it reaches the group after the newer one.
+  stub-wait:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          command: |
+            echo "sleeping $(cat stub_sleep)s"
+            sleep "$(cat stub_sleep)"
+
+  # THROWAWAY (ticket 2142): copy of check-main-tip comparing against this branch.
+  stub-check-tip:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Fail unless this commit is the tip of main
+          command: |
+            MAIN_TIP=$(git ls-remote origin refs/heads/2142-stub-test | cut -f1) || MAIN_TIP=""
+            if [ -z "$MAIN_TIP" ]; then
+              echo "Could not read the tip of main from origin. Rerun the workflow from failed."
+              exit 1
+            fi
+            if [ "$MAIN_TIP" != "$CIRCLE_SHA1" ]; then
+              echo "Main has moved on to $MAIN_TIP, so this pipeline ($CIRCLE_SHA1) is superseded and must not deploy. Don't rerun it: that commit's pipeline carries these changes. If that one fails, fix or rerun it."
+              exit 1
+            fi
+            echo "$CIRCLE_SHA1 is the tip of main."
+
+
 job-groups:
+  # THROWAWAY (ticket 2142). Remove.
+  stub-tip-check-group:
+    jobs:
+      - stub-check-tip
+      - stub-echo:
+          name: stub-plan
+          requires:
+            - stub-check-tip
+      - stub-echo:
+          name: stub-apply
+          requires:
+            - stub-plan
+
   # Run as one unit via serial-group (see test-plan-approve-and-deploy-to-main).
   plan-approve-and-apply:
     jobs:
@@ -710,6 +766,19 @@ job-groups:
             - terraform-apply
 
 workflows:
+  # THROWAWAY (ticket 2142). Remove.
+  throwaway-tip-check-test:
+    unless: << pipeline.parameters.GHA_Action >>
+    jobs:
+      - stub-wait:
+          filters:
+            branches:
+              only: 2142-stub-test
+      - stub-tip-check-group:
+          serial-group: << pipeline.project.slug >>/throwaway-2142
+          requires:
+            - stub-wait
+
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
