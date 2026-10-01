@@ -664,8 +664,8 @@ jobs:
 
 
 job-groups:
-  # Prod plan -> manual approval -> apply, run as an atomic unit when invoked
-  # with a serial-group (see test-plan-approve-and-deploy-to-main).
+  # Prod plan -> approval -> apply -> dependencies; atomic when invoked with a
+  # serial-group (see test-plan-approve-and-deploy-to-main).
   plan-approve-and-apply:
     jobs:
       - terraform-plan:
@@ -700,14 +700,11 @@ workflows:
           filters:
             branches:
               only: main
-      # Serialised as one unit so two merges to main close together (common
-      # with the merge queue) can't both hold a plan against the same state:
-      # the next pipeline's plan waits until this one has applied, been
-      # rejected or failed. Otherwise the second hits the terraform state lock
-      # or a stale saved plan. Includes deploy-dependencies so overlapping S3
-      # syncs can't land out of order. Waits at most 5 hours, then the waiting
-      # group is cancelled and needs a re-run. Needs auto-cancel OFF
-      # (see DEPLOY.md).
+      # One unit so overlapping merges to main can't plan against the same
+      # state (state lock, stale plan): the next plan waits until this has
+      # applied, been rejected or failed. Includes deploy-dependencies so S3
+      # syncs can't land out of order. Waits at most 5 hours, then is cancelled
+      # and needs a re-run. Needs auto-cancel OFF (see DEPLOY.md).
       - plan-approve-and-apply:
           serial-group: << pipeline.project.slug >>/terraform-main
           requires:
