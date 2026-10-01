@@ -4,8 +4,7 @@ on: [ delete ]
 
 jobs:
   trigger-circleci-delete:
-    # GitHub's merge queue deletes its gh-readonly-queue/* branches after each
-    # merge. They never had a dev environment, so skip the terraform destroy.
+    # Merge queue branches never had a dev environment, so skip the destroy.
     if: ${{ !startsWith(github.event.ref, 'gh-readonly-queue/') }}
     runs-on: ubuntu-latest
     steps:
