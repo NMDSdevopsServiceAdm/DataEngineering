@@ -119,7 +119,7 @@ def main(
         .col_vals_between(
             IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
             0.5,
-            2.0,
+            2.5,
             na_pass=True,
         )
         .col_vals_expr(
