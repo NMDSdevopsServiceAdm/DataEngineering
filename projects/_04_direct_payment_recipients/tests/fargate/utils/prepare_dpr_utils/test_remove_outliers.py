@@ -23,12 +23,16 @@ def run(input_data, expected_data):
 
 
 class TestRemoveOutliers:
-    @pytest.mark.parametrize("value", [-0.1, 1.1], ids=["below_zero", "above_one"])
-    def test_removes_values_outside_zero_to_one(self, value):
-        # Other years keep the LA mean close so only the range rule applies.
+    @pytest.mark.parametrize(
+        ("neighbour", "value"),
+        [(0.0, -0.1), (1.0, 1.1)],
+        ids=["below_zero", "above_one"],
+    )
+    def test_removes_values_outside_zero_to_one(self, neighbour, value):
+        # Neighbours sit next to the value so only the range rule applies.
         run(
-            [("a", 2019, 0.5, 1.0), ("a", 2020, 0.5, 1.0), ("a", 2021, value, 1.0)],
-            [("a", 2019, 0.5, 1.0), ("a", 2020, 0.5, 1.0), ("a", 2021, None, 1.0)],
+            [("a", 2019, neighbour, 1.0), ("a", 2020, neighbour, 1.0), ("a", 2021, value, 1.0)],
+            [("a", 2019, neighbour, 1.0), ("a", 2020, neighbour, 1.0), ("a", 2021, None, 1.0)],
         )  # fmt: skip
 
     @pytest.mark.parametrize(

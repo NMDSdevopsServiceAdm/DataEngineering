@@ -2,7 +2,7 @@ import polars as pl
 import pytest
 
 import projects._04_direct_payment_recipients.fargate.utils.prepare_dpr_utils.estimate_proportion_employing_staff as job
-from projects._04_direct_payment_recipients.direct_payments_config_polars import (
+from projects._04_direct_payment_recipients.direct_payments_config import (
     DirectPaymentConfiguration as Config,
 )
 from utils.column_names.direct_payments_column_names import (

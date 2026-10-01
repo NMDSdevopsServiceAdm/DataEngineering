@@ -8,6 +8,9 @@ locals {
   ind_cqc_job_role_estimates_dataset_name     = terraform.workspace == "main" ? "01_filled_posts_06_job_roles_04_estimate" : "main_01_filled_posts_06_job_roles_04_estimate"
   ind_cqc_job_role_metadata_dataset_name      = terraform.workspace == "main" ? "01_filled_posts_06_job_roles_01_merge_metadata" : "main_01_filled_posts_06_job_roles_01_merge_metadata"
   ind_cqc_estimated_filled_posts_dataset_name = terraform.workspace == "main" ? "01_filled_posts_05_estimated" : "main_01_filled_posts_05_estimated"
+  # Temporary: remove after comparing the new direct_payments_merged output against main's.
+  # Also remove the matching direct_payments_merged and direct_payments_estimates_by_icb syncs in .circleci/config.yml.
+  dpr_merged_dataset_name = terraform.workspace == "main" ? "direct_payments_merged" : "main_direct_payments_merged"
 
   # Max polling attempts and per-attempt wait (seconds) for the "Wait For Worker"/
   # "Wait For Workplace" states in CQC-And-ASCWDS-Orchestrator.json, before the
@@ -100,9 +103,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     run_crawler_state_machine_arn = aws_sfn_state_machine.run_crawler.arn
 
     # jobs
-    prepare_dpr_external_job_name         = module.prepare_dpr_external_data_job.job_name
-    prepare_dpr_survey_job_name           = module.prepare_dpr_survey_data_job.job_name
-    merge_dpr_data_job_name               = module.merge_dpr_data_job.job_name
     flatten_cqc_ratings_job_name          = module.flatten_cqc_ratings_job.job_name
     merge_coverage_data_job_name          = module.merge_coverage_data_job.job_name
     validate_merge_coverage_data_job_name = module.validate_merge_coverage_data_job.job_name

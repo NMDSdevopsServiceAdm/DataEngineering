@@ -1,56 +1,33 @@
 {
   "Comment": "A description of my state machine",
-  "StartAt": "Prepare data in parallel",
+  "StartAt": "Prepare direct payments",
   "States": {
-    "Prepare data in parallel": {
-      "Type": "Parallel",
-      "Next": "Merge DPR data",
-      "Branches": [
-        {
-          "StartAt": "Prepare DPR survey data",
-          "States": {
-            "Prepare DPR survey data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${prepare_dpr_survey_job_name}",
-                "Arguments": {
-                  "--survey_data_source": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_survey/version=2026.02/",
-                  "--destination": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_survey_prepared/version=2026.02/"
-                }
-              },
-              "End": true
-            }
+    "Prepare direct payments": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${direct_payments_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${direct_payments_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
           }
         },
-        {
-          "StartAt": "Prepare DPR external data",
-          "States": {
-            "Prepare DPR external data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${prepare_dpr_external_job_name}",
-                "Arguments": {
-                  "--direct_payments_source": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_external/version=2026.02/",
-                  "--destination": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_external_prepared/version=2026.02/"
-                }
-              },
-              "End": true
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_04_direct_payments-container",
+              "Command": [
+                "prepare_direct_payments.py",
+                "--survey_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_survey/version=2026.02/",
+                "--external_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_external/version=2026.02/",
+                "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_merged/version=2026.02/"
+              ]
             }
-          }
-        }
-      ]
-    },
-    "Merge DPR data": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-      "Parameters": {
-        "JobName": "${merge_dpr_data_job_name}",
-        "Arguments": {
-          "--direct_payments_external_data_source": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_external_prepared/version=2026.02/",
-          "--direct_payments_survey_data_source": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_survey_prepared/version=2026.02/",
-          "--destination": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_merged/version=2026.02/"
+          ]
         }
       },
       "Next": "Estimate direct payments polars"

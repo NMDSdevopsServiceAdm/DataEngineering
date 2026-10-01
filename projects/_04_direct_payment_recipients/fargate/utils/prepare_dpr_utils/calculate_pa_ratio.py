@@ -1,6 +1,6 @@
 import polars as pl
 
-from projects._04_direct_payment_recipients.direct_payments_config_polars import (
+from projects._04_direct_payment_recipients.direct_payments_config import (
     DIRECT_PAYMENTS_MISSING_PA_RATIOS,
     DirectPaymentConfiguration as Config,
 )

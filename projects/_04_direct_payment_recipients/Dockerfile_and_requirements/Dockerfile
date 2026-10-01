@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Shared libraries
 COPY projects/_04_direct_payment_recipients/fargate/utils /app/projects/_04_direct_payment_recipients/fargate/utils
-COPY projects/_04_direct_payment_recipients/direct_payments_config_polars.py /app/projects/_04_direct_payment_recipients/direct_payments_config_polars.py
+COPY projects/_04_direct_payment_recipients/direct_payments_config.py /app/projects/_04_direct_payment_recipients/direct_payments_config.py
 COPY polars_utils /app/polars_utils
 COPY utils/file_utils.py /app/utils/file_utils.py
 COPY utils/column_names /app/utils/column_names/
@@ -21,6 +21,7 @@ COPY utils/column_values /app/utils/column_values/
 COPY utils/value_labels /app/utils/value_labels
 
 # Copy python jobs to WORKDIR
+COPY projects/_04_direct_payment_recipients/fargate/prepare_direct_payments.py /app/prepare_direct_payments.py
 COPY projects/_04_direct_payment_recipients/fargate/estimate_direct_payments.py /app/estimate_direct_payments.py
 COPY projects/_04_direct_payment_recipients/fargate/validate_estimate_direct_payments.py /app/validate_estimate_direct_payments.py
 COPY projects/_04_direct_payment_recipients/fargate/split_pa_filled_posts_into_icb_areas.py /app/split_pa_filled_posts_into_icb_areas.py

@@ -7,7 +7,7 @@ import polars as pl
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from projects._04_direct_payment_recipients.direct_payments_config_polars import (
+from projects._04_direct_payment_recipients.direct_payments_config import (
     DirectPaymentConfiguration as Config,
 )
 from utils.column_names.direct_payments_column_names import (

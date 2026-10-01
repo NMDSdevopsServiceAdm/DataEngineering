@@ -24,6 +24,10 @@ DIRECT_PAYMENTS_MISSING_PA_RATIOS: dict[int, float] = {
     2018: 1.96,
 }
 
+# Hackney is the only LA missing SALT service user DPRs.
+# Values come from an Excel regression of its earlier SALT data points.
+HACKNEY_SERVICE_USER_DPRS_DURING_YEAR: dict[int, float] = {2022: 580.5, 2023: 629.2}
+
 
 @dataclass
 class DirectPaymentsMisspelledLaNames:

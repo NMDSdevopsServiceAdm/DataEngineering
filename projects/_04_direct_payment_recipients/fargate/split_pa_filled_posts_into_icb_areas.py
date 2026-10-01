@@ -1,7 +1,7 @@
 import polars as pl
 
 from polars_utils import cleaning_utils, utils
-from projects._04_direct_payment_recipients.direct_payments_config_polars import (
+from projects._04_direct_payment_recipients.direct_payments_config import (
     EstimatePeriodAsDate,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (

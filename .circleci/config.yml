@@ -506,6 +506,9 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=04_dpr/dataset=direct_payments_survey/" "s3://$BRANCH_DATASET_BUCKET/domain=04_dpr/dataset=direct_payments_survey/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=04_dpr/dataset=direct_payments_external/" "s3://$BRANCH_DATASET_BUCKET/domain=04_dpr/dataset=direct_payments_external/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=04_dpr/dataset=direct_payments_estimates_by_icb/" "s3://$BRANCH_DATASET_BUCKET/domain=04_dpr/dataset=main_direct_payments_estimates_by_icb/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=04_dpr/dataset=direct_payments_merged/" "s3://$BRANCH_DATASET_BUCKET/domain=04_dpr/dataset=main_direct_payments_merged/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=04_dpr/dataset=direct_payments_estimates/" "s3://$BRANCH_DATASET_BUCKET/domain=04_dpr/dataset=main_direct_payments_estimates/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=04_dpr/dataset=direct_payments_estimates_summary/" "s3://$BRANCH_DATASET_BUCKET/domain=04_dpr/dataset=main_direct_payments_estimates_summary/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" --delete
       - run:
           name: Copy models to non-prod dataset
