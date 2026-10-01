@@ -738,7 +738,7 @@ workflows:
 
   # Every job here that has a branch filter also ignores gh-readonly-queue/*:
   # those are GitHub merge queue's temporary branches, which merge-queue-checks
-  # below tests instead. Without the exclusion each queued PR would deploy a
+  # (above) tests instead. Without the exclusion each queued PR would deploy a
   # dev environment. Jobs with no filter of their own only run via `requires`.
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
