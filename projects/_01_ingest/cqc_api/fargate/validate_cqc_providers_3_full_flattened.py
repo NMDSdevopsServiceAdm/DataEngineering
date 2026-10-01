@@ -37,6 +37,9 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             [
                 CQCP.provider_id,
                 Keys.import_date,
+                Keys.year,
+                Keys.month,
+                Keys.day,
             ]
         )
         # index columns

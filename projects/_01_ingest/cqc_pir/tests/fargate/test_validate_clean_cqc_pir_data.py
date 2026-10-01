@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from unittest.mock import Mock, patch
 
 import polars as pl
@@ -19,6 +20,7 @@ class TestMain:
             PIRClean.pir_people_directly_employed: [10],
             PIRClean.care_home: ["Y"],
             PIRClean.pir_people_directly_employed_cleaned: [10],
+            PIRClean.pir_submission_date_as_date: [date(2025, 1, 1)],
         }
     )
 

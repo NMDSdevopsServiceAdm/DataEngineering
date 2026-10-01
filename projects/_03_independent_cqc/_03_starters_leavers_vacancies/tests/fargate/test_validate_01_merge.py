@@ -5,6 +5,9 @@ import polars as pl
 
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_01_merge as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_values.categorical_columns_by_dataset import (
+    SLVPrepareCategoricalValues,
+)
 
 PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_01_merge"
 
@@ -13,9 +16,15 @@ class TestMain:
     def setup_method(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
+            IndCqcColumns.published_job_role_label: pl.String,
         }
         source_rows = [
-            ("1-001",),
+            (
+                "1-001",
+                SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values[
+                    0
+                ],
+            ),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
@@ -44,7 +53,7 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_report_includes_row_count_check_only(
+    def test_validation_report_includes_expected_validations(
         self,
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
@@ -58,4 +67,8 @@ class TestMain:
 
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
-        assert assertion_types_present == {"row_count_match"}
+        assert assertion_types_present == {
+            "row_count_match",
+            "col_vals_in_set",
+            "specially",
+        }

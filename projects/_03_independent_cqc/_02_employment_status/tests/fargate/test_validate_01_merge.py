@@ -70,6 +70,9 @@ class TestMain:
             {
                 IndCqcColumns.location_id: ["1-001"] * PUBLISHED_ROLE_COUNT,
                 IndCqcColumns.current_region: [Region.london] * PUBLISHED_ROLE_COUNT,
+                IndCqcColumns.published_job_role_label: (
+                    SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+                ),
             }
         )
 
@@ -119,4 +122,5 @@ class TestMain:
             "row_count_match",
             "col_vals_not_null",
             "col_vals_in_set",
+            "specially",
         }

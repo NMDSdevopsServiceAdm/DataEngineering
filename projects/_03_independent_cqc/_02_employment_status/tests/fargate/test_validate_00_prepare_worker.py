@@ -9,8 +9,14 @@ import projects._03_independent_cqc._02_employment_status.fargate.validate_00_pr
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
+from utils.column_values.ascwds_labelled_vocab import (
+    MainJobRoleLabels,
+    PublishedJobRoleLabels,
+)
 
 PATCH_PATH = "projects._03_independent_cqc._02_employment_status.fargate.validate_00_prepare_worker"
 
@@ -20,7 +26,17 @@ class TestMain:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.source_df = pl.DataFrame({"worker_id": ["1", "2"]})
+        self.source_df = pl.DataFrame(
+            {
+                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker]
+                * 2,
+                EmpStatus.permanent_count: [1, 0],
+                EmpStatus.temporary_count: [0, 1],
+                EmpStatus.bank_or_pool_count: [0, 0],
+                EmpStatus.agency_count: [0, 0],
+                EmpStatus.other_count: [0, 0],
+            }
+        )
         # Row count is based on unique rows per RESHAPED_GROUP_COLUMNS, so the
         # two loc1/1-001 rows below count as one group.
         self.compare_df = pl.DataFrame(
@@ -89,6 +105,34 @@ class TestMain:
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
         assert "row_count_match" in assertion_types_present
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.get_matched_ascwds_dates")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_validation_report_includes_expected_validations(
+        self,
+        mock_read_parquet: Mock,
+        mock_get_matched_ascwds_dates: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+        mock_get_matched_ascwds_dates.return_value = self.matched_dates
+
+        job.main(
+            "bucket", "my/source/", "my/compare/", self.METADATA_SOURCE, "my/reports/"
+        )
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+
+        assert assertion_types_present == {
+            "row_count_match",
+            "col_vals_ge",
+            "col_vals_in_set",
+            "specially",
+        }
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.get_matched_ascwds_dates")
