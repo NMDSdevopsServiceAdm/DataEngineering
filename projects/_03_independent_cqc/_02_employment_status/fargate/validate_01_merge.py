@@ -24,6 +24,7 @@ SOURCE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
     IndCqcColumns.current_region,
+    IndCqcColumns.published_job_role_label,
 ]
 
 
@@ -98,6 +99,19 @@ def main(
             IndCqcColumns.current_region,
             CatValues.current_region_column_values.categorical_values,
             brief="current_region is one of the expected ONS regions",
+        )
+        # col_vals_in_set has no na_pass, so this also enforces completeness
+        .col_vals_in_set(
+            IndCqcColumns.published_job_role_label,
+            SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values,
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.published_job_role_label,
+                SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.published_job_role_label} should have exactly "
+            f"{SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values} distinct values",
         )
         .interrogate()
     )

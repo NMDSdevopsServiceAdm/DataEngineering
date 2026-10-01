@@ -80,6 +80,7 @@ class IndCqcColumns:
     brand_id: str = CQCLClean.brand_id
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
+    care_home_model_run_id: str = care_home_model + "_run_id"
     care_home_status_count: str = "care_home_status_count"
     combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contemporary_constituency: str = ONSClean.contemporary_constituency
@@ -239,7 +240,11 @@ class IndCqcColumns:
     next_submission_time: str = "next_submission_time"
     non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
+    non_res_with_dormancy_model_run_id: str = non_res_with_dormancy_model + "_run_id"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
+    non_res_without_dormancy_model_run_id: str = (
+        non_res_without_dormancy_model + "_run_id"
+    )
     national_percentage_care_worker_filled_posts: str = (
         "national_percentage_care_worker_filled_posts"
     )
@@ -512,6 +517,12 @@ class EmploymentStatusColumns:
     estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
     estimated_emp_stat_other: str = "estimated_emp_stat_other"
     estimated_employees: str = "estimated_employees"
+    permanent_count_clean: str = "emplstat_permanent_count_clean"
+    temporary_count_clean: str = "emplstat_temporary_count_clean"
+    bank_or_pool_count_clean: str = "emplstat_bank_or_pool_count_clean"
+    agency_count_clean: str = "emplstat_agency_count_clean"
+    other_count_clean: str = "emplstat_other_count_clean"
+    filtering_rule: str = "employment_status_filtering_rule"
 
 
 @dataclass

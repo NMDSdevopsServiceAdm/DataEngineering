@@ -412,7 +412,6 @@ class ValidateCleanIndCQCSchemas:
             (IndCQC.imputed_registration_date, pl.Date()),
             (IndCQC.dormancy, pl.String()),
             (IndCQC.number_of_beds, pl.Int64()),
-            (IndCQC.number_of_beds_at_provider, pl.Int64()),
             (IndCQC.services_offered, pl.List(pl.String())),
             (IndCQC.primary_service_type, pl.String()),
             (IndCQC.contemporary_ons_import_date, pl.Date()),
@@ -440,6 +439,13 @@ class ValidateCleanIndCQCSchemas:
                 IndCQC.ascwds_filled_posts_source,
                 CatColType.AscwdsFilledPostsSourceEnumType,
             ),
+            (IndCQC.care_home_status_count, pl.Int32()),
+            (IndCQC.number_of_beds_banded, pl.Float64()),
+            (IndCQC.ct_care_home_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.ct_care_home_filtering_rule, pl.String()),
+            (IndCQC.ct_non_res_filtering_rule, pl.String()),
+            (IndCQC.ct_care_home_total_employed_cleaned, pl.Int64()),
+            (IndCQC.ct_non_res_care_workers_employed_cleaned, pl.Int64()),
         ]
     )
 
@@ -513,6 +519,8 @@ class ValidateImputedIndCqcAscwdsAndPir:
             (IndCQC.imputed_filled_post_model, pl.Float32()),
             (IndCQC.imputed_filled_posts_per_bed_ratio_model, pl.Float32()),
             (IndCQC.posts_rolling_average_model, pl.Float32()),
+            (IndCQC.number_of_beds_banded_for_rolling_avg, pl.Float64()),
+            (IndCQC.banded_bed_ratio_rolling_average_model, pl.Float32()),
             (IndCQC.ct_combined_care_home_and_non_res, pl.Float32()),
             (
                 IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
@@ -564,10 +572,18 @@ class ValidateEstimatedIndCQCFilledPostsSchemas:
             ),
             (IndCQC.posts_rolling_average_model, pl.Float32()),
             (IndCQC.care_home_model, pl.Float32()),
+            (IndCQC.care_home_model_run_id, pl.String()),
+            (IndCQC.imputed_posts_care_home_model, pl.Float32()),
             (IndCQC.imputed_posts_non_res_combined_model, pl.Float32()),
+            (IndCQC.non_res_combined_model, pl.Float32()),
             (IndCQC.non_res_with_dormancy_model, pl.Float32()),
+            (IndCQC.non_res_with_dormancy_model_run_id, pl.String()),
             (IndCQC.non_res_without_dormancy_model, pl.Float32()),
+            (IndCQC.non_res_without_dormancy_model_run_id, pl.String()),
             (IndCQC.imputed_pir_filled_posts_model, pl.Float32()),
+            (IndCQC.ct_non_res_all_posts, pl.Float32()),
+            (IndCQC.ct_non_res_filled_post_estimate, pl.Float32()),
+            (IndCQC.ct_non_res_filled_post_estimate_source, pl.String()),
             (IndCQC.services_offered, pl.List(pl.String())),
         ]
     )
@@ -907,6 +923,7 @@ class NullGroupedProvidersSchema:
             (IndCQC.care_home, pl.String()),
             (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
             (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.number_of_beds_at_provider, pl.Int64()),
             (NGPcol.location_pir_average, pl.Float64()),
         ]
     )

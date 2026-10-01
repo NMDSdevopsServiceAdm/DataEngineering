@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added validation checks for columns that are created but never checked, across the Independent CQC filled posts, employment status, starters/leavers/vacancies, CQC locations/providers ingest, CQC PIR, Capacity Tracker, ONS postcode directory and direct payment recipients validators.
 - Added a `col_vals_in_set`/distinct-count validation check for ASC-WDS workplace `region_id`, the one ASC-WDS-adjacent categorical column that previously had no validation backing it.
 - Joined worker-derived employment status counts into the SLV merge step, collapsing worker job roles to the published scheme already used by workplace and job-role-estimate data, and applying the same null-location and date-reduction filtering `_00_prepare_workplace` already uses so the worker and workplace import dates line up for the join.
 - Added has_continuous_data_since_date to publication cleaning utils. It flags locations with capacity tracker data as either a care home or non-res at all periods from a given date onwards. The two capacity tracker columns are coalesced then checked for completeness.
@@ -24,11 +25,14 @@ All notable changes to this project will be documented in this file.
 - Added project-level group-share aggregation and R²/MAE scoring utilities to `_03_independent_cqc`, for any categorical breakdown model.
 - Added group-level totals scoring (R² and weighted absolute % error) to the project-level model evaluation utilities, for scoring filled posts model predictions.
 - Added a project-level utility that nulls chosen columns for groups where a subset's share of the group total is too low, for reuse across categorical breakdowns.
+- Added a data-quality cleaning step for the EmpStat clean job that nulls an org's permanent, temporary, bank-or-pool, agency and other employment status counts (and their percentage-share columns) where too few of its reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
+- Added a step to the EmpStat clean job that creates a `_clean` copy of each deduplicated employment status count, with a filtering-rule column recording whether each row is populated or missing data.
 
 
 ### Changed
+- Added `number_of_beds_at_provider` to the grouped providers output dataset.
+- Increased the upper limit of CT combined trendline validation from 2.0 to 2.5.
 - Changed employment status count deduplication to judge staleness per workplace and import date rather than per job role: counts are only nulled when no job role changed.
-- Stopped dropping `number_of_beds_at_provider` from the cleaned independent CQC filled posts output, reclassifying it from a temporary grouped-provider column to a permanent one, and added a non-negative validation check for it.
 - Consolidated ASC-WDS code-label vocabulary (7 workplace/worker columns) into a single Python source of truth, retiring `data_labels_lookup.csv`.
 - Moved the 9 ASC-WDS `ColumnValues` classes (main job role, employment status, establishment type, parent permission, is parent, main service id, registration type) plus `PublishedJobRoleLabels` (moved alongside them to avoid a circular import, since it subclasses `MainJobRoleLabels`) from `categorical_column_values.py` into `ascwds_labelled_vocab.py`, so that module owns the classes as well as their code-to-label dicts, and retired reconciliation's own hand-rolled `region_id` label dict in favour of the shared one, which also now labels the `-1` ("not known") region_id code that dict never covered - previously left as the raw `-1` in the reconciliation report. Also removed the unused `estimate_filled_posts_geography_labels_dict`.
 - Migrated the reconciliation job (CQC deregistration reports for ASC-WDS singles/subs and parent accounts) from PySpark/Glue to Polars on the `_02_sfc_internal` shared Fargate task, folding its Dockerfile into that project's shared `Dockerfile_and_requirements` image alongside `cqc_coverage`, renumbering its folder to `_03_reconciliation`, and removing the old Glue job, its PySpark code, and their tests/fixtures.
@@ -48,6 +52,7 @@ All notable changes to this project will be documented in this file.
 - Replaced the job role archive validation's single "at least 1 row" check with schema, row-count-against-source, and primary-key uniqueness/completeness checks scoped to just the newly-written partition for each output (estimates and metadata), plus a cross-output check confirming both outputs received the same run's partition.
 - Moved the filled posts models' date-index step into a shared, reusable `_03_independent_cqc` utility (`add_date_index`).
 - Serialised the dev CircleCI image build, terraform plan/apply and environment destroy per branch, and added a job that fails a pipeline whose apply didn't run.
+- Moved the `_03_independent_cqc` Dockerfile out of `_01_filled_posts` and up to the project level (`projects/_03_independent_cqc/Dockerfile_and_requirements/`), as the image also builds the employment status and starters/leavers/vacancies jobs. Updated the path in `docker-bake.hcl`; the Dockerfile itself is unchanged.
 
 
 ### Improved
