@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 from datetime import date
 
-from utils.column_values.categorical_column_values import RegistrationStatus
+from utils.column_values.categorical_column_values import (
+    ParentsOrSinglesAndSubs,
+    RegistrationStatus,
+)
 
 
 @dataclass
@@ -191,6 +194,33 @@ class ValidateMergeCoverageData:
         ("loc 2", date(2024, 1, 1), "name", "AB1 2CD", "Y", "2024", "01", "01"),
     ]
     expected_row_count = 1
+
+
+@dataclass
+class MergeCoverageData:
+    cqc_location_rows = [(date(2024, 4, 1),)]
+
+    ascwds_workplace_rows = [("1-001",)]
+
+    cqc_ratings_rows = [("Good",)]
+
+    cqc_providers_rows = [("1",)]
+
+    # (is_parent, parent_permission)
+    deduped_merged_coverage_rows = [
+        ("Yes", "Workplace has ownership"),  # is_parent - parent
+        ("No", "Parent has ownership"),  # not parent, but parent has ownership - parent
+        (
+            "No",
+            "Workplace has ownership",
+        ),  # not parent, no ownership - singles_and_subs
+    ]
+
+    expected_parents_or_singles_and_subs = [
+        ParentsOrSinglesAndSubs.parents,
+        ParentsOrSinglesAndSubs.parents,
+        ParentsOrSinglesAndSubs.singles_and_subs,
+    ]
 
 
 @dataclass

@@ -6,6 +6,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
+    CqcProviderCleanedColumns as CQCPClean,
+)
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
@@ -63,6 +66,23 @@ class ValidateMergeCoverageSchemas:
             (Keys.year, pl.String),
             (Keys.month, pl.String),
             (Keys.day, pl.String),
+        ]
+    )
+
+
+class MergeCoverageSchema:
+    cqc_location_schema = pl.Schema([(CQCLClean.cqc_location_import_date, pl.Date)])
+
+    ascwds_workplace_schema = pl.Schema([(AscWdsColumns.establishment_id, pl.String)])
+
+    cqc_ratings_schema = pl.Schema([(CQCRatingsColumns.overall_rating, pl.String)])
+
+    cqc_providers_schema = pl.Schema([(CQCPClean.provider_id, pl.String)])
+
+    deduped_merged_coverage_schema = pl.Schema(
+        [
+            (AscWdsColumns.is_parent, pl.String),
+            (AscWdsColumns.parent_permission, pl.String),
         ]
     )
 
