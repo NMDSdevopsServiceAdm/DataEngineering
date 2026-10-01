@@ -20,7 +20,8 @@ COPY utils/value_labels /app/utils/value_labels
 COPY projects/_02_sfc_internal/utils /app/projects/_02_sfc_internal/utils
 
 # Copy python jobs to WORKDIR
-COPY projects/_02_sfc_internal/cqc_coverage/fargate/*.py .
+COPY projects/_02_sfc_internal/_02_cqc_coverage/fargate/*.py .
+COPY projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils /app/projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils
 COPY projects/_02_sfc_internal/_03_reconciliation/fargate/*.py .
 
 ENTRYPOINT ["python"]
