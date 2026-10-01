@@ -54,8 +54,7 @@ def main(
     merged_coverage_lf = cov_utils.deduplicate_merged_coverage_data(merged_coverage_lf)
 
     # TODO (ticket 2134): call add_parents_or_singles_and_subs_column here, once
-    # join_ascwds_data_into_cqc_location_df above is real and actually provides
-    # the is_parent/parent_permission columns it needs.
+    # the join above is real.
     merged_coverage_lf = cov_utils.join_latest_cqc_rating_into_coverage_df(
         merged_coverage_lf, cqc_ratings_lf
     )
