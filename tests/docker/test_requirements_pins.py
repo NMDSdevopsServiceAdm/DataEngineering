@@ -56,8 +56,7 @@ class TestDockerRequirementsPins:
 
     The images install docker_requirements/requirements.txt with plain pip, so only
     what is pinned there is fixed. An unpinned great-tables once floated to 1.0.0,
-    which HTML-escapes pointblank's report icons, while CI stayed green on 0.23.0
-    (see ticket 2137).
+    which HTML-escapes pointblank's report icons, while CI stayed green on 0.23.0.
     """
 
     @pytest.mark.parametrize("package,version", sorted(DOCKER_PINS.items()))
