@@ -15,6 +15,7 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResColumns as CTNR,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import CareHome
 
 # --- clean_capacity_tracker_utils ---
 
@@ -166,6 +167,7 @@ VALIDATE_CARE_HOME_RAW_DATA = {
 }
 VALIDATE_CARE_HOME_CLEANED_DATA = {
     CTCHClean.cqc_id: ["1-001"],
+    CTCHClean.care_home: [CareHome.care_home],
     CTCHClean.ct_care_home_import_date: ["20240101"],
     CTCHClean.nurses_employed: [2],
     CTCHClean.care_workers_employed: [1],
@@ -184,6 +186,7 @@ VALIDATE_CARE_HOME_CLEANED_DATA = {
 VALIDATE_NON_RES_RAW_DATA = {CTNRClean.cqc_id: ["1-001", "1-002"]}
 VALIDATE_NON_RES_CLEANED_DATA = {
     CTNRClean.cqc_id: ["1-001", "1-002"],
+    CTNRClean.care_home: [CareHome.not_care_home, CareHome.not_care_home],
     CTNRClean.ct_non_res_import_date: ["20240101", "20240101"],
     CTNRClean.cqc_care_workers_employed: [5, 10],
     CTNRClean.service_user_count: [10, 20],
