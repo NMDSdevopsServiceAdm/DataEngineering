@@ -58,7 +58,7 @@ def test_average_is_mean_total_staff_per_year():
     )
 
 
-def test_survey_average_wins_over_historic_ratio_and_historic_fills_missing_years():
+def test_survey_overrides_historic_ratio_and_historic_fills_gaps():
     # Historic years are 2011-13, 2015, 2016 and 2018; survey 2013 overrides 1.98.
     survey_lf = make_survey_lf([(2013, 5.0)])
 
@@ -70,6 +70,24 @@ def test_survey_average_wins_over_historic_ratio_and_historic_fills_missing_year
             (2011, 1.98),
             (2012, (1.98 + 1.98 + 5.0) / 3),
             (2014, (5.0 + 2.00) / 2),
+            (2015, (2.00 + 2.01) / 2),
+            (2017, (2.01 + 1.96) / 2),
+        ]
+    )
+    pl_testing.assert_frame_equal(returned_df, expected_df)
+
+
+def test_empty_survey_returns_historic_years_only():
+    survey_lf = make_survey_lf([])
+
+    returned_df = run(survey_lf, from_year=ALL_YEARS)
+
+    expected_df = make_expected_df(
+        [
+            (2010, 1.98),
+            (2011, 1.98),
+            (2012, 1.98),
+            (2014, (1.98 + 2.00) / 2),
             (2015, (2.00 + 2.01) / 2),
             (2017, (2.01 + 1.96) / 2),
         ]
@@ -100,7 +118,7 @@ def test_year_is_reduced_by_one():
         ),
     ],
 )
-def test_rolling_average_uses_years_within_window_and_divides_by_rows_present(
+def test_rolling_average_shrinks_window_over_gap_years(
     survey_years: list[int], expected_ratios: list[float]
 ):
     survey_lf = make_survey_lf(
