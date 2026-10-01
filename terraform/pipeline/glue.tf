@@ -46,21 +46,6 @@ module "merge_dpr_data_job" {
   }
 }
 
-module "split_pa_filled_posts_into_icb_areas_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_04_direct_payment_recipients/jobs"
-  script_name     = "split_pa_filled_posts_into_icb_areas.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-  job_parameters = {
-    "--postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=01_ons/dataset=postcode_directory_cleaned/"
-    "--pa_filled_posts_souce"     = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_estimates/version=2026.02/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_estimates_by_icb/version=2026.02/"
-  }
-}
-
 module "flatten_cqc_ratings_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_02_sfc_internal/cqc_ratings/jobs"

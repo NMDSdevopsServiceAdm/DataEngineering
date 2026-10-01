@@ -23,5 +23,6 @@ COPY utils/value_labels /app/utils/value_labels
 # Copy python jobs to WORKDIR
 COPY projects/_04_direct_payment_recipients/fargate/estimate_direct_payments.py /app/estimate_direct_payments.py
 COPY projects/_04_direct_payment_recipients/fargate/validate_estimate_direct_payments.py /app/validate_estimate_direct_payments.py
+COPY projects/_04_direct_payment_recipients/fargate/split_pa_filled_posts_into_icb_areas.py /app/split_pa_filled_posts_into_icb_areas.py
 
 ENTRYPOINT ["python"]
