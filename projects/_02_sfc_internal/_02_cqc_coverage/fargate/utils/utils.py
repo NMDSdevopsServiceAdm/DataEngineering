@@ -27,18 +27,6 @@ def _keep_first_row_per_group(
 ) -> pl.LazyFrame:
     """Keeps one row per `group_columns` group, the first by `order_columns`.
 
-    Polars equivalent of the PySpark original's row_number-over-a-window
-    dedupe. Sorting first then taking `unique(keep="first")` is deterministic
-    here because the global sort by `order_columns` guarantees that, within
-    any `group_columns` group, rows appear in exactly the tie-break priority
-    order - `maintain_order=True` just makes `unique` respect that order
-    instead of returning an arbitrary row per group.
-
-    This is used three times in this module (ASC-WDS workplace, merged
-    coverage, and CQC provider deduplication) and nowhere else in the repo
-    yet, so it stays private here rather than being promoted to a shared
-    `polars_utils` helper.
-
     Args:
         lf (pl.LazyFrame): The LazyFrame to deduplicate.
         group_columns (list[str]): Columns identifying duplicate groups.
@@ -57,15 +45,13 @@ def _keep_first_row_per_group(
 def add_removed_by_purge_date_filter_flag(
     ascwds_workplace_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
-    """Flags ASC-WDS workplaces that should be excluded for having passed their purge date.
+    """Flags ASC-WDS workplaces that have passed their purge date.
 
     Args:
-        ascwds_workplace_lf (pl.LazyFrame): ASC-WDS workplace data, including its
-            last-active and purge-date columns.
+        ascwds_workplace_lf (pl.LazyFrame): ASC-WDS workplace data.
 
     Returns:
-        pl.LazyFrame: The same data with a `removed_by_purge_date_filter` flag added
-            and its source last-active/purge-date columns dropped.
+        pl.LazyFrame: The same data with a `removed_by_purge_date_filter` flag added.
     """
     return ascwds_workplace_lf.with_columns(
         (
@@ -83,8 +69,7 @@ def deduplicate_ascwds_workplace_data(
         ascwds_workplace_lf (pl.LazyFrame): ASC-WDS workplace data.
 
     Returns:
-        pl.LazyFrame: The same data with one row per (import date, location),
-            preferring the most recently updated establishment.
+        pl.LazyFrame: One row per import date and location.
     """
     return _keep_first_row_per_group(
         ascwds_workplace_lf,
@@ -99,10 +84,6 @@ def join_ascwds_data_into_cqc_location_df(
     ascwds_workplace_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """Joins ASC-WDS workplace data onto CQC locations using an aligned import date.
-
-    Aligns each CQC location's import date to the most recent ASC-WDS import date
-    on or before it, then joins on location_id and that aligned date, bringing in
-    all ASC-WDS workplace columns.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Cleaned CQC locations data.
@@ -132,9 +113,6 @@ def join_ascwds_data_into_cqc_location_df(
 def add_flag_for_in_ascwds(merged_coverage_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Adds a flag for whether each CQC location is present and active in ASC-WDS.
 
-    A location is flagged as in ASC-WDS when it has an ASC-WDS establishment_id and
-    has not been excluded by the purge-date filter.
-
     Args:
         merged_coverage_lf (pl.LazyFrame): Coverage data with ASC-WDS columns joined
             in.
@@ -161,8 +139,7 @@ def deduplicate_merged_coverage_data(merged_coverage_lf: pl.LazyFrame) -> pl.Laz
             in and the `in_ascwds` flag added.
 
     Returns:
-        pl.LazyFrame: The same data with one row per (import date, name, postcode,
-            care home), preferring the row that is in ASC-WDS.
+        pl.LazyFrame: One row per import date, name, postcode and care home.
     """
     return _keep_first_row_per_group(
         merged_coverage_lf,
@@ -184,14 +161,8 @@ def deduplicate_merged_coverage_data(merged_coverage_lf: pl.LazyFrame) -> pl.Laz
 def _filter_for_latest_cqc_ratings(cqc_ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Filters CQC ratings down to the latest current rating per location.
 
-    Inlined as a private helper rather than promoted to its own module-level
-    function: in the PySpark original, `filter_for_latest_cqc_ratings` is only
-    ever called from `join_latest_cqc_rating_into_coverage_df`, so the two stay
-    paired here too.
-
     Args:
-        cqc_ratings_lf (pl.LazyFrame): CQC ratings data (may contain multiple
-            rows per location).
+        cqc_ratings_lf (pl.LazyFrame): CQC ratings data.
 
     Returns:
         pl.LazyFrame: CQC ratings data with only the latest current rating per
@@ -215,13 +186,9 @@ def join_latest_cqc_rating_into_coverage_df(
 ) -> pl.LazyFrame:
     """Joins each location's latest current CQC rating onto the coverage data.
 
-    Internally filters cqc_ratings_lf down to the latest current rating per location
-    before joining, since the raw ratings data contains multiple rows per location.
-
     Args:
         merged_coverage_lf (pl.LazyFrame): Coverage data so far.
-        cqc_ratings_lf (pl.LazyFrame): CQC ratings data (may contain multiple rows
-            per location).
+        cqc_ratings_lf (pl.LazyFrame): CQC ratings data.
 
     Returns:
         pl.LazyFrame: Coverage data with the latest overall CQC rating added.
@@ -240,9 +207,6 @@ def add_columns_for_locality_manager_dashboard(
 ) -> pl.LazyFrame:
     """Adds the locality manager dashboard columns to the coverage data.
 
-    Covers local-authority coverage, month-on-month coverage/location change, and
-    new-registration counts. Migrated in full as its own ticket (2131c).
-
     Args:
         merged_coverage_lf (pl.LazyFrame): Coverage data so far.
 
@@ -250,7 +214,7 @@ def add_columns_for_locality_manager_dashboard(
         pl.LazyFrame: Coverage data with the locality manager dashboard columns
             added.
     """
-    # TODO (ticket 2131c): migrate the 6 functions currently in the PySpark
+    # TODO (ticket 2131c): migrate the 6 functions currently in
     # `lm_engagement_utils.py` (LA coverage, coverage monthly change, locations
     # monthly change, new registrations) into this module and call them here.
     return merged_coverage_lf
@@ -262,13 +226,9 @@ def join_provider_name_into_merged_coverage_df(
 ) -> pl.LazyFrame:
     """Joins each location's latest provider name onto the coverage data.
 
-    Deduplicates the providers data to the latest import date per provider before
-    joining, since the raw providers data contains multiple rows per provider.
-
     Args:
         merged_coverage_lf (pl.LazyFrame): Coverage data so far.
-        cqc_providers_lf (pl.LazyFrame): CQC providers data (may contain multiple
-            rows per provider).
+        cqc_providers_lf (pl.LazyFrame): CQC providers data.
 
     Returns:
         pl.LazyFrame: Coverage data with the provider name added.
