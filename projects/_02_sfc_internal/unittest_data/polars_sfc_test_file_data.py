@@ -1,7 +1,11 @@
 from dataclasses import dataclass
 from datetime import date
 
-from utils.column_values.categorical_column_values import RegistrationStatus
+from utils.column_values.categorical_column_values import (
+    InAscwds,
+    ParentsOrSinglesAndSubs,
+    RegistrationStatus,
+)
 
 
 @dataclass
@@ -191,6 +195,132 @@ class ValidateMergeCoverageData:
         ("loc 2", date(2024, 1, 1), "name", "AB1 2CD", "Y", "2024", "01", "01"),
     ]
     expected_row_count = 1
+
+
+@dataclass
+class MergeCoverageData:
+    cqc_location_rows = [(date(2024, 4, 1),)]
+
+    ascwds_workplace_rows = [("1-001",)]
+
+    cqc_ratings_rows = [("Good",)]
+
+    cqc_providers_rows = [("1",)]
+
+    # (is_parent, parent_permission)
+    deduped_merged_coverage_rows = [
+        ("Yes", "Workplace has ownership"),  # is_parent - parent
+        ("No", "Parent has ownership"),  # not parent, but parent has ownership - parent
+        (
+            "No",
+            "Workplace has ownership",
+        ),  # not parent, no ownership - singles_and_subs
+    ]
+
+    expected_parents_or_singles_and_subs = [
+        ParentsOrSinglesAndSubs.parents,
+        ParentsOrSinglesAndSubs.parents,
+        ParentsOrSinglesAndSubs.singles_and_subs,
+    ]
+
+    # (establishment_id, workplace_last_active_date, purge_date)
+    add_removed_by_purge_date_filter_flag_rows = [
+        ("1-001", date(2024, 1, 1), date(2024, 6, 1)),  # active before purge - removed
+        ("1-002", date(2024, 6, 1), date(2024, 1, 1)),  # active after purge - kept
+    ]
+    expected_removed_by_purge_date_filter_flags = [True, False]
+
+    # (ascwds_workplace_import_date, location_id, master_update_date, establishment_id)
+    deduplicate_ascwds_workplace_data_rows = [
+        (date(2024, 4, 1), "1-001", date(2024, 3, 1), "100"),  # older update - dropped
+        (date(2024, 4, 1), "1-001", date(2024, 3, 15), "101"),  # latest update - kept
+        (date(2024, 4, 1), "1-002", date(2024, 3, 1), "102"),  # only row - kept
+        (date(2024, 4, 1), "1-003", date(2024, 3, 1), "200"),  # update date tied with
+        (
+            date(2024, 4, 1),
+            "1-003",
+            date(2024, 3, 1),
+            "199",
+        ),  # row below - lower id wins
+    ]
+    expected_deduplicate_ascwds_workplace_data_establishment_ids = [
+        "101",
+        "102",
+        "199",
+    ]
+
+    # cqc_location: (cqc_location_import_date, location_id)
+    join_ascwds_data_cqc_location_rows = [(date(2024, 4, 1), "1-001")]
+    # ascwds_workplace: (ascwds_workplace_import_date, location_id, establishment_id)
+    join_ascwds_data_ascwds_workplace_rows = [
+        (date(2024, 1, 1), "1-001", "100"),
+        (date(2024, 3, 1), "1-001", "101"),  # closest import date on/before 2024-04-01
+        (
+            date(2024, 5, 1),
+            "1-001",
+            "102",
+        ),  # after the CQC import date - not aligned to
+    ]
+    expected_join_ascwds_data_aligned_import_date = date(2024, 3, 1)
+    expected_join_ascwds_data_establishment_id = "101"
+
+    # (establishment_id, removed_by_purge_date_filter)
+    add_flag_for_in_ascwds_rows = [
+        ("100", False),  # has establishment, not removed - in ASC-WDS
+        ("101", True),  # has establishment, removed - not in ASC-WDS
+        (None, False),  # no establishment - not in ASC-WDS
+    ]
+    expected_in_ascwds_flags = [
+        InAscwds.is_in_ascwds,
+        InAscwds.not_in_ascwds,
+        InAscwds.not_in_ascwds,
+    ]
+
+    # (cqc_location_import_date, name, postal_code, care_home, in_ascwds,
+    #  imputed_registration_date, location_id)
+    deduplicate_merged_coverage_data_rows = [
+        (date(2024, 4, 1), "Name A", "AB1 2CD", "Y", 0, date(2024, 1, 1), "1-002"),
+        (date(2024, 4, 1), "Name A", "AB1 2CD", "Y", 1, date(2024, 1, 1), "1-001"),
+        (date(2024, 4, 1), "Name B", "EF3 4GH", "N", 1, date(2024, 2, 1), "1-003"),
+        (date(2024, 4, 1), "Name B", "EF3 4GH", "N", 1, date(2024, 2, 1), "1-004"),
+    ]
+    expected_deduplicate_merged_coverage_data_location_ids = ["1-001", "1-003"]
+
+    # coverage: (location_id,)
+    join_latest_cqc_rating_coverage_rows = [("1-001",), ("1-002",)]
+    # ratings: (location_id, overall_rating, latest_rating_flag, current_or_historic)
+    join_latest_cqc_rating_ratings_rows = [
+        ("1-001", "Good", 1, "Current"),  # latest current rating - kept
+        ("1-001", "Requires improvement", 0, "Historic"),  # not latest - filtered out
+        ("1-002", "Outstanding", 1, "Historic"),  # latest but historic - filtered out
+    ]
+    expected_join_latest_cqc_rating_overall_ratings = ["Good", None]
+
+    # coverage: (location_id, provider_id)
+    join_provider_name_coverage_rows = [("1-001", "P1"), ("1-002", "P2")]
+    # providers: (provider_id, name, cqc_provider_import_date)
+    join_provider_name_providers_rows = [
+        ("P1", "Provider One Old Name", date(2024, 1, 1)),
+        ("P1", "Provider One New Name", date(2024, 4, 1)),  # latest import date - kept
+        ("P2", "Provider Two", date(2024, 2, 1)),
+    ]
+    expected_join_provider_names = ["Provider One New Name", "Provider Two"]
+
+    # (cqc_location_import_date, location_id, is_parent, parent_permission)
+    merged_coverage_with_two_import_dates_rows = [
+        (
+            date(2024, 3, 1),
+            "1-001",
+            "No",
+            "Workplace has ownership",
+        ),  # older month - excluded from reduced output
+        (
+            date(2024, 4, 1),
+            "1-002",
+            "No",
+            "Workplace has ownership",
+        ),  # latest month - kept in reduced output
+    ]
 
 
 @dataclass

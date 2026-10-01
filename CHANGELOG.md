@@ -26,6 +26,9 @@ All notable changes to this project will be documented in this file.
 - Added group-level totals scoring (R² and weighted absolute % error) to the project-level model evaluation utilities, for scoring filled posts model predictions.
 - Added a project-level utility that nulls chosen columns for groups where a subset's share of the group total is too low, for reuse across categorical breakdowns.
 - Added a `_clean` copy of each deduplicated employment status count and a data-quality cleaning step for the EmpStat clean job that nulls a location's or org's employment status counts (and their percentage-share columns) where too few of their reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
+- Migrated the `_02_cqc_coverage` job's core merge logic (ASC-WDS purge-date handling, the aligned-date join, deduplication, the latest-CQC-rating and provider-name joins, and the latest-month output) from PySpark to Polars, running in parallel to the existing pipeline for output comparison.
+- Added a data-quality cleaning step for the EmpStat clean job that nulls an org's permanent, temporary, bank-or-pool, agency and other employment status counts (and their percentage-share columns) where too few of its reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
+- Added a step to the EmpStat clean job that creates a `_clean` copy of each deduplicated employment status count, with a filtering-rule column recording whether each row is populated or missing data.
 
 
 ### Changed
@@ -50,6 +53,8 @@ All notable changes to this project will be documented in this file.
 - Moved `EmploymentStatusRatesColumns` (renamed `EmploymentStatusMagicNumberRateColumns`) into the shared `ind_cqc_pipeline_columns.py`, alongside the other column-name classes.
 - Replaced the job role archive validation's single "at least 1 row" check with schema, row-count-against-source, and primary-key uniqueness/completeness checks scoped to just the newly-written partition for each output (estimates and metadata), plus a cross-output check confirming both outputs received the same run's partition.
 - Moved the filled posts models' date-index step into a shared, reusable `_03_independent_cqc` utility (`add_date_index`).
+- Serialised the dev CircleCI image build, terraform plan/apply and environment destroy per branch, and added a job that fails a pipeline whose apply didn't run.
+- Moved the `_03_independent_cqc` Dockerfile out of `_01_filled_posts` and up to the project level (`projects/_03_independent_cqc/Dockerfile_and_requirements/`), as the image also builds the employment status and starters/leavers/vacancies jobs. Updated the path in `docker-bake.hcl`; the Dockerfile itself is unchanged.
 
 
 ### Improved
@@ -62,6 +67,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the IND CQC filled posts model's `get_run_number` to paginate through all S3 objects under a model root instead of only the first page, so it no longer silently undercounts (and risks reusing/overwriting a run number) once a model root passes 1000 objects.
 - Fixed the Glue crawler module's `table_prefix` so Athena table names no longer start with a digit (which Athena/Presto can't query unquoted), by adding a leading underscore ahead of the numbered domain prefix.
 - Fixed the `_02_employment_status`/`_03_starters_leavers_vacancies` pipelines' `_00_prepare_worker`/`_00_prepare_workplace` and their validate jobs to reduce ASCWDS import dates to those already CQC-matched in the job role metadata, instead of an independent hardcoded quarterly/earliest-file-per-month rule that could disagree with the metadata match and cause the merge step to silently miss rows.
+- Fixed the grouped providers output marking a location as fixed when its data was only deduplicated, moving fixed dates forward on every run, taking the latest snapshot from the latest flagged month instead of the latest month, and leaving fixed dates empty in months with no flagged location.
 - Fixed the SLV clean job computing turnover/starter/vacancy rates before deduplicating starters, leavers and vacancies, which could change a location's rate even when the underlying deduplicated figure hadn't changed; rates are now calculated from the deduplicated columns.
 - Fixed `care_home` being downgraded from its `CareHomeEnumType` to a generic `Categorical` in the job role estimates merge metadata, an oversight from when the metadata schema was set up; it's now cast to the correct type at source, and its validation schema check updated to match.
 - Fixed the Ind-CQC-Archive step function hardcoding the branch-bucket-only `main_`-prefixed job role estimates/metadata dataset names, which would have broken it in production; it now uses the same workspace-aware dataset name locals as the other step functions.
