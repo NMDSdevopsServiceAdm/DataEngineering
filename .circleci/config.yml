@@ -503,6 +503,14 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_04_estimate/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_01_merge_metadata/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" --delete
+            # TEMPORARY (ticket 2136): seeds the datasets SfC-Internal's "Flatten CQC
+            # Ratings"/"Merge Coverage Data"/"Reconciliation" states need but that are
+            # normally produced by other step functions, so this one can be manually
+            # exercised end-to-end on this branch. Revert once that run succeeds.
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_04_latest_snapshot/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_04_latest_snapshot/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=providers_04_full_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=providers_04_full_cleaned/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=02_sfc/dataset=ascwds_for_sfc_internal/" "s3://$BRANCH_DATASET_BUCKET/domain=02_sfc/dataset=ascwds_for_sfc_internal/" --delete
       - run:
           name: Copy models to non-prod dataset
           command: |
