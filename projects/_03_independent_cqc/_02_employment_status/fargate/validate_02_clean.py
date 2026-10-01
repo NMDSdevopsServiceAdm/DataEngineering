@@ -48,11 +48,7 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
-    # Struct/List columns can't be validated by pointblank
-    source_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{source_path}",
-        exclude_complex_types=True,
-    )
+    source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,

@@ -63,10 +63,7 @@ class TestMain:
         assert mock_read_parquet.call_count == 2
         mock_read_parquet.assert_has_calls(
             [
-                call(
-                    source="s3://bucket/my/source/",
-                    exclude_complex_types=True,
-                ),
+                call(source="s3://bucket/my/source/"),
                 call(
                     source="s3://bucket/my/compare/",
                     selected_columns=job.COMPARE_COLS_TO_IMPORT,
