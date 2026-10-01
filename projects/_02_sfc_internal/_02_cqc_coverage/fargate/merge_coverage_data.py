@@ -3,7 +3,6 @@ import sys
 from polars_utils import utils
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from projects._02_sfc_internal._02_cqc_coverage.fargate.utils import utils as cov_utils
-from projects._02_sfc_internal.utils.utils import add_parents_or_singles_and_subs_column
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -53,7 +52,10 @@ def main(
     )
     merged_coverage_lf = cov_utils.add_flag_for_in_ascwds(merged_coverage_lf)
     merged_coverage_lf = cov_utils.deduplicate_merged_coverage_data(merged_coverage_lf)
-    merged_coverage_lf = add_parents_or_singles_and_subs_column(merged_coverage_lf)
+
+    # TODO (ticket 2134): call add_parents_or_singles_and_subs_column here, once
+    # join_ascwds_data_into_cqc_location_df above is real and actually provides
+    # the is_parent/parent_permission columns it needs.
     merged_coverage_lf = cov_utils.join_latest_cqc_rating_into_coverage_df(
         merged_coverage_lf, cqc_ratings_lf
     )
