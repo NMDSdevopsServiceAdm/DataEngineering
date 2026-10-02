@@ -63,7 +63,8 @@ def filter_to_first_import_of_most_recent_month(lf: pl.LazyFrame) -> pl.LazyFram
 
 def raise_on_duplicate_key_question_names(key_question_ratings: pl.Expr) -> pl.Expr:
     """
-    Passes through a `keyQuestionRatings` list, raising if any list repeats a name.
+    Passes through a `keyQuestionRatings` list, raising a ValueError if any list
+    repeats a name.
 
     Selecting by name keeps only the first match, so a repeated name would silently
     drop a rating. The check is part of the lazy plan, so the error is raised when the
@@ -75,9 +76,6 @@ def raise_on_duplicate_key_question_names(key_question_ratings: pl.Expr) -> pl.E
 
     Returns:
         pl.Expr: The unchanged `key_question_ratings` expression.
-
-    Raises:
-        ValueError: If any list contains the same key question name more than once.
     """
 
     def _check(series: pl.Series) -> pl.Series:
@@ -94,7 +92,7 @@ def get_key_question_rating_exprs(key_question_ratings: pl.Expr) -> list[pl.Expr
     Builds one rating expression per key question, selected by name.
 
     Selecting by name means the result doesn't depend on list order. A key question
-    missing from the list gives null.
+    missing from the list gives null. Raises a ValueError if any list repeats a name.
 
     Args:
         key_question_ratings (pl.Expr): Expression for a `keyQuestionRatings` list of
@@ -102,9 +100,6 @@ def get_key_question_rating_exprs(key_question_ratings: pl.Expr) -> list[pl.Expr
 
     Returns:
         list[pl.Expr]: Rating expressions aliased to the key question rating columns.
-
-    Raises:
-        ValueError: If any list contains the same key question name more than once.
     """
     key_question_ratings = raise_on_duplicate_key_question_names(key_question_ratings)
 
