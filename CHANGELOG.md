@@ -32,6 +32,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Converted direct payment recipients outlier removal from PySpark to a single Polars function (not yet wired into a job).
 - Added `number_of_beds_at_provider` to the grouped providers output dataset.
 - Increased the upper limit of CT combined trendline validation from 2.0 to 2.5.
 - Changed employment status count deduplication to judge staleness per workplace and import date rather than per job role: counts are only nulled when no job role changed.
