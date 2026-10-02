@@ -12,6 +12,7 @@ from utils.column_values.categorical_column_values import InAscwds
 year_col: str = "_year"
 
 
+# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:add_columns_for_locality_manager_dashboard
 def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
     """
     Adds the columns required for the locality manager dashboard.
@@ -31,6 +32,7 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
     return calculate_new_registrations(df, agg_w, ytd_w)
 
 
+# converted to polars -> absorbed into projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py (no Window-builder equivalent needed; each function states partition_by/order_by inline)
 def create_windows_for_lm_engagement_calculations() -> Tuple[Window, Window, Window]:
     """
     Creates the windows required for the locality manager dashboard.
@@ -55,6 +57,7 @@ def create_windows_for_lm_engagement_calculations() -> Tuple[Window, Window, Win
     return w, agg_w, ytd_w
 
 
+# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:calculate_la_coverage_monthly
 def calculate_la_coverage_monthly(df: DataFrame, agg_w: Window) -> DataFrame:
     """
     Adds a column with the monthly coverage for the local authority.
@@ -78,6 +81,7 @@ def calculate_la_coverage_monthly(df: DataFrame, agg_w: Window) -> DataFrame:
     )
 
 
+# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:calculate_coverage_monthly_change
 def calculate_coverage_monthly_change(df: DataFrame, w: Window) -> DataFrame:
     """
     Adds a column with the coverage monthly change for the local authority.
@@ -98,6 +102,7 @@ def calculate_coverage_monthly_change(df: DataFrame, w: Window) -> DataFrame:
     )
 
 
+# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:calculate_locations_monthly_change
 def calculate_locations_monthly_change(
     df: DataFrame, w: Window, agg_w: Window
 ) -> DataFrame:
@@ -132,6 +137,7 @@ def calculate_locations_monthly_change(
     ).drop(CoverageColumns.in_ascwds_change)
 
 
+# converted to polars -> projects/_02_sfc_internal/_02_cqc_coverage/fargate/utils/utils.py:calculate_new_registrations
 def calculate_new_registrations(
     df: DataFrame, agg_w: Window, ytd_w: Window
 ) -> DataFrame:
