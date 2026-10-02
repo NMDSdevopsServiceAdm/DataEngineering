@@ -96,6 +96,11 @@ prepare_current_ratings_cases = [
         expected_rows=Data.expected_prepare_current_ratings_rows,
     ),
     PrepareCurrentRatingsCase(
+        id="maps_ratings_to_columns_by_name_when_key_questions_reordered",
+        rows=Data.current_ratings_reordered_key_question_rows,
+        expected_rows=Data.expected_prepare_current_ratings_rows,
+    ),
+    PrepareCurrentRatingsCase(
         id="fills_missing_key_questions_with_null_when_fewer_than_five",
         rows=Data.current_ratings_short_key_question_list_rows,
         expected_rows=Data.expected_prepare_current_ratings_short_key_question_list_rows,
@@ -137,6 +142,11 @@ prepare_historic_ratings_cases = [
     PrepareHistoricRatingsCase(
         id="flattens_recodes_and_labels_as_historic",
         rows=Data.historic_ratings_rows,
+        expected_rows=Data.expected_prepare_historic_ratings_rows,
+    ),
+    PrepareHistoricRatingsCase(
+        id="maps_ratings_to_columns_by_name_when_key_questions_reordered",
+        rows=Data.historic_ratings_reordered_key_question_rows,
         expected_rows=Data.expected_prepare_historic_ratings_rows,
     ),
     PrepareHistoricRatingsCase(

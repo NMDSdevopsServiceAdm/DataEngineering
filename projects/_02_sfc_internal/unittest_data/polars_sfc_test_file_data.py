@@ -503,20 +503,37 @@ class FlattenCQCRatings:
             },
         )
 
-    def _kq(name, rating="Good"):
+    def _kq(name, rating):
         return {"name": name, "rating": rating}
 
+    # Distinct rating per key question shows each lands in its own column.
+    # fmt: off
+    _all_key_questions = [
+        _kq("Safe", "safe_rating"),
+        _kq("Well-led", "well_led_rating"),
+        _kq("Caring", "caring_rating"),
+        _kq("Responsive", "responsive_rating"),
+        _kq("Effective", "effective_rating"),
+    ]
+    _all_key_questions_reordered = [
+        _kq("Effective", "effective_rating"),
+        _kq("Caring", "caring_rating"),
+        _kq("Safe", "safe_rating"),
+        _kq("Responsive", "responsive_rating"),
+        _kq("Well-led", "well_led_rating"),
+    ]
+    _short_key_questions = [
+        _kq("Well-led", "well_led_rating"),
+        _kq("Safe", "safe_rating"),
+    ]
+    # fmt: on
+
     current_ratings_rows = [
-        _current_ratings(
-            "1-001",
-            [
-                _kq("Safe"),
-                _kq("Well-led"),
-                _kq("Caring", "Outstanding"),
-                _kq("Responsive", "Inspected but not rated"),
-                _kq("Effective", "Requires improvement"),
-            ],
-        ),
+        _current_ratings("1-001", _all_key_questions),
+    ]
+
+    current_ratings_reordered_key_question_rows = [
+        _current_ratings("1-001", _all_key_questions_reordered),
     ]
 
     expected_prepare_current_ratings_rows = [
@@ -525,17 +542,17 @@ class FlattenCQCRatings:
             "Registered",
             "2024-01-01",
             "Good",
-            "Good",
-            "Good",
-            "Outstanding",
-            "Inspected but not rated",
-            "Requires improvement",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
             "Current",
         ),
     ]
 
     current_ratings_short_key_question_list_rows = [
-        _current_ratings("1-002", [_kq("Safe"), _kq("Well-led")]),
+        _current_ratings("1-002", _short_key_questions),
     ]
 
     expected_prepare_current_ratings_short_key_question_list_rows = [
@@ -544,8 +561,8 @@ class FlattenCQCRatings:
             "Registered",
             "2024-01-01",
             "Good",
-            "Good",
-            "Good",
+            "safe_rating",
+            "well_led_rating",
             None,
             None,
             None,
@@ -560,21 +577,14 @@ class FlattenCQCRatings:
         }
 
     historic_ratings_rows = [
+        ("1-001", "Registered", [_historic_entry("2023-01-01", _all_key_questions)]),
+    ]
+
+    historic_ratings_reordered_key_question_rows = [
         (
             "1-001",
             "Registered",
-            [
-                _historic_entry(
-                    "2023-01-01",
-                    [
-                        _kq("Safe"),
-                        _kq("Well-led"),
-                        _kq("Caring"),
-                        _kq("Responsive"),
-                        _kq("Effective"),
-                    ],
-                )
-            ],
+            [_historic_entry("2023-01-01", _all_key_questions_reordered)],
         ),
     ]
 
@@ -584,11 +594,11 @@ class FlattenCQCRatings:
             "Registered",
             "2023-01-01",
             "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
             "Historic",
         ),
     ]
@@ -598,9 +608,13 @@ class FlattenCQCRatings:
             "1-001",
             "Registered",
             [
-                _historic_entry("2023-01-01", [_kq("Safe"), _kq("Well-led")]),
+                _historic_entry("2023-01-01", _short_key_questions),
                 _historic_entry(
-                    "2023-01-01", [_kq("Safe", "Inadequate"), _kq("Well-led")]
+                    "2023-01-01",
+                    [
+                        _kq("Safe", "other_safe_rating"),
+                        _kq("Well-led", "well_led_rating"),
+                    ],
                 ),
             ],
         ),
@@ -612,8 +626,8 @@ class FlattenCQCRatings:
             "Registered",
             "2023-01-01",
             "Good",
-            "Good",
-            "Good",
+            "safe_rating",
+            "well_led_rating",
             None,
             None,
             None,
@@ -624,8 +638,8 @@ class FlattenCQCRatings:
             "Registered",
             "2023-01-01",
             "Good",
-            "Inadequate",
-            "Good",
+            "other_safe_rating",
+            "well_led_rating",
             None,
             None,
             None,

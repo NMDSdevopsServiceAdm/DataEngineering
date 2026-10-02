@@ -13,6 +13,14 @@ from utils.column_values.categorical_column_values import CQCCurrentOrHistoricVa
 # .explode() behaivour to drop empty and null lists.
 DROP_EMPTY_AND_NULL = {"empty_as_null": False, "keep_nulls": False}
 
+KEY_QUESTION_ALIASES = {
+    CQCL.safe: CQCRatings.safe_rating,
+    CQCL.well_led: CQCRatings.well_led_rating,
+    CQCL.caring: CQCRatings.caring_rating,
+    CQCL.responsive: CQCRatings.responsive_rating,
+    CQCL.effective: CQCRatings.effective_rating,
+}
+
 
 def keep_latest_per_key(lf: pl.LazyFrame, key_col: str, order_col: str) -> pl.LazyFrame:
     """
@@ -53,13 +61,34 @@ def filter_to_first_import_of_most_recent_month(lf: pl.LazyFrame) -> pl.LazyFram
     return lf.filter(pl.col(Keys.day) == pl.col(Keys.day).min())
 
 
+def get_key_question_rating_exprs(key_question_ratings: pl.Expr) -> list[pl.Expr]:
+    """
+    Builds one rating expression per key question, selected by name.
+
+    Selecting by name means the result doesn't depend on list order. A key question
+    missing from the list gives null.
+
+    Args:
+        key_question_ratings (pl.Expr): Expression for a `keyQuestionRatings` list of
+            name/rating structs.
+
+    Returns:
+        list[pl.Expr]: Rating expressions aliased to the key question rating columns.
+    """
+    return [
+        key_question_ratings.list.eval(
+            pl.element().filter(pl.element().struct.field(CQCL.name) == name)
+        )
+        .list.first()
+        .struct.field(CQCL.rating)
+        .alias(alias)
+        for name, alias in KEY_QUESTION_ALIASES.items()
+    ]
+
+
 def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Flattens the current ratings struct into one row per location, labelled as current.
-
-    The five key questions are picked out of `keyQuestionRatings` by fixed position
-    (Safe, Well-led, Caring, Responsive, Effective). `null_on_oob=True` handles
-    locations with fewer than 5 key questions.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
@@ -68,26 +97,13 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: Flattened current ratings, flagged as current.
     """
     overall = pl.col(CQCL.current_ratings).struct.field(CQCL.overall)
-    key_question_ratings = overall.struct.field(CQCL.key_question_ratings)
-    key_question_aliases = [
-        CQCRatings.safe_rating,
-        CQCRatings.well_led_rating,
-        CQCRatings.caring_rating,
-        CQCRatings.responsive_rating,
-        CQCRatings.effective_rating,
-    ]
 
     return cqc_location_lf.select(
         CQCL.location_id,
         CQCL.registration_status,
         overall.struct.field(CQCL.report_date).alias(CQCRatings.date),
         overall.struct.field(CQCL.rating).alias(CQCRatings.overall_rating),
-        *[
-            key_question_ratings.list.get(position, null_on_oob=True)
-            .struct.field(CQCL.rating)
-            .alias(alias)
-            for position, alias in enumerate(key_question_aliases)
-        ],
+        *get_key_question_rating_exprs(overall.struct.field(CQCL.key_question_ratings)),
         pl.lit(CQCCurrentOrHistoricValues.current).alias(
             CQCRatings.current_or_historic
         ),
@@ -98,10 +114,9 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Flattens the historic ratings list into one row per location historic rating entry.
 
-    Explodes `historicRatings`, then picks each key question's rating out of the
-    entry's `keyQuestionRatings` list by name. Every entry stays its own row, so
-    entries sharing a location and report date are kept rather than collapsed. This
-    avoids a pivot, so the whole function stays lazy.
+    Explodes `historicRatings`. Every entry stays its own row, so entries sharing a
+    location and report date are kept rather than collapsed. This avoids a pivot, so
+    the whole function stays lazy.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
@@ -109,13 +124,6 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: Flattened historic ratings, flagged as historic.
     """
-    key_question_aliases = {
-        CQCL.safe: CQCRatings.safe_rating,
-        CQCL.well_led: CQCRatings.well_led_rating,
-        CQCL.caring: CQCRatings.caring_rating,
-        CQCL.responsive: CQCRatings.responsive_rating,
-        CQCL.effective: CQCRatings.effective_rating,
-    }
     key_question_ratings = (
         pl.col(CQCL.historic_ratings)
         .struct.field(CQCL.overall)
@@ -139,15 +147,7 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             .struct.field(CQCL.overall)
             .struct.field(CQCL.rating)
             .alias(CQCRatings.overall_rating),
-            *[
-                key_question_ratings.list.eval(
-                    pl.element().filter(pl.element().struct.field(CQCL.name) == name)
-                )
-                .list.first()
-                .struct.field(CQCL.rating)
-                .alias(alias)
-                for name, alias in key_question_aliases.items()
-            ],
+            *get_key_question_rating_exprs(key_question_ratings),
             pl.lit(CQCCurrentOrHistoricValues.historic).alias(
                 CQCRatings.current_or_historic
             ),
