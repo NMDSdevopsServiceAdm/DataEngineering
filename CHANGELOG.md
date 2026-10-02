@@ -75,6 +75,7 @@ All notable changes to this project will be documented in this file.
 - Fixed job role estimates metadata validation to stop excluding `contained_invalid_missing_data_code`, a workaround for data the lookback cap now retains.
 - Fixed the IND CQC filled posts model's predict step to stop with an error showing both feature lists when the saved model's features differ from the model registry, rather than risk silently misaligned predictions. Also stopped its features validation requiring `posts_rolling_average_model` for the non-res with dormancy model, which doesn't use it, and made the care home check name the bed features that column was standing in for.
 - Fixed the Windows setup and deploy docs causing Terraform and MFA command-line errors: the `HOME` step no longer needs a hand-typed username, the two conflicting `non-prod` AWS profiles are now a single Terraform-compatible one (no `mfa_serial`), broken links to the setup guide are corrected, and the Terraform install step now matches the version CircleCI uses.
+- Fixed validation report summaries showing the step and table icons as raw SVG text. `great-tables` is now pinned to 0.23.0 in the Fargate image requirements and `pyproject.toml`, after the unpinned dependency picked up 1.0.0, which HTML-escapes unformatted table cells. Added tests that the report icons are not escaped and that every pin in the Docker requirements matches `pyproject.toml`.
 
 
 ## [v2026.08.1] - 11/09/2026
