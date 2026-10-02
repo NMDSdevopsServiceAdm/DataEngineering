@@ -166,7 +166,8 @@
                   "ErrorEquals": [
                     "States.ALL"
                   ],
-                  "Next": "Polars Flatten CQC Ratings Failed"
+                  "ResultPath": "$.polars_flatten_error",
+          "Next": "Polars Flatten CQC Ratings Failed"
                 }
               ],
               "End": true

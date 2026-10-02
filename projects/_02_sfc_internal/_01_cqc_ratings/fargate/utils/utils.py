@@ -8,12 +8,13 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_values.categorical_column_values import CQCCurrentOrHistoricValues
+from utils.column_values.categorical_column_values import (
+    CQCCurrentOrHistoricValues,
+    CQCRatingsDatasetValues,
+)
 
 # .explode() behaivour to drop empty and null lists.
 DROP_EMPTY_AND_NULL = {"empty_as_null": False, "keep_nulls": False}
-
-PRE_SAF_DATASET = "Pre SAF"
 
 KEY_QUESTION_ALIASES = {
     CQCL.safe: CQCRatings.safe_rating,
@@ -137,7 +138,7 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.lit(CQCCurrentOrHistoricValues.current).alias(
             CQCRatings.current_or_historic
         ),
-        pl.lit(PRE_SAF_DATASET).alias(CQCL.dataset),
+        pl.lit(CQCRatingsDatasetValues.pre_saf).alias(CQCL.dataset),
     )
 
 
@@ -182,6 +183,6 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             pl.lit(CQCCurrentOrHistoricValues.historic).alias(
                 CQCRatings.current_or_historic
             ),
-            pl.lit(PRE_SAF_DATASET).alias(CQCL.dataset),
+            pl.lit(CQCRatingsDatasetValues.pre_saf).alias(CQCL.dataset),
         )
     )
