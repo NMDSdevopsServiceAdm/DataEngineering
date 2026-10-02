@@ -2,6 +2,7 @@ import polars as pl
 
 import polars_utils.cleaning_utils as cUtils
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.clean_utils as cleanUtils
+import projects._03_independent_cqc.utils.cleaning_utils as cleaningUtils
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
@@ -46,7 +47,9 @@ def main(
         not_known_rule=SLVFilteringRule.contained_invalid_missing_data_code,
     )
 
-    lf = cUtils.remove_repeated_values_over_time(
+    # Staleness is judged per workplace and import date, not per job role: values
+    # are only nulled when no job role at that workplace/date changed.
+    lf = cleaningUtils.remove_repeated_values_over_time_as_group(
         lf,
         columns_to_clean=[
             SLVCols.starters_cleaned,
@@ -55,6 +58,7 @@ def main(
         ],
         partition_by_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
         date_column=IndCQC.cqc_location_import_date,
+        workplace_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
     )
 
     lf = cleanUtils.create_slv_rate_columns(lf)
