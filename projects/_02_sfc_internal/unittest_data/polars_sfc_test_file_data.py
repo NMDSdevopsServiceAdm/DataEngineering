@@ -329,6 +329,11 @@ class LmEngagementData:
     orchestrator_input_rows = [
         ("loc 1", date(2024, 1, 1), "cssr 1", 1),
         ("loc 1", date(2024, 2, 1), "cssr 1", 1),
+        # loc 1's cssr 1 rows duplicated into 2025 (still continuously in
+        # ASC-WDS) to check new_registrations_ytd resets per year rather than
+        # carrying 2024's cumulative total forward.
+        ("loc 1", date(2025, 1, 1), "cssr 1", 1),
+        ("loc 1", date(2025, 2, 1), "cssr 1", 1),
         ("loc 2", date(2024, 1, 1), "cssr 2", 0),
         ("loc 2", date(2024, 2, 1), "cssr 2", 1),
         ("loc 3", date(2024, 1, 1), "cssr 3", 1),
@@ -357,6 +362,8 @@ class LmEngagementData:
     expected_la_coverage_rows = [
         ("loc 1", date(2024, 1, 1), "cssr 1", 1, 2024, 1.0),
         ("loc 1", date(2024, 2, 1), "cssr 1", 1, 2024, 1.0),
+        ("loc 1", date(2025, 1, 1), "cssr 1", 1, 2025, 1.0),
+        ("loc 1", date(2025, 2, 1), "cssr 1", 1, 2025, 1.0),
         ("loc 2", date(2024, 1, 1), "cssr 2", 0, 2024, 0.0),
         ("loc 2", date(2024, 2, 1), "cssr 2", 1, 2024, 1.0),
         ("loc 3", date(2024, 1, 1), "cssr 3", 1, 2024, 1.0),
@@ -379,6 +386,8 @@ class LmEngagementData:
     expected_coverage_change_rows = [
         ("loc 1", date(2024, 1, 1), "cssr 1", 1, 2024, 1.0, None),
         ("loc 1", date(2024, 2, 1), "cssr 1", 1, 2024, 1.0, 0.0),
+        ("loc 1", date(2025, 1, 1), "cssr 1", 1, 2025, 1.0, 0.0),
+        ("loc 1", date(2025, 2, 1), "cssr 1", 1, 2025, 1.0, 0.0),
         ("loc 2", date(2024, 1, 1), "cssr 2", 0, 2024, 0.0, None),
         ("loc 2", date(2024, 2, 1), "cssr 2", 1, 2024, 1.0, 1.0),
         ("loc 3", date(2024, 1, 1), "cssr 3", 1, 2024, 1.0, None),
@@ -401,6 +410,8 @@ class LmEngagementData:
     expected_locations_change_rows = [
         ("loc 1", date(2024, 1, 1), "cssr 1", 1, 2024, 1.0, None, 0, 1),
         ("loc 1", date(2024, 2, 1), "cssr 1", 1, 2024, 1.0, 0.0, 1, 0),
+        ("loc 1", date(2025, 1, 1), "cssr 1", 1, 2025, 1.0, 0.0, 1, 0),
+        ("loc 1", date(2025, 2, 1), "cssr 1", 1, 2025, 1.0, 0.0, 1, 0),
         ("loc 2", date(2024, 1, 1), "cssr 2", 0, 2024, 0.0, None, 0, 0),
         ("loc 2", date(2024, 2, 1), "cssr 2", 1, 2024, 1.0, 1.0, 0, 1),
         ("loc 3", date(2024, 1, 1), "cssr 3", 1, 2024, 1.0, None, 0, 1),
@@ -424,6 +435,8 @@ class LmEngagementData:
     expected_final_rows = [
         ("loc 1", date(2024, 1, 1), "cssr 1", 1, 2024, 1.0, None, 1, 1, 1),
         ("loc 1", date(2024, 2, 1), "cssr 1", 1, 2024, 1.0, 0.0, 0, 0, 1),
+        ("loc 1", date(2025, 1, 1), "cssr 1", 1, 2025, 1.0, 0.0, 0, 0, 0),
+        ("loc 1", date(2025, 2, 1), "cssr 1", 1, 2025, 1.0, 0.0, 0, 0, 0),
         ("loc 2", date(2024, 1, 1), "cssr 2", 0, 2024, 0.0, None, 0, 0, 0),
         ("loc 2", date(2024, 2, 1), "cssr 2", 1, 2024, 1.0, 1.0, 1, 1, 1),
         ("loc 3", date(2024, 1, 1), "cssr 3", 1, 2024, 1.0, None, 1, 1, 1),
