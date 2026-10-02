@@ -9,9 +9,9 @@ def main(
     """
     Cleans the merged employment status data.
 
-    Nulls counts for stale workplaces and for orgs with too few permanent/temporary
-    staff (recording why in employment_status_filtering_rule), then adds
-    percentage shares.
+    Nulls counts for stale workplaces and for orgs/locations with too few
+    permanent/temporary staff (recording why in
+    employment_status_filtering_rule), then adds percentage shares.
 
     Args:
         merged_data_source (str): path to the merged data
@@ -22,6 +22,7 @@ def main(
     lf = cUtils.deduplicate_employment_status_counts(lf)
     lf = cUtils.create_clean_count_columns(lf)
     lf = cUtils.null_counts_for_low_org_ratio(lf)
+    lf = cUtils.null_counts_for_low_location_ratio(lf)
     lf = cUtils.create_employment_status_percentage_columns(lf)
 
     utils.sink_to_parquet(
