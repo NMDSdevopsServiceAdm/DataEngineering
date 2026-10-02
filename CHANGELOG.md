@@ -56,7 +56,7 @@ All notable changes to this project will be documented in this file.
 - Moved the filled posts models' date-index step into a shared, reusable `_03_independent_cqc` utility (`add_date_index`).
 - Serialised the dev CircleCI image build, terraform plan/apply and environment destroy per branch, and added a job that fails a pipeline whose apply didn't run.
 - Moved the `_03_independent_cqc` Dockerfile out of `_01_filled_posts` and up to the project level (`projects/_03_independent_cqc/Dockerfile_and_requirements/`), as the image also builds the employment status and starters/leavers/vacancies jobs. Updated the path in `docker-bake.hcl`; the Dockerfile itself is unchanged.
-
+- Converted the direct payment recipients survey to PA-ratio calculation from PySpark to Polars. It is not yet used by a job.
 
 ### Improved
 - Confirmed the DPR extrapolation ratio model doesn't depend on input row order, with tests that feed it reversed and interleaved rows, and added a validation check that estimated DPR data has one row per LA area and year, which the model relies on.
