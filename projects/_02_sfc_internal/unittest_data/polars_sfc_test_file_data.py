@@ -522,6 +522,10 @@ class FlattenCQCRatings:
         _kq("Responsive", "responsive_rating"),
         _kq("Well-led", "well_led_rating"),
     ]
+    _duplicate_name_key_questions = [
+        _kq("Safe", "safe_rating"),
+        _kq("Safe", "other_safe_rating"),
+    ]
     _short_key_questions = [
         _kq("Well-led", "well_led_rating"),
         _kq("Safe", "safe_rating"),
@@ -530,6 +534,10 @@ class FlattenCQCRatings:
 
     current_ratings_rows = [
         _current_ratings("1-001", _all_key_questions),
+    ]
+
+    current_ratings_duplicate_key_question_name_rows = [
+        _current_ratings("1-001", _duplicate_name_key_questions),
     ]
 
     current_ratings_reordered_key_question_rows = [
@@ -578,6 +586,14 @@ class FlattenCQCRatings:
 
     historic_ratings_rows = [
         ("1-001", "Registered", [_historic_entry("2023-01-01", _all_key_questions)]),
+    ]
+
+    historic_ratings_duplicate_key_question_name_rows = [
+        (
+            "1-001",
+            "Registered",
+            [_historic_entry("2023-01-01", _duplicate_name_key_questions)],
+        ),
     ]
 
     historic_ratings_reordered_key_question_rows = [

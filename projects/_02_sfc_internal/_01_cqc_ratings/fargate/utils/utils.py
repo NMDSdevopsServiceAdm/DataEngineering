@@ -61,6 +61,34 @@ def filter_to_first_import_of_most_recent_month(lf: pl.LazyFrame) -> pl.LazyFram
     return lf.filter(pl.col(Keys.day) == pl.col(Keys.day).min())
 
 
+def raise_on_duplicate_key_question_names(key_question_ratings: pl.Expr) -> pl.Expr:
+    """
+    Passes through a `keyQuestionRatings` list, raising if any list repeats a name.
+
+    Selecting by name keeps only the first match, so a repeated name would silently
+    drop a rating. The check is part of the lazy plan, so the error is raised when the
+    pipeline is collected rather than forcing an earlier collect.
+
+    Args:
+        key_question_ratings (pl.Expr): Expression for a `keyQuestionRatings` list of
+            name/rating structs.
+
+    Returns:
+        pl.Expr: The unchanged `key_question_ratings` expression.
+
+    Raises:
+        ValueError: If any list contains the same key question name more than once.
+    """
+
+    def _check(series: pl.Series) -> pl.Series:
+        names = series.list.eval(pl.element().struct.field(CQCL.name))
+        if (names.list.n_unique() != names.list.len()).any():
+            raise ValueError("Duplicate key question names found in a ratings list.")
+        return series
+
+    return key_question_ratings.map_batches(_check, is_elementwise=True)
+
+
 def get_key_question_rating_exprs(key_question_ratings: pl.Expr) -> list[pl.Expr]:
     """
     Builds one rating expression per key question, selected by name.
@@ -74,7 +102,12 @@ def get_key_question_rating_exprs(key_question_ratings: pl.Expr) -> list[pl.Expr
 
     Returns:
         list[pl.Expr]: Rating expressions aliased to the key question rating columns.
+
+    Raises:
+        ValueError: If any list contains the same key question name more than once.
     """
+    key_question_ratings = raise_on_duplicate_key_question_names(key_question_ratings)
+
     return [
         key_question_ratings.list.eval(
             pl.element().filter(pl.element().struct.field(CQCL.name) == name)
