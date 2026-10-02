@@ -48,9 +48,8 @@ def main(
 ) -> None:
     """Flattens CQC ratings and assessments into standard and benchmark datasets.
 
-    Commented-out calls are placeholders for functions not yet converted from the
-    PySpark job. Until they are converted, both destinations receive the flattened
-    current and historic ratings.
+    Commented-out calls are placeholders for steps not yet implemented. Until then,
+    both destinations receive the flattened current and historic ratings.
 
     Args:
         cqc_full_snapshot_source (str): Source s3 directory for the latest full

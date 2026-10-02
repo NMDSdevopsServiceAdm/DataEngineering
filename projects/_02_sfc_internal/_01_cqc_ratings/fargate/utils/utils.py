@@ -118,14 +118,13 @@ def get_key_question_rating_exprs(key_question_ratings: pl.Expr) -> list[pl.Expr
 
 def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Flattens the current ratings struct into one row per location, labelled as current
-    and as the pre-SAF dataset.
+    Flattens the current ratings struct into one row per location.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
 
     Returns:
-        pl.LazyFrame: Flattened current ratings, flagged as current and pre-SAF.
+        pl.LazyFrame: Flattened current ratings, flagged as current and Pre SAF.
     """
     overall = pl.col(CQCL.current_ratings).struct.field(CQCL.overall)
 
@@ -154,7 +153,7 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
 
     Returns:
-        pl.LazyFrame: Flattened historic ratings, flagged as historic and pre-SAF.
+        pl.LazyFrame: Flattened historic ratings, flagged as historic and Pre SAF.
     """
     key_question_ratings = (
         pl.col(CQCL.historic_ratings)
