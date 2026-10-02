@@ -556,6 +556,7 @@ class FlattenCQCRatings:
             "responsive_rating",
             "effective_rating",
             "Current",
+            "Pre SAF",
         ),
     ]
 
@@ -575,6 +576,7 @@ class FlattenCQCRatings:
             None,
             None,
             "Current",
+            "Pre SAF",
         ),
     ]
 
@@ -616,6 +618,7 @@ class FlattenCQCRatings:
             "responsive_rating",
             "effective_rating",
             "Historic",
+            "Pre SAF",
         ),
     ]
 
@@ -648,6 +651,7 @@ class FlattenCQCRatings:
             None,
             None,
             "Historic",
+            "Pre SAF",
         ),
         (
             "1-001",
@@ -660,5 +664,6 @@ class FlattenCQCRatings:
             None,
             None,
             "Historic",
+            "Pre SAF",
         ),
     ]

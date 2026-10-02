@@ -13,6 +13,8 @@ from utils.column_values.categorical_column_values import CQCCurrentOrHistoricVa
 # .explode() behaivour to drop empty and null lists.
 DROP_EMPTY_AND_NULL = {"empty_as_null": False, "keep_nulls": False}
 
+PRE_SAF_DATASET = "Pre SAF"
+
 KEY_QUESTION_ALIASES = {
     CQCL.safe: CQCRatings.safe_rating,
     CQCL.well_led: CQCRatings.well_led_rating,
@@ -116,13 +118,14 @@ def get_key_question_rating_exprs(key_question_ratings: pl.Expr) -> list[pl.Expr
 
 def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Flattens the current ratings struct into one row per location, labelled as current.
+    Flattens the current ratings struct into one row per location, labelled as current
+    and as the pre-SAF dataset.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
 
     Returns:
-        pl.LazyFrame: Flattened current ratings, flagged as current.
+        pl.LazyFrame: Flattened current ratings, flagged as current and pre-SAF.
     """
     overall = pl.col(CQCL.current_ratings).struct.field(CQCL.overall)
 
@@ -135,6 +138,7 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.lit(CQCCurrentOrHistoricValues.current).alias(
             CQCRatings.current_or_historic
         ),
+        pl.lit(PRE_SAF_DATASET).alias(CQCL.dataset),
     )
 
 
@@ -150,7 +154,7 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
 
     Returns:
-        pl.LazyFrame: Flattened historic ratings, flagged as historic.
+        pl.LazyFrame: Flattened historic ratings, flagged as historic and pre-SAF.
     """
     key_question_ratings = (
         pl.col(CQCL.historic_ratings)
@@ -179,5 +183,6 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             pl.lit(CQCCurrentOrHistoricValues.historic).alias(
                 CQCRatings.current_or_historic
             ),
+            pl.lit(PRE_SAF_DATASET).alias(CQCL.dataset),
         )
     )

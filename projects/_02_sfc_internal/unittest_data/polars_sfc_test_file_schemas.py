@@ -326,5 +326,6 @@ class FlattenCQCRatings:
         [
             *flattened_ratings_schema.items(),
             (CQCRatingsColumns.current_or_historic, pl.String),
+            (CQCL.dataset, pl.String),
         ]
     )
