@@ -16,7 +16,6 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import ONScol as ONS
-from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
@@ -55,7 +54,6 @@ from utils.column_values.categorical_column_values import (
     EmploymentStatusFilteringRule,
     EstimatedProportionEmployingStaffSource,
     EstimateFilledPostsSource,
-    InAscwds,
     JobGroupLabels,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
@@ -179,18 +177,6 @@ class MergedIndCQCCategoricalValues:
     current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
     contemporary_cssr_column_values = ContemporaryCSSR(IndCQC.contemporary_cssr)
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
-
-
-@dataclass
-class MergedCoverageCategoricalValues:
-    care_home_column_values = CareHome(IndCQC.care_home)
-    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
-    current_region_column_values = Region(IndCQC.current_region)
-    current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
-    sector_column_values = Sector(IndCQC.cqc_sector)
-    dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
-    in_ascwds_column_values = InAscwds(CoverageColumns.in_ascwds)
-    primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
 
 
 @dataclass
