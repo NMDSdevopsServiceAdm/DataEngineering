@@ -4,17 +4,12 @@ on: [ delete ]
 
 jobs:
   trigger-circleci-delete:
-    # Only branches have a dev environment to destroy: skip tag deletes and
-    # merge queue branches.
-    if: ${{ github.event.ref_type == 'branch' && !startsWith(github.event.ref, 'gh-readonly-queue/') }}
+    # Merge queue branches never had a dev environment, so skip the destroy.
+    if: ${{ !startsWith(github.event.ref, 'gh-readonly-queue/') }}
     runs-on: ubuntu-latest
     steps:
       - name: print branch name
-        # Via env: so a branch name containing shell syntax like $(...) is never
-        # spliced into the script and run on the runner.
-        env:
-          BRANCH_NAME: ${{ github.event.ref }}
-        run: echo "Calling Cicle CI pipeline with parameter GHA_Meta - $BRANCH_NAME"
+        run: echo "Calling Cicle CI pipeline with parameter GHA_Meta - ${{ github.event.ref }}"
       - name: Trigger circle CI delete development environment workflow
         uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.6
         with:
