@@ -65,7 +65,7 @@ Description block — markdown, sections in this order:
   a heading line (e.g. roles under "by role:"); don't flatten a grouping into a flat list.
 - Card references inside Scope text ("#5", "step 6") become labels too (`E5`).
 - Trello can't resolve references from the repo or Claude's memory, so replace `[[wiki links]]`, memory
-  file names and repo-relative links with plain words ("the 2101 design") or a backticked path. Plain
+  file names and repo-relative links with plain words ("the design doc") or a backticked path. Plain
   names for people are fine. External `https://` links are fine as markdown links.
 - No tables, no HTML.
 
