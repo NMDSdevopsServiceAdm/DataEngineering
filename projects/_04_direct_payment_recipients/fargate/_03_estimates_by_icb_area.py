@@ -133,7 +133,7 @@ def calculate_icb_proportions(postcode_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 if __name__ == "__main__":
-    print("Running split PA filled posts into ICB areas job")
+    print("Running estimates by ICB area job")
 
     args = utils.get_args(
         (
@@ -156,4 +156,4 @@ if __name__ == "__main__":
         destination=args.destination,
     )
 
-    print("Finished split PA filled posts into ICB areas job")
+    print("Finished estimates by ICB area job")

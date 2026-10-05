@@ -1,11 +1,9 @@
 import unittest
 from unittest.mock import ANY, Mock, call, patch
 
-import projects._04_direct_payment_recipients.fargate.estimate_direct_payments as job
+import projects._04_direct_payment_recipients.fargate._02_estimate as job
 
-PATCH_PATH: str = (
-    "projects._04_direct_payment_recipients.fargate.estimate_direct_payments"
-)
+PATCH_PATH: str = "projects._04_direct_payment_recipients.fargate._02_estimate"
 
 
 class EstimateDirectPaymentsTests(unittest.TestCase):

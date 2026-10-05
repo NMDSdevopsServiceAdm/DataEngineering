@@ -5,7 +5,7 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._04_direct_payment_recipients.fargate.split_pa_filled_posts_into_icb_areas as job
+import projects._04_direct_payment_recipients.fargate._03_estimates_by_icb_area as job
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
@@ -14,7 +14,7 @@ from utils.column_names.direct_payments_column_names import (
 )
 
 PATCH_PATH: str = (
-    "projects._04_direct_payment_recipients.fargate.split_pa_filled_posts_into_icb_areas"
+    "projects._04_direct_payment_recipients.fargate._03_estimates_by_icb_area"
 )
 
 POSTCODE_SCHEMA = {
