@@ -36,7 +36,6 @@ All notable changes to this project will be documented in this file.
 - Added `number_of_beds_at_provider` to the grouped providers output dataset.
 - Increased the upper limit of CT combined trendline validation from 2.0 to 2.5.
 - Changed employment status count deduplication to judge staleness per workplace and import date rather than per job role: counts are only nulled when no job role changed.
-- Changed SLV starters/leavers/vacancies deduplication to judge staleness per workplace and import date rather than per job role: a job role's values are only nulled when no job role at that workplace/date changed.
 - Consolidated ASC-WDS code-label vocabulary (7 workplace/worker columns) into a single Python source of truth, retiring `data_labels_lookup.csv`.
 - Moved the 9 ASC-WDS `ColumnValues` classes (main job role, employment status, establishment type, parent permission, is parent, main service id, registration type) plus `PublishedJobRoleLabels` (moved alongside them to avoid a circular import, since it subclasses `MainJobRoleLabels`) from `categorical_column_values.py` into `ascwds_labelled_vocab.py`, so that module owns the classes as well as their code-to-label dicts, and retired reconciliation's own hand-rolled `region_id` label dict in favour of the shared one, which also now labels the `-1` ("not known") region_id code that dict never covered - previously left as the raw `-1` in the reconciliation report. Also removed the unused `estimate_filled_posts_geography_labels_dict`.
 - Migrated the reconciliation job (CQC deregistration reports for ASC-WDS singles/subs and parent accounts) from PySpark/Glue to Polars on the `_02_sfc_internal` shared Fargate task, folding its Dockerfile into that project's shared `Dockerfile_and_requirements` image alongside `cqc_coverage`, renumbering its folder to `_03_reconciliation`, and removing the old Glue job, its PySpark code, and their tests/fixtures.
@@ -57,6 +56,7 @@ All notable changes to this project will be documented in this file.
 - Moved the filled posts models' date-index step into a shared, reusable `_03_independent_cqc` utility (`add_date_index`).
 - Serialised the dev CircleCI image build, terraform plan/apply and environment destroy per branch, and added a job that fails a pipeline whose apply didn't run.
 - Moved the `_03_independent_cqc` Dockerfile out of `_01_filled_posts` and up to the project level (`projects/_03_independent_cqc/Dockerfile_and_requirements/`), as the image also builds the employment status and starters/leavers/vacancies jobs. Updated the path in `docker-bake.hcl`; the Dockerfile itself is unchanged.
+- Changed SLV starters/leavers/vacancies deduplication to judge staleness per workplace and import date rather than per job role: a job role's values are only nulled when no job role at that workplace/date changed.
 
 
 ### Improved
