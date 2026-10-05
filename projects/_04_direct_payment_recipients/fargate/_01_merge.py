@@ -85,7 +85,7 @@ def main(survey_source: str, external_source: str, destination: str) -> None:
 
 
 if __name__ == "__main__":
-    print("Running prepare direct payments job")
+    print("Running merge direct payments job")
 
     args = utils.get_args(
         ("--survey_source", "S3 URI to read ingested IE/PA survey data from"),
@@ -99,4 +99,4 @@ if __name__ == "__main__":
         destination=args.destination,
     )
 
-    print("Finished prepare direct payments job")
+    print("Finished merge direct payments job")
