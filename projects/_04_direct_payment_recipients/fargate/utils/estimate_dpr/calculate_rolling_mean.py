@@ -8,20 +8,20 @@ from utils.column_names.direct_payments_column_names import (
 def calculate_rolling_mean(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Calculates a rolling mean over the current row and previous two rows within
-    each local authority. Years are ordered by year_as_integer, but do not need
+    each local authority. Years are ordered by YEAR_AS_INTEGER, but do not need
     to be consecutive.
 
     All years in all areas are assumed to be populated in the column
-    'estimated_proportion_of_service_users_employing_staff'.
+    'ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF'.
 
     Args:
         lf (pl.LazyFrame): A LazyFrame with columns
-            'la_area', 'year_as_integer' and
-            'estimated_proportion_of_service_users_employing_staff'.
+            'LA_AREA', 'YEAR_AS_INTEGER' and
+            'ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF'.
 
     Returns:
         pl.LazyFrame: A LazyFrame with new column
-            'rolling_average_estimated_proportion_of_service_users_employing_staff'.
+            'ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF'.
     """
     grouping_cols = [DP.LA_AREA, DP.YEAR_AS_INTEGER]
 

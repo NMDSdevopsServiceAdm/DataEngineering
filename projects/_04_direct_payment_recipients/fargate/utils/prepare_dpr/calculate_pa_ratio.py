@@ -23,8 +23,8 @@ def calculate_pa_ratio(survey_lf: pl.LazyFrame) -> pl.LazyFrame:
             total staff columns.
 
     Returns:
-        pl.LazyFrame: A LazyFrame with columns 'year_as_integer' and
-            'ratio_rolling_average'.
+        pl.LazyFrame: A LazyFrame with columns 'YEAR_AS_INTEGER' and
+            'RATIO_ROLLING_AVERAGE'.
     """
     # Staff bounds for plausible survey responses.
     min_staff = 1.0
