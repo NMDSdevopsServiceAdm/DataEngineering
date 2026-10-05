@@ -3,7 +3,7 @@ import sys
 import polars as pl
 
 from polars_utils import utils
-from projects._02_sfc_internal._01_cqc_ratings.fargate.utils import utils as rtg_utils
+from projects._02_sfc_internal._01_cqc_ratings.fargate.utils import utils as rUtils
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
@@ -73,7 +73,7 @@ def main(
     cqc_delta_lf = utils.scan_parquet(
         cqc_locations_api_delta_source, selected_columns=DELTA_COLUMNS_TO_IMPORT
     )
-    cqc_delta_lf = rtg_utils.keep_latest_per_key(
+    cqc_delta_lf = rUtils.keep_latest_per_key(
         cqc_delta_lf, CQCL.location_id, Keys.import_date
     )
 
@@ -83,12 +83,12 @@ def main(
     ascwds_workplace_lf = utils.scan_parquet(
         ascwds_workplace_source, selected_columns=ASCWDS_WORKPLACE_COLUMNS_TO_IMPORT
     )
-    ascwds_workplace_lf = rtg_utils.filter_to_first_import_of_most_recent_month(
+    ascwds_workplace_lf = rUtils.filter_to_first_import_of_most_recent_month(
         ascwds_workplace_lf
     )
 
-    current_ratings_lf = rtg_utils.prepare_current_ratings(cqc_ratings_lf)
-    historic_ratings_lf = rtg_utils.prepare_historic_ratings(cqc_ratings_lf)
+    current_ratings_lf = rUtils.prepare_current_ratings(cqc_ratings_lf)
+    historic_ratings_lf = rUtils.prepare_historic_ratings(cqc_ratings_lf)
     # assessment_ratings_lf = prepare_assessment_ratings(cqc_ratings_lf)
 
     # raise_error_when_assessment_df_contains_overall_data(assessment_ratings_lf)
