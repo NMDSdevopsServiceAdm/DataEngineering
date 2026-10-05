@@ -83,6 +83,7 @@ def save_run_log(
     archive_date: str,
     run_number: int,
     archive_date_time: datetime,
+    commit_sha: str,
     max_import_dates: dict[str, date | None],
     destination: str,
 ) -> None:
@@ -90,13 +91,13 @@ def save_run_log(
     Saves a one-row log of this archive run to S3, partitioned by archive_date and
     run_number.
 
-    The approval and check flags are False; commit_sha and tag are null, for later
-    steps to fill in.
+    The approval and check flags are False; tag is null, for later steps to fill in.
 
     Args:
         archive_date (str): archive date formatted as yyyy-mm-dd
         run_number (int): run number of this archive
         archive_date_time (datetime): when the archive ran
+        commit_sha (str): commit sha of the deployed code
         max_import_dates (dict[str, date | None]): latest import date of each
             source dataset, keyed by run log column name
         destination (str): s3 URI to write the run log to
@@ -108,7 +109,7 @@ def save_run_log(
             RunLogCols.archive_date_time: [archive_date_time],
             **{column: [value] for column, value in max_import_dates.items()},
             RunLogCols.approved: [False],
-            RunLogCols.commit_sha: [None],
+            RunLogCols.commit_sha: [commit_sha],
             RunLogCols.tag: [None],
             RunLogCols.selected_for_publication: [False],
             RunLogCols.reconciled: [False],
@@ -132,6 +133,7 @@ def main(
     job_role_metadata_destination: str,
     filled_posts_estimates_source: str,
     run_log_destination: str,
+    commit_sha: str,
 ) -> None:
     """
     Archives the independent CQC filled posts by job role estimates, split into two
@@ -157,6 +159,7 @@ def main(
         filled_posts_estimates_source (str): source s3 directory for the filled posts
             estimates, used for the run log's latest import dates
         run_log_destination (str): s3 URI to write the run log to
+        commit_sha (str): commit sha of the deployed code, recorded in the run log
     """
     print("Archiving independent CQC filled posts by job role...")
 
@@ -222,6 +225,7 @@ def main(
         archive_date,
         run_number,
         archive_date_time,
+        commit_sha,
         max_import_dates,
         run_log_destination,
     )
@@ -254,6 +258,7 @@ if __name__ == "__main__":
             "Source s3 directory for the filled posts estimates",
         ),
         ("--run_log_destination", "S3 URI to write the run log to"),
+        ("--commit_sha", "Commit sha of the deployed code"),
     )
 
     main(
@@ -263,6 +268,7 @@ if __name__ == "__main__":
         job_role_metadata_destination=args.job_role_metadata_destination,
         filled_posts_estimates_source=args.filled_posts_estimates_source,
         run_log_destination=args.run_log_destination,
+        commit_sha=args.commit_sha,
     )
 
     print("Finished Archive Independent CQC Job Role Estimates job")

@@ -20,6 +20,7 @@ ESTIMATES_DESTINATION = "some/estimates/destination"
 METADATA_DESTINATION = "some/metadata/destination"
 FILLED_POSTS_SOURCE = "some/filled_posts/directory"
 RUN_LOG_DESTINATION = "some/run_log/destination"
+COMMIT_SHA = "abc123"
 MAX_IMPORT_DATES = {
     RunLogCols.max_ascwds_workplace_import_date: date(2026, 8, 1),
     RunLogCols.max_cqc_location_import_date: date(2026, 8, 2),
@@ -68,6 +69,7 @@ class TestMain:
             METADATA_DESTINATION,
             FILLED_POSTS_SOURCE,
             RUN_LOG_DESTINATION,
+            COMMIT_SHA,
         )
 
         assert scan_parquet_mock.call_count == 3
@@ -112,6 +114,7 @@ class TestMain:
             "2026-09-04",
             3,
             ARCHIVE_DATE_TIME,
+            COMMIT_SHA,
             MAX_IMPORT_DATES,
             RUN_LOG_DESTINATION,
         )
@@ -127,6 +130,7 @@ class TestSaveRunLog:
             "2026-09-04",
             3,
             ARCHIVE_DATE_TIME,
+            COMMIT_SHA,
             MAX_IMPORT_DATES,
             RUN_LOG_DESTINATION,
         )
@@ -141,6 +145,7 @@ class TestSaveRunLog:
             "2026-09-04",
             3,
             ARCHIVE_DATE_TIME,
+            COMMIT_SHA,
             MAX_IMPORT_DATES,
             RUN_LOG_DESTINATION,
         )
@@ -154,7 +159,7 @@ class TestSaveRunLog:
                     ARCHIVE_DATE_TIME,
                     *MAX_IMPORT_DATES.values(),
                     False,
-                    None,
+                    COMMIT_SHA,
                     None,
                     False,
                     False,
