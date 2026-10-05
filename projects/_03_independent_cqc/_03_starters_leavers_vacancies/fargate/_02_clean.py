@@ -47,8 +47,10 @@ def main(
         not_known_rule=SLVFilteringRule.contained_invalid_missing_data_code,
     )
 
-    # Staleness is judged per workplace and import date, not per job role: values
-    # are only nulled when no job role at that workplace/date changed.
+    # Starters, leavers and vacancies are deduplicated as one unit per job role,
+    # and staleness is judged per workplace and import date rather than per job
+    # role: values are only nulled when none of the three changed for any job
+    # role at that workplace/date.
     lf = cleaningUtils.remove_repeated_values_over_time_as_group(
         lf,
         columns_to_clean=[
