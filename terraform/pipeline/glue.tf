@@ -3,64 +3,6 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
   description = "Database for all datasets belonging to the ${local.workspace_prefix} environment."
 }
 
-module "prepare_dpr_external_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_04_direct_payment_recipients/jobs"
-  script_name     = "prepare_dpr_external_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-  job_parameters = {
-    "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_external/version=2026.02/"
-    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_external_prepared/version=2026.02/"
-  }
-}
-
-module "prepare_dpr_survey_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_04_direct_payment_recipients/jobs"
-  script_name     = "prepare_dpr_survey_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-  job_parameters = {
-    "--survey_data_source" = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_survey/version=2026.02/"
-    "--destination"        = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_survey_prepared/version=2026.02/"
-  }
-}
-
-module "merge_dpr_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_04_direct_payment_recipients/jobs"
-  script_name     = "merge_dpr_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-  job_parameters = {
-    "--direct_payments_external_data_source" = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_external_prepared/version=2026.02/"
-    "--direct_payments_survey_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_survey_prepared/version=2026.02/"
-    "--destination"                          = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_merged/version=2026.02/"
-  }
-}
-
-module "split_pa_filled_posts_into_icb_areas_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_04_direct_payment_recipients/jobs"
-  script_name     = "split_pa_filled_posts_into_icb_areas.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-  job_parameters = {
-    "--postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=01_ons/dataset=postcode_directory_cleaned/"
-    "--pa_filled_posts_souce"     = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_estimates/version=2026.02/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=04_dpr/dataset=direct_payments_estimates_by_icb/version=2026.02/"
-  }
-}
-
 module "flatten_cqc_ratings_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_02_sfc_internal/cqc_ratings/jobs"
@@ -75,43 +17,6 @@ module "flatten_cqc_ratings_job" {
     "--ascwds_workplace_source"        = "${module.datasets_bucket.bucket_uri}/domain=01_ascwds/dataset=workplace/"
     "--cqc_ratings_destination"        = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_data_requests/"
     "--benchmark_ratings_destination"  = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
-  }
-}
-
-module "merge_coverage_data_job" {
-  source            = "../modules/glue-job"
-  script_dir        = "projects/_02_sfc_internal/cqc_coverage/jobs"
-  script_name       = "merge_coverage_data.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  glue_version      = "5.0"
-  worker_type       = "G.2X"
-  number_of_workers = 5
-
-  job_parameters = {
-    "--cleaned_cqc_location_source"  = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=locations_04_full_cleaned_registered/"
-    "--ascwds_workplace_source"      = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/"
-    "--cqc_ratings_source"           = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_data_requests/"
-    "--cleaned_cqc_providers_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=providers_04_full_cleaned/"
-    "--merged_coverage_destination"  = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data/"
-    "--reduced_coverage_destination" = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_monthly_coverage_data/"
-  }
-}
-
-module "validate_merge_coverage_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_02_sfc_internal/cqc_coverage/jobs"
-  script_name     = "validate_merge_coverage_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=locations_04_full_cleaned_registered/"
-    "--merged_coverage_data_source" = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data/"
-    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data_validation/"
   }
 }
 

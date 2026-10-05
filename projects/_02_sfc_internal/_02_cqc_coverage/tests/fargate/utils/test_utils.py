@@ -1,10 +1,13 @@
 import polars as pl
+from polars import testing as pl_testing
 
 import projects._02_sfc_internal._02_cqc_coverage.fargate.utils.utils as job
 from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import (
+    LmEngagementData,
     MergeCoverageData as Data,
 )
 from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import (
+    LmEngagementSchema,
     MergeCoverageSchema as Schemas,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
@@ -15,6 +18,8 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
+
+SORT_COLUMNS = [CQCLClean.location_id, CQCLClean.cqc_location_import_date]
 
 
 class TestAddRemovedByPurgeDateFilterFlag:
@@ -171,4 +176,108 @@ class TestJoinProviderNameIntoMergedCoverageDf:
         assert (
             returned_df.get_column(CQCLClean.provider_name).to_list()
             == Data.expected_join_provider_names
+        )
+
+
+class TestCalculateLaCoverageMonthly:
+    def test_adds_la_monthly_coverage_ratio_per_cssr_and_import_date(self):
+        input_lf = pl.LazyFrame(
+            LmEngagementData.base_rows,
+            schema=LmEngagementSchema.base_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            LmEngagementData.expected_la_coverage_rows,
+            schema=LmEngagementSchema.la_coverage_schema,
+            orient="row",
+        )
+
+        returned_df = job.calculate_la_coverage_monthly(input_lf).sort(SORT_COLUMNS)
+
+        pl_testing.assert_frame_equal(
+            returned_df.collect(), expected_lf.sort(SORT_COLUMNS).collect()
+        )
+
+
+class TestCalculateCoverageMonthlyChange:
+    def test_adds_month_on_month_change_in_la_coverage_per_location(self):
+        input_lf = pl.LazyFrame(
+            LmEngagementData.expected_la_coverage_rows,
+            schema=LmEngagementSchema.la_coverage_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            LmEngagementData.expected_coverage_change_rows,
+            schema=LmEngagementSchema.coverage_change_schema,
+            orient="row",
+        )
+
+        returned_df = job.calculate_coverage_monthly_change(input_lf).sort(SORT_COLUMNS)
+
+        pl_testing.assert_frame_equal(
+            returned_df.collect(), expected_lf.sort(SORT_COLUMNS).collect()
+        )
+
+
+class TestCalculateLocationsMonthlyChange:
+    def test_adds_net_change_in_ascwds_active_locations_per_cssr(self):
+        input_lf = pl.LazyFrame(
+            LmEngagementData.expected_coverage_change_rows,
+            schema=LmEngagementSchema.coverage_change_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            LmEngagementData.expected_locations_change_rows,
+            schema=LmEngagementSchema.locations_change_schema,
+            orient="row",
+        )
+
+        returned_df = job.calculate_locations_monthly_change(input_lf).sort(
+            SORT_COLUMNS
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_df.collect(), expected_lf.sort(SORT_COLUMNS).collect()
+        )
+
+
+class TestCalculateNewRegistrations:
+    def test_adds_monthly_and_year_to_date_new_registration_counts_per_cssr(self):
+        input_lf = pl.LazyFrame(
+            LmEngagementData.expected_locations_change_rows,
+            schema=LmEngagementSchema.locations_change_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            LmEngagementData.expected_final_rows,
+            schema=LmEngagementSchema.final_schema,
+            orient="row",
+        )
+
+        returned_df = job.calculate_new_registrations(input_lf).sort(SORT_COLUMNS)
+
+        pl_testing.assert_frame_equal(
+            returned_df.collect(), expected_lf.sort(SORT_COLUMNS).collect()
+        )
+
+
+class TestAddColumnsForLocalityManagerDashboard:
+    def test_adds_all_locality_manager_dashboard_columns(self):
+        input_lf = pl.LazyFrame(
+            LmEngagementData.orchestrator_input_rows,
+            schema=LmEngagementSchema.orchestrator_input_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            LmEngagementData.expected_final_rows,
+            schema=LmEngagementSchema.final_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_columns_for_locality_manager_dashboard(input_lf).sort(
+            SORT_COLUMNS
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_df.collect(), expected_lf.sort(SORT_COLUMNS).collect()
         )

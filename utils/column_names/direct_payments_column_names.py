@@ -24,29 +24,10 @@ class DirectPaymentColumnNames:
     PROPORTION_IF_TOTAL_DPR_CLOSER: str = "proportion_if_total_dpr_closer"
     PROPORTION_IF_SERVICE_USER_DPR_CLOSER: str = "proportion_if_service_user_dpr_closer"
     PROPORTION_ALLOCATED: str = "proportion_allocated"
-    DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF: str = (
-        "difference_between_adass_and_total_ascof"
-    )
-    DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF: str = (
-        "difference_between_adass_and_su_only_ascof"
-    )
     PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
         "proportion_su_only_employing_staff"
     )
     YEAR_AS_INTEGER: str = "year_as_integer"
-
-    # Remove outliers
-    OUTLIERS_FOR_REMOVAL: str = "outliers_for_removal"
-    COUNT_OF_YEARS_WITH_PROPORTION: str = "count_of_years_with_proportion_by_la_area"
-    PENULTIMATE_YEAR_DATA: str = "2021_data"
-    LAST_YEAR_CONTAINING_RAW_DATA: str = "last_year_containing_raw_data"
-    LAST_RAW_DATA_POINT: str = "last_raw_data_point"
-    GROUPED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
-        "avg(proportion_su_only_employing_staff)"
-    )
-    MEAN_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
-        "mean_proportion_su_only_employing_staff_within_la_area"
-    )
 
     # Prepare during year data
     TOTAL_DPRS_DURING_YEAR: str = "total_dpr_during_year"
@@ -152,18 +133,11 @@ class DirectPaymentColumnNames:
     AVERAGE_STAFF: str = "average_staff"
 
     RATIO_ROLLING_AVERAGE: str = "ratio_rolling_average"
-    COUNT: str = "count"
-    COUNT_OF_YEARS: str = "count_of_years"
-    SUM_OF_RATIOS: str = "sum_of_ratios"
 
     HISTORIC_RATIO: str = "historic_ratio"
 
     # Split PA filled posts by ICB area
-    COUNT_OF_DISTINCT_POSTCODES_PER_LA: str = "count_of_distinct_postcodes_per_la"
     HYBRID_AREA_LA_ICB: str = "hybrid_area_la_icb"
-    COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA: str = (
-        "count_of_distinct_postcodes_per_hybrid_area"
-    )
     PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA: str = (
         "proportion_of_ICB_postcodes_in_la_area"
     )
@@ -177,7 +151,5 @@ class DirectPaymentColumnNames:
 class DirectPaymentColumnValues:
     TOTAL_DPRS: str = "total_dprs"
     SU_ONLY_DPRS: str = "su_only_dprs"
-    REMOVE: str = "remove"
-    RETAIN: str = "retain"
     PREVIOUS: str = "previous"
     NEXT: str = "next"
