@@ -72,9 +72,9 @@
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "Validate estimate direct payments polars",
+                  "StartAt": "Validate estimates",
                   "States": {
-                    "Validate estimate direct payments polars": {
+                    "Validate estimates": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
@@ -108,9 +108,9 @@
                   }
                 },
                 {
-                  "StartAt": "Split pa estimates into hybrid areas",
+                  "StartAt": "Estimate by ICB area",
                   "States": {
-                    "Split pa estimates into hybrid areas": {
+                    "Estimate by ICB area": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
