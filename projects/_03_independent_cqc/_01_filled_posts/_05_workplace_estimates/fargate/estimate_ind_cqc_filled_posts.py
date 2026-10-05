@@ -13,7 +13,7 @@ from projects._03_independent_cqc._01_filled_posts._05_workplace_estimates.farga
     enrich_with_model_predictions,
     set_min_value,
 )
-from projects._03_independent_cqc._01_filled_posts.utils.imputation.imputation import (
+from projects._03_independent_cqc.utils.imputation.imputation import (
     model_imputation,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC

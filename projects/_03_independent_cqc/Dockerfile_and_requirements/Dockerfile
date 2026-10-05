@@ -20,7 +20,6 @@ COPY projects/_03_independent_cqc/_01_filled_posts/_04_model/utils /app/projects
 COPY projects/_03_independent_cqc/_01_filled_posts/_05_workplace_estimates/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_05_workplace_estimates/fargate/utils
 COPY projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_06_job_role_estimates/fargate/utils
 COPY projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/utils /app/projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/utils
-COPY projects/_03_independent_cqc/_01_filled_posts/utils /app/projects/_03_independent_cqc/_01_filled_posts/utils
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/utils /app/projects/_03_independent_cqc/_02_employment_status/fargate/utils
 COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/utils /app/projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/utils
 COPY polars_utils /app/polars_utils

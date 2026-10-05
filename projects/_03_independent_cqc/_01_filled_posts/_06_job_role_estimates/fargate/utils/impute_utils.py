@@ -4,10 +4,10 @@ from typing import Optional
 import polars as pl
 
 from polars_utils.expressions import percentage_share
-from projects._03_independent_cqc._01_filled_posts.utils.imputation.extrapolation import (
+from projects._03_independent_cqc.utils.imputation.extrapolation import (
     model_extrapolation,
 )
-from projects._03_independent_cqc._01_filled_posts.utils.imputation.interpolation import (
+from projects._03_independent_cqc.utils.imputation.interpolation import (
     model_interpolation,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
