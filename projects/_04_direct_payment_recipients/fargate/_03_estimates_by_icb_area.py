@@ -124,9 +124,9 @@ def calculate_icb_proportions(postcode_lf: pl.LazyFrame) -> pl.LazyFrame:
         postcode_lf.group_by(*la_keys, ONSClean.contemporary_icb)
         .agg(pl.col(ONSClean.postcode).count().alias("icb_postcodes"))
         .with_columns(
-            (
-                pl.col("icb_postcodes") / pl.col("icb_postcodes").sum().over(la_keys)
-            ).alias(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA)
+            (pl.col("icb_postcodes") / pl.col("icb_postcodes").sum().over(la_keys))
+            .cast(pl.Float32)
+            .alias(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA)
         )
         .drop("icb_postcodes")
     )

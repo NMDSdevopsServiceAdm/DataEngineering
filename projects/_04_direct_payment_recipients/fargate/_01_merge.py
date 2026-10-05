@@ -56,7 +56,7 @@ def main(survey_source: str, external_source: str, destination: str) -> None:
             pl.col(DP.YEAR_AS_INTEGER).replace_strict(
                 HACKNEY_SERVICE_USER_DPRS_DURING_YEAR,
                 default=None,
-                return_dtype=pl.Float64,
+                return_dtype=pl.Float32,
             )
         )
         .otherwise(None)

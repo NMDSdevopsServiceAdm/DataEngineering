@@ -25,7 +25,7 @@ POSTCODE_SCHEMA = {
 }
 PA_SCHEMA = {
     DP.LA_AREA: pl.String,
-    DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float64,
+    DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float32,
     DP.YEAR_AS_INTEGER: pl.Int64,
 }
 
@@ -33,9 +33,9 @@ OUTPUT_SCHEMA = {
     ONSClean.contemporary_ons_import_date: pl.Date,
     ONSClean.contemporary_cssr: pl.String,
     ONSClean.contemporary_icb: pl.String,
-    DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA: pl.Float64,
+    DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA: pl.Float32,
     DP.YEAR_AS_INTEGER: pl.Int64,
-    DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_HYBRID_AREA: pl.Float64,
+    DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_HYBRID_AREA: pl.Float32,
 }
 
 # cssr1 has 3 postcodes in icb1; cssr2 has 1 in icb2 and 3 in icb3.
@@ -96,7 +96,7 @@ class TestCalculateIcbProportions:
                 ONSClean.contemporary_ons_import_date: pl.Date,
                 ONSClean.contemporary_cssr: pl.String,
                 ONSClean.contemporary_icb: pl.String,
-                DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA: pl.Float64,
+                DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA: pl.Float32,
             },
             orient="row",
         )
@@ -188,3 +188,13 @@ class TestMain:
             orient="row",
         )
         pl_testing.assert_frame_equal(returned_df, expected_df, check_row_order=False)
+
+    def test_output_float_columns_are_float32(self):
+        pa_lf = pl.LazyFrame([("cssr2", 200.0, 2022)], schema=PA_SCHEMA, orient="row")
+
+        returned_df = run_main(postcode_lf(), pa_lf)
+
+        float_dtypes = {
+            dtype for dtype in returned_df.schema.values() if dtype.is_float()
+        }
+        assert float_dtypes == {pl.Float32}
