@@ -17,7 +17,6 @@ _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 
 
-
 def reduced_data_filter_expr(
     today: date | None = None,
     fy_start_month: int = 4,
