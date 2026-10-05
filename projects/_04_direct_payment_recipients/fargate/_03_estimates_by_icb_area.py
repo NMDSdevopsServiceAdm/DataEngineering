@@ -29,6 +29,13 @@ def main(
     pa_filled_posts_source: str,
     destination: str,
 ) -> None:
+    """Splits PA filled posts estimates from LA areas into ICB areas.
+
+    Args:
+        postcode_directory_source (str): S3 URI of the cleaned ONS postcode directory.
+        pa_filled_posts_source (str): S3 URI of the PA filled posts estimates by LA area.
+        destination (str): S3 URI to write the estimates by ICB area to.
+    """
     postcode_lf = utils.scan_parquet(
         postcode_directory_source, selected_columns=postcode_columns
     )

@@ -2,7 +2,7 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._04_direct_payment_recipients.fargate.utils.prepare_dpr_utils.remove_outliers as job
+import projects._04_direct_payment_recipients.fargate.utils.prepare_dpr.remove_outliers as job
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )

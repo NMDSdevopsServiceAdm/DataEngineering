@@ -4,7 +4,7 @@ from polars_utils.utils import coalesce_with_source_labels
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.calculate_rolling_mean import (
+from projects._04_direct_payment_recipients.fargate.utils.estimate_dpr.calculate_rolling_mean import (
     calculate_rolling_mean,
 )
 from projects._04_direct_payment_recipients.fargate.utils.models.extrapolation_ratio import (
@@ -34,20 +34,20 @@ def calculate_estimated_service_users_employing_staff(lf: pl.LazyFrame) -> pl.La
 
     Args:
         lf (pl.LazyFrame): LazyFrame containing direct payments data with columns:
-            - LA_AREA
-            - YEAR_AS_INTEGER
-            - SERVICE_USER_DPRS_DURING_YEAR
-            - PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+            - la_area
+            - year_as_integer
+            - service_user_dprs_during_year
+            - proportion_of_service_users_employing_staff
 
     Returns:
         pl.LazyFrame: LazyFrame with additional columns:
-            - ESTIMATE_USING_MEAN
-            - ESTIMATE_USING_EXTRAPOLATION_RATIO
-            - ESTIMATE_USING_INTERPOLATION
-            - ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-            - ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE
-            - ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-            - ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            - estimate_using_mean
+            - estimate_using_extrapolation_ratio
+            - estimate_using_interpolation
+            - estimated_proportion_of_service_users_employing_staff
+            - estimated_proportion_of_service_users_employing_staff_source
+            - rolling_average_estimated_proportion_of_service_users_employing_staff
+            - estimated_service_user_dprs_during_year_employing_staff
     """
 
     lf = model_using_mean(lf)
