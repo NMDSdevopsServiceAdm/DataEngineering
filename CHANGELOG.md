@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file.
 - Migrated the `_02_cqc_coverage` job's core merge logic (ASC-WDS purge-date handling, the aligned-date join, deduplication, the latest-CQC-rating and provider-name joins, and the latest-month output) from PySpark to Polars, running in parallel to the existing pipeline for output comparison.
 - Added a data-quality cleaning step for the EmpStat clean job that nulls an org's permanent, temporary, bank-or-pool, agency and other employment status counts (and their percentage-share columns) where too few of its reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
 - Added a step to the EmpStat clean job that creates a `_clean` copy of each deduplicated employment status count, with a filtering-rule column recording whether each row is populated or missing data.
+- Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock, with a gate that fails a main pipeline whose prod deploy was skipped or cancelled instead of reporting it as success.
 
 
 ### Changed
