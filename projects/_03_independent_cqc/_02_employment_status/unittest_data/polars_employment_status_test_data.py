@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 from typing import Any, Optional
 
 import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_worker_utils as prepare_worker_job
@@ -710,12 +710,12 @@ PERCENTAGE_COLUMNS = [
     EmpStatus.agency_percentage,
     EmpStatus.other_percentage,
 ]
-IMPUTED_PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage_imputed,
-    EmpStatus.temporary_percentage_imputed,
-    EmpStatus.bank_or_pool_percentage_imputed,
-    EmpStatus.agency_percentage_imputed,
-    EmpStatus.other_percentage_imputed,
+TRENDLINE_PERCENTAGE_COLUMNS = [
+    EmpStatus.permanent_percentage_imputed_for_trendline,
+    EmpStatus.temporary_percentage_imputed_for_trendline,
+    EmpStatus.bank_or_pool_percentage_imputed_for_trendline,
+    EmpStatus.agency_percentage_imputed_for_trendline,
+    EmpStatus.other_percentage_imputed_for_trendline,
 ]
 ROLLING_AVERAGE_PERCENTAGE_COLUMNS = [
     EmpStatus.permanent_percentage_rolling_avg,
@@ -723,6 +723,13 @@ ROLLING_AVERAGE_PERCENTAGE_COLUMNS = [
     EmpStatus.bank_or_pool_percentage_rolling_avg,
     EmpStatus.agency_percentage_rolling_avg,
     EmpStatus.other_percentage_rolling_avg,
+]
+FULL_IMPUTED_PERCENTAGE_COLUMNS = [
+    EmpStatus.permanent_percentage_full_imputed,
+    EmpStatus.temporary_percentage_full_imputed,
+    EmpStatus.bank_or_pool_percentage_full_imputed,
+    EmpStatus.agency_percentage_full_imputed,
+    EmpStatus.other_percentage_full_imputed,
 ]
 FIRST_KNOWN_VALUE_COLUMNS = [
     ImputeTempCols.first_known_value_prefix + col for col in PERCENTAGE_COLUMNS
@@ -769,6 +776,7 @@ class ImputeUtilsTestCase:
 
 
 FIVE_MONTHS = [date(2024, month, 1) for month in range(1, 6)]
+TEN_DAYS_APART = [date(2024, 1, 1) + timedelta(days=10 * i) for i in range(5)]
 CARE_WORKER = PublishedJobRoleLabels.care_worker
 REGISTERED_NURSE = PublishedJobRoleLabels.registered_nurse
 
@@ -794,7 +802,7 @@ def short_term_imputation_case(
         input_data=input_data,
         expected_data={
             **input_data,
-            **status_split(expected_permanent, IMPUTED_PERCENTAGE_COLUMNS),
+            **status_split(expected_permanent, TRENDLINE_PERCENTAGE_COLUMNS),
         },
     )
 
@@ -822,7 +830,7 @@ def rolling_average_case(
         IndCQC.current_region: regions,
         IndCQC.published_job_role_label: roles,
         IndCQC.cqc_location_import_date: dates,
-        **status_split(permanent, IMPUTED_PERCENTAGE_COLUMNS),
+        **status_split(permanent, TRENDLINE_PERCENTAGE_COLUMNS),
         **(extra_columns or {}),
     }
     return ImputeUtilsTestCase(
@@ -831,6 +839,90 @@ def rolling_average_case(
         expected_data={
             **input_data,
             **status_split(expected_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+        },
+    )
+
+
+def full_imputation_case(
+    id: str,
+    dates: list[date],
+    permanent: list[Optional[float]],
+    rolling_permanent: list[float],
+    expected_permanent: list[Optional[float]],
+) -> ImputeUtilsTestCase:
+    """
+    Build a single location and job role case from the known permanent share, its rolling
+    average and the expected full imputed share, splitting each with `status_split`.
+    """
+    input_data = {
+        IndCQC.location_id: ["loc1"] * len(dates),
+        IndCQC.published_job_role_label: [CARE_WORKER] * len(dates),
+        IndCQC.cqc_location_import_date: dates,
+        **status_split(permanent, PERCENTAGE_COLUMNS),
+        **status_split(rolling_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+    }
+    return ImputeUtilsTestCase(
+        id=id,
+        input_data=input_data,
+        expected_data={
+            **input_data,
+            **status_split(expected_permanent, FULL_IMPUTED_PERCENTAGE_COLUMNS),
+        },
+    )
+
+
+def full_imputation_five_status_case(
+    id: str,
+    dates: list[date],
+    known: list[list[Optional[float]]],
+    rolling: list[list[float]],
+    expected: list[list[Optional[float]]],
+) -> ImputeUtilsTestCase:
+    """
+    Build a single location and job role case that states every status. `known`, `rolling` and
+    `expected` each hold one list per status, in permanent, temporary, bank or pool, agency,
+    other order.
+    """
+    input_data = {
+        IndCQC.location_id: ["loc1"] * len(dates),
+        IndCQC.published_job_role_label: [CARE_WORKER] * len(dates),
+        IndCQC.cqc_location_import_date: dates,
+        **dict(zip(PERCENTAGE_COLUMNS, known)),
+        **dict(zip(ROLLING_AVERAGE_PERCENTAGE_COLUMNS, rolling)),
+    }
+    return ImputeUtilsTestCase(
+        id=id,
+        input_data=input_data,
+        expected_data={
+            **input_data,
+            **dict(zip(FULL_IMPUTED_PERCENTAGE_COLUMNS, expected)),
+        },
+    )
+
+
+def full_imputation_rows_case(
+    id: str,
+    rows: list[tuple[str, str, date, Optional[float], float]],
+    expected_permanent: list[Optional[float]],
+) -> ImputeUtilsTestCase:
+    """
+    Build a case across locations and job roles from (location, job role, date, permanent
+    share, rolling average permanent share) rows, splitting each share with `status_split`.
+    """
+    locations, roles, dates, permanent, rolling_permanent = map(list, zip(*rows))
+    input_data = {
+        IndCQC.location_id: locations,
+        IndCQC.published_job_role_label: roles,
+        IndCQC.cqc_location_import_date: dates,
+        **status_split(permanent, PERCENTAGE_COLUMNS),
+        **status_split(rolling_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+    }
+    return ImputeUtilsTestCase(
+        id=id,
+        input_data=input_data,
+        expected_data={
+            **input_data,
+            **status_split(expected_permanent, FULL_IMPUTED_PERCENTAGE_COLUMNS),
         },
     )
 
@@ -1020,11 +1112,15 @@ class TestImputeUtilsData:
                 EmpStatus.bank_or_pool_percentage: [0.1, None, 0.1],
                 EmpStatus.agency_percentage: [0.2, None, 0.2],
                 EmpStatus.other_percentage: [0.1, None, 0.1],
-                EmpStatus.permanent_percentage_imputed: [0.5, 0.4, 0.2],
-                EmpStatus.temporary_percentage_imputed: [0.1, 0.2, 0.4],
-                EmpStatus.bank_or_pool_percentage_imputed: [0.1, 0.1, 0.1],
-                EmpStatus.agency_percentage_imputed: [0.2, 0.2, 0.2],
-                EmpStatus.other_percentage_imputed: [0.1, 0.1, 0.1],
+                EmpStatus.permanent_percentage_imputed_for_trendline: [0.5, 0.4, 0.2],
+                EmpStatus.temporary_percentage_imputed_for_trendline: [0.1, 0.2, 0.4],
+                EmpStatus.bank_or_pool_percentage_imputed_for_trendline: [
+                    0.1,
+                    0.1,
+                    0.1,
+                ],
+                EmpStatus.agency_percentage_imputed_for_trendline: [0.2, 0.2, 0.2],
+                EmpStatus.other_percentage_imputed_for_trendline: [0.1, 0.1, 0.1],
             },
         ),
         short_term_imputation_case(
@@ -1132,6 +1228,83 @@ class TestImputeUtilsData:
                 0.0,
                 0.0,
             ],
+        ),
+    ]
+
+    add_full_imputed_percentages_test_cases = [
+        full_imputation_case(
+            id="does_not_change_known_values",
+            dates=FIVE_MONTHS,
+            permanent=[0.2, 0.4, 0.6, 0.8, 0.5],
+            rolling_permanent=[0.5] * 5,
+            expected_permanent=[0.2, 0.4, 0.6, 0.8, 0.5],
+        ),
+        full_imputation_case(
+            id="extrapolates_forwards_by_nominal_change_in_rolling_average",
+            dates=FIVE_MONTHS,
+            permanent=[0.2, None, None, None, None],
+            rolling_permanent=[0.5, 0.6, 0.7, 0.55, 0.5],
+            expected_permanent=[0.2, 0.3, 0.4, 0.25, 0.2],
+        ),
+        full_imputation_case(
+            id="extrapolates_backwards_by_nominal_change_in_rolling_average",
+            dates=FIVE_MONTHS,
+            permanent=[None, None, 0.4, 0.5, 0.6],
+            rolling_permanent=[0.35, 0.45, 0.5, 0.55, 0.6],
+            expected_permanent=[0.25, 0.35, 0.4, 0.5, 0.6],
+        ),
+        full_imputation_case(
+            id="interpolates_gap_along_rolling_average_trend",
+            dates=TEN_DAYS_APART,
+            permanent=[0.2, None, None, None, 0.6],
+            rolling_permanent=[0.5, 0.6, 0.6, 0.7, 0.8],
+            expected_permanent=[0.2, 0.325, 0.35, 0.475, 0.6],
+        ),
+        full_imputation_five_status_case(
+            id="imputes_each_status_from_its_own_rolling_average",
+            dates=FIVE_MONTHS[:2],
+            known=[[0.4, None], [0.3, None], [0.1, None], [0.1, None], [0.1, None]],
+            rolling=[[0.5, 0.45], [0.2, 0.25], [0.1, 0.1], [0.1, 0.12], [0.1, 0.08]],
+            expected=[[0.4, 0.35], [0.3, 0.35], [0.1, 0.1], [0.1, 0.12], [0.1, 0.08]],
+        ),
+        full_imputation_five_status_case(
+            id="floors_negative_values_at_zero_and_reshares_to_sum_to_one",
+            dates=FIVE_MONTHS[:2],
+            known=[[0.1, None], [0.3, None], [0.0, None], [0.6, None], [0.0, None]],
+            rolling=[[0.5, 0.2], [0.2, 0.3], [0.0, 0.0], [0.3, 0.5], [0.0, 0.0]],
+            expected=[
+                [0.1, 0.0],
+                [0.3, 1 / 3],
+                [0.0, 0.0],
+                [0.6, 2 / 3],
+                [0.0, 0.0],
+            ],
+        ),
+        full_imputation_case(
+            id="leaves_null_when_group_has_no_known_values",
+            dates=FIVE_MONTHS,
+            permanent=[None] * 5,
+            rolling_permanent=[0.3] * 5,
+            expected_permanent=[None] * 5,
+        ),
+        full_imputation_rows_case(
+            id="keeps_locations_and_job_roles_separate",
+            rows=[
+                ("loc1", CARE_WORKER, date(2024, 1, 1), 0.2, 0.5),
+                ("loc1", REGISTERED_NURSE, date(2024, 1, 1), 0.6, 0.5),
+                ("loc2", CARE_WORKER, date(2024, 1, 1), 0.4, 0.5),
+                ("loc1", CARE_WORKER, date(2024, 2, 1), None, 0.6),
+                ("loc1", REGISTERED_NURSE, date(2024, 2, 1), None, 0.3),
+                ("loc2", CARE_WORKER, date(2024, 2, 1), None, 0.6),
+            ],
+            expected_permanent=[0.2, 0.6, 0.4, 0.3, 0.4, 0.5],
+        ),
+        full_imputation_case(
+            id="drops_temporary_columns",
+            dates=TEN_DAYS_APART,
+            permanent=[None, 0.2, None, 0.4, None],
+            rolling_permanent=[0.5] * 5,
+            expected_permanent=[0.2, 0.2, 0.3, 0.4, 0.4],
         ),
     ]
 

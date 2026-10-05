@@ -390,6 +390,7 @@ class EmploymentStatusImputeTempColumns:
     first_known_value_prefix: str = "es_impute_first_known_value_"
     last_known_value_prefix: str = "es_impute_last_known_value_"
     rolling_total_prefix: str = "es_impute_rolling_total_"
+    unnormalised_prefix: str = "es_impute_unnormalised_"
 
 
 @dataclass
@@ -500,16 +501,33 @@ class EmploymentStatusColumns:
     bank_or_pool_percentage: str = "emplstat_bank_or_pool_percentage"
     agency_percentage: str = "emplstat_agency_percentage"
     other_percentage: str = "emplstat_other_percentage"
-    permanent_percentage_imputed: str = permanent_percentage + "_imputed"
-    temporary_percentage_imputed: str = temporary_percentage + "_imputed"
-    bank_or_pool_percentage_imputed: str = bank_or_pool_percentage + "_imputed"
-    agency_percentage_imputed: str = agency_percentage + "_imputed"
-    other_percentage_imputed: str = other_percentage + "_imputed"
+    permanent_percentage_imputed_for_trendline: str = (
+        permanent_percentage + "_imputed_for_trendline"
+    )
+    temporary_percentage_imputed_for_trendline: str = (
+        temporary_percentage + "_imputed_for_trendline"
+    )
+    bank_or_pool_percentage_imputed_for_trendline: str = (
+        bank_or_pool_percentage + "_imputed_for_trendline"
+    )
+    agency_percentage_imputed_for_trendline: str = (
+        agency_percentage + "_imputed_for_trendline"
+    )
+    other_percentage_imputed_for_trendline: str = (
+        other_percentage + "_imputed_for_trendline"
+    )
     permanent_percentage_rolling_avg: str = permanent_percentage + "_rolling_avg"
     temporary_percentage_rolling_avg: str = temporary_percentage + "_rolling_avg"
     bank_or_pool_percentage_rolling_avg: str = bank_or_pool_percentage + "_rolling_avg"
     agency_percentage_rolling_avg: str = agency_percentage + "_rolling_avg"
     other_percentage_rolling_avg: str = other_percentage + "_rolling_avg"
+    permanent_percentage_full_imputed: str = permanent_percentage + "_full_imputed"
+    temporary_percentage_full_imputed: str = temporary_percentage + "_full_imputed"
+    bank_or_pool_percentage_full_imputed: str = (
+        bank_or_pool_percentage + "_full_imputed"
+    )
+    agency_percentage_full_imputed: str = agency_percentage + "_full_imputed"
+    other_percentage_full_imputed: str = other_percentage + "_full_imputed"
     employee_count: str = "emplstat_employee_count"
     estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
     estimated_emp_stat_temp: str = "estimated_emp_stat_temp"

@@ -1,5 +1,11 @@
 import polars as pl
 
+from projects._03_independent_cqc.utils.imputation.extrapolation import (
+    model_extrapolation,
+)
+from projects._03_independent_cqc.utils.imputation.interpolation import (
+    model_interpolation,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
@@ -21,12 +27,12 @@ PERCENTAGE_COLUMNS: list[str] = [
     EmpStatus.other_percentage,
 ]
 
-IMPUTED_PERCENTAGE_COLUMNS: list[str] = [
-    EmpStatus.permanent_percentage_imputed,
-    EmpStatus.temporary_percentage_imputed,
-    EmpStatus.bank_or_pool_percentage_imputed,
-    EmpStatus.agency_percentage_imputed,
-    EmpStatus.other_percentage_imputed,
+TRENDLINE_PERCENTAGE_COLUMNS: list[str] = [
+    EmpStatus.permanent_percentage_imputed_for_trendline,
+    EmpStatus.temporary_percentage_imputed_for_trendline,
+    EmpStatus.bank_or_pool_percentage_imputed_for_trendline,
+    EmpStatus.agency_percentage_imputed_for_trendline,
+    EmpStatus.other_percentage_imputed_for_trendline,
 ]
 
 ROLLING_AVERAGE_PERCENTAGE_COLUMNS: list[str] = [
@@ -35,6 +41,14 @@ ROLLING_AVERAGE_PERCENTAGE_COLUMNS: list[str] = [
     EmpStatus.bank_or_pool_percentage_rolling_avg,
     EmpStatus.agency_percentage_rolling_avg,
     EmpStatus.other_percentage_rolling_avg,
+]
+
+FULL_IMPUTED_PERCENTAGE_COLUMNS: list[str] = [
+    EmpStatus.permanent_percentage_full_imputed,
+    EmpStatus.temporary_percentage_full_imputed,
+    EmpStatus.bank_or_pool_percentage_full_imputed,
+    EmpStatus.agency_percentage_full_imputed,
+    EmpStatus.other_percentage_full_imputed,
 ]
 
 FILL_BOUNDARY_COLUMNS: list[str] = [
@@ -128,7 +142,7 @@ def add_short_term_imputed_percentages(
             offset string (e.g. "5y")
 
     Returns:
-        pl.LazyFrame: dataset with the 5 "emplstat_<status>_percentage_imputed" columns added
+        pl.LazyFrame: dataset with the 5 "emplstat_<status>_percentage_imputed_for_trendline" columns added
     """
     order_key = IndCQC.cqc_location_import_date
 
@@ -161,8 +175,8 @@ def add_short_term_imputed_percentages(
             .then(pl.col(TempCols.first_known_value_prefix + col)),
         )
         .cast(pl.Float32)
-        .alias(imputed_col)
-        for col, imputed_col in zip(PERCENTAGE_COLUMNS, IMPUTED_PERCENTAGE_COLUMNS)
+        .alias(trendline_col)
+        for col, trendline_col in zip(PERCENTAGE_COLUMNS, TRENDLINE_PERCENTAGE_COLUMNS)
     ).drop(FILL_BOUNDARY_COLUMNS)
 
 
@@ -187,7 +201,7 @@ def add_rolling_average_percentages(
         4. Join the averages back onto the location-level dataset and drop the temporary columns.
 
     Args:
-        lf (pl.LazyFrame): dataset containing the 5 "emplstat_<status>_percentage_imputed"
+        lf (pl.LazyFrame): dataset containing the 5 "emplstat_<status>_percentage_imputed_for_trendline"
             columns
         rolling_period (str): the rolling window length, as a Polars offset string (e.g. "6mo")
 
@@ -202,7 +216,7 @@ def add_rolling_average_percentages(
     order_key = IndCQC.cqc_location_import_date
     date_groups = rolling_groups + [order_key]
     rolling_total_columns = [
-        TempCols.rolling_total_prefix + col for col in IMPUTED_PERCENTAGE_COLUMNS
+        TempCols.rolling_total_prefix + col for col in TRENDLINE_PERCENTAGE_COLUMNS
     ]
 
     # Totals are Float64: a Float32 sliding-window sum leaves a residual as values leave the
@@ -211,9 +225,11 @@ def add_rolling_average_percentages(
     date_totals_lf = lf.group_by(date_groups).agg(
         *[
             pl.col(col).cast(pl.Float64).sum().alias(total_col)
-            for col, total_col in zip(IMPUTED_PERCENTAGE_COLUMNS, rolling_total_columns)
+            for col, total_col in zip(
+                TRENDLINE_PERCENTAGE_COLUMNS, rolling_total_columns
+            )
         ],
-        pl.col(EmpStatus.permanent_percentage_imputed)
+        pl.col(EmpStatus.permanent_percentage_imputed_for_trendline)
         .is_not_null()
         .sum()
         .alias(TempCols.contributing_locations),
@@ -250,3 +266,62 @@ def add_rolling_average_percentages(
         on=date_groups,
         how="left",
     )
+
+
+def add_full_imputed_percentages(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Add the 5 employment status percentages with every gap filled, for each location and job
+    role.
+
+    Each status's known values are carried along the change in its rolling average: extrapolated
+    outside the known range and interpolated by trend between known values, with no time limit.
+    Imputed values are floored at zero and re-shared across the 5 statuses to sum to 1. Known
+    values are kept as they are, and a location and job role with no known values stays null.
+
+    The floored total is at least 1 because the unfloored shares sum to 1, so the re-share needs
+    no zero guard. Statuses run one at a time because the shared extrapolation and interpolation
+    helpers return fixed column names, which are dropped before the next status.
+
+    Args:
+        lf (pl.LazyFrame): dataset containing the 5 percentage columns and their rolling averages
+
+    Returns:
+        pl.LazyFrame: dataset with the 5 "emplstat_<status>_percentage_full_imputed" columns added
+    """
+    unnormalised_columns = [
+        TempCols.unnormalised_prefix + col for col in PERCENTAGE_COLUMNS
+    ]
+
+    for col, rolling_col, unnormalised_col in zip(
+        PERCENTAGE_COLUMNS, ROLLING_AVERAGE_PERCENTAGE_COLUMNS, unnormalised_columns
+    ):
+        lf = model_extrapolation(
+            lf, col, rolling_col, "nominal", group_columns=LOCATION_JOB_ROLE_GROUPS
+        )
+        lf = model_interpolation(
+            lf, col, method="trend", group_columns=LOCATION_JOB_ROLE_GROUPS
+        )
+        lf = lf.with_columns(
+            pl.when(pl.col(col).is_null())
+            .then(
+                pl.coalesce(
+                    IndCQC.extrapolation_model, IndCQC.interpolation_model
+                ).clip(lower_bound=0)
+            )
+            .alias(unnormalised_col)
+        ).drop(
+            IndCQC.extrapolation_forwards,
+            IndCQC.extrapolation_model,
+            IndCQC.interpolation_model,
+        )
+
+    unnormalised_total = pl.sum_horizontal(unnormalised_columns)
+
+    return lf.with_columns(
+        pl.coalesce(col, pl.col(unnormalised_col) / unnormalised_total)
+        .cast(pl.Float32)
+        .alias(full_col)
+        for col, unnormalised_col, full_col in zip(
+            PERCENTAGE_COLUMNS, unnormalised_columns, FULL_IMPUTED_PERCENTAGE_COLUMNS
+        )
+    ).drop(unnormalised_columns)
