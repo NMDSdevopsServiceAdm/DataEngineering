@@ -55,11 +55,12 @@ PUBLICATION_EXTRAS = (
     / "Dockerfile_and_requirements"
     / "requirements-extra.txt"
 )
-PUBLICATION_EXTRAS_PINS = get_pins(PUBLICATION_EXTRAS.read_text().splitlines())
 EXCEL_PACKAGES = ["gptables", "xlsxwriter", "pandas", "numpy", "openpyxl", "pyarrow"]
 
 PYPROJECT_ALL_PINS = {
-    **get_pins(tomllib.loads(PYPROJECT.read_text())["dependency-groups"]["dev"]),
+    **get_pins(
+        tomllib.loads(PYPROJECT.read_text()).get("dependency-groups", {}).get("dev", [])
+    ),
     **PYPROJECT_PINS,
 }
 DOCKERFILES = sorted(REPO_ROOT.glob("projects/**/Dockerfile"))
@@ -164,7 +165,9 @@ class TestPublicationExtrasPins:
 
     @pytest.mark.parametrize("package", EXCEL_PACKAGES)
     def test_excel_package_is_pinned(self, package):
-        assert package in PUBLICATION_EXTRAS_PINS, (
+        extras_pins = get_pins(PUBLICATION_EXTRAS.read_text().splitlines())
+
+        assert package in extras_pins, (
             f"{package} is not pinned in {PUBLICATION_EXTRAS.name} for the "
             "publication image, so the Excel jobs would fail at import in the "
             "container despite passing locally."
