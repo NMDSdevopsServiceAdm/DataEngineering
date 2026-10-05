@@ -593,3 +593,21 @@ class AscwdsJobRoleRatiosMergedSource(ColumnValues):
     imputed_ascwds_job_role_ratios: str = IndCQC.imputed_ascwds_job_role_ratios
     ascwds_job_role_rolling_ratio: str = IndCQC.ascwds_job_role_rolling_ratio
     ascwds_job_role_ratios: str = IndCQC.ascwds_job_role_ratios
+
+
+@dataclass
+class PublishedMainService(ColumnValues):
+    """The possible values of the main service column in publication data"""
+
+    all_locations: str = "All CQC locations"
+    all_care_homes: str = "All CQC care homes"
+    care_home_with_nursing: str = " - CQC care home with nursing"
+    care_home_only: str = " - CQC care only home"
+    non_residential: str = "CQC non-residential"
+
+
+@dataclass
+class PublishedRegion(Region):
+    """The possible values of the region column in publication data"""
+
+    england: str = "England"

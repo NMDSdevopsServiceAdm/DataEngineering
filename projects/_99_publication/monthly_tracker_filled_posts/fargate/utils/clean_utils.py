@@ -4,18 +4,18 @@ import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_values.categorical_column_values import PrimaryServiceType
+from utils.column_values.ascwds_labelled_vocab import PublishedJobGroupLabels
+from utils.column_values.categorical_column_values import (
+    PublishedMainService,
+    PrimaryServiceType,
+    PublishedRegion,
+)
 
 # A location is filtered out when its capacity tracker data swings further from
 # the national average swing than this many standard deviations.
 _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 
-# Rollup labels are publication-only, not real source data - kept local here.
-_ALL_JOB_ROLES: str = "All job roles"
-_ALL_CQC_CARE_HOMES: str = "All CQC care homes"
-_ALL_CQC_LOCATIONS: str = "All CQC locations"
-_ENGLAND: str = "England"
 
 
 def reduced_data_filter_expr(
@@ -486,7 +486,7 @@ def add_rows_for_publication_groups(
             ],
         )
         .with_columns(
-            pl.lit(_ALL_JOB_ROLES)
+            pl.lit(PublishedJobGroupLabels.all_job_roles)
             .cast(column_schema[IndCQC.main_job_role_clean_labelled])
             .alias(IndCQC.main_job_role_clean_labelled),
             pl.col(IndCQC.primary_service_type).cast(pl.Categorical),
@@ -506,7 +506,7 @@ def add_rows_for_publication_groups(
         job_role_enlarged_lf.group_by(service_type_group_keys)
         .agg([pl.col(column).sum() for column in metric_columns])
         .with_columns(
-            pl.lit(_ALL_CQC_LOCATIONS)
+            pl.lit(PublishedMainService.all_locations)
             .cast(column_schema[IndCQC.primary_service_type])
             .alias(IndCQC.primary_service_type)
         )
@@ -524,7 +524,7 @@ def add_rows_for_publication_groups(
         .group_by(service_type_group_keys)
         .agg([pl.col(column).sum() for column in metric_columns])
         .with_columns(
-            pl.lit(_ALL_CQC_CARE_HOMES)
+            pl.lit(PublishedMainService.all_care_homes)
             .cast(column_schema[IndCQC.primary_service_type])
             .alias(IndCQC.primary_service_type)
         )
@@ -544,7 +544,7 @@ def add_rows_for_publication_groups(
         service_type_enlarged_lf.group_by(england_group_keys)
         .agg([pl.col(column).sum() for column in metric_columns])
         .with_columns(
-            pl.lit(_ENGLAND)
+            pl.lit(PublishedRegion.england)
             .cast(column_schema[IndCQC.current_region])
             .alias(IndCQC.current_region)
         )

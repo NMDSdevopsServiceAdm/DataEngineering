@@ -6,7 +6,12 @@ import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_values.categorical_column_values import PrimaryServiceType
+from utils.column_values.ascwds_labelled_vocab import PublishedJobGroupLabels
+from utils.column_values.categorical_column_values import (
+    PublishedMainService,
+    PrimaryServiceType,
+    PublishedRegion,
+)
 
 
 @dataclass
@@ -723,7 +728,7 @@ add_rows_for_publication_groups_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "All job roles",
+                PublishedJobGroupLabels.all_job_roles,
                 "London",
                 _CARE_HOME_WITH_NURSING,
                 *_all_terms_metrics(30.0, 1, 13.0),
@@ -764,14 +769,14 @@ add_rows_for_publication_groups_test_cases = [
                 date(2025, 4, 1),
                 "Registered nurse",
                 "London",
-                "All CQC locations",
+                PublishedMainService.all_locations,
                 *_all_terms_metrics(25.0, 2, 11.0),
             ),
             (
                 date(2025, 4, 1),
                 "Registered nurse",
                 "London",
-                "All CQC care homes",
+                PublishedMainService.all_care_homes,
                 *_all_terms_metrics(10.0, 1, 5.0),
             ),
         ],
@@ -810,7 +815,7 @@ add_rows_for_publication_groups_test_cases = [
             (
                 date(2025, 4, 1),
                 "Registered nurse",
-                "England",
+                PublishedRegion.england,
                 _CARE_HOME_WITH_NURSING,
                 *_all_terms_metrics(22.0, 2, 11.0),
             ),
