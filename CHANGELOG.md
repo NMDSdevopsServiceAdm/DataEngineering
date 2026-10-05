@@ -39,7 +39,6 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Converted the split PA filled posts into ICB areas step of the Direct Payment Recipients pipeline from PySpark to Polars.
-- Converted direct payment recipients outlier removal from PySpark to a single Polars function (not yet wired into a job).
 - Added `number_of_beds_at_provider` to the grouped providers output dataset.
 - Increased the upper limit of CT combined trendline validation from 2.0 to 2.5.
 - Changed employment status count deduplication to judge staleness per workplace and import date rather than per job role: counts are only nulled when no job role changed.
@@ -64,7 +63,7 @@ All notable changes to this project will be documented in this file.
 - Moved the filled posts models' date-index step into a shared, reusable `_03_independent_cqc` utility (`add_date_index`).
 - Serialised the dev CircleCI image build, terraform plan/apply and environment destroy per branch, and added a job that fails a pipeline whose apply didn't run.
 - Moved the `_03_independent_cqc` Dockerfile out of `_01_filled_posts` and up to the project level (`projects/_03_independent_cqc/Dockerfile_and_requirements/`), as the image also builds the employment status and starters/leavers/vacancies jobs. Updated the path in `docker-bake.hcl`; the Dockerfile itself is unchanged.
-- Converted the direct payment recipients survey to PA-ratio calculation and proportion of service users employing staff estimate from PySpark to Polars. They not yet used by a job.
+- Replaced the PySpark DPR prepare and merge Glue jobs with one Polars Fargate step, and removed the intermediate `_prepared` datasets and the remaining PySpark DPR code.
 
 ### Improved
 - Selected key question ratings by name in both current and historic CQC ratings, raising an error if a name is repeated within a list.
