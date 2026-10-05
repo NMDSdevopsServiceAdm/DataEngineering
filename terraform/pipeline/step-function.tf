@@ -87,6 +87,9 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     dataset_bucket_name           = module.datasets_bucket.bucket_name
     pipeline_resources_bucket_uri = module.pipeline_resources.bucket_uri
 
+    # archive run log
+    commit_sha = var.commit_sha
+
     # compare paths
     ind_cqc_job_role_estimates     = local.ind_cqc_job_role_estimates_dataset_name
     ind_cqc_job_role_metadata      = local.ind_cqc_job_role_metadata_dataset_name
