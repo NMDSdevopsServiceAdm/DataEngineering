@@ -78,43 +78,6 @@ module "flatten_cqc_ratings_job" {
   }
 }
 
-module "merge_coverage_data_job" {
-  source            = "../modules/glue-job"
-  script_dir        = "projects/_02_sfc_internal/cqc_coverage/jobs"
-  script_name       = "merge_coverage_data.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  glue_version      = "5.0"
-  worker_type       = "G.2X"
-  number_of_workers = 5
-
-  job_parameters = {
-    "--cleaned_cqc_location_source"  = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=locations_04_full_cleaned_registered/"
-    "--ascwds_workplace_source"      = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/"
-    "--cqc_ratings_source"           = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_data_requests/"
-    "--cleaned_cqc_providers_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=providers_04_full_cleaned/"
-    "--merged_coverage_destination"  = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data/"
-    "--reduced_coverage_destination" = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_monthly_coverage_data/"
-  }
-}
-
-module "validate_merge_coverage_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_02_sfc_internal/cqc_coverage/jobs"
-  script_name     = "validate_merge_coverage_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=01_cqc/dataset=locations_04_full_cleaned_registered/"
-    "--merged_coverage_data_source" = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data/"
-    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data_validation/"
-  }
-}
-
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "01_ascwds"

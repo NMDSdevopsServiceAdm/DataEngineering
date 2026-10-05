@@ -18,6 +18,10 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_names.reconciliation_columns import ReconciliationColumns
 
+from projects._02_sfc_internal._02_cqc_coverage.fargate.utils.utils import (
+    YEAR_COLUMN,
+)
+
 
 class ValidateMergeCoverageSchemas:
     cqc_locations_schema = pl.Schema(
@@ -171,6 +175,58 @@ class MergeCoverageSchema:
             (CQCLClean.location_id, pl.String),
             (AscWdsColumns.is_parent, pl.String),
             (AscWdsColumns.parent_permission, pl.String),
+        ]
+    )
+
+
+class LmEngagementSchema:
+    base_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String),
+            (CQCLClean.cqc_location_import_date, pl.Date),
+            (CQCLClean.current_cssr, pl.String),
+            (CoverageColumns.in_ascwds, pl.Int32),
+            (YEAR_COLUMN, pl.Int32),
+        ]
+    )
+
+    la_coverage_schema = pl.Schema(
+        [
+            *base_schema.items(),
+            (CoverageColumns.la_monthly_coverage, pl.Float32),
+        ]
+    )
+
+    coverage_change_schema = pl.Schema(
+        [
+            *la_coverage_schema.items(),
+            (CoverageColumns.coverage_monthly_change, pl.Float32),
+        ]
+    )
+
+    locations_change_schema = pl.Schema(
+        [
+            *coverage_change_schema.items(),
+            (CoverageColumns.in_ascwds_last_month, pl.Int32),
+            (CoverageColumns.locations_monthly_change, pl.Int32),
+        ]
+    )
+
+    final_schema = pl.Schema(
+        [
+            *coverage_change_schema.items(),
+            (CoverageColumns.locations_monthly_change, pl.Int32),
+            (CoverageColumns.new_registrations_monthly, pl.Int32),
+            (CoverageColumns.new_registrations_ytd, pl.Int32),
+        ]
+    )
+
+    orchestrator_input_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String),
+            (CQCLClean.cqc_location_import_date, pl.Date),
+            (CQCLClean.current_cssr, pl.String),
+            (CoverageColumns.in_ascwds, pl.Int32),
         ]
     )
 
