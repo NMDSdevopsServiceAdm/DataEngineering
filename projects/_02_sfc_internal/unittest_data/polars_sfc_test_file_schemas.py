@@ -18,6 +18,10 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_names.reconciliation_columns import ReconciliationColumns
 
+from projects._02_sfc_internal._02_cqc_coverage.fargate.utils.utils import (
+    YEAR_COLUMN,
+)
+
 
 class ValidateMergeCoverageSchemas:
     cqc_locations_schema = pl.Schema(
@@ -83,6 +87,146 @@ class MergeCoverageSchema:
         [
             (AscWdsColumns.is_parent, pl.String),
             (AscWdsColumns.parent_permission, pl.String),
+        ]
+    )
+
+    add_removed_by_purge_date_filter_flag_schema = pl.Schema(
+        [
+            (AscWdsColumns.establishment_id, pl.String),
+            (AscWdsColumns.workplace_last_active_date, pl.Date),
+            (AscWdsColumns.purge_date, pl.Date),
+        ]
+    )
+
+    deduplicate_ascwds_workplace_data_schema = pl.Schema(
+        [
+            (AscWdsColumns.ascwds_workplace_import_date, pl.Date),
+            (AscWdsColumns.location_id, pl.String),
+            (AscWdsColumns.master_update_date, pl.Date),
+            (AscWdsColumns.establishment_id, pl.String),
+        ]
+    )
+
+    join_ascwds_data_cqc_location_schema = pl.Schema(
+        [
+            (CQCLClean.cqc_location_import_date, pl.Date),
+            (CQCLClean.location_id, pl.String),
+        ]
+    )
+
+    join_ascwds_data_ascwds_workplace_schema = pl.Schema(
+        [
+            (AscWdsColumns.ascwds_workplace_import_date, pl.Date),
+            (AscWdsColumns.location_id, pl.String),
+            (AscWdsColumns.establishment_id, pl.String),
+        ]
+    )
+
+    add_flag_for_in_ascwds_schema = pl.Schema(
+        [
+            (AscWdsColumns.establishment_id, pl.String),
+            (AscWdsColumns.removed_by_purge_date_filter, pl.Boolean),
+        ]
+    )
+
+    deduplicate_merged_coverage_data_schema = pl.Schema(
+        [
+            (CQCLClean.cqc_location_import_date, pl.Date),
+            (CQCLClean.name, pl.String),
+            (CQCLClean.postal_code, pl.String),
+            (CQCLClean.care_home, pl.String),
+            (CoverageColumns.in_ascwds, pl.Int32),
+            (CQCLClean.imputed_registration_date, pl.Date),
+            (CQCLClean.location_id, pl.String),
+        ]
+    )
+
+    join_latest_cqc_rating_coverage_schema = pl.Schema(
+        [(CQCLClean.location_id, pl.String)]
+    )
+
+    join_latest_cqc_rating_ratings_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String),
+            (CQCRatingsColumns.overall_rating, pl.String),
+            (CQCRatingsColumns.latest_rating_flag, pl.Int32),
+            (CQCRatingsColumns.current_or_historic, pl.String),
+        ]
+    )
+
+    join_provider_name_coverage_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String),
+            (CQCLClean.provider_id, pl.String),
+        ]
+    )
+
+    join_provider_name_providers_schema = pl.Schema(
+        [
+            (CQCPClean.provider_id, pl.String),
+            (CQCPClean.name, pl.String),
+            (CQCPClean.cqc_provider_import_date, pl.Date),
+        ]
+    )
+
+    merged_coverage_with_two_import_dates_schema = pl.Schema(
+        [
+            (CQCLClean.cqc_location_import_date, pl.Date),
+            (CQCLClean.location_id, pl.String),
+            (AscWdsColumns.is_parent, pl.String),
+            (AscWdsColumns.parent_permission, pl.String),
+        ]
+    )
+
+
+class LmEngagementSchema:
+    base_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String),
+            (CQCLClean.cqc_location_import_date, pl.Date),
+            (CQCLClean.current_cssr, pl.String),
+            (CoverageColumns.in_ascwds, pl.Int32),
+            (YEAR_COLUMN, pl.Int32),
+        ]
+    )
+
+    la_coverage_schema = pl.Schema(
+        [
+            *base_schema.items(),
+            (CoverageColumns.la_monthly_coverage, pl.Float32),
+        ]
+    )
+
+    coverage_change_schema = pl.Schema(
+        [
+            *la_coverage_schema.items(),
+            (CoverageColumns.coverage_monthly_change, pl.Float32),
+        ]
+    )
+
+    locations_change_schema = pl.Schema(
+        [
+            *coverage_change_schema.items(),
+            (CoverageColumns.in_ascwds_last_month, pl.Int32),
+            (CoverageColumns.locations_monthly_change, pl.Int32),
+        ]
+    )
+
+    final_schema = pl.Schema(
+        [
+            *coverage_change_schema.items(),
+            (CoverageColumns.locations_monthly_change, pl.Int32),
+            (CoverageColumns.new_registrations_monthly, pl.Int32),
+            (CoverageColumns.new_registrations_ytd, pl.Int32),
+        ]
+    )
+
+    orchestrator_input_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String),
+            (CQCLClean.cqc_location_import_date, pl.Date),
+            (CQCLClean.current_cssr, pl.String),
+            (CoverageColumns.in_ascwds, pl.Int32),
         ]
     )
 

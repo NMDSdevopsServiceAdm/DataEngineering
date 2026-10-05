@@ -96,6 +96,11 @@ prepare_current_ratings_cases = [
         expected_rows=Data.expected_prepare_current_ratings_rows,
     ),
     PrepareCurrentRatingsCase(
+        id="maps_ratings_to_columns_by_name_when_key_questions_reordered",
+        rows=Data.current_ratings_reordered_key_question_rows,
+        expected_rows=Data.expected_prepare_current_ratings_rows,
+    ),
+    PrepareCurrentRatingsCase(
         id="fills_missing_key_questions_with_null_when_fewer_than_five",
         rows=Data.current_ratings_short_key_question_list_rows,
         expected_rows=Data.expected_prepare_current_ratings_short_key_question_list_rows,
@@ -122,6 +127,16 @@ class TestPrepareCurrentRatings:
         )
         pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
 
+    def test_prepare_current_ratings_raises_when_key_question_name_repeated(self):
+        input_lf = pl.LazyFrame(
+            Data.current_ratings_duplicate_key_question_name_rows,
+            schema=Schemas.current_ratings_schema,
+            orient="row",
+        )
+
+        with pytest.raises(ValueError, match="Duplicate key question names"):
+            job.prepare_current_ratings(input_lf).collect()
+
 
 @dataclass
 class PrepareHistoricRatingsCase:
@@ -137,6 +152,11 @@ prepare_historic_ratings_cases = [
     PrepareHistoricRatingsCase(
         id="flattens_recodes_and_labels_as_historic",
         rows=Data.historic_ratings_rows,
+        expected_rows=Data.expected_prepare_historic_ratings_rows,
+    ),
+    PrepareHistoricRatingsCase(
+        id="maps_ratings_to_columns_by_name_when_key_questions_reordered",
+        rows=Data.historic_ratings_reordered_key_question_rows,
         expected_rows=Data.expected_prepare_historic_ratings_rows,
     ),
     PrepareHistoricRatingsCase(
@@ -167,3 +187,13 @@ class TestPrepareHistoricRatings:
             orient="row",
         )
         pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
+
+    def test_prepare_historic_ratings_raises_when_key_question_name_repeated(self):
+        input_lf = pl.LazyFrame(
+            Data.historic_ratings_duplicate_key_question_name_rows,
+            schema=Schemas.historic_ratings_schema,
+            orient="row",
+        )
+
+        with pytest.raises(ValueError, match="Duplicate key question names"):
+            job.prepare_historic_ratings(input_lf).collect()

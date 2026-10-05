@@ -6,11 +6,15 @@ description: Use when a ticket's work is ready for review — "/open-pr", "open 
 # Opening a PR
 
 1. Confirm the branch is pushed and up to date with remote — run `commit-push` first if not.
-2. Clean up code comments in the diff against `main`: for each comment on a touched line, trim,
-   rewrite, or remove it if it isn't brief, restates *what* instead of the non-obvious *why*, or
-   references something that'll go stale (a ticket number, a PR number, a caller). Leave comments
-   outside the diff alone. If this changes any files, commit and push the fix (`commit-push`
-   skill) before continuing.
+2. Clean up comments, docstrings and names in the diff against `main`: for each one on a touched line, trim,
+   rewrite, or remove it if it isn't brief, restates *what* instead of the non-obvious *why*, refers
+   to the previous implementation (e.g. PySpark; the `# converted to polars ->` pointer stays), or
+   references something that'll go stale (a ticket number, a PR number, a caller). Rewrite docstrings
+   of touched functions as few words as possible. Rename only identifiers inside the unit being changed
+   (see CLAUDE.md's upgrade scope). Leave anything outside the diff alone. If this changes any files, commit and
+   push the fix (`commit-push` skill) before continuing.
+   - Also consolidate the `CHANGELOG.md` bullets this branch added (`git diff main -- CHANGELOG.md`): one
+     short bullet per piece of work, as few words as possible.
 3. Run a sub-agent review of the diff against `main`, following the `review-checklist` skill. This is what satisfies the "Code reviewed by AI" checklist item on the PR template — don't tick it without actually running this.
    - Any **Critical** finding: stop and resolve or discuss with the user before continuing.
    - Important/Optional findings: show them, then continue regardless.

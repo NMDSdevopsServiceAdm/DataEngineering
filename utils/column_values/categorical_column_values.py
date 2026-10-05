@@ -581,6 +581,9 @@ class EmploymentStatusFilteringRule(ColumnValues):
     org_level_low_permanent_temporary_ratio: str = (
         "org_level_low_permanent_temporary_ratio"
     )
+    location_level_low_permanent_temporary_ratio: str = (
+        "location_level_low_permanent_temporary_ratio"
+    )
 
 
 @dataclass

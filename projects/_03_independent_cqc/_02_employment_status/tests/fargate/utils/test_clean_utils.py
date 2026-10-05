@@ -152,6 +152,28 @@ class TestCreateEmploymentStatusPercentageColumns:
         assert returned_lf == percentage_share_horizontal_mock.return_value
 
 
+class TestNullCountsForLowLocationRatio:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.null_counts_for_low_location_ratio_test_cases
+        ],
+    )
+    def test_nulls_clean_counts_only_where_location_ratio_is_too_low(self, case):
+        test_lf = build_input_lf(case.input_data)
+        expected_lf = build_expected_lf(case.expected_data)
+
+        returned_lf = job.null_counts_for_low_location_ratio(test_lf)
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+            check_column_order=False,
+        )
+
+
 class TestNullCountsForLowOrgRatio:
     @pytest.mark.parametrize(
         "case",
@@ -193,6 +215,35 @@ class TestDedupThenRatioRules:
         returned_lf = job.null_counts_for_low_org_ratio(
             job.create_clean_count_columns(
                 job.deduplicate_employment_status_counts(test_lf)
+            )
+        )
+        returned_lf = returned_lf.filter(
+            pl.col(IndCQC.cqc_location_import_date) == self.SECOND_IMPORT_DATE
+        ).select(list(case.expected_data))
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+            check_column_order=False,
+        )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.dedup_then_location_ratio_test_cases
+        ],
+    )
+    def test_location_rule_on_workplace_level_dedup_output(self, case):
+        test_lf = build_input_lf(case.input_data)
+        expected_lf = build_expected_lf(case.expected_data)
+
+        returned_lf = job.null_counts_for_low_location_ratio(
+            job.null_counts_for_low_org_ratio(
+                job.create_clean_count_columns(
+                    job.deduplicate_employment_status_counts(test_lf)
+                )
             )
         )
         returned_lf = returned_lf.filter(
