@@ -16,6 +16,7 @@ from projects._04_direct_payment_recipients.direct_payments_configuration import
 from utils import utils
 
 
+# converted to polars -> projects\_04_direct_payment_recipients\fargate\utils\prepare_dpr_utils\calculate_pa_ratio.py
 def calculate_pa_ratio(survey_df: DataFrame) -> DataFrame:
     survey_df = survey_df.withColumnRenamed(DP.YEAR, DP.YEAR_AS_INTEGER)
     survey_df = exclude_outliers(survey_df)

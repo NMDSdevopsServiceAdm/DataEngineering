@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 
 from pyspark.ml.feature import Bucketizer
-from pyspark.sql import Column, DataFrame, Window
+from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 from pyspark.sql.types import StringType, StructField, StructType
 
@@ -294,39 +294,6 @@ def calculate_filled_posts_per_bed_ratio(
     )
 
     return input_df
-
-
-def remove_duplicates_based_on_column_order(
-    df: DataFrame,
-    columns_to_identify_duplicates: List[str],
-    order_by: List[Column],
-) -> DataFrame:
-    """
-    Remove duplicate rows using custom window ordering.
-
-    Keeps the first row within each duplicate group according to the
-    provided ordering expressions.
-
-    Args:
-        df (DataFrame): The DataFrame to remove duplicates from.
-        columns_to_identify_duplicates (List[str]): Columns defining duplicate groups.
-        order_by (List[Column]): List of PySpark column expressions defining sort priority.
-
-    Returns:
-        DataFrame: A DataFrame with duplicates removed.
-    """
-    row_num = "_row_number"
-
-    return (
-        df.withColumn(
-            row_num,
-            F.row_number().over(
-                Window.partitionBy(*columns_to_identify_duplicates).orderBy(*order_by)
-            ),
-        )
-        .where(F.col(row_num) == 1)
-        .drop(row_num)
-    )
 
 
 # converted to polars -> polars_utils.cleaning_utils.create_banded_bed_count_column

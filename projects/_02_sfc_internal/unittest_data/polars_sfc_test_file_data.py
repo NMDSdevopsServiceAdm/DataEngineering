@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from utils.column_values.categorical_column_values import (
+    InAscwds,
     ParentsOrSinglesAndSubs,
     RegistrationStatus,
 )
@@ -222,6 +223,238 @@ class MergeCoverageData:
         ParentsOrSinglesAndSubs.singles_and_subs,
     ]
 
+    # (establishment_id, workplace_last_active_date, purge_date)
+    add_removed_by_purge_date_filter_flag_rows = [
+        ("1-001", date(2024, 1, 1), date(2024, 6, 1)),  # active before purge - removed
+        ("1-002", date(2024, 6, 1), date(2024, 1, 1)),  # active after purge - kept
+    ]
+    expected_removed_by_purge_date_filter_flags = [True, False]
+
+    # (ascwds_workplace_import_date, location_id, master_update_date, establishment_id)
+    deduplicate_ascwds_workplace_data_rows = [
+        (date(2024, 4, 1), "1-001", date(2024, 3, 1), "100"),  # older update - dropped
+        (date(2024, 4, 1), "1-001", date(2024, 3, 15), "101"),  # latest update - kept
+        (date(2024, 4, 1), "1-002", date(2024, 3, 1), "102"),  # only row - kept
+        (date(2024, 4, 1), "1-003", date(2024, 3, 1), "200"),  # update date tied with
+        (
+            date(2024, 4, 1),
+            "1-003",
+            date(2024, 3, 1),
+            "199",
+        ),  # row below - lower id wins
+    ]
+    expected_deduplicate_ascwds_workplace_data_establishment_ids = [
+        "101",
+        "102",
+        "199",
+    ]
+
+    # cqc_location: (cqc_location_import_date, location_id)
+    join_ascwds_data_cqc_location_rows = [(date(2024, 4, 1), "1-001")]
+    # ascwds_workplace: (ascwds_workplace_import_date, location_id, establishment_id)
+    join_ascwds_data_ascwds_workplace_rows = [
+        (date(2024, 1, 1), "1-001", "100"),
+        (date(2024, 3, 1), "1-001", "101"),  # closest import date on/before 2024-04-01
+        (
+            date(2024, 5, 1),
+            "1-001",
+            "102",
+        ),  # after the CQC import date - not aligned to
+    ]
+    expected_join_ascwds_data_aligned_import_date = date(2024, 3, 1)
+    expected_join_ascwds_data_establishment_id = "101"
+
+    # (establishment_id, removed_by_purge_date_filter)
+    add_flag_for_in_ascwds_rows = [
+        ("100", False),  # has establishment, not removed - in ASC-WDS
+        ("101", True),  # has establishment, removed - not in ASC-WDS
+        (None, False),  # no establishment - not in ASC-WDS
+    ]
+    expected_in_ascwds_flags = [
+        InAscwds.is_in_ascwds,
+        InAscwds.not_in_ascwds,
+        InAscwds.not_in_ascwds,
+    ]
+
+    # (cqc_location_import_date, name, postal_code, care_home, in_ascwds,
+    #  imputed_registration_date, location_id)
+    deduplicate_merged_coverage_data_rows = [
+        (date(2024, 4, 1), "Name A", "AB1 2CD", "Y", 0, date(2024, 1, 1), "1-002"),
+        (date(2024, 4, 1), "Name A", "AB1 2CD", "Y", 1, date(2024, 1, 1), "1-001"),
+        (date(2024, 4, 1), "Name B", "EF3 4GH", "N", 1, date(2024, 2, 1), "1-003"),
+        (date(2024, 4, 1), "Name B", "EF3 4GH", "N", 1, date(2024, 2, 1), "1-004"),
+    ]
+    expected_deduplicate_merged_coverage_data_location_ids = ["1-001", "1-003"]
+
+    # coverage: (location_id,)
+    join_latest_cqc_rating_coverage_rows = [("1-001",), ("1-002",)]
+    # ratings: (location_id, overall_rating, latest_rating_flag, current_or_historic)
+    join_latest_cqc_rating_ratings_rows = [
+        ("1-001", "Good", 1, "Current"),  # latest current rating - kept
+        ("1-001", "Requires improvement", 0, "Historic"),  # not latest - filtered out
+        ("1-002", "Outstanding", 1, "Historic"),  # latest but historic - filtered out
+    ]
+    expected_join_latest_cqc_rating_overall_ratings = ["Good", None]
+
+    # coverage: (location_id, provider_id)
+    join_provider_name_coverage_rows = [("1-001", "P1"), ("1-002", "P2")]
+    # providers: (provider_id, name, cqc_provider_import_date)
+    join_provider_name_providers_rows = [
+        ("P1", "Provider One Old Name", date(2024, 1, 1)),
+        ("P1", "Provider One New Name", date(2024, 4, 1)),  # latest import date - kept
+        ("P2", "Provider Two", date(2024, 2, 1)),
+    ]
+    expected_join_provider_names = ["Provider One New Name", "Provider Two"]
+
+    # (cqc_location_import_date, location_id, is_parent, parent_permission)
+    merged_coverage_with_two_import_dates_rows = [
+        (
+            date(2024, 3, 1),
+            "1-001",
+            "No",
+            "Workplace has ownership",
+        ),  # older month - excluded from reduced output
+        (
+            date(2024, 4, 1),
+            "1-002",
+            "No",
+            "Workplace has ownership",
+        ),  # latest month - kept in reduced output
+    ]
+
+
+@dataclass
+class LmEngagementData:
+    # (location_id, cqc_location_import_date, current_cssr, in_ascwds)
+    orchestrator_input_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1),
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1),
+        # loc 1's cssr 1 rows duplicated into 2025 (still continuously in
+        # ASC-WDS) to check new_registrations_ytd resets per year rather than
+        # carrying 2024's cumulative total forward.
+        ("loc 1", date(2025, 1, 1), "cssr 1", 1),
+        ("loc 1", date(2025, 2, 1), "cssr 1", 1),
+        ("loc 2", date(2024, 1, 1), "cssr 2", 0),
+        ("loc 2", date(2024, 2, 1), "cssr 2", 1),
+        ("loc 3", date(2024, 1, 1), "cssr 3", 1),
+        ("loc 3", date(2024, 2, 1), "cssr 3", 0),
+        ("loc 4", date(2024, 1, 1), "cssr 4", 0),
+        ("loc 4", date(2024, 2, 1), "cssr 4", 1),
+        ("loc 4", date(2024, 3, 1), "cssr 4", 1),
+        ("loc 5", date(2024, 1, 1), "cssr 4", 0),
+        ("loc 5", date(2024, 2, 1), "cssr 4", 1),
+        ("loc 5", date(2024, 3, 1), "cssr 4", 1),
+        ("loc 6", date(2024, 1, 1), "cssr 4", 0),
+        ("loc 6", date(2024, 2, 1), "cssr 4", 1),
+        ("loc 6", date(2024, 3, 1), "cssr 4", 1),
+        # loc 7's rows are deliberately out of date order, to check the window
+        # functions sort internally rather than relying on input row order.
+        ("loc 7", date(2024, 2, 1), "cssr 4", 0),
+        ("loc 7", date(2024, 1, 1), "cssr 4", 0),
+        ("loc 7", date(2024, 3, 1), "cssr 4", 1),
+    ]
+
+    # orchestrator_input_rows plus a precomputed _year column.
+    base_rows = [(*row, row[1].year) for row in orchestrator_input_rows]
+
+    # (location_id, cqc_location_import_date, current_cssr, in_ascwds, _year,
+    #  la_monthly_coverage)
+    expected_la_coverage_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1, 2024, 1.0),
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1, 2024, 1.0),
+        ("loc 1", date(2025, 1, 1), "cssr 1", 1, 2025, 1.0),
+        ("loc 1", date(2025, 2, 1), "cssr 1", 1, 2025, 1.0),
+        ("loc 2", date(2024, 1, 1), "cssr 2", 0, 2024, 0.0),
+        ("loc 2", date(2024, 2, 1), "cssr 2", 1, 2024, 1.0),
+        ("loc 3", date(2024, 1, 1), "cssr 3", 1, 2024, 1.0),
+        ("loc 3", date(2024, 2, 1), "cssr 3", 0, 2024, 0.0),
+        ("loc 4", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0),
+        ("loc 4", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75),
+        ("loc 4", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0),
+        ("loc 5", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0),
+        ("loc 5", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75),
+        ("loc 5", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0),
+        ("loc 6", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0),
+        ("loc 6", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75),
+        ("loc 6", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0),
+        ("loc 7", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0),
+        ("loc 7", date(2024, 2, 1), "cssr 4", 0, 2024, 0.75),
+        ("loc 7", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0),
+    ]
+
+    # ... plus coverage_monthly_change
+    expected_coverage_change_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1, 2024, 1.0, None),
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1, 2024, 1.0, 0.0),
+        ("loc 1", date(2025, 1, 1), "cssr 1", 1, 2025, 1.0, 0.0),
+        ("loc 1", date(2025, 2, 1), "cssr 1", 1, 2025, 1.0, 0.0),
+        ("loc 2", date(2024, 1, 1), "cssr 2", 0, 2024, 0.0, None),
+        ("loc 2", date(2024, 2, 1), "cssr 2", 1, 2024, 1.0, 1.0),
+        ("loc 3", date(2024, 1, 1), "cssr 3", 1, 2024, 1.0, None),
+        ("loc 3", date(2024, 2, 1), "cssr 3", 0, 2024, 0.0, -1.0),
+        ("loc 4", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None),
+        ("loc 4", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75, 0.75),
+        ("loc 4", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25),
+        ("loc 5", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None),
+        ("loc 5", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75, 0.75),
+        ("loc 5", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25),
+        ("loc 6", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None),
+        ("loc 6", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75, 0.75),
+        ("loc 6", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25),
+        ("loc 7", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None),
+        ("loc 7", date(2024, 2, 1), "cssr 4", 0, 2024, 0.75, 0.75),
+        ("loc 7", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25),
+    ]
+
+    # ... plus in_ascwds_last_month, locations_monthly_change
+    expected_locations_change_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1, 2024, 1.0, None, 0, 1),
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1, 2024, 1.0, 0.0, 1, 0),
+        ("loc 1", date(2025, 1, 1), "cssr 1", 1, 2025, 1.0, 0.0, 1, 0),
+        ("loc 1", date(2025, 2, 1), "cssr 1", 1, 2025, 1.0, 0.0, 1, 0),
+        ("loc 2", date(2024, 1, 1), "cssr 2", 0, 2024, 0.0, None, 0, 0),
+        ("loc 2", date(2024, 2, 1), "cssr 2", 1, 2024, 1.0, 1.0, 0, 1),
+        ("loc 3", date(2024, 1, 1), "cssr 3", 1, 2024, 1.0, None, 0, 1),
+        ("loc 3", date(2024, 2, 1), "cssr 3", 0, 2024, 0.0, -1.0, 1, -1),
+        ("loc 4", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None, 0, 0),
+        ("loc 4", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75, 0.75, 0, 3),
+        ("loc 4", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25, 1, 1),
+        ("loc 5", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None, 0, 0),
+        ("loc 5", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75, 0.75, 0, 3),
+        ("loc 5", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25, 1, 1),
+        ("loc 6", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None, 0, 0),
+        ("loc 6", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75, 0.75, 0, 3),
+        ("loc 6", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25, 1, 1),
+        ("loc 7", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None, 0, 0),
+        ("loc 7", date(2024, 2, 1), "cssr 4", 0, 2024, 0.75, 0.75, 0, 3),
+        ("loc 7", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25, 0, 1),
+    ]
+
+    # final shape: ... locations_monthly_change, new_registrations_monthly,
+    # new_registrations_ytd (in_ascwds_last_month dropped)
+    expected_final_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1, 2024, 1.0, None, 1, 1, 1),
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1, 2024, 1.0, 0.0, 0, 0, 1),
+        ("loc 1", date(2025, 1, 1), "cssr 1", 1, 2025, 1.0, 0.0, 0, 0, 0),
+        ("loc 1", date(2025, 2, 1), "cssr 1", 1, 2025, 1.0, 0.0, 0, 0, 0),
+        ("loc 2", date(2024, 1, 1), "cssr 2", 0, 2024, 0.0, None, 0, 0, 0),
+        ("loc 2", date(2024, 2, 1), "cssr 2", 1, 2024, 1.0, 1.0, 1, 1, 1),
+        ("loc 3", date(2024, 1, 1), "cssr 3", 1, 2024, 1.0, None, 1, 1, 1),
+        ("loc 3", date(2024, 2, 1), "cssr 3", 0, 2024, 0.0, -1.0, -1, 0, 1),
+        ("loc 4", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None, 0, 0, 0),
+        ("loc 4", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75, 0.75, 3, 3, 3),
+        ("loc 4", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25, 1, 1, 4),
+        ("loc 5", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None, 0, 0, 0),
+        ("loc 5", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75, 0.75, 3, 3, 3),
+        ("loc 5", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25, 1, 1, 4),
+        ("loc 6", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None, 0, 0, 0),
+        ("loc 6", date(2024, 2, 1), "cssr 4", 1, 2024, 0.75, 0.75, 3, 3, 3),
+        ("loc 6", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25, 1, 1, 4),
+        ("loc 7", date(2024, 1, 1), "cssr 4", 0, 2024, 0.0, None, 0, 0, 0),
+        ("loc 7", date(2024, 2, 1), "cssr 4", 0, 2024, 0.75, 0.75, 3, 3, 3),
+        ("loc 7", date(2024, 3, 1), "cssr 4", 1, 2024, 1.0, 0.25, 1, 1, 4),
+    ]
+
 
 @dataclass
 class ReconciliationData:
@@ -270,20 +503,45 @@ class FlattenCQCRatings:
             },
         )
 
-    def _kq(name, rating="Good"):
+    def _kq(name, rating):
         return {"name": name, "rating": rating}
 
+    # Distinct rating per key question shows each lands in its own column.
+    # fmt: off
+    _all_key_questions = [
+        _kq("Safe", "safe_rating"),
+        _kq("Well-led", "well_led_rating"),
+        _kq("Caring", "caring_rating"),
+        _kq("Responsive", "responsive_rating"),
+        _kq("Effective", "effective_rating"),
+    ]
+    _all_key_questions_reordered = [
+        _kq("Effective", "effective_rating"),
+        _kq("Caring", "caring_rating"),
+        _kq("Safe", "safe_rating"),
+        _kq("Responsive", "responsive_rating"),
+        _kq("Well-led", "well_led_rating"),
+    ]
+    _duplicate_name_key_questions = [
+        _kq("Safe", "safe_rating"),
+        _kq("Safe", "other_safe_rating"),
+    ]
+    _short_key_questions = [
+        _kq("Well-led", "well_led_rating"),
+        _kq("Safe", "safe_rating"),
+    ]
+    # fmt: on
+
     current_ratings_rows = [
-        _current_ratings(
-            "1-001",
-            [
-                _kq("Safe"),
-                _kq("Well-led"),
-                _kq("Caring", "Outstanding"),
-                _kq("Responsive", "Inspected but not rated"),
-                _kq("Effective", "Requires improvement"),
-            ],
-        ),
+        _current_ratings("1-001", _all_key_questions),
+    ]
+
+    current_ratings_duplicate_key_question_name_rows = [
+        _current_ratings("1-001", _duplicate_name_key_questions),
+    ]
+
+    current_ratings_reordered_key_question_rows = [
+        _current_ratings("1-001", _all_key_questions_reordered),
     ]
 
     expected_prepare_current_ratings_rows = [
@@ -292,17 +550,17 @@ class FlattenCQCRatings:
             "Registered",
             "2024-01-01",
             "Good",
-            "Good",
-            "Good",
-            "Outstanding",
-            "Inspected but not rated",
-            "Requires improvement",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
             "Current",
         ),
     ]
 
     current_ratings_short_key_question_list_rows = [
-        _current_ratings("1-002", [_kq("Safe"), _kq("Well-led")]),
+        _current_ratings("1-002", _short_key_questions),
     ]
 
     expected_prepare_current_ratings_short_key_question_list_rows = [
@@ -311,8 +569,8 @@ class FlattenCQCRatings:
             "Registered",
             "2024-01-01",
             "Good",
-            "Good",
-            "Good",
+            "safe_rating",
+            "well_led_rating",
             None,
             None,
             None,
@@ -327,21 +585,22 @@ class FlattenCQCRatings:
         }
 
     historic_ratings_rows = [
+        ("1-001", "Registered", [_historic_entry("2023-01-01", _all_key_questions)]),
+    ]
+
+    historic_ratings_duplicate_key_question_name_rows = [
         (
             "1-001",
             "Registered",
-            [
-                _historic_entry(
-                    "2023-01-01",
-                    [
-                        _kq("Safe"),
-                        _kq("Well-led"),
-                        _kq("Caring"),
-                        _kq("Responsive"),
-                        _kq("Effective"),
-                    ],
-                )
-            ],
+            [_historic_entry("2023-01-01", _duplicate_name_key_questions)],
+        ),
+    ]
+
+    historic_ratings_reordered_key_question_rows = [
+        (
+            "1-001",
+            "Registered",
+            [_historic_entry("2023-01-01", _all_key_questions_reordered)],
         ),
     ]
 
@@ -351,11 +610,11 @@ class FlattenCQCRatings:
             "Registered",
             "2023-01-01",
             "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
-            "Good",
+            "safe_rating",
+            "well_led_rating",
+            "caring_rating",
+            "responsive_rating",
+            "effective_rating",
             "Historic",
         ),
     ]
@@ -365,9 +624,13 @@ class FlattenCQCRatings:
             "1-001",
             "Registered",
             [
-                _historic_entry("2023-01-01", [_kq("Safe"), _kq("Well-led")]),
+                _historic_entry("2023-01-01", _short_key_questions),
                 _historic_entry(
-                    "2023-01-01", [_kq("Safe", "Inadequate"), _kq("Well-led")]
+                    "2023-01-01",
+                    [
+                        _kq("Safe", "other_safe_rating"),
+                        _kq("Well-led", "well_led_rating"),
+                    ],
                 ),
             ],
         ),
@@ -379,8 +642,8 @@ class FlattenCQCRatings:
             "Registered",
             "2023-01-01",
             "Good",
-            "Good",
-            "Good",
+            "safe_rating",
+            "well_led_rating",
             None,
             None,
             None,
@@ -391,8 +654,8 @@ class FlattenCQCRatings:
             "Registered",
             "2023-01-01",
             "Good",
-            "Inadequate",
-            "Good",
+            "other_safe_rating",
+            "well_led_rating",
             None,
             None,
             None,

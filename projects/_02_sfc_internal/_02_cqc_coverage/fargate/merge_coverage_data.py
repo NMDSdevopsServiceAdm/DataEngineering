@@ -3,9 +3,78 @@ import sys
 from polars_utils import utils
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from projects._02_sfc_internal._02_cqc_coverage.fargate.utils import utils as cov_utils
+from projects._02_sfc_internal.utils.utils import add_parents_or_singles_and_subs_column
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
+    CqcProviderCleanedColumns as CQCPClean,
+)
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
+
+CLEANED_CQC_LOCATIONS_COLUMNS_TO_IMPORT = [
+    CQCLClean.location_id,
+    CQCLClean.cqc_location_import_date,
+    CQCLClean.name,
+    CQCLClean.postal_code,
+    CQCLClean.provider_id,
+    CQCLClean.cqc_sector,
+    CQCLClean.registration_status,
+    CQCLClean.imputed_registration_date,
+    CQCLClean.dormancy,
+    CQCLClean.care_home,
+    CQCLClean.number_of_beds,
+    CQCLClean.primary_service_type,
+    CQCLClean.regulated_activities_offered,
+    CQCLClean.specialisms_offered,
+    CQCLClean.specialism_dementia,
+    CQCLClean.specialism_learning_disabilities,
+    CQCLClean.specialism_mental_health,
+    CQCLClean.services_offered,
+    CQCLClean.current_ons_import_date,
+    CQCLClean.current_cssr,
+    CQCLClean.current_icb,
+    CQCLClean.current_region,
+    CQCLClean.current_rural_urban_ind_11,
+]
+
+CLEANED_ASCWDS_WORKPLACE_COLUMNS_TO_IMPORT = [
+    AWPClean.ascwds_workplace_import_date,
+    AWPClean.location_id,
+    AWPClean.establishment_id,
+    AWPClean.organisation_id,
+    AWPClean.total_staff,
+    AWPClean.worker_records,
+    AWPClean.master_update_date,
+    AWPClean.master_update_date_org,
+    AWPClean.establishment_created_date,
+    AWPClean.nmds_id,
+    AWPClean.is_parent,
+    AWPClean.parent_permission,
+    AWPClean.last_logged_in_date,
+    AWPClean.la_permission,
+    AWPClean.workplace_last_active_date,
+    AWPClean.purge_date,
+]
+
+# The ratings dataset's location id column is genuinely camelCase
+# ("locationId"), confirmed against _01_cqc_ratings' own output schema.
+CQC_RATINGS_COLUMNS_TO_IMPORT = [
+    CQCLClean.location_id,
+    CQCRatingsColumns.date,
+    CQCRatingsColumns.overall_rating,
+    CQCRatingsColumns.latest_rating_flag,
+    CQCRatingsColumns.current_or_historic,
+]
+
+CLEANED_CQC_PROVIDERS_COLUMNS_TO_IMPORT = [
+    CQCPClean.provider_id,
+    CQCPClean.name,
+    CQCPClean.cqc_provider_import_date,
+]
 
 
 def main(
@@ -31,10 +100,21 @@ def main(
         reduced_coverage_destination (str): Destination s3 directory for the
             single-month coverage dataset.
     """
-    cqc_location_lf = utils.scan_parquet(cleaned_cqc_location_source)
-    ascwds_workplace_lf = utils.scan_parquet(ascwds_workplace_source)
-    cqc_ratings_lf = utils.scan_parquet(cqc_ratings_source)
-    cqc_providers_lf = utils.scan_parquet(cleaned_cqc_providers_source)
+    cqc_location_lf = utils.scan_parquet(
+        cleaned_cqc_location_source,
+        selected_columns=CLEANED_CQC_LOCATIONS_COLUMNS_TO_IMPORT,
+    )
+    ascwds_workplace_lf = utils.scan_parquet(
+        ascwds_workplace_source,
+        selected_columns=CLEANED_ASCWDS_WORKPLACE_COLUMNS_TO_IMPORT,
+    )
+    cqc_ratings_lf = utils.scan_parquet(
+        cqc_ratings_source, selected_columns=CQC_RATINGS_COLUMNS_TO_IMPORT
+    )
+    cqc_providers_lf = utils.scan_parquet(
+        cleaned_cqc_providers_source,
+        selected_columns=CLEANED_CQC_PROVIDERS_COLUMNS_TO_IMPORT,
+    )
 
     ascwds_workplace_lf = cov_utils.add_removed_by_purge_date_filter_flag(
         ascwds_workplace_lf
@@ -52,9 +132,7 @@ def main(
     )
     merged_coverage_lf = cov_utils.add_flag_for_in_ascwds(merged_coverage_lf)
     merged_coverage_lf = cov_utils.deduplicate_merged_coverage_data(merged_coverage_lf)
-
-    # TODO (ticket 2134): call add_parents_or_singles_and_subs_column here, once
-    # the join above is real.
+    merged_coverage_lf = add_parents_or_singles_and_subs_column(merged_coverage_lf)
     merged_coverage_lf = cov_utils.join_latest_cqc_rating_into_coverage_df(
         merged_coverage_lf, cqc_ratings_lf
     )
@@ -67,9 +145,9 @@ def main(
 
     utils.sink_to_parquet(merged_coverage_lf, merged_coverage_destination)
 
-    # TODO (ticket 2131b): filter to the latest import month instead of a
-    # straight pass-through.
-    reduced_coverage_lf = merged_coverage_lf
+    reduced_coverage_lf = utils.filter_to_maximum_value_in_column(
+        merged_coverage_lf, CQCLClean.cqc_location_import_date
+    )
     utils.sink_to_parquet(reduced_coverage_lf, reduced_coverage_destination)
 
 

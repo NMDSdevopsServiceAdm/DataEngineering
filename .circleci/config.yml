@@ -649,8 +649,9 @@ jobs:
             terraform workspace select default
             terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
 
-  # Fails a pipeline whose terraform-apply did not run, which CircleCI would
-  # otherwise report as success.
+  # Fails a pipeline whose terraform-apply did not run (on main: whose
+  # plan-approve-and-apply group did not), which CircleCI would otherwise report
+  # as success.
   flag-incomplete-deploy:
     docker:
       - image: cimg/base:current
@@ -734,6 +735,16 @@ workflows:
           requires:
             - test
             - task-containerisation
+      # CircleCI reports a skipped (superseded) or cancelled group as success,
+      # so fail loudly instead. List the statuses: `terminal` includes success.
+      - flag-incomplete-deploy:
+          requires:
+            - plan-approve-and-apply:
+                - not_run
+                - canceled
+          filters:
+            branches:
+              only: main
 
   # Merge queue branches get lint and tests only, no deploy. These four jobs
   # are the main-merge-queue ruleset's required checks; delete that ruleset to

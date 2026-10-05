@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from pyspark.sql.types import (
-    BooleanType,
     DateType,
     DoubleType,
     FloatType,
@@ -145,16 +144,6 @@ class CleaningUtilsSchemas:
         [
             *filled_posts_per_bed_ratio_schema,
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
-        ]
-    )
-
-    remove_duplicate_locationids_schema = StructType(
-        [
-            StructField("id_for_checking", IntegerType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(AWPClean.location_id, StringType(), True),
-            StructField(AWPClean.master_update_date, DateType(), True),
-            StructField("some_bool_col", BooleanType(), True),
         ]
     )
 
