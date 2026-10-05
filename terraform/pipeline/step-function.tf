@@ -103,9 +103,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     run_crawler_state_machine_arn = aws_sfn_state_machine.run_crawler.arn
 
     # jobs
-    flatten_cqc_ratings_job_name          = module.flatten_cqc_ratings_job.job_name
-    merge_coverage_data_job_name          = module.merge_coverage_data_job.job_name
-    validate_merge_coverage_data_job_name = module.validate_merge_coverage_data_job.job_name
+    flatten_cqc_ratings_job_name = module.flatten_cqc_ratings_job.job_name
 
     # crawlers
     ascwds_crawler_name      = module.ascwds_crawler.crawler_name
