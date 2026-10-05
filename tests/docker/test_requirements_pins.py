@@ -55,11 +55,7 @@ PUBLICATION_EXTRAS = (
     / "Dockerfile_and_requirements"
     / "requirements-extra.txt"
 )
-PUBLICATION_EXTRAS_PINS = (
-    get_pins(PUBLICATION_EXTRAS.read_text().splitlines())
-    if PUBLICATION_EXTRAS.exists()
-    else {}
-)
+PUBLICATION_EXTRAS_PINS = get_pins(PUBLICATION_EXTRAS.read_text().splitlines())
 EXCEL_PACKAGES = ["gptables", "xlsxwriter", "pandas", "numpy", "openpyxl", "pyarrow"]
 
 PYPROJECT_ALL_PINS = {
@@ -105,10 +101,7 @@ class TestDockerRequirementsPins:
 
 
 class TestExtrasPins:
-    """
-    Guards each project's requirements-extra.txt against drifting from the
-    versions uv.lock (and so CI) tests, as the shared requirements are guarded.
-    """
+    """Keeps each requirements-extra.txt pin in step with the version uv.lock tests."""
 
     @pytest.mark.parametrize("extras_file,package,version", EXTRAS_PIN_CASES)
     def test_extras_pin_matches_pyproject_pin(self, extras_file, package, version):
@@ -123,10 +116,9 @@ class TestExtrasPins:
 
 class TestExtrasFiles:
     """
-    Guards the shape of each requirements-extra.txt.
+    Each requirements-extra.txt must be exact pins and installed by its Dockerfile.
 
-    get_pins() ignores anything that isn't an exact `==` pin, so a loose line
-    would otherwise escape the pin checks and float to the latest version.
+    get_pins() ignores loose lines, which would float to the latest version.
     """
 
     @pytest.mark.parametrize("extras_file", EXTRAS_FILE_CASES)
@@ -168,13 +160,7 @@ class TestExtrasFiles:
 
 
 class TestPublicationExtrasPins:
-    """
-    Guards the Excel packages the publication image needs but the shared
-    requirements don't provide.
-
-    pyarrow is included because Polars' `to_pandas()` (used to hand tables to
-    gptables) needs it, and pytest can't see that the slim image lacks it.
-    """
+    """The publication image needs these Excel packages; pyarrow is for `to_pandas()`."""
 
     @pytest.mark.parametrize("package", EXCEL_PACKAGES)
     def test_excel_package_is_pinned(self, package):

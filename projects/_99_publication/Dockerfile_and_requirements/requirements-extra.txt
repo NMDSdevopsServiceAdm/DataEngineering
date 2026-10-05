@@ -1,5 +1,4 @@
-# Excel workbook packages for the publication image. pyarrow is needed by Polars' to_pandas().
-# Keep each pin in step with pyproject.toml.
+# Excel packages for the publication image (pyarrow is for Polars' to_pandas()). Keep in step with pyproject.toml.
 gptables==2.0.2
 xlsxwriter==3.2.9
 pandas==2.3.2
