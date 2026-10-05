@@ -4,6 +4,9 @@ import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_names.publication_download_columns import (
+    PublicationDownloadColumns as PubDownload,
+)
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
 # A location is filtered out when its capacity tracker data swings further from
@@ -16,6 +19,20 @@ _ALL_JOB_ROLES: str = "All job roles"
 _ALL_CQC_CARE_HOMES: str = "All CQC care homes"
 _ALL_CQC_LOCATIONS: str = "All CQC locations"
 _ENGLAND: str = "England"
+
+# Data is imported monthly, so "monthly" and "annual" change are both a fixed
+# row-count lag rather than a calendar-based lookup.
+_MONTHLY_PERIODS_BACK: int = 1
+_ANNUAL_PERIODS_BACK: int = 12
+_DOWNLOAD_TABLE_GROUP_COLUMNS: list[str] = [
+    IndCQC.current_region,
+    IndCQC.primary_service_type,
+]
+_DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
+    PubDownload.period,
+    PubDownload.region,
+    PubDownload.main_service,
+]
 
 
 def reduced_data_filter_expr(
@@ -637,3 +654,177 @@ def calc_perc_change_cumulative_from_given_period_onwards(
         .over(group_columns, order_by=IndCQC.cqc_location_import_date)
         .alias(column_alias)
     )
+
+
+def calc_perc_change_against_periods_ago(
+    column_name: str,
+    periods_back: int,
+    group_columns: list[str],
+    column_alias: str,
+) -> pl.Expr:
+    """
+    Percentage change in column_name against the row periods_back periods
+    earlier within each group, as a net change fraction: (current -
+    previous) / previous, so 0.25 = +25%.
+
+    Unlike calc_perc_change_between_rows, this has no from_date window - the
+    download tables compare across a group's whole history rather than a
+    term's assessment window. "periods_back periods earlier" is the row that
+    many places earlier in the group's data ordered by import date, not
+    necessarily that many calendar periods back, so a missing row shifts the
+    comparison silently. Null for a group's first periods_back rows, and
+    null (not inf/NaN) when the earlier value is exactly 0 or missing, since
+    column_name is a sum and can legitimately be 0. column_name is cast to
+    Float32 before dividing, so an integer count column (e.g. a location
+    count) doesn't widen the result to Float64.
+
+    Args:
+        column_name (str): the value column to measure change in.
+        periods_back (int): how many rows earlier, within the group, to
+            compare against (e.g. 1 for month-over-month, 12 for
+            year-over-year on monthly data).
+        group_columns (list[str]): columns identifying a group, e.g. region
+            and service type.
+        column_alias (str): name to alias the resulting column to.
+
+    Returns:
+        pl.Expr: float expression with the lagged percentage change.
+    """
+    current_value = pl.col(column_name).cast(pl.Float32)
+    previous_value = current_value.shift(periods_back).over(
+        group_columns, order_by=IndCQC.cqc_location_import_date
+    )
+    return (
+        pl.when(previous_value.is_null() | (previous_value == 0))
+        .then(None)
+        .otherwise((current_value - previous_value) / previous_value)
+        .alias(column_alias)
+    )
+
+
+def _filter_to_all_job_roles_rollup(
+    publication_summary_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    return publication_summary_lf.filter(
+        pl.col(IndCQC.main_job_role_clean_labelled) == _ALL_JOB_ROLES
+    )
+
+
+def build_t0_estimates_download_table(
+    publication_summary_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Builds the T0 data-download table: estimated filled posts and CQC
+    location count, one row per period, region and main service.
+
+    Filters to the "All job roles" rollup row, since the download has no
+    job-role breakdown, then renames the publication-level totals to the
+    download's output column names.
+
+    Args:
+        publication_summary_lf (pl.LazyFrame): output of
+            add_rows_for_publication_groups.
+
+    Returns:
+        pl.LazyFrame: one row per (period, region, main_service), sorted by
+            period then region then main_service.
+    """
+    return (
+        _filter_to_all_job_roles_rollup(publication_summary_lf)
+        .select(
+            pl.col(IndCQC.cqc_location_import_date).alias(PubDownload.period),
+            pl.col(IndCQC.current_region).alias(PubDownload.region),
+            pl.col(IndCQC.primary_service_type).alias(PubDownload.main_service),
+            pl.col(Pub.publication_filled_posts).alias(
+                PubDownload.estimated_filled_posts
+            ),
+            pl.col(Pub.publication_locationid_count).alias(PubDownload.cqc_locations),
+        )
+        .sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
+    )
+
+
+def build_t1_filled_posts_perc_change_download_table(
+    publication_summary_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Builds the T1 data-download table: annual and monthly percentage change
+    of estimated filled posts, one row per period, region and main service.
+
+    Filters to the "All job roles" rollup row, since the download has no
+    job-role breakdown, then computes both percentage changes against
+    publication_filled_posts within each (region, main_service) group.
+
+    Args:
+        publication_summary_lf (pl.LazyFrame): output of
+            add_rows_for_publication_groups.
+
+    Returns:
+        pl.LazyFrame: one row per (period, region, main_service), sorted by
+            period then region then main_service.
+    """
+    all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf)
+    all_job_roles_lf = all_job_roles_lf.with_columns(
+        calc_perc_change_against_periods_ago(
+            Pub.publication_filled_posts,
+            _ANNUAL_PERIODS_BACK,
+            _DOWNLOAD_TABLE_GROUP_COLUMNS,
+            PubDownload.annual_percentage_change,
+        ),
+        calc_perc_change_against_periods_ago(
+            Pub.publication_filled_posts,
+            _MONTHLY_PERIODS_BACK,
+            _DOWNLOAD_TABLE_GROUP_COLUMNS,
+            PubDownload.monthly_percentage_change,
+        ),
+    )
+    return all_job_roles_lf.select(
+        pl.col(IndCQC.cqc_location_import_date).alias(PubDownload.period),
+        pl.col(IndCQC.current_region).alias(PubDownload.region),
+        pl.col(IndCQC.primary_service_type).alias(PubDownload.main_service),
+        pl.col(PubDownload.annual_percentage_change),
+        pl.col(PubDownload.monthly_percentage_change),
+    ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
+
+
+def build_t2_location_count_perc_change_download_table(
+    publication_summary_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Builds the T2 data-download table: annual and monthly percentage change
+    of CQC location count, one row per period, region and main service.
+
+    Filters to the "All job roles" rollup row, since the download has no
+    job-role breakdown, then computes both percentage changes against
+    publication_locationid_count within each (region, main_service) group.
+
+    Args:
+        publication_summary_lf (pl.LazyFrame): output of
+            add_rows_for_publication_groups.
+
+    Returns:
+        pl.LazyFrame: one row per (period, region, main_service), sorted by
+            period then region then main_service.
+    """
+    all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf)
+    all_job_roles_lf = all_job_roles_lf.with_columns(
+        calc_perc_change_against_periods_ago(
+            Pub.publication_locationid_count,
+            _ANNUAL_PERIODS_BACK,
+            _DOWNLOAD_TABLE_GROUP_COLUMNS,
+            PubDownload.annual_percentage_change,
+        ),
+        calc_perc_change_against_periods_ago(
+            Pub.publication_locationid_count,
+            _MONTHLY_PERIODS_BACK,
+            _DOWNLOAD_TABLE_GROUP_COLUMNS,
+            PubDownload.monthly_percentage_change,
+        ),
+    )
+    return all_job_roles_lf.select(
+        pl.col(IndCQC.cqc_location_import_date).alias(PubDownload.period),
+        pl.col(IndCQC.current_region).alias(PubDownload.region),
+        pl.col(IndCQC.primary_service_type).alias(PubDownload.main_service),
+        pl.col(PubDownload.annual_percentage_change),
+        pl.col(PubDownload.monthly_percentage_change),
+    ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)

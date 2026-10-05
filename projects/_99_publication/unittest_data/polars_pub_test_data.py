@@ -6,6 +6,9 @@ import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_names.publication_download_columns import (
+    PublicationDownloadColumns as PubDownload,
+)
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
@@ -1119,3 +1122,367 @@ format_large_number_test_cases = [
         expected_data=[(3500000.0, "3.500m")],
     ),
 ]
+
+
+@dataclass
+class CalcPercChangeAgainstPeriodsAgoTestCase:
+    id: str
+    column_name: str
+    periods_back: int
+    group_columns: list[str]
+    column_alias: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+DOWNLOAD_TABLE_GROUP_COLUMNS = [
+    IndCQC.current_region,
+    IndCQC.primary_service_type,
+]
+_LONDON_CARE_HOME_WITH_NURSING = ("London", _CARE_HOME_WITH_NURSING)
+_SOUTH_WEST_NON_RES = ("South West", "Non-residential service")
+
+calc_perc_change_against_periods_ago_test_cases = [
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        id="change_is_measured_against_periods_back_rows_earlier",
+        column_name=Pub.publication_filled_posts,
+        periods_back=2,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=PubDownload.annual_percentage_change,
+        expected_data=[
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 100.0, None, None),
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 150.0, None, None),
+            (date(2025, 3, 1), *_LONDON_CARE_HOME_WITH_NURSING, 200.0, None, 1.0),
+        ],
+    ),
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        id="null_for_every_row_before_periods_back_have_elapsed",
+        column_name=Pub.publication_filled_posts,
+        periods_back=3,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=PubDownload.annual_percentage_change,
+        expected_data=[
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 100.0, None, None),
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 150.0, None, None),
+        ],
+    ),
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        id="null_when_the_earlier_value_is_zero",
+        column_name=Pub.publication_filled_posts,
+        periods_back=1,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=PubDownload.monthly_percentage_change,
+        expected_data=[
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 0.0, None, None),
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 50.0, None, None),
+        ],
+    ),
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        id="a_value_dropping_to_zero_is_a_full_decrease_not_a_null",
+        column_name=Pub.publication_filled_posts,
+        periods_back=1,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=PubDownload.monthly_percentage_change,
+        expected_data=[
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 100.0, None, None),
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 0.0, None, -1.0),
+        ],
+    ),
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        # Rows are deliberately out of date order within each group, so this
+        # only passes if the lag genuinely orders by import date rather than
+        # relying on physical row order.
+        id="groups_do_not_affect_each_other",
+        column_name=Pub.publication_filled_posts,
+        periods_back=1,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=PubDownload.monthly_percentage_change,
+        expected_data=[
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 200.0, None, 1.0),
+            (date(2025, 2, 1), *_SOUTH_WEST_NON_RES, 25.0, None, -0.5),
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 100.0, None, None),
+            (date(2025, 1, 1), *_SOUTH_WEST_NON_RES, 50.0, None, None),
+        ],
+    ),
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        id="honours_the_column_name_periods_back_group_columns_and_alias_arguments",
+        column_name=Pub.publication_locationid_count,
+        periods_back=1,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=PubDownload.annual_percentage_change,
+        expected_data=[
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 40, None),
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 60, 0.5),
+        ],
+    ),
+]
+
+
+@dataclass
+class BuildT0EstimatesDownloadTableTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+_ALL_CQC_LOCATIONS = "All CQC locations"
+_ALL_CQC_CARE_HOMES = "All CQC care homes"
+_ALL_JOB_ROLES = "All job roles"
+
+build_t0_estimates_download_table_test_cases = [
+    BuildT0EstimatesDownloadTableTestCase(
+        id="selects_and_renames_estimated_filled_posts_and_cqc_locations",
+        input_data=[
+            (
+                date(2025, 4, 1),
+                _ALL_JOB_ROLES,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                100.0,
+                10,
+            ),
+        ],
+        expected_data=[
+            (date(2025, 4, 1), "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
+        ],
+    ),
+    BuildT0EstimatesDownloadTableTestCase(
+        # The job-role rows are dropped - only the "All job roles" rollup
+        # feeds the download, which has no job-role breakdown.
+        id="filters_out_individual_job_role_rows",
+        input_data=[
+            (
+                date(2025, 4, 1),
+                "Registered nurse",
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                40.0,
+                10,
+            ),
+            (
+                date(2025, 4, 1),
+                _ALL_JOB_ROLES,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                100.0,
+                10,
+            ),
+        ],
+        expected_data=[
+            (date(2025, 4, 1), "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
+        ],
+    ),
+    BuildT0EstimatesDownloadTableTestCase(
+        # Region/service-type rollups are not job-role rows, so they pass
+        # through the "All job roles" filter like any other region/service.
+        id="keeps_region_and_service_type_rollup_rows",
+        input_data=[
+            (
+                date(2025, 4, 1),
+                _ALL_JOB_ROLES,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                100.0,
+                10,
+            ),
+            (
+                date(2025, 4, 1),
+                _ALL_JOB_ROLES,
+                "London",
+                _ALL_CQC_CARE_HOMES,
+                150.0,
+                15,
+            ),
+            (
+                date(2025, 4, 1),
+                _ALL_JOB_ROLES,
+                "London",
+                _ALL_CQC_LOCATIONS,
+                200.0,
+                20,
+            ),
+            (
+                date(2025, 4, 1),
+                _ALL_JOB_ROLES,
+                "England",
+                _ALL_CQC_LOCATIONS,
+                500.0,
+                50,
+            ),
+        ],
+        expected_data=[
+            (date(2025, 4, 1), "England", _ALL_CQC_LOCATIONS, 500.0, 50),
+            (date(2025, 4, 1), "London", _ALL_CQC_CARE_HOMES, 150.0, 15),
+            (date(2025, 4, 1), "London", _ALL_CQC_LOCATIONS, 200.0, 20),
+            (date(2025, 4, 1), "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
+        ],
+    ),
+    BuildT0EstimatesDownloadTableTestCase(
+        # Deliberately out of (period, region, main_service) order on input -
+        # only passes if the output is genuinely sorted, not just passed
+        # through in input order.
+        id="sorts_by_period_then_region_then_main_service",
+        input_data=[
+            (
+                date(2025, 5, 1),
+                _ALL_JOB_ROLES,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                110.0,
+                11,
+            ),
+            (
+                date(2025, 4, 1),
+                _ALL_JOB_ROLES,
+                "South West",
+                _CARE_HOME_WITH_NURSING,
+                90.0,
+                9,
+            ),
+            (
+                date(2025, 4, 1),
+                _ALL_JOB_ROLES,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                100.0,
+                10,
+            ),
+        ],
+        expected_data=[
+            (date(2025, 4, 1), "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2025, 4, 1), "South West", _CARE_HOME_WITH_NURSING, 90.0, 9),
+            (date(2025, 5, 1), "London", _CARE_HOME_WITH_NURSING, 110.0, 11),
+        ],
+    ),
+]
+
+
+def _consecutive_months(start_year: int, start_month: int, count: int) -> list[date]:
+    """Generates count sequential month-start dates, for annual-window test fixtures."""
+    months = []
+    year, month = start_year, start_month
+    for _ in range(count):
+        months.append(date(year, month, 1))
+        month += 1
+        if month > 12:
+            month = 1
+            year += 1
+    return months
+
+
+# 13 consecutive monthly rows: flat for the first 12, then a step up on the
+# 13th - the only row with 12 full periods of history behind it, so it is
+# also the only row where the annual change can be non-null.
+_THIRTEEN_MONTHS = _consecutive_months(2024, 4, 13)
+_FILLED_POSTS_FLAT_THEN_STEP = [100.0] * 12 + [200.0]
+_LOCATION_COUNT_FLAT_THEN_STEP = [10] * 12 + [15]
+
+build_t1_filled_posts_perc_change_download_table_test_cases = [
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        # Less than a year of periods exist, so even though the first and
+        # last rows are a calendar year apart, the annual change (a 12-row
+        # lag, not a calendar lookup) stays null throughout.
+        id="annual_change_stays_null_until_a_full_annual_window_of_periods_exists",
+        input_data=[
+            (date(2024, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2025, 3, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
+            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 200.0, 15),
+        ],
+        expected_data=[
+            (date(2024, 4, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, None),
+            (date(2025, 3, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 0.5),
+            (date(2025, 4, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 0.3333333),
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        id="annual_change_becomes_non_null_once_12_periods_of_history_exist",
+        input_data=[
+            (_THIRTEEN_MONTHS[i], _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING,
+             _FILLED_POSTS_FLAT_THEN_STEP[i], 10)
+            for i in range(13)
+        ],
+        expected_data=[
+            (
+                _THIRTEEN_MONTHS[i],
+                *_LONDON_CARE_HOME_WITH_NURSING,
+                1.0 if i == 12 else None,
+                None if i == 0 else (1.0 if i == 12 else 0.0),
+            )
+            for i in range(13)
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        id="filters_out_individual_job_role_rows_before_computing_change",
+        input_data=[
+            (date(2025, 3, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 40.0, 5),
+            (date(2025, 3, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2025, 4, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 999.0, 99),
+            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
+        ],
+        expected_data=[
+            (date(2025, 3, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, None),
+            (date(2025, 4, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 0.5),
+        ],
+    ),
+]  # fmt: skip
+
+build_t2_location_count_perc_change_download_table_test_cases = [
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        id="annual_change_stays_null_until_a_full_annual_window_of_periods_exists",
+        input_data=[
+            (date(2024, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2025, 3, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
+            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 200.0, 15),
+        ],
+        expected_data=[
+            (date(2024, 4, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, None),
+            (date(2025, 3, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 0.2),
+            (date(2025, 4, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 0.25),
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        id="annual_change_becomes_non_null_once_12_periods_of_history_exist",
+        input_data=[
+            (_THIRTEEN_MONTHS[i], _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING,
+             100.0, _LOCATION_COUNT_FLAT_THEN_STEP[i])
+            for i in range(13)
+        ],
+        expected_data=[
+            (
+                _THIRTEEN_MONTHS[i],
+                *_LONDON_CARE_HOME_WITH_NURSING,
+                0.5 if i == 12 else None,
+                None if i == 0 else (0.5 if i == 12 else 0.0),
+            )
+            for i in range(13)
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        id="filters_out_individual_job_role_rows_before_computing_change",
+        input_data=[
+            (date(2025, 3, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 40.0, 5),
+            (date(2025, 3, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2025, 4, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 999.0, 99),
+            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
+        ],
+        expected_data=[
+            (date(2025, 3, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, None),
+            (date(2025, 4, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 0.2),
+        ],
+    ),
+]  # fmt: skip
