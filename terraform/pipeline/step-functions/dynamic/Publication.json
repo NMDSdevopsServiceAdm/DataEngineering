@@ -66,7 +66,10 @@
                       "Command": [
                         "_02_clean.py",
                         "--merge_data_source", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge/",
-                        "--clean_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_clean/"
+                        "--clean_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_clean/",
+                        "--t0_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t0_estimates/",
+                        "--t1_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t1_filled_posts_perc_change/",
+                        "--t2_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t2_location_count_perc_change/"
                       ]
                     }
                   ]
