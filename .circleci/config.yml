@@ -695,7 +695,7 @@ job-groups:
     jobs:
       - stub-echo:
           name: stub-plan
-          sleep_seconds: 60
+          sleep_seconds: 240
       - stub-approval:
           type: approval
           requires:
