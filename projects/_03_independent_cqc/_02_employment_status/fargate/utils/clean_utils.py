@@ -9,6 +9,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import EmploymentStatusFilteringRule
 
+LOCATION_PERMANENT_TEMPORARY_RATIO_THRESHOLD = 0.01
 ORG_PERMANENT_TEMPORARY_RATIO_THRESHOLD = 0.05
 
 DEDUP_TO_CLEAN_COUNT_COLUMNS: dict[str, str] = {
@@ -161,5 +162,46 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
         EmpStatus.permanent_count_clean,
         EmploymentStatusFilteringRule.populated,
         EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio,
+        categorical_type=CatColType.EmploymentStatusFilteringRuleCatType,
+    )
+
+
+def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Nulls a location's _clean counts where permanent+temporary is 1% or less of
+    its staff, and updates employment_status_filtering_rule where still
+    'populated', so an org-level reason stands if both rules fail.
+
+    The ratio uses the _dedup counts.
+
+    Args:
+        lf (pl.LazyFrame): dataset with the _dedup and _clean counts and
+            employment_status_filtering_rule.
+
+    Returns:
+        pl.LazyFrame: lf with the _clean counts nulled and the rule updated for
+            flagged locations.
+    """
+    lf = cleaningUtils.null_columns_where_group_share_too_low(
+        lf,
+        partition_by_columns=[
+            IndCQC.location_id,
+            IndCQC.ascwds_workplace_import_date,
+        ],
+        total_columns=list(DEDUP_TO_CLEAN_COUNT_COLUMNS),
+        share_columns=[
+            EmpStatus.permanent_count_dedup,
+            EmpStatus.temporary_count_dedup,
+        ],
+        columns_to_null=CLEAN_COUNT_COLUMNS,
+        maximum_share=LOCATION_PERMANENT_TEMPORARY_RATIO_THRESHOLD,
+    )
+    return filtering_utils.update_filtering_rule(
+        lf,
+        EmpStatus.filtering_rule,
+        EmpStatus.permanent_count_dedup,
+        EmpStatus.permanent_count_clean,
+        EmploymentStatusFilteringRule.populated,
+        EmploymentStatusFilteringRule.location_level_low_permanent_temporary_ratio,
         categorical_type=CatColType.EmploymentStatusFilteringRuleCatType,
     )

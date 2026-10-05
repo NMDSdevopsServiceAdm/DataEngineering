@@ -14,6 +14,17 @@ class DirectPaymentConfiguration:
     FIRST_YEAR: int = 2011
 
 
+# Ratios for years the survey has no data for.
+DIRECT_PAYMENTS_MISSING_PA_RATIOS: dict[int, float] = {
+    2011: 1.98,
+    2012: 1.98,
+    2013: 1.98,
+    2015: 2.00,
+    2016: 2.01,
+    2018: 1.96,
+}
+
+
 @dataclass
 class DirectPaymentsMisspelledLaNames:
     DICT_TO_CORRECT_LA_NAMES = {
