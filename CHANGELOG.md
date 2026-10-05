@@ -36,6 +36,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Restructured the Direct Payment Recipients pipeline to match Independent CQC: renamed jobs and S3 datasets to numbered steps, ran validation and ICB split in parallel, and added error notification with an always-run crawler.
 - Converted the split PA filled posts into ICB areas step of the Direct Payment Recipients pipeline from PySpark to Polars.
 - Added `number_of_beds_at_provider` to the grouped providers output dataset.
 - Increased the upper limit of CT combined trendline validation from 2.0 to 2.5.

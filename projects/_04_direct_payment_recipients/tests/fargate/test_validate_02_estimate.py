@@ -5,7 +5,7 @@ from unittest.mock import Mock, call, patch
 import polars as pl
 import pytest
 
-import projects._04_direct_payment_recipients.fargate.validate_estimate_direct_payments as job
+import projects._04_direct_payment_recipients.fargate.validate_02_estimate as job
 from projects._04_direct_payment_recipients.direct_payments_config import (
     DirectPaymentConfiguration as Config,
 )
@@ -13,9 +13,7 @@ from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
-PATCH_PATH = (
-    "projects._04_direct_payment_recipients.fargate.validate_estimate_direct_payments"
-)
+PATCH_PATH = "projects._04_direct_payment_recipients.fargate.validate_02_estimate"
 
 
 @dataclass

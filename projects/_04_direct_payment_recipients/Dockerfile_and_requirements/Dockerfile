@@ -21,9 +21,9 @@ COPY utils/column_values /app/utils/column_values/
 COPY utils/value_labels /app/utils/value_labels
 
 # Copy python jobs to WORKDIR
-COPY projects/_04_direct_payment_recipients/fargate/prepare_direct_payments.py /app/prepare_direct_payments.py
-COPY projects/_04_direct_payment_recipients/fargate/estimate_direct_payments.py /app/estimate_direct_payments.py
-COPY projects/_04_direct_payment_recipients/fargate/validate_estimate_direct_payments.py /app/validate_estimate_direct_payments.py
-COPY projects/_04_direct_payment_recipients/fargate/split_pa_filled_posts_into_icb_areas.py /app/split_pa_filled_posts_into_icb_areas.py
+COPY projects/_04_direct_payment_recipients/fargate/_01_merge.py /app/_01_merge.py
+COPY projects/_04_direct_payment_recipients/fargate/_02_estimate.py /app/_02_estimate.py
+COPY projects/_04_direct_payment_recipients/fargate/validate_02_estimate.py /app/validate_02_estimate.py
+COPY projects/_04_direct_payment_recipients/fargate/_03_estimates_by_icb_area.py /app/_03_estimates_by_icb_area.py
 
 ENTRYPOINT ["python"]

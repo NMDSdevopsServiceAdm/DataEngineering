@@ -3,14 +3,12 @@ from unittest.mock import Mock, patch
 import polars as pl
 import pytest
 
-import projects._04_direct_payment_recipients.fargate.prepare_direct_payments as job
+import projects._04_direct_payment_recipients.fargate._01_merge as job
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
-PATCH_PATH: str = (
-    "projects._04_direct_payment_recipients.fargate.prepare_direct_payments"
-)
+PATCH_PATH: str = "projects._04_direct_payment_recipients.fargate._01_merge"
 
 EXTERNAL_SCHEMA = {
     DP.LA_AREA: pl.String,
