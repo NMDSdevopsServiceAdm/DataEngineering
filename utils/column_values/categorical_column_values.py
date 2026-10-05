@@ -185,10 +185,10 @@ class Sector(ColumnValues):
 class JobGroupLabels(ColumnValues):
     """The possible values of the job group column in ASCWDS data"""
 
-    direct_care: str = "direct_care"
-    managers: str = "managers"
-    regulated_professions: str = "regulated_professions"
-    other: str = "other"
+    direct_care: str = "Direct care"
+    managers: str = "Managers"
+    regulated_professions: str = "Regulated professions"
+    other: str = "Other"
 
 
 @dataclass
@@ -611,3 +611,10 @@ class PublishedRegion(Region):
     """The possible values of the region column in publication data"""
 
     england: str = "England"
+
+
+@dataclass
+class PublishedJobGroupLabels(JobGroupLabels):
+    """The possible values of the job group column in publication data"""
+
+    all_job_roles: str = "All job roles"

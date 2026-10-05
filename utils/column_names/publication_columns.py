@@ -64,3 +64,8 @@ class PublicationColumns:
     cqc_location_import_date_full: str = "cqc_location_import_date_full"
     main_service: str = "Main service"
     job_group: str = "Job group"
+    region: str = "Region"
+    estimated_filled_posts: str = "Estimated filled posts"
+    cqc_locations: str = "CQC locations"
+    annual_percentage_change: str = "Annual percentage change"
+    monthly_percentage_change: str = "Monthly percentage change"

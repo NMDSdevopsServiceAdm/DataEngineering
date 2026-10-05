@@ -6,9 +6,9 @@ import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_values.ascwds_labelled_vocab import PublishedJobGroupLabels
 from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
+    PublishedJobGroupLabels,
     PublishedMainService,
     PublishedRegion,
 )

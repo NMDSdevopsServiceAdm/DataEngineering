@@ -166,17 +166,6 @@ class PublishedJobRoleLabels(ColumnValues):
 
 
 @dataclass
-class PublishedJobGroupLabels(ColumnValues):
-    """The possible values of the job group column in publication data"""
-
-    all_job_roles: str = "All job roles"
-    direct_care: str = "Direct care"
-    managers: str = "Managers"
-    regulated_professions: str = "Regulated professions"
-    other: str = "Other"
-
-
-@dataclass
 class EstablishmentType(ColumnValues):
     """The possible values of the establishment type column in ASCWDS data"""
 
