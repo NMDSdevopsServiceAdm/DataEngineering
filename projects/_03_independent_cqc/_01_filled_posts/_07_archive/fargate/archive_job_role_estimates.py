@@ -81,15 +81,15 @@ def save_run_log(
     Saves a one-row log of this archive run to S3, partitioned by archive_date and
     run_number.
 
-    The approved, selected_for_publication, reconciled and locally_checked flags
-    are written as False. commit_sha and tag are written as null.
+    The approval and check flags are False; commit_sha and tag are null, for later
+    steps to fill in.
 
     Args:
         archive_date (str): archive date formatted as yyyy-mm-dd
         run_number (int): run number of this archive
         max_cqc_location_import_date (date): latest cqc_location_import_date in
             the archived estimates
-        archive_date_time (datetime): date and time the archive ran
+        archive_date_time (datetime): when the archive ran
         destination (str): s3 URI to write the run log to
     """
     run_log_lf = pl.LazyFrame(
@@ -127,8 +127,8 @@ def main(
     Archives the independent CQC filled posts by job role estimates, split into two
     column-scoped outputs: estimates and metadata.
 
-    A run log row is also saved, recording the archive datetime and latest
-    cqc_location_import_date of the run.
+    A run log row is also saved. It is excluded from the run_number check so a
+    missing log row can't block the next run.
 
     Each output is partitioned by archive_date and run_number.
     archive_date is a string formatted as yyyy-mm-dd.
