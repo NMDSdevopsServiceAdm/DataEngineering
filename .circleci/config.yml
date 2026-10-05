@@ -662,49 +662,8 @@ jobs:
             echo "terraform-apply did not run. If a newer pipeline exists on this branch, this one was superseded: don't rerun it. Otherwise an earlier job failed: see above."
             exit 1
 
-  # THROWAWAY (ticket 2140 review follow-up). Remove.
-  stub-echo:
-    parameters:
-      sleep_seconds:
-        type: integer
-        default: 0
-    docker:
-      - image: cimg/base:current
-    resource_class: small
-    steps:
-      - run:
-          command: |
-            echo "stub job, pipeline << pipeline.number >>"
-            sleep << parameters.sleep_seconds >>
-
-  # THROWAWAY (ticket 2140 review follow-up). Remove.
-  stub-gate:
-    docker:
-      - image: cimg/base:current
-    resource_class: small
-    steps:
-      - run:
-          command: |
-            echo "stub gate fired, the group did not run to completion"
-            exit 1
-
 
 job-groups:
-  # THROWAWAY (ticket 2140 review follow-up). Remove.
-  stub-plan-approve-apply:
-    jobs:
-      - stub-echo:
-          name: stub-plan
-          sleep_seconds: 240
-      - stub-approval:
-          type: approval
-          requires:
-            - stub-plan
-      - stub-echo:
-          name: stub-apply
-          requires:
-            - stub-approval
-
   # Run as one unit via serial-group (see test-plan-approve-and-deploy-to-main).
   plan-approve-and-apply:
     jobs:
@@ -724,25 +683,6 @@ job-groups:
             - terraform-apply
 
 workflows:
-  # THROWAWAY (ticket 2140 review follow-up). Remove.
-  throwaway-gate-test:
-    unless: << pipeline.parameters.GHA_Action >>
-    jobs:
-      - stub-echo:
-          name: stub-upstream
-          filters:
-            branches:
-              only: 2140-merge-queue
-      - stub-plan-approve-apply:
-          serial-group: << pipeline.project.slug >>/throwaway-2140-gate
-          requires:
-            - stub-upstream
-      - stub-gate:
-          requires:
-            - stub-plan-approve-apply:
-                - not_run
-                - canceled
-
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
