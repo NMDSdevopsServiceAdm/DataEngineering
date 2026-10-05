@@ -12,8 +12,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
-# Test commit to change latest commit sha.
-
 JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
     IndCQC.id_per_locationid_import_date,
     IndCQC.location_id,
