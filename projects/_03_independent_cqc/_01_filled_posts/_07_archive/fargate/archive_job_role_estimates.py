@@ -56,11 +56,20 @@ JOB_ROLE_METADATA_ARCHIVE_COLUMNS = [
     IndCQC.care_home_status_count,
 ]
 
+MAX_IMPORT_DATE_SOURCE_COLUMNS = {
+    RunLogCols.max_ascwds_workplace_import_date: IndCQC.ascwds_workplace_import_date,
+    RunLogCols.max_cqc_location_import_date: IndCQC.cqc_location_import_date,
+    RunLogCols.max_cqc_pir_import_date: IndCQC.cqc_pir_import_date,
+    RunLogCols.max_ct_care_home_import_date: IndCQC.ct_care_home_import_date,
+    RunLogCols.max_ct_non_res_import_date: IndCQC.ct_non_res_import_date,
+    RunLogCols.max_current_ons_import_date: IndCQC.current_ons_import_date,
+}
+
 RUN_LOG_SCHEMA = {
     ArchiveKeys.archive_date: pl.String,
     ArchiveKeys.run_number: pl.Int64,
     RunLogCols.archive_date_time: pl.Datetime,
-    RunLogCols.max_cqc_location_import_date: pl.Date,
+    **{column: pl.Date for column in MAX_IMPORT_DATE_SOURCE_COLUMNS},
     RunLogCols.approved: pl.Boolean,
     RunLogCols.commit_sha: pl.String,
     RunLogCols.tag: pl.String,
@@ -73,8 +82,8 @@ RUN_LOG_SCHEMA = {
 def save_run_log(
     archive_date: str,
     run_number: int,
-    max_cqc_location_import_date: date,
     archive_date_time: datetime,
+    max_import_dates: dict[str, date | None],
     destination: str,
 ) -> None:
     """
@@ -87,9 +96,9 @@ def save_run_log(
     Args:
         archive_date (str): archive date formatted as yyyy-mm-dd
         run_number (int): run number of this archive
-        max_cqc_location_import_date (date): latest cqc_location_import_date in
-            the archived estimates
         archive_date_time (datetime): when the archive ran
+        max_import_dates (dict[str, date | None]): latest import date of each
+            source dataset, keyed by run log column name
         destination (str): s3 URI to write the run log to
     """
     run_log_lf = pl.LazyFrame(
@@ -97,7 +106,7 @@ def save_run_log(
             ArchiveKeys.archive_date: [archive_date],
             ArchiveKeys.run_number: [run_number],
             RunLogCols.archive_date_time: [archive_date_time],
-            RunLogCols.max_cqc_location_import_date: [max_cqc_location_import_date],
+            **{column: [value] for column, value in max_import_dates.items()},
             RunLogCols.approved: [False],
             RunLogCols.commit_sha: [None],
             RunLogCols.tag: [None],
@@ -106,7 +115,7 @@ def save_run_log(
             RunLogCols.locally_checked: [False],
         },
         schema=RUN_LOG_SCHEMA,
-    )
+    ).select(list(RUN_LOG_SCHEMA))
 
     print(f"Exporting run log as parquet to {destination}")
     utils.sink_to_parquet(
@@ -121,6 +130,7 @@ def main(
     job_role_metadata_source: str,
     job_role_estimates_destination: str,
     job_role_metadata_destination: str,
+    filled_posts_estimates_source: str,
     run_log_destination: str,
 ) -> None:
     """
@@ -144,6 +154,8 @@ def main(
             archive to
         job_role_metadata_destination (str): s3 URI to write the job role metadata
             archive to
+        filled_posts_estimates_source (str): source s3 directory for the filled posts
+            estimates, used for the run log's latest import dates
         run_log_destination (str): s3 URI to write the run log to
     """
     print("Archiving independent CQC filled posts by job role...")
@@ -170,10 +182,17 @@ def main(
         selected_columns=JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
     )
 
-    max_cqc_location_import_date = (
-        job_role_estimates_lf.select(pl.col(IndCQC.cqc_location_import_date).max())
+    max_import_dates = (
+        utils.scan_parquet(
+            filled_posts_estimates_source,
+            selected_columns=list(MAX_IMPORT_DATE_SOURCE_COLUMNS.values()),
+        )
+        .select(
+            pl.col(source).max().alias(column)
+            for column, source in MAX_IMPORT_DATE_SOURCE_COLUMNS.items()
+        )
         .collect()
-        .item()
+        .row(0, named=True)
     )
 
     job_role_estimates_lf = job_role_estimates_lf.with_columns(
@@ -202,8 +221,8 @@ def main(
     save_run_log(
         archive_date,
         run_number,
-        max_cqc_location_import_date,
         archive_date_time,
+        max_import_dates,
         run_log_destination,
     )
 
@@ -230,6 +249,10 @@ if __name__ == "__main__":
             "--job_role_metadata_destination",
             "S3 URI to write the job role metadata archive to",
         ),
+        (
+            "--filled_posts_estimates_source",
+            "Source s3 directory for the filled posts estimates",
+        ),
         ("--run_log_destination", "S3 URI to write the run log to"),
     )
 
@@ -238,6 +261,7 @@ if __name__ == "__main__":
         job_role_metadata_source=args.job_role_metadata_source,
         job_role_estimates_destination=args.job_role_estimates_destination,
         job_role_metadata_destination=args.job_role_metadata_destination,
+        filled_posts_estimates_source=args.filled_posts_estimates_source,
         run_log_destination=args.run_log_destination,
     )
 

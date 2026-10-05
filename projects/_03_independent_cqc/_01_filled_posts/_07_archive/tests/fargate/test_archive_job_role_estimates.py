@@ -11,7 +11,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveRunLogColumns as RunLogCols,
 )
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH = "projects._03_independent_cqc._01_filled_posts._07_archive.fargate.archive_job_role_estimates"
 
@@ -19,8 +18,16 @@ ESTIMATES_SOURCE = "some/estimates/directory"
 METADATA_SOURCE = "some/metadata/directory"
 ESTIMATES_DESTINATION = "some/estimates/destination"
 METADATA_DESTINATION = "some/metadata/destination"
+FILLED_POSTS_SOURCE = "some/filled_posts/directory"
 RUN_LOG_DESTINATION = "some/run_log/destination"
-MAX_IMPORT_DATE = date(2026, 8, 1)
+MAX_IMPORT_DATES = {
+    RunLogCols.max_ascwds_workplace_import_date: date(2026, 8, 1),
+    RunLogCols.max_cqc_location_import_date: date(2026, 8, 2),
+    RunLogCols.max_cqc_pir_import_date: date(2026, 8, 3),
+    RunLogCols.max_ct_care_home_import_date: date(2026, 8, 4),
+    RunLogCols.max_ct_non_res_import_date: date(2026, 8, 5),
+    RunLogCols.max_current_ons_import_date: date(2026, 8, 6),
+}
 ARCHIVE_DATE_TIME = datetime(2026, 9, 4, 13, 45, 10)
 
 PARTITION_KEYS = [ArchiveKeys.archive_date, ArchiveKeys.run_number]
@@ -44,8 +51,14 @@ class TestMain:
         datetime_mock.now.return_value = ARCHIVE_DATE_TIME
         get_run_number_mock.return_value = 2
         scan_parquet_mock.side_effect = [
-            pl.LazyFrame({IndCQC.cqc_location_import_date: [MAX_IMPORT_DATE]}),
+            pl.LazyFrame({"dummy": [1]}),
             pl.LazyFrame({"dummy": [2]}),
+            pl.LazyFrame(
+                {
+                    source: [date(2026, 7, 1), MAX_IMPORT_DATES[column]]
+                    for column, source in job.MAX_IMPORT_DATE_SOURCE_COLUMNS.items()
+                }
+            ),
         ]
 
         job.main(
@@ -53,10 +66,11 @@ class TestMain:
             METADATA_SOURCE,
             ESTIMATES_DESTINATION,
             METADATA_DESTINATION,
+            FILLED_POSTS_SOURCE,
             RUN_LOG_DESTINATION,
         )
 
-        assert scan_parquet_mock.call_count == 2
+        assert scan_parquet_mock.call_count == 3
         scan_parquet_mock.assert_has_calls(
             [
                 call(
@@ -66,6 +80,10 @@ class TestMain:
                 call(
                     METADATA_SOURCE,
                     selected_columns=job.JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
+                ),
+                call(
+                    FILLED_POSTS_SOURCE,
+                    selected_columns=list(job.MAX_IMPORT_DATE_SOURCE_COLUMNS.values()),
                 ),
             ]
         )
@@ -93,8 +111,8 @@ class TestMain:
         save_run_log_mock.assert_called_once_with(
             "2026-09-04",
             3,
-            MAX_IMPORT_DATE,
             ARCHIVE_DATE_TIME,
+            MAX_IMPORT_DATES,
             RUN_LOG_DESTINATION,
         )
 
@@ -108,8 +126,8 @@ class TestSaveRunLog:
         job.save_run_log(
             "2026-09-04",
             3,
-            MAX_IMPORT_DATE,
             ARCHIVE_DATE_TIME,
+            MAX_IMPORT_DATES,
             RUN_LOG_DESTINATION,
         )
 
@@ -122,8 +140,8 @@ class TestSaveRunLog:
         job.save_run_log(
             "2026-09-04",
             3,
-            MAX_IMPORT_DATE,
             ARCHIVE_DATE_TIME,
+            MAX_IMPORT_DATES,
             RUN_LOG_DESTINATION,
         )
 
@@ -134,7 +152,7 @@ class TestSaveRunLog:
                     "2026-09-04",
                     3,
                     ARCHIVE_DATE_TIME,
-                    MAX_IMPORT_DATE,
+                    *MAX_IMPORT_DATES.values(),
                     False,
                     None,
                     None,
@@ -147,7 +165,12 @@ class TestSaveRunLog:
                 ArchiveKeys.archive_date: pl.String,
                 ArchiveKeys.run_number: pl.Int64,
                 RunLogCols.archive_date_time: pl.Datetime,
+                RunLogCols.max_ascwds_workplace_import_date: pl.Date,
                 RunLogCols.max_cqc_location_import_date: pl.Date,
+                RunLogCols.max_cqc_pir_import_date: pl.Date,
+                RunLogCols.max_ct_care_home_import_date: pl.Date,
+                RunLogCols.max_ct_non_res_import_date: pl.Date,
+                RunLogCols.max_current_ons_import_date: pl.Date,
                 RunLogCols.approved: pl.Boolean,
                 RunLogCols.commit_sha: pl.String,
                 RunLogCols.tag: pl.String,
