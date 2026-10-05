@@ -11,9 +11,10 @@ rendered chat markdown, which loses its formatting on copy.
 
 ## 1. Identify the input and mode
 
-- **Breakdown** — a plan file path (usually a ticket memory file) or pasted plan text: draft several
-  cards (step 2 onwards).
-- **Single card** — a one-line idea with no plan behind it: draft one card (see "Single card" below).
+- **Breakdown** — a plan file path (usually a ticket memory file) or pasted plan text, and the user wants
+  several cards or the whole plan: draft several cards (step 2 onwards).
+- **Single card** — the user wants one card, whether from a bare one-line idea or for one item of a plan
+  that exists: draft one card (see "Single card" below).
 
 If neither was given, ask in chat what to draft cards for.
 
@@ -23,8 +24,8 @@ One card per independently-workable piece, roughly a PR's worth. Order by depend
 depends on earlier ones.
 
 Give every card a short label so "Depends on" can name cards: an uppercase letter or two taken from the
-plan's subject plus the card's position, e.g. `E1`, `E2` for an Excel plan. State the prefix up front; if
-it's unclear what it should be, ask.
+plan's subject plus the card's position, e.g. `E1`, `E2` for an Excel plan. State the prefix in the
+lead-in sentence (see Output); if it's unclear what it should be, ask.
 
 ## 3. Card format
 
@@ -80,8 +81,8 @@ Around the cards, each in its own code block under a plain line naming it (so it
   these. One line per card to edit: `<existing card> - <the one-line change that avoids double-counting>`.
   Never guess at overlap with cards you haven't been told about; omit the block if there is none.
 - **Dependency overview** (last) — an ASCII graph of the cards. Build it from the finished **Depends on**
-  lines, not separately, so the two can't disagree, then add one line naming the cards that can start
-  immediately. Cards depending on all earlier ones are drawn as one `all earlier cards ---> E9` edge, not
+  lines, not separately, so the two can't disagree, and end the block with one line naming the cards
+  that can start immediately. Cards depending on all earlier ones are drawn as one `all earlier cards ---> E9` edge, not
   one arrow each. A conditional dependency is drawn with a dashed `- - ->` and the condition beside it.
 
 ## Single card
@@ -90,22 +91,23 @@ Same two code blocks and section order as step 3, with these differences:
 
 - No label and no prefix — the title is just the title. The "Card ..." line is replaced by plain
   `Title:` and `Description:` lines above the two blocks.
-- **Scope** holds only what the idea states or directly implies. Everything the one-liner leaves open
-  (limits, thresholds, behaviour on failure, where it lives) goes in as a "Confirm during scoping: ..."
-  bullet — only the few that would change the work (about four at most). Don't add tests, logging,
+- **Scope** holds only what the idea states or directly implies — or, when a plan exists, what the plan
+  states for this one item (never other items). Everything left open (limits, thresholds, behaviour on
+  failure, where it lives) goes in as a "Confirm during scoping: ..." bullet — only the few that would change the work (about four at most). Don't add tests, logging,
   acceptance criteria or other work the idea didn't mention.
 - **Summary** restates the idea and why it matters; it doesn't assert how things currently behave unless
   the user said so.
-- **Depends on** is "Nothing" unless the user named a dependency. Never invent one.
-- Skip **Notes** unless the user gave a caveat.
+- **Depends on** is "Nothing" unless the user — or the plan, for this item — named a dependency. Never
+  invent one. A lone card has no labels, so name any dependency by its title.
+- Skip **Notes** unless the user or the plan gave a caveat for this item.
 
 ## Paste-only: never touch Trello
 
 Claude has no Trello access, so the user pastes the cards in by hand. Never call a Trello API or MCP tool,
 never create, move or label a card, and never ask for a board link, card URL, API key or token — ticket
-details come from what the user types. If asked to add a card to the board or return its link, say in one
-line that you can't reach Trello, then give the paste-ready blocks: title block into the card title,
-description block into the card description.
+details come from what the user types. If asked to add a card to the board or return its link, say you
+can't reach Trello in the lead-in sentence (see Output), then give the paste-ready blocks: title block
+into the card title, description block into the card description.
 
 ## Size
 
@@ -113,22 +115,31 @@ Add one line to every description, after **Depends on** and before **Notes**: `*
 a Fibonacci point: 1, 2, 3, 5 or 8.
 
 - 1 trivial (a config or doc tweak), 2 small and well understood, 3 a moderate change in one place,
-  5 several files or code plus infrastructure, 8 large or with real unknowns.
-- Size is relative effort judged from the plan alone — a rough guess, not a commitment, and say so in the
+  5 several files or code plus infrastructure, 8 large or with real unknowns. "Confirm during scoping"
+  bullets alone don't make a card an 8; the unknowns have to be large.
+- Size is relative effort judged from the plan or idea alone — a rough guess, not a commitment; the
+  closing line says so (see Output).
+- In a breakdown, a card that would be bigger than 8 is split into smaller cards instead; the closing line
+  says which one was split. A single card is never split — if it's over 8, size it 8 and say so in the
   closing line.
-- A card that would be bigger than 8 is split into smaller cards instead; say which one was split.
 
-To stop sizing cards, delete this section; nothing else refers to it.
+To stop sizing cards, delete this section and the size mentions in Output's closing line.
 
 ## Output
 
-In chat. At most one plain lead-in sentence before the first block and no summary after; the only closing
-line is the flags below, and only when there is something to flag.
+In chat. Apart from the blocks, the only text allowed is:
 
-If the user asks for it saved, write the same blocks to `trello-cards-<ticket|slug>.md` at the repo
-root — the ticket number from the branch name if it parses, else a short slug of the subject. Leave it
-untracked; it's theirs to paste from and delete. Never commit it.
+- **Label lines** directly above a block — `Card E1`, `Title:`, `Description:`, or a block's name. Labels,
+  not prose.
+- **One lead-in sentence** before the first block. It states the prefix (breakdown) and, if the user asked
+  to add the card to the board or get a link, that you can't reach Trello.
+- **One closing line** after the last block, always present when sizes are shown. It says sizes are rough
+  guesses and adds anything else the user should check: a split or over-8 card, plan references you
+  replaced, or a plan that hints at existing cards without naming them (so no overlap block).
 
-Flag, in one closing line, anything the user should check: the prefix you picked, plan references you
-replaced, or an overlap you didn't include because no existing cards were named — plus any flag another
-section above asks for.
+No other commentary or summary.
+
+If the user asks for it saved, also write the same blocks to `trello-cards-<ticket|slug>.md` at the
+worktree root — the ticket number from the branch name if it parses, else a short slug of the subject.
+The chat output still appears in full. Leave the file untracked; it's theirs to paste from and delete.
+Never commit it.
