@@ -35,6 +35,7 @@ All notable changes to this project will be documented in this file.
 - Added a step to the EmpStat clean job that creates a `_clean` copy of each deduplicated employment status count, with a filtering-rule column recording whether each row is populated or missing data.
 - Added a `check-main-tip` job at the start of the prod plan, approval, apply and dependency deploy group that fails a main pipeline whose commit is no longer the tip of `main`, so an older pipeline reaching the group after a newer one cannot apply its older plan or sync older code.
 - Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock, with a gate that fails a main pipeline whose prod deploy was skipped or cancelled instead of reporting it as success.
+- Added `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image through a new `requirements-extra.txt`, copied the publication jobs into the image with a `*.py` glob and added a `templates` folder for the publication workbook templates, and extended the Docker pin test to check every `requirements-extra.txt` against `pyproject.toml`.
 
 
 ### Changed
