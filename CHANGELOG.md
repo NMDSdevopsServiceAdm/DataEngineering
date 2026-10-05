@@ -36,6 +36,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Converted the split PA filled posts into ICB areas step of the Direct Payment Recipients pipeline from PySpark to Polars.
 - Converted direct payment recipients outlier removal from PySpark to a single Polars function (not yet wired into a job).
 - Added `number_of_beds_at_provider` to the grouped providers output dataset.
 - Increased the upper limit of CT combined trendline validation from 2.0 to 2.5.

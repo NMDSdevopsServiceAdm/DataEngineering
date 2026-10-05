@@ -35,3 +35,9 @@ class DirectPaymentsMisspelledLaNames:
         "Medway Towns": ContemporaryCSSR.medway,
         "Southend": ContemporaryCSSR.southend_on_sea,
     }
+
+
+@dataclass
+class EstimatePeriodAsDate:
+    MONTH: int = 3
+    DAY: int = 31
