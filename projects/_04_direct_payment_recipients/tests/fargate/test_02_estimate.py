@@ -90,6 +90,7 @@ def test_output_float_columns_are_float32():
     ):
         job.main("source", "destination", "summary_destination")
 
+    assert sink_mock.call_count == 2
     for sink_call in sink_mock.call_args_list:
         schema = sink_call.args[0].collect().schema
         float_dtypes = {dtype for dtype in schema.values() if dtype.is_float()}
