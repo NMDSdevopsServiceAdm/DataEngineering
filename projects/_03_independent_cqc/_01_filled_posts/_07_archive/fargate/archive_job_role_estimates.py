@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 import polars as pl
 
@@ -6,6 +6,9 @@ import projects._03_independent_cqc._01_filled_posts._07_archive.fargate.utils.a
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchiveRunLogColumns as RunLogCols,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -53,16 +56,79 @@ JOB_ROLE_METADATA_ARCHIVE_COLUMNS = [
     IndCQC.care_home_status_count,
 ]
 
+RUN_LOG_SCHEMA = {
+    ArchiveKeys.archive_date: pl.String,
+    ArchiveKeys.run_number: pl.Int64,
+    RunLogCols.archive_date_time: pl.Datetime,
+    RunLogCols.max_cqc_location_import_date: pl.Date,
+    RunLogCols.approved: pl.Boolean,
+    RunLogCols.commit_sha: pl.String,
+    RunLogCols.tag: pl.String,
+    RunLogCols.selected_for_publication: pl.Boolean,
+    RunLogCols.reconciled: pl.Boolean,
+    RunLogCols.locally_checked: pl.Boolean,
+}
+
+
+def save_run_log(
+    archive_date: str,
+    run_number: int,
+    max_cqc_location_import_date: date,
+    archive_date_time: datetime,
+    destination: str,
+) -> None:
+    """
+    Saves a one-row log of this archive run to S3, partitioned by archive_date and
+    run_number.
+
+    The approved, selected_for_publication, reconciled and locally_checked flags
+    are written as False. commit_sha and tag are written as null.
+
+    Args:
+        archive_date (str): archive date formatted as yyyy-mm-dd
+        run_number (int): run number of this archive
+        max_cqc_location_import_date (date): latest cqc_location_import_date in
+            the archived estimates
+        archive_date_time (datetime): date and time the archive ran
+        destination (str): s3 URI to write the run log to
+    """
+    run_log_lf = pl.LazyFrame(
+        {
+            ArchiveKeys.archive_date: [archive_date],
+            ArchiveKeys.run_number: [run_number],
+            RunLogCols.archive_date_time: [archive_date_time],
+            RunLogCols.max_cqc_location_import_date: [max_cqc_location_import_date],
+            RunLogCols.approved: [False],
+            RunLogCols.commit_sha: [None],
+            RunLogCols.tag: [None],
+            RunLogCols.selected_for_publication: [False],
+            RunLogCols.reconciled: [False],
+            RunLogCols.locally_checked: [False],
+        },
+        schema=RUN_LOG_SCHEMA,
+    )
+
+    print(f"Exporting run log as parquet to {destination}")
+    utils.sink_to_parquet(
+        run_log_lf,
+        destination,
+        partition_cols=[ArchiveKeys.archive_date, ArchiveKeys.run_number],
+    )
+
 
 def main(
     job_role_estimates_source: str,
     job_role_metadata_source: str,
     job_role_estimates_destination: str,
     job_role_metadata_destination: str,
+    run_log_destination: str,
 ) -> None:
     """
     Archives the independent CQC filled posts by job role estimates, split into two
     column-scoped outputs: estimates and metadata.
+
+    A run log row is also saved, recording the archive datetime and latest
+    cqc_location_import_date of the run.
 
     Each output is partitioned by archive_date and run_number.
     archive_date is a string formatted as yyyy-mm-dd.
@@ -78,10 +144,12 @@ def main(
             archive to
         job_role_metadata_destination (str): s3 URI to write the job role metadata
             archive to
+        run_log_destination (str): s3 URI to write the run log to
     """
     print("Archiving independent CQC filled posts by job role...")
 
-    archive_date = datetime.now().strftime("%Y-%m-%d")
+    archive_date_time = datetime.now()
+    archive_date = archive_date_time.strftime("%Y-%m-%d")
     run_number = (
         aUtils.get_run_number(
             [
@@ -100,6 +168,12 @@ def main(
     job_role_metadata_lf = utils.scan_parquet(
         job_role_metadata_source,
         selected_columns=JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
+    )
+
+    max_cqc_location_import_date = (
+        job_role_estimates_lf.select(pl.col(IndCQC.cqc_location_import_date).max())
+        .collect()
+        .item()
     )
 
     job_role_estimates_lf = job_role_estimates_lf.with_columns(
@@ -125,6 +199,14 @@ def main(
         partition_cols=partition_keys,
     )
 
+    save_run_log(
+        archive_date,
+        run_number,
+        max_cqc_location_import_date,
+        archive_date_time,
+        run_log_destination,
+    )
+
     print("Completed archive independent CQC filled posts by job role")
 
 
@@ -148,6 +230,7 @@ if __name__ == "__main__":
             "--job_role_metadata_destination",
             "S3 URI to write the job role metadata archive to",
         ),
+        ("--run_log_destination", "S3 URI to write the run log to"),
     )
 
     main(
@@ -155,6 +238,7 @@ if __name__ == "__main__":
         job_role_metadata_source=args.job_role_metadata_source,
         job_role_estimates_destination=args.job_role_estimates_destination,
         job_role_metadata_destination=args.job_role_metadata_destination,
+        run_log_destination=args.run_log_destination,
     )
 
     print("Finished Archive Independent CQC Job Role Estimates job")

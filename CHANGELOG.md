@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a run log table to the job role estimates archive job, saving one row per run to S3 with the archive date and time, run number, latest CQC location import date, approval/check flags (initially false) and empty commit sha and tag columns for later steps to fill in.
 - Added validation checks for columns that are created but never checked, across the Independent CQC filled posts, employment status, starters/leavers/vacancies, CQC locations/providers ingest, CQC PIR, Capacity Tracker, ONS postcode directory and direct payment recipients validators.
 - Added a `col_vals_in_set`/distinct-count validation check for ASC-WDS workplace `region_id`, the one ASC-WDS-adjacent categorical column that previously had no validation backing it.
 - Joined worker-derived employment status counts into the SLV merge step, collapsing worker job roles to the published scheme already used by workplace and job-role-estimate data, and applying the same null-location and date-reduction filtering `_00_prepare_workplace` already uses so the worker and workplace import dates line up for the join.
