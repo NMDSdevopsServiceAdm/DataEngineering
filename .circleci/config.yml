@@ -369,6 +369,7 @@ jobs:
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
             cd terraform/pipeline
+            export TF_VAR_commit_sha="$CIRCLE_SHA1"
             terraform plan -out tfplan
       - store_artifacts:
           path: terraform/pipeline/tfplan

@@ -17,7 +17,7 @@ from projects._03_independent_cqc._01_filled_posts._03_impute.fargate.utils.forw
 from projects._03_independent_cqc._01_filled_posts._03_impute.fargate.utils.primary_service_rate_of_change import (
     model_primary_service_rate_of_change_trendline,
 )
-from projects._03_independent_cqc._01_filled_posts.utils.imputation.imputation import (
+from projects._03_independent_cqc.utils.imputation.imputation import (
     model_imputation,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
