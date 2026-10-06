@@ -16,7 +16,7 @@ ALL_YEARS = 0
 def make_survey_lf(rows: list[tuple[int, float]]) -> pl.LazyFrame:
     return pl.LazyFrame(
         rows,
-        schema={DP.YEAR: pl.Int32, DP.TOTAL_STAFF_RECODED: pl.Float64},
+        schema={DP.YEAR: pl.Int32, DP.TOTAL_STAFF_RECODED: pl.Float32},
         orient="row",
     )
 
@@ -24,7 +24,7 @@ def make_survey_lf(rows: list[tuple[int, float]]) -> pl.LazyFrame:
 def make_expected_df(rows: list[tuple[int, float]]) -> pl.DataFrame:
     return pl.DataFrame(
         rows,
-        schema={DP.YEAR_AS_INTEGER: pl.Int32, DP.RATIO_ROLLING_AVERAGE: pl.Float64},
+        schema={DP.YEAR_AS_INTEGER: pl.Int32, DP.RATIO_ROLLING_AVERAGE: pl.Float32},
         orient="row",
     )
 

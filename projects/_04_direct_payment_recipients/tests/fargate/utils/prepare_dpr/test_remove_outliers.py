@@ -10,8 +10,8 @@ from utils.column_names.direct_payments_column_names import (
 SCHEMA = {
     DP.LA_AREA: pl.String,
     DP.YEAR_AS_INTEGER: pl.Int32,
-    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float64,
-    DP.TOTAL_DPRS_DURING_YEAR: pl.Float64,
+    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
+    DP.TOTAL_DPRS_DURING_YEAR: pl.Float32,
 }
 
 

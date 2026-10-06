@@ -13,16 +13,16 @@ PATCH_PATH: str = "projects._04_direct_payment_recipients.fargate._01_merge"
 EXTERNAL_SCHEMA = {
     DP.LA_AREA: pl.String,
     DP.YEAR: pl.String,
-    DP.DPRS_ADASS: pl.Float64,
-    DP.DPRS_EMPLOYING_STAFF_ADASS: pl.Float64,
-    DP.SERVICE_USER_DPRS_AT_YEAR_END: pl.Float64,
-    DP.CARER_DPRS_AT_YEAR_END: pl.Float64,
-    DP.SERVICE_USER_DPRS_DURING_YEAR: pl.Float64,
-    DP.PROPORTION_IMPORTED: pl.Float64,
-    DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE: pl.Float64,
-    DP.FILLED_POSTS_PER_EMPLOYER: pl.Float64,
+    DP.DPRS_ADASS: pl.Float32,
+    DP.DPRS_EMPLOYING_STAFF_ADASS: pl.Float32,
+    DP.SERVICE_USER_DPRS_AT_YEAR_END: pl.Float32,
+    DP.CARER_DPRS_AT_YEAR_END: pl.Float32,
+    DP.SERVICE_USER_DPRS_DURING_YEAR: pl.Float32,
+    DP.PROPORTION_IMPORTED: pl.Float32,
+    DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE: pl.Float32,
+    DP.FILLED_POSTS_PER_EMPLOYER: pl.Float32,
 }
-SURVEY_SCHEMA = {DP.YEAR: pl.Int32, DP.TOTAL_STAFF_RECODED: pl.Float64}
+SURVEY_SCHEMA = {DP.YEAR: pl.Int32, DP.TOTAL_STAFF_RECODED: pl.Float32}
 
 MERGED_COLUMNS = [
     DP.YEAR_AS_INTEGER,
@@ -69,7 +69,9 @@ def test_hackney_2022_and_2023_service_user_dprs_filled_when_null(
 ):
     returned_df = run_main([external_row(la=la, year=year, su_during=su_during)])
 
-    assert returned_df[DP.SERVICE_USER_DPRS_DURING_YEAR].to_list() == [expected]
+    assert returned_df[DP.SERVICE_USER_DPRS_DURING_YEAR].to_list() == [
+        pytest.approx(expected)
+    ]
 
 
 def test_total_dprs_equals_filled_service_user_dprs():
@@ -128,3 +130,10 @@ def test_main_scans_both_sources_and_sinks_once():
     assert scan_mock.call_count == 2
     sink_mock.assert_called_once()
     assert sink_mock.call_args.args[1] == "destination"
+
+
+def test_output_float_columns_are_float32():
+    returned_df = run_main([external_row("Hackney", "2022", None)])
+
+    float_dtypes = {dtype for dtype in returned_df.schema.values() if dtype.is_float()}
+    assert float_dtypes == {pl.Float32}
