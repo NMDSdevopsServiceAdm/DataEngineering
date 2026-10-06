@@ -6,10 +6,12 @@ import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_names.publication_download_columns import (
-    PublicationDownloadColumns as PubDownload,
+from utils.column_values.categorical_column_values import (
+    PrimaryServiceType,
+    PublishedJobGroupLabels,
+    PublishedMainService,
+    PublishedRegion,
 )
-from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
 @dataclass
@@ -726,7 +728,7 @@ add_rows_for_publication_groups_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "All job roles",
+                PublishedJobGroupLabels.all_job_roles,
                 "London",
                 _CARE_HOME_WITH_NURSING,
                 *_all_terms_metrics(30.0, 1, 13.0),
@@ -767,14 +769,14 @@ add_rows_for_publication_groups_test_cases = [
                 date(2025, 4, 1),
                 "Registered nurse",
                 "London",
-                "All CQC locations",
+                PublishedMainService.all_locations,
                 *_all_terms_metrics(25.0, 2, 11.0),
             ),
             (
                 date(2025, 4, 1),
                 "Registered nurse",
                 "London",
-                "All CQC care homes",
+                PublishedMainService.all_care_homes,
                 *_all_terms_metrics(10.0, 1, 5.0),
             ),
         ],
@@ -813,7 +815,7 @@ add_rows_for_publication_groups_test_cases = [
             (
                 date(2025, 4, 1),
                 "Registered nurse",
-                "England",
+                PublishedRegion.england,
                 _CARE_HOME_WITH_NURSING,
                 *_all_terms_metrics(22.0, 2, 11.0),
             ),
@@ -1150,7 +1152,7 @@ calc_perc_change_against_periods_ago_test_cases = [
         column_name=Pub.publication_filled_posts,
         periods_back=2,
         group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
-        column_alias=PubDownload.annual_percentage_change,
+        column_alias=Pub.annual_percentage_change,
         expected_data=[
             (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 100.0, None, None),
             (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 150.0, None, None),
@@ -1162,7 +1164,7 @@ calc_perc_change_against_periods_ago_test_cases = [
         column_name=Pub.publication_filled_posts,
         periods_back=3,
         group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
-        column_alias=PubDownload.annual_percentage_change,
+        column_alias=Pub.annual_percentage_change,
         expected_data=[
             (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 100.0, None, None),
             (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 150.0, None, None),
@@ -1173,7 +1175,7 @@ calc_perc_change_against_periods_ago_test_cases = [
         column_name=Pub.publication_filled_posts,
         periods_back=1,
         group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
-        column_alias=PubDownload.monthly_percentage_change,
+        column_alias=Pub.monthly_percentage_change,
         expected_data=[
             (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 0.0, None, None),
             (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 50.0, None, None),
@@ -1184,7 +1186,7 @@ calc_perc_change_against_periods_ago_test_cases = [
         column_name=Pub.publication_filled_posts,
         periods_back=1,
         group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
-        column_alias=PubDownload.monthly_percentage_change,
+        column_alias=Pub.monthly_percentage_change,
         expected_data=[
             (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 100.0, None, None),
             (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 0.0, None, -1.0),
@@ -1198,7 +1200,7 @@ calc_perc_change_against_periods_ago_test_cases = [
         column_name=Pub.publication_filled_posts,
         periods_back=1,
         group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
-        column_alias=PubDownload.monthly_percentage_change,
+        column_alias=Pub.monthly_percentage_change,
         expected_data=[
             (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 200.0, None, 1.0),
             (date(2025, 2, 1), *_SOUTH_WEST_NON_RES, 25.0, None, -0.5),
@@ -1211,7 +1213,7 @@ calc_perc_change_against_periods_ago_test_cases = [
         column_name=Pub.publication_locationid_count,
         periods_back=1,
         group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
-        column_alias=PubDownload.annual_percentage_change,
+        column_alias=Pub.annual_percentage_change,
         expected_data=[
             (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 40, None),
             (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 60, 0.5),
@@ -1242,9 +1244,14 @@ class BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase:
         return pytest.param(self, id=self.id)
 
 
-_ALL_CQC_LOCATIONS = "All CQC locations"
-_ALL_CQC_CARE_HOMES = "All CQC care homes"
-_ALL_JOB_ROLES = "All job roles"
+_ALL_CQC_LOCATIONS = PublishedMainService.all_locations
+_ALL_CQC_CARE_HOMES = PublishedMainService.all_care_homes
+_ALL_JOB_ROLES = PublishedJobGroupLabels.all_job_roles
+_PUBLISHED_CARE_HOME_WITH_NURSING = PublishedMainService.care_home_with_nursing
+_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING = (
+    "London",
+    _PUBLISHED_CARE_HOME_WITH_NURSING,
+)
 
 # fy_start_month defaults to 4 (April), so this puts the financial year start
 # (and so the annual/monthly boundary) at 2026-04-01.
@@ -1268,11 +1275,11 @@ build_t0_estimates_download_table_test_cases = [
             (date(2026, 6, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 122.0, 13),
         ],
         expected_data=[
-            (date(2024, 4, 1), "Mar-24", "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
-            (date(2025, 4, 1), "Mar-25", "London", _CARE_HOME_WITH_NURSING, 110.0, 11),
-            (date(2026, 4, 1), "Mar-26", "London", _CARE_HOME_WITH_NURSING, 120.0, 12),
-            (date(2026, 5, 1), "Apr-26", "London", _CARE_HOME_WITH_NURSING, 121.0, 12),
-            (date(2026, 6, 1), "May-26", "London", _CARE_HOME_WITH_NURSING, 122.0, 13),
+            (date(2024, 4, 1), "Mar-24", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2025, 4, 1), "Mar-25", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 110.0, 11),
+            (date(2026, 4, 1), "Mar-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 120.0, 12),
+            (date(2026, 5, 1), "Apr-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 121.0, 12),
+            (date(2026, 6, 1), "May-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 122.0, 13),
         ],
     ),
     BuildT0EstimatesDownloadTableTestCase(
@@ -1285,7 +1292,7 @@ build_t0_estimates_download_table_test_cases = [
             (date(2026, 4, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
         ],
         expected_data=[
-            (date(2026, 4, 1), "Mar-26", "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2026, 4, 1), "Mar-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 100.0, 10),
         ],
     ),
     BuildT0EstimatesDownloadTableTestCase(
@@ -1301,9 +1308,9 @@ build_t0_estimates_download_table_test_cases = [
         ],
         expected_data=[
             (date(2026, 4, 1), "Mar-26", "England", _ALL_CQC_LOCATIONS, 500.0, 50),
+            (date(2026, 4, 1), "Mar-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 100.0, 10),
             (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_CARE_HOMES, 150.0, 15),
             (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 200.0, 20),
-            (date(2026, 4, 1), "Mar-26", "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
         ],
     ),
     BuildT0EstimatesDownloadTableTestCase(
@@ -1319,9 +1326,9 @@ build_t0_estimates_download_table_test_cases = [
             (date(2026, 4, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
         ],
         expected_data=[
-            (date(2026, 4, 1), "Mar-26", "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
-            (date(2026, 4, 1), "Mar-26", "South West", _CARE_HOME_WITH_NURSING, 90.0, 9),
-            (date(2026, 5, 1), "Apr-26", "London", _CARE_HOME_WITH_NURSING, 110.0, 11),
+            (date(2026, 4, 1), "Mar-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2026, 4, 1), "Mar-26", "South West", _PUBLISHED_CARE_HOME_WITH_NURSING, 90.0, 9),
+            (date(2026, 5, 1), "Apr-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 110.0, 11),
         ],
     ),
 ]  # fmt: skip
@@ -1340,9 +1347,9 @@ build_t1_filled_posts_perc_change_download_table_test_cases = [
             (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 200.0, 15),
         ],
         expected_data=[
-            (date(2024, 4, 1), "Mar-24", *_LONDON_CARE_HOME_WITH_NURSING, None, None),
-            (date(2025, 4, 1), "Mar-25", *_LONDON_CARE_HOME_WITH_NURSING, 0.5, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_CARE_HOME_WITH_NURSING, 0.3333333, None),
+            (date(2024, 4, 1), "Mar-24", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.3333333, None),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1358,9 +1365,9 @@ build_t1_filled_posts_perc_change_download_table_test_cases = [
             (date(2026, 6, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 198.0, 14),
         ],
         expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_CARE_HOME_WITH_NURSING, None, 0.1),
-            (date(2026, 6, 1), "May-26", *_LONDON_CARE_HOME_WITH_NURSING, None, -0.1),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.1),
+            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, -0.1),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1375,9 +1382,9 @@ build_t1_filled_posts_perc_change_download_table_test_cases = [
             (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 220.0, 16),
         ],
         expected_data=[
-            (date(2025, 4, 1), "Mar-25", *_LONDON_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_CARE_HOME_WITH_NURSING, 1.0, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_CARE_HOME_WITH_NURSING, None, 0.1),
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 1.0, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.1),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1390,8 +1397,8 @@ build_t1_filled_posts_perc_change_download_table_test_cases = [
             (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
         ],
         expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_CARE_HOME_WITH_NURSING, None, 0.5),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.5),
         ],
     ),
 ]  # fmt: skip
@@ -1406,9 +1413,9 @@ build_t2_location_count_perc_change_download_table_test_cases = [
             (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 15),
         ],
         expected_data=[
-            (date(2024, 4, 1), "Mar-24", *_LONDON_CARE_HOME_WITH_NURSING, None, None),
-            (date(2025, 4, 1), "Mar-25", *_LONDON_CARE_HOME_WITH_NURSING, 0.2, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_CARE_HOME_WITH_NURSING, 0.25, None),
+            (date(2024, 4, 1), "Mar-24", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.2, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.25, None),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1420,9 +1427,9 @@ build_t2_location_count_perc_change_download_table_test_cases = [
             (date(2026, 6, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 14),
         ],
         expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_CARE_HOME_WITH_NURSING, None, 0.0666667),
-            (date(2026, 6, 1), "May-26", *_LONDON_CARE_HOME_WITH_NURSING, None, -0.125),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.0666667),
+            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, -0.125),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1434,9 +1441,9 @@ build_t2_location_count_perc_change_download_table_test_cases = [
             (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 16),
         ],
         expected_data=[
-            (date(2025, 4, 1), "Mar-25", *_LONDON_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_CARE_HOME_WITH_NURSING, 0.5, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_CARE_HOME_WITH_NURSING, None, 0.0666667),
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.0666667),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1449,8 +1456,8 @@ build_t2_location_count_perc_change_download_table_test_cases = [
             (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
         ],
         expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_CARE_HOME_WITH_NURSING, None, 0.2),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.2),
         ],
     ),
 ]  # fmt: skip

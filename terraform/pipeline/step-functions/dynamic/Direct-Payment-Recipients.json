@@ -1,157 +1,217 @@
 {
-  "Comment": "A description of my state machine",
-  "StartAt": "Prepare data in parallel",
+  "Comment": "A state machine for producing direct payment recipient estimates and splitting them into ICB areas",
+  "StartAt": "Estimate DPR",
   "States": {
-    "Prepare data in parallel": {
+    "Estimate DPR": {
       "Type": "Parallel",
-      "Next": "Merge DPR data",
       "Branches": [
         {
-          "StartAt": "Prepare DPR survey data",
+          "StartAt": "Merge direct payments",
           "States": {
-            "Prepare DPR survey data": {
+            "Merge direct payments": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${prepare_dpr_survey_job_name}",
-                "Arguments": {
-                  "--survey_data_source": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_survey/version=2027.01/",
-                  "--destination": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_survey_prepared/version=2027.01/"
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${direct_payments_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${direct_payments_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_04_direct_payments-container",
+                      "Command": [
+                        "_01_merge.py",
+                        "--survey_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=00_survey/version=2027.01/",
+                        "--external_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=00_external/version=2027.01/",
+                        "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=01_merge/version=2027.01/"
+                      ]
+                    }
+                  ]
                 }
               },
+              "Next": "Estimate direct payments"
+            },
+            "Estimate direct payments": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${direct_payments_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${direct_payments_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_04_direct_payments-container",
+                      "Command": [
+                        "_02_estimate.py",
+                        "--direct_payments_merged_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=01_merge/version=2027.01/",
+                        "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=02_estimate/version=2027.01/",
+                        "--summary_destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=02_estimate_summary/version=2027.01/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Validate and split estimates"
+            },
+            "Validate and split estimates": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Validate estimates",
+                  "States": {
+                    "Validate estimates": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${direct_payments_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${direct_payments_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_04_direct_payments-container",
+                              "Command": [
+                                "validate_02_estimate.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=04_dpr/dataset=02_estimate/version=2027.01/",
+                                "--reports_path", "domain=04_dpr/dataset=02_estimate_validation/version=2027.01/",
+                                "--compare_path", "domain=04_dpr/dataset=01_merge/version=2027.01/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Estimate by ICB area",
+                  "States": {
+                    "Estimate by ICB area": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${direct_payments_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${direct_payments_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_04_direct_payments-container",
+                              "Command": [
+                                "_03_estimates_by_icb_area.py",
+                                "--postcode_directory_source", "${dataset_bucket_uri}/domain=01_ons/dataset=postcode_directory_cleaned/",
+                                "--pa_filled_posts_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=02_estimate/version=2027.01/",
+                                "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=03_estimates_by_icb_area/version=2027.01/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                }
+              ],
               "End": true
             }
           }
-        },
+        }
+      ],
+      "Next": "Handle Error and Run Crawlers",
+      "Catch": [
         {
-          "StartAt": "Prepare DPR external data",
-          "States": {
-            "Prepare DPR external data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${prepare_dpr_external_job_name}",
-                "Arguments": {
-                  "--direct_payments_source": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_external/version=2027.01/",
-                  "--destination": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_external_prepared/version=2027.01/"
-                }
-              },
-              "End": true
-            }
-          }
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Handle Error and Run Crawlers",
+          "ResultPath": "$.error"
         }
       ]
     },
-    "Merge DPR data": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-      "Parameters": {
-        "JobName": "${merge_dpr_data_job_name}",
-        "Arguments": {
-          "--direct_payments_external_data_source": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_external_prepared/version=2027.01/",
-          "--direct_payments_survey_data_source": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_survey_prepared/version=2027.01/",
-          "--destination": "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_merged/version=2027.01/"
-        }
-      },
-      "Next": "Estimate direct payments polars"
-    },
-    "Estimate direct payments polars": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::ecs:runTask.sync",
-      "Parameters": {
-        "Cluster": "${polars_cluster_arn}",
-        "TaskDefinition": "${direct_payments_task_arn}",
-        "LaunchType": "FARGATE",
-        "NetworkConfiguration": {
-          "AwsvpcConfiguration": {
-            "Subnets": ${public_subnet_ids},
-            "SecurityGroups": ["${direct_payments_security_group_id}"],
-            "AssignPublicIp": "ENABLED"
+    "Handle Error and Run Crawlers": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
           }
         },
-        "Overrides": {
-          "ContainerOverrides": [
-            {
-              "Name": "_04_direct_payments-container",
-              "Command": [
-                "estimate_direct_payments.py",
-                "--direct_payments_merged_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_merged/version=2027.01/",
-                "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_estimates/version=2027.01/",
-                "--summary_destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_estimates_summary/version=2027.01/"
-              ]
+        {
+          "StartAt": "Run DPR Crawler",
+          "States": {
+            "Run DPR Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${dpr_crawler_name}"
+              },
+              "End": true
             }
-          ]
-        }
-      },
-      "Next": "Validate estimate direct payments polars"
-    },
-    "Validate estimate direct payments polars": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::ecs:runTask.sync",
-      "Parameters": {
-        "Cluster": "${polars_cluster_arn}",
-        "TaskDefinition": "${direct_payments_task_arn}",
-        "LaunchType": "FARGATE",
-        "NetworkConfiguration": {
-          "AwsvpcConfiguration": {
-            "Subnets": ${public_subnet_ids},
-            "SecurityGroups": ["${direct_payments_security_group_id}"],
-            "AssignPublicIp": "ENABLED"
           }
-        },
-        "Overrides": {
-          "ContainerOverrides": [
-            {
-              "Name": "_04_direct_payments-container",
-              "Command": [
-                "validate_estimate_direct_payments.py",
-                "--bucket_name", "${dataset_bucket_name}",
-                "--source_path", "domain=04_dpr/dataset=direct_payments_estimates/version=2027.01/",
-                "--reports_path", "domain=04_dpr/dataset=direct_payments_estimates_validation/version=2027.01/",
-                "--compare_path", "domain=04_dpr/dataset=direct_payments_merged/version=2027.01/"
-              ]
-            }
-          ]
         }
-      },
-      "Next": "Split pa estimates into hybrid areas"
-    },
-    "Split pa estimates into hybrid areas": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::ecs:runTask.sync",
-      "Parameters": {
-        "Cluster": "${polars_cluster_arn}",
-        "TaskDefinition": "${direct_payments_task_arn}",
-        "LaunchType": "FARGATE",
-        "NetworkConfiguration": {
-          "AwsvpcConfiguration": {
-            "Subnets": ${public_subnet_ids},
-            "SecurityGroups": ["${direct_payments_security_group_id}"],
-            "AssignPublicIp": "ENABLED"
-          }
-        },
-        "Overrides": {
-          "ContainerOverrides": [
-            {
-              "Name": "_04_direct_payments-container",
-              "Command": [
-                "split_pa_filled_posts_into_icb_areas.py",
-                "--postcode_directory_source", "${dataset_bucket_uri}/domain=01_ons/dataset=postcode_directory_cleaned/",
-                "--pa_filled_posts_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_estimates/version=2027.01/",
-                "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_estimates_by_icb/version=2027.01/"
-              ]
-            }
-          ]
-        }
-      },
-      "Next": "Run DPR crawler"
-    },
-    "Run DPR crawler": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Parameters": {
-        "Name": "${dpr_crawler_name}"
-      },
+      ],
       "End": true
     }
   }

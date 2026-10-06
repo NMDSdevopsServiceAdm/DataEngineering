@@ -4,31 +4,36 @@ import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_names.publication_download_columns import (
-    PublicationDownloadColumns as PubDownload,
+from utils.column_values.categorical_column_values import (
+    PrimaryServiceType,
+    PublishedJobGroupLabels,
+    PublishedMainService,
+    PublishedRegion,
 )
-from utils.column_values.categorical_column_values import PrimaryServiceType
 
 # A location is filtered out when its capacity tracker data swings further from
 # the national average swing than this many standard deviations.
 _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 
-# Rollup labels are publication-only, not real source data - kept local here.
-_ALL_JOB_ROLES: str = "All job roles"
-_ALL_CQC_CARE_HOMES: str = "All CQC care homes"
-_ALL_CQC_LOCATIONS: str = "All CQC locations"
-_ENGLAND: str = "England"
-
 _DOWNLOAD_TABLE_GROUP_COLUMNS: list[str] = [
     IndCQC.current_region,
     IndCQC.primary_service_type,
 ]
 _DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
-    PubDownload.period,
-    PubDownload.region,
-    PubDownload.main_service,
+    Pub.period,
+    Pub.region,
+    Pub.main_service,
 ]
+
+# Maps the raw primary_service_type category values to their published
+# display labels for the data-download tables - the rollup rows already
+# hold their published labels directly (see add_rows_for_publication_groups).
+_PUBLISHED_MAIN_SERVICE_BY_CATEGORY: dict[str, str] = {
+    PrimaryServiceType.care_home_with_nursing: PublishedMainService.care_home_with_nursing,
+    PrimaryServiceType.care_home_only: PublishedMainService.care_home_only,
+    PrimaryServiceType.non_residential: PublishedMainService.non_residential,
+}
 
 
 def reduced_data_filter_expr(
@@ -499,7 +504,7 @@ def add_rows_for_publication_groups(
             ],
         )
         .with_columns(
-            pl.lit(_ALL_JOB_ROLES)
+            pl.lit(PublishedJobGroupLabels.all_job_roles)
             .cast(column_schema[IndCQC.main_job_role_clean_labelled])
             .alias(IndCQC.main_job_role_clean_labelled),
             pl.col(IndCQC.primary_service_type).cast(pl.Categorical),
@@ -519,7 +524,7 @@ def add_rows_for_publication_groups(
         job_role_enlarged_lf.group_by(service_type_group_keys)
         .agg([pl.col(column).sum() for column in metric_columns])
         .with_columns(
-            pl.lit(_ALL_CQC_LOCATIONS)
+            pl.lit(PublishedMainService.all_locations)
             .cast(column_schema[IndCQC.primary_service_type])
             .alias(IndCQC.primary_service_type)
         )
@@ -537,7 +542,7 @@ def add_rows_for_publication_groups(
         .group_by(service_type_group_keys)
         .agg([pl.col(column).sum() for column in metric_columns])
         .with_columns(
-            pl.lit(_ALL_CQC_CARE_HOMES)
+            pl.lit(PublishedMainService.all_care_homes)
             .cast(column_schema[IndCQC.primary_service_type])
             .alias(IndCQC.primary_service_type)
         )
@@ -557,7 +562,7 @@ def add_rows_for_publication_groups(
         service_type_enlarged_lf.group_by(england_group_keys)
         .agg([pl.col(column).sum() for column in metric_columns])
         .with_columns(
-            pl.lit(_ENGLAND)
+            pl.lit(PublishedRegion.england)
             .cast(column_schema[IndCQC.current_region])
             .alias(IndCQC.current_region)
         )
@@ -702,7 +707,8 @@ def _filter_to_all_job_roles_rollup(
     publication_summary_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     return publication_summary_lf.filter(
-        pl.col(IndCQC.main_job_role_clean_labelled) == _ALL_JOB_ROLES
+        pl.col(IndCQC.main_job_role_clean_labelled)
+        == PublishedJobGroupLabels.all_job_roles
     )
 
 
@@ -721,7 +727,7 @@ def _period_label_expr() -> pl.Expr:
         pl.col(IndCQC.cqc_location_import_date)
         .dt.offset_by("-1mo")
         .dt.strftime("%b-%y")
-        .alias(PubDownload.period_label)
+        .alias(Pub.period_label)
     )
 
 
@@ -815,11 +821,11 @@ def _split_annual_and_monthly_perc_change(
         pl.when(is_monthly_row)
         .then(None)
         .otherwise(pl.col(raw_change_column))
-        .alias(PubDownload.annual_percentage_change),
+        .alias(Pub.annual_percentage_change),
         pl.when(is_monthly_row)
         .then(pl.col(raw_change_column))
         .otherwise(None)
-        .alias(PubDownload.monthly_percentage_change),
+        .alias(Pub.monthly_percentage_change),
     ).drop(raw_change_column)
 
 
@@ -854,14 +860,15 @@ def build_t0_estimates_download_table(
         _filter_to_all_job_roles_rollup(publication_summary_lf)
         .filter(_annual_sampling_filter_expr(today, fy_start_month))
         .select(
-            pl.col(IndCQC.cqc_location_import_date).alias(PubDownload.period),
+            pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
             _period_label_expr(),
-            pl.col(IndCQC.current_region).alias(PubDownload.region),
-            pl.col(IndCQC.primary_service_type).alias(PubDownload.main_service),
-            pl.col(Pub.publication_filled_posts).alias(
-                PubDownload.estimated_filled_posts
-            ),
-            pl.col(Pub.publication_locationid_count).alias(PubDownload.cqc_locations),
+            pl.col(IndCQC.current_region).alias(Pub.region),
+            pl.col(IndCQC.primary_service_type)
+            .cast(pl.Utf8)
+            .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
+            .alias(Pub.main_service),
+            pl.col(Pub.publication_filled_posts).alias(Pub.estimated_filled_posts),
+            pl.col(Pub.publication_locationid_count).alias(Pub.cqc_locations),
         )
         .sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
     )
@@ -902,12 +909,15 @@ def build_t1_filled_posts_perc_change_download_table(
         all_job_roles_lf, Pub.publication_filled_posts, today, fy_start_month
     )
     return all_job_roles_lf.select(
-        pl.col(IndCQC.cqc_location_import_date).alias(PubDownload.period),
+        pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
         _period_label_expr(),
-        pl.col(IndCQC.current_region).alias(PubDownload.region),
-        pl.col(IndCQC.primary_service_type).alias(PubDownload.main_service),
-        pl.col(PubDownload.annual_percentage_change),
-        pl.col(PubDownload.monthly_percentage_change),
+        pl.col(IndCQC.current_region).alias(Pub.region),
+        pl.col(IndCQC.primary_service_type)
+        .cast(pl.Utf8)
+        .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
+        .alias(Pub.main_service),
+        pl.col(Pub.annual_percentage_change),
+        pl.col(Pub.monthly_percentage_change),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
 
 
@@ -947,10 +957,13 @@ def build_t2_location_count_perc_change_download_table(
         all_job_roles_lf, Pub.publication_locationid_count, today, fy_start_month
     )
     return all_job_roles_lf.select(
-        pl.col(IndCQC.cqc_location_import_date).alias(PubDownload.period),
+        pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
         _period_label_expr(),
-        pl.col(IndCQC.current_region).alias(PubDownload.region),
-        pl.col(IndCQC.primary_service_type).alias(PubDownload.main_service),
-        pl.col(PubDownload.annual_percentage_change),
-        pl.col(PubDownload.monthly_percentage_change),
+        pl.col(IndCQC.current_region).alias(Pub.region),
+        pl.col(IndCQC.primary_service_type)
+        .cast(pl.Utf8)
+        .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
+        .alias(Pub.main_service),
+        pl.col(Pub.annual_percentage_change),
+        pl.col(Pub.monthly_percentage_change),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)

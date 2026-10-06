@@ -8,9 +8,6 @@ import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.clean
 import projects._99_publication.unittest_data.polars_pub_test_data as Data
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_names.publication_download_columns import (
-    PublicationDownloadColumns as PubDownload,
-)
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
@@ -481,12 +478,12 @@ class TestBuildT0EstimatesDownloadTable:
     )
     expected_schema = pl.Schema(
         [
-            (PubDownload.period, pl.Date()),
-            (PubDownload.period_label, pl.String()),
-            (PubDownload.region, pl.String()),
-            (PubDownload.main_service, pl.String()),
-            (PubDownload.estimated_filled_posts, pl.Float32()),
-            (PubDownload.cqc_locations, pl.UInt32()),
+            (Pub.period, pl.Date()),
+            (Pub.period_label, pl.String()),
+            (Pub.region, pl.String()),
+            (Pub.main_service, pl.String()),
+            (Pub.estimated_filled_posts, pl.Float32()),
+            (Pub.cqc_locations, pl.UInt32()),
         ]
     )
 
@@ -524,7 +521,7 @@ class TestBuildT0EstimatesDownloadTable:
             input_lf, today=date(2026, 10, 6)
         ).collect()
 
-        key_columns = [PubDownload.period, PubDownload.region, PubDownload.main_service]
+        key_columns = [Pub.period, Pub.region, Pub.main_service]
         assert returned_df.height == returned_df.select(key_columns).n_unique()
 
 
@@ -532,12 +529,12 @@ class TestBuildT1FilledPostsPercChangeDownloadTable:
     input_schema = TestBuildT0EstimatesDownloadTable.input_schema
     expected_schema = pl.Schema(
         [
-            (PubDownload.period, pl.Date()),
-            (PubDownload.period_label, pl.String()),
-            (PubDownload.region, pl.String()),
-            (PubDownload.main_service, pl.String()),
-            (PubDownload.annual_percentage_change, pl.Float32()),
-            (PubDownload.monthly_percentage_change, pl.Float32()),
+            (Pub.period, pl.Date()),
+            (Pub.period_label, pl.String()),
+            (Pub.region, pl.String()),
+            (Pub.main_service, pl.String()),
+            (Pub.annual_percentage_change, pl.Float32()),
+            (Pub.monthly_percentage_change, pl.Float32()),
         ]
     )
 

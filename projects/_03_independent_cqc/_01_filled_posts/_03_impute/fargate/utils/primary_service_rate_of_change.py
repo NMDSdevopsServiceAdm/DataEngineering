@@ -3,7 +3,7 @@ import math
 import polars as pl
 
 from polars_utils.cleaning_utils import create_banded_bed_count_column
-from projects._03_independent_cqc._01_filled_posts.utils.imputation.interpolation import (
+from projects._03_independent_cqc.utils.imputation.interpolation import (
     model_interpolation,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
