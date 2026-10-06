@@ -51,6 +51,7 @@ from utils.column_values.categorical_column_values import (
     CTNonResFilledPostEstimateSource,
     CurrentCSSR,
     Dormancy,
+    EmploymentStatusEstimateSource,
     EmploymentStatusFilteringRule,
     EstimatedProportionEmployingStaffSource,
     EstimateFilledPostsSource,
@@ -339,6 +340,13 @@ class SLVCleanCategoricalValues:
     )
     vacancies_filtering_rule_column_values = SLVFilteringRule(
         SLVCols.vacancies_filtering_rule
+    )
+
+
+@dataclass
+class EmploymentStatusEstimateCategoricalValues:
+    estimate_source_column_values = EmploymentStatusEstimateSource(
+        EmpStatus.percentage_estimate_source
     )
 
 

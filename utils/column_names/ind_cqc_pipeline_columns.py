@@ -527,6 +527,12 @@ class EmploymentStatusColumns:
     bank_or_pool_percentage_rolling_avg: str = bank_or_pool_percentage + "_rolling_avg"
     agency_percentage_rolling_avg: str = agency_percentage + "_rolling_avg"
     other_percentage_rolling_avg: str = other_percentage + "_rolling_avg"
+    permanent_percentage_estimated: str = permanent_percentage + "_estimated"
+    temporary_percentage_estimated: str = temporary_percentage + "_estimated"
+    bank_or_pool_percentage_estimated: str = bank_or_pool_percentage + "_estimated"
+    agency_percentage_estimated: str = agency_percentage + "_estimated"
+    other_percentage_estimated: str = other_percentage + "_estimated"
+    percentage_estimate_source: str = "emplstat_percentage_estimate_source"
     employee_count: str = "emplstat_employee_count"
     estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
     estimated_emp_stat_temp: str = "estimated_emp_stat_temp"
@@ -562,17 +568,6 @@ class StartersLeaversVacanciesColumns:
     turnover_rate_dedup: str = turnover_rate + "_deduplicated"
     starter_rate_dedup: str = starter_rate + "_deduplicated"
     vacancy_rate_dedup: str = vacancy_rate + "_deduplicated"
-
-
-@dataclass
-class EmploymentStatusMagicNumberRateColumns:
-    service: str = "service"
-    weighting_job_role: str = "weighting_job_role"
-    emp_stat_perm: str = "emp_stat_perm"
-    emp_stat_temp: str = "emp_stat_temp"
-    emp_stat_bank_or_pool: str = "emp_stat_bank_or_pool"
-    emp_stat_agency: str = "emp_stat_agency"
-    emp_stat_other: str = "emp_stat_other"
 
 
 @dataclass

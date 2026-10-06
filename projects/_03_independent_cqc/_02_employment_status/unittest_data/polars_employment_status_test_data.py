@@ -3,6 +3,15 @@ from datetime import date
 from typing import Any, Optional
 
 import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_worker_utils as prepare_worker_job
+from projects._03_independent_cqc._02_employment_status.fargate.utils.estimate_utils import (
+    ESTIMATED_COUNT_COLUMNS,
+    ESTIMATED_PERCENTAGE_COLUMNS,
+)
+from projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils import (
+    IMPUTED_PERCENTAGE_COLUMNS,
+    PERCENTAGE_COLUMNS,
+    ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -11,9 +20,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusImputeTempColumns as ImputeTempCols,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    EmploymentStatusMagicNumberRateColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.ascwds_labelled_vocab import (
@@ -24,6 +30,7 @@ from utils.column_values.ascwds_labelled_vocab import (
     PublishedJobRoleLabels,
 )
 from utils.column_values.categorical_column_values import (
+    EmploymentStatusEstimateSource,
     EmploymentStatusFilteringRule,
     JobGroupLabels,
     PrimaryServiceType,
@@ -280,10 +287,9 @@ class CollapseJobRoleEstimatesToPublishedLabelsTestCase:
 
 
 @dataclass
-class ApplyEmploymentStatusMagicNumbersTestCase:
+class AddEstimatedEmploymentStatusColumnsTestCase:
     id: str
-    job_role_estimates_data: dict[str, Any]
-    employment_status_rates_data: dict[str, Any]
+    input_data: dict[str, Any]
     expected_data: dict[str, Any]
 
 
@@ -574,116 +580,99 @@ class TestMergeUtilsData:
     ]
 
 
+def _estimate_row(
+    cleaned: list[float | None],
+    imputed: list[float | None],
+    rolling_avg: list[float | None],
+    metric: float | None,
+) -> dict[str, list]:
+    """One row; each list holds the 5 statuses as perm, temp, bank, agency, other."""
+    return {
+        METRIC: [metric],
+        **{col: [val] for col, val in zip(PERCENTAGE_COLUMNS, cleaned)},
+        **{col: [val] for col, val in zip(IMPUTED_PERCENTAGE_COLUMNS, imputed)},
+        **{
+            col: [val]
+            for col, val in zip(ROLLING_AVERAGE_PERCENTAGE_COLUMNS, rolling_avg)
+        },
+    }
+
+
+def _estimate_expected(
+    row: dict[str, list],
+    estimated: list[float | None],
+    source: str | None,
+    counts: list[float | None],
+    employees: float | None,
+) -> dict[str, list]:
+    return {
+        **row,
+        **{col: [val] for col, val in zip(ESTIMATED_PERCENTAGE_COLUMNS, estimated)},
+        EmpStatus.percentage_estimate_source: [source],
+        **{col: [val] for col, val in zip(ESTIMATED_COUNT_COLUMNS, counts)},
+        EmpStatus.estimated_employees: [employees],
+    }
+
+
+NULLS = [None] * 5
+CLEANED = [0.5, 0.25, 0.125, 0.0625, 0.0625]
+IMPUTED = [0.4, 0.3, 0.1, 0.1, 0.1]
+ROLLING_AVG = [0.3, 0.3, 0.2, 0.1, 0.1]
+
+
 @dataclass
-class TestMagicNumberUtilsData:
-    apply_employment_status_magic_numbers_test_cases = [
-        ApplyEmploymentStatusMagicNumbersTestCase(
-            id="splits_filled_post_metric_by_employment_status_rates",
-            job_role_estimates_data={
-                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
-                METRIC: [100.0],
-                EmpStatus.employee_count: [50],
-            },
-            employment_status_rates_data={
-                EmpStatRates.service: ["CQC Non residential"],
-                EmpStatRates.weighting_job_role: ["Care_worker"],
-                EmpStatRates.emp_stat_perm: [0.5],
-                EmpStatRates.emp_stat_temp: [0.2],
-                EmpStatRates.emp_stat_bank_or_pool: [0.15],
-                EmpStatRates.emp_stat_agency: [0.1],
-                EmpStatRates.emp_stat_other: [0.05],
-            },
-            expected_data={
-                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
-                METRIC: [100.0],
-                EmpStatus.employee_count: [50],
-                EmpStatus.estimated_emp_stat_perm: [50.0],
-                EmpStatus.estimated_emp_stat_temp: [20.0],
-                EmpStatus.estimated_emp_stat_bank_or_pool: [15.0],
-                EmpStatus.estimated_emp_stat_agency: [10.0],
-                EmpStatus.estimated_emp_stat_other: [5.0],
-                EmpStatus.estimated_employees: [70.0],
-            },
+class TestEstimateUtilsData:
+    add_estimated_employment_status_columns_test_cases = [
+        AddEstimatedEmploymentStatusColumnsTestCase(
+            id="uses_cleaned_percentages_when_populated",
+            input_data=_estimate_row(CLEANED, IMPUTED, ROLLING_AVG, 64.0),
+            expected_data=_estimate_expected(
+                _estimate_row(CLEANED, IMPUTED, ROLLING_AVG, 64.0),
+                CLEANED,
+                EmploymentStatusEstimateSource.cleaned,
+                [32.0, 16.0, 8.0, 4.0, 4.0],
+                48.0,
+            ),
         ),
-        ApplyEmploymentStatusMagicNumbersTestCase(
-            id="maps_the_two_irregular_csv_labels_and_both_care_home_service_types",
-            job_role_estimates_data={
-                IndCQC.primary_service_type: [
-                    PrimaryServiceType.care_home_only,
-                    PrimaryServiceType.care_home_with_nursing,
-                ],
-                IndCQC.published_job_role_label: [
-                    PublishedJobRoleLabels.community_support_and_outreach,
-                    PublishedJobRoleLabels.other,
-                ],
-                METRIC: [10.0, 8.0],
-                EmpStatus.employee_count: [4, 10],
-            },
-            employment_status_rates_data={
-                EmpStatRates.service: [
-                    "CQC Care only home",
-                    "CQC Care home with nursing",
-                ],
-                EmpStatRates.weighting_job_role: [
-                    "Support_and_outreach",
-                    "All_others",
-                ],
-                EmpStatRates.emp_stat_perm: [0.4, 0.5],
-                EmpStatRates.emp_stat_temp: [0.1, 0.5],
-                EmpStatRates.emp_stat_bank_or_pool: [0.2, 0.0],
-                EmpStatRates.emp_stat_agency: [0.2, 0.0],
-                EmpStatRates.emp_stat_other: [0.1, 0.0],
-            },
-            expected_data={
-                IndCQC.primary_service_type: [
-                    PrimaryServiceType.care_home_only,
-                    PrimaryServiceType.care_home_with_nursing,
-                ],
-                IndCQC.published_job_role_label: [
-                    PublishedJobRoleLabels.community_support_and_outreach,
-                    PublishedJobRoleLabels.other,
-                ],
-                METRIC: [10.0, 8.0],
-                EmpStatus.employee_count: [4, 10],
-                EmpStatus.estimated_emp_stat_perm: [4.0, 4.0],
-                EmpStatus.estimated_emp_stat_temp: [1.0, 4.0],
-                EmpStatus.estimated_emp_stat_bank_or_pool: [2.0, 0.0],
-                EmpStatus.estimated_emp_stat_agency: [2.0, 0.0],
-                EmpStatus.estimated_emp_stat_other: [1.0, 0.0],
-                EmpStatus.estimated_employees: [5.0, 8.0],
-            },
+        AddEstimatedEmploymentStatusColumnsTestCase(
+            id="uses_imputed_percentages_when_cleaned_null",
+            input_data=_estimate_row(NULLS, IMPUTED, ROLLING_AVG, 100.0),
+            expected_data=_estimate_expected(
+                _estimate_row(NULLS, IMPUTED, ROLLING_AVG, 100.0),
+                IMPUTED,
+                EmploymentStatusEstimateSource.imputed,
+                [40.0, 30.0, 10.0, 10.0, 10.0],
+                70.0,
+            ),
         ),
-        ApplyEmploymentStatusMagicNumbersTestCase(
-            id="propagates_null_metric_to_all_split_columns_and_the_estimated_employees_column",
-            job_role_estimates_data={
-                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
-                METRIC: [None],
-                EmpStatus.employee_count: [5],
-            },
-            employment_status_rates_data={
-                EmpStatRates.service: ["CQC Non residential"],
-                EmpStatRates.weighting_job_role: ["Care_worker"],
-                EmpStatRates.emp_stat_perm: [0.5],
-                EmpStatRates.emp_stat_temp: [0.2],
-                EmpStatRates.emp_stat_bank_or_pool: [0.15],
-                EmpStatRates.emp_stat_agency: [0.1],
-                EmpStatRates.emp_stat_other: [0.05],
-            },
-            expected_data={
-                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
-                METRIC: [None],
-                EmpStatus.employee_count: [5],
-                EmpStatus.estimated_emp_stat_perm: [None],
-                EmpStatus.estimated_emp_stat_temp: [None],
-                EmpStatus.estimated_emp_stat_bank_or_pool: [None],
-                EmpStatus.estimated_emp_stat_agency: [None],
-                EmpStatus.estimated_emp_stat_other: [None],
-                EmpStatus.estimated_employees: [None],
-            },
+        AddEstimatedEmploymentStatusColumnsTestCase(
+            id="uses_rolling_average_percentages_when_cleaned_and_imputed_null",
+            input_data=_estimate_row(NULLS, NULLS, ROLLING_AVG, 100.0),
+            expected_data=_estimate_expected(
+                _estimate_row(NULLS, NULLS, ROLLING_AVG, 100.0),
+                ROLLING_AVG,
+                EmploymentStatusEstimateSource.rolling_avg,
+                [30.0, 30.0, 20.0, 10.0, 10.0],
+                60.0,
+            ),
+        ),
+        AddEstimatedEmploymentStatusColumnsTestCase(
+            id="leaves_estimates_null_when_all_percentages_null",
+            input_data=_estimate_row(NULLS, NULLS, NULLS, 100.0),
+            expected_data=_estimate_expected(
+                _estimate_row(NULLS, NULLS, NULLS, 100.0), NULLS, None, NULLS, None
+            ),
+        ),
+        AddEstimatedEmploymentStatusColumnsTestCase(
+            id="leaves_counts_null_when_metric_null",
+            input_data=_estimate_row(CLEANED, IMPUTED, ROLLING_AVG, None),
+            expected_data=_estimate_expected(
+                _estimate_row(CLEANED, IMPUTED, ROLLING_AVG, None),
+                CLEANED,
+                EmploymentStatusEstimateSource.cleaned,
+                NULLS,
+                None,
+            ),
         ),
     ]
 
