@@ -9,8 +9,6 @@ on `sys.path` they must be inlined and checked against the repo's version.
 import polars as pl
 
 
-# Google-style docstring: one line on what it does, then anything non-obvious, such as why
-# it stays lazy.
 def placeholder_example(
     lf: pl.LazyFrame, value_columns: list[str], group_columns: list[str]
 ) -> pl.LazyFrame:
