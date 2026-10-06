@@ -185,10 +185,10 @@ class Sector(ColumnValues):
 class JobGroupLabels(ColumnValues):
     """The possible values of the job group column in ASCWDS data"""
 
-    direct_care: str = "direct_care"
-    managers: str = "managers"
-    regulated_professions: str = "regulated_professions"
-    other: str = "other"
+    direct_care: str = "Direct care"
+    managers: str = "Managers"
+    regulated_professions: str = "Regulated professions"
+    other: str = "Other"
 
 
 @dataclass
@@ -438,15 +438,13 @@ class CTNonResFilledPostEstimateSource(ColumnValues):
 
 
 @dataclass
-class EstimatedProportionEmployingStaffSource(ColumnValues):
-    """The possible values of the estimated proportion of service users employing staff source column in the direct payment recipients pipeline"""
+class ImputedProportionEmployingStaffSource(ColumnValues):
+    """The possible values of the imputed proportion employing staff source column in the direct payment recipients pipeline"""
 
-    proportion_of_service_users_employing_staff: str = (
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-    )
-    estimate_using_extrapolation_ratio: str = DP.ESTIMATE_USING_EXTRAPOLATION_RATIO
-    estimate_using_interpolation: str = DP.ESTIMATE_USING_INTERPOLATION
-    estimate_using_mean: str = DP.ESTIMATE_USING_MEAN
+    proportion_employing_staff: str = DP.proportion_employing_staff
+    estimate_using_extrapolation_ratio: str = DP.estimate_using_extrapolation_ratio
+    estimate_using_interpolation: str = DP.estimate_using_interpolation
+    estimate_using_mean: str = DP.estimate_using_mean
 
 
 @dataclass
@@ -461,6 +459,11 @@ class CQCRatingsValues(ColumnValues):
 class CQCCurrentOrHistoricValues(ColumnValues):
     current: str = "Current"
     historic: str = "Historic"
+
+
+@dataclass
+class CQCRatingsDatasetValues(ColumnValues):
+    pre_saf: str = "Pre SAF"
 
 
 @dataclass
@@ -593,3 +596,28 @@ class AscwdsJobRoleRatiosMergedSource(ColumnValues):
     imputed_ascwds_job_role_ratios: str = IndCQC.imputed_ascwds_job_role_ratios
     ascwds_job_role_rolling_ratio: str = IndCQC.ascwds_job_role_rolling_ratio
     ascwds_job_role_ratios: str = IndCQC.ascwds_job_role_ratios
+
+
+@dataclass
+class PublishedMainService(ColumnValues):
+    """The possible values of the main service column in publication data"""
+
+    all_locations: str = "All CQC locations"
+    all_care_homes: str = "All CQC care homes"
+    care_home_with_nursing: str = " - CQC care home with nursing"
+    care_home_only: str = " - CQC care only home"
+    non_residential: str = "CQC non-residential"
+
+
+@dataclass
+class PublishedRegion(Region):
+    """The possible values of the region column in publication data"""
+
+    england: str = "England"
+
+
+@dataclass
+class PublishedJobGroupLabels(JobGroupLabels):
+    """The possible values of the job group column in publication data"""
+
+    all_job_roles: str = "All job roles"

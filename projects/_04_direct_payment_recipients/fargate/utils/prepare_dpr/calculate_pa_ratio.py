@@ -23,8 +23,8 @@ def calculate_pa_ratio(survey_lf: pl.LazyFrame) -> pl.LazyFrame:
             total staff columns.
 
     Returns:
-        pl.LazyFrame: A LazyFrame with columns 'YEAR_AS_INTEGER' and
-            'RATIO_ROLLING_AVERAGE'.
+        pl.LazyFrame: A LazyFrame with columns 'year_as_integer' and
+            'ratio_rolling_average'.
     """
     # Staff bounds for plausible survey responses.
     min_staff = 1.0
@@ -32,40 +32,40 @@ def calculate_pa_ratio(survey_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     historic_ratio_lf = pl.LazyFrame(
         {
-            DP.YEAR_AS_INTEGER: list(DIRECT_PAYMENTS_MISSING_PA_RATIOS),
-            DP.HISTORIC_RATIO: list(DIRECT_PAYMENTS_MISSING_PA_RATIOS.values()),
+            DP.year_as_integer: list(DIRECT_PAYMENTS_MISSING_PA_RATIOS),
+            DP.historic_ratio: list(DIRECT_PAYMENTS_MISSING_PA_RATIOS.values()),
         },
-        schema={DP.YEAR_AS_INTEGER: pl.Int32, DP.HISTORIC_RATIO: pl.Float32},
+        schema={DP.year_as_integer: pl.Int32, DP.historic_ratio: pl.Float32},
     )
 
     survey_average_lf = (
         survey_lf.select(
-            pl.col(DP.YEAR).cast(pl.Int32).alias(DP.YEAR_AS_INTEGER),
-            DP.TOTAL_STAFF_RECODED,
+            pl.col(DP.year).cast(pl.Int32).alias(DP.year_as_integer),
+            DP.total_staff_recoded,
         )
-        .filter(pl.col(DP.TOTAL_STAFF_RECODED).is_between(min_staff, max_staff))
-        .group_by(DP.YEAR_AS_INTEGER)
-        .agg(pl.col(DP.TOTAL_STAFF_RECODED).mean().alias(DP.AVERAGE_STAFF))
+        .filter(pl.col(DP.total_staff_recoded).is_between(min_staff, max_staff))
+        .group_by(DP.year_as_integer)
+        .agg(pl.col(DP.total_staff_recoded).mean().alias(DP.average_staff))
     )
 
     pa_ratio_lf = survey_average_lf.join(
-        historic_ratio_lf, on=DP.YEAR_AS_INTEGER, how="full", coalesce=True
+        historic_ratio_lf, on=DP.year_as_integer, how="full", coalesce=True
     ).select(
-        (pl.col(DP.YEAR_AS_INTEGER) - 1).alias(DP.YEAR_AS_INTEGER),
-        pl.coalesce(DP.AVERAGE_STAFF, DP.HISTORIC_RATIO).alias(DP.AVERAGE_STAFF),
+        (pl.col(DP.year_as_integer) - 1).alias(DP.year_as_integer),
+        pl.coalesce(DP.average_staff, DP.historic_ratio).alias(DP.average_staff),
     )
 
     return (
-        pa_ratio_lf.sort(DP.YEAR_AS_INTEGER)
+        pa_ratio_lf.sort(DP.year_as_integer)
         .with_columns(
-            pl.col(DP.AVERAGE_STAFF)
+            pl.col(DP.average_staff)
             .rolling_mean_by(
-                DP.YEAR_AS_INTEGER,
+                DP.year_as_integer,
                 window_size=f"{Config.NUMBER_OF_YEARS_ROLLING_AVERAGE}i",
                 closed="right",
                 min_samples=1,
             )
-            .alias(DP.RATIO_ROLLING_AVERAGE)
+            .alias(DP.ratio_rolling_average)
         )
-        .select(DP.YEAR_AS_INTEGER, DP.RATIO_ROLLING_AVERAGE)
+        .select(DP.year_as_integer, DP.ratio_rolling_average)
     )

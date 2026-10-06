@@ -34,85 +34,77 @@ def calculate_estimated_service_users_employing_staff(lf: pl.LazyFrame) -> pl.La
 
     Args:
         lf (pl.LazyFrame): LazyFrame containing direct payments data with columns:
-            - LA_AREA
-            - YEAR_AS_INTEGER
-            - SERVICE_USER_DPRS_DURING_YEAR
-            - PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+            - la_area
+            - year_as_integer
+            - service_user_dprs_during_year
+            - proportion_employing_staff
 
     Returns:
         pl.LazyFrame: LazyFrame with additional columns:
-            - ESTIMATE_USING_MEAN
-            - ESTIMATE_USING_EXTRAPOLATION_RATIO
-            - ESTIMATE_USING_INTERPOLATION
-            - ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-            - ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE
-            - ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-            - ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            - estimate_using_mean
+            - estimate_using_extrapolation_ratio
+            - estimate_using_interpolation
+            - imputed_proportion_employing_staff
+            - imputed_proportion_employing_staff_source
+            - rolling_average_proportion_employing_staff
+            - estimated_service_users_employing_staff
     """
 
     lf = model_using_mean(lf)
     lf = lf.with_columns(
         pl.coalesce(
-            [DP.ESTIMATE_USING_MEAN, DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE]
-        ).alias(DP.ESTIMATE_USING_MEAN)
+            [DP.estimate_using_mean, DP.historic_service_users_employing_staff_estimate]
+        ).alias(DP.estimate_using_mean)
     )
 
     lf = model_extrapolation(lf)
 
-    lf = model_interpolation(lf, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+    lf = model_interpolation(lf, DP.proportion_employing_staff)
 
     lf = lf.with_columns(
         coalesce_with_source_labels(
             cols=[
-                DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-                DP.ESTIMATE_USING_EXTRAPOLATION_RATIO,
-                DP.ESTIMATE_USING_INTERPOLATION,
-                DP.ESTIMATE_USING_MEAN,
+                DP.proportion_employing_staff,
+                DP.estimate_using_extrapolation_ratio,
+                DP.estimate_using_interpolation,
+                DP.estimate_using_mean,
             ],
-            name=DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+            name=DP.imputed_proportion_employing_staff,
         )
     )
 
     # Drop the interpolation column and re-run interpolation to fill any remaining nulls.
     # This is to populate year = 2014 where there are no values for proportion of service users employing staff.
     # Mean imputation populates 2013, proportions are known in 2015 and later, so interpolation is being used to estimate 2014.
-    lf = lf.drop(DP.ESTIMATE_USING_INTERPOLATION)
-    lf = model_interpolation(
-        lf, DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-    )
+    lf = lf.drop(DP.estimate_using_interpolation)
+    lf = model_interpolation(lf, DP.imputed_proportion_employing_staff)
 
     source_update_exprs = (
         pl.when(
             (
-                pl.col(
-                    DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-                ).is_null()
-                & pl.col(DP.ESTIMATE_USING_INTERPOLATION).is_not_null()
+                pl.col(DP.imputed_proportion_employing_staff).is_null()
+                & pl.col(DP.estimate_using_interpolation).is_not_null()
             )
         )
-        .then(pl.lit(DP.ESTIMATE_USING_INTERPOLATION))
-        .otherwise(
-            pl.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE)
-        )
-        .alias(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE)
+        .then(pl.lit(DP.estimate_using_interpolation))
+        .otherwise(pl.col(DP.imputed_proportion_employing_staff_source))
+        .alias(DP.imputed_proportion_employing_staff_source)
     )
     estimate_update_expr = pl.coalesce(
         [
-            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-            DP.ESTIMATE_USING_INTERPOLATION,
+            DP.imputed_proportion_employing_staff,
+            DP.estimate_using_interpolation,
         ]
-    ).alias(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+    ).alias(DP.imputed_proportion_employing_staff)
     lf = lf.with_columns(estimate_update_expr, source_update_exprs)
 
     lf = calculate_rolling_mean(lf)
 
     lf = lf.with_columns(
         (
-            pl.col(DP.SERVICE_USER_DPRS_DURING_YEAR)
-            * pl.col(
-                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-            )
-        ).alias(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF)
+            pl.col(DP.service_user_dprs_during_year)
+            * pl.col(DP.rolling_average_proportion_employing_staff)
+        ).alias(DP.estimated_service_users_employing_staff)
     )
 
     return lf

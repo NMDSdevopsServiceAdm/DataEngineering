@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a Polars scaffold for the CQC ratings flatten job, run in SfC-Internal alongside the PySpark job. It writes to separate `_polars` datasets and its failure doesn't stop the other jobs.
 - Added a run log table to the job role estimates archive, recording one row per run.
 - Added validation checks for columns that are created but never checked, across the Independent CQC filled posts, employment status, starters/leavers/vacancies, CQC locations/providers ingest, CQC PIR, Capacity Tracker, ONS postcode directory and direct payment recipients validators.
 - Added a `col_vals_in_set`/distinct-count validation check for ASC-WDS workplace `region_id`, the one ASC-WDS-adjacent categorical column that previously had no validation backing it.
@@ -37,6 +38,11 @@ All notable changes to this project will be documented in this file.
 - Added a `check-main-tip` job at the start of the prod plan, approval, apply and dependency deploy group that fails a main pipeline whose commit is no longer the tip of `main`, so an older pipeline reaching the group after a newer one cannot apply its older plan or sync older code.
 - Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock, with a gate that fails a main pipeline whose prod deploy was skipped or cancelled instead of reporting it as success.
 - Added full imputation to the employment status impute job, filling remaining gaps by carrying each location and job role's known percentages along the rolling averages, with validation of the result. Renamed the short-term imputed percentage columns to `*_imputed_for_trendline`.
+- Added published label classes and column names for the publication outputs, and used them in the publication clean job.
+
+
+### Changed
+- Changed the job group labels (`JobGroupLabels`) from snake_case to human-readable values, e.g. "direct_care" to "Direct care", so `main_job_group_labels` data values change on every run.
 - Added the Excel packages `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image, and extended the Docker pin test to cover every `requirements-extra.txt`.
 - Added a `trello-cards` Claude Code skill that drafts paste-ready Trello cards from a plan or a one-line idea.
 
@@ -78,6 +84,7 @@ All notable changes to this project will be documented in this file.
 - Reduced the IND CQC filled posts model features validation's memory use by scanning the wide imputed comparison dataset lazily, so only the columns its expected row count needs are read.
 - Tidied the direct payment recipients folder names, test layout, test names and docstrings to match the rest of the pipeline. No behaviour change.
 - Changed the direct payment recipients ratio, proportion and estimate columns from Float64 to Float32, halving their memory use.
+- Renamed the direct payment recipients columns to shorter, lower snake_case names, dropping `estimated` from mid-stage columns. Estimate, summary and ICB output columns and the estimate source label `proportion_employing_staff` change, so downstream readers need the new names.
 
 
 ### Fixed

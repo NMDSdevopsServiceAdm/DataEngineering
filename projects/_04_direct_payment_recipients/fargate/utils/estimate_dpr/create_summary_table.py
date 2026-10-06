@@ -19,27 +19,25 @@ def create_summary_table(
         pl.LazyFrame: A LazyFrame grouped by year with the following columns:
             - total_dprs
             - service_user_dprs
-            - service_users_employing_staff
-            - service_users_with_self_employed_staff
+            - employing_staff
+            - employing_self_employed_staff
             - total_dprs_employing_staff
-            - total_personal_assistant_filled_posts
+            - pa_filled_posts
     """
-    summary_direct_payments_lf = lf.group_by(DP.YEAR_AS_INTEGER).agg(
-        pl.sum(DP.TOTAL_DPRS_DURING_YEAR).cast(pl.Float32).alias(DP.TOTAL_DPRS),
-        pl.sum(DP.SERVICE_USER_DPRS_DURING_YEAR)
+    summary_direct_payments_lf = lf.group_by(DP.year_as_integer).agg(
+        pl.sum(DP.total_dprs_during_year).cast(pl.Float32).alias(DP.total_dprs),
+        pl.sum(DP.service_user_dprs_during_year)
         .cast(pl.Float32)
-        .alias(DP.SERVICE_USER_DPRS),
-        pl.sum(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF)
+        .alias(DP.service_user_dprs),
+        pl.sum(DP.estimated_service_users_employing_staff)
         .cast(pl.Float32)
-        .alias(DP.SERVICE_USERS_EMPLOYING_STAFF),
-        pl.sum(DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF)
+        .alias(DP.employing_staff),
+        pl.sum(DP.estimated_service_users_employing_self_employed_staff)
         .cast(pl.Float32)
-        .alias(DP.SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF),
-        pl.sum(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF)
+        .alias(DP.employing_self_employed_staff),
+        pl.sum(DP.estimated_total_dpr_employing_staff)
         .cast(pl.Float32)
-        .alias(DP.TOTAL_DPRS_EMPLOYING_STAFF),
-        pl.sum(DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS)
-        .cast(pl.Float32)
-        .alias(DP.TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS),
+        .alias(DP.total_dprs_employing_staff),
+        pl.sum(DP.estimated_pa_filled_posts).cast(pl.Float32).alias(DP.pa_filled_posts),
     )
     return summary_direct_payments_lf

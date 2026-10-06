@@ -13,6 +13,12 @@ from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+)
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    PartitionKeys as RawKeys,
+)
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -326,5 +332,34 @@ class FlattenCQCRatings:
         [
             *flattened_ratings_schema.items(),
             (CQCRatingsColumns.current_or_historic, pl.String),
+            (CQCL.dataset, pl.String),
+        ]
+    )
+
+    main_snapshot_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCL.type, pl.String),
+        ]
+    )
+
+    main_delta_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (RawKeys.import_date, pl.String),
+            (CQCL.current_ratings, current_ratings_struct),
+            (CQCL.historic_ratings, historic_ratings_struct),
+        ]
+    )
+
+    main_ascwds_workplace_schema = pl.Schema(
+        [
+            (RawKeys.import_date, pl.String),
+            (RawKeys.year, pl.String),
+            (RawKeys.month, pl.String),
+            (RawKeys.day, pl.String),
+            (AWP.establishment_id, pl.String),
+            (AWP.location_id, pl.String),
         ]
     )

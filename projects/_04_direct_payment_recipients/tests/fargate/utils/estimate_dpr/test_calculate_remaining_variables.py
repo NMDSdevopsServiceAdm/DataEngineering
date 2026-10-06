@@ -12,16 +12,16 @@ from utils.column_names.direct_payments_column_names import (
 class TestCalculateRemainingVariables(unittest.TestCase):
     def test_calculate_remaining_variables_returns_expected_values(self):
         schema = {
-            DP.LA_AREA: pl.String,
-            DP.YEAR_AS_INTEGER: pl.Int32,
-            DP.SERVICE_USER_DPRS_DURING_YEAR: pl.Float32,
-            DP.TOTAL_DPRS_DURING_YEAR: pl.Float32,
-            DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: pl.Float32,
-            DP.FILLED_POSTS_PER_EMPLOYER: pl.Float32,
-            DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: pl.Float32,
-            DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF: pl.Float32,
-            DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float32,
-            DP.ESTIMATED_PROPORTION_OF_TOTAL_DPR_EMPLOYING_STAFF: pl.Float32,
+            DP.la_area: pl.String,
+            DP.year_as_integer: pl.Int32,
+            DP.service_user_dprs_during_year: pl.Float32,
+            DP.total_dprs_during_year: pl.Float32,
+            DP.estimated_service_users_employing_staff: pl.Float32,
+            DP.filled_posts_per_employer: pl.Float32,
+            DP.estimated_service_users_employing_self_employed_staff: pl.Float32,
+            DP.estimated_total_dpr_employing_staff: pl.Float32,
+            DP.estimated_pa_filled_posts: pl.Float32,
+            DP.estimated_proportion_of_total_dpr_employing_staff: pl.Float32,
         }
 
         rows = [
@@ -31,10 +31,10 @@ class TestCalculateRemainingVariables(unittest.TestCase):
 
         expected_lf = pl.LazyFrame(rows, schema, orient="row")
         test_lf = expected_lf.drop(
-            DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF,
-            DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF,
-            DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
-            DP.ESTIMATED_PROPORTION_OF_TOTAL_DPR_EMPLOYING_STAFF,
+            DP.estimated_service_users_employing_self_employed_staff,
+            DP.estimated_total_dpr_employing_staff,
+            DP.estimated_pa_filled_posts,
+            DP.estimated_proportion_of_total_dpr_employing_staff,
         )
         returned_lf = job.calculate_remaining_variables(test_lf)
 

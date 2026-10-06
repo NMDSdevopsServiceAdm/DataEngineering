@@ -25,14 +25,12 @@ class TestDPRModelInterpolation(unittest.TestCase):
             ("area_3", 2021, None, None),
         ]
         test_schema = {
-            DP.LA_AREA: pl.String,
-            DP.YEAR_AS_INTEGER: pl.Int64,
-            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
-            DP.ESTIMATE_USING_INTERPOLATION: pl.Float32,
+            DP.la_area: pl.String,
+            DP.year_as_integer: pl.Int64,
+            DP.proportion_employing_staff: pl.Float32,
+            DP.estimate_using_interpolation: pl.Float32,
         }
         expected_lf = pl.LazyFrame(rows, schema=test_schema, orient="row")
-        test_lf = expected_lf.drop(DP.ESTIMATE_USING_INTERPOLATION)
-        returned_lf = job.model_interpolation(
-            test_lf, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-        )
+        test_lf = expected_lf.drop(DP.estimate_using_interpolation)
+        returned_lf = job.model_interpolation(test_lf, DP.proportion_employing_staff)
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
