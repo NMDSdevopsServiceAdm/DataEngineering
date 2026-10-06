@@ -275,9 +275,10 @@ def add_full_imputed_percentages(lf: pl.LazyFrame) -> pl.LazyFrame:
     time limit. Filled values are floored at zero and re-shared to sum to 1, and a location and
     job role with no known values stays null.
 
-    The floored total is at least 1 because the unfloored shares sum to 1, so the re-share needs
-    no zero guard. Statuses run one at a time because the shared helpers return fixed column
-    names, which are dropped before the next status.
+    The re-share needs no zero guard: rolling averages that sum to 1 give unfloored shares that
+    sum to 1, so the floored total is about 1 or more. A null rolling average leaves the row
+    null. Statuses run one at a time because the shared helpers return fixed column names, which
+    are dropped before the next status.
 
     Args:
         lf (pl.LazyFrame): dataset containing the 5 percentage columns and their rolling averages
