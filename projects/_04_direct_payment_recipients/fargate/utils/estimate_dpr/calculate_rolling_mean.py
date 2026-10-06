@@ -15,9 +15,8 @@ def calculate_rolling_mean(lf: pl.LazyFrame) -> pl.LazyFrame:
     'imputed_proportion_employing_staff'.
 
     Args:
-        lf (pl.LazyFrame): A LazyFrame with columns
-            'la_area', 'year_as_integer' and
-            'imputed_proportion_employing_staff'.
+        lf (pl.LazyFrame): A LazyFrame with columns 'la_area', 'year_as_integer'
+            and 'imputed_proportion_employing_staff'.
 
     Returns:
         pl.LazyFrame: A LazyFrame with new column
