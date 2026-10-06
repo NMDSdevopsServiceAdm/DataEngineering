@@ -1,4 +1,7 @@
 from polars_utils import utils
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
+    merge_utils,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
@@ -29,21 +32,27 @@ def main(
     jr_archive_estimates_source: str,
     jr_archive_metadata_source: str,
     merge_data_destination: str,
+    run_number: int | None = None,
 ) -> None:
     """
-    Merges archived job role estimates and metadata.
+    Merges archived job role estimates and metadata for one archived run.
 
     Args:
-        jr_archive_estimates_source (str): source s3 directory for archived job role estimates data
-        jr_archive_metadata_source (str): source s3 directory for archived job role metadata data
+        jr_archive_estimates_source (str): s3 directory of the archived job role estimates
+        jr_archive_metadata_source (str): s3 directory of the archived job role metadata
         merge_data_destination (str): destination s3 directory for merged data
+        run_number (int | None): the archived run to merge. Defaults to None, the latest run
     """
+    estimates_run_source, metadata_run_source = merge_utils.resolve_run_sources(
+        [jr_archive_estimates_source, jr_archive_metadata_source], run_number
+    )
+
     jr_estimates_lf = utils.scan_parquet(
-        jr_archive_estimates_source,
+        estimates_run_source,
         selected_columns=JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
     )
     metadata_lf = utils.scan_parquet(
-        jr_archive_metadata_source,
+        metadata_run_source,
         selected_columns=JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
     )
 
@@ -61,19 +70,26 @@ if __name__ == "__main__":
     args = utils.get_args(
         (
             "--jr_archive_estimates_source",
-            "Source s3 directory for archived job role estimates data",
+            "S3 directory of the archived job role estimates, holding all runs",
         ),
         (
             "--jr_archive_metadata_source",
-            "Source s3 directory for archived job role metadata data",
+            "S3 directory of the archived job role metadata, holding all runs",
         ),
         (
             "--merge_data_destination",
             "Destination s3 directory for merged data",
+        ),
+        (
+            "--run_number",
+            "Archived run number to merge, or 'latest'",
+            False,
+            merge_utils.LATEST_RUN,
         ),
     )
     main(
         jr_archive_estimates_source=args.jr_archive_estimates_source,
         jr_archive_metadata_source=args.jr_archive_metadata_source,
         merge_data_destination=args.merge_data_destination,
+        run_number=merge_utils.parse_run_number(args.run_number),
     )
