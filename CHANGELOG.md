@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added a Polars scaffold for the CQC ratings flatten job, run in SfC-Internal alongside the PySpark job. It writes to separate `_polars` datasets and its failure doesn't stop the other jobs.
+- Added a run log table to the job role estimates archive, recording one row per run.
 - Added validation checks for columns that are created but never checked, across the Independent CQC filled posts, employment status, starters/leavers/vacancies, CQC locations/providers ingest, CQC PIR, Capacity Tracker, ONS postcode directory and direct payment recipients validators.
 - Added a `col_vals_in_set`/distinct-count validation check for ASC-WDS workplace `region_id`, the one ASC-WDS-adjacent categorical column that previously had no validation backing it.
 - Joined worker-derived employment status counts into the SLV merge step, collapsing worker job roles to the published scheme already used by workplace and job-role-estimate data, and applying the same null-location and date-reduction filtering `_00_prepare_workplace` already uses so the worker and workplace import dates line up for the join.
@@ -34,10 +35,15 @@ All notable changes to this project will be documented in this file.
 - Migrated the `_02_cqc_coverage` job's core merge logic (ASC-WDS purge-date handling, the aligned-date join, deduplication, the latest-CQC-rating and provider-name joins, and the latest-month output) from PySpark to Polars, running in parallel to the existing pipeline for output comparison.
 - Added a data-quality cleaning step for the EmpStat clean job that nulls an org's permanent, temporary, bank-or-pool, agency and other employment status counts (and their percentage-share columns) where too few of its reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
 - Added a step to the EmpStat clean job that creates a `_clean` copy of each deduplicated employment status count, with a filtering-rule column recording whether each row is populated or missing data.
+- Added a `check-main-tip` job at the start of the prod plan, approval, apply and dependency deploy group that fails a main pipeline whose commit is no longer the tip of `main`, so an older pipeline reaching the group after a newer one cannot apply its older plan or sync older code.
+- Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock, with a gate that fails a main pipeline whose prod deploy was skipped or cancelled instead of reporting it as success.
+- Added the Excel packages `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image, and extended the Docker pin test to cover every `requirements-extra.txt`.
+- Added a `trello-cards` Claude Code skill that drafts paste-ready Trello cards from a plan or a one-line idea.
 
 
 ### Changed
-- Converted direct payment recipients outlier removal from PySpark to a single Polars function (not yet wired into a job).
+- Restructured the Direct Payment Recipients pipeline to match Independent CQC: numbered job and dataset names, parallel validation, and error notification with an always-run crawler.
+- Converted the split PA filled posts into ICB areas step of the Direct Payment Recipients pipeline from PySpark to Polars.
 - Added `number_of_beds_at_provider` to the grouped providers output dataset.
 - Increased the upper limit of CT combined trendline validation from 2.0 to 2.5.
 - Changed employment status count deduplication to judge staleness per workplace and import date rather than per job role: counts are only nulled when no job role changed.
@@ -62,13 +68,16 @@ All notable changes to this project will be documented in this file.
 - Moved the filled posts models' date-index step into a shared, reusable `_03_independent_cqc` utility (`add_date_index`).
 - Serialised the dev CircleCI image build, terraform plan/apply and environment destroy per branch, and added a job that fails a pipeline whose apply didn't run.
 - Moved the `_03_independent_cqc` Dockerfile out of `_01_filled_posts` and up to the project level (`projects/_03_independent_cqc/Dockerfile_and_requirements/`), as the image also builds the employment status and starters/leavers/vacancies jobs. Updated the path in `docker-bake.hcl`; the Dockerfile itself is unchanged.
-
+- Replaced the PySpark DPR prepare and merge Glue jobs with one Polars Fargate step, and removed the intermediate `_prepared` datasets and the remaining PySpark DPR code.
+- Moved the extrapolation, interpolation and imputation utilities, with their tests and test data, to the project-level `_03_independent_cqc` utils.
 
 ### Improved
 - Selected key question ratings by name in both current and historic CQC ratings, raising an error if a name is repeated within a list.
 - Confirmed the DPR extrapolation ratio model doesn't depend on input row order, with tests that feed it reversed and interleaved rows, and added a validation check that estimated DPR data has one row per LA area and year, which the model relies on.
 - Combined the three near-identical CI scripts that decide whether a push should seed the raw bucket, seed the archive sample data or run the CQC integration tests into one `scripts/select_ci_gate.py`, so adding a new gate is one entry in its list of trigger paths. Added a test that fails if a trigger path no longer exists in the repo, so a renamed file can't leave a gate silently never firing.
 - Reduced the IND CQC filled posts model features validation's memory use by scanning the wide imputed comparison dataset lazily, so only the columns its expected row count needs are read.
+- Tidied the direct payment recipients folder names, test layout, test names and docstrings to match the rest of the pipeline. No behaviour change.
+- Changed the direct payment recipients ratio, proportion and estimate columns from Float64 to Float32, halving their memory use.
 
 
 ### Fixed
@@ -83,6 +92,7 @@ All notable changes to this project will be documented in this file.
 - Fixed job role estimates metadata validation to stop excluding `contained_invalid_missing_data_code`, a workaround for data the lookback cap now retains.
 - Fixed the IND CQC filled posts model's predict step to stop with an error showing both feature lists when the saved model's features differ from the model registry, rather than risk silently misaligned predictions. Also stopped its features validation requiring `posts_rolling_average_model` for the non-res with dormancy model, which doesn't use it, and made the care home check name the bed features that column was standing in for.
 - Fixed the Windows setup and deploy docs causing Terraform and MFA command-line errors: the `HOME` step no longer needs a hand-typed username, the two conflicting `non-prod` AWS profiles are now a single Terraform-compatible one (no `mfa_serial`), broken links to the setup guide are corrected, and the Terraform install step now matches the version CircleCI uses.
+- Fixed the delete-development-environments GitHub workflow to pass the deleted branch name to its log step through an environment variable instead of splicing it into the shell command (a branch name containing `$(...)` could run code on the runner), and to skip tag deletes, which have no development environment to destroy.
 - Fixed validation report summaries showing the step and table icons as raw SVG text. `great-tables` is now pinned to 0.23.0 in the Fargate image requirements and `pyproject.toml`, after the unpinned dependency picked up 1.0.0, which HTML-escapes unformatted table cells. Added tests that the report icons are not escaped and that every pin in the Docker requirements matches `pyproject.toml`.
 
 

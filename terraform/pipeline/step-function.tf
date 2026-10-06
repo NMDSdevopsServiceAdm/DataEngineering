@@ -87,6 +87,9 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     dataset_bucket_name           = module.datasets_bucket.bucket_name
     pipeline_resources_bucket_uri = module.pipeline_resources.bucket_uri
 
+    # archive run log
+    commit_sha = var.commit_sha
+
     # compare paths
     ind_cqc_job_role_estimates     = local.ind_cqc_job_role_estimates_dataset_name
     ind_cqc_job_role_metadata      = local.ind_cqc_job_role_metadata_dataset_name
@@ -100,11 +103,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     run_crawler_state_machine_arn = aws_sfn_state_machine.run_crawler.arn
 
     # jobs
-    prepare_dpr_external_job_name                 = module.prepare_dpr_external_data_job.job_name
-    prepare_dpr_survey_job_name                   = module.prepare_dpr_survey_data_job.job_name
-    merge_dpr_data_job_name                       = module.merge_dpr_data_job.job_name
-    split_pa_filled_posts_into_icb_areas_job_name = module.split_pa_filled_posts_into_icb_areas_job.job_name
-    flatten_cqc_ratings_job_name                  = module.flatten_cqc_ratings_job.job_name
+    flatten_cqc_ratings_job_name = module.flatten_cqc_ratings_job.job_name
 
     # crawlers
     ascwds_crawler_name      = module.ascwds_crawler.crawler_name

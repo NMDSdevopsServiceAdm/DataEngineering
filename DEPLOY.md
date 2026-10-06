@@ -69,5 +69,6 @@ terraform workspace delete <workspace_name>
 - Requires manual approval when merging to main
 - You can find the full CircleCi configuration inside [.circleci/config.yml](.circleci/config.yml).
 - Per branch, the image build and `terraform-plan`/`terraform-apply` run one at a time (`serial-group`), so a newer push waits for a running apply. A superseded pipeline's apply is skipped and its `flag-incomplete-deploy` job fails: don't rerun it.
+- On main, `check-main-tip` runs first in the prod `plan-approve-and-apply` group and fails if the pipeline's commit is no longer the tip of `main`, so an older pipeline that reaches the group after a newer one can't apply its older plan or sync older code. Don't rerun a pipeline that fails it: the newer commit's pipeline carries those changes.
 - Needs **Auto-cancel redundant workflows** OFF in the CircleCI project settings (Project Settings > Advanced), or a running apply is cancelled again.
 - Branch names may only use letters, digits, `.`, `_`, `-` and `/` (the `serial-group` key allows nothing else).
