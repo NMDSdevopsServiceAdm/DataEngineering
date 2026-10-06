@@ -66,6 +66,7 @@ All notable changes to this project will be documented in this file.
 - Serialised the dev CircleCI image build, terraform plan/apply and environment destroy per branch, and added a job that fails a pipeline whose apply didn't run.
 - Moved the `_03_independent_cqc` Dockerfile out of `_01_filled_posts` and up to the project level (`projects/_03_independent_cqc/Dockerfile_and_requirements/`), as the image also builds the employment status and starters/leavers/vacancies jobs. Updated the path in `docker-bake.hcl`; the Dockerfile itself is unchanged.
 - Replaced the PySpark DPR prepare and merge Glue jobs with one Polars Fargate step, and removed the intermediate `_prepared` datasets and the remaining PySpark DPR code.
+- Moved the extrapolation, interpolation and imputation utilities, with their tests and test data, to the project-level `_03_independent_cqc` utils.
 
 ### Improved
 - Selected key question ratings by name in both current and historic CQC ratings, raising an error if a name is repeated within a list.
