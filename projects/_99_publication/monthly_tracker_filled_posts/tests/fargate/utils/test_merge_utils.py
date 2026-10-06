@@ -19,17 +19,31 @@ def mock_s3_pages(mock_boto_client: Mock, pages: list[dict]) -> MagicMock:
     return mock_paginator
 
 
+@dataclass
+class ParseRunNumberTestCase:
+    id: str
+    value: str | None
+    expected: int | None
+
+    def as_pytest_param(self):
+        return pytest.param(self.value, self.expected, id=self.id)
+
+
+parse_run_number_cases = [
+    ParseRunNumberTestCase(id="returns_none_when_not_given", value=None, expected=None),
+    ParseRunNumberTestCase(id="returns_none_for_latest", value="latest", expected=None),
+    ParseRunNumberTestCase(id="returns_int_for_digit_string", value="3", expected=3),
+]
+
+
 class TestParseRunNumber:
-    def test_returns_none_when_not_given(self):
-        assert job.parse_run_number(None) is None
+    @pytest.mark.parametrize(
+        "value, expected", [c.as_pytest_param() for c in parse_run_number_cases]
+    )
+    def test_returns_expected_run_number(self, value: str | None, expected: int | None):
+        assert job.parse_run_number(value) == expected
 
-    def test_returns_none_for_latest(self):
-        assert job.parse_run_number("latest") is None
-
-    def test_returns_int_for_digit_string(self):
-        assert job.parse_run_number("3") == 3
-
-    @pytest.mark.parametrize("value", ["abc", "null", "-1", ""])
+    @pytest.mark.parametrize("value", ["abc", "null", "-1", "", "²"])
     def test_raises_for_non_numeric_value(self, value: str):
         with pytest.raises(ValueError, match="run_number"):
             job.parse_run_number(value)
@@ -187,7 +201,11 @@ select_run_number_cases = [
 class TestSelectRunNumber:
     @pytest.mark.parametrize(
         "case",
-        [c.as_pytest_param() for c in select_run_number_cases if c.expected],
+        [
+            c.as_pytest_param()
+            for c in select_run_number_cases
+            if c.expected is not None
+        ],
     )
     def test_returns_expected_run_number(self, case: SelectRunNumberTestCase):
         assert (
@@ -196,7 +214,11 @@ class TestSelectRunNumber:
 
     @pytest.mark.parametrize(
         "case",
-        [c.as_pytest_param() for c in select_run_number_cases if c.expected_error],
+        [
+            c.as_pytest_param()
+            for c in select_run_number_cases
+            if c.expected_error is not None
+        ],
     )
     def test_raises_for_unusable_runs(self, case: SelectRunNumberTestCase):
         with pytest.raises(ValueError, match=case.expected_error):
@@ -232,6 +254,17 @@ class TestResolveRunSources:
         assert returned == [
             "s3://bucket/dataset=estimates/archive_date=2026-09-22/run_number=1/",
             "s3://bucket/dataset=metadata/archive_date=2026-09-22/run_number=1/",
+        ]
+
+    @patch(f"{PATCH_PATH}.list_archive_runs")
+    def test_uses_each_roots_own_archive_date(self, list_archive_runs_mock: Mock):
+        list_archive_runs_mock.side_effect = [{2: "2026-10-01"}, {2: "2026-10-02"}]
+
+        returned = job.resolve_run_sources([self.estimates_root, self.metadata_root], 2)
+
+        assert returned == [
+            "s3://bucket/dataset=estimates/archive_date=2026-10-01/run_number=2/",
+            "s3://bucket/dataset=metadata/archive_date=2026-10-02/run_number=2/",
         ]
 
     @pytest.mark.parametrize(

@@ -25,7 +25,7 @@ def parse_run_number(value: str | None) -> int | None:
     """
     if value is None or value == LATEST_RUN:
         return None
-    if not value.isdigit():
+    if not value.isdecimal():
         raise ValueError(
             f"run_number must be a whole number or 'latest', got '{value}'"
         )
