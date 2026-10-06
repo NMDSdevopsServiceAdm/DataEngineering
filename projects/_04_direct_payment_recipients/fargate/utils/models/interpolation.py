@@ -11,7 +11,7 @@ def model_interpolation(
 ) -> pl.LazyFrame:
     """
     Performs straight line interpolation of missing values for the
-    estimated proportion of service users employing staff.
+    imputed proportion of service users employing staff.
 
     Args:
         direct_payments_lf (pl.LazyFrame): Input LazyFrame with columns la_area,

@@ -125,7 +125,7 @@ def calculate_icb_proportions(postcode_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: One row per import date, cssr and icb with the ICB's proportion of the cssr's postcodes.
     """
-    icb_postcodes: str = "icb_postcodes"
+    icb_postcodes = "icb_postcodes"
     la_keys = [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr]
 
     return (
