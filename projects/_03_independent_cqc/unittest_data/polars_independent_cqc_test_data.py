@@ -582,6 +582,44 @@ class TestCleaningUtilsData:
                 "second_value_dedup": [2, 2, None, None],
             },
         ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="independent_null_location_rows_are_judged_individually",
+            input_data={
+                "location_id": [None, None, None, None],
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 5],
+                "second_value": [2, 2, 2, 2],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            independent=True,
+            expected_data={
+                "location_id": [None, None, None, None],
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 5],
+                "second_value": [2, 2, 2, 2],
+                # location_id is null, so there's no workplace to broadcast across -
+                # each role's own timeline, and each column, decides on its own.
+                # Unlike the composite-mode equivalent of this case, role b's
+                # first_value changing does not keep its unchanged second_value.
+                "first_value_dedup": [1, 1, None, 5],
+                "second_value_dedup": [2, 2, None, None],
+            },
+        ),
     ]
 
     percentage_share_horizontal_test_cases = [
