@@ -1,5 +1,6 @@
 """
-PLACEHOLDER: shows the shape of a snippet. Delete it when the first real snippet is added.
+PLACEHOLDER: shows the shape of a snippet. Delete it, and its test
+`tests/skills/test_placeholder_example.py`, when the first real snippet is added.
 
 Say here what the function is for and what it requires: any repo functions it imports, and
 that without a repo checkout on `sys.path` they must be inlined and checked against the
