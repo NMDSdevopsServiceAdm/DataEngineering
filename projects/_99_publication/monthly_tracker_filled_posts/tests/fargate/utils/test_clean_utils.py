@@ -482,6 +482,7 @@ class TestBuildT0EstimatesDownloadTable:
     expected_schema = pl.Schema(
         [
             (PubDownload.period, pl.Date()),
+            (PubDownload.period_label, pl.String()),
             (PubDownload.region, pl.String()),
             (PubDownload.main_service, pl.String()),
             (PubDownload.estimated_filled_posts, pl.Float32()),
@@ -499,7 +500,7 @@ class TestBuildT0EstimatesDownloadTable:
     def test_returns_expected_data(self, case):
         input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
 
-        returned_lf = job.build_t0_estimates_download_table(input_lf)
+        returned_lf = job.build_t0_estimates_download_table(input_lf, today=case.today)
 
         expected_lf = pl.LazyFrame(
             case.expected_data, self.expected_schema, orient="row"
@@ -509,17 +510,19 @@ class TestBuildT0EstimatesDownloadTable:
     def test_output_has_no_duplicate_period_region_main_service_keys(self):
         input_lf = pl.LazyFrame(
             [
-                (date(2025, 4, 1), "All job roles", "London", "Care home service", 100.0, 10),
-                (date(2025, 4, 1), "Registered nurse", "London", "Care home service", 40.0, 10),
-                (date(2025, 4, 1), "All job roles", "London", "Non-residential service", 50.0, 5),
-                (date(2025, 4, 1), "All job roles", "South West", "Care home service", 60.0, 6),
-                (date(2025, 5, 1), "All job roles", "London", "Care home service", 110.0, 11),
+                (date(2026, 4, 1), "All job roles", "London", "Care home service", 100.0, 10),
+                (date(2026, 4, 1), "Registered nurse", "London", "Care home service", 40.0, 10),
+                (date(2026, 4, 1), "All job roles", "London", "Non-residential service", 50.0, 5),
+                (date(2026, 4, 1), "All job roles", "South West", "Care home service", 60.0, 6),
+                (date(2026, 5, 1), "All job roles", "London", "Care home service", 110.0, 11),
             ],
             self.input_schema,
             orient="row",
         )  # fmt: skip
 
-        returned_df = job.build_t0_estimates_download_table(input_lf).collect()
+        returned_df = job.build_t0_estimates_download_table(
+            input_lf, today=date(2026, 10, 6)
+        ).collect()
 
         key_columns = [PubDownload.period, PubDownload.region, PubDownload.main_service]
         assert returned_df.height == returned_df.select(key_columns).n_unique()
@@ -530,6 +533,7 @@ class TestBuildT1FilledPostsPercChangeDownloadTable:
     expected_schema = pl.Schema(
         [
             (PubDownload.period, pl.Date()),
+            (PubDownload.period_label, pl.String()),
             (PubDownload.region, pl.String()),
             (PubDownload.main_service, pl.String()),
             (PubDownload.annual_percentage_change, pl.Float32()),
@@ -547,7 +551,9 @@ class TestBuildT1FilledPostsPercChangeDownloadTable:
     def test_returns_expected_data(self, case):
         input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
 
-        returned_lf = job.build_t1_filled_posts_perc_change_download_table(input_lf)
+        returned_lf = job.build_t1_filled_posts_perc_change_download_table(
+            input_lf, today=case.today
+        )
 
         expected_lf = pl.LazyFrame(
             case.expected_data, self.expected_schema, orient="row"
@@ -569,7 +575,9 @@ class TestBuildT2LocationCountPercChangeDownloadTable:
     def test_returns_expected_data(self, case):
         input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
 
-        returned_lf = job.build_t2_location_count_perc_change_download_table(input_lf)
+        returned_lf = job.build_t2_location_count_perc_change_download_table(
+            input_lf, today=case.today
+        )
 
         expected_lf = pl.LazyFrame(
             case.expected_data, self.expected_schema, orient="row"

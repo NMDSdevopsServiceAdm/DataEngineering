@@ -179,7 +179,7 @@ def main(
     )
 
     t0_estimates_lf = clean_utils.build_t0_estimates_download_table(
-        publication_summary_lf
+        publication_summary_lf, today=today
     )
     utils.sink_to_parquet(
         lazy_df=t0_estimates_lf,
@@ -188,7 +188,7 @@ def main(
 
     t1_filled_posts_perc_change_lf = (
         clean_utils.build_t1_filled_posts_perc_change_download_table(
-            publication_summary_lf
+            publication_summary_lf, today=today
         )
     )
     utils.sink_to_parquet(
@@ -198,7 +198,7 @@ def main(
 
     t2_location_count_perc_change_lf = (
         clean_utils.build_t2_location_count_perc_change_download_table(
-            publication_summary_lf
+            publication_summary_lf, today=today
         )
     )
     utils.sink_to_parquet(

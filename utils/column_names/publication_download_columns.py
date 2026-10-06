@@ -4,6 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class PublicationDownloadColumns:
     period: str = "period"
+    period_label: str = "period_label"
     region: str = "region"
     main_service: str = "main_service"
     estimated_filled_posts: str = "estimated_filled_posts"
