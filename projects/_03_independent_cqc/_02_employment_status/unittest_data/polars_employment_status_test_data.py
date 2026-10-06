@@ -847,7 +847,7 @@ def full_imputation_case(
     id: str,
     dates: list[date],
     permanent: list[Optional[float]],
-    rolling_permanent: list[float],
+    rolling_permanent: list[Optional[float]],
     expected_permanent: list[Optional[float]],
 ) -> ImputeUtilsTestCase:
     """
@@ -1255,10 +1255,10 @@ class TestImputeUtilsData:
         ),
         full_imputation_case(
             id="interpolates_gap_along_rolling_average_trend",
-            dates=TEN_DAYS_APART,
+            dates=[date(2024, 1, 1) + timedelta(days=d) for d in [0, 5, 10, 30, 40]],
             permanent=[0.2, None, None, None, 0.6],
             rolling_permanent=[0.5, 0.6, 0.6, 0.7, 0.8],
-            expected_permanent=[0.2, 0.325, 0.35, 0.475, 0.6],
+            expected_permanent=[0.2, 0.3125, 0.325, 0.475, 0.6],
         ),
         full_imputation_five_status_case(
             id="imputes_each_status_from_its_own_rolling_average",
@@ -1305,6 +1305,32 @@ class TestImputeUtilsData:
             permanent=[None, 0.2, None, 0.4, None],
             rolling_permanent=[0.5] * 5,
             expected_permanent=[0.2, 0.2, 0.3, 0.4, 0.4],
+        ),
+        full_imputation_case(
+            id="fills_from_a_single_known_value",
+            dates=FIVE_MONTHS,
+            permanent=[None, None, 0.4, None, None],
+            rolling_permanent=[0.35, 0.45, 0.5, 0.6, 0.55],
+            expected_permanent=[0.25, 0.35, 0.4, 0.5, 0.45],
+        ),
+        full_imputation_case(
+            id="fills_across_gaps_of_many_years",
+            dates=[
+                date(2013, 1, 1),
+                date(2018, 1, 1),
+                date(2023, 1, 1),
+                date(2026, 1, 1),
+            ],
+            permanent=[0.2, None, 0.6, None],
+            rolling_permanent=[0.5, 0.6, 0.8, 0.7],
+            expected_permanent=[0.2, 0.35, 0.6, 0.5],
+        ),
+        full_imputation_case(
+            id="leaves_null_when_rolling_average_is_null",
+            dates=FIVE_MONTHS[:3],
+            permanent=[0.2, None, None],
+            rolling_permanent=[0.5, None, 0.6],
+            expected_permanent=[0.2, None, 0.3],
         ),
     ]
 

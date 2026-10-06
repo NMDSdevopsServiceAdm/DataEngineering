@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from typing import Any
 from unittest.mock import Mock, patch
 
 import polars as pl
@@ -16,13 +18,43 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 PATCH_PATH = "projects._03_independent_cqc.utils.imputation.imputation"
 
 
+@dataclass
+class GroupColumnsTestCase:
+    id: str
+    kwargs: dict[str, Any]
+    expected_group_columns: list[str]
+
+    def as_pytest_param(self):
+        return pytest.param(self.kwargs, self.expected_group_columns, id=self.id)
+
+
+group_columns_cases = [
+    GroupColumnsTestCase(
+        id="defaults_to_location_and_care_home",
+        kwargs={"care_home": False},
+        expected_group_columns=[IndCqc.location_id, IndCqc.care_home],
+    ),
+    GroupColumnsTestCase(
+        id="uses_given_group_columns",
+        kwargs={"care_home": None, "group_columns": [IndCqc.location_id]},
+        expected_group_columns=[IndCqc.location_id],
+    ),
+]
+
+
 class TestModelImputationFunctionality:
+    @pytest.mark.parametrize(
+        "kwargs, expected_group_columns",
+        [case.as_pytest_param() for case in group_columns_cases],
+    )
     @patch(f"{PATCH_PATH}.model_interpolation")
     @patch(f"{PATCH_PATH}.model_extrapolation")
-    def test_function_has_expected_calls(
+    def test_function_passes_group_columns_to_models(
         self,
         model_extrapolation_mock: Mock,
         model_interpolation_mock: Mock,
+        kwargs,
+        expected_group_columns,
     ):
         flagged_lf = pl.LazyFrame(
             [],
@@ -37,11 +69,10 @@ class TestModelImputationFunctionality:
             Data.column_with_null_values_name,
             Data.model_column_name,
             Data.imputed_values_column_name,
-            care_home=False,
             extrapolation_method="nominal",
+            **kwargs,
         )
 
-        expected_group_columns = [IndCqc.location_id, IndCqc.care_home]
         model_extrapolation_mock.assert_called_once()
         assert (
             model_extrapolation_mock.call_args.kwargs["group_columns"]
@@ -51,39 +82,6 @@ class TestModelImputationFunctionality:
         assert (
             model_interpolation_mock.call_args.kwargs["group_columns"]
             == expected_group_columns
-        )
-
-    @patch(f"{PATCH_PATH}.model_interpolation")
-    @patch(f"{PATCH_PATH}.model_extrapolation")
-    def test_function_passes_given_group_columns_to_models(
-        self,
-        model_extrapolation_mock: Mock,
-        model_interpolation_mock: Mock,
-    ):
-        flagged_lf = pl.LazyFrame(
-            [],
-            Schemas.expected_model_imputation_schema,
-            orient="row",
-        )
-        model_extrapolation_mock.return_value = flagged_lf
-        model_interpolation_mock.return_value = flagged_lf
-        group_columns = [IndCqc.location_id]
-
-        job.model_imputation(
-            Mock(name="input_lf"),
-            Data.column_with_null_values_name,
-            Data.model_column_name,
-            Data.imputed_values_column_name,
-            care_home=None,
-            extrapolation_method="nominal",
-            group_columns=group_columns,
-        )
-
-        assert (
-            model_extrapolation_mock.call_args.kwargs["group_columns"] == group_columns
-        )
-        assert (
-            model_interpolation_mock.call_args.kwargs["group_columns"] == group_columns
         )
 
 

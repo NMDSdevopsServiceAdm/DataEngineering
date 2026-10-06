@@ -151,7 +151,7 @@ def main(
         .col_vals_expr(
             pl.col(EmpStatus.permanent_percentage).is_null()
             | pl.all_horizontal(
-                pl.col(known_col) == pl.col(full_col)
+                pl.col(known_col).eq_missing(pl.col(full_col))
                 for known_col, full_col in zip(
                     PERCENTAGE_COLUMNS, FULL_IMPUTED_PERCENTAGE_COLUMNS
                 )
