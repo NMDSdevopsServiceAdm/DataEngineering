@@ -46,6 +46,7 @@ def main(
     estimates_run_source, metadata_run_source = merge_utils.resolve_run_sources(
         [jr_archive_estimates_source, jr_archive_metadata_source], run_number
     )
+    print(f"Merging archived runs: {estimates_run_source} and {metadata_run_source}")
 
     jr_estimates_lf = utils.scan_parquet(
         estimates_run_source,

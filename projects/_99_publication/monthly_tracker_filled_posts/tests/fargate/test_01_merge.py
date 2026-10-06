@@ -1,5 +1,7 @@
 from unittest.mock import Mock, patch
 
+import pytest
+
 import projects._99_publication.monthly_tracker_filled_posts.fargate._01_merge as job
 
 PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._01_merge"
@@ -104,3 +106,24 @@ class TestMain:
         resolve_run_sources_mock.assert_called_once_with(
             [TEST_ESTIMATES_ROOT, TEST_METADATA_ROOT], 3
         )
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources")
+    def test_main_logs_the_resolved_run_sources(
+        self,
+        resolve_run_sources_mock: Mock,
+        scan_parquet_mock: Mock,
+        sink_to_parquet_mock: Mock,
+        capsys: pytest.CaptureFixture,
+    ):
+        resolve_run_sources_mock.return_value = [
+            TEST_ESTIMATES_SOURCE,
+            TEST_METADATA_SOURCE,
+        ]
+
+        job.main(TEST_ESTIMATES_ROOT, TEST_METADATA_ROOT, TEST_DESTINATION)
+
+        logged = capsys.readouterr().out
+        assert TEST_ESTIMATES_SOURCE in logged
+        assert TEST_METADATA_SOURCE in logged
