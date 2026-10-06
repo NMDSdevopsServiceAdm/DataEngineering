@@ -1,5 +1,5 @@
 {
-  "Comment": "Manually-started pipeline to ingest the raw DPR survey and external CSVs, replacing the old ingest_dpr_survey_data_job/ingest_dpr_external_data_job Glue jobs. Before each annual run, edit the '--source' (raw CSV S3 path) and the 'version=YYYY.MM' segment of '--destination' below for both branches, commit, and let CI/CD deploy the change - then start this state machine with no execution input needed. The destination version must also be updated to match in Direct-Payment-Recipients.json's Prepare states.",
+  "Comment": "Manually-started pipeline to ingest the raw DPR survey and external CSVs, replacing the old ingest_dpr_survey_data_job/ingest_dpr_external_data_job Glue jobs. Before each annual run, edit the '--source' (raw CSV S3 path) and the 'version=' segment of '--destination' below for both branches, commit, and let CI/CD deploy the change - then start this state machine with no execution input needed. The destination version must also be updated to match in Direct-Payment-Recipients.json's Merge state.",
   "StartAt": "Ingest DPR data in parallel",
   "States": {
     "Ingest DPR data in parallel": {
@@ -33,7 +33,7 @@
                         "--dataset",
                         "survey",
                         "--destination",
-                        "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_survey/version=YYYY.MM/"
+                        "${dataset_bucket_uri}/domain=04_dpr/dataset=00_survey/version=2027.01/"
                       ]
                     }
                   ]
@@ -71,7 +71,7 @@
                         "--dataset",
                         "external",
                         "--destination",
-                        "${dataset_bucket_uri}/domain=04_dpr/dataset=direct_payments_external/version=YYYY.MM/"
+                        "${dataset_bucket_uri}/domain=04_dpr/dataset=00_external/version=2027.01/"
                       ]
                     }
                   ]
