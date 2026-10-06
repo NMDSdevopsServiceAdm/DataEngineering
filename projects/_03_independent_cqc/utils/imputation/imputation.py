@@ -28,7 +28,7 @@ def model_imputation(
     Extrapolation and interpolation run across the whole LazyFrame, grouped by
     `group_columns`, and fill nulls by following the change in
     '<model_column_name>'. The known and filled values are coalesced into
-    'imputed_column_name' for the rows selected by `care_home`.
+    'imputed_column_name' for the rows selected by `care_home`; other rows are null.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the column_with_null_values.
