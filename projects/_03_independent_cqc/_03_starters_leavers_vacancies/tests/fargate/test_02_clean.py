@@ -1,4 +1,4 @@
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._02_clean as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -43,34 +43,21 @@ class TestMain:
             missing_rule=SLVFilteringRule.missing_data,
             not_known_rule=SLVFilteringRule.contained_invalid_missing_data_code,
         )
-        partition_by_columns = [IndCQC.location_id, IndCQC.published_job_role_label]
-        workplace_columns = [IndCQC.location_id, IndCQC.cqc_location_import_date]
-        remove_repeated_values_over_time_as_group_mock.assert_has_calls(
-            [
-                call(
-                    null_not_known_values_mock.return_value,
-                    columns_to_clean=[SLVCols.starters_cleaned],
-                    partition_by_columns=partition_by_columns,
-                    date_column=IndCQC.cqc_location_import_date,
-                    workplace_columns=workplace_columns,
-                ),
-                call(
-                    remove_repeated_values_over_time_as_group_mock.return_value,
-                    columns_to_clean=[SLVCols.leavers_cleaned],
-                    partition_by_columns=partition_by_columns,
-                    date_column=IndCQC.cqc_location_import_date,
-                    workplace_columns=workplace_columns,
-                ),
-                call(
-                    remove_repeated_values_over_time_as_group_mock.return_value,
-                    columns_to_clean=[SLVCols.vacancies_cleaned],
-                    partition_by_columns=partition_by_columns,
-                    date_column=IndCQC.cqc_location_import_date,
-                    workplace_columns=workplace_columns,
-                ),
-            ]
+        remove_repeated_values_over_time_as_group_mock.assert_called_once_with(
+            null_not_known_values_mock.return_value,
+            columns_to_clean=[
+                SLVCols.starters_cleaned,
+                SLVCols.leavers_cleaned,
+                SLVCols.vacancies_cleaned,
+            ],
+            partition_by_columns=[
+                IndCQC.location_id,
+                IndCQC.published_job_role_label,
+            ],
+            date_column=IndCQC.cqc_location_import_date,
+            workplace_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
+            independent=True,
         )
-        assert remove_repeated_values_over_time_as_group_mock.call_count == 3
         create_slv_rate_columns_mock.assert_called_once_with(
             remove_repeated_values_over_time_as_group_mock.return_value
         )

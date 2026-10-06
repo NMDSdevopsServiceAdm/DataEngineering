@@ -51,18 +51,18 @@ def main(
     # other, but staleness for each one is judged per workplace and import date
     # rather than per job role: a job role's value for a given metric is only
     # nulled when no job role at that workplace/date changed for that metric.
-    for column in [
-        SLVCols.starters_cleaned,
-        SLVCols.leavers_cleaned,
-        SLVCols.vacancies_cleaned,
-    ]:
-        lf = cleaningUtils.remove_repeated_values_over_time_as_group(
-            lf,
-            columns_to_clean=[column],
-            partition_by_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
-            date_column=IndCQC.cqc_location_import_date,
-            workplace_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
-        )
+    lf = cleaningUtils.remove_repeated_values_over_time_as_group(
+        lf,
+        columns_to_clean=[
+            SLVCols.starters_cleaned,
+            SLVCols.leavers_cleaned,
+            SLVCols.vacancies_cleaned,
+        ],
+        partition_by_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
+        date_column=IndCQC.cqc_location_import_date,
+        workplace_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
+        independent=True,
+    )
 
     lf = cleanUtils.create_slv_rate_columns(lf)
 
