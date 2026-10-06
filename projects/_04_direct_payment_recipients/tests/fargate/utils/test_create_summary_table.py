@@ -14,12 +14,12 @@ class TestCreateSummaryTable(unittest.TestCase):
         input_schema = {
             DP.YEAR_AS_INTEGER: pl.Int32,
             DP.LA_AREA: pl.String,
-            DP.TOTAL_DPRS_DURING_YEAR: pl.Float64,
-            DP.SERVICE_USER_DPRS_DURING_YEAR: pl.Float64,
-            DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: pl.Float64,
-            DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: pl.Float64,
-            DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF: pl.Float64,
-            DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float64,
+            DP.TOTAL_DPRS_DURING_YEAR: pl.Float32,
+            DP.SERVICE_USER_DPRS_DURING_YEAR: pl.Float32,
+            DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: pl.Float32,
+            DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: pl.Float32,
+            DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF: pl.Float32,
+            DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float32,
         }
 
         input_rows = [
