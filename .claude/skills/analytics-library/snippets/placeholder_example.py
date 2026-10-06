@@ -2,9 +2,8 @@
 PLACEHOLDER: shows the shape of a snippet. Delete it, and its test
 `tests/skills/test_placeholder_example.py`, when the first real snippet is added.
 
-Say here what the function is for and what it requires: any repo functions it imports, and
-that without a repo checkout on `sys.path` they must be inlined and checked against the
-repo's version on synthetic data.
+State what the function is for and any repo functions it imports; without a repo checkout
+on `sys.path` they must be inlined and checked against the repo's version.
 """
 
 import polars as pl
@@ -16,8 +15,8 @@ def placeholder_example(
     """
     Take the mean of each value column within each group.
 
-    Docstring: Google style, one line on what it does, then anything non-obvious (such as why
-    it stays lazy). Column names are parameters, not hardcoded strings.
+    Google-style docstring: one line on what it does, then anything non-obvious, such as why
+    it stays lazy.
 
     Args:
         lf (pl.LazyFrame): dataset containing the value and group columns
