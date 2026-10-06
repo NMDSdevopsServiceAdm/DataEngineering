@@ -50,13 +50,13 @@ model_extrapolation_test_cases = [
 
 class TestModelExtrapolation:
     schema = {
-        DP.LA_AREA: pl.String,
-        DP.YEAR_AS_INTEGER: pl.Int32,
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
-        DP.ESTIMATE_USING_MEAN: pl.Float32,
-        DP.FIRST_YEAR_WITH_DATA: pl.Int32,
-        DP.LAST_YEAR_WITH_DATA: pl.Int32,
-        DP.ESTIMATE_USING_EXTRAPOLATION_RATIO: pl.Float32,
+        DP.la_area: pl.String,
+        DP.year_as_integer: pl.Int32,
+        DP.proportion_employing_staff: pl.Float32,
+        DP.estimate_using_mean: pl.Float32,
+        DP.first_year_with_data: pl.Int32,
+        DP.last_year_with_data: pl.Int32,
+        DP.estimate_using_extrapolation_ratio: pl.Float32,
     }
 
     @pytest.mark.parametrize(
@@ -65,9 +65,9 @@ class TestModelExtrapolation:
     def test_model_extrapolation_returns_expected_values(self, test_data):
         expected_lf = pl.LazyFrame(test_data, self.schema, orient="row")
         test_lf = expected_lf.drop(
-            DP.FIRST_YEAR_WITH_DATA,
-            DP.LAST_YEAR_WITH_DATA,
-            DP.ESTIMATE_USING_EXTRAPOLATION_RATIO,
+            DP.first_year_with_data,
+            DP.last_year_with_data,
+            DP.estimate_using_extrapolation_ratio,
         )
 
         returned_lf = job.model_extrapolation(test_lf)

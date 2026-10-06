@@ -27,20 +27,20 @@ def main(survey_source: str, external_source: str, destination: str) -> None:
         destination (str): S3 URI to write the merged data to.
     """
     survey_lf = utils.scan_parquet(
-        survey_source, selected_columns=[DP.YEAR, DP.TOTAL_STAFF_RECODED]
+        survey_source, selected_columns=[DP.year, DP.total_staff_recoded]
     )
     direct_payments_lf = utils.scan_parquet(
         external_source,
         selected_columns=[
-            DP.LA_AREA,
-            DP.YEAR,
-            DP.DPRS_ADASS,
-            DP.DPRS_EMPLOYING_STAFF_ADASS,
-            DP.SERVICE_USER_DPRS_AT_YEAR_END,
-            DP.CARER_DPRS_AT_YEAR_END,
-            DP.SERVICE_USER_DPRS_DURING_YEAR,
-            DP.PROPORTION_IMPORTED,
-            DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
+            DP.la_area,
+            DP.year,
+            DP.dprs_adass,
+            DP.dprs_employing_staff_adass,
+            DP.service_user_dprs_at_year_end,
+            DP.carer_dprs_at_year_end,
+            DP.service_user_dprs_during_year,
+            DP.proportion_imported,
+            DP.historic_service_users_employing_staff_estimate,
         ],
     )
 
@@ -49,11 +49,11 @@ def main(survey_source: str, external_source: str, destination: str) -> None:
     direct_payments_lf = estimate_proportion_employing_staff(direct_payments_lf)
     direct_payments_lf = remove_outliers(direct_payments_lf)
 
-    service_user_dprs = pl.col(DP.SERVICE_USER_DPRS_DURING_YEAR)
+    service_user_dprs = pl.col(DP.service_user_dprs_during_year)
     hackney_dprs = (
-        pl.when(pl.col(DP.LA_AREA) == "Hackney")
+        pl.when(pl.col(DP.la_area) == "Hackney")
         .then(
-            pl.col(DP.YEAR_AS_INTEGER).replace_strict(
+            pl.col(DP.year_as_integer).replace_strict(
                 HACKNEY_SERVICE_USER_DPRS_DURING_YEAR,
                 default=None,
                 return_dtype=pl.Float32,
@@ -63,21 +63,21 @@ def main(survey_source: str, external_source: str, destination: str) -> None:
     )
     direct_payments_lf = direct_payments_lf.with_columns(
         pl.coalesce(service_user_dprs, hackney_dprs).alias(
-            DP.SERVICE_USER_DPRS_DURING_YEAR
+            DP.service_user_dprs_during_year
         )
-    ).with_columns(service_user_dprs.alias(DP.TOTAL_DPRS_DURING_YEAR))
+    ).with_columns(service_user_dprs.alias(DP.total_dprs_during_year))
 
     direct_payments_lf = direct_payments_lf.select(
-        DP.YEAR_AS_INTEGER,
-        DP.LA_AREA,
-        DP.YEAR,
-        DP.SERVICE_USER_DPRS_DURING_YEAR,
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-        DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
-        DP.TOTAL_DPRS_DURING_YEAR,
+        DP.year_as_integer,
+        DP.la_area,
+        DP.year,
+        DP.service_user_dprs_during_year,
+        DP.proportion_employing_staff,
+        DP.historic_service_users_employing_staff_estimate,
+        DP.total_dprs_during_year,
     ).join(
-        pa_ratio_lf.rename({DP.RATIO_ROLLING_AVERAGE: DP.FILLED_POSTS_PER_EMPLOYER}),
-        on=DP.YEAR_AS_INTEGER,
+        pa_ratio_lf.rename({DP.ratio_rolling_average: DP.filled_posts_per_employer}),
+        on=DP.year_as_integer,
         how="left",
     )
 

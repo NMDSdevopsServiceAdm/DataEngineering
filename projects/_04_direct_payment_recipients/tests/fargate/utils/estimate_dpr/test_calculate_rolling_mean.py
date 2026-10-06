@@ -107,16 +107,14 @@ class TestCalculateRollingMean:
         expected_lf = pl.LazyFrame(
             test_data,
             schema={
-                DP.LA_AREA: pl.String,
-                DP.YEAR_AS_INTEGER: pl.Int32,
-                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
-                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
+                DP.la_area: pl.String,
+                DP.year_as_integer: pl.Int32,
+                DP.imputed_proportion_employing_staff: pl.Float32,
+                DP.rolling_average_proportion_employing_staff: pl.Float32,
             },
             orient="row",
         )
-        test_lf = expected_lf.drop(
-            DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-        )
+        test_lf = expected_lf.drop(DP.rolling_average_proportion_employing_staff)
         returned_lf = job.calculate_rolling_mean(test_lf)
-        expected_lf = expected_lf.sort([DP.LA_AREA, DP.YEAR_AS_INTEGER])
+        expected_lf = expected_lf.sort([DP.la_area, DP.year_as_integer])
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

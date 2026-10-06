@@ -21,13 +21,13 @@ from projects._04_direct_payment_recipients.fargate.utils.estimate_dpr.merge_cor
 )
 
 direct_payments_columns = [
-    DP.LA_AREA,
-    DP.YEAR_AS_INTEGER,
-    DP.SERVICE_USER_DPRS_DURING_YEAR,
-    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-    DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
-    DP.TOTAL_DPRS_DURING_YEAR,
-    DP.FILLED_POSTS_PER_EMPLOYER,
+    DP.la_area,
+    DP.year_as_integer,
+    DP.service_user_dprs_during_year,
+    DP.proportion_employing_staff,
+    DP.historic_service_users_employing_staff_estimate,
+    DP.total_dprs_during_year,
+    DP.filled_posts_per_employer,
 ]
 
 
@@ -51,7 +51,7 @@ def main(
     lf = merge_cornwall_and_isles_of_scilly(lf)
 
     lf = lf.with_columns(
-        pl.col(DP.LA_AREA).replace(LANameCorrections.DICT_TO_CORRECT_LA_NAMES)
+        pl.col(DP.la_area).replace(LANameCorrections.DICT_TO_CORRECT_LA_NAMES)
     )
 
     lf = calculate_estimated_service_users_employing_staff(lf)
