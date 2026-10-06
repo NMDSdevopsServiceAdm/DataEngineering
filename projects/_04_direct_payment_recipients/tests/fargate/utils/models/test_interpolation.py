@@ -12,7 +12,7 @@ PATCH_PATH = "projects._04_direct_payment_recipients.fargate.utils.models.interp
 
 
 class TestDPRModelInterpolation(unittest.TestCase):
-    def test_function_retuns_expected_values(self):
+    def test_model_interpolation_returns_expected_values(self):
         rows = [
             ("area_1", 2019, 0.3, 0.3),
             ("area_1", 2020, None, 0.3375),

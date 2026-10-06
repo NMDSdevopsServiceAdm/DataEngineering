@@ -4,7 +4,7 @@ from polars_utils.utils import coalesce_with_source_labels
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.calculate_rolling_mean import (
+from projects._04_direct_payment_recipients.fargate.utils.estimate_dpr.calculate_rolling_mean import (
     calculate_rolling_mean,
 )
 from projects._04_direct_payment_recipients.fargate.utils.models.extrapolation_ratio import (
