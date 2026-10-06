@@ -16,7 +16,7 @@ ALL_YEARS = 0
 def make_survey_lf(rows: list[tuple[int, float]]) -> pl.LazyFrame:
     return pl.LazyFrame(
         rows,
-        schema={DP.YEAR: pl.Int32, DP.TOTAL_STAFF_RECODED: pl.Float32},
+        schema={DP.year: pl.Int32, DP.total_staff_recoded: pl.Float32},
         orient="row",
     )
 
@@ -24,7 +24,7 @@ def make_survey_lf(rows: list[tuple[int, float]]) -> pl.LazyFrame:
 def make_expected_df(rows: list[tuple[int, float]]) -> pl.DataFrame:
     return pl.DataFrame(
         rows,
-        schema={DP.YEAR_AS_INTEGER: pl.Int32, DP.RATIO_ROLLING_AVERAGE: pl.Float32},
+        schema={DP.year_as_integer: pl.Int32, DP.ratio_rolling_average: pl.Float32},
         orient="row",
     )
 
@@ -32,8 +32,8 @@ def make_expected_df(rows: list[tuple[int, float]]) -> pl.DataFrame:
 def run(survey_lf: pl.LazyFrame, from_year: int = FIRST_TEST_YEAR) -> pl.DataFrame:
     return (
         job.calculate_pa_ratio(survey_lf)
-        .filter(pl.col(DP.YEAR_AS_INTEGER) >= from_year)
-        .sort(DP.YEAR_AS_INTEGER)
+        .filter(pl.col(DP.year_as_integer) >= from_year)
+        .sort(DP.year_as_integer)
         .collect()
     )
 
@@ -100,7 +100,7 @@ def test_year_is_reduced_by_one():
 
     returned_df = run(survey_lf)
 
-    assert returned_df[DP.YEAR_AS_INTEGER].to_list() == [2029]
+    assert returned_df[DP.year_as_integer].to_list() == [2029]
 
 
 @pytest.mark.parametrize(
@@ -138,4 +138,4 @@ def test_returns_only_year_and_rolling_average():
 
     returned_df = run(survey_lf)
 
-    assert returned_df.columns == [DP.YEAR_AS_INTEGER, DP.RATIO_ROLLING_AVERAGE]
+    assert returned_df.columns == [DP.year_as_integer, DP.ratio_rolling_average]

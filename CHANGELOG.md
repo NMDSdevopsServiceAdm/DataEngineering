@@ -74,6 +74,7 @@ All notable changes to this project will be documented in this file.
 - Reduced the IND CQC filled posts model features validation's memory use by scanning the wide imputed comparison dataset lazily, so only the columns its expected row count needs are read.
 - Tidied the direct payment recipients folder names, test layout, test names and docstrings to match the rest of the pipeline. No behaviour change.
 - Changed the direct payment recipients ratio, proportion and estimate columns from Float64 to Float32, halving their memory use.
+- Renamed the direct payment recipients columns to shorter, lower snake_case names, dropping `estimated` from mid-stage columns. Output columns in the estimate, summary and ICB datasets are renamed, so downstream readers need the new names.
 
 
 ### Fixed

@@ -24,18 +24,18 @@ POSTCODE_SCHEMA = {
     ONSClean.contemporary_icb: pl.String,
 }
 PA_SCHEMA = {
-    DP.LA_AREA: pl.String,
-    DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float32,
-    DP.YEAR_AS_INTEGER: pl.Int64,
+    DP.la_area: pl.String,
+    DP.estimated_pa_filled_posts: pl.Float32,
+    DP.year_as_integer: pl.Int64,
 }
 
 OUTPUT_SCHEMA = {
     ONSClean.contemporary_ons_import_date: pl.Date,
     ONSClean.contemporary_cssr: pl.String,
     ONSClean.contemporary_icb: pl.String,
-    DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA: pl.Float32,
-    DP.YEAR_AS_INTEGER: pl.Int64,
-    DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_HYBRID_AREA: pl.Float32,
+    DP.proportion_of_icb_postcodes_in_la_area: pl.Float32,
+    DP.year_as_integer: pl.Int64,
+    DP.estimated_pa_filled_posts_per_hybrid_area: pl.Float32,
 }
 
 # cssr1 has 3 postcodes in icb1; cssr2 has 1 in icb2 and 3 in icb3.
@@ -96,7 +96,7 @@ class TestCalculateIcbProportions:
                 ONSClean.contemporary_ons_import_date: pl.Date,
                 ONSClean.contemporary_cssr: pl.String,
                 ONSClean.contemporary_icb: pl.String,
-                DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA: pl.Float32,
+                DP.proportion_of_icb_postcodes_in_la_area: pl.Float32,
             },
             orient="row",
         )
@@ -107,10 +107,10 @@ class TestCalculateIcbProportions:
 
         sums_df = returned_df.group_by(
             ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr
-        ).agg(pl.col(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA).sum())
+        ).agg(pl.col(DP.proportion_of_icb_postcodes_in_la_area).sum())
 
         assert (
-            sums_df[DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA].to_list()
+            sums_df[DP.proportion_of_icb_postcodes_in_la_area].to_list()
             == [1.0] * sums_df.height
         )
 
@@ -165,7 +165,7 @@ class TestMain:
 
         returned_df = run_main(postcodes, pa_lf)
 
-        matched_dates = returned_df.filter(pl.col(DP.YEAR_AS_INTEGER).is_not_null())[
+        matched_dates = returned_df.filter(pl.col(DP.year_as_integer).is_not_null())[
             ONSClean.contemporary_ons_import_date
         ].to_list()
         assert matched_dates == [date(2023, 3, 31)]

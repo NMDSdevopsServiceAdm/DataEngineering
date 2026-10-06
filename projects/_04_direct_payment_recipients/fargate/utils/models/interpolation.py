@@ -14,17 +14,17 @@ def model_interpolation(
     estimated proportion of service users employing staff.
 
     Args:
-        direct_payments_lf (pl.LazyFrame): Input LazyFrame with columns LA_AREA,
-            YEAR_AS_INTEGER and PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+        direct_payments_lf (pl.LazyFrame): Input LazyFrame with columns la_area,
+            year_as_integer and proportion_employing_staff
         col_with_nulls (str): A column with null values to interpolate between.
 
     Returns:
         pl.LazyFrame: Original LazyFrame with an additional column
-            ESTIMATE_USING_INTERPOLATION
+            estimate_using_interpolation
     """
     return direct_payments_lf.with_columns(
         pl.col(col_with_nulls)
-        .interpolate_by(DP.YEAR_AS_INTEGER)
-        .over(DP.LA_AREA)
-        .alias(DP.ESTIMATE_USING_INTERPOLATION)
+        .interpolate_by(DP.year_as_integer)
+        .over(DP.la_area)
+        .alias(DP.estimate_using_interpolation)
     )
