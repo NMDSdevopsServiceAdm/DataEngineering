@@ -6,6 +6,7 @@ snippet is loaded by its file path.
 """
 
 import importlib.util
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
@@ -40,6 +41,7 @@ def load_snippet(path: Path) -> ModuleType:
     """
     spec = importlib.util.spec_from_file_location(path.stem, path)
     module = importlib.util.module_from_spec(spec)
+    sys.modules[path.stem] = module
     spec.loader.exec_module(module)
     return module
 
