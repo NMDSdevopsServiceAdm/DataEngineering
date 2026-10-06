@@ -62,7 +62,7 @@ class TestModelExtrapolation:
     @pytest.mark.parametrize(
         "test_data", [c.as_pytest_param() for c in model_extrapolation_test_cases]
     )
-    def test_function_returns_expected_values(self, test_data):
+    def test_model_extrapolation_returns_expected_values(self, test_data):
         expected_lf = pl.LazyFrame(test_data, self.schema, orient="row")
         test_lf = expected_lf.drop(
             DP.FIRST_YEAR_WITH_DATA,

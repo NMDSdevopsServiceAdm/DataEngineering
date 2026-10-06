@@ -3,23 +3,23 @@ import unittest
 import polars as pl
 import polars.testing as pl_testing
 
-import projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.create_summary_table as job
+import projects._04_direct_payment_recipients.fargate.utils.estimate_dpr.create_summary_table as job
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
 
 class TestCreateSummaryTable(unittest.TestCase):
-    def test_function_returns_expected_values(self):
+    def test_create_summary_table_returns_expected_values(self):
         input_schema = {
             DP.YEAR_AS_INTEGER: pl.Int32,
             DP.LA_AREA: pl.String,
-            DP.TOTAL_DPRS_DURING_YEAR: pl.Float64,
-            DP.SERVICE_USER_DPRS_DURING_YEAR: pl.Float64,
-            DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: pl.Float64,
-            DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: pl.Float64,
-            DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF: pl.Float64,
-            DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float64,
+            DP.TOTAL_DPRS_DURING_YEAR: pl.Float32,
+            DP.SERVICE_USER_DPRS_DURING_YEAR: pl.Float32,
+            DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: pl.Float32,
+            DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: pl.Float32,
+            DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF: pl.Float32,
+            DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float32,
         }
 
         input_rows = [

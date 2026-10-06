@@ -556,6 +556,7 @@ class FlattenCQCRatings:
             "responsive_rating",
             "effective_rating",
             "Current",
+            "Pre SAF",
         ),
     ]
 
@@ -575,6 +576,7 @@ class FlattenCQCRatings:
             None,
             None,
             "Current",
+            "Pre SAF",
         ),
     ]
 
@@ -616,6 +618,7 @@ class FlattenCQCRatings:
             "responsive_rating",
             "effective_rating",
             "Historic",
+            "Pre SAF",
         ),
     ]
 
@@ -648,6 +651,7 @@ class FlattenCQCRatings:
             None,
             None,
             "Historic",
+            "Pre SAF",
         ),
         (
             "1-001",
@@ -660,5 +664,23 @@ class FlattenCQCRatings:
             None,
             None,
             "Historic",
+            "Pre SAF",
         ),
     ]
+
+    # fmt: off
+    main_snapshot_rows = [
+        ("1-001", "Registered", "Social Care Org"),
+        ("1-002", "Registered", "Independent Healthcare Org"),  # not social care - excluded
+    ]
+
+    main_delta_rows = [
+        ("1-001", "20240101", _current_ratings("1-001", _all_key_questions)[2], [_historic_entry("2023-01-01", _all_key_questions)]),
+        ("1-001", "20230101", _current_ratings("1-001", _short_key_questions)[2], []),  # older import - excluded
+        ("1-002", "20240101", _current_ratings("1-002", _all_key_questions)[2], []),
+    ]
+
+    main_ascwds_workplace_rows = [
+        ("20240101", "2024", "01", "01", "100", "1-001"),
+    ]
+    # fmt: on

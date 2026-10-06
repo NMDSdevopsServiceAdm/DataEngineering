@@ -35,7 +35,7 @@ def calculate_pa_ratio(survey_lf: pl.LazyFrame) -> pl.LazyFrame:
             DP.YEAR_AS_INTEGER: list(DIRECT_PAYMENTS_MISSING_PA_RATIOS),
             DP.HISTORIC_RATIO: list(DIRECT_PAYMENTS_MISSING_PA_RATIOS.values()),
         },
-        schema={DP.YEAR_AS_INTEGER: pl.Int32, DP.HISTORIC_RATIO: pl.Float64},
+        schema={DP.YEAR_AS_INTEGER: pl.Int32, DP.HISTORIC_RATIO: pl.Float32},
     )
 
     survey_average_lf = (

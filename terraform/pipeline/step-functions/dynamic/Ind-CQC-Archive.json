@@ -31,7 +31,10 @@
                         "--job_role_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
                         "--job_role_metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
                         "--job_role_estimates_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/",
-                        "--job_role_metadata_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/"
+                        "--job_role_metadata_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/",
+                        "--filled_posts_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_estimated_filled_posts}/",
+                        "--run_log_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/",
+                        "--commit_sha", "${commit_sha}"
                       ]
                     }
                   ]

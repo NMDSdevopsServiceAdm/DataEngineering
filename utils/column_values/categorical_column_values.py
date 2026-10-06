@@ -464,6 +464,11 @@ class CQCCurrentOrHistoricValues(ColumnValues):
 
 
 @dataclass
+class CQCRatingsDatasetValues(ColumnValues):
+    pre_saf: str = "Pre SAF"
+
+
+@dataclass
 class CQCLatestRating(ColumnValues):
     is_latest_rating: int = 1
     not_latest_rating: int = 0

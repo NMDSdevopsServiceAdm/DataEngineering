@@ -5,7 +5,7 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.merge_cornwall_and_isles_of_scilly as job
+import projects._04_direct_payment_recipients.fargate.utils.estimate_dpr.merge_cornwall_and_isles_of_scilly as job
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
@@ -89,7 +89,9 @@ class TestMergeCornwallAndIslesOfScilly:
             for case in merge_cornwall_and_isles_of_scilly_test_cases
         ],
     )
-    def test_function_returns_expected_values(self, input_data, expected_data):
+    def test_merge_cornwall_and_isles_of_scilly_returns_expected_values(
+        self, input_data, expected_data
+    ):
         test_schema = {
             DP.LA_AREA: pl.String,
             DP.YEAR_AS_INTEGER: pl.Int32,
