@@ -6,10 +6,10 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc.utils.imputation.interpolation as job
-from projects._03_independent_cqc.unittest_data.polars_imputation_test_file_data import (
+from projects._03_independent_cqc.unittest_data.polars_independent_cqc_test_data import (
     InterpolationData as Data,
 )
-from projects._03_independent_cqc.unittest_data.polars_imputation_test_file_schemas import (
+from projects._03_independent_cqc.unittest_data.polars_independent_cqc_test_schema import (
     InterpolationSchema as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc

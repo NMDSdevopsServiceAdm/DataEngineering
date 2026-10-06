@@ -29,6 +29,13 @@ def main(
     pa_filled_posts_source: str,
     destination: str,
 ) -> None:
+    """Splits PA filled posts estimates from LA areas into ICB areas.
+
+    Args:
+        postcode_directory_source (str): S3 URI of the cleaned ONS postcode directory.
+        pa_filled_posts_source (str): S3 URI of the PA filled posts estimates by LA area.
+        destination (str): S3 URI to write the estimates by ICB area to.
+    """
     postcode_lf = utils.scan_parquet(
         postcode_directory_source, selected_columns=postcode_columns
     )
@@ -124,9 +131,9 @@ def calculate_icb_proportions(postcode_lf: pl.LazyFrame) -> pl.LazyFrame:
         postcode_lf.group_by(*la_keys, ONSClean.contemporary_icb)
         .agg(pl.col(ONSClean.postcode).count().alias("icb_postcodes"))
         .with_columns(
-            (
-                pl.col("icb_postcodes") / pl.col("icb_postcodes").sum().over(la_keys)
-            ).alias(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA)
+            (pl.col("icb_postcodes") / pl.col("icb_postcodes").sum().over(la_keys))
+            .cast(pl.Float32)
+            .alias(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA)
         )
         .drop("icb_postcodes")
     )

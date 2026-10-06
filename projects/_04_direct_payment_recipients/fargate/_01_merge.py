@@ -4,13 +4,13 @@ from polars_utils import utils
 from projects._04_direct_payment_recipients.direct_payments_config import (
     HACKNEY_SERVICE_USER_DPRS_DURING_YEAR,
 )
-from projects._04_direct_payment_recipients.fargate.utils.prepare_dpr_utils.calculate_pa_ratio import (
+from projects._04_direct_payment_recipients.fargate.utils.prepare_dpr.calculate_pa_ratio import (
     calculate_pa_ratio,
 )
-from projects._04_direct_payment_recipients.fargate.utils.prepare_dpr_utils.estimate_proportion_employing_staff import (
+from projects._04_direct_payment_recipients.fargate.utils.prepare_dpr.estimate_proportion_employing_staff import (
     estimate_proportion_employing_staff,
 )
-from projects._04_direct_payment_recipients.fargate.utils.prepare_dpr_utils.remove_outliers import (
+from projects._04_direct_payment_recipients.fargate.utils.prepare_dpr.remove_outliers import (
     remove_outliers,
 )
 from utils.column_names.direct_payments_column_names import (
@@ -56,7 +56,7 @@ def main(survey_source: str, external_source: str, destination: str) -> None:
             pl.col(DP.YEAR_AS_INTEGER).replace_strict(
                 HACKNEY_SERVICE_USER_DPRS_DURING_YEAR,
                 default=None,
-                return_dtype=pl.Float64,
+                return_dtype=pl.Float32,
             )
         )
         .otherwise(None)
@@ -88,9 +88,18 @@ if __name__ == "__main__":
     print("Running merge direct payments job")
 
     args = utils.get_args(
-        ("--survey_source", "S3 URI to read ingested IE/PA survey data from"),
-        ("--external_source", "S3 URI to read external direct payments data from"),
-        ("--destination", "S3 URI to save merged direct payments data to"),
+        (
+            "--survey_source",
+            "S3 URI to read ingested IE/PA survey data from",
+        ),
+        (
+            "--external_source",
+            "S3 URI to read external direct payments data from",
+        ),
+        (
+            "--destination",
+            "S3 URI to save merged direct payments data to",
+        ),
     )
 
     main(

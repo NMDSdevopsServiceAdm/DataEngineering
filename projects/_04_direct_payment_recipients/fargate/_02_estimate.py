@@ -7,16 +7,16 @@ from utils.column_names.direct_payments_column_names import (
 from projects._04_direct_payment_recipients.direct_payments_config import (
     DirectPaymentsMisspelledLaNames as LANameCorrections,
 )
-from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.calculate_remaining_variables import (
+from projects._04_direct_payment_recipients.fargate.utils.estimate_dpr.calculate_remaining_variables import (
     calculate_remaining_variables,
 )
-from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.create_summary_table import (
+from projects._04_direct_payment_recipients.fargate.utils.estimate_dpr.create_summary_table import (
     create_summary_table,
 )
-from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.estimate_service_users_employing_staff import (
+from projects._04_direct_payment_recipients.fargate.utils.estimate_dpr.estimate_service_users_employing_staff import (
     calculate_estimated_service_users_employing_staff,
 )
-from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.merge_cornwall_and_isles_of_scilly import (
+from projects._04_direct_payment_recipients.fargate.utils.estimate_dpr.merge_cornwall_and_isles_of_scilly import (
     merge_cornwall_and_isles_of_scilly,
 )
 
@@ -36,6 +36,13 @@ def main(
     destination: str,
     summary_destination: str,
 ) -> None:
+    """Estimates service users employing staff and derived PA filled posts per LA.
+
+    Args:
+        direct_payments_merged_source (str): S3 URI of the merged DPR data.
+        destination (str): S3 URI to write the estimates to.
+        summary_destination (str): S3 URI to write the summary table to.
+    """
     lf = utils.scan_parquet(
         source=direct_payments_merged_source,
         selected_columns=direct_payments_columns,

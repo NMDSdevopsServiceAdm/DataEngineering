@@ -5,7 +5,7 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.estimate_service_users_employing_staff as job
+import projects._04_direct_payment_recipients.fargate.utils.estimate_dpr.estimate_service_users_employing_staff as job
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
@@ -129,7 +129,9 @@ class TestEstimateServiceUsersEmployingStaff:
             for case in estimated_service_users_employing_staff_test_cases
         ],
     )
-    def test_function_returns_expected_values(self, expected_data):
+    def test_calculate_estimated_service_users_employing_staff_returns_expected_values(
+        self, expected_data
+    ):
         expected_lf = pl.LazyFrame(
             expected_data,
             schema={

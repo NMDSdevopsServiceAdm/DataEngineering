@@ -1,7 +1,7 @@
 import polars as pl
 import pytest
 
-import projects._04_direct_payment_recipients.fargate.utils.prepare_dpr_utils.estimate_proportion_employing_staff as job
+import projects._04_direct_payment_recipients.fargate.utils.prepare_dpr.estimate_proportion_employing_staff as job
 from projects._04_direct_payment_recipients.direct_payments_config import (
     DirectPaymentConfiguration as Config,
 )
@@ -13,11 +13,11 @@ CARERS_PCT = Config.CARERS_EMPLOYING_PERCENTAGE
 
 INPUT_SCHEMA = {
     DP.YEAR: pl.String,
-    DP.DPRS_ADASS: pl.Float64,
-    DP.DPRS_EMPLOYING_STAFF_ADASS: pl.Float64,
-    DP.SERVICE_USER_DPRS_AT_YEAR_END: pl.Float64,
-    DP.CARER_DPRS_AT_YEAR_END: pl.Float64,
-    DP.PROPORTION_IMPORTED: pl.Float64,
+    DP.DPRS_ADASS: pl.Float32,
+    DP.DPRS_EMPLOYING_STAFF_ADASS: pl.Float32,
+    DP.SERVICE_USER_DPRS_AT_YEAR_END: pl.Float32,
+    DP.CARER_DPRS_AT_YEAR_END: pl.Float32,
+    DP.PROPORTION_IMPORTED: pl.Float32,
 }
 
 
@@ -124,7 +124,9 @@ def test_allocated_falls_back_to_su_formula_when_at_or_above_threshold_or_null(
 def test_imported_proportion_takes_precedence_when_present():
     returned = run(imported=0.123)
 
-    assert returned[DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF] == 0.123
+    assert returned[DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF] == pytest.approx(
+        0.123
+    )
 
 
 def test_returns_input_columns_plus_proportion_and_year_as_integer():

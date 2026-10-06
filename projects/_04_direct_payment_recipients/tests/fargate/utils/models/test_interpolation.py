@@ -12,7 +12,7 @@ PATCH_PATH = "projects._04_direct_payment_recipients.fargate.utils.models.interp
 
 
 class TestDPRModelInterpolation(unittest.TestCase):
-    def test_function_retuns_expected_values(self):
+    def test_model_interpolation_returns_expected_values(self):
         rows = [
             ("area_1", 2019, 0.3, 0.3),
             ("area_1", 2020, None, 0.3375),
@@ -27,8 +27,8 @@ class TestDPRModelInterpolation(unittest.TestCase):
         test_schema = {
             DP.LA_AREA: pl.String,
             DP.YEAR_AS_INTEGER: pl.Int64,
-            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float64,
-            DP.ESTIMATE_USING_INTERPOLATION: pl.Float64,
+            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
+            DP.ESTIMATE_USING_INTERPOLATION: pl.Float32,
         }
         expected_lf = pl.LazyFrame(rows, schema=test_schema, orient="row")
         test_lf = expected_lf.drop(DP.ESTIMATE_USING_INTERPOLATION)

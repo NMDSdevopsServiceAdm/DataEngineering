@@ -47,51 +47,10 @@ class DirectPaymentColumnNames:
     )
 
     # Model extrapolation
-    EXTRAPOLATION_RATIO: str = "extrapolation_ratio"
     FIRST_YEAR_WITH_DATA: str = "first_year_with_data"
-    FIRST_DATA_POINT: str = "first_data_point"
-    FIRST_YEAR_MEAN_ESTIMATE: str = "first_year_mean_estimate"
     LAST_YEAR_WITH_DATA: str = "last_year_with_data"
-    LAST_DATA_POINT: str = "last_data_point"
-    LAST_YEAR_MEAN_ESTIMATE: str = "last_year_mean_estimate"
-
-    # Model interpolation
-    FIRST_SUBMISSION_YEAR: str = "first_submission_year"
-    LAST_SUBMISSION_YEAR: str = "last_submission_year"
-    PREVIOUS_SERVICE_USERS_EMPLOYING_STAFF: str = (
-        "previous_service_users_employing_staff"
-    )
-    NEXT_SERVICE_USERS_EMPLOYING_STAFF: str = "next_service_users_employing_staff"
-    ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED: str = (
-        "estimated_proportion_of_service_users_employing_staff_year_provided"
-    )
-    PREVIOUS_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED: (
-        str
-    ) = "previous_estimated_proportion_of_service_users_employing_staff_year_provided"
-    NEXT_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED: str = (
-        "next_estimated_proportion_of_service_users_employing_staff_year_provided"
-    )
-    INTERPOLATION_YEAR: str = "interpolation_year"
-
-    # Model using mean
-    COUNT_OF_SERVICE_USER_DPRS_DURING_YEAR: str = (
-        "count_of_service_user_dprs_during_year"
-    )
-    SUM_OF_SERVICE_USER_DPRS_DURING_YEAR: str = "sum_of_service_user_dprs_during_year"
 
     # Rolling average
-    COUNT_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
-        "count_of_estimated_proportion_of_service_users_employing_staff"
-    )
-    SUM_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
-        "sum_of_estimated_proportion_of_service_users_employing_staff"
-    )
-    ROLLING_TOTAL_OF_COUNT_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: (
-        str
-    ) = "rolling_total_of_count_of_estimated_proportion_of_service_users_employing_staff"
-    ROLLING_TOTAL_OF_SUM_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: (
-        str
-    ) = "rolling_total_of_sum_of_estimated_proportion_of_service_users_employing_staff"
     ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
         "rolling_average_estimated_proportion_of_service_users_employing_staff"
     )
@@ -107,26 +66,16 @@ class DirectPaymentColumnNames:
     ESTIMATED_PROPORTION_OF_TOTAL_DPR_EMPLOYING_STAFF: str = (
         "estimated_proportion_of_total_dpr_employing_staff"
     )
-    ESTIMATED_PROPORTION_OF_DPR_WHO_ARE_SERVICE_USERS: str = (
-        "estimated_proportion_of_dpr_who_are_service_users"
-    )
 
     # Create summary table
     TOTAL_DPRS: str = "total_dprs"
-    PROPORTION_OF_SERVICE_USER_DPRS: str = "proportion_of_service_user_dprs"
     SERVICE_USER_DPRS: str = "service_user_dprs"
-    PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_FINAL: str = (
-        "proportion_of_service_users_employing_staff"
-    )
     SERVICE_USERS_EMPLOYING_STAFF: str = "service_users_employing_staff"
     SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: str = (
         "service_users_with_self_employed_staff"
     )
     TOTAL_DPRS_EMPLOYING_STAFF: str = "total_dprs_employing_staff"
     TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: str = "total_personal_assistant_filled_posts"
-    PROPORTION_OF_TOTAL_DPRS_EMPLOYING_STAFF: str = (
-        "proportion_of_total_dprs_employing_staff"
-    )
 
     # PA ratio
     TOTAL_STAFF_RECODED: str = "total_staff_recoded"
@@ -137,7 +86,6 @@ class DirectPaymentColumnNames:
     HISTORIC_RATIO: str = "historic_ratio"
 
     # Split PA filled posts by ICB area
-    HYBRID_AREA_LA_ICB: str = "hybrid_area_la_icb"
     PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA: str = (
         "proportion_of_ICB_postcodes_in_la_area"
     )
@@ -151,5 +99,3 @@ class DirectPaymentColumnNames:
 class DirectPaymentColumnValues:
     TOTAL_DPRS: str = "total_dprs"
     SU_ONLY_DPRS: str = "su_only_dprs"
-    PREVIOUS: str = "previous"
-    NEXT: str = "next"

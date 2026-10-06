@@ -46,6 +46,23 @@ class ArchiveDateRunNumberPartitionKeys:
 
 
 @dataclass
+class ArchiveRunLogColumns:
+    approved: str = "approved"
+    archive_date_time: str = "archive_date_time"
+    commit_sha: str = "commit_sha"
+    locally_checked: str = "locally_checked"
+    max_ascwds_workplace_import_date: str = "max_ascwds_workplace_import_date"
+    max_cqc_location_import_date: str = "max_cqc_location_import_date"
+    max_cqc_pir_import_date: str = "max_cqc_pir_import_date"
+    max_ct_care_home_import_date: str = "max_ct_care_home_import_date"
+    max_ct_non_res_import_date: str = "max_ct_non_res_import_date"
+    max_current_ons_import_date: str = "max_current_ons_import_date"
+    reconciled: str = "reconciled"
+    selected_for_publication: str = "selected_for_publication"
+    tag: str = "tag"
+
+
+@dataclass
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
     activity_count: str = "activity_count"

@@ -3,14 +3,14 @@ import unittest
 import polars as pl
 import polars.testing as pl_testing
 
-import projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.calculate_remaining_variables as job
+import projects._04_direct_payment_recipients.fargate.utils.estimate_dpr.calculate_remaining_variables as job
 from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
 
 class TestCalculateRemainingVariables(unittest.TestCase):
-    def test_function_retuns_expected_values(self):
+    def test_calculate_remaining_variables_returns_expected_values(self):
         schema = {
             DP.LA_AREA: pl.String,
             DP.YEAR_AS_INTEGER: pl.Int32,
