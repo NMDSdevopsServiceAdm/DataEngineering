@@ -126,13 +126,12 @@ def add_short_term_imputed_percentages(
     interpolation_cap_period: str,
 ) -> pl.LazyFrame:
     """
-    Impute the 5 employment status percentages within time limits, for each location and job
-    role.
+    Fill short gaps in the 5 employment status percentages, for each location and job role.
 
-    Gaps are interpolated by date if they span no more than `interpolation_cap_period`, and the
-    first and last known values are carried outside the known range for no more than
-    `extrapolation_period`. Known values are kept as they are. Interpolating each percentage
-    linearly between two splits that sum to 1 gives a split that also sums to 1.
+    Gaps spanning no more than `interpolation_cap_period` are interpolated by date, and the first
+    and last known values are carried outside the known range for no more than
+    `extrapolation_period`. Known values are kept. Linear interpolation between two splits that
+    sum to 1 gives a split that also sums to 1.
 
     Args:
         lf (pl.LazyFrame): dataset containing the employment status percentage columns
@@ -142,7 +141,7 @@ def add_short_term_imputed_percentages(
             offset string (e.g. "5y")
 
     Returns:
-        pl.LazyFrame: dataset with the 5 "emplstat_<status>_percentage_imputed_for_trendline" columns added
+        pl.LazyFrame: dataset with the 5 imputed-for-trendline percentage columns added
     """
     order_key = IndCQC.cqc_location_import_date
 
@@ -185,24 +184,22 @@ def add_rolling_average_percentages(
     rolling_period: str,
 ) -> pl.LazyFrame:
     """
-    Add a rolling average of the short-term imputed percentages per primary service type,
+    Add a rolling average of the imputed-for-trendline percentages per primary service type,
     region and job role.
 
-    The average is the mean imputed share across the locations contributing to a group, counting
-    each location once regardless of size. Averages sum to 1 across the 5 statuses without extra
-    normalisation, because a location has every imputed percentage populated or none of them.
+    Each location counts once, regardless of size. Averages sum to 1 across the 5 statuses
+    without normalisation, because a location has every percentage populated or none of them.
 
     Steps:
-        1. Total each imputed percentage and count the contributing locations per date,
-           pre-aggregated so the calculation stays within the Polars streaming engine.
-        2. Roll the totals over `rolling_period` on this small aggregated dataset.
-        3. Divide each total by the count, carrying the nearest known average into any date with
-           no contributing locations.
-        4. Join the averages back onto the location-level dataset and drop the temporary columns.
+        1. Total each percentage and count the contributing locations per date, pre-aggregated
+           to stay within the Polars streaming engine.
+        2. Roll the totals over `rolling_period` on this small dataset.
+        3. Divide each total by the count, carrying the nearest average into any date with no
+           contributing locations.
+        4. Join the averages back on and drop the temporary columns.
 
     Args:
-        lf (pl.LazyFrame): dataset containing the 5 "emplstat_<status>_percentage_imputed_for_trendline"
-            columns
+        lf (pl.LazyFrame): dataset containing the 5 imputed-for-trendline percentage columns
         rolling_period (str): the rolling window length, as a Polars offset string (e.g. "6mo")
 
     Returns:
@@ -273,14 +270,14 @@ def add_full_imputed_percentages(lf: pl.LazyFrame) -> pl.LazyFrame:
     Add the 5 employment status percentages with every gap filled, for each location and job
     role.
 
-    Each status's known values are carried along the change in its rolling average: extrapolated
-    outside the known range and interpolated by trend between known values, with no time limit.
-    Imputed values are floored at zero and re-shared across the 5 statuses to sum to 1. Known
-    values are kept as they are, and a location and job role with no known values stays null.
+    Known values are kept. Each status's gaps are filled along the change in its rolling average:
+    extrapolated outside the known range and interpolated by trend between known values, with no
+    time limit. Filled values are floored at zero and re-shared to sum to 1, and a location and
+    job role with no known values stays null.
 
     The floored total is at least 1 because the unfloored shares sum to 1, so the re-share needs
-    no zero guard. Statuses run one at a time because the shared extrapolation and interpolation
-    helpers return fixed column names, which are dropped before the next status.
+    no zero guard. Statuses run one at a time because the shared helpers return fixed column
+    names, which are dropped before the next status.
 
     Args:
         lf (pl.LazyFrame): dataset containing the 5 percentage columns and their rolling averages
