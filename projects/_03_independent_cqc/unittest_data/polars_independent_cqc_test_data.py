@@ -539,10 +539,8 @@ class TestCleaningUtilsData:
                 "date": [date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)],
                 "first_value": [1, 2, 2],
                 "second_value": [5, 5, 5],
-                # second_value repeats throughout and is nulled from its second
-                # appearance, even though first_value changes in between - unlike
-                # the composite (non-independent) mode, one column changing does
-                # not keep the other column's otherwise-repeated value.
+                # second_value repeats and is nulled despite first_value changing -
+                # unlike composite mode, one column changing doesn't retain another.
                 "first_value_dedup": [1, 2, None],
                 "second_value_dedup": [5, None, None],
             },
@@ -577,13 +575,9 @@ class TestCleaningUtilsData:
                 ],
                 "first_value": [1, 1, 1, 5],
                 "second_value": [2, 2, 2, 2],
-                # role b's first_value changes in February, so BOTH roles' first_value
-                # are retained for that date (workplace broadcast). second_value never
-                # changes for either role, so it is nulled for both roles in February -
-                # first_value changing has no bearing on second_value, unlike the
-                # composite (non-independent) mode's "one_role_changes_keeps_all_roles_
-                # for_the_workplace" case above, where second_value would be retained
-                # too.
+                # role b's first_value changes, so both roles keep it (workplace
+                # broadcast). second_value never changes, so it's nulled for both -
+                # independent of first_value, unlike the composite mode case above.
                 "first_value_dedup": [1, 1, 1, 5],
                 "second_value_dedup": [2, 2, None, None],
             },
