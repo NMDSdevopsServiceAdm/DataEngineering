@@ -109,22 +109,6 @@ details come from what the user types. If asked to add a card to the board or re
 can't reach Trello in the lead-in sentence (see Output), then give the paste-ready blocks: title block
 into the card title, description block into the card description.
 
-## Size
-
-Add one line to every description, after **Depends on** and before **Notes**: `**Size:** N`, where N is
-a Fibonacci point: 1, 2, 3, 5 or 8.
-
-- 1 trivial (a config or doc tweak), 2 small and well understood, 3 a moderate change in one place,
-  5 several files or code plus infrastructure, 8 large or with real unknowns. "Confirm during scoping"
-  bullets alone don't make a card an 8; the unknowns have to be large.
-- Size is relative effort judged from the plan or idea alone — a rough guess, not a commitment; the
-  closing line says so (see Output).
-- In a breakdown, a card that would be bigger than 8 is split into smaller cards instead; the closing line
-  says which one was split. A single card is never split — if it's over 8, size it 8 and say so in the
-  closing line.
-
-To stop sizing cards, delete this section and the size mentions in Output's closing line.
-
 ## Output
 
 In chat. Apart from the blocks, the only text allowed is:
@@ -133,9 +117,9 @@ In chat. Apart from the blocks, the only text allowed is:
   not prose.
 - **One lead-in sentence** before the first block. It states the prefix (breakdown) and, if the user asked
   to add the card to the board or get a link, that you can't reach Trello.
-- **One closing line** after the last block, always present when sizes are shown. It says sizes are rough
-  guesses and adds anything else the user should check: a split or over-8 card, plan references you
-  replaced, or a plan that hints at existing cards without naming them (so no overlap block).
+- **One closing line** after the last block, only when there is something for the user to check: plan
+  references you replaced, or a plan that hints at existing cards without naming them (so no overlap
+  block).
 
 No other commentary or summary.
 
