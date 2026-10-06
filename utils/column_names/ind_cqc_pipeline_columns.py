@@ -407,7 +407,6 @@ class EmploymentStatusImputeTempColumns:
     first_known_value_prefix: str = "es_impute_first_known_value_"
     last_known_value_prefix: str = "es_impute_last_known_value_"
     rolling_total_prefix: str = "es_impute_rolling_total_"
-    unnormalised_prefix: str = "es_impute_unnormalised_"
 
 
 @dataclass

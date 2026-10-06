@@ -53,6 +53,39 @@ class TestModelImputationFunctionality:
             == expected_group_columns
         )
 
+    @patch(f"{PATCH_PATH}.model_interpolation")
+    @patch(f"{PATCH_PATH}.model_extrapolation")
+    def test_function_passes_given_group_columns_to_models(
+        self,
+        model_extrapolation_mock: Mock,
+        model_interpolation_mock: Mock,
+    ):
+        flagged_lf = pl.LazyFrame(
+            [],
+            Schemas.expected_model_imputation_schema,
+            orient="row",
+        )
+        model_extrapolation_mock.return_value = flagged_lf
+        model_interpolation_mock.return_value = flagged_lf
+        group_columns = [IndCqc.location_id]
+
+        job.model_imputation(
+            Mock(name="input_lf"),
+            Data.column_with_null_values_name,
+            Data.model_column_name,
+            Data.imputed_values_column_name,
+            care_home=None,
+            extrapolation_method="nominal",
+            group_columns=group_columns,
+        )
+
+        assert (
+            model_extrapolation_mock.call_args.kwargs["group_columns"] == group_columns
+        )
+        assert (
+            model_interpolation_mock.call_args.kwargs["group_columns"] == group_columns
+        )
+
 
 class TestModelImputationResults:
     @pytest.mark.parametrize(
@@ -80,3 +113,31 @@ class TestModelImputationResults:
             expected_lf,
             check_row_order=False,
         )
+
+
+class TestModelImputationWithArguments:
+    @pytest.mark.parametrize(
+        "model_imputation_data, kwargs",
+        [
+            case.as_pytest_param()
+            for case in Data.expected_model_imputation_with_arguments_test_cases
+        ],
+    )
+    def test_function_returns_expected_data(self, model_imputation_data, kwargs):
+        expected_lf = pl.LazyFrame(
+            model_imputation_data,
+            Schemas.expected_model_imputation_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(Data.imputed_values_column_name)
+
+        returned_lf = job.model_imputation(
+            input_lf,
+            Data.column_with_null_values_name,
+            Data.model_column_name,
+            Data.imputed_values_column_name,
+            extrapolation_method="nominal",
+            **kwargs,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)

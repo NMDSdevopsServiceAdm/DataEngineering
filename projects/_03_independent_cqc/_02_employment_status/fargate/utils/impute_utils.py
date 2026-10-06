@@ -1,11 +1,6 @@
 import polars as pl
 
-from projects._03_independent_cqc.utils.imputation.extrapolation import (
-    model_extrapolation,
-)
-from projects._03_independent_cqc.utils.imputation.interpolation import (
-    model_interpolation,
-)
+from projects._03_independent_cqc.utils.imputation.imputation import model_imputation
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
@@ -277,8 +272,7 @@ def add_full_imputed_percentages(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     The re-share needs no zero guard: rolling averages that sum to 1 give unfloored shares that
     sum to 1, so the floored total is about 1 or more. A null rolling average leaves the row
-    null. Statuses run one at a time because the shared helpers return fixed column names, which
-    are dropped before the next status.
+    null.
 
     Args:
         lf (pl.LazyFrame): dataset containing the 5 percentage columns and their rolling averages
@@ -286,40 +280,30 @@ def add_full_imputed_percentages(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: dataset with the 5 "emplstat_<status>_percentage_full_imputed" columns added
     """
-    unnormalised_columns = [
-        TempCols.unnormalised_prefix + col for col in PERCENTAGE_COLUMNS
-    ]
-
-    for col, rolling_col, unnormalised_col in zip(
-        PERCENTAGE_COLUMNS, ROLLING_AVERAGE_PERCENTAGE_COLUMNS, unnormalised_columns
+    for col, rolling_col, full_col in zip(
+        PERCENTAGE_COLUMNS,
+        ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
+        FULL_IMPUTED_PERCENTAGE_COLUMNS,
     ):
-        lf = model_extrapolation(
-            lf, col, rolling_col, "nominal", group_columns=LOCATION_JOB_ROLE_GROUPS
-        )
-        lf = model_interpolation(
-            lf, col, method="trend", group_columns=LOCATION_JOB_ROLE_GROUPS
-        )
-        lf = lf.with_columns(
-            pl.when(pl.col(col).is_null())
-            .then(
-                pl.coalesce(
-                    IndCQC.extrapolation_model, IndCQC.interpolation_model
-                ).clip(lower_bound=0)
-            )
-            .alias(unnormalised_col)
-        ).drop(
-            IndCQC.extrapolation_forwards,
-            IndCQC.extrapolation_model,
-            IndCQC.interpolation_model,
+        lf = model_imputation(
+            lf,
+            col,
+            rolling_col,
+            full_col,
+            care_home=None,
+            extrapolation_method="nominal",
+            group_columns=LOCATION_JOB_ROLE_GROUPS,
         )
 
-    unnormalised_total = pl.sum_horizontal(unnormalised_columns)
+    floored_total = pl.sum_horizontal(
+        pl.col(FULL_IMPUTED_PERCENTAGE_COLUMNS).clip(lower_bound=0)
+    )
 
     return lf.with_columns(
-        pl.coalesce(col, pl.col(unnormalised_col) / unnormalised_total)
+        pl.when(pl.col(col).is_null())
+        .then(pl.col(full_col).clip(lower_bound=0) / floored_total)
+        .otherwise(pl.col(full_col))
         .cast(pl.Float32)
         .alias(full_col)
-        for col, unnormalised_col, full_col in zip(
-            PERCENTAGE_COLUMNS, unnormalised_columns, FULL_IMPUTED_PERCENTAGE_COLUMNS
-        )
-    ).drop(unnormalised_columns)
+        for col, full_col in zip(PERCENTAGE_COLUMNS, FULL_IMPUTED_PERCENTAGE_COLUMNS)
+    )
