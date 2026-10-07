@@ -8,7 +8,7 @@ from projects._03_independent_cqc._02_employment_status.fargate.utils.estimate_u
     ESTIMATED_PERCENTAGE_COLUMNS,
 )
 from projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils import (
-    IMPUTED_PERCENTAGE_COLUMNS,
+    FULL_IMPUTED_PERCENTAGE_COLUMNS,
     PERCENTAGE_COLUMNS,
     ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
 )
@@ -590,7 +590,7 @@ def _estimate_row(
     return {
         METRIC: [metric],
         **{col: [val] for col, val in zip(PERCENTAGE_COLUMNS, cleaned)},
-        **{col: [val] for col, val in zip(IMPUTED_PERCENTAGE_COLUMNS, imputed)},
+        **{col: [val] for col, val in zip(FULL_IMPUTED_PERCENTAGE_COLUMNS, imputed)},
         **{
             col: [val]
             for col, val in zip(ROLLING_AVERAGE_PERCENTAGE_COLUMNS, rolling_avg)

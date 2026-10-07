@@ -2,7 +2,7 @@ import polars as pl
 
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils import (
-    IMPUTED_PERCENTAGE_COLUMNS,
+    FULL_IMPUTED_PERCENTAGE_COLUMNS,
     PERCENTAGE_COLUMNS,
     ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
 )
@@ -53,7 +53,7 @@ def add_estimated_employment_status_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.coalesce(cleaned, imputed, rolling_avg).alias(estimated)
         for cleaned, imputed, rolling_avg, estimated in zip(
             PERCENTAGE_COLUMNS,
-            IMPUTED_PERCENTAGE_COLUMNS,
+            FULL_IMPUTED_PERCENTAGE_COLUMNS,
             ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
             ESTIMATED_PERCENTAGE_COLUMNS,
         )
@@ -63,7 +63,7 @@ def add_estimated_employment_status_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(
         pl.when(pl.col(EmpStatus.permanent_percentage).is_not_null())
         .then(pl.lit(EmploymentStatusEstimateSource.cleaned))
-        .when(pl.col(EmpStatus.permanent_percentage_imputed).is_not_null())
+        .when(pl.col(EmpStatus.permanent_percentage_full_imputed).is_not_null())
         .then(pl.lit(EmploymentStatusEstimateSource.imputed))
         .when(pl.col(EmpStatus.permanent_percentage_rolling_avg).is_not_null())
         .then(pl.lit(EmploymentStatusEstimateSource.rolling_avg))
