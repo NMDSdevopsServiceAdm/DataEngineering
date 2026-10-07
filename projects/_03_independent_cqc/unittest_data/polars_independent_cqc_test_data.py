@@ -710,6 +710,58 @@ class ScoreGroupTotalsTestCase:
         return pytest.param(self, id=self.id)
 
 
+@dataclass
+class AddFinancialYearTestCase:
+    id: str
+    dates: list[date]
+    expected_years: list[int]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class ScoreRowsTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+    by_columns: list[str] | None = None
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class CalculatePeriodBiasTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class FitBiasSlopePerYearTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class WeightedBiasSlopeTestCase:
+    id: str
+    dates: list[date]
+    biases: list[float]
+    known_totals: list[float]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
 class TestModelEvaluationUtilsData:
     location_rows_share_a_fold_test_cases = [
         AssignLocationFoldsTestCase(
@@ -892,6 +944,7 @@ class TestModelEvaluationUtilsData:
                 ],
                 IndCQC.estimate_filled_posts: [30.0, 5.0],
                 IndCQC.ascwds_filled_posts_dedup_clean: [30.0, 6.0],
+                ModelEvaluation.number_of_rows: [2, 1],
             },
         ),
     ]
@@ -911,6 +964,7 @@ class TestModelEvaluationUtilsData:
                 IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
                 IndCQC.estimate_filled_posts: [10.0],
                 IndCQC.ascwds_filled_posts_dedup_clean: [12.0],
+                ModelEvaluation.number_of_rows: [1],
             },
         ),
     ]
@@ -944,6 +998,259 @@ class TestModelEvaluationUtilsData:
                 ModelEvaluation.weighted_absolute_percentage_error: [0.0, 0.5],
             },
             by_columns=[ModelEvaluation.fold],
+        ),
+    ]
+
+    financial_year_test_cases = [
+        AddFinancialYearTestCase(
+            id="april_starts_the_financial_year",
+            dates=[date(2024, 3, 31), date(2024, 4, 1)],
+            expected_years=[2023, 2024],
+        ),
+        AddFinancialYearTestCase(
+            id="january_to_march_belong_to_the_year_before",
+            dates=[date(2023, 12, 1), date(2024, 1, 1), date(2024, 3, 1)],
+            expected_years=[2023, 2023, 2023],
+        ),
+    ]
+
+    # Errors are 10, 25, 30 and 0 against known 100, 200, 300 and 400 (total 1000).
+    # R² is 1 - 1625 / 50000 and RMSE is the square root of 1625 / 4.
+    score_rows_test_cases = [
+        ScoreRowsTestCase(
+            id="within_ten_and_twenty_five_include_the_limit",
+            input_data={
+                IndCQC.estimate_filled_posts: [110.0, 225.0, 330.0, 400.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [100.0, 200.0, 300.0, 400.0],
+            },
+            expected_data={
+                ModelEvaluation.number_of_rows: [4],
+                ModelEvaluation.bias: [0.065],
+                ModelEvaluation.weighted_absolute_percentage_error: [0.065],
+                IndCQC.r2: [0.9675],
+                IndCQC.rmse: [20.155644370746373],
+                IndCQC.proportion_of_model_predictions_within_ten: [0.5],
+                IndCQC.proportion_of_model_predictions_within_twenty_five: [0.75],
+            },
+        ),
+        # Over- and under-prediction cancel in bias but not in the weighted error.
+        ScoreRowsTestCase(
+            id="over_and_under_prediction_cancel_in_bias_only",
+            input_data={
+                IndCQC.estimate_filled_posts: [20.0, 20.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [10.0, 30.0],
+            },
+            expected_data={
+                ModelEvaluation.number_of_rows: [2],
+                ModelEvaluation.bias: [0.0],
+                ModelEvaluation.weighted_absolute_percentage_error: [0.5],
+                IndCQC.r2: [0.0],
+                IndCQC.rmse: [10.0],
+                IndCQC.proportion_of_model_predictions_within_ten: [1.0],
+                IndCQC.proportion_of_model_predictions_within_twenty_five: [1.0],
+            },
+        ),
+    ]
+
+    rows_without_known_posts_not_scored_test_cases = [
+        ScoreRowsTestCase(
+            id="row_missing_a_known_value_left_out_of_every_score",
+            input_data={
+                IndCQC.estimate_filled_posts: [20.0, 20.0, 999.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [10.0, 30.0, None],
+            },
+            expected_data={
+                ModelEvaluation.number_of_rows: [2],
+                ModelEvaluation.bias: [0.0],
+                ModelEvaluation.weighted_absolute_percentage_error: [0.5],
+                IndCQC.r2: [0.0],
+                IndCQC.rmse: [10.0],
+                IndCQC.proportion_of_model_predictions_within_ten: [1.0],
+                IndCQC.proportion_of_model_predictions_within_twenty_five: [1.0],
+            },
+        ),
+    ]
+
+    # Fold 0 is predicted exactly; fold 1 is 10 out in each row, in opposite directions.
+    scores_split_by_fold_test_cases = [
+        ScoreRowsTestCase(
+            id="each_fold_scored_on_its_own_rows",
+            input_data={
+                ModelEvaluation.fold: [0, 0, 1, 1],
+                IndCQC.estimate_filled_posts: [10.0, 30.0, 20.0, 20.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [10.0, 30.0, 10.0, 30.0],
+            },
+            expected_data={
+                ModelEvaluation.fold: [0, 1],
+                ModelEvaluation.number_of_rows: [2, 2],
+                ModelEvaluation.bias: [0.0, 0.0],
+                ModelEvaluation.weighted_absolute_percentage_error: [0.0, 0.5],
+                IndCQC.r2: [1.0, 0.0],
+                IndCQC.rmse: [0.0, 10.0],
+                IndCQC.proportion_of_model_predictions_within_ten: [1.0, 1.0],
+                IndCQC.proportion_of_model_predictions_within_twenty_five: [1.0, 1.0],
+            },
+            by_columns=[ModelEvaluation.fold],
+        ),
+    ]
+
+    period_bias_test_cases = [
+        # January: (110 + 95 - 200) / 200. February: (80 - 100) / 100.
+        CalculatePeriodBiasTestCase(
+            id="bias_relative_to_the_known_total_of_each_period",
+            input_data={
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * 3,
+                IndCQC.cqc_location_import_date: [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                ],
+                IndCQC.estimate_filled_posts: [110.0, 95.0, 80.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [100.0, 100.0, 100.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * 2,
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 2, 1)],
+                IndCQC.estimate_filled_posts: [205.0, 80.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [200.0, 100.0],
+                ModelEvaluation.number_of_rows: [2, 1],
+                ModelEvaluation.bias: [0.025, -0.2],
+            },
+        ),
+        CalculatePeriodBiasTestCase(
+            id="periods_measured_separately_for_each_group",
+            input_data={
+                IndCQC.primary_service_type: [
+                    PrimaryServiceType.non_residential,
+                    PrimaryServiceType.care_home_only,
+                ],
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 2,
+                IndCQC.estimate_filled_posts: [150.0, 50.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [100.0, 100.0],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [
+                    PrimaryServiceType.non_residential,
+                    PrimaryServiceType.care_home_only,
+                ],
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 2,
+                IndCQC.estimate_filled_posts: [150.0, 50.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [100.0, 100.0],
+                ModelEvaluation.number_of_rows: [1, 1],
+                ModelEvaluation.bias: [0.5, -0.5],
+            },
+        ),
+        CalculatePeriodBiasTestCase(
+            id="row_missing_a_known_value_left_out_of_both_totals",
+            input_data={
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * 2,
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 2,
+                IndCQC.estimate_filled_posts: [110.0, 999.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [100.0, None],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
+                IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
+                IndCQC.estimate_filled_posts: [110.0],
+                IndCQC.ascwds_filled_posts_dedup_clean: [100.0],
+                ModelEvaluation.number_of_rows: [1],
+                ModelEvaluation.bias: [0.1],
+            },
+        ),
+    ]
+
+    # Bias is 0.2 at the first date and falls by 0.05 for every 365.25 days after it.
+    bias_slope_test_cases = [
+        FitBiasSlopePerYearTestCase(
+            id="bias_that_falls_every_year_has_a_negative_slope",
+            input_data={
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * 3,
+                IndCQC.cqc_location_import_date: [
+                    date(2020, 1, 1),
+                    date(2022, 1, 1),
+                    date(2024, 1, 1),
+                ],
+                ModelEvaluation.bias: [
+                    0.2,
+                    0.2 - 0.05 * (date(2022, 1, 1) - date(2020, 1, 1)).days / 365.25,
+                    0.2 - 0.05 * (date(2024, 1, 1) - date(2020, 1, 1)).days / 365.25,
+                ],
+                IndCQC.ascwds_filled_posts_dedup_clean: [100.0, 300.0, 200.0],
+                ModelEvaluation.number_of_rows: [5, 9, 7],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
+                ModelEvaluation.bias_slope_per_year: [-0.05],
+                ModelEvaluation.number_of_periods: [3],
+                ModelEvaluation.minimum_rows_in_period: [5],
+            },
+        ),
+        FitBiasSlopePerYearTestCase(
+            id="steady_bias_has_no_slope",
+            input_data={
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * 3,
+                IndCQC.cqc_location_import_date: [
+                    date(2022, 1, 1),
+                    date(2023, 1, 1),
+                    date(2024, 1, 1),
+                ],
+                ModelEvaluation.bias: [0.1] * 3,
+                IndCQC.ascwds_filled_posts_dedup_clean: [100.0, 100.0, 100.0],
+                ModelEvaluation.number_of_rows: [2, 2, 2],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
+                ModelEvaluation.bias_slope_per_year: [0.0],
+                ModelEvaluation.number_of_periods: [3],
+                ModelEvaluation.minimum_rows_in_period: [2],
+            },
+        ),
+        FitBiasSlopePerYearTestCase(
+            id="each_group_gets_its_own_slope_and_counts",
+            input_data={
+                IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * 2
+                + [PrimaryServiceType.care_home_only] * 3,
+                IndCQC.cqc_location_import_date: [
+                    date(2022, 1, 1),
+                    date(2023, 1, 1),
+                    date(2022, 1, 1),
+                    date(2023, 1, 1),
+                    date(2024, 1, 1),
+                ],
+                ModelEvaluation.bias: [0.1, 0.1, 0.2, 0.2, 0.2],
+                IndCQC.ascwds_filled_posts_dedup_clean: [100.0] * 5,
+                ModelEvaluation.number_of_rows: [4, 6, 3, 8, 9],
+            },
+            expected_data={
+                IndCQC.primary_service_type: [
+                    PrimaryServiceType.non_residential,
+                    PrimaryServiceType.care_home_only,
+                ],
+                ModelEvaluation.bias_slope_per_year: [0.0, 0.0],
+                ModelEvaluation.number_of_periods: [2, 3],
+                ModelEvaluation.minimum_rows_in_period: [4, 3],
+            },
+        ),
+    ]
+
+    # The first period has little known data and an extreme bias.
+    weighted_bias_slope_test_cases = [
+        WeightedBiasSlopeTestCase(
+            id="thin_early_periods_count_for_less",
+            dates=[
+                date(2020, 1, 1),
+                date(2021, 1, 1),
+                date(2022, 1, 1),
+                date(2023, 1, 1),
+            ],
+            biases=[0.9, 0.1, 0.12, 0.1],
+            known_totals=[10.0, 1000.0, 1200.0, 1100.0],
+        ),
+        WeightedBiasSlopeTestCase(
+            id="equal_periods_count_equally",
+            dates=[date(2020, 1, 1), date(2021, 1, 1), date(2022, 1, 1)],
+            biases=[0.3, 0.1, -0.1],
+            known_totals=[500.0, 500.0, 500.0],
         ),
     ]
 

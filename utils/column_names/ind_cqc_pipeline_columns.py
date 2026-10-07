@@ -584,6 +584,12 @@ class ModelEvaluationColumns:
     column_name: str = "column_name"
     mean_period_to_period_change: str = "mean_period_to_period_change"
     weighted_absolute_percentage_error: str = "weighted_absolute_percentage_error"
+    financial_year: str = "financial_year"
+    number_of_rows: str = "number_of_rows"
+    bias: str = "bias"
+    number_of_periods: str = "number_of_periods"
+    minimum_rows_in_period: str = "minimum_rows_in_period"
+    bias_slope_per_year: str = "bias_slope_per_year"
 
 
 @dataclass
