@@ -264,7 +264,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ct_non_res_state_machine"
 }
 
 resource "aws_cloudwatch_event_rule" "ingest_pir_onspd_succeeded" {
-  state       = "ENABLED"
+  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
   name        = "${local.workspace_prefix}-ingest-pir-onspd-succeeded"
   description = "Captures when the CQC PIR or ONS Postcode Directory ingest state machine succeeds"
 
