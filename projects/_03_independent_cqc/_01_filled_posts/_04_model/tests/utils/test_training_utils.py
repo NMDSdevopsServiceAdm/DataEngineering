@@ -3,9 +3,13 @@ import unittest
 import numpy as np
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 from projects._03_independent_cqc._01_filled_posts._04_model.utils import (
     training_utils as job,
+)
+from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_test_file_data import (
+    IsTrainingRowData,
 )
 from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_test_file_data import (
     ModelTrainingUtilsData as Data,
@@ -132,3 +136,23 @@ class ConvertDataframeToNumpyTests(unittest.TestCase):
                 self.expected_col_y,
             )
         )
+
+
+class TestIsTrainingRow:
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in IsTrainingRowData.test_cases]
+    )
+    def test_only_known_dependent_and_one_care_home_status_trains(self, case):
+        input_lf = pl.LazyFrame(
+            {
+                IndCQC.imputed_filled_post_model: case.dependent,
+                IndCQC.care_home_status_count: case.care_home_status_count,
+            },
+            schema_overrides={IndCQC.imputed_filled_post_model: pl.Float64},
+        )
+
+        returned_df = input_lf.select(
+            job.is_training_row(IndCQC.imputed_filled_post_model)
+        ).collect()
+
+        assert returned_df.to_series().to_list() == case.expected_is_training_row

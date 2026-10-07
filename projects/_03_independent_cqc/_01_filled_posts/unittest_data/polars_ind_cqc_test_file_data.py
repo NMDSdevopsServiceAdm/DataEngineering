@@ -3565,3 +3565,43 @@ class CombineASCWDSAndPIRData:
         ("1-004", date(2024, 1, 1), None, None),
         ("1-004", date(2024, 2, 1), 80.0, 80.0),
     ]
+
+
+@dataclass
+class IsTrainingRowTestCase:
+    id: str
+    dependent: list[float | None]
+    care_home_status_count: list[int]
+    expected_is_training_row: list[bool]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+class IsTrainingRowData:
+    test_cases = [
+        IsTrainingRowTestCase(
+            id="known_dependent_and_one_care_home_status",
+            dependent=[12.0],
+            care_home_status_count=[1],
+            expected_is_training_row=[True],
+        ),
+        IsTrainingRowTestCase(
+            id="unknown_dependent",
+            dependent=[None],
+            care_home_status_count=[1],
+            expected_is_training_row=[False],
+        ),
+        IsTrainingRowTestCase(
+            id="location_that_has_had_two_care_home_statuses",
+            dependent=[12.0],
+            care_home_status_count=[2],
+            expected_is_training_row=[False],
+        ),
+        IsTrainingRowTestCase(
+            id="rows_decided_separately",
+            dependent=[12.0, None, 5.0],
+            care_home_status_count=[1, 1, 2],
+            expected_is_training_row=[True, False, False],
+        ),
+    ]
