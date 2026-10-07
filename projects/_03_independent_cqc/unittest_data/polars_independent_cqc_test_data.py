@@ -1981,6 +1981,17 @@ class ModelImputationTestCase:
 
 
 @dataclass
+class ModelImputationWithArgumentsTestCase:
+    id: str
+    expected_data: list[Any]
+    kwargs: dict[str, Any]
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.expected_data, self.kwargs, id=self.id)
+
+
+@dataclass
 class ModelImputation:
     column_with_null_values_name: str = "null_values"
     model_column_name: str = "trend_model"
@@ -2049,3 +2060,39 @@ class ModelImputation:
             ],
         ),
     ] # fmt: skip
+
+    expected_model_imputation_with_arguments_test_cases = [
+        ModelImputationWithArgumentsTestCase(
+            id="when_group_columns_ignore_care_home_gaps_are_filled_across_status_change",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 50.0, 1.0, 50.0),
+                ("1-001", date(2023, 2, 1), CareHome.care_home, None, 2.0, 51.0),
+                ("1-001", date(2023, 3, 1), CareHome.care_home, None, 3.0, 52.0),
+            ],
+            kwargs={"care_home": None, "group_columns": [IndCQC.location_id]},
+        ),
+        ModelImputationWithArgumentsTestCase(
+            id="when_care_home_is_none_every_service_type_is_imputed",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, 19.0),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, 20.0, 2.0, 20.0),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, 21.0),
+                ("1-002", date(2023, 1, 1), CareHome.care_home, None, 1.0, 19.0),
+                ("1-002", date(2023, 2, 1), CareHome.care_home, 20.0, 2.0, 20.0),
+                ("1-002", date(2023, 3, 1), CareHome.care_home, None, 3.0, 21.0),
+            ],
+            kwargs={"care_home": None},
+        ),
+        ModelImputationWithArgumentsTestCase(
+            id="when_care_home_is_true_only_care_homes_are_imputed",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, None),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, 20.0, 2.0, None),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, None),
+                ("1-002", date(2023, 1, 1), CareHome.care_home, None, 1.0, 19.0),
+                ("1-002", date(2023, 2, 1), CareHome.care_home, 20.0, 2.0, 20.0),
+                ("1-002", date(2023, 3, 1), CareHome.care_home, None, 3.0, 21.0),
+            ],
+            kwargs={"care_home": True},
+        ),
+    ]
