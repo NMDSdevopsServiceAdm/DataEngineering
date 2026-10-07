@@ -39,6 +39,7 @@ All notable changes to this project will be documented in this file.
 - Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock, with a gate that fails a main pipeline whose prod deploy was skipped or cancelled instead of reporting it as success.
 - Added published label classes and column names for the publication outputs, and used them in the publication clean job.
 - Added a shared definition of the rows a filled posts model trains on, now used by the model training job.
+- Added filled posts model cross-validation helpers: out-of-fold predictions from a model spec and non-res size bands.
 
 
 ### Changed

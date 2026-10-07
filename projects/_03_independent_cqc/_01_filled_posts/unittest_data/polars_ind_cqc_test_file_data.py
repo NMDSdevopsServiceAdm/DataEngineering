@@ -6,7 +6,14 @@ from typing import Any, Optional
 import numpy as np
 import pytest
 
+from projects._03_independent_cqc._01_filled_posts._04_model.utils.value_labels import (
+    ModelTypes,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ModelEvaluationColumns as ModelEvaluation,
+)
+from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
 from utils.column_values.categorical_column_values import (
     RUI,
@@ -3564,6 +3571,130 @@ class CombineASCWDSAndPIRData:
         ("1-003", date(2024, 2, 1), 40.0, None),
         ("1-004", date(2024, 1, 1), None, None),
         ("1-004", date(2024, 2, 1), 80.0, 80.0),
+    ]
+
+
+CROSS_VALIDATION_LOCATIONS = [f"loc{i}" for i in range(6)]
+CROSS_VALIDATION_DATES = [date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)]
+
+
+def exact_cross_validation_dependent(service_count: int, activity_count: int) -> float:
+    return 2.0 * service_count + 3.0 * activity_count + 1.0
+
+
+def cross_validation_features_data() -> dict[str, list[Any]]:
+    """Three dates for each of six locations, with a dependent that is exactly linear."""
+    rows = [
+        (location, import_date, (i + j) % 4 + 1, (2 * i + j) % 3 + 1)
+        for i, location in enumerate(CROSS_VALIDATION_LOCATIONS)
+        for j, import_date in enumerate(CROSS_VALIDATION_DATES)
+    ]
+    return {
+        IndCQC.location_id: [row[0] for row in rows],
+        IndCQC.cqc_location_import_date: [row[1] for row in rows],
+        IndCQC.care_home_status_count: [1] * len(rows),
+        IndCQC.service_count_capped: [row[2] for row in rows],
+        IndCQC.activity_count_capped: [row[3] for row in rows],
+        IndCQC.imputed_filled_post_model: [
+            exact_cross_validation_dependent(row[2], row[3]) for row in rows
+        ],
+    }
+
+
+@dataclass
+class FilledPostsConversionTestCase:
+    id: str
+    dependent: str
+    predictions: list[float]
+    number_of_beds: list[int | None]
+    expected_predictions: list[float | None]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class NonResSizeBandTestCase:
+    id: str
+    location_ids: list[str]
+    known_posts: list[float | None]
+    expected_bands: list[str | None]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+class CrossValidationUtilsData:
+    spec = {
+        MRKeys.model_type: ModelTypes.linear_regression,
+        MRKeys.model_params: {},
+        MRKeys.dependent: IndCQC.imputed_filled_post_model,
+        # The reverse of the columns' order in the data, to show the spec's order is used.
+        MRKeys.features: [IndCQC.activity_count_capped, IndCQC.service_count_capped],
+    }
+
+    # Two locations in each of the three folds.
+    folds_data = {
+        IndCQC.location_id: CROSS_VALIDATION_LOCATIONS,
+        ModelEvaluation.fold: [0, 0, 1, 1, 2, 2],
+    }
+
+    garbage_dependent = 10_000.0
+
+    filled_posts_conversion_test_cases = [
+        FilledPostsConversionTestCase(
+            id="care_home_ratio_multiplied_by_beds",
+            dependent=IndCQC.imputed_filled_posts_per_bed_ratio_model,
+            predictions=[2.0, 1.5],
+            number_of_beds=[10, 20],
+            expected_predictions=[20.0, 30.0],
+        ),
+        FilledPostsConversionTestCase(
+            id="care_home_without_beds_has_no_filled_posts",
+            dependent=IndCQC.imputed_filled_posts_per_bed_ratio_model,
+            predictions=[2.0, 1.5],
+            number_of_beds=[10, None],
+            expected_predictions=[20.0, None],
+        ),
+        FilledPostsConversionTestCase(
+            id="other_dependents_already_in_filled_posts",
+            dependent=IndCQC.imputed_filled_post_model,
+            predictions=[12.0, 3.5],
+            number_of_beds=[10, 20],
+            expected_predictions=[12.0, 3.5],
+        ),
+    ]
+
+    non_res_size_band_test_cases = [
+        NonResSizeBandTestCase(
+            id="band_edges_belong_to_the_band_they_start",
+            location_ids=[f"loc{i}" for i in range(9)],
+            known_posts=[24.9, 25.0, 49.9, 50.0, 74.9, 75.0, 99.9, 100.0, 500.0],
+            expected_bands=[
+                "1-24",
+                "25-49",
+                "25-49",
+                "50-74",
+                "50-74",
+                "75-99",
+                "75-99",
+                "100+",
+                "100+",
+            ],
+        ),
+        # The mean of 10 and 50 is 30, and the row without a known value is banded too.
+        NonResSizeBandTestCase(
+            id="location_banded_by_mean_known_posts_on_every_row",
+            location_ids=["loc0"] * 3,
+            known_posts=[10.0, 50.0, None],
+            expected_bands=["25-49"] * 3,
+        ),
+        NonResSizeBandTestCase(
+            id="location_with_no_known_posts_has_no_band",
+            location_ids=["loc0", "loc1"],
+            known_posts=[None, 30.0],
+            expected_bands=[None, "25-49"],
+        ),
     ]
 
 

@@ -11,6 +11,13 @@
 - Always stop the notebook after use
 
 
+## Filled posts model experiments
+- Read data from a dedicated branch's dataset bucket and don't push to that branch again. Every push re-copies main data and reruns the pipeline, so leaving it alone keeps a frozen copy.
+- Write results to a persistent S3 prefix, not the branch's buckets. Deleting the branch deletes them.
+- Use the same polars and scikit-learn versions as the repo (see `pyproject.toml`), and record the commit you cloned.
+- Read parquet lazily from S3, selecting only the columns needed. The instance's disk is small.
+
+
 # Jupyter Notebooks on Amazon Web Services Elastic MapReduce (EMR)
 
 ## Steps to Launch
