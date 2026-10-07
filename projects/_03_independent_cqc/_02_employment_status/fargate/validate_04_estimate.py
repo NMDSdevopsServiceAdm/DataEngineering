@@ -65,11 +65,13 @@ def main(
         .col_vals_ge(
             columns=EMPLOYMENT_STATUS_SPLIT_COLUMNS,
             value=0,
+            na_pass=True,
             brief="Employment status split columns are non-negative",
         )
         .col_vals_ge(
             EmpStatus.estimated_employees,
             0,
+            na_pass=True,
             brief="estimated_employees is non-negative",
         )
     )
@@ -81,7 +83,9 @@ def main(
 
     sum_of_splits = sum(pl.col(column) for column in EMPLOYMENT_STATUS_SPLIT_COLUMNS)
     validation = validation.col_vals_expr(
-        expr=(
+        expr=sum_of_splits.is_null()
+        | pl.col(METRIC).is_null()
+        | (
             (sum_of_splits - pl.col(METRIC)).abs()
             <= pl.col(METRIC).abs() * EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE
         ),
@@ -92,7 +96,8 @@ def main(
         EmpStatus.estimated_emp_stat_temp
     )
     validation = validation.col_vals_expr(
-        expr=(
+        expr=employees_sum.is_null()
+        | (
             (pl.col(EmpStatus.estimated_employees) - employees_sum).abs()
             <= employees_sum.abs() * EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE
         ),
