@@ -41,7 +41,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
-- The CQC PIR and ONS postcode directory ingest pipelines now start the Ind CQC filled posts estimates pipeline when they succeed.
+- The CQC PIR and ONS postcode directory ingests now start the Ind CQC filled posts estimates pipeline on success.
 - Changed the job group labels (`JobGroupLabels`) from snake_case to human-readable values, e.g. "direct_care" to "Direct care", so `main_job_group_labels` data values change on every run.
 - Added the Excel packages `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image, and extended the Docker pin test to cover every `requirements-extra.txt`.
 - Added a `trello-cards` Claude Code skill that drafts paste-ready Trello cards from a plan or a one-line idea.

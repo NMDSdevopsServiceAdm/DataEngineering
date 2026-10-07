@@ -77,7 +77,7 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
 }
 
 locals {
-  # Template variables shared by sf_pipelines and the ingest state machines below
+  # Shared by sf_pipelines and the ingest state machines below
   state_machine_template_vars = {
     # s3
     dataset_bucket_uri            = module.datasets_bucket.bucket_uri
@@ -160,7 +160,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
 }
 
 
-# Created explicitly as they start Ind-CQC-Filled-Post-Estimates, which would be a circular dependency inside sf_pipelines
+# Explicit (not in sf_pipelines) as they reference Ind-CQC-Filled-Post-Estimates, which would be circular
 resource "aws_sfn_state_machine" "ingest_cqc_pir_state_machine" {
   name     = "${local.workspace_prefix}-Ingest-CQC-PIR"
   role_arn = aws_iam_role.step_function_iam_role.arn
