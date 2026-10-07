@@ -11,11 +11,11 @@ def main(
     imputed_data_destination: str,
 ) -> None:
     """
-    Imputes values to fill gaps between and around known employment status values.
+    Imputes employment status percentages for each location and job role.
 
-    Short-term gaps in each location and job role's percentages are filled first, then
-    those percentages are averaged over a rolling window per primary service type, region
-    and job role.
+    Short-term gaps are filled first, then averaged over a rolling window per primary service
+    type, region and job role. Every remaining gap is filled by carrying the known percentages
+    along the rolling averages.
 
     Args:
         cleaned_data_source (str): path to the cleaned data
@@ -33,6 +33,8 @@ def main(
         lf,
         rolling_period=ROLLING_AVERAGE_PERIOD,
     )
+
+    lf = iUtils.add_full_imputed_percentages(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,
