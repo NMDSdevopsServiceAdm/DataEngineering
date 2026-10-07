@@ -40,6 +40,7 @@ All notable changes to this project will be documented in this file.
 - Added full imputation to the employment status impute job, filling remaining gaps by carrying each location and job role's known percentages along the rolling averages, with validation of the result. Renamed the short-term imputed percentage columns to `*_imputed_for_trendline`.
 - Added published label classes and column names for the publication outputs, and used them in the publication clean job.
 - Added a shared definition of the rows a filled posts model trains on, now used by the model training job.
+- Added filled posts model cross-validation helpers: out-of-fold predictions from a model spec and non-res size bands.
 - Added financial year, row-level, per-period bias and bias slope scoring to the project-level model evaluation utilities.
 
 
