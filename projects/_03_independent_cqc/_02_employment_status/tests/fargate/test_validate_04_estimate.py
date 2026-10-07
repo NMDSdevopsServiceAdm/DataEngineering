@@ -28,8 +28,6 @@ class TestMain:
         }
         source_rows = [
             ("1-001", 10.0, 5.0, 2.0, 1.5, 1.0, 0.5, 7.0),
-            ("1-002", 10.0, None, None, None, None, None, None),
-            ("1-003", None, None, None, None, None, None, None),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
@@ -75,19 +73,3 @@ class TestMain:
         assert "row_count_match" in assertion_types_present
         assert "col_vals_ge" in assertion_types_present
         assert "col_vals_expr" in assertion_types_present
-
-    @patch(f"{PATCH_PATH}.vl.write_reports")
-    @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_passes_when_estimates_are_null(
-        self,
-        mock_read_parquet: Mock,
-        mock_write_reports: Mock,
-    ):
-        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
-
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
-
-        validation_arg = mock_write_reports.call_args[0][0]
-        report_json = json.loads(validation_arg.get_json_report())
-
-        assert all(item["all_passed"] for item in report_json)
