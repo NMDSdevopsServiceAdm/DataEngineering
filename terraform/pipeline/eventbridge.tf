@@ -113,10 +113,10 @@ resource "aws_iam_policy" "start_state_machines" {
         Action = ["states:StartExecution"]
         Resource = [
           aws_sfn_state_machine.sf_pipelines["Ingest-ASCWDS"].arn,
-          aws_sfn_state_machine.sf_pipelines["Ingest-CQC-PIR"].arn,
+          aws_sfn_state_machine.ingest_cqc_pir_state_machine.arn,
           aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Care-Home"].arn,
           aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Non-Res"].arn,
-          aws_sfn_state_machine.sf_pipelines["Ingest-ONSPD"].arn
+          aws_sfn_state_machine.ingest_onspd_state_machine.arn
         ]
       }
     ]
@@ -173,7 +173,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
 resource "aws_cloudwatch_event_target" "trigger_ingest_cqc_pir_state_machine" {
   rule      = aws_cloudwatch_event_rule.cqc_pir_csv_added.name
   target_id = "${local.workspace_prefix}-StartIngestCqcPirStateMachine"
-  arn       = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-PIR"].arn
+  arn       = aws_sfn_state_machine.ingest_cqc_pir_state_machine.arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {
@@ -196,7 +196,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_cqc_pir_state_machine" {
 resource "aws_cloudwatch_event_target" "trigger_ingest_ons_pd_state_machine" {
   rule      = aws_cloudwatch_event_rule.ons_pd_csv_added.name
   target_id = "${local.workspace_prefix}-StartIngestONSStateMachine"
-  arn       = aws_sfn_state_machine.sf_pipelines["Ingest-ONSPD"].arn
+  arn       = aws_sfn_state_machine.ingest_onspd_state_machine.arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {

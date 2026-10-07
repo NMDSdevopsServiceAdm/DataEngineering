@@ -166,6 +166,17 @@
         "Name": "${cqc_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Start Ind CQC Filled Posts Pipeline"
+    },
+    "Start Ind CQC Filled Posts Pipeline": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution",
+      "Parameters": {
+        "StateMachineArn": "${ind_cqc_pipeline_state_machine_arn}",
+        "Input": {
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
       "Next": "Success"
     },
     "Publish error notification": {
