@@ -170,3 +170,37 @@ def empty_s3_folder(bucket_name: str, prefix: str) -> None:
     keys_str = "\n".join([obj["Key"] for obj in to_delete])
     print(f"Deleting {len(to_delete):} objects:\n{keys_str}")
     s3_client.delete_objects(Bucket=bucket_name, Delete={"Objects": to_delete})
+
+
+RUN_PARTITION_PATTERN = re.compile(
+    r"archive_date=(\d{4}-\d{2}-\d{2})/run_number=(\d+)/"
+)
+
+
+def list_archive_runs(s3_root: str) -> dict[int, str]:
+    """
+    Lists the archived runs under an S3 archive root.
+
+    Reads the archive_date and run_number partitions from the object keys, e.g.
+    <root>/archive_date=2026-09-22/run_number=1/file.parquet
+
+    Args:
+        s3_root (str): S3 directory of an archive, partitioned by archive_date and
+            run_number
+
+    Returns:
+        dict[int, str]: the archive_date (yyyy-mm-dd) of each run_number found
+    """
+    bucket, prefix = split_s3_uri(s3_root.rstrip("/") + "/")
+    pages = (
+        boto3.client("s3")
+        .get_paginator("list_objects_v2")
+        .paginate(Bucket=bucket, Prefix=prefix)
+    )
+
+    return {
+        int(match.group(2)): match.group(1)
+        for page in pages
+        for obj in page.get("Contents", [])
+        if (match := RUN_PARTITION_PATTERN.search(obj["Key"]))
+    }

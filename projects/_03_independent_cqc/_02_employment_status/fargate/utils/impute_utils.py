@@ -1,5 +1,6 @@
 import polars as pl
 
+from projects._03_independent_cqc.utils.imputation.imputation import model_imputation
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
@@ -21,12 +22,12 @@ PERCENTAGE_COLUMNS: list[str] = [
     EmpStatus.other_percentage,
 ]
 
-IMPUTED_PERCENTAGE_COLUMNS: list[str] = [
-    EmpStatus.permanent_percentage_imputed,
-    EmpStatus.temporary_percentage_imputed,
-    EmpStatus.bank_or_pool_percentage_imputed,
-    EmpStatus.agency_percentage_imputed,
-    EmpStatus.other_percentage_imputed,
+TRENDLINE_PERCENTAGE_COLUMNS: list[str] = [
+    EmpStatus.permanent_percentage_imputed_for_trendline,
+    EmpStatus.temporary_percentage_imputed_for_trendline,
+    EmpStatus.bank_or_pool_percentage_imputed_for_trendline,
+    EmpStatus.agency_percentage_imputed_for_trendline,
+    EmpStatus.other_percentage_imputed_for_trendline,
 ]
 
 ROLLING_AVERAGE_PERCENTAGE_COLUMNS: list[str] = [
@@ -35,6 +36,14 @@ ROLLING_AVERAGE_PERCENTAGE_COLUMNS: list[str] = [
     EmpStatus.bank_or_pool_percentage_rolling_avg,
     EmpStatus.agency_percentage_rolling_avg,
     EmpStatus.other_percentage_rolling_avg,
+]
+
+FULL_IMPUTED_PERCENTAGE_COLUMNS: list[str] = [
+    EmpStatus.permanent_percentage_full_imputed,
+    EmpStatus.temporary_percentage_full_imputed,
+    EmpStatus.bank_or_pool_percentage_full_imputed,
+    EmpStatus.agency_percentage_full_imputed,
+    EmpStatus.other_percentage_full_imputed,
 ]
 
 FILL_BOUNDARY_COLUMNS: list[str] = [
@@ -112,13 +121,12 @@ def add_short_term_imputed_percentages(
     interpolation_cap_period: str,
 ) -> pl.LazyFrame:
     """
-    Impute the 5 employment status percentages within time limits, for each location and job
-    role.
+    Fill short gaps in the 5 employment status percentages, for each location and job role.
 
-    Gaps are interpolated by date if they span no more than `interpolation_cap_period`, and the
-    first and last known values are carried outside the known range for no more than
-    `extrapolation_period`. Known values are kept as they are. Interpolating each percentage
-    linearly between two splits that sum to 1 gives a split that also sums to 1.
+    Gaps spanning no more than `interpolation_cap_period` are interpolated by date, and the first
+    and last known values are carried outside the known range for no more than
+    `extrapolation_period`. Known values are kept. Linear interpolation between two splits that
+    sum to 1 gives a split that also sums to 1.
 
     Args:
         lf (pl.LazyFrame): dataset containing the employment status percentage columns
@@ -128,7 +136,7 @@ def add_short_term_imputed_percentages(
             offset string (e.g. "5y")
 
     Returns:
-        pl.LazyFrame: dataset with the 5 "emplstat_<status>_percentage_imputed" columns added
+        pl.LazyFrame: dataset with the 5 imputed-for-trendline percentage columns added
     """
     order_key = IndCQC.cqc_location_import_date
 
@@ -161,8 +169,8 @@ def add_short_term_imputed_percentages(
             .then(pl.col(TempCols.first_known_value_prefix + col)),
         )
         .cast(pl.Float32)
-        .alias(imputed_col)
-        for col, imputed_col in zip(PERCENTAGE_COLUMNS, IMPUTED_PERCENTAGE_COLUMNS)
+        .alias(trendline_col)
+        for col, trendline_col in zip(PERCENTAGE_COLUMNS, TRENDLINE_PERCENTAGE_COLUMNS)
     ).drop(FILL_BOUNDARY_COLUMNS)
 
 
@@ -171,24 +179,22 @@ def add_rolling_average_percentages(
     rolling_period: str,
 ) -> pl.LazyFrame:
     """
-    Add a rolling average of the short-term imputed percentages per primary service type,
+    Add a rolling average of the imputed-for-trendline percentages per primary service type,
     region and job role.
 
-    The average is the mean imputed share across the locations contributing to a group, counting
-    each location once regardless of size. Averages sum to 1 across the 5 statuses without extra
-    normalisation, because a location has every imputed percentage populated or none of them.
+    Each location counts once, regardless of size. Averages sum to 1 across the 5 statuses
+    without normalisation, because a location has every percentage populated or none of them.
 
     Steps:
-        1. Total each imputed percentage and count the contributing locations per date,
-           pre-aggregated so the calculation stays within the Polars streaming engine.
-        2. Roll the totals over `rolling_period` on this small aggregated dataset.
-        3. Divide each total by the count, carrying the nearest known average into any date with
-           no contributing locations.
-        4. Join the averages back onto the location-level dataset and drop the temporary columns.
+        1. Total each percentage and count the contributing locations per date, pre-aggregated
+           to stay within the Polars streaming engine.
+        2. Roll the totals over `rolling_period` on this small dataset.
+        3. Divide each total by the count, carrying the nearest average into any date with no
+           contributing locations.
+        4. Join the averages back on and drop the temporary columns.
 
     Args:
-        lf (pl.LazyFrame): dataset containing the 5 "emplstat_<status>_percentage_imputed"
-            columns
+        lf (pl.LazyFrame): dataset containing the 5 imputed-for-trendline percentage columns
         rolling_period (str): the rolling window length, as a Polars offset string (e.g. "6mo")
 
     Returns:
@@ -202,7 +208,7 @@ def add_rolling_average_percentages(
     order_key = IndCQC.cqc_location_import_date
     date_groups = rolling_groups + [order_key]
     rolling_total_columns = [
-        TempCols.rolling_total_prefix + col for col in IMPUTED_PERCENTAGE_COLUMNS
+        TempCols.rolling_total_prefix + col for col in TRENDLINE_PERCENTAGE_COLUMNS
     ]
 
     # Totals are Float64: a Float32 sliding-window sum leaves a residual as values leave the
@@ -211,9 +217,11 @@ def add_rolling_average_percentages(
     date_totals_lf = lf.group_by(date_groups).agg(
         *[
             pl.col(col).cast(pl.Float64).sum().alias(total_col)
-            for col, total_col in zip(IMPUTED_PERCENTAGE_COLUMNS, rolling_total_columns)
+            for col, total_col in zip(
+                TRENDLINE_PERCENTAGE_COLUMNS, rolling_total_columns
+            )
         ],
-        pl.col(EmpStatus.permanent_percentage_imputed)
+        pl.col(EmpStatus.permanent_percentage_imputed_for_trendline)
         .is_not_null()
         .sum()
         .alias(TempCols.contributing_locations),
@@ -249,4 +257,53 @@ def add_rolling_average_percentages(
         rolling_agg_lf.drop(*rolling_total_columns, TempCols.contributing_locations),
         on=date_groups,
         how="left",
+    )
+
+
+def add_full_imputed_percentages(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Add the 5 employment status percentages with every gap filled, for each location and job
+    role.
+
+    Known values are kept. Each status's gaps are filled along the change in its rolling average:
+    extrapolated outside the known range and interpolated by trend between known values, with no
+    time limit. Filled values are floored at zero and re-shared to sum to 1, and a location and
+    job role with no known values stays null.
+
+    The re-share needs no zero guard: rolling averages that sum to 1 give unfloored shares that
+    sum to 1, so the floored total is about 1 or more. A null rolling average leaves the row
+    null.
+
+    Args:
+        lf (pl.LazyFrame): dataset containing the 5 percentage columns and their rolling averages
+
+    Returns:
+        pl.LazyFrame: dataset with the 5 "emplstat_<status>_percentage_full_imputed" columns added
+    """
+    for col, rolling_col, full_col in zip(
+        PERCENTAGE_COLUMNS,
+        ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
+        FULL_IMPUTED_PERCENTAGE_COLUMNS,
+    ):
+        lf = model_imputation(
+            lf,
+            col,
+            rolling_col,
+            full_col,
+            care_home=None,
+            extrapolation_method="nominal",
+            group_columns=LOCATION_JOB_ROLE_GROUPS,
+        )
+
+    floored_total = pl.sum_horizontal(
+        pl.col(FULL_IMPUTED_PERCENTAGE_COLUMNS).clip(lower_bound=0)
+    )
+
+    return lf.with_columns(
+        pl.when(pl.col(col).is_null())
+        .then(pl.col(full_col).clip(lower_bound=0) / floored_total)
+        .otherwise(pl.col(full_col))
+        .cast(pl.Float32)
+        .alias(full_col)
+        for col, full_col in zip(PERCENTAGE_COLUMNS, FULL_IMPUTED_PERCENTAGE_COLUMNS)
     )
