@@ -113,10 +113,11 @@ resource "aws_iam_policy" "start_state_machines" {
         Action = ["states:StartExecution"]
         Resource = [
           aws_sfn_state_machine.sf_pipelines["Ingest-ASCWDS"].arn,
-          aws_sfn_state_machine.ingest_cqc_pir_state_machine.arn,
+          aws_sfn_state_machine.sf_pipelines["Ingest-CQC-PIR"].arn,
           aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Care-Home"].arn,
           aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Non-Res"].arn,
-          aws_sfn_state_machine.ingest_onspd_state_machine.arn
+          aws_sfn_state_machine.sf_pipelines["Ingest-ONSPD"].arn,
+          aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
         ]
       }
     ]
@@ -173,7 +174,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
 resource "aws_cloudwatch_event_target" "trigger_ingest_cqc_pir_state_machine" {
   rule      = aws_cloudwatch_event_rule.cqc_pir_csv_added.name
   target_id = "${local.workspace_prefix}-StartIngestCqcPirStateMachine"
-  arn       = aws_sfn_state_machine.ingest_cqc_pir_state_machine.arn
+  arn       = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-PIR"].arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {
@@ -196,7 +197,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_cqc_pir_state_machine" {
 resource "aws_cloudwatch_event_target" "trigger_ingest_ons_pd_state_machine" {
   rule      = aws_cloudwatch_event_rule.ons_pd_csv_added.name
   target_id = "${local.workspace_prefix}-StartIngestONSStateMachine"
-  arn       = aws_sfn_state_machine.ingest_onspd_state_machine.arn
+  arn       = aws_sfn_state_machine.sf_pipelines["Ingest-ONSPD"].arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {
@@ -257,6 +258,42 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ct_non_res_state_machine"
                 "source": "s3://<bucket_name>/<key>"
             }
         }
+    }
+    EOF
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "ingest_pir_onspd_succeeded" {
+  state       = "ENABLED"
+  name        = "${local.workspace_prefix}-ingest-pir-onspd-succeeded"
+  description = "Captures when the CQC PIR or ONS Postcode Directory ingest state machine succeeds"
+
+  event_pattern = jsonencode({
+    source        = ["aws.states"]
+    "detail-type" = ["Step Functions Execution Status Change"]
+    detail = {
+      status = ["SUCCEEDED"]
+      stateMachineArn = [
+        aws_sfn_state_machine.sf_pipelines["Ingest-CQC-PIR"].arn,
+        aws_sfn_state_machine.sf_pipelines["Ingest-ONSPD"].arn
+      ]
+    }
+  })
+}
+
+resource "aws_cloudwatch_event_target" "trigger_ind_cqc_estimates_state_machine" {
+  rule      = aws_cloudwatch_event_rule.ingest_pir_onspd_succeeded.name
+  target_id = "${local.workspace_prefix}-StartIndCqcEstimatesStateMachine"
+  arn       = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
+  role_arn  = aws_iam_role.start_state_machines.arn
+
+  input_transformer {
+    input_paths = {
+      execution_arn = "$.detail.executionArn",
+    }
+    input_template = <<EOF
+    {
+        "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID": "<execution_arn>"
     }
     EOF
   }

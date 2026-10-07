@@ -76,9 +76,12 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   ]
 }
 
-locals {
-  # Shared by sf_pipelines and the ingest state machines below
-  state_machine_template_vars = {
+resource "aws_sfn_state_machine" "sf_pipelines" {
+  for_each = local.step_functions
+  name     = "${local.workspace_prefix}-${each.key}"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile(each.value, {
     # s3
     dataset_bucket_uri            = module.datasets_bucket.bucket_uri
     dataset_bucket_name           = module.datasets_bucket.bucket_name
@@ -143,15 +146,7 @@ locals {
     # models
     preprocessor_name = "preprocess_non_res_pir"
     model_name        = "non_res_pir"
-  }
-}
-
-resource "aws_sfn_state_machine" "sf_pipelines" {
-  for_each   = local.step_functions
-  name       = "${local.workspace_prefix}-${each.key}"
-  role_arn   = aws_iam_role.step_function_iam_role.arn
-  type       = "STANDARD"
-  definition = templatefile(each.value, local.state_machine_template_vars)
+  })
 
   depends_on = [
     aws_iam_policy.step_function_iam_policy,
@@ -159,46 +154,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
   ]
 }
 
-
-# Explicit (not in sf_pipelines) as they reference Ind-CQC-Filled-Post-Estimates, which would be circular
-resource "aws_sfn_state_machine" "ingest_cqc_pir_state_machine" {
-  name     = "${local.workspace_prefix}-Ingest-CQC-PIR"
-  role_arn = aws_iam_role.step_function_iam_role.arn
-  type     = "STANDARD"
-  definition = templatefile("step-functions/Ingest-CQC-PIR.json", merge(local.state_machine_template_vars, {
-    ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
-  }))
-
-  depends_on = [
-    aws_iam_policy.step_function_iam_policy,
-    module.datasets_bucket
-  ]
-}
-
-resource "aws_sfn_state_machine" "ingest_onspd_state_machine" {
-  name     = "${local.workspace_prefix}-Ingest-ONSPD"
-  role_arn = aws_iam_role.step_function_iam_role.arn
-  type     = "STANDARD"
-  definition = templatefile("step-functions/Ingest-ONSPD.json", merge(local.state_machine_template_vars, {
-    ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
-  }))
-
-  depends_on = [
-    aws_iam_policy.step_function_iam_policy,
-    module.datasets_bucket
-  ]
-}
-
-
-moved {
-  from = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-PIR"]
-  to   = aws_sfn_state_machine.ingest_cqc_pir_state_machine
-}
-
-moved {
-  from = aws_sfn_state_machine.sf_pipelines["Ingest-ONSPD"]
-  to   = aws_sfn_state_machine.ingest_onspd_state_machine
-}
 
 resource "aws_cloudwatch_log_group" "state_machines" {
   name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
