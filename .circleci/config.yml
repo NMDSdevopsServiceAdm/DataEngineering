@@ -504,6 +504,9 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_04_estimate/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_01_merge_metadata/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" --delete
+            # Ticket 2149, temporary, not for main: the EmpStat clean output the distribution notebook reads.
+            # main_ prefix so a branch run of the pipeline can't be wiped by this --delete.
+            aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=02_employment_status_02_clean/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_02_employment_status_02_clean/" --delete
       - run:
           name: Copy models to non-prod dataset
           command: |
