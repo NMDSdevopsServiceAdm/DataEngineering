@@ -580,3 +580,45 @@ class TestBuildT2LocationCountPercChangeDownloadTable:
             case.expected_data, self.expected_schema, orient="row"
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestBuildT0EstimatesVerificationTable:
+    input_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.estimate_filled_posts, pl.Float32()),
+        ]
+    )
+    expected_schema = pl.Schema(
+        [
+            (Pub.period, pl.Date()),
+            (Pub.period_label, pl.String()),
+            (Pub.region, pl.String()),
+            (Pub.main_service, pl.String()),
+            (Pub.estimated_filled_posts, pl.Float32()),
+            (Pub.cqc_locations, pl.UInt32()),
+        ]
+    )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.build_t0_estimates_verification_table_test_cases
+        ],
+    )
+    def test_returns_expected_data(self, case):
+        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
+
+        returned_lf = job.build_t0_estimates_verification_table(
+            input_lf, today=case.today
+        )
+
+        expected_lf = pl.LazyFrame(
+            case.expected_data, self.expected_schema, orient="row"
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

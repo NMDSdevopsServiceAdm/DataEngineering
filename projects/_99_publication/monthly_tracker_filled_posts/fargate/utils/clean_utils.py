@@ -967,3 +967,118 @@ def build_t2_location_count_perc_change_download_table(
         pl.col(Pub.annual_percentage_change),
         pl.col(Pub.monthly_percentage_change),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
+
+
+def build_t0_estimates_verification_table(
+    cleaned_lf: pl.LazyFrame,
+    today: date | None = None,
+    fy_start_month: int = 4,
+) -> pl.LazyFrame:
+    """
+    Builds a diagnostic table in T0's shape, but summing estimate_filled_posts
+    (the location-level, pre-job-role-split estimate) instead of the
+    job-role-summed publication_filled_posts - for verifying whether a
+    difference against a published reference originates in the job-role
+    estimates split/reallocation rather than in this aggregation.
+
+    Deduplicates to one row per (location_id, cqc_location_import_date)
+    first: estimate_filled_posts repeats identically across every job role
+    row for a location, so summing without deduplicating would multiply it
+    by the location's job role count.
+
+    Args:
+        cleaned_lf (pl.LazyFrame): location-level data, as passed into
+            aggregate_to_publication_rows. Must carry estimate_filled_posts
+            (not selected by _01_merge.py by default - added there for this
+            verification).
+        today (date | None): reference date for the financial year split.
+            Defaults to the current system date when None.
+        fy_start_month (int): month the financial year starts.
+
+    Returns:
+        pl.LazyFrame: one row per (period, region, main_service), with a
+            period_label display column alongside the raw period date,
+            sorted by period then region then main_service.
+    """
+    location_level_lf = cleaned_lf.unique(
+        subset=[IndCQC.location_id, IndCQC.cqc_location_import_date],
+        keep="first",
+    ).with_columns(pl.col(IndCQC.primary_service_type).cast(pl.Categorical))
+
+    group_keys = [
+        IndCQC.cqc_location_import_date,
+        IndCQC.current_region,
+        IndCQC.primary_service_type,
+    ]
+    all_locations_lf = location_level_lf.group_by(group_keys).agg(
+        pl.col(IndCQC.estimate_filled_posts).sum().alias(Pub.estimated_filled_posts),
+        pl.col(IndCQC.location_id).n_unique().alias(Pub.cqc_locations),
+    )
+
+    column_schema = all_locations_lf.collect_schema()
+    column_order = column_schema.names()
+    metric_columns = [Pub.estimated_filled_posts, Pub.cqc_locations]
+
+    service_type_group_keys = [IndCQC.cqc_location_import_date, IndCQC.current_region]
+    all_cqc_locations_lf = (
+        all_locations_lf.group_by(service_type_group_keys)
+        .agg([pl.col(column).sum() for column in metric_columns])
+        .with_columns(
+            pl.lit(PublishedMainService.all_locations)
+            .cast(column_schema[IndCQC.primary_service_type])
+            .alias(IndCQC.primary_service_type)
+        )
+        .select(column_order)
+    )
+    all_cqc_care_homes_lf = (
+        all_locations_lf.filter(
+            pl.col(IndCQC.primary_service_type).is_in(
+                [
+                    PrimaryServiceType.care_home_with_nursing,
+                    PrimaryServiceType.care_home_only,
+                ]
+            )
+        )
+        .group_by(service_type_group_keys)
+        .agg([pl.col(column).sum() for column in metric_columns])
+        .with_columns(
+            pl.lit(PublishedMainService.all_care_homes)
+            .cast(column_schema[IndCQC.primary_service_type])
+            .alias(IndCQC.primary_service_type)
+        )
+        .select(column_order)
+    )
+    service_type_enlarged_lf = pl.concat(
+        [all_locations_lf, all_cqc_locations_lf, all_cqc_care_homes_lf],
+        how="vertical",
+    )
+
+    england_group_keys = [IndCQC.cqc_location_import_date, IndCQC.primary_service_type]
+    england_lf = (
+        service_type_enlarged_lf.group_by(england_group_keys)
+        .agg([pl.col(column).sum() for column in metric_columns])
+        .with_columns(
+            pl.lit(PublishedRegion.england)
+            .cast(column_schema[IndCQC.current_region])
+            .alias(IndCQC.current_region)
+        )
+        .select(column_order)
+    )
+
+    rollup_lf = pl.concat([service_type_enlarged_lf, england_lf], how="vertical")
+
+    return (
+        rollup_lf.filter(_annual_sampling_filter_expr(today, fy_start_month))
+        .select(
+            pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
+            _period_label_expr(),
+            pl.col(IndCQC.current_region).alias(Pub.region),
+            pl.col(IndCQC.primary_service_type)
+            .cast(pl.Utf8)
+            .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
+            .alias(Pub.main_service),
+            pl.col(Pub.estimated_filled_posts),
+            pl.col(Pub.cqc_locations),
+        )
+        .sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
+    )

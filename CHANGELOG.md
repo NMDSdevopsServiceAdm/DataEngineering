@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a diagnostic T0 verification table to the publication clean job, summing the location-level estimate_filled_posts (deduplicated per location) instead of the job-role-summed total, to verify whether a mismatch against a published reference originates in the job-role estimates pipeline.
 - Added a Polars scaffold for the CQC ratings flatten job, run in SfC-Internal alongside the PySpark job. It writes to separate `_polars` datasets and its failure doesn't stop the other jobs.
 - Added a run log table to the job role estimates archive, recording one row per run.
 - Added validation checks for columns that are created but never checked, across the Independent CQC filled posts, employment status, starters/leavers/vacancies, CQC locations/providers ingest, CQC PIR, Capacity Tracker, ONS postcode directory and direct payment recipients validators.

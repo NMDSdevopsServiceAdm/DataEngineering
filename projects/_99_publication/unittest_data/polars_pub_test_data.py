@@ -1461,3 +1461,60 @@ build_t2_location_count_perc_change_download_table_test_cases = [
         ],
     ),
 ]  # fmt: skip
+
+
+@dataclass
+class BuildT0EstimatesVerificationTableTestCase:
+    id: str
+    today: date
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+build_t0_estimates_verification_table_test_cases = [
+    BuildT0EstimatesVerificationTableTestCase(
+        # estimate_filled_posts repeats across every job role row for the
+        # same location - deduplicating to one row per (location, date)
+        # before summing must not double-count it.
+        id="deduplicates_estimate_filled_posts_across_job_role_rows_before_summing",
+        today=_TODAY,
+        input_data=[
+            ("1-001", date(2026, 4, 1), "Registered nurse", "London", _CARE_HOME_WITH_NURSING, 50.0),
+            ("1-001", date(2026, 4, 1), "Care worker", "London", _CARE_HOME_WITH_NURSING, 50.0),
+            ("1-002", date(2026, 4, 1), "Registered nurse", "London", "non-residential", 40.0),
+            ("1-002", date(2026, 4, 1), "Care worker", "London", "non-residential", 40.0),
+        ],
+        expected_data=[
+            (date(2026, 4, 1), "Mar-26", "England", _PUBLISHED_CARE_HOME_WITH_NURSING, 50.0, 1),
+            (date(2026, 4, 1), "Mar-26", "England", _ALL_CQC_CARE_HOMES, 50.0, 1),
+            (date(2026, 4, 1), "Mar-26", "England", _ALL_CQC_LOCATIONS, 90.0, 2),
+            (date(2026, 4, 1), "Mar-26", "England", PublishedMainService.non_residential, 40.0, 1),
+            (date(2026, 4, 1), "Mar-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 50.0, 1),
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_CARE_HOMES, 50.0, 1),
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 90.0, 2),
+            (date(2026, 4, 1), "Mar-26", "London", PublishedMainService.non_residential, 40.0, 1),
+        ],
+    ),
+    BuildT0EstimatesVerificationTableTestCase(
+        id="rolls_up_to_england_across_regions",
+        today=_TODAY,
+        input_data=[
+            ("1-001", date(2026, 4, 1), "Registered nurse", "London", _CARE_HOME_WITH_NURSING, 50.0),
+            ("1-002", date(2026, 4, 1), "Registered nurse", "South West", _CARE_HOME_WITH_NURSING, 30.0),
+        ],
+        expected_data=[
+            (date(2026, 4, 1), "Mar-26", "England", _PUBLISHED_CARE_HOME_WITH_NURSING, 80.0, 2),
+            (date(2026, 4, 1), "Mar-26", "England", _ALL_CQC_CARE_HOMES, 80.0, 2),
+            (date(2026, 4, 1), "Mar-26", "England", _ALL_CQC_LOCATIONS, 80.0, 2),
+            (date(2026, 4, 1), "Mar-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 50.0, 1),
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_CARE_HOMES, 50.0, 1),
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 50.0, 1),
+            (date(2026, 4, 1), "Mar-26", "South West", _PUBLISHED_CARE_HOME_WITH_NURSING, 30.0, 1),
+            (date(2026, 4, 1), "Mar-26", "South West", _ALL_CQC_CARE_HOMES, 30.0, 1),
+            (date(2026, 4, 1), "Mar-26", "South West", _ALL_CQC_LOCATIONS, 30.0, 1),
+        ],
+    ),
+]  # fmt: skip
