@@ -64,8 +64,9 @@ def predict_out_of_fold(
     rows of the held-out fold. A prediction is therefore never made by a model that has seen
     that row's location. Training rows are the production training job's.
 
-    The selected columns are collected once because scikit-learn needs the data in memory,
-    and every fold trains on four fifths of it. It fails if a location has no fold.
+    The selected columns are collected once because scikit-learn needs the data in memory.
+    Each fold also holds a copy of its training rows and their float64 array. It fails if a
+    location has no fold.
 
     Args:
         features_lf (pl.LazyFrame): features dataset
@@ -100,7 +101,8 @@ def predict_in_chunks(
     """
     Predict every row, collecting one fold of locations at a time to limit memory.
 
-    It fails if a location has no fold.
+    The source is rescanned for each fold, and folds with no rows are skipped. It fails if a
+    location has no fold.
 
     Args:
         model (LinearRegression | Pipeline): a fitted model
@@ -115,22 +117,22 @@ def predict_in_chunks(
     features_with_folds_lf = _add_folds(features_lf, folds_lf, spec)
     folds = (
         folds_lf.select(ModelEvaluation.fold)
+        .drop_nulls()
         .unique()
         .sort(ModelEvaluation.fold)
         .collect()[ModelEvaluation.fold]
         .to_list()
     )
 
-    return pl.concat(
-        _predict_rows(
-            model,
-            features_with_folds_lf.filter(
-                pl.col(ModelEvaluation.fold) == fold
-            ).collect(),
-            spec,
-        )
-        for fold in folds
-    )
+    predictions = []
+    for fold in folds:
+        chunk_df = features_with_folds_lf.filter(
+            pl.col(ModelEvaluation.fold) == fold
+        ).collect()
+        if chunk_df.height:
+            predictions.append(_predict_rows(model, chunk_df, spec))
+
+    return pl.concat(predictions)
 
 
 def convert_to_filled_posts(
@@ -156,7 +158,10 @@ def convert_to_filled_posts(
 
     return (
         predictions_lf.join(
-            number_of_beds_lf.select(*keys, IndCQC.number_of_beds), on=keys, how="left"
+            number_of_beds_lf.select(*keys, IndCQC.number_of_beds),
+            on=keys,
+            how="left",
+            validate="m:1",
         )
         .with_columns(
             pl.col(IndCQC.prediction)
@@ -171,10 +176,10 @@ def add_non_res_size_band(
     lf: pl.LazyFrame, known_column: str, location_column: str
 ) -> pl.LazyFrame:
     """
-    Band each non-res location by its mean known filled posts across all dates.
+    Band each location by its mean known filled posts across all dates.
 
-    The band comes from the known value, so it is outcome-based. Small bands tend to be
-    over-predicted and large bands under-predicted by any model.
+    The caller filters to non-res. The band comes from the known value, so it is
+    outcome-based, and means below 25 are in the first band.
 
     Args:
         lf (pl.LazyFrame): dataset containing the known and location columns
@@ -199,7 +204,7 @@ def add_non_res_size_band(
 def _add_folds(
     features_lf: pl.LazyFrame, folds_lf: pl.LazyFrame, spec: dict
 ) -> pl.LazyFrame:
-    """Select the columns the spec needs and add each location's fold, checking none is missing."""
+    """Select the spec's columns and add each location's fold, failing if any has none."""
     keys = [IndCQC.location_id, IndCQC.cqc_location_import_date]
     columns = list(
         dict.fromkeys(
@@ -210,6 +215,9 @@ def _add_folds(
                 *spec[MRKeys.features],
             ]
         )
+    )
+    folds_lf = folds_lf.select(IndCQC.location_id, ModelEvaluation.fold).filter(
+        pl.col(ModelEvaluation.fold).is_not_null()
     )
     locations_without_a_fold = (
         features_lf.select(IndCQC.location_id)
@@ -223,9 +231,7 @@ def _add_folds(
         raise ValueError(f"{locations_without_a_fold} locations have no fold")
 
     return features_lf.select(columns).join(
-        folds_lf.select(IndCQC.location_id, ModelEvaluation.fold),
-        on=IndCQC.location_id,
-        how="left",
+        folds_lf, on=IndCQC.location_id, how="left", validate="m:1"
     )
 
 

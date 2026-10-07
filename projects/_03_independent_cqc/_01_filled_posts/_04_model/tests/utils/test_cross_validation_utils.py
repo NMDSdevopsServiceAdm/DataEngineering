@@ -12,6 +12,8 @@ from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_
     CrossValidationUtilsData as Data,
 )
 from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_test_file_data import (
+    CROSS_VALIDATION_COEFFICIENTS,
+    CROSS_VALIDATION_DATES,
     cross_validation_features_data,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -20,7 +22,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
-LOCATION_ROWS = 3
+LOCATION_ROWS = len(CROSS_VALIDATION_DATES)
+TOLERANCE = 1e-4
 
 
 def features_lf(**overrides_by_column) -> pl.LazyFrame:
@@ -72,7 +75,10 @@ class TestFitModel:
         model = job.fit_model(train_df, Data.spec)
 
         # The spec lists the activity count first, which has a coefficient of 3.
-        np.testing.assert_allclose(model.coef_, [3.0, 2.0])
+        np.testing.assert_allclose(
+            model.coef_,
+            [CROSS_VALIDATION_COEFFICIENTS[1], CROSS_VALIDATION_COEFFICIENTS[0]],
+        )
 
 
 class TestPredictOutOfFold:
@@ -96,7 +102,7 @@ class TestPredictOutOfFold:
         predicted, exact = locations_predictions(
             returned_df, Data.folds_data[IndCQC.location_id]
         )
-        np.testing.assert_allclose(predicted, exact, rtol=1e-4)
+        np.testing.assert_allclose(predicted, exact, rtol=TOLERANCE)
 
     def test_location_predicted_by_a_model_that_never_saw_it(self):
         # loc2 is in fold 1, so only the fold 1 model is untrained on its rows.
@@ -110,9 +116,9 @@ class TestPredictOutOfFold:
         trained_on_it, trained_on_it_exact = locations_predictions(
             returned_df, ["loc0", "loc1", "loc4", "loc5"]
         )
-        np.testing.assert_allclose(held_out, held_out_exact, rtol=1e-4)
+        np.testing.assert_allclose(held_out, held_out_exact, rtol=TOLERANCE)
         # The other folds' models did train on loc2, so they are visibly thrown off by it.
-        assert not np.allclose(trained_on_it, trained_on_it_exact, rtol=1e-2)
+        assert np.max(np.abs(trained_on_it - trained_on_it_exact)) > 100
 
     def test_rows_without_a_dependent_are_predicted_but_not_trained_on(self):
         missing_lf = features_lf(**{IndCQC.imputed_filled_post_model: {"loc1": None}})
@@ -123,7 +129,7 @@ class TestPredictOutOfFold:
             returned_df, Data.folds_data[IndCQC.location_id]
         )
         assert returned_df[IndCQC.prediction].null_count() == 0
-        np.testing.assert_allclose(predicted, exact, rtol=1e-4)
+        np.testing.assert_allclose(predicted, exact, rtol=TOLERANCE)
 
     def test_locations_that_changed_care_home_status_are_not_trained_on(self):
         changed_lf = features_lf(
@@ -139,7 +145,7 @@ class TestPredictOutOfFold:
         predicted, exact = locations_predictions(
             returned_df, ["loc0", "loc1", "loc4", "loc5"]
         )
-        np.testing.assert_allclose(predicted, exact, rtol=1e-4)
+        np.testing.assert_allclose(predicted, exact, rtol=TOLERANCE)
 
     def test_raises_when_a_location_has_no_fold(self):
         folds_missing_a_location_lf = folds_lf().filter(
@@ -150,6 +156,23 @@ class TestPredictOutOfFold:
             job.predict_out_of_fold(
                 features_lf(), folds_missing_a_location_lf, Data.spec
             )
+
+    def test_raises_when_a_location_has_a_null_fold(self):
+        null_fold_lf = folds_lf().with_columns(
+            pl.when(pl.col(IndCQC.location_id) == "loc5")
+            .then(None)
+            .otherwise(pl.col(ModelEvaluation.fold))
+            .alias(ModelEvaluation.fold)
+        )
+
+        with pytest.raises(ValueError, match="1 locations have no fold"):
+            job.predict_out_of_fold(features_lf(), null_fold_lf, Data.spec)
+
+    def test_raises_when_a_location_has_two_folds(self):
+        duplicate_fold_lf = pl.concat([folds_lf(), folds_lf().head(1)])
+
+        with pytest.raises(pl.exceptions.ComputeError):
+            job.predict_out_of_fold(features_lf(), duplicate_fold_lf, Data.spec)
 
 
 class TestPredictInChunks:
@@ -173,7 +196,45 @@ class TestPredictInChunks:
         assert returned_df.height == (
             len(Data.folds_data[IndCQC.location_id]) * LOCATION_ROWS
         )
-        np.testing.assert_allclose(predicted, exact, rtol=1e-4)
+        np.testing.assert_allclose(predicted, exact, rtol=TOLERANCE)
+
+    def test_rows_returned_with_their_locations_fold(self):
+        model = job.fit_on_all_rows(features_lf(), Data.spec)
+
+        returned_df = job.predict_in_chunks(model, features_lf(), folds_lf(), Data.spec)
+
+        returned_folds = returned_df.group_by(IndCQC.location_id).agg(
+            pl.col(ModelEvaluation.fold).unique()
+        )
+        expected = dict(zip(*Data.folds_data.values()))
+        assert {
+            row[IndCQC.location_id]: row[ModelEvaluation.fold]
+            for row in returned_folds.to_dicts()
+        } == {location: [fold] for location, fold in expected.items()}
+
+    def test_fold_with_no_rows_is_skipped(self):
+        extra_fold_lf = pl.concat(
+            [
+                folds_lf(),
+                pl.LazyFrame(
+                    {
+                        IndCQC.location_id: ["not_in_features"],
+                        ModelEvaluation.fold: [7],
+                    },
+                    schema_overrides={ModelEvaluation.fold: pl.UInt8},
+                ),
+            ]
+        )
+        model = job.fit_on_all_rows(features_lf(), Data.spec)
+
+        returned_df = job.predict_in_chunks(
+            model, features_lf(), extra_fold_lf, Data.spec
+        )
+
+        assert (
+            returned_df.height
+            == len(Data.folds_data[IndCQC.location_id]) * LOCATION_ROWS
+        )
 
     def test_raises_when_a_location_has_no_fold(self):
         folds_missing_a_location_lf = folds_lf().filter(
@@ -217,6 +278,25 @@ class TestConvertToFilledPosts:
             IndCQC.cqc_location_import_date,
             IndCQC.prediction,
         ]
+
+
+class TestConvertToFilledPostsKeys:
+    def test_raises_when_a_location_and_date_has_two_bed_counts(self):
+        keys = {
+            IndCQC.location_id: ["loc0", "loc0"],
+            IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 2,
+        }
+        predictions_lf = pl.LazyFrame({**keys, IndCQC.prediction: [1.0, 1.0]})
+        spec = {
+            **Data.spec,
+            MRKeys.dependent: IndCQC.imputed_filled_posts_per_bed_ratio_model,
+        }
+        duplicate_beds_lf = pl.LazyFrame({**keys, IndCQC.number_of_beds: [10, 12]})
+
+        with pytest.raises(pl.exceptions.ComputeError):
+            job.convert_to_filled_posts(
+                predictions_lf, duplicate_beds_lf, spec
+            ).collect()
 
 
 class TestAddNonResSizeBand:

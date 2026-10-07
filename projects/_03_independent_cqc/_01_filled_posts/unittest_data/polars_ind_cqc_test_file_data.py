@@ -3576,10 +3576,16 @@ class CombineASCWDSAndPIRData:
 
 CROSS_VALIDATION_LOCATIONS = [f"loc{i}" for i in range(6)]
 CROSS_VALIDATION_DATES = [date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)]
+CROSS_VALIDATION_COEFFICIENTS = (
+    2.0,
+    3.0,
+    1.0,
+)  # service count, activity count, intercept
 
 
 def exact_cross_validation_dependent(service_count: int, activity_count: int) -> float:
-    return 2.0 * service_count + 3.0 * activity_count + 1.0
+    service, activity, intercept = CROSS_VALIDATION_COEFFICIENTS
+    return service * service_count + activity * activity_count + intercept
 
 
 def cross_validation_features_data() -> dict[str, list[Any]]:
