@@ -204,9 +204,8 @@ def score_rows(
     """
     Score predicted against known filled posts row by row, in posts.
 
-    Only rows with a known value are scored. Bias and the error are relative to the known
-    total, so bigger locations count for more: sum(predicted - known) / sum(known) and
-    sum(|predicted - known|) / sum(known).
+    Only rows with a known value are scored. Bias is sum(predicted - known) / sum(known) and
+    the weighted error is sum(|predicted - known|) / sum(known), so bigger locations count more.
 
     Args:
         lf (pl.LazyFrame): dataset containing the predicted, known and "by" columns
@@ -260,8 +259,8 @@ def calculate_period_bias(
     """
     Measure the bias of predicted against known filled posts in each period.
 
-    Bias is (predicted - known) / known, summed over the rows known in that period. Both
-    sides cover the same rows, so a change in who is known doesn't show up as bias.
+    Bias is (sum predicted - sum known) / sum known, over the rows with a known value in the
+    period. Both sides cover the same rows, so a change in who is known doesn't show up as bias.
 
     Args:
         lf (pl.LazyFrame): dataset containing the predicted, known, period and "by" columns
@@ -292,11 +291,10 @@ def fit_bias_slope_per_year(
     by_columns: list[str],
 ) -> pl.LazyFrame:
     """
-    Fit how much the bias changes per year, to show if predictions are too flat over time.
+    Fit the weighted least squares slope of bias against time, in bias per year.
 
-    A model that is too flat over-predicts early and under-predicts late, so its slope moves
-    away from 0. It is a least squares line of bias against time, weighted by each period's
-    known total so thin periods count for less.
+    Each period is weighted by its known total, so thin periods count for less. A group with
+    one period has no slope, so filter on "number_of_periods".
 
     Args:
         period_bias_lf (pl.LazyFrame): a row per period (per group), such as from
