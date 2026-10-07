@@ -338,10 +338,14 @@ def aggregate_to_publication_rows(
     contribute to one term's assessment columns without contributing to
     another's.
 
+    Capacity tracker (CT) values are location-level and repeat on each of a
+    location's job role rows, so CT totals sum one row per location per group.
+    The term filters are location-level, so the first row is representative.
+
     group_keys defaults to (import date, job role, region, service type). A
     narrower set (e.g. dropping job role) still counts each location once,
-    since n_unique(location_id) is recomputed at that grain rather than
-    summed from separately-computed per-job-role counts.
+    since location counts and CT totals are recomputed at that grain rather
+    than summed from separately-computed per-job-role values.
 
     Args:
         lazy_df (pl.LazyFrame): location-level data with consistent_service,
@@ -379,6 +383,7 @@ def aggregate_to_publication_rows(
     )
 
     filled_posts_col = IndCQC.estimate_filled_posts_by_job_role
+    first_row_per_location = pl.col(IndCQC.location_id).is_first_distinct()
 
     return lazy_df.group_by(group_keys).agg(
         pl.col(filled_posts_col).sum().alias(Pub.publication_filled_posts),
@@ -392,7 +397,7 @@ def aggregate_to_publication_rows(
         .n_unique()
         .alias(Pub.assessment_locationid_count_long_term),
         pl.col(Pub.ct_total_employed_imputed)
-        .filter(long_term_filter)
+        .filter(long_term_filter & first_row_per_location)
         .sum()
         .alias(Pub.assessment_ct_total_employed_long_term),
         pl.col(filled_posts_col)
@@ -404,7 +409,7 @@ def aggregate_to_publication_rows(
         .n_unique()
         .alias(Pub.assessment_locationid_count_medium_term),
         pl.col(Pub.ct_total_employed_imputed)
-        .filter(medium_term_filter)
+        .filter(medium_term_filter & first_row_per_location)
         .sum()
         .alias(Pub.assessment_ct_total_employed_medium_term),
         pl.col(filled_posts_col)
@@ -416,7 +421,7 @@ def aggregate_to_publication_rows(
         .n_unique()
         .alias(Pub.assessment_locationid_count_short_term),
         pl.col(Pub.ct_total_employed_imputed)
-        .filter(short_term_filter)
+        .filter(short_term_filter & first_row_per_location)
         .sum()
         .alias(Pub.assessment_ct_total_employed_short_term),
     )

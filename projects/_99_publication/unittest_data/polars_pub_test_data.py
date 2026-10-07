@@ -481,8 +481,8 @@ aggregate_to_publication_rows_test_cases = [
     ),
     AggregateToPublicationRowsTestCase(
         # Both rows are the same location - publication_locationid_count must
-        # count distinct locations, not rows, while filled posts still sum
-        # across both.
+        # count distinct locations, not rows, and its location-level CT value
+        # once, while filled posts still sum across both.
         id="counts_distinct_locations_not_rows",
         input_data=[
             (
@@ -510,13 +510,13 @@ aggregate_to_publication_rows_test_cases = [
                 1,
                 25.0,
                 1,
-                10.0,
+                5.0,
                 25.0,
                 1,
-                10.0,
+                5.0,
                 25.0,
                 1,
-                10.0,
+                5.0,
             ),
         ],
     ),
@@ -717,7 +717,7 @@ add_rows_for_publication_groups_test_cases = [
                 "London",
                 _CARE_HOME_WITH_NURSING,
                 20.0,
-                8.0,
+                5.0,
                 *_ALL_TRUE_FILTERS,
             ),
         ],
@@ -731,7 +731,7 @@ add_rows_for_publication_groups_test_cases = [
                 PublishedJobGroupLabels.all_job_roles,
                 "London",
                 _CARE_HOME_WITH_NURSING,
-                *_all_terms_metrics(30.0, 1, 13.0),
+                *_all_terms_metrics(30.0, 1, 5.0),
             ),
         ],
     ),
