@@ -658,6 +658,106 @@ aggregate_to_publication_rows_test_cases = [
             ),
         ],
     ),
+    AggregateToPublicationRowsTestCase(
+        # 1-007 has two rows (CT 5.0 each) and 1-008 has one (CT 3.0) - each
+        # location's CT value counts once, so 5.0 + 3.0 rather than 5.0 + 5.0 + 3.0.
+        id="ct_total_counts_each_location_once_across_multiple_locations",
+        input_data=[
+            (
+                "1-007",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "1-007",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                15.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "1-008",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                20.0,
+                3.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                45.0,
+                2,
+                45.0,
+                2,
+                8.0,
+                45.0,
+                2,
+                8.0,
+                45.0,
+                2,
+                8.0,
+            ),
+        ],
+    ),
+    AggregateToPublicationRowsTestCase(
+        # Every row of 1-009 fails consistent_service, so it adds nothing to any
+        # term's CT total however many rows it has.
+        id="ct_total_is_zero_when_a_location_fails_the_filters_on_all_its_rows",
+        input_data=[
+            (
+                "1-009",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                5.0,
+                False,  # consistent_service
+                True,
+                True,
+                True,
+                True,
+                True,
+                True,
+            ),
+            (
+                "1-009",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                15.0,
+                5.0,
+                False,  # consistent_service
+                True,
+                True,
+                True,
+                True,
+                True,
+                True,
+            ),
+        ],
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                25.0,
+                1,
+                0.0,
+                0,
+                0.0,
+                0.0,
+                0,
+                0.0,
+                0.0,
+                0,
+                0.0,
+            ),
+        ],
+    ),
 ]
 
 
