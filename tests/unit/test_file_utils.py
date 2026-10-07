@@ -295,3 +295,105 @@ class TestEmptyS3Folder:
                 ]
             },
         )
+
+
+TEST_ARCHIVE_ROOT = "s3://test-bucket/domain=03_ind_cqc/dataset=archive/"
+
+
+def mock_s3_pages(mock_boto_client: Mock, pages: list[dict]) -> MagicMock:
+    mock_paginator = MagicMock()
+    mock_paginator.paginate.return_value = pages
+    mock_boto_client.return_value.get_paginator.return_value = mock_paginator
+    return mock_paginator
+
+
+class TestListArchiveRuns:
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_returns_empty_when_no_runs_exist(self, mock_boto_client: Mock):
+        mock_s3_pages(mock_boto_client, [{"Contents": []}, {}])
+
+        assert file_utils.list_archive_runs(TEST_ARCHIVE_ROOT) == {}
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_maps_each_run_number_to_its_archive_date(self, mock_boto_client: Mock):
+        prefix = "domain=03_ind_cqc/dataset=archive"
+        mock_s3_pages(
+            mock_boto_client,
+            [
+                {
+                    "Contents": [
+                        {
+                            "Key": f"{prefix}/archive_date=2026-09-22/run_number=1/a.parquet"
+                        },
+                        {
+                            "Key": f"{prefix}/archive_date=2026-10-01/run_number=2/a.parquet"
+                        },
+                    ]
+                },
+                {
+                    "Contents": [
+                        {
+                            "Key": f"{prefix}/archive_date=2026-10-01/run_number=3/a.parquet"
+                        }
+                    ]
+                },
+            ],
+        )
+
+        assert file_utils.list_archive_runs(TEST_ARCHIVE_ROOT) == {
+            1: "2026-09-22",
+            2: "2026-10-01",
+            3: "2026-10-01",
+        }
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_lists_a_run_once_when_it_has_many_files(self, mock_boto_client: Mock):
+        prefix = (
+            "domain=03_ind_cqc/dataset=archive/archive_date=2026-09-22/run_number=1"
+        )
+        mock_s3_pages(
+            mock_boto_client,
+            [
+                {
+                    "Contents": [
+                        {"Key": f"{prefix}/a.parquet"},
+                        {"Key": f"{prefix}/b.parquet"},
+                    ]
+                }
+            ],
+        )
+
+        assert file_utils.list_archive_runs(TEST_ARCHIVE_ROOT) == {1: "2026-09-22"}
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_ignores_keys_outside_run_partitions(self, mock_boto_client: Mock):
+        prefix = "domain=03_ind_cqc/dataset=archive"
+        mock_s3_pages(
+            mock_boto_client,
+            [
+                {
+                    "Contents": [
+                        {"Key": f"{prefix}/_SUCCESS"},
+                        {"Key": f"{prefix}/archive_date=2026-09-22/"},
+                        {
+                            "Key": f"{prefix}/archive_date=2026-09-22/run_number=1/a.parquet"
+                        },
+                    ]
+                }
+            ],
+        )
+
+        assert file_utils.list_archive_runs(TEST_ARCHIVE_ROOT) == {1: "2026-09-22"}
+
+    @pytest.mark.parametrize("root", [TEST_ARCHIVE_ROOT, TEST_ARCHIVE_ROOT.rstrip("/")])
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_scopes_the_listing_to_the_given_s3_root(
+        self, mock_boto_client: Mock, root: str
+    ):
+        mock_paginator = mock_s3_pages(mock_boto_client, [{}])
+
+        file_utils.list_archive_runs(root)
+
+        mock_paginator.paginate.assert_called_once_with(
+            Bucket="test-bucket", Prefix="domain=03_ind_cqc/dataset=archive/"
+        )
