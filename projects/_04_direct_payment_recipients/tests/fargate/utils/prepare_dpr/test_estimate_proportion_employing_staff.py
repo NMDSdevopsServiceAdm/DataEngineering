@@ -12,12 +12,12 @@ from utils.column_names.direct_payments_column_names import (
 CARERS_PCT = Config.CARERS_EMPLOYING_PERCENTAGE
 
 INPUT_SCHEMA = {
-    DP.YEAR: pl.String,
-    DP.DPRS_ADASS: pl.Float32,
-    DP.DPRS_EMPLOYING_STAFF_ADASS: pl.Float32,
-    DP.SERVICE_USER_DPRS_AT_YEAR_END: pl.Float32,
-    DP.CARER_DPRS_AT_YEAR_END: pl.Float32,
-    DP.PROPORTION_IMPORTED: pl.Float32,
+    DP.year: pl.String,
+    DP.dprs_adass: pl.Float32,
+    DP.dprs_employing_staff_adass: pl.Float32,
+    DP.service_user_dprs_at_year_end: pl.Float32,
+    DP.carer_dprs_at_year_end: pl.Float32,
+    DP.proportion_imported: pl.Float32,
 }
 
 
@@ -38,8 +38,8 @@ def test_year_is_cast_to_integer():
         )
     ).collect()
 
-    assert returned_df.schema[DP.YEAR_AS_INTEGER] == pl.Int32
-    assert returned_df[DP.YEAR_AS_INTEGER].to_list() == [2021]
+    assert returned_df.schema[DP.year_as_integer] == pl.Int32
+    assert returned_df[DP.year_as_integer].to_list() == [2021]
 
 
 def test_proportion_is_employing_staff_over_dprs_adass():
@@ -48,18 +48,14 @@ def test_proportion_is_employing_staff_over_dprs_adass():
     returned = run(adass=120.0, employing=30.0, su=110.0, carers=50.0)
 
     expected = (0.25 * 110.0 + 50.0 * CARERS_PCT) / 110.0
-    assert returned[DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF] == pytest.approx(
-        expected
-    )
+    assert returned[DP.proportion_employing_staff] == pytest.approx(expected)
 
 
 def test_total_dprs_is_service_users_plus_carers():
     # Proportion 0.5 with ADASS equal to SU + carers (150), so total is closer.
     returned = run(adass=150.0, employing=75.0, su=100.0, carers=50.0)
 
-    assert returned[DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF] == pytest.approx(
-        0.75
-    )
+    assert returned[DP.proportion_employing_staff] == pytest.approx(0.75)
 
 
 @pytest.mark.parametrize(
@@ -75,18 +71,14 @@ def test_closer_base_is_total_su_or_total_on_tie_or_null(adass, expected):
     # total but the null propagates to the proportion, so they are not observable here.
     returned = run(adass=adass, employing=adass / 2, su=100.0, carers=50.0)
 
-    assert returned[DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF] == pytest.approx(
-        expected
-    )
+    assert returned[DP.proportion_employing_staff] == pytest.approx(expected)
 
 
 def test_proportion_if_total_closer():
     # 0.4 * 150 / 100
     returned = run(adass=150.0, employing=60.0, su=100.0, carers=50.0)
 
-    assert returned[DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF] == pytest.approx(
-        0.6
-    )
+    assert returned[DP.proportion_employing_staff] == pytest.approx(0.6)
 
 
 def test_proportion_if_su_closer_includes_carers_at_fixed_percentage():
@@ -94,9 +86,7 @@ def test_proportion_if_su_closer_includes_carers_at_fixed_percentage():
     returned = run(adass=100.0, employing=40.0, su=100.0, carers=50.0)
 
     expected = (0.4 * 100.0 + 50.0 * CARERS_PCT) / 100.0
-    assert returned[DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF] == pytest.approx(
-        expected
-    )
+    assert returned[DP.proportion_employing_staff] == pytest.approx(expected)
 
 
 @pytest.mark.parametrize(
@@ -116,17 +106,13 @@ def test_allocated_falls_back_to_su_formula_when_at_or_above_threshold_or_null(
     # Total is the closer base in every case.
     returned = run(adass=adass, employing=employing, su=su, carers=carers)
 
-    assert returned[DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF] == pytest.approx(
-        expected
-    )
+    assert returned[DP.proportion_employing_staff] == pytest.approx(expected)
 
 
 def test_imported_proportion_takes_precedence_when_present():
     returned = run(imported=0.123)
 
-    assert returned[DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF] == pytest.approx(
-        0.123
-    )
+    assert returned[DP.proportion_employing_staff] == pytest.approx(0.123)
 
 
 def test_returns_input_columns_plus_proportion_and_year_as_integer():
@@ -138,6 +124,6 @@ def test_returns_input_columns_plus_proportion_and_year_as_integer():
 
     assert returned_df.columns == [
         *INPUT_SCHEMA,
-        DP.YEAR_AS_INTEGER,
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        DP.year_as_integer,
+        DP.proportion_employing_staff,
     ]

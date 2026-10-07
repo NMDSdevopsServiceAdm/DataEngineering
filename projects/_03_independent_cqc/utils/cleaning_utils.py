@@ -12,44 +12,93 @@ def remove_repeated_values_over_time_as_group(
     partition_by_columns: str | list[str],
     date_column: str,
     workplace_columns: list[str] | None = None,
+    independent: bool = False,
 ) -> pl.LazyFrame:
     """
-    Replaces consecutive repeated values with null across a group of columns as a
-    single unit, optionally judged at workplace level.
+    Nulls a value that repeats the prior row in its partition, across one or
+    more columns at once, optionally broadcasting the decision across a
+    workplace.
 
-    Unlike `polars_utils.cleaning_utils.remove_repeated_values_over_time`, which
-    dedups each column independently, this treats `columns_to_clean` as one
-    composite value: a row is only a repeat of the prior row in its partition if
-    ALL of `columns_to_clean` are unchanged. If any one of them changes, none of
-    them are nulled.
+    By default, `columns_to_clean` is treated as one composite unit via a
+    null-safe struct comparison: any one column changing keeps all of them. With
+    `independent=True`, each column is instead judged on its own, but all
+    columns are still computed in one batched set of `.over()` passes rather
+    than one per column.
 
-    Packs `columns_to_clean` into a single struct column and delegates to
-    `remove_repeated_values_over_time`, relying on struct equality being
-    field-wise and null-safe - two consecutive rows where every field is null
-    compare as unchanged, rather than propagating null/unknown the way a plain
-    nullable-column comparison would.
-
-    If `workplace_columns` is given, staleness is judged at workplace level: each
-    row is still compared with the prior row in its own `partition_by_columns`
-    timeline, but a row is only nulled when no row sharing its `workplace_columns`
-    values changed (true repeat = no timeline changed). The decision is broadcast
-    with `.over()` rather than a group_by + join, which costs more peak memory.
-    Rows where any workplace column is null are judged on their own row only, so
-    unrelated null-keyed rows aren't pooled.
+    If `workplace_columns` is given, a row is only nulled when no row sharing
+    those values changed - broadcast with `.over()` rather than a group_by +
+    join, which costs more peak memory. Rows with a null workplace column are
+    judged on their own row only. With `independent=True`, this broadcast runs
+    separately per column.
 
     Args:
         lf (pl.LazyFrame): The LazyFrame to clean.
-        columns_to_clean (list[str]): Column names to dedup as a single unit.
+        columns_to_clean (list[str]): Columns to dedup, as one unit unless
+            `independent` is True.
         partition_by_columns (str | list[str]): Column(s) identifying each
             entity's timeline.
         date_column (str): Column to order rows by within each partition.
         workplace_columns (list[str] | None): Columns identifying a workplace on
-            a date. Defaults to None, which judges each timeline independently.
+            a date. Defaults to None, which judges each timeline alone.
+        independent (bool): Judge each column on its own rather than as one
+            composite unit. Defaults to False.
 
     Returns:
         pl.LazyFrame: The input LazyFrame with one new "<original>_dedup" column
             per input column.
     """
+    if independent:
+        partition_columns = (
+            [partition_by_columns]
+            if isinstance(partition_by_columns, str)
+            else partition_by_columns
+        )
+        changed_columns = {
+            column: f"_row_changed_{column}" for column in columns_to_clean
+        }
+
+        changed_exprs = []
+        for column in columns_to_clean:
+            last_value = (
+                pl.col(column)
+                .shift(1)
+                .over(
+                    partition_by=partition_columns,
+                    order_by=[*partition_columns, date_column],
+                )
+            )
+            changed_exprs.append(
+                (last_value.is_null() | (pl.col(column) != last_value)).alias(
+                    changed_columns[column]
+                )
+            )
+        lf = lf.with_columns(changed_exprs)
+
+        if workplace_columns is not None:
+            workplace_is_known = pl.all_horizontal(
+                [pl.col(c).is_not_null() for c in workplace_columns]
+            )
+            lf = lf.with_columns(
+                [
+                    pl.when(workplace_is_known)
+                    .then(pl.col(changed_columns[column]).any().over(workplace_columns))
+                    .otherwise(pl.col(changed_columns[column]))
+                    .alias(changed_columns[column])
+                    for column in columns_to_clean
+                ]
+            )
+
+        lf = lf.with_columns(
+            [
+                pl.when(pl.col(changed_columns[column]))
+                .then(pl.col(column))
+                .otherwise(None)
+                .alias(f"{column}_dedup")
+                for column in columns_to_clean
+            ]
+        )
+        return lf.drop(list(changed_columns.values()))
+
     if workplace_columns is not None:
         partition_columns = (
             [partition_by_columns]

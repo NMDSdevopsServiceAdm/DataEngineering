@@ -20,41 +20,41 @@ PATCH_PATH = "projects._04_direct_payment_recipients.fargate.validate_02_estimat
 class Schemas:
     merged_schema = pl.Schema(
         [
-            (DP.LA_AREA, pl.String),
-            (DP.YEAR, pl.String),
-            (DP.YEAR_AS_INTEGER, pl.Int64),
-            (DP.SERVICE_USER_DPRS_DURING_YEAR, pl.Float32),
-            (DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, pl.Float32),
-            (DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE, pl.Float32),
-            (DP.TOTAL_DPRS_DURING_YEAR, pl.Float32),
-            (DP.FILLED_POSTS_PER_EMPLOYER, pl.Float32),
+            (DP.la_area, pl.String),
+            (DP.year, pl.String),
+            (DP.year_as_integer, pl.Int64),
+            (DP.service_user_dprs_during_year, pl.Float32),
+            (DP.proportion_employing_staff, pl.Float32),
+            (DP.historic_service_users_employing_staff_estimate, pl.Float32),
+            (DP.total_dprs_during_year, pl.Float32),
+            (DP.filled_posts_per_employer, pl.Float32),
         ]
     )
     estimates_schema = pl.Schema(
         [
             *merged_schema.items(),
-            (DP.ESTIMATE_USING_MEAN, pl.Float32),
-            (DP.FIRST_YEAR_WITH_DATA, pl.Int32),
-            (DP.LAST_YEAR_WITH_DATA, pl.Int32),
-            (DP.ESTIMATE_USING_EXTRAPOLATION_RATIO, pl.Float32),
-            (DP.ESTIMATE_USING_INTERPOLATION, pl.Float32),
-            (DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, pl.Float32),
+            (DP.estimate_using_mean, pl.Float32),
+            (DP.first_year_with_data, pl.Int32),
+            (DP.last_year_with_data, pl.Int32),
+            (DP.estimate_using_extrapolation_ratio, pl.Float32),
+            (DP.estimate_using_interpolation, pl.Float32),
+            (DP.imputed_proportion_employing_staff, pl.Float32),
             (
-                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE,
+                DP.imputed_proportion_employing_staff_source,
                 pl.String,
             ),
             (
-                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+                DP.rolling_average_proportion_employing_staff,
                 pl.Float32,
             ),
             (
-                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
+                DP.estimated_service_users_employing_staff,
                 pl.Float32,
             ),
-            (DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF, pl.Float32),
-            (DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF, pl.Float32),
-            (DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, pl.Float32),
-            (DP.ESTIMATED_PROPORTION_OF_TOTAL_DPR_EMPLOYING_STAFF, pl.Float32),
+            (DP.estimated_service_users_employing_self_employed_staff, pl.Float32),
+            (DP.estimated_total_dpr_employing_staff, pl.Float32),
+            (DP.estimated_pa_filled_posts, pl.Float32),
+            (DP.estimated_proportion_of_total_dpr_employing_staff, pl.Float32),
         ]
     )
 
@@ -78,7 +78,7 @@ class Data:
             None,
             0.5,
             0.5,
-            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+            DP.proportion_employing_staff,
             0.5,
             5.0,
             0.2,
@@ -151,8 +151,8 @@ class TestMain:
         # The dataset's own earliest year must be accepted, even though it
         # predates the years with known proportions.
         source_df = self.source_df.with_columns(
-            pl.lit(Config.FIRST_YEAR, dtype=pl.Int32).alias(DP.FIRST_YEAR_WITH_DATA),
-            pl.lit(Config.FIRST_YEAR, dtype=pl.Int32).alias(DP.LAST_YEAR_WITH_DATA),
+            pl.lit(Config.FIRST_YEAR, dtype=pl.Int32).alias(DP.first_year_with_data),
+            pl.lit(Config.FIRST_YEAR, dtype=pl.Int32).alias(DP.last_year_with_data),
         )
         mock_read_parquet.side_effect = [source_df, self.compare_df]
 
@@ -164,7 +164,7 @@ class TestMain:
             item
             for item in report_json
             if item["assertion_type"] == "col_vals_between"
-            and item["column"] in (DP.FIRST_YEAR_WITH_DATA, DP.LAST_YEAR_WITH_DATA)
+            and item["column"] in (DP.first_year_with_data, DP.last_year_with_data)
         ]
 
         assert len(year_bound_steps) == 2
@@ -180,17 +180,15 @@ class TestMain:
         year: int,
     ):
         early_year_df = self.source_df.with_columns(
-            pl.lit(year).alias(DP.YEAR_AS_INTEGER),
+            pl.lit(year).alias(DP.year_as_integer),
+            pl.lit(None, dtype=pl.Float32).alias(DP.imputed_proportion_employing_staff),
             pl.lit(None, dtype=pl.Float32).alias(
-                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-            ),
-            pl.lit(None, dtype=pl.Float32).alias(
-                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+                DP.rolling_average_proportion_employing_staff
             ),
             pl.lit(None, dtype=pl.String).alias(
-                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE
+                DP.imputed_proportion_employing_staff_source
             ),
-            pl.lit(1.5, dtype=pl.Float32).alias(DP.ESTIMATE_USING_INTERPOLATION),
+            pl.lit(1.5, dtype=pl.Float32).alias(DP.estimate_using_interpolation),
         )
         source_df = pl.concat([early_year_df, self.source_df], how="vertical_relaxed")
         mock_read_parquet.side_effect = [source_df, self.compare_df]
@@ -200,10 +198,10 @@ class TestMain:
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
         estimate_columns = (
-            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-            DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE,
-            DP.ESTIMATE_USING_INTERPOLATION,
+            DP.imputed_proportion_employing_staff,
+            DP.rolling_average_proportion_employing_staff,
+            DP.imputed_proportion_employing_staff_source,
+            DP.estimate_using_interpolation,
         )
         estimate_steps = [
             item for item in report_json if item["column"] in estimate_columns
@@ -220,17 +218,15 @@ class TestMain:
         mock_write_reports: Mock,
     ):
         recent_year_df = self.source_df.with_columns(
-            pl.lit(2015).alias(DP.YEAR_AS_INTEGER),
+            pl.lit(2015).alias(DP.year_as_integer),
+            pl.lit(None, dtype=pl.Float32).alias(DP.imputed_proportion_employing_staff),
             pl.lit(None, dtype=pl.Float32).alias(
-                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-            ),
-            pl.lit(None, dtype=pl.Float32).alias(
-                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+                DP.rolling_average_proportion_employing_staff
             ),
             pl.lit(None, dtype=pl.String).alias(
-                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE
+                DP.imputed_proportion_employing_staff_source
             ),
-            pl.lit(1.5, dtype=pl.Float32).alias(DP.ESTIMATE_USING_INTERPOLATION),
+            pl.lit(1.5, dtype=pl.Float32).alias(DP.estimate_using_interpolation),
         )
         mock_read_parquet.side_effect = [recent_year_df, self.compare_df]
 
@@ -239,10 +235,10 @@ class TestMain:
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
         estimate_columns = (
-            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-            DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE,
-            DP.ESTIMATE_USING_INTERPOLATION,
+            DP.imputed_proportion_employing_staff,
+            DP.rolling_average_proportion_employing_staff,
+            DP.imputed_proportion_employing_staff_source,
+            DP.estimate_using_interpolation,
         )
         estimate_steps = [
             item for item in report_json if item["column"] in estimate_columns

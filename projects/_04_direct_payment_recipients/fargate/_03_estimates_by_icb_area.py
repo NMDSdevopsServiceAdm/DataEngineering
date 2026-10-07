@@ -18,9 +18,9 @@ postcode_columns = [
     ONSClean.contemporary_icb,
 ]
 pa_filled_posts_columns = [
-    DP.LA_AREA,
-    DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
-    DP.YEAR_AS_INTEGER,
+    DP.la_area,
+    DP.estimated_pa_filled_posts,
+    DP.year_as_integer,
 ]
 
 
@@ -49,23 +49,23 @@ def main(
 
     pa_filled_posts_lf = pa_filled_posts_lf.with_columns(
         pl.date(
-            pl.col(DP.YEAR_AS_INTEGER) + 1,
+            pl.col(DP.year_as_integer) + 1,
             EstimatePeriodAsDate.MONTH,
             EstimatePeriodAsDate.DAY,
-        ).alias(DP.ESTIMATE_PERIOD_AS_DATE)
+        ).alias(DP.estimate_period_as_date)
     )
 
     pa_filled_posts_lf = cleaning_utils.add_aligned_date_column(
         pa_filled_posts_lf,
         postcode_lf,
-        DP.ESTIMATE_PERIOD_AS_DATE,
+        DP.estimate_period_as_date,
         ONSClean.contemporary_ons_import_date,
     )
 
     pa_filled_posts_lf = pa_filled_posts_lf.select(
-        pl.col(DP.LA_AREA).alias(ONSClean.contemporary_cssr),
-        DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
-        DP.YEAR_AS_INTEGER,
+        pl.col(DP.la_area).alias(ONSClean.contemporary_cssr),
+        DP.estimated_pa_filled_posts,
+        DP.year_as_integer,
         ONSClean.contemporary_ons_import_date,
     )
 
@@ -79,12 +79,12 @@ def main(
         ONSClean.contemporary_ons_import_date,
         ONSClean.contemporary_cssr,
         ONSClean.contemporary_icb,
-        DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA,
-        DP.YEAR_AS_INTEGER,
+        DP.proportion_of_icb_postcodes_in_la_area,
+        DP.year_as_integer,
         (
-            pl.col(DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS)
-            * pl.col(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA)
-        ).alias(DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_HYBRID_AREA),
+            pl.col(DP.estimated_pa_filled_posts)
+            * pl.col(DP.proportion_of_icb_postcodes_in_la_area)
+        ).alias(DP.estimated_pa_filled_posts_per_hybrid_area),
     )
 
     utils.sink_to_parquet(icb_proportion_lf, destination)
@@ -125,17 +125,18 @@ def calculate_icb_proportions(postcode_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: One row per import date, cssr and icb with the ICB's proportion of the cssr's postcodes.
     """
+    icb_postcodes = "icb_postcodes"
     la_keys = [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr]
 
     return (
         postcode_lf.group_by(*la_keys, ONSClean.contemporary_icb)
-        .agg(pl.col(ONSClean.postcode).count().alias("icb_postcodes"))
+        .agg(pl.col(ONSClean.postcode).count().alias(icb_postcodes))
         .with_columns(
-            (pl.col("icb_postcodes") / pl.col("icb_postcodes").sum().over(la_keys))
+            (pl.col(icb_postcodes) / pl.col(icb_postcodes).sum().over(la_keys))
             .cast(pl.Float32)
-            .alias(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA)
+            .alias(DP.proportion_of_icb_postcodes_in_la_area)
         )
-        .drop("icb_postcodes")
+        .drop(icb_postcodes)
     )
 
 

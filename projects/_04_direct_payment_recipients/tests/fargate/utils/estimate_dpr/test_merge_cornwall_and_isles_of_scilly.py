@@ -93,13 +93,13 @@ class TestMergeCornwallAndIslesOfScilly:
         self, input_data, expected_data
     ):
         test_schema = {
-            DP.LA_AREA: pl.String,
-            DP.YEAR_AS_INTEGER: pl.Int32,
-            DP.SERVICE_USER_DPRS_DURING_YEAR: pl.Float32,
-            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
-            DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE: pl.Float32,
-            DP.TOTAL_DPRS_DURING_YEAR: pl.Float32,
-            DP.FILLED_POSTS_PER_EMPLOYER: pl.Float32,
+            DP.la_area: pl.String,
+            DP.year_as_integer: pl.Int32,
+            DP.service_user_dprs_during_year: pl.Float32,
+            DP.proportion_employing_staff: pl.Float32,
+            DP.historic_service_users_employing_staff_estimate: pl.Float32,
+            DP.total_dprs_during_year: pl.Float32,
+            DP.filled_posts_per_employer: pl.Float32,
         }
         input_lf = pl.LazyFrame(
             input_data,

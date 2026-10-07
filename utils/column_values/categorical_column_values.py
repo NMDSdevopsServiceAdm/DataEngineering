@@ -438,15 +438,13 @@ class CTNonResFilledPostEstimateSource(ColumnValues):
 
 
 @dataclass
-class EstimatedProportionEmployingStaffSource(ColumnValues):
-    """The possible values of the estimated proportion of service users employing staff source column in the direct payment recipients pipeline"""
+class ImputedProportionEmployingStaffSource(ColumnValues):
+    """The possible values of the imputed proportion employing staff source column in the direct payment recipients pipeline"""
 
-    proportion_of_service_users_employing_staff: str = (
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-    )
-    estimate_using_extrapolation_ratio: str = DP.ESTIMATE_USING_EXTRAPOLATION_RATIO
-    estimate_using_interpolation: str = DP.ESTIMATE_USING_INTERPOLATION
-    estimate_using_mean: str = DP.ESTIMATE_USING_MEAN
+    proportion_employing_staff: str = DP.proportion_employing_staff
+    estimate_using_extrapolation_ratio: str = DP.estimate_using_extrapolation_ratio
+    estimate_using_interpolation: str = DP.estimate_using_interpolation
+    estimate_using_mean: str = DP.estimate_using_mean
 
 
 @dataclass

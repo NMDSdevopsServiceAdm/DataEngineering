@@ -53,8 +53,8 @@ from utils.column_values.categorical_column_values import (
     Dormancy,
     EmploymentStatusEstimateSource,
     EmploymentStatusFilteringRule,
-    EstimatedProportionEmployingStaffSource,
     EstimateFilledPostsSource,
+    ImputedProportionEmployingStaffSource,
     JobGroupLabels,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
@@ -316,9 +316,9 @@ class DiagnosticOnKnownFilledPostsCategoricalValues:
 
 @dataclass
 class DirectPaymentRecipientsEstimateCategoricalValues:
-    estimated_proportion_of_service_users_employing_staff_source_column_values = (
-        EstimatedProportionEmployingStaffSource(
-            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE
+    imputed_proportion_employing_staff_source_column_values = (
+        ImputedProportionEmployingStaffSource(
+            DP.imputed_proportion_employing_staff_source
         )
     )
 

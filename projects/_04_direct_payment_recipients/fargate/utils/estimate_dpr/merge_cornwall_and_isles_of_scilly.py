@@ -28,38 +28,38 @@ def merge_cornwall_and_isles_of_scilly(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     merged_lf = (
         lf.filter(
-            (pl.col(DP.LA_AREA) == cornwall) | (pl.col(DP.LA_AREA) == isles_of_scilly)
+            (pl.col(DP.la_area) == cornwall) | (pl.col(DP.la_area) == isles_of_scilly)
         )
         # polars_streaming: groupby-agg workaround; could be replaced with .over() grouped aggregations when window functions support streaming
-        .group_by([DP.YEAR_AS_INTEGER])
+        .group_by([DP.year_as_integer])
         .agg(
-            pl.when(pl.col(DP.SERVICE_USER_DPRS_DURING_YEAR).count() > 0).then(
-                pl.sum(DP.SERVICE_USER_DPRS_DURING_YEAR)
+            pl.when(pl.col(DP.service_user_dprs_during_year).count() > 0).then(
+                pl.sum(DP.service_user_dprs_during_year)
             ),
-            pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
-            .filter(pl.col(DP.LA_AREA) == cornwall)
+            pl.col(DP.proportion_employing_staff)
+            .filter(pl.col(DP.la_area) == cornwall)
             .first()
-            .alias(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
-            pl.col(DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE)
-            .filter(pl.col(DP.LA_AREA) == cornwall)
+            .alias(DP.proportion_employing_staff),
+            pl.col(DP.historic_service_users_employing_staff_estimate)
+            .filter(pl.col(DP.la_area) == cornwall)
             .first()
-            .alias(DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE),
-            pl.when(pl.col(DP.TOTAL_DPRS_DURING_YEAR).count() > 0).then(
-                pl.sum(DP.TOTAL_DPRS_DURING_YEAR)
+            .alias(DP.historic_service_users_employing_staff_estimate),
+            pl.when(pl.col(DP.total_dprs_during_year).count() > 0).then(
+                pl.sum(DP.total_dprs_during_year)
             ),
-            pl.col(DP.FILLED_POSTS_PER_EMPLOYER)
-            .filter(pl.col(DP.LA_AREA) == cornwall)
+            pl.col(DP.filled_posts_per_employer)
+            .filter(pl.col(DP.la_area) == cornwall)
             .first()
-            .alias(DP.FILLED_POSTS_PER_EMPLOYER),
+            .alias(DP.filled_posts_per_employer),
         )
         .with_columns(
-            pl.lit(ContemporaryCSSR.cornwall_and_isles_of_scilly).alias(DP.LA_AREA)
+            pl.lit(ContemporaryCSSR.cornwall_and_isles_of_scilly).alias(DP.la_area)
         )
-        .select(DP.LA_AREA, pl.all().exclude(DP.LA_AREA))
+        .select(DP.la_area, pl.all().exclude(DP.la_area))
     )
 
     lf = lf.filter(
-        (pl.col(DP.LA_AREA) != cornwall) & (pl.col(DP.LA_AREA) != isles_of_scilly)
+        (pl.col(DP.la_area) != cornwall) & (pl.col(DP.la_area) != isles_of_scilly)
     )
 
     return pl.concat(

@@ -517,16 +517,33 @@ class EmploymentStatusColumns:
     bank_or_pool_percentage: str = "emplstat_bank_or_pool_percentage"
     agency_percentage: str = "emplstat_agency_percentage"
     other_percentage: str = "emplstat_other_percentage"
-    permanent_percentage_imputed: str = permanent_percentage + "_imputed"
-    temporary_percentage_imputed: str = temporary_percentage + "_imputed"
-    bank_or_pool_percentage_imputed: str = bank_or_pool_percentage + "_imputed"
-    agency_percentage_imputed: str = agency_percentage + "_imputed"
-    other_percentage_imputed: str = other_percentage + "_imputed"
+    permanent_percentage_imputed_for_trendline: str = (
+        permanent_percentage + "_imputed_for_trendline"
+    )
+    temporary_percentage_imputed_for_trendline: str = (
+        temporary_percentage + "_imputed_for_trendline"
+    )
+    bank_or_pool_percentage_imputed_for_trendline: str = (
+        bank_or_pool_percentage + "_imputed_for_trendline"
+    )
+    agency_percentage_imputed_for_trendline: str = (
+        agency_percentage + "_imputed_for_trendline"
+    )
+    other_percentage_imputed_for_trendline: str = (
+        other_percentage + "_imputed_for_trendline"
+    )
     permanent_percentage_rolling_avg: str = permanent_percentage + "_rolling_avg"
     temporary_percentage_rolling_avg: str = temporary_percentage + "_rolling_avg"
     bank_or_pool_percentage_rolling_avg: str = bank_or_pool_percentage + "_rolling_avg"
     agency_percentage_rolling_avg: str = agency_percentage + "_rolling_avg"
     other_percentage_rolling_avg: str = other_percentage + "_rolling_avg"
+    permanent_percentage_full_imputed: str = permanent_percentage + "_full_imputed"
+    temporary_percentage_full_imputed: str = temporary_percentage + "_full_imputed"
+    bank_or_pool_percentage_full_imputed: str = (
+        bank_or_pool_percentage + "_full_imputed"
+    )
+    agency_percentage_full_imputed: str = agency_percentage + "_full_imputed"
+    other_percentage_full_imputed: str = other_percentage + "_full_imputed"
     permanent_percentage_estimated: str = permanent_percentage + "_estimated"
     temporary_percentage_estimated: str = temporary_percentage + "_estimated"
     bank_or_pool_percentage_estimated: str = bank_or_pool_percentage + "_estimated"
@@ -562,9 +579,9 @@ class StartersLeaversVacanciesColumns:
     starters_filtering_rule: str = starters + "_filtering_rule"
     leavers_filtering_rule: str = leavers + "_filtering_rule"
     vacancies_filtering_rule: str = vacancies + "_filtering_rule"
-    starters_cleaned_dedup: str = starters_cleaned + "_deduplicated"
-    leavers_cleaned_dedup: str = leavers_cleaned + "_deduplicated"
-    vacancies_cleaned_dedup: str = vacancies_cleaned + "_deduplicated"
+    starters_cleaned_dedup: str = starters_cleaned + "_dedup"
+    leavers_cleaned_dedup: str = leavers_cleaned + "_dedup"
+    vacancies_cleaned_dedup: str = vacancies_cleaned + "_dedup"
     turnover_rate_dedup: str = turnover_rate + "_deduplicated"
     starter_rate_dedup: str = starter_rate + "_deduplicated"
     vacancy_rate_dedup: str = vacancy_rate + "_deduplicated"
@@ -579,6 +596,12 @@ class ModelEvaluationColumns:
     column_name: str = "column_name"
     mean_period_to_period_change: str = "mean_period_to_period_change"
     weighted_absolute_percentage_error: str = "weighted_absolute_percentage_error"
+    financial_year: str = "financial_year"
+    number_of_rows: str = "number_of_rows"
+    bias: str = "bias"
+    number_of_periods: str = "number_of_periods"
+    minimum_rows_in_period: str = "minimum_rows_in_period"
+    bias_slope_per_year: str = "bias_slope_per_year"
 
 
 @dataclass

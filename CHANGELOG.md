@@ -37,7 +37,9 @@ All notable changes to this project will be documented in this file.
 - Added a step to the EmpStat clean job that creates a `_clean` copy of each deduplicated employment status count, with a filtering-rule column recording whether each row is populated or missing data.
 - Added a `check-main-tip` job at the start of the prod plan, approval, apply and dependency deploy group that fails a main pipeline whose commit is no longer the tip of `main`, so an older pipeline reaching the group after a newer one cannot apply its older plan or sync older code.
 - Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock, with a gate that fails a main pipeline whose prod deploy was skipped or cancelled instead of reporting it as success.
+- Added full imputation to the employment status impute job, filling remaining gaps by carrying each location and job role's known percentages along the rolling averages, with validation of the result. Renamed the short-term imputed percentage columns to `*_imputed_for_trendline`.
 - Added published label classes and column names for the publication outputs, and used them in the publication clean job.
+- Added financial year, row-level, per-period bias and bias slope scoring to the project-level model evaluation utilities.
 
 
 ### Changed
@@ -74,8 +76,10 @@ All notable changes to this project will be documented in this file.
 - Moved the filled posts models' date-index step into a shared, reusable `_03_independent_cqc` utility (`add_date_index`).
 - Serialised the dev CircleCI image build, terraform plan/apply and environment destroy per branch, and added a job that fails a pipeline whose apply didn't run.
 - Moved the `_03_independent_cqc` Dockerfile out of `_01_filled_posts` and up to the project level (`projects/_03_independent_cqc/Dockerfile_and_requirements/`), as the image also builds the employment status and starters/leavers/vacancies jobs. Updated the path in `docker-bake.hcl`; the Dockerfile itself is unchanged.
+- Changed SLV starters/leavers/vacancies deduplication to judge staleness per workplace and import date rather than per job role, independently per metric, via a new `independent` mode on the shared `remove_repeated_values_over_time_as_group` utility that batches all three metrics into one pass.
 - Replaced the PySpark DPR prepare and merge Glue jobs with one Polars Fargate step, and removed the intermediate `_prepared` datasets and the remaining PySpark DPR code.
 - Moved the extrapolation, interpolation and imputation utilities, with their tests and test data, to the project-level `_03_independent_cqc` utils.
+- Added run selection to the publication merge step: start Publication with `{"run_number": N}` to merge that archived job role estimates run, or with no input for the latest run. The resolved run is logged.
 
 ### Improved
 - Selected key question ratings by name in both current and historic CQC ratings, raising an error if a name is repeated within a list.
@@ -84,6 +88,7 @@ All notable changes to this project will be documented in this file.
 - Reduced the IND CQC filled posts model features validation's memory use by scanning the wide imputed comparison dataset lazily, so only the columns its expected row count needs are read.
 - Tidied the direct payment recipients folder names, test layout, test names and docstrings to match the rest of the pipeline. No behaviour change.
 - Changed the direct payment recipients ratio, proportion and estimate columns from Float64 to Float32, halving their memory use.
+- Renamed the direct payment recipients columns to shorter, lower snake_case names, dropping `estimated` from mid-stage columns. Estimate, summary and ICB output columns and the estimate source label `proportion_employing_staff` change, so downstream readers need the new names.
 
 
 ### Fixed

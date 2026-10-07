@@ -27,70 +27,70 @@ def estimate_proportion_employing_staff(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Returns:
         pl.LazyFrame: The input columns plus 'year_as_integer' and
-            'proportion_of_service_users_employing_staff'.
+            'proportion_employing_staff'.
     """
     input_columns = lf.collect_schema().names()
 
     difference_to_total = (
-        pl.col(DP.DPRS_ADASS) - pl.col(DP.TOTAL_DPRS_AT_YEAR_END)
+        pl.col(DP.dprs_adass) - pl.col(DP.total_dprs_at_year_end)
     ).abs()
     difference_to_su_only = (
-        pl.col(DP.DPRS_ADASS) - pl.col(DP.SERVICE_USER_DPRS_AT_YEAR_END)
+        pl.col(DP.dprs_adass) - pl.col(DP.service_user_dprs_at_year_end)
     ).abs()
 
     lf = lf.with_columns(
-        pl.col(DP.YEAR).cast(pl.Int32).alias(DP.YEAR_AS_INTEGER),
-        (pl.col(DP.DPRS_EMPLOYING_STAFF_ADASS) / pl.col(DP.DPRS_ADASS)).alias(
-            DP.PROPORTION_OF_DPR_EMPLOYING_STAFF
+        pl.col(DP.year).cast(pl.Int32).alias(DP.year_as_integer),
+        (pl.col(DP.dprs_employing_staff_adass) / pl.col(DP.dprs_adass)).alias(
+            DP.proportion_dpr_employing_staff
         ),
         (
-            pl.col(DP.SERVICE_USER_DPRS_AT_YEAR_END) + pl.col(DP.CARER_DPRS_AT_YEAR_END)
-        ).alias(DP.TOTAL_DPRS_AT_YEAR_END),
+            pl.col(DP.service_user_dprs_at_year_end) + pl.col(DP.carer_dprs_at_year_end)
+        ).alias(DP.total_dprs_at_year_end),
     )
 
     lf = lf.with_columns(
         pl.when(difference_to_total < difference_to_su_only)
-        .then(pl.lit(Values.TOTAL_DPRS))
+        .then(pl.lit(Values.total_dprs))
         .when(difference_to_total > difference_to_su_only)
-        .then(pl.lit(Values.SU_ONLY_DPRS))
-        .otherwise(pl.lit(Values.TOTAL_DPRS))
-        .alias(DP.CLOSER_BASE),
+        .then(pl.lit(Values.su_only_dprs))
+        .otherwise(pl.lit(Values.total_dprs))
+        .alias(DP.closer_base),
         (
-            pl.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF)
-            * pl.col(DP.TOTAL_DPRS_AT_YEAR_END)
-            / pl.col(DP.SERVICE_USER_DPRS_AT_YEAR_END)
-        ).alias(DP.PROPORTION_IF_TOTAL_DPR_CLOSER),
+            pl.col(DP.proportion_dpr_employing_staff)
+            * pl.col(DP.total_dprs_at_year_end)
+            / pl.col(DP.service_user_dprs_at_year_end)
+        ).alias(DP.proportion_if_total_dpr_closer),
         (
             (
-                pl.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF)
-                * pl.col(DP.SERVICE_USER_DPRS_AT_YEAR_END)
-                + pl.col(DP.CARER_DPRS_AT_YEAR_END) * Config.CARERS_EMPLOYING_PERCENTAGE
+                pl.col(DP.proportion_dpr_employing_staff)
+                * pl.col(DP.service_user_dprs_at_year_end)
+                + pl.col(DP.carer_dprs_at_year_end) * Config.CARERS_EMPLOYING_PERCENTAGE
             )
-            / pl.col(DP.SERVICE_USER_DPRS_AT_YEAR_END)
-        ).alias(DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER),
+            / pl.col(DP.service_user_dprs_at_year_end)
+        ).alias(DP.proportion_if_service_user_dpr_closer),
     )
 
     lf = lf.with_columns(
-        pl.when(pl.col(DP.CLOSER_BASE) == Values.SU_ONLY_DPRS)
-        .then(pl.col(DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER))
-        .otherwise(pl.col(DP.PROPORTION_IF_TOTAL_DPR_CLOSER))
-        .alias(DP.PROPORTION_ALLOCATED)
+        pl.when(pl.col(DP.closer_base) == Values.su_only_dprs)
+        .then(pl.col(DP.proportion_if_service_user_dpr_closer))
+        .otherwise(pl.col(DP.proportion_if_total_dpr_closer))
+        .alias(DP.proportion_allocated)
     )
 
     lf = lf.with_columns(
         pl.when(
-            pl.col(DP.PROPORTION_ALLOCATED)
+            pl.col(DP.proportion_allocated)
             < Config.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_THRESHOLD
         )
-        .then(pl.col(DP.PROPORTION_ALLOCATED))
-        .otherwise(pl.col(DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER))
-        .alias(DP.PROPORTION_ALLOCATED)
+        .then(pl.col(DP.proportion_allocated))
+        .otherwise(pl.col(DP.proportion_if_service_user_dpr_closer))
+        .alias(DP.proportion_allocated)
     )
 
     return lf.select(
         *input_columns,
-        DP.YEAR_AS_INTEGER,
-        pl.coalesce(DP.PROPORTION_IMPORTED, DP.PROPORTION_ALLOCATED).alias(
-            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+        DP.year_as_integer,
+        pl.coalesce(DP.proportion_imported, DP.proportion_allocated).alias(
+            DP.proportion_employing_staff
         ),
     )
