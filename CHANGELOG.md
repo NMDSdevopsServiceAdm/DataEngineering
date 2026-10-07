@@ -73,6 +73,7 @@ All notable changes to this project will be documented in this file.
 - Moved the filled posts models' date-index step into a shared, reusable `_03_independent_cqc` utility (`add_date_index`).
 - Serialised the dev CircleCI image build, terraform plan/apply and environment destroy per branch, and added a job that fails a pipeline whose apply didn't run.
 - Moved the `_03_independent_cqc` Dockerfile out of `_01_filled_posts` and up to the project level (`projects/_03_independent_cqc/Dockerfile_and_requirements/`), as the image also builds the employment status and starters/leavers/vacancies jobs. Updated the path in `docker-bake.hcl`; the Dockerfile itself is unchanged.
+- Changed SLV starters/leavers/vacancies deduplication to judge staleness per workplace and import date rather than per job role, independently per metric, via a new `independent` mode on the shared `remove_repeated_values_over_time_as_group` utility that batches all three metrics into one pass.
 - Replaced the PySpark DPR prepare and merge Glue jobs with one Polars Fargate step, and removed the intermediate `_prepared` datasets and the remaining PySpark DPR code.
 - Moved the extrapolation, interpolation and imputation utilities, with their tests and test data, to the project-level `_03_independent_cqc` utils.
 - Added run selection to the publication merge step: start Publication with `{"run_number": N}` to merge that archived job role estimates run, or with no input for the latest run. The resolved run is logged.

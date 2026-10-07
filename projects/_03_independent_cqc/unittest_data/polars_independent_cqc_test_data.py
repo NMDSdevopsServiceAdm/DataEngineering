@@ -24,6 +24,7 @@ class RemoveRepeatedValuesOverTimeAsGroupTestCase:
     date_column: str
     expected_data: dict[str, Any]
     workplace_columns: list[str] | None = None
+    independent: bool = False
 
     def as_pytest_param(self):
         return pytest.param(self, id=self.id)
@@ -517,6 +518,106 @@ class TestCleaningUtilsData:
                 "second_value": [2, 5, 2],
                 "first_value_dedup": [1, 4, None],
                 "second_value_dedup": [2, 5, None],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="independent_columns_are_nulled_separately_even_if_one_changes",
+            input_data={
+                "location_id": ["loc_1"] * 3,
+                "job_role": ["a"] * 3,
+                "date": [date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)],
+                "first_value": [1, 2, 2],
+                "second_value": [5, 5, 5],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            independent=True,
+            expected_data={
+                "location_id": ["loc_1"] * 3,
+                "job_role": ["a"] * 3,
+                "date": [date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)],
+                "first_value": [1, 2, 2],
+                "second_value": [5, 5, 5],
+                # second_value repeats and is nulled despite first_value changing -
+                # unlike composite mode, one column changing doesn't retain another.
+                "first_value_dedup": [1, 2, None],
+                "second_value_dedup": [5, None, None],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="independent_columns_broadcast_separately_across_the_workplace",
+            input_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 5],
+                "second_value": [2, 2, 2, 2],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            independent=True,
+            expected_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 5],
+                "second_value": [2, 2, 2, 2],
+                # role b's first_value changes, so both roles keep it (workplace
+                # broadcast). second_value never changes, so it's nulled for both -
+                # independent of first_value, unlike the composite mode case above.
+                "first_value_dedup": [1, 1, 1, 5],
+                "second_value_dedup": [2, 2, None, None],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="independent_null_location_rows_are_judged_individually",
+            input_data={
+                "location_id": [None, None, None, None],
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 5],
+                "second_value": [2, 2, 2, 2],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            independent=True,
+            expected_data={
+                "location_id": [None, None, None, None],
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 1, 1, 5],
+                "second_value": [2, 2, 2, 2],
+                # location_id is null, so there's no workplace to broadcast across -
+                # each role's own timeline, and each column, decides on its own.
+                # Unlike the composite-mode equivalent of this case, role b's
+                # first_value changing does not keep its unchanged second_value.
+                "first_value_dedup": [1, 1, None, 5],
+                "second_value_dedup": [2, 2, None, None],
             },
         ),
     ]
