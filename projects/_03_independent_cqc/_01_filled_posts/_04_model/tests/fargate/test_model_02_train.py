@@ -185,6 +185,47 @@ class TestMain:
         ][MRKeys.features]
         assert saved_metadata[MMKeys.feature_columns] == registry_features
 
+    @patch(f"{PATCH_PATH}.tUtils.is_training_row")
+    @patch(f"{PATCH_PATH}.vUtils.save_model_and_metadata")
+    @patch(f"{PATCH_PATH}.vUtils.get_run_number", return_value=3)
+    @patch(f"{PATCH_PATH}.paths.generate_model_path")
+    @patch(f"{PATCH_PATH}.mUtils.calculate_metrics")
+    @patch(f"{PATCH_PATH}.mUtils.build_model")
+    @patch(f"{PATCH_PATH}.tUtils.convert_dataframe_to_numpy")
+    @patch(f"{PATCH_PATH}.tUtils.split_train_test")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_feature_data)
+    @patch(f"{PATCH_PATH}.validate_model_definition")
+    @patch(f"{PATCH_PATH}.paths.generate_features_path")
+    @patch(f"{PATCH_PATH}.model_registry", TEST_MODEL_REGISTRY_RETRAIN_OTHER)
+    def test_trains_on_training_rows_only(
+        self,
+        generate_features_path_mock: Mock,
+        validate_model_definition_mock: Mock,
+        scan_parquet_mock: Mock,
+        split_train_test_mock: Mock,
+        convert_dataframe_to_numpy_mock: Mock,
+        build_model_mock: Mock,
+        calculate_metrics_mock: Mock,
+        generate_model_path_mock: Mock,
+        get_run_number_mock: Mock,
+        save_model_and_metadata_mock: Mock,
+        is_training_row_mock: Mock,
+    ):
+        split_train_test_mock.side_effect = [
+            (self.mock_train_data, self.mock_test_data)
+        ]
+        convert_dataframe_to_numpy_mock.side_effect = [
+            (self.mock_X, self.mock_y),
+            (self.mock_X, self.mock_y),
+        ]
+
+        job.main(self.TEST_BUCKET_NAME, self.TEST_MODEL_NAME)
+
+        is_training_row_mock.assert_called_once_with("dependent_col")
+        scan_parquet_mock.return_value.filter.assert_called_with(
+            is_training_row_mock.return_value
+        )
+
     @patch(f"{PATCH_PATH}.vUtils.save_model_and_metadata")
     @patch(f"{PATCH_PATH}.vUtils.get_run_number", return_value=3)
     @patch(f"{PATCH_PATH}.paths.generate_model_path")

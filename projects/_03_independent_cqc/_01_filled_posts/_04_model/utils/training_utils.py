@@ -61,3 +61,21 @@ def convert_dataframe_to_numpy(
     y = df.select(dependent_column).to_numpy().ravel()
 
     return X, y
+
+
+def is_training_row(dependent_column: str) -> pl.Expr:
+    """
+    Expression for the rows a model is trained on.
+
+    A row needs a known dependent value, and its location must only ever have had one care
+    home status.
+
+    Args:
+        dependent_column (str): the dependent (target) column of the model
+
+    Returns:
+        pl.Expr: true for rows to train on
+    """
+    return pl.col(dependent_column).is_not_null() & (
+        pl.col(IndCQC.care_home_status_count) == 1
+    )
