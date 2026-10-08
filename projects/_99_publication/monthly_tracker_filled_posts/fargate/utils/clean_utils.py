@@ -468,6 +468,10 @@ def add_rows_for_publication_groups(
     into it - the shared PrimaryServiceType enum is left alone, since it's
     also used by the IND CQC pipeline's own category-count validation.
 
+    Evaluates cleaned_lf once, at call time. The job role rows are collected
+    because every rollup consumes them, and left lazy Polars re-runs the
+    whole upstream plan for each consumer. They are small (post-aggregation).
+
     Args:
         cleaned_lf (pl.LazyFrame): location-level data, as passed into
             aggregate_to_publication_rows.
@@ -519,6 +523,7 @@ def add_rows_for_publication_groups(
     job_role_enlarged_lf = pl.concat(
         [publication_summary_lf, all_job_roles_lf], how="vertical"
     )
+    job_role_enlarged_lf = job_role_enlarged_lf.collect(engine="streaming").lazy()
 
     service_type_group_keys = [
         IndCQC.cqc_location_import_date,
