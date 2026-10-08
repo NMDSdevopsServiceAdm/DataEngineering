@@ -12,11 +12,6 @@ JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS = [
     IndCQC.main_job_role_clean_labelled,
     IndCQC.main_job_group_labelled,
     IndCQC.estimate_filled_posts_by_job_role,
-    # Location-level, pre-job-role-split estimate - repeated across every job
-    # role row for the same location_id/cqc_location_import_date, added here
-    # only so the publication clean job can verify its job-role-summed total
-    # against this base estimate.
-    IndCQC.estimate_filled_posts,
 ]
 
 JOB_ROLE_METADATA_ARCHIVE_COLUMNS = [
