@@ -70,6 +70,42 @@ class TestHasContinuousDataSinceDate:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestHasConsistentServiceSinceDate:
+    schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.primary_service_type, pl.String()),
+        ]
+    )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.has_consistent_service_since_date_test_cases
+        ],
+    )
+    def test_flags_locations_with_a_single_care_home_status_since_a_given_date(
+        self, case
+    ):
+        expected_schema = pl.Schema(
+            list(self.schema.items())
+            + [(Pub.consistent_service_short_term, pl.Boolean())]
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+
+        test_lf = expected_lf.drop(Pub.consistent_service_short_term)
+
+        returned_lf = test_lf.with_columns(
+            job.has_consistent_service_since_date(
+                case.from_date, Pub.consistent_service_short_term
+            )
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestFormatLargeNumber:
     @pytest.mark.parametrize(
         "case",
@@ -133,7 +169,9 @@ class TestAggregateToPublicationRows:
                 pl.Float32(),
             ),
             (Pub.ct_total_employed_imputed, pl.Float32()),
-            (Pub.consistent_service, pl.Boolean()),
+            (Pub.consistent_service_long_term, pl.Boolean()),
+            (Pub.consistent_service_medium_term, pl.Boolean()),
+            (Pub.consistent_service_short_term, pl.Boolean()),
             (Pub.ct_has_data_long_term, pl.Boolean()),
             (Pub.ct_has_data_medium_term, pl.Boolean()),
             (Pub.ct_has_data_short_term, pl.Boolean()),
@@ -190,13 +228,7 @@ class TestAggregateToPublicationRows:
                     "Care home with nursing",
                     10.0,
                     5.0,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
+                    *[True] * 9,
                 ),
                 (
                     "1-101",
@@ -206,13 +238,7 @@ class TestAggregateToPublicationRows:
                     "Care home with nursing",
                     20.0,
                     5.0,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
+                    *[True] * 9,
                 ),
             ],
             self.input_schema,
@@ -292,7 +318,9 @@ class TestAddRowsForPublicationGroups:
                 pl.Float32(),
             ),
             (Pub.ct_total_employed_imputed, pl.Float32()),
-            (Pub.consistent_service, pl.Boolean()),
+            (Pub.consistent_service_long_term, pl.Boolean()),
+            (Pub.consistent_service_medium_term, pl.Boolean()),
+            (Pub.consistent_service_short_term, pl.Boolean()),
             (Pub.ct_has_data_long_term, pl.Boolean()),
             (Pub.ct_has_data_medium_term, pl.Boolean()),
             (Pub.ct_has_data_short_term, pl.Boolean()),

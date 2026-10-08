@@ -33,10 +33,6 @@ def main(
     )
 
     cleaned_lf = cleaned_lf.with_columns(
-        (pl.col(IndCQC.care_home_status_count) == 1).alias(Pub.consistent_service)
-    )
-
-    cleaned_lf = cleaned_lf.with_columns(
         pl.coalesce(
             IndCQC.ct_care_home_total_employed_imputed,
             IndCQC.ct_non_res_care_workers_employed_imputed,
@@ -51,6 +47,15 @@ def main(
     medium_term_from_date = date(fy_year - 1, 4, 1)
     short_term_from_date = date(fy_year, 4, 1)
     cleaned_lf = cleaned_lf.with_columns(
+        clean_utils.has_consistent_service_since_date(
+            long_term_from_date, Pub.consistent_service_long_term
+        ),
+        clean_utils.has_consistent_service_since_date(
+            medium_term_from_date, Pub.consistent_service_medium_term
+        ),
+        clean_utils.has_consistent_service_since_date(
+            short_term_from_date, Pub.consistent_service_short_term
+        ),
         clean_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             long_term_from_date,

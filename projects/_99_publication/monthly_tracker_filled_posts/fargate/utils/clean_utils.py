@@ -129,6 +129,35 @@ def has_continuous_data_since_date(
     ).alias(column_alias)
 
 
+def has_consistent_service_since_date(from_date: date, column_alias: str) -> pl.Expr:
+    """
+    Builds a polars expression for flagging locations that have been either a
+    care home or not a care home, but not both, on every import date from
+    from_date onwards.
+
+    Care home status is taken from primary_service_type. False for a location
+    with no rows on or after from_date.
+
+    Args:
+        from_date (date): the earliest import date to check from.
+        column_alias (str): name to alias the resulting column to.
+
+    Returns:
+        pl.Expr: boolean expression aliased to column_alias, constant across
+            all rows of a location.
+    """
+    is_care_home = pl.col(IndCQC.primary_service_type).is_in(
+        [PrimaryServiceType.care_home_with_nursing, PrimaryServiceType.care_home_only]
+    )
+    care_home_statuses_in_window = (
+        is_care_home.filter(pl.col(IndCQC.cqc_location_import_date) >= from_date)
+        .drop_nulls()
+        .n_unique()
+        .over(IndCQC.location_id)
+    )
+    return (care_home_statuses_in_window == 1).alias(column_alias)
+
+
 def format_large_number(column_name: str, column_alias: str) -> pl.Expr:
     """
     Builds a polars expression formatting a number for display.
@@ -333,7 +362,7 @@ def aggregate_to_publication_rows(
 
     Publication columns sum filled posts and count distinct locations across
     every row in a group. Assessment columns do the same but only over rows
-    passing that term's consistent_service, dispersion and has-data filters,
+    passing that term's consistent service, dispersion and has-data filters,
     applied independently per term within the same group_by so a row can
     contribute to one term's assessment columns without contributing to
     another's.
@@ -348,9 +377,9 @@ def aggregate_to_publication_rows(
     than summed from separately-computed per-job-role values.
 
     Args:
-        lazy_df (pl.LazyFrame): location-level data with consistent_service,
-            ct_total_employed_imputed, ct_has_data_*_term and
-            ct_dispersion_filter_*_term already added.
+        lazy_df (pl.LazyFrame): location-level data with
+            consistent_service_*_term, ct_total_employed_imputed,
+            ct_has_data_*_term and ct_dispersion_filter_*_term already added.
         group_keys (list[str] | None): columns to group by. Defaults to
             import date, job role, region and service type.
 
@@ -367,17 +396,17 @@ def aggregate_to_publication_rows(
         ]
 
     long_term_filter = (
-        pl.col(Pub.consistent_service)
+        pl.col(Pub.consistent_service_long_term)
         & pl.col(Pub.ct_dispersion_filter_long_term)
         & pl.col(Pub.ct_has_data_long_term)
     )
     medium_term_filter = (
-        pl.col(Pub.consistent_service)
+        pl.col(Pub.consistent_service_medium_term)
         & pl.col(Pub.ct_dispersion_filter_medium_term)
         & pl.col(Pub.ct_has_data_medium_term)
     )
     short_term_filter = (
-        pl.col(Pub.consistent_service)
+        pl.col(Pub.consistent_service_short_term)
         & pl.col(Pub.ct_dispersion_filter_short_term)
         & pl.col(Pub.ct_has_data_short_term)
     )

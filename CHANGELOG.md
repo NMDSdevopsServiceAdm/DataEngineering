@@ -101,6 +101,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the delete-development-environments GitHub workflow to pass the deleted branch name to its log step through an environment variable instead of splicing it into the shell command (a branch name containing `$(...)` could run code on the runner), and to skip tag deletes, which have no development environment to destroy.
 - Fixed validation report summaries showing the step and table icons as raw SVG text. `great-tables` is now pinned to 0.23.0 in the Fargate image requirements and `pyproject.toml`, after the unpinned dependency picked up 1.0.0, which HTML-escapes unformatted table cells. Added tests that the report icons are not escaped and that every pin in the Docker requirements matches `pyproject.toml`.
 - Fixed over-counting of capacity tracker total employed in the monthly tracker publication aggregation.
+- Fixed the monthly tracker publication's same service type filter to check care home status within each term's window, matching the Tableau filter, instead of across the location's whole history.
 
 
 ## [v2026.08.1] - 11/09/2026

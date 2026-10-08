@@ -94,6 +94,62 @@ reduced_data_filter_test_cases = [
 
 
 @dataclass
+class HasConsistentServiceSinceDateTestCase:
+    id: str
+    from_date: date
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+_CH_NURSING = PrimaryServiceType.care_home_with_nursing
+_CH_ONLY = PrimaryServiceType.care_home_only
+_CH_NON_RES = PrimaryServiceType.non_residential
+
+has_consistent_service_since_date_test_cases = [
+    HasConsistentServiceSinceDateTestCase(
+        id="true_when_always_a_care_home_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-001", date(2025, 4, 1), _CH_NURSING, True),
+            ("1-001", date(2026, 4, 1), _CH_ONLY, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="true_when_never_a_care_home_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-002", date(2025, 4, 1), _CH_NON_RES, True),
+            ("1-002", date(2026, 4, 1), _CH_NON_RES, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="false_when_care_home_status_changes_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-003", date(2025, 4, 1), _CH_NURSING, False),
+            ("1-003", date(2026, 4, 1), _CH_NON_RES, False),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="ignores_a_status_change_before_the_window",
+        from_date=date(2026, 4, 1),
+        expected_data=[
+            ("1-004", date(2025, 4, 1), _CH_NURSING, True),
+            ("1-004", date(2026, 4, 1), _CH_NON_RES, True),
+            ("1-004", date(2026, 5, 1), _CH_NON_RES, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="false_when_there_are_no_rows_in_the_window",
+        from_date=date(2027, 4, 1),
+        expected_data=[("1-005", date(2025, 4, 1), _CH_NURSING, False)],
+    ),
+]
+
+
+@dataclass
 class HasContinuousDataSinceDateTestCase:
     id: str
     column_name: str
@@ -393,7 +449,8 @@ class AggregateToPublicationRowsTestCase:
         return pytest.param(self, id=self.id)
 
 
-_ALL_TRUE_FILTERS = (True, True, True, True, True, True, True)
+_ALL_TRUE_FILTERS = (True,) * 9
+_FAILS_CONSISTENT_SERVICE_FILTERS = (False,) * 3 + (True,) * 6
 _NURSE_LONDON_CARE_HOME = ("Registered nurse", "London", "Care home service")
 
 aggregate_to_publication_rows_test_cases = [
@@ -414,13 +471,7 @@ aggregate_to_publication_rows_test_cases = [
                 *_NURSE_LONDON_CARE_HOME,
                 20.0,
                 8.0,
-                False,  # consistent_service
-                True,
-                True,
-                True,
-                True,
-                True,
-                True,
+                *_FAILS_CONSISTENT_SERVICE_FILTERS,
             ),
         ],
         expected_data=[
@@ -452,7 +503,9 @@ aggregate_to_publication_rows_test_cases = [
                 *_NURSE_LONDON_CARE_HOME,
                 10.0,
                 5.0,
-                True,  # consistent_service
+                True,  # consistent_service_long_term
+                True,  # consistent_service_medium_term
+                True,  # consistent_service_short_term
                 True,  # ct_has_data_long_term
                 False,  # ct_has_data_medium_term
                 True,  # ct_has_data_short_term
@@ -476,6 +529,41 @@ aggregate_to_publication_rows_test_cases = [
                 0.0,
                 0,
                 0.0,
+            ),
+        ],
+    ),
+    AggregateToPublicationRowsTestCase(
+        # 1-010 changed service type inside the medium term window only - each
+        # term uses its own consistent service flag.
+        id="each_term_uses_its_own_consistent_service_flag",
+        input_data=[
+            (
+                "1-010",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                5.0,
+                True,  # consistent_service_long_term
+                False,  # consistent_service_medium_term
+                True,  # consistent_service_short_term
+                *(True,) * 6,
+            ),
+        ],
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                1,
+                10.0,
+                1,
+                5.0,
+                0.0,
+                0,
+                0.0,
+                10.0,
+                1,
+                5.0,
             ),
         ],
     ),
@@ -707,7 +795,7 @@ aggregate_to_publication_rows_test_cases = [
         ],
     ),
     AggregateToPublicationRowsTestCase(
-        # Every row of 1-009 fails consistent_service, so it adds nothing to any
+        # Every row of 1-009 fails the consistent service filters, so it adds nothing to any
         # term's CT total however many rows it has.
         id="ct_total_is_zero_when_a_location_fails_the_filters_on_all_its_rows",
         input_data=[
@@ -717,13 +805,7 @@ aggregate_to_publication_rows_test_cases = [
                 *_NURSE_LONDON_CARE_HOME,
                 10.0,
                 5.0,
-                False,  # consistent_service
-                True,
-                True,
-                True,
-                True,
-                True,
-                True,
+                *_FAILS_CONSISTENT_SERVICE_FILTERS,
             ),
             (
                 "1-009",
@@ -731,13 +813,7 @@ aggregate_to_publication_rows_test_cases = [
                 *_NURSE_LONDON_CARE_HOME,
                 15.0,
                 5.0,
-                False,  # consistent_service
-                True,
-                True,
-                True,
-                True,
-                True,
-                True,
+                *_FAILS_CONSISTENT_SERVICE_FILTERS,
             ),
         ],
         expected_data=[

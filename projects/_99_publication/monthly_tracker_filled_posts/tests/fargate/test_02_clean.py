@@ -24,6 +24,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.clean_utils.add_rows_for_publication_groups")
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
+    @patch(f"{PATCH_PATH}.clean_utils.has_consistent_service_since_date")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
     @patch(f"{PATCH_PATH}.clean_utils.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
@@ -34,6 +35,7 @@ class TestMain:
         date_mock: Mock,
         reduced_data_filter_expr_mock: Mock,
         has_continuous_data_since_date_mock: Mock,
+        has_consistent_service_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
         aggregate_to_publication_rows_mock: Mock,
         add_rows_for_publication_groups_mock: Mock,
@@ -46,7 +48,6 @@ class TestMain:
             {
                 IndCQC.location_id: ["1-001", "1-001"],
                 IndCQC.cqc_location_import_date: [date(2025, 4, 1), date(2026, 4, 1)],
-                IndCQC.care_home_status_count: [1, 2],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0, None],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None, 6.0],
             }
@@ -58,6 +59,9 @@ class TestMain:
             lambda column_name, from_date, column_alias: pl.lit(True).alias(
                 column_alias
             )
+        )
+        has_consistent_service_since_date_mock.side_effect = (
+            lambda from_date, column_alias: pl.lit(True).alias(column_alias)
         )
         add_dispersion_filter_mock.side_effect = (
             lambda lazy_df, column_names, from_date, column_alias: (
@@ -93,6 +97,14 @@ class TestMain:
 
         reduced_data_filter_expr_mock.assert_called_once_with(
             cutoff_date=date(2020, 4, 1),
+        )
+
+        has_consistent_service_since_date_mock.assert_has_calls(
+            [
+                call(date(2021, 7, 1), Pub.consistent_service_long_term),
+                call(date(2025, 4, 1), Pub.consistent_service_medium_term),
+                call(date(2026, 4, 1), Pub.consistent_service_short_term),
+            ]
         )
 
         has_continuous_data_since_date_mock.assert_has_calls(
@@ -146,10 +158,11 @@ class TestMain:
             {
                 IndCQC.location_id: ["1-001", "1-001"],
                 IndCQC.cqc_location_import_date: [date(2025, 4, 1), date(2026, 4, 1)],
-                IndCQC.care_home_status_count: [1, 2],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0, None],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None, 6.0],
-                Pub.consistent_service: [True, False],
+                Pub.consistent_service_long_term: [True, True],
+                Pub.consistent_service_medium_term: [True, True],
+                Pub.consistent_service_short_term: [True, True],
                 Pub.ct_total_employed_imputed: [5.0, 6.0],
                 Pub.ct_has_data_long_term: [True, True],
                 Pub.ct_has_data_medium_term: [True, True],
@@ -288,6 +301,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.clean_utils.add_rows_for_publication_groups")
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
+    @patch(f"{PATCH_PATH}.clean_utils.has_consistent_service_since_date")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
     @patch(f"{PATCH_PATH}.clean_utils.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
@@ -298,6 +312,7 @@ class TestMain:
         date_mock: Mock,
         reduced_data_filter_expr_mock: Mock,
         has_continuous_data_since_date_mock: Mock,
+        has_consistent_service_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
         aggregate_to_publication_rows_mock: Mock,
         add_rows_for_publication_groups_mock: Mock,
@@ -308,7 +323,6 @@ class TestMain:
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
             {
-                IndCQC.care_home_status_count: [1],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None],
             }
@@ -320,6 +334,9 @@ class TestMain:
             lambda column_name, from_date, column_alias: pl.lit(True).alias(
                 column_alias
             )
+        )
+        has_consistent_service_since_date_mock.side_effect = (
+            lambda from_date, column_alias: pl.lit(True).alias(column_alias)
         )
         add_dispersion_filter_mock.side_effect = (
             lambda lazy_df, column_names, from_date, column_alias: (
