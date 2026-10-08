@@ -106,6 +106,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the Windows setup and deploy docs causing Terraform and MFA command-line errors: the `HOME` step no longer needs a hand-typed username, the two conflicting `non-prod` AWS profiles are now a single Terraform-compatible one (no `mfa_serial`), broken links to the setup guide are corrected, and the Terraform install step now matches the version CircleCI uses.
 - Fixed the delete-development-environments GitHub workflow to pass the deleted branch name to its log step through an environment variable instead of splicing it into the shell command (a branch name containing `$(...)` could run code on the runner), and to skip tag deletes, which have no development environment to destroy.
 - Fixed validation report summaries showing the step and table icons as raw SVG text. `great-tables` is now pinned to 0.23.0 in the Fargate image requirements and `pyproject.toml`, after the unpinned dependency picked up 1.0.0, which HTML-escapes unformatted table cells. Added tests that the report icons are not escaped and that every pin in the Docker requirements matches `pyproject.toml`.
+- Fixed over-counting of capacity tracker total employed in the monthly tracker publication aggregation.
 
 
 ## [v2026.08.1] - 11/09/2026
