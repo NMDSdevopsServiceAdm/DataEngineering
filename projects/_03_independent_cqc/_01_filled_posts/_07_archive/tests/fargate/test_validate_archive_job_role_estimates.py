@@ -290,6 +290,18 @@ class TestJobRoleRunLogValidation:
 
         assert validation.all_passed()
 
+    def test_run_log_validation_passes_when_partition_columns_are_last(self):
+        run_log_df = make_run_log_df()
+        partition_columns = [ArchiveKeys.archive_date, ArchiveKeys.run_number]
+        run_log_df = run_log_df.select(
+            *[c for c in run_log_df.columns if c not in partition_columns],
+            *partition_columns,
+        )
+
+        validation = self.run_validation(run_log_df)
+
+        assert validation.all_passed()
+
     def test_run_log_validation_reads_run_log_and_checks_all_outputs_agree(self):
         with patch(
             f"{PATCH_PATH}.aUtils.make_run_numbers_agree_validator",

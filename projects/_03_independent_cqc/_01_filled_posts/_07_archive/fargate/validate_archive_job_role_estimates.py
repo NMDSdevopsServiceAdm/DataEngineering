@@ -321,6 +321,7 @@ def job_role_run_log_validation(
         )
         .col_schema_match(
             schema=RUN_LOG_EXPECTED_SCHEMA,
+            in_order=False,
             brief="Run log columns should match the expected schema",
         )
         .row_count_match(
