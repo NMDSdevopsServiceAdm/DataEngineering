@@ -197,6 +197,98 @@ def format_large_number(column_name: str, column_alias: str) -> pl.Expr:
     )
 
 
+def _round_half_away_from_zero(value: pl.Expr, nearest: float) -> pl.Expr:
+    """
+    Rounds value to the nearest multiple of nearest, rounding an exact half
+    away from zero - matching Excel's ROUND, unlike polars' own `.round()`
+    which rounds half to even. Needed for exact parity with a manually
+    ROUND()-ed reference, where a half-to-even value would silently land in
+    the wrong band/decimal on a tie.
+
+    Normalises an exact-zero result to positive zero: the away-from-zero
+    arithmetic can otherwise produce -0.0 for a negative input that rounds
+    to zero, which would display as a stray minus sign.
+
+    Args:
+        value (pl.Expr): the numeric expression to round.
+        nearest (float): the multiple to round to.
+
+    Returns:
+        pl.Expr: float expression rounded to the nearest multiple.
+    """
+    scaled = value / nearest
+    rounded = (scaled.abs() + 0.5).floor() * scaled.sign() * nearest
+    return pl.when(rounded == 0).then(0.0).otherwise(rounded)
+
+
+def round_to_publication_bands(column_name: str, column_alias: str) -> pl.Expr:
+    """
+    Builds a polars expression applying the publication's controlled
+    rounding to a non-negative figure (e.g. a summed filled posts total),
+    for parity with the manually-published reference's own banded rounding.
+
+    Rounds to the nearest: 0 below 10; 10 from 10-14; 25 from 15-499; 50
+    from 500-999; 100 from 1,000-9,999; 500 from 10,000-24,999; 1,000 from
+    25,000-249,999; 5,000 from 250,000-1,499,999; 10,000 from 1,500,000
+    upwards. Assumes a non-negative input, since every value this is
+    applied to (a sum of filled posts or locations) is always >= 0.
+
+    Args:
+        column_name (str): the numeric column to round.
+        column_alias (str): name to alias the resulting column to.
+
+    Returns:
+        pl.Expr: float expression with the banded-rounded value.
+    """
+    value = pl.col(column_name)
+    return (
+        pl.when(value < 10)
+        .then(0.0)
+        .when(value < 15)
+        .then(_round_half_away_from_zero(value, 10))
+        .when(value < 500)
+        .then(_round_half_away_from_zero(value, 25))
+        .when(value < 1_000)
+        .then(_round_half_away_from_zero(value, 50))
+        .when(value < 10_000)
+        .then(_round_half_away_from_zero(value, 100))
+        .when(value < 25_000)
+        .then(_round_half_away_from_zero(value, 500))
+        .when(value < 250_000)
+        .then(_round_half_away_from_zero(value, 1_000))
+        .when(value < 1_500_000)
+        .then(_round_half_away_from_zero(value, 5_000))
+        .otherwise(_round_half_away_from_zero(value, 10_000))
+        .alias(column_alias)
+    )
+
+
+def format_percentage(column_name: str, column_alias: str) -> pl.Expr:
+    """
+    Builds a polars expression formatting a percentage-change fraction (e.g.
+    0.032 = +3.2%) to a 1 decimal place display string (e.g. "3.2%",
+    "-0.8%"), for parity with the manually-published reference's own 1dp
+    percentages. Null stays null, rather than becoming the string "null%" -
+    the annual/monthly percentage change columns this is applied to are
+    deliberately null on every row outside their own series.
+
+    Args:
+        column_name (str): the fractional percentage column to format.
+        column_alias (str): name to alias the resulting column to.
+
+    Returns:
+        pl.Expr: string expression with the formatted percentage, or null.
+    """
+    value = pl.col(column_name)
+    rounded_percentage = _round_half_away_from_zero(value * 100, 0.1).round(1)
+    return (
+        pl.when(value.is_null())
+        .then(None)
+        .otherwise(rounded_percentage.cast(pl.Utf8) + "%")
+        .alias(column_alias)
+    )
+
+
 def add_dispersion_filter(
     lazy_df: pl.LazyFrame,
     column_names: list[str],
@@ -853,8 +945,13 @@ def build_t0_estimates_download_table(
 
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with a
-            period_label display column alongside the raw period date,
-            sorted by period then region then main_service.
+            period_label display column alongside the raw period date, and
+            an estimated_filled_posts_formatted column holding the
+            publication's banded-rounded figure (see
+            round_to_publication_bands) alongside the raw value - cqc_locations
+            is not rounded, since it already matches the published figures
+            exactly as a plain count. Sorted by period then region then
+            main_service.
     """
     return (
         _filter_to_all_job_roles_rollup(publication_summary_lf)
@@ -868,6 +965,9 @@ def build_t0_estimates_download_table(
             .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
             .alias(Pub.main_service),
             pl.col(Pub.publication_filled_posts).alias(Pub.estimated_filled_posts),
+            round_to_publication_bands(
+                Pub.publication_filled_posts, Pub.estimated_filled_posts_formatted
+            ),
             pl.col(Pub.publication_locationid_count).alias(Pub.cqc_locations),
         )
         .sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
@@ -899,8 +999,10 @@ def build_t1_filled_posts_perc_change_download_table(
 
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with a
-            period_label display column alongside the raw period date,
-            sorted by period then region then main_service.
+            period_label display column alongside the raw period date, and
+            a 1dp formatted display string (see format_percentage)
+            alongside each raw percentage change value. Sorted by period
+            then region then main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
@@ -917,7 +1019,13 @@ def build_t1_filled_posts_perc_change_download_table(
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
         pl.col(Pub.annual_percentage_change),
+        format_percentage(
+            Pub.annual_percentage_change, Pub.annual_percentage_change_formatted
+        ),
         pl.col(Pub.monthly_percentage_change),
+        format_percentage(
+            Pub.monthly_percentage_change, Pub.monthly_percentage_change_formatted
+        ),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
 
 
@@ -947,8 +1055,10 @@ def build_t2_location_count_perc_change_download_table(
 
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with a
-            period_label display column alongside the raw period date,
-            sorted by period then region then main_service.
+            period_label display column alongside the raw period date, and
+            a 1dp formatted display string (see format_percentage)
+            alongside each raw percentage change value. Sorted by period
+            then region then main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
@@ -965,21 +1075,25 @@ def build_t2_location_count_perc_change_download_table(
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
         pl.col(Pub.annual_percentage_change),
+        format_percentage(
+            Pub.annual_percentage_change, Pub.annual_percentage_change_formatted
+        ),
         pl.col(Pub.monthly_percentage_change),
+        format_percentage(
+            Pub.monthly_percentage_change, Pub.monthly_percentage_change_formatted
+        ),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
 
 
-def build_t0_estimates_verification_table(
-    cleaned_lf: pl.LazyFrame,
-    today: date | None = None,
-    fy_start_month: int = 4,
-) -> pl.LazyFrame:
+def _build_base_estimate_rollup_lf(cleaned_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Builds a diagnostic table in T0's shape, but summing estimate_filled_posts
-    (the location-level, pre-job-role-split estimate) instead of the
-    job-role-summed publication_filled_posts - for verifying whether a
-    difference against a published reference originates in the job-role
-    estimates split/reallocation rather than in this aggregation.
+    Builds one row per (period, region, primary_service_type - including the
+    region/service/England rollups), summing estimate_filled_posts (the
+    location-level, pre-job-role-split estimate) instead of the
+    job-role-summed publication_filled_posts - shared by the T0 and T1
+    verification tables, which diagnose whether a difference against a
+    published reference originates in the job-role estimates
+    split/reallocation rather than in this aggregation.
 
     Deduplicates to one row per (location_id, cqc_location_import_date)
     first: estimate_filled_posts repeats identically across every job role
@@ -991,14 +1105,11 @@ def build_t0_estimates_verification_table(
             aggregate_to_publication_rows. Must carry estimate_filled_posts
             (not selected by _01_merge.py by default - added there for this
             verification).
-        today (date | None): reference date for the financial year split.
-            Defaults to the current system date when None.
-        fy_start_month (int): month the financial year starts.
 
     Returns:
-        pl.LazyFrame: one row per (period, region, main_service), with a
-            period_label display column alongside the raw period date,
-            sorted by period then region then main_service.
+        pl.LazyFrame: one row per (cqc_location_import_date, current_region,
+            primary_service_type), with estimated_filled_posts and
+            cqc_locations columns, not yet period-sampled/selected/sorted.
     """
     location_level_lf = cleaned_lf.unique(
         subset=[IndCQC.location_id, IndCQC.cqc_location_import_date],
@@ -1065,7 +1176,39 @@ def build_t0_estimates_verification_table(
         .select(column_order)
     )
 
-    rollup_lf = pl.concat([service_type_enlarged_lf, england_lf], how="vertical")
+    return pl.concat([service_type_enlarged_lf, england_lf], how="vertical")
+
+
+def build_t0_estimates_verification_table(
+    cleaned_lf: pl.LazyFrame,
+    today: date | None = None,
+    fy_start_month: int = 4,
+) -> pl.LazyFrame:
+    """
+    Builds a diagnostic table in T0's shape, but summing estimate_filled_posts
+    (the location-level, pre-job-role-split estimate) instead of the
+    job-role-summed publication_filled_posts - for verifying whether a
+    difference against a published reference originates in the job-role
+    estimates split/reallocation rather than in this aggregation.
+
+    Args:
+        cleaned_lf (pl.LazyFrame): location-level data, as passed into
+            aggregate_to_publication_rows. Must carry estimate_filled_posts
+            (not selected by _01_merge.py by default - added there for this
+            verification).
+        today (date | None): reference date for the financial year split.
+            Defaults to the current system date when None.
+        fy_start_month (int): month the financial year starts.
+
+    Returns:
+        pl.LazyFrame: one row per (period, region, main_service), with a
+            period_label display column alongside the raw period date, and
+            an estimated_filled_posts_formatted column holding the
+            publication's banded-rounded figure (see
+            round_to_publication_bands) alongside the raw value. Sorted by
+            period then region then main_service.
+    """
+    rollup_lf = _build_base_estimate_rollup_lf(cleaned_lf)
 
     return (
         rollup_lf.filter(_annual_sampling_filter_expr(today, fy_start_month))
@@ -1078,7 +1221,63 @@ def build_t0_estimates_verification_table(
             .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
             .alias(Pub.main_service),
             pl.col(Pub.estimated_filled_posts),
+            round_to_publication_bands(
+                Pub.estimated_filled_posts, Pub.estimated_filled_posts_formatted
+            ),
             pl.col(Pub.cqc_locations),
         )
         .sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
     )
+
+
+def build_t1_filled_posts_perc_change_verification_table(
+    cleaned_lf: pl.LazyFrame,
+    today: date | None = None,
+    fy_start_month: int = 4,
+) -> pl.LazyFrame:
+    """
+    Builds a diagnostic table in T1's shape, but computing percentage change
+    against the location-level, pre-job-role-split estimate_filled_posts
+    instead of the job-role-summed publication_filled_posts - for verifying
+    whether a difference against a published reference originates in the
+    job-role estimates split/reallocation rather than in this calculation.
+
+    Args:
+        cleaned_lf (pl.LazyFrame): location-level data, as passed into
+            aggregate_to_publication_rows. Must carry estimate_filled_posts
+            (not selected by _01_merge.py by default - added there for this
+            verification).
+        today (date | None): reference date for the financial year split.
+            Defaults to the current system date when None.
+        fy_start_month (int): month the financial year starts.
+
+    Returns:
+        pl.LazyFrame: one row per (period, region, main_service), with a
+            period_label display column alongside the raw period date, and
+            a 1dp formatted display string (see format_percentage)
+            alongside each raw percentage change value. Sorted by period
+            then region then main_service.
+    """
+    rollup_lf = _build_base_estimate_rollup_lf(cleaned_lf).filter(
+        _annual_sampling_filter_expr(today, fy_start_month)
+    )
+    rollup_lf = _split_annual_and_monthly_perc_change(
+        rollup_lf, Pub.estimated_filled_posts, today, fy_start_month
+    )
+    return rollup_lf.select(
+        pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
+        _period_label_expr(),
+        pl.col(IndCQC.current_region).alias(Pub.region),
+        pl.col(IndCQC.primary_service_type)
+        .cast(pl.Utf8)
+        .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
+        .alias(Pub.main_service),
+        pl.col(Pub.annual_percentage_change),
+        format_percentage(
+            Pub.annual_percentage_change, Pub.annual_percentage_change_formatted
+        ),
+        pl.col(Pub.monthly_percentage_change),
+        format_percentage(
+            Pub.monthly_percentage_change, Pub.monthly_percentage_change_formatted
+        ),
+    ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)

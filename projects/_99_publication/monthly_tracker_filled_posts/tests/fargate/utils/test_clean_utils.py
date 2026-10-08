@@ -483,6 +483,7 @@ class TestBuildT0EstimatesDownloadTable:
             (Pub.region, pl.String()),
             (Pub.main_service, pl.String()),
             (Pub.estimated_filled_posts, pl.Float32()),
+            (Pub.estimated_filled_posts_formatted, pl.Float32()),
             (Pub.cqc_locations, pl.UInt32()),
         ]
     )
@@ -534,7 +535,9 @@ class TestBuildT1FilledPostsPercChangeDownloadTable:
             (Pub.region, pl.String()),
             (Pub.main_service, pl.String()),
             (Pub.annual_percentage_change, pl.Float32()),
+            (Pub.annual_percentage_change_formatted, pl.String()),
             (Pub.monthly_percentage_change, pl.Float32()),
+            (Pub.monthly_percentage_change_formatted, pl.String()),
         ]
     )
 
@@ -600,6 +603,7 @@ class TestBuildT0EstimatesVerificationTable:
             (Pub.region, pl.String()),
             (Pub.main_service, pl.String()),
             (Pub.estimated_filled_posts, pl.Float32()),
+            (Pub.estimated_filled_posts_formatted, pl.Float32()),
             (Pub.cqc_locations, pl.UInt32()),
         ]
     )
@@ -621,4 +625,79 @@ class TestBuildT0EstimatesVerificationTable:
         expected_lf = pl.LazyFrame(
             case.expected_data, self.expected_schema, orient="row"
         )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestBuildT1FilledPostsPercChangeVerificationTable:
+    input_schema = TestBuildT0EstimatesVerificationTable.input_schema
+    expected_schema = pl.Schema(
+        [
+            (Pub.period, pl.Date()),
+            (Pub.period_label, pl.String()),
+            (Pub.region, pl.String()),
+            (Pub.main_service, pl.String()),
+            (Pub.annual_percentage_change, pl.Float32()),
+            (Pub.annual_percentage_change_formatted, pl.String()),
+            (Pub.monthly_percentage_change, pl.Float32()),
+            (Pub.monthly_percentage_change_formatted, pl.String()),
+        ]
+    )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.build_t1_filled_posts_perc_change_verification_table_test_cases
+        ],
+    )
+    def test_returns_expected_data(self, case):
+        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
+
+        returned_lf = job.build_t1_filled_posts_perc_change_verification_table(
+            input_lf, today=case.today
+        )
+
+        expected_lf = pl.LazyFrame(
+            case.expected_data, self.expected_schema, orient="row"
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestRoundToPublicationBands:
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.round_to_publication_bands_test_cases],
+    )
+    def test_rounds_to_the_publication_controlled_rounding_bands(self, case):
+        expected_schema = pl.Schema(
+            [(case.column_name, pl.Float32()), (case.column_alias, pl.Float32())]
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+
+        test_lf = expected_lf.drop(case.column_alias)
+
+        returned_lf = test_lf.with_columns(
+            job.round_to_publication_bands(case.column_name, case.column_alias)
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestFormatPercentage:
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.format_percentage_test_cases],
+    )
+    def test_formats_a_percentage_fraction_for_display(self, case):
+        expected_schema = pl.Schema(
+            [(case.column_name, pl.Float32()), (case.column_alias, pl.String())]
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+
+        test_lf = expected_lf.drop(case.column_alias)
+
+        returned_lf = test_lf.with_columns(
+            job.format_percentage(case.column_name, case.column_alias)
+        )
+
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

@@ -17,6 +17,7 @@ def main(
     t1_destination: str,
     t2_destination: str,
     t0_verify_destination: str,
+    t1_verify_destination: str,
 ) -> None:
     """
     Cleans merged job role data and builds the T0/T1/T2 data-download tables.
@@ -34,6 +35,11 @@ def main(
             verification table (diagnostic only - sums estimate_filled_posts
             instead of the job-role-summed total, see
             build_t0_estimates_verification_table)
+        t1_verify_destination (str): destination s3 directory for the T1
+            verification table (diagnostic only - computes percentage
+            change against estimate_filled_posts instead of the
+            job-role-summed total, see
+            build_t1_filled_posts_perc_change_verification_table)
     """
     merged_lf = utils.scan_parquet(merge_data_source)
 
@@ -219,6 +225,14 @@ def main(
         output_path=t0_verify_destination,
     )
 
+    t1_verify_lf = clean_utils.build_t1_filled_posts_perc_change_verification_table(
+        cleaned_lf, today=today
+    )
+    utils.sink_to_parquet(
+        lazy_df=t1_verify_lf,
+        output_path=t1_verify_destination,
+    )
+
 
 if __name__ == "__main__":
     args = utils.get_args(
@@ -249,6 +263,11 @@ if __name__ == "__main__":
             "Destination s3 directory for the T0 verification table "
             "(diagnostic only)",
         ),
+        (
+            "--t1_verify_destination",
+            "Destination s3 directory for the T1 verification table "
+            "(diagnostic only)",
+        ),
     )
     main(
         args.merge_data_source,
@@ -257,4 +276,5 @@ if __name__ == "__main__":
         args.t1_destination,
         args.t2_destination,
         args.t0_verify_destination,
+        args.t1_verify_destination,
     )

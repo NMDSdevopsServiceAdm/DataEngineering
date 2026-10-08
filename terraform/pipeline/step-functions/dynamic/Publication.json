@@ -70,7 +70,8 @@
                         "--t0_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t0_estimates/",
                         "--t1_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t1_filled_posts_perc_change/",
                         "--t2_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t2_location_count_perc_change/",
-                        "--t0_verify_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t0_verify_base_estimate/"
+                        "--t0_verify_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t0_verify_base_estimate/",
+                        "--t1_verify_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t1_verify_base_estimate/"
                       ]
                     }
                   ]
