@@ -12,10 +12,18 @@ PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._02_
 
 TEST_SOURCE = "some/directory"
 TEST_DESTINATION = "some/other/directory"
+TEST_T0_DESTINATION = "some/t0/directory"
+TEST_T1_DESTINATION = "some/t1/directory"
+TEST_T2_DESTINATION = "some/t2/directory"
 
 
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(
+        f"{PATCH_PATH}.clean_utils.build_t2_location_count_perc_change_download_table"
+    )
+    @patch(f"{PATCH_PATH}.clean_utils.build_t1_filled_posts_perc_change_download_table")
+    @patch(f"{PATCH_PATH}.clean_utils.build_t0_estimates_download_table")
     @patch(f"{PATCH_PATH}.clean_utils.format_large_number")
     @patch(
         f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
@@ -40,6 +48,9 @@ class TestMain:
         calc_perc_change_between_rows_mock: Mock,
         calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
         format_large_number_mock: Mock,
+        build_t0_estimates_download_table_mock: Mock,
+        build_t1_filled_posts_perc_change_download_table_mock: Mock,
+        build_t2_location_count_perc_change_download_table_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
@@ -86,8 +97,23 @@ class TestMain:
         format_large_number_mock.side_effect = lambda column_name, column_alias: pl.lit(
             "42"
         ).alias(column_alias)
+        build_t0_estimates_download_table_mock.return_value = pl.LazyFrame(
+            {Pub.publication_filled_posts: [42.0]}
+        )
+        build_t1_filled_posts_perc_change_download_table_mock.return_value = (
+            pl.LazyFrame({Pub.publication_filled_posts: [42.0]})
+        )
+        build_t2_location_count_perc_change_download_table_mock.return_value = (
+            pl.LazyFrame({Pub.publication_filled_posts: [42.0]})
+        )
 
-        job.main(TEST_SOURCE, TEST_DESTINATION)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_T0_DESTINATION,
+            TEST_T1_DESTINATION,
+            TEST_T2_DESTINATION,
+        )
 
         scan_parquet_mock.assert_called_once_with(TEST_SOURCE)
 
@@ -248,9 +274,9 @@ class TestMain:
             ]
         )
 
-        sink_to_parquet_mock.assert_called_once()
-        sink_call_kwargs = sink_to_parquet_mock.call_args.kwargs
-        assert sink_call_kwargs["output_path"] == TEST_DESTINATION
+        assert sink_to_parquet_mock.call_count == 4
+        clean_sink_call_kwargs = sink_to_parquet_mock.call_args_list[0].kwargs
+        assert clean_sink_call_kwargs["output_path"] == TEST_DESTINATION
         expected_sink_lf = aggregate_to_publication_rows_mock.return_value.with_columns(
             pl.lit(None, dtype=pl.Float32).alias(
                 Pub.assessment_ct_period_perc_change_long_term
@@ -277,9 +303,51 @@ class TestMain:
             pl.lit("Apr 2026").alias(Pub.cqc_location_import_date_abbreviated),
             pl.lit("April 2026").alias(Pub.cqc_location_import_date_full),
         )
-        assert_frame_equal(sink_call_kwargs["lazy_df"], expected_sink_lf)
+        assert_frame_equal(clean_sink_call_kwargs["lazy_df"], expected_sink_lf)
+
+        build_t0_estimates_download_table_mock.assert_called_once()
+        assert_frame_equal(
+            build_t0_estimates_download_table_mock.call_args.args[0],
+            expected_sink_lf,
+        )
+        build_t1_filled_posts_perc_change_download_table_mock.assert_called_once()
+        assert_frame_equal(
+            build_t1_filled_posts_perc_change_download_table_mock.call_args.args[0],
+            expected_sink_lf,
+        )
+        build_t2_location_count_perc_change_download_table_mock.assert_called_once()
+        assert_frame_equal(
+            build_t2_location_count_perc_change_download_table_mock.call_args.args[0],
+            expected_sink_lf,
+        )
+
+        t0_sink_call_kwargs = sink_to_parquet_mock.call_args_list[1].kwargs
+        assert t0_sink_call_kwargs["output_path"] == TEST_T0_DESTINATION
+        assert (
+            t0_sink_call_kwargs["lazy_df"]
+            is build_t0_estimates_download_table_mock.return_value
+        )
+
+        t1_sink_call_kwargs = sink_to_parquet_mock.call_args_list[2].kwargs
+        assert t1_sink_call_kwargs["output_path"] == TEST_T1_DESTINATION
+        assert (
+            t1_sink_call_kwargs["lazy_df"]
+            is build_t1_filled_posts_perc_change_download_table_mock.return_value
+        )
+
+        t2_sink_call_kwargs = sink_to_parquet_mock.call_args_list[3].kwargs
+        assert t2_sink_call_kwargs["output_path"] == TEST_T2_DESTINATION
+        assert (
+            t2_sink_call_kwargs["lazy_df"]
+            is build_t2_location_count_perc_change_download_table_mock.return_value
+        )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(
+        f"{PATCH_PATH}.clean_utils.build_t2_location_count_perc_change_download_table"
+    )
+    @patch(f"{PATCH_PATH}.clean_utils.build_t1_filled_posts_perc_change_download_table")
+    @patch(f"{PATCH_PATH}.clean_utils.build_t0_estimates_download_table")
     @patch(f"{PATCH_PATH}.clean_utils.format_large_number")
     @patch(
         f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
@@ -304,6 +372,9 @@ class TestMain:
         calc_perc_change_between_rows_mock: Mock,
         calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
         format_large_number_mock: Mock,
+        build_t0_estimates_download_table_mock: Mock,
+        build_t1_filled_posts_perc_change_download_table_mock: Mock,
+        build_t2_location_count_perc_change_download_table_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
@@ -348,8 +419,23 @@ class TestMain:
         format_large_number_mock.side_effect = lambda column_name, column_alias: pl.lit(
             "42"
         ).alias(column_alias)
+        build_t0_estimates_download_table_mock.return_value = pl.LazyFrame(
+            {Pub.publication_filled_posts: [42.0]}
+        )
+        build_t1_filled_posts_perc_change_download_table_mock.return_value = (
+            pl.LazyFrame({Pub.publication_filled_posts: [42.0]})
+        )
+        build_t2_location_count_perc_change_download_table_mock.return_value = (
+            pl.LazyFrame({Pub.publication_filled_posts: [42.0]})
+        )
 
-        job.main(TEST_SOURCE, TEST_DESTINATION)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_T0_DESTINATION,
+            TEST_T1_DESTINATION,
+            TEST_T2_DESTINATION,
+        )
 
         reduced_data_filter_expr_mock.assert_called_once_with(
             cutoff_date=date(2027, 4, 1),
