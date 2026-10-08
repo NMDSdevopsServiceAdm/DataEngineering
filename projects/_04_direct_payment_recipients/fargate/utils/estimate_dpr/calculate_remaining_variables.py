@@ -19,9 +19,9 @@ def calculate_remaining_variables(
     existing columns in the input LazyFrame and configuration constants.
 
     The following derived columns are added:
-        - estimated_service_users_with_self_employed_staff
+        - estimated_service_users_employing_self_employed_staff
         - estimated_total_dpr_employing_staff
-        - estimated_total_personal_assistant_filled_posts
+        - estimated_pa_filled_posts
         - estimated_proportion_of_total_dpr_employing_staff
 
     Args:
@@ -30,33 +30,31 @@ def calculate_remaining_variables(
     Returns:
         pl.LazyFrame: A new LazyFrame with additional derived columns appended.
     """
-    service_users_with_self_employed_staff_expr = (
-        pl.col(DP.SERVICE_USER_DPRS_DURING_YEAR)
+    employing_self_employed_staff_expr = (
+        pl.col(DP.service_user_dprs_during_year)
         * Config.SELF_EMPLOYED_STAFF_PER_SERVICE_USER
     )
 
     total_dpr_employing_staff_expr = (
-        pl.col(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF)
-        + service_users_with_self_employed_staff_expr
+        pl.col(DP.estimated_service_users_employing_staff)
+        + employing_self_employed_staff_expr
     )
 
-    total_personal_assistant_filled_posts_expr = (
-        total_dpr_employing_staff_expr * pl.col(DP.FILLED_POSTS_PER_EMPLOYER)
+    pa_filled_posts_expr = total_dpr_employing_staff_expr * pl.col(
+        DP.filled_posts_per_employer
     )
 
     proportion_of_dpr_employing_staff_expr = total_dpr_employing_staff_expr / pl.col(
-        DP.TOTAL_DPRS_DURING_YEAR
+        DP.total_dprs_during_year
     )
 
     return lf.with_columns(
-        service_users_with_self_employed_staff_expr.alias(
-            DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF
+        employing_self_employed_staff_expr.alias(
+            DP.estimated_service_users_employing_self_employed_staff
         ),
-        total_dpr_employing_staff_expr.alias(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF),
-        total_personal_assistant_filled_posts_expr.alias(
-            DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS
-        ),
+        total_dpr_employing_staff_expr.alias(DP.estimated_total_dpr_employing_staff),
+        pa_filled_posts_expr.alias(DP.estimated_pa_filled_posts),
         proportion_of_dpr_employing_staff_expr.alias(
-            DP.ESTIMATED_PROPORTION_OF_TOTAL_DPR_EMPLOYING_STAFF
+            DP.estimated_proportion_of_total_dpr_employing_staff
         ),
     )

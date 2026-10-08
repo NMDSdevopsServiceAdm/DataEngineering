@@ -7,13 +7,14 @@ import pytest
 import projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils as job
 from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_test_data import (
     FIRST_KNOWN_VALUE_COLUMNS,
-    IMPUTED_PERCENTAGE_COLUMNS,
+    FULL_IMPUTED_PERCENTAGE_COLUMNS,
     LAST_KNOWN_VALUE_COLUMNS,
     PERCENTAGE_COLUMNS,
     ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
     ROLLING_AVERAGE_PERIOD,
     SHORT_TERM_EXTRAPOLATION_PERIOD,
     SHORT_TERM_INTERPOLATION_CAP_PERIOD,
+    TRENDLINE_PERCENTAGE_COLUMNS,
 )
 from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_test_data import (
     TestImputeUtilsData as Data,
@@ -32,7 +33,8 @@ DATE_COLUMNS = [
 ]
 FLOAT32_COLUMNS = (
     PERCENTAGE_COLUMNS
-    + IMPUTED_PERCENTAGE_COLUMNS
+    + TRENDLINE_PERCENTAGE_COLUMNS
+    + FULL_IMPUTED_PERCENTAGE_COLUMNS
     + ROLLING_AVERAGE_PERCENTAGE_COLUMNS
     + FIRST_KNOWN_VALUE_COLUMNS
     + LAST_KNOWN_VALUE_COLUMNS
@@ -113,6 +115,25 @@ class TestAddRollingAveragePercentages:
         returned_lf = job.add_rolling_average_percentages(
             to_lf(case.input_data), rolling_period=ROLLING_AVERAGE_PERIOD
         )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            to_lf(case.expected_data),
+            check_row_order=False,
+            check_column_order=False,
+        )
+
+
+class TestAddFullImputedPercentages:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.add_full_imputed_percentages_test_cases
+        ],
+    )
+    def test_adds_full_imputed_percentages(self, case):
+        returned_lf = job.add_full_imputed_percentages(to_lf(case.input_data))
 
         pl_testing.assert_frame_equal(
             returned_lf,

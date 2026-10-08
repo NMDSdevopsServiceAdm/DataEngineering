@@ -12,14 +12,14 @@ from utils.column_names.direct_payments_column_names import (
 class TestCreateSummaryTable(unittest.TestCase):
     def test_create_summary_table_returns_expected_values(self):
         input_schema = {
-            DP.YEAR_AS_INTEGER: pl.Int32,
-            DP.LA_AREA: pl.String,
-            DP.TOTAL_DPRS_DURING_YEAR: pl.Float32,
-            DP.SERVICE_USER_DPRS_DURING_YEAR: pl.Float32,
-            DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: pl.Float32,
-            DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: pl.Float32,
-            DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF: pl.Float32,
-            DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float32,
+            DP.year_as_integer: pl.Int32,
+            DP.la_area: pl.String,
+            DP.total_dprs_during_year: pl.Float32,
+            DP.service_user_dprs_during_year: pl.Float32,
+            DP.estimated_service_users_employing_staff: pl.Float32,
+            DP.estimated_service_users_employing_self_employed_staff: pl.Float32,
+            DP.estimated_total_dpr_employing_staff: pl.Float32,
+            DP.estimated_pa_filled_posts: pl.Float32,
         }
 
         input_rows = [
@@ -30,13 +30,13 @@ class TestCreateSummaryTable(unittest.TestCase):
         ]
 
         expected_schema = {
-            DP.YEAR_AS_INTEGER: pl.Int32,
-            DP.TOTAL_DPRS: pl.Float32,
-            DP.SERVICE_USER_DPRS: pl.Float32,
-            DP.SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
-            DP.SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: pl.Float32,
-            DP.TOTAL_DPRS_EMPLOYING_STAFF: pl.Float32,
-            DP.TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float32,
+            DP.year_as_integer: pl.Int32,
+            DP.total_dprs: pl.Float32,
+            DP.service_user_dprs: pl.Float32,
+            DP.employing_staff: pl.Float32,
+            DP.employing_self_employed_staff: pl.Float32,
+            DP.total_dprs_employing_staff: pl.Float32,
+            DP.pa_filled_posts: pl.Float32,
         }
 
         expected_rows = [

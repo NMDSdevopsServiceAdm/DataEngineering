@@ -21,18 +21,18 @@ def remove_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: Input with flagged proportions set to null.
     """
-    value = pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
-    year = pl.col(DP.YEAR_AS_INTEGER)
+    value = pl.col(DP.proportion_employing_staff)
+    year = pl.col(DP.year_as_integer)
 
     is_remove = (
         # Proportions must be between 0 and 1.
         (value < 0)
         | (value > 1)
         # An LA's only known value is implausibly extreme.
-        | ((value.count().over(DP.LA_AREA) == 1) & ((value > 0.85) | (value < 0.15)))
+        | ((value.count().over(DP.la_area) == 1) & ((value > 0.85) | (value < 0.15)))
         # Value is too far from the LA mean.
         | (
-            (value - value.mean().over(DP.LA_AREA)).abs()
+            (value - value.mean().over(DP.la_area)).abs()
             >= Config.ADASS_PROPORTION_OUTLIER_THRESHOLD
         )
         # 2022 is extreme and jumps by more than 0.3 from 2021.
@@ -40,7 +40,7 @@ def remove_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
             (year == 2022)
             & ((value > 0.9) | (value < 0.1))
             & (
-                (value - value.filter(year == 2021).first().over(DP.LA_AREA)).abs()
+                (value - value.filter(year == 2021).first().over(DP.la_area)).abs()
                 > 0.3
             )
         )
@@ -48,7 +48,7 @@ def remove_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     # Latest year with a known value is kept if it is plausible.
     is_retain = (
-        (year == year.filter(value.is_not_null()).max().over(DP.LA_AREA))
+        (year == year.filter(value.is_not_null()).max().over(DP.la_area))
         & (value > 0.25)
         & (value < 0.75)
     ).fill_null(False)
