@@ -1356,7 +1356,9 @@ build_t1_filled_posts_perc_change_download_table_test_cases = [
         # The financial-year-start row itself is annual (both null, no prior
         # year in this data) - every row after it is monthly, so
         # monthly_percentage_change is populated and annual_percentage_change
-        # stays null.
+        # stays null. Monthly change is cumulative against the FY-start
+        # baseline (200.0), not month-over-month: the 2026-06-01 row's -0.01
+        # is (198-200)/200, not (198-220)/220.
         id="monthly_percentage_change_is_populated_for_current_financial_year_rows_annual_change_stays_null",
         today=_TODAY,
         input_data=[
@@ -1367,7 +1369,7 @@ build_t1_filled_posts_perc_change_download_table_test_cases = [
         expected_data=[
             (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
             (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.1),
-            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, -0.1),
+            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, -0.01),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1419,6 +1421,9 @@ build_t2_location_count_perc_change_download_table_test_cases = [
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        # Monthly change is cumulative against the FY-start baseline (15),
+        # not month-over-month: the 2026-06-01 row's -0.0666667 is
+        # (14-15)/15, not (14-16)/16.
         id="monthly_percentage_change_is_populated_for_current_financial_year_rows_annual_change_stays_null",
         today=_TODAY,
         input_data=[
@@ -1429,7 +1434,7 @@ build_t2_location_count_perc_change_download_table_test_cases = [
         expected_data=[
             (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
             (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.0666667),
-            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, -0.125),
+            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, -0.0666667),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(

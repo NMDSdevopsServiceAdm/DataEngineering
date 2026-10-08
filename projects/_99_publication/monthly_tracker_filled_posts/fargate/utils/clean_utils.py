@@ -631,6 +631,8 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     since a term's window never borrows a baseline from before its own
     start. Null (not inf/NaN) when the baseline is exactly 0 - see
     calc_perc_change_between_rows for why column_name can legitimately be 0.
+    column_name is cast to Float32 before dividing, so an integer count
+    column (e.g. a location count) doesn't widen the result to Float64.
 
     Args:
         column_name (str): the value column to measure change in.
@@ -644,7 +646,7 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     """
     in_window_value = (
         pl.when(pl.col(IndCQC.cqc_location_import_date) >= from_date)
-        .then(pl.col(column_name))
+        .then(pl.col(column_name).cast(pl.Float32))
         .otherwise(None)
     )
     baseline_value = in_window_value.filter(in_window_value.is_not_null()).first()
@@ -788,12 +790,14 @@ def _split_annual_and_monthly_perc_change(
     Adds annual_percentage_change and monthly_percentage_change to an
     annual-sampling-filtered frame.
 
-    Both come from a single row-over-row change (the annual series is
-    exactly one year apart row-to-row, and the current financial year's
-    monthly series exactly one month apart, including its first row against
-    the last annual row) - whichever period a row falls into gets that
-    change, the other column stays null, since a row is never in both
-    series.
+    annual_percentage_change is a row-over-row change (the annual series is
+    exactly one year apart row-to-row). monthly_percentage_change is
+    cumulative against the financial-year-start baseline (the last annual
+    row), not month-over-month - matching the published reference's own
+    convention. The first monthly row's change is the same under either
+    definition, since it's a single step from that baseline either way.
+    Whichever period a row falls into gets that change, the other column
+    stays null, since a row is never in both series.
 
     Args:
         lazy_df (pl.LazyFrame): output of _annual_sampling_filter_expr,
@@ -807,26 +811,33 @@ def _split_annual_and_monthly_perc_change(
             monthly_percentage_change added.
     """
     fy_start = _financial_year_start(today, fy_start_month)
-    raw_change_column = "_raw_period_perc_change"
+    raw_annual_change_column = "_raw_annual_perc_change"
+    raw_monthly_change_column = "_raw_monthly_perc_change"
     lazy_df = lazy_df.with_columns(
         calc_perc_change_against_periods_ago(
             column_name,
             1,
             _DOWNLOAD_TABLE_GROUP_COLUMNS,
-            raw_change_column,
-        )
+            raw_annual_change_column,
+        ),
+        calc_perc_change_cumulative_from_given_period_onwards(
+            column_name,
+            fy_start,
+            _DOWNLOAD_TABLE_GROUP_COLUMNS,
+            raw_monthly_change_column,
+        ),
     )
     is_monthly_row = pl.col(IndCQC.cqc_location_import_date) > fy_start
     return lazy_df.with_columns(
         pl.when(is_monthly_row)
         .then(None)
-        .otherwise(pl.col(raw_change_column))
+        .otherwise(pl.col(raw_annual_change_column))
         .alias(Pub.annual_percentage_change),
         pl.when(is_monthly_row)
-        .then(pl.col(raw_change_column))
+        .then(pl.col(raw_monthly_change_column))
         .otherwise(None)
         .alias(Pub.monthly_percentage_change),
-    ).drop(raw_change_column)
+    ).drop(raw_annual_change_column, raw_monthly_change_column)
 
 
 def build_t0_estimates_download_table(
