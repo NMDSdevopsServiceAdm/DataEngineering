@@ -129,19 +129,28 @@ class TestDescribeFit:
             {**Data.spec, "model_type": "lasso", "model_params": params},
         )
 
+    def test_labels_scores_as_all_rows_not_pooled(self):
+        model = self.fitted(alpha=0.0001)
+
+        returned_df, _ = job.describe_fit(MODEL, model, FEATURES)
+
+        assert set(returned_df["fold"]) == {"all_rows"}
+
     def test_flags_a_fit_that_stopped_at_max_iter(self):
         model = self.fitted(alpha=0.0001, max_iter=1)
 
         returned_df, _ = job.describe_fit(MODEL, model, FEATURES)
 
-        assert value(returned_df, "fit_diagnostics", "hit_max_iter") == 1.0
+        assert value(returned_df, "fit_diagnostics", "hit_max_iter", "all_rows") == 1.0
 
     def test_counts_exactly_zero_coefficients(self):
         model = self.fitted(alpha=1_000_000)
 
         returned_df, _ = job.describe_fit(MODEL, model, FEATURES)
 
-        assert value(returned_df, "fit_diagnostics", "zero_coefficients") == 2
+        assert (
+            value(returned_df, "fit_diagnostics", "zero_coefficients", "all_rows") == 2
+        )
 
     def test_returns_each_features_coefficient(self):
         model = self.fitted(alpha=0.0001)
@@ -156,7 +165,7 @@ class TestDescribeFit:
 
         returned_df, _ = job.describe_fit(MODEL, model, FEATURES)
 
-        assert value(returned_df, "fit_diagnostics", "hit_max_iter") == 0.0
+        assert value(returned_df, "fit_diagnostics", "hit_max_iter", "all_rows") == 0.0
 
 
 class TestScoreJumpiness:

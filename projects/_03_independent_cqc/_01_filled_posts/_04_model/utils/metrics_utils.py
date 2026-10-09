@@ -319,6 +319,7 @@ def describe_fit(
 
     scores_df = pl.DataFrame(
         {
+            FOLD: ["all_rows"],
             "n_iter": [n_iter],
             "max_iter": [max_iter],
             "hit_max_iter": [float(max_iter > 0 and n_iter >= max_iter)],
@@ -327,7 +328,10 @@ def describe_fit(
         }
     )
 
-    return to_long(scores_df, model_name, "fit_diagnostics"), coefficients
+    return (
+        to_long(scores_df, model_name, "fit_diagnostics", fold_column=FOLD),
+        coefficients,
+    )
 
 
 def score_jumpiness(
