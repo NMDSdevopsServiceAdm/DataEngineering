@@ -21,8 +21,8 @@ ESTIMATED_PERCENTAGE_COLUMNS: list[str] = [
 ]
 
 ESTIMATED_COUNT_COLUMNS: list[str] = [
-    EmpStatus.estimated_emp_stat_perm,
-    EmpStatus.estimated_emp_stat_temp,
+    EmpStatus.estimated_emp_stat_permanent,
+    EmpStatus.estimated_emp_stat_temporary,
     EmpStatus.estimated_emp_stat_bank_or_pool,
     EmpStatus.estimated_emp_stat_agency,
     EmpStatus.estimated_emp_stat_other,
@@ -80,7 +80,7 @@ def add_estimated_employment_status_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     return lf.with_columns(
         (
-            pl.col(EmpStatus.estimated_emp_stat_perm)
-            + pl.col(EmpStatus.estimated_emp_stat_temp)
+            pl.col(EmpStatus.estimated_emp_stat_permanent)
+            + pl.col(EmpStatus.estimated_emp_stat_temporary)
         ).alias(EmpStatus.estimated_employees)
     )

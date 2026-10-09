@@ -551,8 +551,8 @@ class EmploymentStatusColumns:
     estimated_other_percentage: str = "estimated_" + other_percentage
     estimated_percentage_source: str = "estimated_emplstat_percentage_source"
     employee_count: str = "emplstat_employee_count"
-    estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
-    estimated_emp_stat_temp: str = "estimated_emp_stat_temp"
+    estimated_emp_stat_permanent: str = "estimated_emp_stat_permanent"
+    estimated_emp_stat_temporary: str = "estimated_emp_stat_temporary"
     estimated_emp_stat_bank_or_pool: str = "estimated_emp_stat_bank_or_pool"
     estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
     estimated_emp_stat_other: str = "estimated_emp_stat_other"
