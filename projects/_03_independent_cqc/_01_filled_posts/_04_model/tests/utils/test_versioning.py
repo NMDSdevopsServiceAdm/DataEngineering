@@ -5,6 +5,8 @@ from unittest.mock import MagicMock, Mock, patch
 
 import boto3
 import joblib
+import polars as pl
+import pytest
 from moto import mock_aws
 
 from projects._03_independent_cqc._01_filled_posts._04_model.utils import (
@@ -181,6 +183,52 @@ class SaveModelAndMetadataTests(unittest.TestCase):
                 "models/model_A/42/metadata.json",
             },
         )
+
+
+class TestSaveMetrics:
+    S3_ROOT = "s3://pipeline-resources/models/model_A/"
+    METRICS_DF = pl.DataFrame({"metric": ["r2"], "value": [0.9]})
+
+    @pytest.fixture
+    def s3(self):
+        with mock_aws():
+            s3 = boto3.client("s3", region_name="eu-west-2")
+            s3.create_bucket(
+                Bucket="pipeline-resources",
+                CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+            )
+            yield s3
+
+    def test_saves_metrics_and_coefficients_under_run_prefix(self, s3):
+        job.save_metrics(self.S3_ROOT, 4, self.METRICS_DF, {"feature": 0.5})
+
+        objects = s3.list_objects_v2(
+            Bucket="pipeline-resources", Prefix="models/model_A/4/"
+        )
+        keys = {obj["Key"] for obj in objects["Contents"]}
+
+        assert keys == {
+            "models/model_A/4/metrics.parquet",
+            "models/model_A/4/coefficients.json",
+        }
+
+    def test_metrics_round_trip_unchanged(self, s3):
+        job.save_metrics(self.S3_ROOT, 4, self.METRICS_DF, {})
+
+        body = s3.get_object(
+            Bucket="pipeline-resources", Key="models/model_A/4/metrics.parquet"
+        )["Body"].read()
+
+        assert pl.read_parquet(io.BytesIO(body)).equals(self.METRICS_DF)
+
+    def test_coefficients_round_trip_unchanged(self, s3):
+        job.save_metrics(self.S3_ROOT, 4, self.METRICS_DF, {"feature": 0.5})
+
+        body = s3.get_object(
+            Bucket="pipeline-resources", Key="models/model_A/4/coefficients.json"
+        )["Body"].read()
+
+        assert json.loads(body) == {"feature": 0.5}
 
 
 class LoadModelTests(unittest.TestCase):

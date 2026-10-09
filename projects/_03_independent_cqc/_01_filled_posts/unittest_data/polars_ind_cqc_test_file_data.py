@@ -225,17 +225,6 @@ class FeaturesEngineeringUtilsData:
 
 @dataclass
 class ModelTrainingUtilsData:
-    split_train_test_rows = [
-        ("1-001", 10.0),
-        ("1-001", 11.0),
-        ("1-002", 20.0),
-        ("1-002", 21.0),
-        ("1-003", 30.0),
-        ("1-003", 31.0),
-        ("1-004", 40.0),
-        ("1-004", 41.0),
-    ]
-
     convert_dataframe_to_numpy_basic_rows = [
         ("1-001", 1, 10, 5.0),
         ("1-002", 2, 20, 6.0),
@@ -3742,3 +3731,27 @@ class IsTrainingRowData:
             expected_is_training_row=[True, False, False],
         ),
     ]
+
+
+def metrics_locations_data() -> dict[str, list[Any]]:
+    """
+    Non-res rows for the cross validation locations, with the known value equal to the
+    imputed target except for loc5, which has none.
+    """
+    features = cross_validation_features_data()
+    target = features[IndCQC.imputed_filled_post_model]
+    is_loc5 = [location == "loc5" for location in features[IndCQC.location_id]]
+    rows = len(target)
+    return {
+        IndCQC.location_id: features[IndCQC.location_id],
+        IndCQC.cqc_location_import_date: features[IndCQC.cqc_location_import_date],
+        IndCQC.ascwds_filled_posts_dedup_clean: [
+            None if no_known else value for no_known, value in zip(is_loc5, target)
+        ],
+        IndCQC.primary_service_type: ["non-residential"] * rows,
+        IndCQC.current_cssr: ["cssr"] * rows,
+        IndCQC.number_of_beds: [None] * rows,
+        IndCQC.number_of_beds_banded: [None] * rows,
+        IndCQC.imputed_filled_post_model: target,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model: [None] * rows,
+    }

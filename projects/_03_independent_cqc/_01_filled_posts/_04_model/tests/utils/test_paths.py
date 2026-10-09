@@ -19,6 +19,13 @@ class TestGenerateIndCqcPath:
         assert returned_path == expected_path
 
 
+class TestGenerateCleanedPath:
+    def test_returns_expected_path(self):
+        returned_path = job.generate_cleaned_path(DATASETS_BUCKET)
+        expected_path = "s3://sfc-test-datasets/domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned/"
+        assert returned_path == expected_path
+
+
 class TestGenerateFeaturesPath:
     def test_returns_expected_path(self):
         returned_path = job.generate_features_path(DATASETS_BUCKET, MODEL)
