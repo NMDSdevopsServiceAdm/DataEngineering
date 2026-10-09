@@ -1,5 +1,6 @@
 import polars as pl
 
+from polars_utils import utils
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils import (
     FULL_IMPUTED_PERCENTAGE_COLUMNS,
@@ -19,6 +20,19 @@ ESTIMATED_PERCENTAGE_COLUMNS: list[str] = [
     EmpStatus.estimated_agency_percentage,
     EmpStatus.estimated_other_percentage,
 ]
+
+SOURCE_BY_COLUMN: dict[str, str] = {
+    col: source
+    for cols, source in (
+        (PERCENTAGE_COLUMNS, EmploymentStatusEstimateSource.cleaned),
+        (FULL_IMPUTED_PERCENTAGE_COLUMNS, EmploymentStatusEstimateSource.imputed),
+        (
+            ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
+            EmploymentStatusEstimateSource.rolling_avg,
+        ),
+    )
+    for col in cols
+}
 
 ESTIMATED_COUNT_COLUMNS: list[str] = [
     EmpStatus.estimated_emp_stat_permanent,
@@ -49,27 +63,29 @@ def add_estimated_employment_status_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     metric = IndCQC.estimate_filled_posts_by_job_role
 
-    lf = lf.with_columns(
-        pl.coalesce(cleaned, imputed, rolling_avg).alias(estimated)
+    percentage_and_source_exprs = [
+        utils.coalesce_with_source_labels(
+            cols=[cleaned, imputed, rolling_avg], name=estimated
+        )
         for cleaned, imputed, rolling_avg, estimated in zip(
             PERCENTAGE_COLUMNS,
             FULL_IMPUTED_PERCENTAGE_COLUMNS,
             ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
             ESTIMATED_PERCENTAGE_COLUMNS,
         )
+    ]
+    status_source_columns = [f"{col}_source" for col in ESTIMATED_PERCENTAGE_COLUMNS]
+
+    lf = lf.with_columns(
+        expr for exprs in percentage_and_source_exprs for expr in exprs
     )
 
-    # a tier's 5 percentages are all populated or all null, so permanent stands in for all 5
     lf = lf.with_columns(
-        pl.when(pl.col(EmpStatus.permanent_percentage).is_not_null())
-        .then(pl.lit(EmploymentStatusEstimateSource.cleaned))
-        .when(pl.col(EmpStatus.permanent_percentage_full_imputed).is_not_null())
-        .then(pl.lit(EmploymentStatusEstimateSource.imputed))
-        .when(pl.col(EmpStatus.permanent_percentage_rolling_avg).is_not_null())
-        .then(pl.lit(EmploymentStatusEstimateSource.rolling_avg))
+        pl.coalesce(status_source_columns)
+        .replace_strict(SOURCE_BY_COLUMN)
         .cast(CatColType.EmploymentStatusEstimateSourceEnumType)
         .alias(EmpStatus.estimated_percentage_source)
-    )
+    ).drop(status_source_columns)
 
     lf = lf.with_columns(
         (pl.col(metric) * pl.col(estimated_percentage)).alias(estimated_count)
