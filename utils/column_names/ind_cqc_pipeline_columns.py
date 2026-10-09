@@ -608,6 +608,46 @@ class ModelEvaluationColumns:
     number_of_periods: str = "number_of_periods"
     minimum_rows_in_period: str = "minimum_rows_in_period"
     bias_slope_per_year: str = "bias_slope_per_year"
+    number_of_groups: str = "number_of_groups"
+    known_rows: str = "known_rows"
+    known_rows_scored: str = "known_rows_scored"
+    coverage: str = "coverage"
+    n_iter: str = "n_iter"
+    max_iter: str = "max_iter"
+    hit_max_iter: str = "hit_max_iter"
+    zero_coefficients: str = "zero_coefficients"
+    number_of_features: str = "number_of_features"
+    locations: str = "locations"
+    rows: str = "rows"
+    imputed_target_posts: str = "imputed_target_posts"
+    ratio_prediction: str = "ratio_prediction"
+    prediction_unclipped: str = "prediction_unclipped"
+    log_prediction: str = "log_prediction"
+    model: str = "model"
+    level: str = "level"
+    group: str = "group"
+    metric: str = "metric"
+    value: str = "value"
+
+
+@dataclass
+class ModelEvaluationLabels:
+    """The levels and group/fold labels in long-format model evaluation scores."""
+
+    pooled: str = "pooled"
+    all_rows: str = "all_rows"
+    all_groups: str = "all"
+    coverage: str = "coverage"
+    headline_group_totals: str = "headline_group_totals"
+    headline_by_year: str = "headline_by_year"
+    period_totals: str = "period_totals"
+    size_band: str = "size_band"
+    row_level_posts: str = "row_level_posts"
+    row_level_metadata_scale: str = "row_level_metadata_scale"
+    imputed_target_rows: str = "imputed_target_rows"
+    imputed_target_period_bias: str = "imputed_target_period_bias"
+    fit_diagnostics: str = "fit_diagnostics"
+    jumpiness: str = "jumpiness"
 
 
 @dataclass
