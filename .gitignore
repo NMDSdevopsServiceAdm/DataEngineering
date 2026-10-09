@@ -67,3 +67,7 @@ __pycache__/
 lambdas/**.zip
 
 .coverage
+
+# update_run_log.sh working copies
+run_log_original/
+run_log_updated/
