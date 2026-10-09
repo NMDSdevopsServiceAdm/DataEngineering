@@ -3755,3 +3755,40 @@ def metrics_locations_data() -> dict[str, list[Any]]:
         IndCQC.imputed_filled_post_model: target,
         IndCQC.imputed_filled_posts_per_bed_ratio_model: [None] * rows,
     }
+
+
+METRICS_CARE_HOME_BEDS = 10
+
+
+def metrics_care_home_features_data() -> dict[str, list[Any]]:
+    """The cross validation features with the dependent as a per bed ratio."""
+    data = cross_validation_features_data()
+    data[IndCQC.imputed_filled_posts_per_bed_ratio_model] = data.pop(
+        IndCQC.imputed_filled_post_model
+    )
+    return data
+
+
+def metrics_care_home_locations_data() -> dict[str, list[Any]]:
+    """
+    Care home rows for the cross validation locations, 10 beds each, with known posts equal
+    to the ratio times beds except for loc5, which has none.
+    """
+    features = metrics_care_home_features_data()
+    ratio = features[IndCQC.imputed_filled_posts_per_bed_ratio_model]
+    is_loc5 = [location == "loc5" for location in features[IndCQC.location_id]]
+    rows = len(ratio)
+    return {
+        IndCQC.location_id: features[IndCQC.location_id],
+        IndCQC.cqc_location_import_date: features[IndCQC.cqc_location_import_date],
+        IndCQC.ascwds_filled_posts_dedup_clean: [
+            None if no_known else value * METRICS_CARE_HOME_BEDS
+            for no_known, value in zip(is_loc5, ratio)
+        ],
+        IndCQC.primary_service_type: ["Care home without nursing"] * rows,
+        IndCQC.current_cssr: ["cssr"] * rows,
+        IndCQC.number_of_beds: [METRICS_CARE_HOME_BEDS] * rows,
+        IndCQC.number_of_beds_banded: [3] * rows,
+        IndCQC.imputed_filled_post_model: [None] * rows,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model: ratio,
+    }
