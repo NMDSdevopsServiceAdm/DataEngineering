@@ -116,6 +116,16 @@ class TestMain:
         assert mocks.save_metrics.call_args.args[1] == 4
         assert mocks.save_model_and_metadata.call_args.args[1] == 4
 
+    def test_saves_metrics_before_the_model_so_partial_runs_are_not_found(self, mocks):
+        calls = MagicMock()
+        calls.attach_mock(mocks.save_metrics, "save_metrics")
+        calls.attach_mock(mocks.save_model_and_metadata, "save_model_and_metadata")
+
+        job.main(BUCKET_NAME, MODEL_NAME)
+
+        saved = [call[0] for call in calls.mock_calls]
+        assert saved == ["save_metrics", "save_model_and_metadata"]
+
     def test_saves_the_model_fitted_on_all_rows(self, mocks):
         job.main(BUCKET_NAME, MODEL_NAME)
 

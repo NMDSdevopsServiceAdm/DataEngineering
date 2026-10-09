@@ -42,8 +42,9 @@ def main(bucket_name: str, model_name: str) -> None:
         5. Describe the fit and score the jumpiness of its predictions
         6. Save the model, metadata, metrics and coefficients under a new run number
 
-    Note: scikit-learn needs in-memory data, so the features are collected once per fold.
-    The cleaned and imputed datasets are only read for the columns scoring needs.
+    Note: scikit-learn needs in-memory data, so features are collected for the fold
+    predictions, the final fit and the jumpiness sample. The cleaned and imputed datasets are
+    only read for the columns scoring needs.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the datasets from
@@ -97,7 +98,7 @@ def main(bucket_name: str, model_name: str) -> None:
             IndCQC.imputed_filled_post_model,
             IndCQC.imputed_filled_posts_per_bed_ratio_model,
         )
-        .join(known_lf, on=keys, how="left")
+        .join(known_lf, on=keys, how="left", validate="m:1")
     )
 
     folds_lf = (
@@ -136,6 +137,8 @@ def main(bucket_name: str, model_name: str) -> None:
         (pl.col(ModelEvaluation.level) == Labels.row_level_metadata_scale)
         & (pl.col(ModelEvaluation.fold) == Labels.pooled)
     )
+
+    assert pooled_metadata_scale_df.height, "no pooled metadata-scale metrics to save"
 
     metadata = {
         "name": model_name,
