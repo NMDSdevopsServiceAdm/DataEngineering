@@ -46,7 +46,7 @@ All notable changes to this project will be documented in this file.
 - Added utilities to score filled posts models on held-out locations and save the metrics beside a model run. Not yet used by any job.
 
 ### Changed
-- Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics (`metrics.parquet`) and coefficients beside each model run. Models are now fitted on all training rows instead of an 80/20 split.
+- Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics (`metrics.parquet`) and coefficients beside each model run. Models are now fitted on all training rows instead of an 80/20 split, and the `metrics` in `metadata.json` are scored on known values only, so aren't comparable with earlier runs.
 - Changed the job group labels (`JobGroupLabels`) from snake_case to human-readable values, e.g. "direct_care" to "Direct care", so `main_job_group_labels` data values change on every run.
 - Added the Excel packages `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image, and extended the Docker pin test to cover every `requirements-extra.txt`.
 - Added a `trello-cards` Claude Code skill that drafts paste-ready Trello cards from a plan or a one-line idea.
