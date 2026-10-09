@@ -454,19 +454,23 @@ def add_rows_for_publication_groups(
     "England" rollup rows for the Tableau/Excel filter dropdowns.
 
     Built recursively - job role, then service type, then region - so
-    England ends up with a row for every job role/service type combination,
+    England has a row for every job role/service type combination,
     including the other rollups.
 
     Job role is rebuilt from cleaned_lf via aggregate_to_publication_rows
-    with job role dropped from the group keys, since a location has one row
-    per job role it employs and summing per-job-role counts would
-    double-count it. Region and service type are single-valued per
-    location, so those rollups just re-sum the aggregated columns.
+    with job role dropped from the group keys, since summing per-job-role
+    counts would double-count a location (one row per job role it employs).
+    Region and service type are single-valued per location, so those
+    rollups re-sum the aggregated columns.
 
     primary_service_type is a closed Enum in production, so it is cast to
-    Categorical here, local to this job, before the new labels are written
-    into it - the shared PrimaryServiceType enum is left alone, since it's
-    also used by the IND CQC pipeline's own category-count validation.
+    Categorical here before the new labels are written into it. The shared
+    PrimaryServiceType enum is left alone: the IND CQC pipeline's
+    category-count validation also uses it.
+
+    The job role rows (small, post-aggregation) are collected so every
+    rollup and sink reuses one evaluation of cleaned_lf; left lazy, Polars
+    re-runs the whole upstream plan per consumer.
 
     Args:
         cleaned_lf (pl.LazyFrame): location-level data, as passed into
@@ -519,6 +523,7 @@ def add_rows_for_publication_groups(
     job_role_enlarged_lf = pl.concat(
         [publication_summary_lf, all_job_roles_lf], how="vertical"
     )
+    job_role_enlarged_lf = job_role_enlarged_lf.collect(engine="streaming").lazy()
 
     service_type_group_keys = [
         IndCQC.cqc_location_import_date,

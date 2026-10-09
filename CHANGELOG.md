@@ -90,6 +90,7 @@ All notable changes to this project will be documented in this file.
 - Combined the three near-identical CI scripts that decide whether a push should seed the raw bucket, seed the archive sample data or run the CQC integration tests into one `scripts/select_ci_gate.py`, so adding a new gate is one entry in its list of trigger paths. Added a test that fails if a trigger path no longer exists in the repo, so a renamed file can't leave a gate silently never firing.
 - Reduced the IND CQC filled posts model features validation's memory use by scanning the wide imputed comparison dataset lazily, so only the columns its expected row count needs are read.
 - Tidied the direct payment recipients folder names, test layout, test names and docstrings to match the rest of the pipeline. No behaviour change.
+- Sped up the publication clean job by computing its cleaned data once instead of for every rollup and output table.
 - Changed the direct payment recipients ratio, proportion and estimate columns from Float64 to Float32, halving their memory use.
 - Renamed the direct payment recipients columns to shorter, lower snake_case names, dropping `estimated` from mid-stage columns. Estimate, summary and ICB output columns and the estimate source label `proportion_employing_staff` change, so downstream readers need the new names.
 
