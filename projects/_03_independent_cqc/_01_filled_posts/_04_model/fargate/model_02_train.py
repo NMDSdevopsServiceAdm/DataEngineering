@@ -20,6 +20,12 @@ from projects._03_independent_cqc._01_filled_posts._04_model.utils.validate_mode
 )
 from projects._03_independent_cqc.utils import model_evaluation_utils as evaluation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ModelEvaluationColumns as ModelEvaluation,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ModelEvaluationLabels as Labels,
+)
 from utils.column_names.ind_cqc_pipeline_columns import ModelMetadataKeys as MMKeys
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
@@ -127,7 +133,8 @@ def main(bucket_name: str, model_name: str) -> None:
 
     metrics_df = pl.concat([scores_df, fit_df, jumpiness_df])
     pooled_metadata_scale_df = metrics_df.filter(
-        (pl.col("level") == "row_level_metadata_scale") & (pl.col("fold") == "pooled")
+        (pl.col(ModelEvaluation.level) == Labels.row_level_metadata_scale)
+        & (pl.col(ModelEvaluation.fold) == Labels.pooled)
     )
 
     metadata = {
@@ -139,8 +146,8 @@ def main(bucket_name: str, model_name: str) -> None:
         "dependent_column": model_def[MRKeys.dependent],
         "metrics": dict(
             zip(
-                pooled_metadata_scale_df["metric"].to_list(),
-                pooled_metadata_scale_df["value"].to_list(),
+                pooled_metadata_scale_df[ModelEvaluation.metric].to_list(),
+                pooled_metadata_scale_df[ModelEvaluation.value].to_list(),
             )
         ),
     }

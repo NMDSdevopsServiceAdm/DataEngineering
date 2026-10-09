@@ -7,6 +7,12 @@ import pytest
 
 import projects._03_independent_cqc._01_filled_posts._04_model.fargate.model_02_train as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ModelEvaluationColumns as ModelEvaluation,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ModelEvaluationLabels as Labels,
+)
 from utils.column_names.ind_cqc_pipeline_columns import ModelMetadataKeys as MMKeys
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
@@ -35,12 +41,12 @@ def registry(auto_retrain: bool = True, dependent: str = "dependent_col") -> dic
 def long_scores(level: str, fold: str, metric: str, value: float) -> pl.DataFrame:
     return pl.DataFrame(
         {
-            "model": [MODEL_NAME],
-            "level": [level],
-            "group": ["all"],
-            "fold": [fold],
-            "metric": [metric],
-            "value": [value],
+            ModelEvaluation.model: [MODEL_NAME],
+            ModelEvaluation.level: [level],
+            ModelEvaluation.group: [Labels.all_groups],
+            ModelEvaluation.fold: [fold],
+            ModelEvaluation.metric: [metric],
+            ModelEvaluation.value: [value],
         }
     )
 
@@ -67,17 +73,26 @@ def mocks():
         patched.get_run_number.return_value = 3
         patched.score_out_of_fold.return_value = pl.concat(
             [
-                long_scores("row_level_metadata_scale", "pooled", IndCQC.r2, 0.8),
-                long_scores("row_level_metadata_scale", "0", IndCQC.r2, 0.1),
-                long_scores("coverage", "pooled", "coverage", 1.0),
+                long_scores(
+                    Labels.row_level_metadata_scale, Labels.pooled, IndCQC.r2, 0.8
+                ),
+                long_scores(Labels.row_level_metadata_scale, "0", IndCQC.r2, 0.1),
+                long_scores(
+                    Labels.coverage, Labels.pooled, ModelEvaluation.coverage, 1.0
+                ),
             ]
         )
         patched.describe_fit.return_value = (
-            long_scores("fit_diagnostics", "all_rows", "n_iter", 5.0),
+            long_scores(
+                Labels.fit_diagnostics, Labels.all_rows, ModelEvaluation.n_iter, 5.0
+            ),
             {"feat1": 0.5},
         )
         patched.score_jumpiness.return_value = long_scores(
-            "jumpiness", "pooled", "mean_period_to_period_change", 0.02
+            Labels.jumpiness,
+            Labels.pooled,
+            ModelEvaluation.mean_period_to_period_change,
+            0.02,
         )
         stack.enter_context(patch(f"{PATCH_PATH}.model_registry", registry()))
         stack.enter_context(patch(f"{PATCH_PATH}.validate_model_definition"))
@@ -111,11 +126,11 @@ class TestMain:
         job.main(BUCKET_NAME, MODEL_NAME)
 
         saved_metrics_df, saved_coefficients = mocks.save_metrics.call_args.args[2:]
-        assert set(saved_metrics_df["level"]) == {
-            "row_level_metadata_scale",
-            "coverage",
-            "fit_diagnostics",
-            "jumpiness",
+        assert set(saved_metrics_df[ModelEvaluation.level]) == {
+            Labels.row_level_metadata_scale,
+            Labels.coverage,
+            Labels.fit_diagnostics,
+            Labels.jumpiness,
         }
         assert saved_coefficients == {"feat1": 0.5}
 
