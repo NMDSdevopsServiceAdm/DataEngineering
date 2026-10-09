@@ -46,6 +46,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Replaced the employment status magic-number split with estimated percentages (cleaned, then imputed, then rolling average), their source, and estimated counts and employees. Removed the rates CSV input.
 - Changed the job group labels (`JobGroupLabels`) from snake_case to human-readable values, e.g. "direct_care" to "Direct care", so `main_job_group_labels` data values change on every run.
 - Added the Excel packages `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image, and extended the Docker pin test to cover every `requirements-extra.txt`.
 - Added a `trello-cards` Claude Code skill that drafts paste-ready Trello cards from a plan or a one-line idea.

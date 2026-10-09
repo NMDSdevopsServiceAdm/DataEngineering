@@ -2,11 +2,12 @@ from dataclasses import dataclass
 
 import polars as pl
 
-from utils.column_values.categorical_column_values import (
-    EstimateFilledPostsSource,
-)
+from utils.column_values.categorical_column_values import EstimateFilledPostsSource
 from utils.column_values.categorical_columns_by_dataset import (
     CleanedIndCQCCategoricalValues as CleanedIndCQCCatVals,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    EmploymentStatusEstimateCategoricalValues as EmpStatusEstimateCatVals,
 )
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as JobRoleEstimatesCatVals,
@@ -56,6 +57,9 @@ class CategoricalColumnTypes:
     )
     EmploymentStatusCatType = pl.Categorical(
         pl.Categories("employment_status", namespace="filled_posts")
+    )
+    EmploymentStatusEstimateSourceEnumType = pl.Enum(
+        EmpStatusEstimateCatVals.estimate_source_column_values.categorical_values
     )
     EmploymentStatusFilteringRuleCatType = pl.Categorical(
         pl.Categories(

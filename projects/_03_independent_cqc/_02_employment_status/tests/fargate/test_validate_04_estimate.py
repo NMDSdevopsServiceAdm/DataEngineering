@@ -19,8 +19,8 @@ class TestMain:
         source_schema = {
             IndCqcColumns.location_id: pl.String,
             job.METRIC: pl.Float64,
-            EmpStatus.estimated_emp_stat_perm: pl.Float64,
-            EmpStatus.estimated_emp_stat_temp: pl.Float64,
+            EmpStatus.estimated_emp_stat_permanent: pl.Float64,
+            EmpStatus.estimated_emp_stat_temporary: pl.Float64,
             EmpStatus.estimated_emp_stat_bank_or_pool: pl.Float64,
             EmpStatus.estimated_emp_stat_agency: pl.Float64,
             EmpStatus.estimated_emp_stat_other: pl.Float64,
