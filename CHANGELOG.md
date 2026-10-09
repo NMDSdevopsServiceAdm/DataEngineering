@@ -43,7 +43,7 @@ All notable changes to this project will be documented in this file.
 - Added a shared definition of the rows a filled posts model trains on, now used by the model training job.
 - Added filled posts model cross-validation helpers: out-of-fold predictions from a model spec and non-res size bands.
 - Added financial year, row-level, per-period bias and bias slope scoring to the project-level model evaluation utilities.
-
+- Added utilities to score filled posts models on held-out locations and save the metrics beside a model run. Not yet used by any job.
 
 ### Changed
 - The CQC PIR and ONS postcode directory ingests now start the Ind CQC filled posts estimates pipeline on success.
