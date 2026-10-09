@@ -43,7 +43,7 @@ All notable changes to this project will be documented in this file.
 - Added a shared definition of the rows a filled posts model trains on, now used by the model training job.
 - Added filled posts model cross-validation helpers: out-of-fold predictions from a model spec and non-res size bands.
 - Added financial year, row-level, per-period bias and bias slope scoring to the project-level model evaluation utilities.
-
+- Added utilities that score filled posts models on held-out locations (headline totals, bias, size bands, jumpiness, fit diagnostics), and helpers to save the metrics beside a model run. Not yet used by any job.
 
 ### Changed
 - Changed the job group labels (`JobGroupLabels`) from snake_case to human-readable values, e.g. "direct_care" to "Direct care", so `main_job_group_labels` data values change on every run.
