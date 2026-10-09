@@ -31,7 +31,7 @@ class TestAddEstimatedEmploymentStatusColumns:
             **input_schema,
             **{col: pl.Float32 for col in job.ESTIMATED_PERCENTAGE_COLUMNS},
             **{col: pl.Float64 for col in job.ESTIMATED_COUNT_COLUMNS},
-            EmpStatus.percentage_estimate_source: CatColType.EmploymentStatusEstimateSourceEnumType,
+            EmpStatus.estimated_percentage_source: CatColType.EmploymentStatusEstimateSourceEnumType,
             EmpStatus.estimated_employees: pl.Float64,
         }
         input_lf = pl.LazyFrame(case.input_data, schema=input_schema)

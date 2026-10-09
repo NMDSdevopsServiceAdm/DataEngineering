@@ -13,11 +13,11 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import EmploymentStatusEstimateSource
 
 ESTIMATED_PERCENTAGE_COLUMNS: list[str] = [
-    EmpStatus.permanent_percentage_estimated,
-    EmpStatus.temporary_percentage_estimated,
-    EmpStatus.bank_or_pool_percentage_estimated,
-    EmpStatus.agency_percentage_estimated,
-    EmpStatus.other_percentage_estimated,
+    EmpStatus.estimated_permanent_percentage,
+    EmpStatus.estimated_temporary_percentage,
+    EmpStatus.estimated_bank_or_pool_percentage,
+    EmpStatus.estimated_agency_percentage,
+    EmpStatus.estimated_other_percentage,
 ]
 
 ESTIMATED_COUNT_COLUMNS: list[str] = [
@@ -43,7 +43,7 @@ def add_estimated_employment_status_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
             columns and the job role filled-post metric.
 
     Returns:
-        pl.LazyFrame: dataset with 5 "emplstat_<status>_percentage_estimated" columns, a
+        pl.LazyFrame: dataset with 5 "estimated_emplstat_<status>_percentage" columns, a
             percentage estimate source column, 5 "estimated_emp_stat_<status>" columns and an
             "estimated_employees" column added.
     """
@@ -68,7 +68,7 @@ def add_estimated_employment_status_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
         .when(pl.col(EmpStatus.permanent_percentage_rolling_avg).is_not_null())
         .then(pl.lit(EmploymentStatusEstimateSource.rolling_avg))
         .cast(CatColType.EmploymentStatusEstimateSourceEnumType)
-        .alias(EmpStatus.percentage_estimate_source)
+        .alias(EmpStatus.estimated_percentage_source)
     )
 
     lf = lf.with_columns(

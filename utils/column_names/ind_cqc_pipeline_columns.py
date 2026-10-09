@@ -544,12 +544,12 @@ class EmploymentStatusColumns:
     )
     agency_percentage_full_imputed: str = agency_percentage + "_full_imputed"
     other_percentage_full_imputed: str = other_percentage + "_full_imputed"
-    permanent_percentage_estimated: str = permanent_percentage + "_estimated"
-    temporary_percentage_estimated: str = temporary_percentage + "_estimated"
-    bank_or_pool_percentage_estimated: str = bank_or_pool_percentage + "_estimated"
-    agency_percentage_estimated: str = agency_percentage + "_estimated"
-    other_percentage_estimated: str = other_percentage + "_estimated"
-    percentage_estimate_source: str = "emplstat_percentage_estimate_source"
+    estimated_permanent_percentage: str = "estimated_" + permanent_percentage
+    estimated_temporary_percentage: str = "estimated_" + temporary_percentage
+    estimated_bank_or_pool_percentage: str = "estimated_" + bank_or_pool_percentage
+    estimated_agency_percentage: str = "estimated_" + agency_percentage
+    estimated_other_percentage: str = "estimated_" + other_percentage
+    estimated_percentage_source: str = "estimated_emplstat_percentage_source"
     employee_count: str = "emplstat_employee_count"
     estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
     estimated_emp_stat_temp: str = "estimated_emp_stat_temp"

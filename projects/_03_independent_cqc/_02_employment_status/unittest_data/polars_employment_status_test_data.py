@@ -608,7 +608,7 @@ def _estimate_expected(
     return {
         **row,
         **{col: [val] for col, val in zip(ESTIMATED_PERCENTAGE_COLUMNS, estimated)},
-        EmpStatus.percentage_estimate_source: [source],
+        EmpStatus.estimated_percentage_source: [source],
         **{col: [val] for col, val in zip(ESTIMATED_COUNT_COLUMNS, counts)},
         EmpStatus.estimated_employees: [employees],
     }

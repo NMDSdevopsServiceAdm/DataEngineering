@@ -346,7 +346,7 @@ class SLVCleanCategoricalValues:
 @dataclass
 class EmploymentStatusEstimateCategoricalValues:
     estimate_source_column_values = EmploymentStatusEstimateSource(
-        EmpStatus.percentage_estimate_source
+        EmpStatus.estimated_percentage_source
     )
 
 
