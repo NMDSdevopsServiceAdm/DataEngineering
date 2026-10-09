@@ -1099,6 +1099,122 @@
                           ]
                         }
                       },
+                      "Next": "Archive Job Role Estimates"
+                    },
+                    "Archive Job Role Estimates": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "archive_job_role_estimates.py",
+                                "--job_role_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
+                                "--job_role_metadata_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
+                                "--job_role_estimates_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/",
+                                "--job_role_metadata_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/",
+                                "--filled_posts_estimates_source", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=${ind_cqc_estimated_filled_posts}/",
+                                "--run_log_destination", "${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/",
+                                "--commit_sha", "${commit_sha}"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "Next": "Validate Job Role Archive"
+                    },
+                    "Validate Job Role Archive": {
+                      "Type": "Parallel",
+                      "Branches": [
+                        {
+                          "StartAt": "Validate Job Role Estimates Archive",
+                          "States": {
+                            "Validate Job Role Estimates Archive": {
+                              "Type": "Task",
+                              "Resource": "arn:aws:states:::ecs:runTask.sync",
+                              "Parameters": {
+                                "Cluster": "${polars_cluster_arn}",
+                                "TaskDefinition": "${independent_cqc_task_arn}",
+                                "LaunchType": "FARGATE",
+                                "NetworkConfiguration": {
+                                  "AwsvpcConfiguration": {
+                                    "Subnets": ${public_subnet_ids},
+                                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                                    "AssignPublicIp": "ENABLED"
+                                  }
+                                },
+                                "Overrides": {
+                                  "ContainerOverrides": [
+                                    {
+                                      "Name": "_03_independent_cqc-container",
+                                      "Command": [
+                                        "validate_archive_job_role_estimates.py",
+                                        "--bucket_name", "${dataset_bucket_name}",
+                                        "--dataset", "estimates",
+                                        "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/",
+                                        "--compare_path", "domain=03_ind_cqc/dataset=${ind_cqc_job_role_estimates}/",
+                                        "--other_output_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/",
+                                        "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_validation/"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              },
+                              "End": true
+                            }
+                          }
+                        },
+                        {
+                          "StartAt": "Validate Job Role Metadata Archive",
+                          "States": {
+                            "Validate Job Role Metadata Archive": {
+                              "Type": "Task",
+                              "Resource": "arn:aws:states:::ecs:runTask.sync",
+                              "Parameters": {
+                                "Cluster": "${polars_cluster_arn}",
+                                "TaskDefinition": "${independent_cqc_task_arn}",
+                                "LaunchType": "FARGATE",
+                                "NetworkConfiguration": {
+                                  "AwsvpcConfiguration": {
+                                    "Subnets": ${public_subnet_ids},
+                                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                                    "AssignPublicIp": "ENABLED"
+                                  }
+                                },
+                                "Overrides": {
+                                  "ContainerOverrides": [
+                                    {
+                                      "Name": "_03_independent_cqc-container",
+                                      "Command": [
+                                        "validate_archive_job_role_estimates.py",
+                                        "--bucket_name", "${dataset_bucket_name}",
+                                        "--dataset", "metadata",
+                                        "--source_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/",
+                                        "--compare_path", "domain=03_ind_cqc/dataset=${ind_cqc_job_role_metadata}/",
+                                        "--other_output_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/",
+                                        "--reports_path", "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata_validation/"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              },
+                              "End": true
+                            }
+                          }
+                        }
+                      ],
                       "End": true
                     }
                   }

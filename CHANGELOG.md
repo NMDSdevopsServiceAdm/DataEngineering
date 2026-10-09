@@ -49,6 +49,7 @@ All notable changes to this project will be documented in this file.
 - Changed the job group labels (`JobGroupLabels`) from snake_case to human-readable values, e.g. "direct_care" to "Direct care", so `main_job_group_labels` data values change on every run.
 - Added the Excel packages `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image, and extended the Docker pin test to cover every `requirements-extra.txt`.
 - Added a `trello-cards` Claude Code skill that drafts paste-ready Trello cards from a plan or a one-line idea.
+- Added the job role estimates archive and its two validations to the Independent CQC filled posts estimates step function, after the job role estimates validation.
 
 
 ### Changed
