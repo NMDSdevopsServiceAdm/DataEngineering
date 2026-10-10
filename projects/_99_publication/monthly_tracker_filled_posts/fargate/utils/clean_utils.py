@@ -197,6 +197,98 @@ def format_large_number(column_name: str, column_alias: str) -> pl.Expr:
     )
 
 
+def _round_half_away_from_zero(value: pl.Expr, nearest: float) -> pl.Expr:
+    """
+    Rounds value to the nearest multiple of nearest, rounding an exact half
+    away from zero - matching Excel's ROUND, unlike polars' own `.round()`
+    which rounds half to even. Needed for exact parity with a manually
+    ROUND()-ed reference, where a half-to-even value would silently land in
+    the wrong band/decimal on a tie.
+
+    Normalises an exact-zero result to positive zero: the away-from-zero
+    arithmetic can otherwise produce -0.0 for a negative input that rounds
+    to zero, which would display as a stray minus sign.
+
+    Args:
+        value (pl.Expr): the numeric expression to round.
+        nearest (float): the multiple to round to.
+
+    Returns:
+        pl.Expr: float expression rounded to the nearest multiple.
+    """
+    scaled = value / nearest
+    rounded = (scaled.abs() + 0.5).floor() * scaled.sign() * nearest
+    return pl.when(rounded == 0).then(0.0).otherwise(rounded)
+
+
+def round_to_publication_bands(column_name: str, column_alias: str) -> pl.Expr:
+    """
+    Builds a polars expression applying the publication's controlled
+    rounding to a non-negative figure (e.g. a summed filled posts total),
+    for parity with the manually-published reference's own banded rounding.
+
+    Rounds to the nearest: 0 below 10; 10 from 10-14; 25 from 15-499; 50
+    from 500-999; 100 from 1,000-9,999; 500 from 10,000-24,999; 1,000 from
+    25,000-249,999; 5,000 from 250,000-1,499,999; 10,000 from 1,500,000
+    upwards. Assumes a non-negative input, since every value this is
+    applied to (a sum of filled posts or locations) is always >= 0.
+
+    Args:
+        column_name (str): the numeric column to round.
+        column_alias (str): name to alias the resulting column to.
+
+    Returns:
+        pl.Expr: float expression with the banded-rounded value.
+    """
+    value = pl.col(column_name)
+    return (
+        pl.when(value < 10)
+        .then(0.0)
+        .when(value < 15)
+        .then(_round_half_away_from_zero(value, 10))
+        .when(value < 500)
+        .then(_round_half_away_from_zero(value, 25))
+        .when(value < 1_000)
+        .then(_round_half_away_from_zero(value, 50))
+        .when(value < 10_000)
+        .then(_round_half_away_from_zero(value, 100))
+        .when(value < 25_000)
+        .then(_round_half_away_from_zero(value, 500))
+        .when(value < 250_000)
+        .then(_round_half_away_from_zero(value, 1_000))
+        .when(value < 1_500_000)
+        .then(_round_half_away_from_zero(value, 5_000))
+        .otherwise(_round_half_away_from_zero(value, 10_000))
+        .alias(column_alias)
+    )
+
+
+def format_percentage(column_name: str, column_alias: str) -> pl.Expr:
+    """
+    Builds a polars expression formatting a percentage-change fraction (e.g.
+    0.032 = +3.2%) to a 1 decimal place display string (e.g. "3.2%",
+    "-0.8%"), for parity with the manually-published reference's own 1dp
+    percentages. Null stays null, rather than becoming the string "null%" -
+    the annual/monthly percentage change columns this is applied to are
+    deliberately null on every row outside their own series.
+
+    Args:
+        column_name (str): the fractional percentage column to format.
+        column_alias (str): name to alias the resulting column to.
+
+    Returns:
+        pl.Expr: string expression with the formatted percentage, or null.
+    """
+    value = pl.col(column_name)
+    rounded_percentage = _round_half_away_from_zero(value * 100, 0.1).round(1)
+    return (
+        pl.when(value.is_null())
+        .then(None)
+        .otherwise(rounded_percentage.cast(pl.Utf8) + "%")
+        .alias(column_alias)
+    )
+
+
 def add_dispersion_filter(
     lazy_df: pl.LazyFrame,
     column_names: list[str],
@@ -869,8 +961,13 @@ def build_t0_estimates_download_table(
 
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with a
-            period_label display column alongside the raw period date,
-            sorted by period then region then main_service.
+            period_label display column alongside the raw period date, and
+            an estimated_filled_posts_formatted column holding the
+            publication's banded-rounded figure (see
+            round_to_publication_bands) alongside the raw value - cqc_locations
+            is not rounded, since it already matches the published figures
+            exactly as a plain count. Sorted by period then region then
+            main_service.
     """
     return (
         _filter_to_all_job_roles_rollup(publication_summary_lf)
@@ -884,6 +981,9 @@ def build_t0_estimates_download_table(
             .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
             .alias(Pub.main_service),
             pl.col(Pub.publication_filled_posts).alias(Pub.estimated_filled_posts),
+            round_to_publication_bands(
+                Pub.publication_filled_posts, Pub.estimated_filled_posts_formatted
+            ),
             pl.col(Pub.publication_locationid_count).alias(Pub.cqc_locations),
         )
         .sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
@@ -915,8 +1015,10 @@ def build_t1_filled_posts_perc_change_download_table(
 
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with a
-            period_label display column alongside the raw period date,
-            sorted by period then region then main_service.
+            period_label display column alongside the raw period date, and
+            a 1dp formatted display string (see format_percentage)
+            alongside each raw percentage change value. Sorted by period
+            then region then main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
@@ -933,7 +1035,13 @@ def build_t1_filled_posts_perc_change_download_table(
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
         pl.col(Pub.annual_percentage_change),
+        format_percentage(
+            Pub.annual_percentage_change, Pub.annual_percentage_change_formatted
+        ),
         pl.col(Pub.monthly_percentage_change),
+        format_percentage(
+            Pub.monthly_percentage_change, Pub.monthly_percentage_change_formatted
+        ),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
 
 
@@ -963,8 +1071,10 @@ def build_t2_location_count_perc_change_download_table(
 
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with a
-            period_label display column alongside the raw period date,
-            sorted by period then region then main_service.
+            period_label display column alongside the raw period date, and
+            a 1dp formatted display string (see format_percentage)
+            alongside each raw percentage change value. Sorted by period
+            then region then main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
@@ -981,5 +1091,11 @@ def build_t2_location_count_perc_change_download_table(
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
         pl.col(Pub.annual_percentage_change),
+        format_percentage(
+            Pub.annual_percentage_change, Pub.annual_percentage_change_formatted
+        ),
         pl.col(Pub.monthly_percentage_change),
+        format_percentage(
+            Pub.monthly_percentage_change, Pub.monthly_percentage_change_formatted
+        ),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
