@@ -1,5 +1,3 @@
-import polars as pl
-
 from polars_utils import utils
 from projects._03_independent_cqc._01_filled_posts._04_model.registry.model_registry import (
     model_registry,
@@ -29,7 +27,7 @@ def main(bucket_name: str, model_name: str) -> None:
     The steps in this function are:
         1. Create paths for model specific features dataset
         2. Validate model and model definitions exist, then assign them to variables
-        3. Load the features dataset
+        3. Load the training rows of the features dataset
         4. Split the dataset into train and test sets
         5. Convert the train and test sets to NumPy arrays
         6. Train the model
@@ -75,10 +73,7 @@ def main(bucket_name: str, model_name: str) -> None:
 
     df = (
         utils.scan_parquet(features_source)
-        .filter(
-            pl.col(dependent_col).is_not_null()
-            & (pl.col(IndCQC.care_home_status_count) == 1)
-        )
+        .filter(tUtils.is_training_row(dependent_col))
         .collect()
     )
 
