@@ -10,6 +10,9 @@
 - Amazon SageMaker pricing is based on pay-as-you-go costs for resources, metadata storage, and API requests
 - Always stop the notebook after use
 
+## Notebook templates
+Templates for common ad-hoc tasks (compare outputs, compare before/after a filter, score rolling-average durations) are in `.claude/skills/sagemaker/templates/`; see `.claude/skills/sagemaker/SKILL.md`. Upload `sagemaker_setup.ipynb` once, then run it at the start of each piece of work: it clones or updates the repo on the instance and copies the latest templates to `~/SageMaker/templates/`.
+
 
 # Jupyter Notebooks on Amazon Web Services Elastic MapReduce (EMR)
 

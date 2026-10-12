@@ -38,6 +38,7 @@ All notable changes to this project will be documented in this file.
 - Added a `check-main-tip` job at the start of the prod plan, approval, apply and dependency deploy group that fails a main pipeline whose commit is no longer the tip of `main`, so an older pipeline reaching the group after a newer one cannot apply its older plan or sync older code.
 - Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock, with a gate that fails a main pipeline whose prod deploy was skipped or cancelled instead of reporting it as success.
 - Added published label classes and column names for the publication outputs, and used them in the publication clean job.
+- Added a `sagemaker` skill with Jupyter notebook templates for comparing two outputs, comparing data before and after a filter, and scoring rolling-average durations, which also show how to structure ad-hoc notebooks for the SageMaker instance, and a setup notebook that clones or updates the repo on the instance and copies the latest templates.
 
 
 ### Changed
