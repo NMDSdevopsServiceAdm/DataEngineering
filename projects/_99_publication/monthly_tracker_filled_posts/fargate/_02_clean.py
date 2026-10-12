@@ -48,7 +48,11 @@ def main(
         pl.coalesce(
             IndCQC.ct_care_home_total_employed_imputed,
             IndCQC.ct_non_res_care_workers_employed_imputed,
-        ).alias(Pub.ct_total_employed_imputed)
+        ).alias(Pub.ct_total_employed_imputed),
+        pl.col(IndCQC.estimate_filled_posts_by_job_role)
+        .sum()
+        .over(IndCQC.location_id, IndCQC.cqc_location_import_date)
+        .alias(Pub.location_estimate_filled_posts),
     )
 
     # 1 July 2021 is the earliest date this CT data exists, so long_term_from_date
@@ -69,17 +73,17 @@ def main(
             short_term_from_date, Pub.consistent_service_short_term
         ),
         clean_utils.has_continuous_data_since_date(
-            Pub.ct_total_employed_imputed,
+            [Pub.ct_total_employed_imputed, Pub.location_estimate_filled_posts],
             long_term_from_date,
             Pub.ct_has_data_long_term,
         ),
         clean_utils.has_continuous_data_since_date(
-            Pub.ct_total_employed_imputed,
+            [Pub.ct_total_employed_imputed, Pub.location_estimate_filled_posts],
             medium_term_from_date,
             Pub.ct_has_data_medium_term,
         ),
         clean_utils.has_continuous_data_since_date(
-            Pub.ct_total_employed_imputed,
+            [Pub.ct_total_employed_imputed, Pub.location_estimate_filled_posts],
             short_term_from_date,
             Pub.ct_has_data_short_term,
         ),

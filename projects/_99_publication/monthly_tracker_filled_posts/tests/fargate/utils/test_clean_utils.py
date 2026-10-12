@@ -63,7 +63,7 @@ class TestHasContinuousDataSinceDate:
 
         returned_lf = test_lf.with_columns(
             job.has_continuous_data_since_date(
-                case.column_name, case.from_date, case.column_alias
+                case.column_names, case.from_date, case.column_alias
             )
         )
 

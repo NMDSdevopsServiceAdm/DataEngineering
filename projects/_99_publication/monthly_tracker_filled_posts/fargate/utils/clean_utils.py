@@ -15,6 +15,7 @@ from utils.column_values.categorical_column_values import (
 # the national average swing than this many standard deviations.
 _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
+_DISPERSION_WEIGHT_COLUMN_SUFFIX: str = "_dispersion_weight"
 
 _DOWNLOAD_TABLE_GROUP_COLUMNS: list[str] = [
     IndCQC.current_region,
@@ -126,22 +127,21 @@ def reduced_data_filter_expr(
 
 
 def has_continuous_data_since_date(
-    column_name: str, from_date: date, column_alias: str
+    column_names: list[str], from_date: date, column_alias: str
 ) -> pl.Expr:
     """
-    Builds a polars expression for flagging locations with data in
-    column_name in all periods from from_date to latest import.
+    Builds a polars expression for flagging locations with positive values in
+    every column in column_names on every import date from from_date to the
+    latest import date.
 
-    True for a location when column_name is not null at every surviving
-    sample date from from_date to the latest import date present in the
-    data. A location missing a row entirely for one of those dates, or with
-    a null value at one, is False — as is every location when there are no
-    import dates on or after from_date at all. Counts distinct dates rather
-    than rows, since a location can have multiple rows per import date (one
-    per job role) with the same repeated column_name value.
+    A location missing a row for one of those dates, or with a null, zero or
+    negative value in any of the columns at one, is False - as is every
+    location when there are no import dates on or after from_date. Counts
+    distinct dates rather than rows, since a location has one row per job role
+    per import date.
 
     Args:
-        column_name (str): the column to check for nulls.
+        column_names (list[str]): the columns that must all be positive.
         from_date (date): the earliest import date to check from.
         column_alias (str): name to alias the resulting column to.
 
@@ -150,17 +150,18 @@ def has_continuous_data_since_date(
             all rows of a location.
     """
     in_window = pl.col(IndCQC.cqc_location_import_date) >= from_date
+    all_positive = pl.all_horizontal([pl.col(name) > 0 for name in column_names])
     dates_in_window = (
         pl.col(IndCQC.cqc_location_import_date).filter(in_window).n_unique()
     )
-    non_null_dates_in_window = (
+    positive_dates_in_window = (
         pl.col(IndCQC.cqc_location_import_date)
-        .filter(in_window & pl.col(column_name).is_not_null())
+        .filter(in_window & all_positive.fill_null(False))
         .n_unique()
         .over(IndCQC.location_id)
     )
     return (
-        (dates_in_window > 0) & (non_null_dates_in_window == dates_in_window)
+        (dates_in_window > 0) & (positive_dates_in_window == dates_in_window)
     ).alias(column_alias)
 
 
@@ -333,10 +334,11 @@ def add_dispersion_filter(
 
     For each column in column_names a location's dispersion is
     (max - min) / mean of its values from from_date onwards, and the location
-    passes when that dispersion sits within two standard deviations of the mean
-    dispersion across all locations. The per-column results are coalesced, so a
-    location is scored on whichever capacity tracker column it actually reports
-    on, and a location with no data in the window at all is False.
+    passes when that dispersion is above min(0, mean - 2 standard deviations)
+    and below mean + 2 standard deviations of the dispersion across locations.
+    The per-column results are coalesced, so a location is scored on whichever
+    capacity tracker column it actually reports on, and a location with no data
+    in the window at all is False.
 
     Each column is scored against its own population of locations rather than
     against a coalesced column, so a care home's volatility is only ever
@@ -346,16 +348,13 @@ def add_dispersion_filter(
     Dispersion is measured over distinct import dates, not rows: a location has
     one row per job role per import date and the capacity tracker columns are
     location-level, so the same value repeats across a date's job role rows.
-    Averaging over rows would weight an import date by its job role count, which
-    varies over time as job roles are added and reallocated. Max and min are
-    unaffected by the repetition, but the mean is, so the (date, value) pairs
-    are deduplicated before aggregating. For the same reason the national mean
-    and standard deviation are taken over one dispersion value per location
-    rather than over every row.
+    The national mean and standard deviation weight each location by its number
+    of import dates with data, and include locations with a single import date
+    (dispersion 0).
 
-    Dispersion is written to a temporary column per source column rather than
-    inlined as an expression. The boundary check references the dispersion five
-    times, and as a single expression Polars re-evaluates the window each time -
+    Dispersion and its weight are written to temporary columns rather than
+    inlined as expressions. The boundary check references them several times,
+    and as a single expression Polars re-evaluates the window each time -
     measured at 4.5x slower than materialising it once on a 2.4m row frame.
 
     Args:
@@ -370,25 +369,56 @@ def add_dispersion_filter(
             of a location.
     """
     dispersion_columns = [name + _DISPERSION_COLUMN_SUFFIX for name in column_names]
+    weight_columns = [name + _DISPERSION_WEIGHT_COLUMN_SUFFIX for name in column_names]
 
     lazy_df = lazy_df.with_columns(
         [
             _dispersion_since_date(column_name, from_date).alias(dispersion_column)
             for column_name, dispersion_column in zip(column_names, dispersion_columns)
         ]
+        + [
+            _dates_with_data_since_date(column_name, from_date).alias(weight_column)
+            for column_name, weight_column in zip(column_names, weight_columns)
+        ]
     )
     lazy_df = lazy_df.with_columns(
         pl.coalesce(
             [
-                _within_dispersion_boundaries(dispersion_column)
-                for dispersion_column in dispersion_columns
+                _within_dispersion_boundaries(dispersion_column, weight_column)
+                for dispersion_column, weight_column in zip(
+                    dispersion_columns, weight_columns
+                )
             ]
         )
         .fill_null(False)
         .alias(column_alias)
     )
 
-    return lazy_df.drop(dispersion_columns)
+    return lazy_df.drop(dispersion_columns + weight_columns)
+
+
+def _dates_with_data_since_date(column_name: str, from_date: date) -> pl.Expr:
+    """
+    Builds a polars expression for a location's count of import dates with a
+    value in column_name on or after from_date.
+
+    Args:
+        column_name (str): the column to count values in.
+        from_date (date): the earliest import date to count from.
+
+    Returns:
+        pl.Expr: integer expression, constant across all rows of a location.
+    """
+    in_window_with_data = (
+        pl.col(IndCQC.cqc_location_import_date) >= from_date
+    ) & pl.col(column_name).is_not_null()
+
+    return (
+        pl.col(IndCQC.cqc_location_import_date)
+        .filter(in_window_with_data)
+        .n_unique()
+        .over(IndCQC.location_id)
+    )
 
 
 def _dispersion_since_date(column_name: str, from_date: date) -> pl.Expr:
@@ -398,11 +428,8 @@ def _dispersion_since_date(column_name: str, from_date: date) -> pl.Expr:
     Deduplicates to one value per import date before aggregating, since a
     location has one row per job role per import date repeating the same
     location-level capacity tracker value. Null where the location has no
-    values in the window, where every value is zero, or where the location
-    has fewer than two distinct import dates with data in the window - a
-    single observation always has a dispersion of exactly zero, which would
-    silently collapse the national mean and standard deviation used as the
-    boundary rather than being excluded like any other undefined case.
+    values in the window or the mean is zero. A single import date gives a
+    dispersion of 0.
 
     Args:
         column_name (str): the column to measure dispersion on.
@@ -421,51 +448,62 @@ def _dispersion_since_date(column_name: str, from_date: date) -> pl.Expr:
         .unique()
         .struct.field(column_name)
     )
-    dates_with_data = (
-        pl.col(IndCQC.cqc_location_import_date)
-        .filter(in_window_with_data)
-        .n_unique()
-        .over(IndCQC.location_id)
-    )
     dispersion = (
         (values_per_import_date.max() - values_per_import_date.min())
         / values_per_import_date.mean()
     ).over(IndCQC.location_id)
 
-    return pl.when(dates_with_data >= 2).then(dispersion).otherwise(None).fill_nan(None)
+    return dispersion.fill_nan(None)
 
 
-def _within_dispersion_boundaries(dispersion_column: str) -> pl.Expr:
+def _within_dispersion_boundaries(
+    dispersion_column: str, weight_column: str
+) -> pl.Expr:
     """
     Builds a polars expression for whether a dispersion is within boundaries.
 
-    Takes the national mean and standard deviation over one dispersion value per
-    location, not per row, since dispersion is already constant across a
-    location's rows and row counts vary by location. Locations with a null
+    Takes the national mean and sample standard deviation over one dispersion
+    value per location, each weighted by weight_column. Locations with a null
     dispersion are excluded from both, and stay null in the result so a caller
-    can fall back to another column. The per-location values are cast to
-    float64 for this step: at float32 precision, accumulated rounding error
-    across the tens of thousands of locations behind this national mean and
-    standard deviation could flip a location sitting close to the boundary.
+    can fall back to another column. The values are cast to float64 for this
+    step: at float32 precision, accumulated rounding error across the tens of
+    thousands of locations behind the mean and standard deviation could flip a
+    location sitting close to a boundary.
 
     Args:
         dispersion_column (str): column holding a per-location dispersion.
+        weight_column (str): column holding a per-location weight.
 
     Returns:
         pl.Expr: boolean expression, null where dispersion_column is null.
     """
-    dispersion_per_location = (
+    one_row_per_location_with_dispersion = (
+        pl.col(IndCQC.location_id).is_first_distinct()
+        & pl.col(dispersion_column).is_not_null()
+    )
+    dispersion = (
         pl.col(dispersion_column)
-        .filter(pl.col(IndCQC.location_id).is_first_distinct())
+        .filter(one_row_per_location_with_dispersion)
         .cast(pl.Float64)
     )
-    mean_dispersion = dispersion_per_location.mean()
-    std_dispersion = dispersion_per_location.std()
+    weight = (
+        pl.col(weight_column)
+        .filter(one_row_per_location_with_dispersion)
+        .cast(pl.Float64)
+    )
+    total_weight = weight.sum()
+    mean_dispersion = (dispersion * weight).sum() / total_weight
+    std_dispersion = (
+        ((dispersion - mean_dispersion) ** 2 * weight).sum() / (total_weight - 1)
+    ).sqrt()
 
-    return pl.col(dispersion_column).is_between(
-        mean_dispersion - _DISPERSION_BOUNDARY_STD_DEVS * std_dispersion,
-        mean_dispersion + _DISPERSION_BOUNDARY_STD_DEVS * std_dispersion,
-        closed="both",
+    lower_boundary = pl.min_horizontal(
+        pl.lit(0.0), mean_dispersion - _DISPERSION_BOUNDARY_STD_DEVS * std_dispersion
+    )
+    upper_boundary = mean_dispersion + _DISPERSION_BOUNDARY_STD_DEVS * std_dispersion
+
+    return (pl.col(dispersion_column) > lower_boundary) & (
+        pl.col(dispersion_column) < upper_boundary
     )
 
 
