@@ -6,7 +6,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).parents[2]
 SKILL_DIR = REPO_ROOT / ".claude" / "skills" / "sagemaker"
-TEMPLATES_DIR = SKILL_DIR / "templates"
+TEMPLATES_DIR = REPO_ROOT / "notebooks" / "sagemaker"
 
 EXPECTED_TEMPLATES = [
     "compare_outputs",
@@ -120,7 +120,7 @@ class TestNotebookTemplates:
 
 
 SKILL_MD = SKILL_DIR / "SKILL.md"
-TEMPLATE_LINK = re.compile(r"templates/([\w-]+)\.ipynb")
+TEMPLATE_LINK = re.compile(r"notebooks/sagemaker/([\w-]+)\.ipynb")
 
 
 def read_frontmatter(path: Path) -> dict[str, str]:

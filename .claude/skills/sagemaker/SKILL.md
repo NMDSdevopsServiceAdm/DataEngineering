@@ -11,16 +11,24 @@ Claude can't reach AWS or the instance. Claude writes the `.ipynb`; the user get
 
 ## Templates
 
-- `templates/sagemaker_setup.ipynb` — the bootstrap notebook: clones the repo on the instance (first run) or updates it (later runs), then copies the latest templates into `~/SageMaker/templates/`. Edit: `BRANCH` (and `REPO_URL`, `CLONE_DIR`, `TEMPLATES_DIR` if they change).
-- `templates/compare_outputs.ipynb` — diff a source dataset against a compare dataset (e.g. old PySpark output vs new Polars output): schema, row counts, row-level and per-column differences on key columns, written to CSV. Edit: `SOURCE_PATH`, `COMPARE_PATH`, `OUTPUT_PATH`, `KEY_COLUMNS`, `SLICE_COLUMN`, `COMPARE_COLUMNS`.
-- `templates/compare_before_after_filter.ipynb` — compare a dataset before and after a filter (matched on keys), split by whether each row is in the filtered values: rows nulled, trendline over time, value distribution (summary stats + histogram), effect on the final estimates column. Edit: `BEFORE_PATH`, `AFTER_PATH`, `KEY_COLUMNS`, `DATE_COLUMN`, `FILTER_COLUMN`, `FILTERED_VALUES`, `VALUE_COLUMN`, `ESTIMATE_COLUMN`.
-- `templates/interpolation_durations.ipynb` — score a rolling-average duration on imputed data: jumpiness and accuracy against known values per split and status. Edit: `IMPUTED_DATA_PATH`, `ROLLING_AVERAGE_PERIOD`, `SCORE_FROM_DATE`, the column constants.
+They live in `notebooks/sagemaker/` — outside `.claude/`, which JupyterLab hides, so they are visible in the cloned repo on the instance.
+
+- `notebooks/sagemaker/sagemaker_setup.ipynb` — the bootstrap notebook: clones the repo on the instance (first run) or updates it (later runs), then copies the latest templates into `~/SageMaker/templates/`. Edit: `BRANCH` (and `REPO_URL`, `CLONE_DIR`, `TEMPLATES_DIR` if they change).
+- `notebooks/sagemaker/compare_outputs.ipynb` — diff a source dataset against a compare dataset (e.g. old PySpark output vs new Polars output): schema, row counts, row-level and per-column differences on key columns, written to CSV. Edit: `SOURCE_PATH`, `COMPARE_PATH`, `OUTPUT_PATH`, `KEY_COLUMNS`, `SLICE_COLUMN`, `COMPARE_COLUMNS`.
+- `notebooks/sagemaker/compare_before_after_filter.ipynb` — compare a dataset before and after a filter (matched on keys), split by whether each row is in the filtered values: rows nulled, trendline over time, value distribution (summary stats + histogram), effect on the final estimates column. Edit: `BEFORE_PATH`, `AFTER_PATH`, `KEY_COLUMNS`, `DATE_COLUMN`, `FILTER_COLUMN`, `FILTERED_VALUES`, `VALUE_COLUMN`, `ESTIMATE_COLUMN`.
+- `notebooks/sagemaker/interpolation_durations.ipynb` — score a rolling-average duration on imputed data: jumpiness and accuracy against known values per split and status. Edit: `IMPUTED_DATA_PATH`, `ROLLING_AVERAGE_PERIOD`, `SCORE_FROM_DATE`, the column constants.
 
 To use one: open it from `~/SageMaker/templates/`, **Save As** into your own folder, edit **only the parameters cell**. Never work inside `~/SageMaker/templates/` or the clone — both are overwritten on every run — and don't edit a committed template for a one-off run.
 
 ## Getting the templates onto the instance
 
-Start the instance (`NOTEBOOKS.md`) and open JupyterLab. Only `sagemaker_setup.ipynb` is ever uploaded by hand, once (**Upload files**; or create a notebook and paste its cells). Then:
+Start the instance (`NOTEBOOKS.md`) and open JupyterLab. `sagemaker_setup.ipynb` can't fetch itself, so the **first time only** put it on the instance by hand. In JupyterLab, **File → New → Terminal**, then run (use `--branch <ticket-branch>` instead of `main` for a branch that hasn't merged yet):
+
+```bash
+cd ~/SageMaker && git clone --depth 1 --branch main https://github.com/NMDSdevopsServiceAdm/DataEngineering.git && mkdir -p templates && cp DataEngineering/notebooks/sagemaker/*.ipynb templates/
+```
+
+All templates, including `sagemaker_setup.ipynb`, are now in `~/SageMaker/templates/`. (No git or GitHub access? Download `sagemaker_setup.ipynb` from GitHub and use **Upload files** into `~/SageMaker`.) Then:
 
 1. Run `sagemaker_setup.ipynb` top to bottom at the start of each piece of work. It needs `git` and GitHub access on the instance (already set up). The first run clones the repo; later runs fetch and hard-reset to `BRANCH`, so the clone always matches GitHub and local edits in it are discarded.
 2. Open the template you need from `~/SageMaker/templates/` and Save As into your own folder.
@@ -63,7 +71,7 @@ No notebook editor is available, so write nbformat-4 JSON (a short throwaway scr
 ## Adding or changing a template
 
 1. Add its name to `EXPECTED_TEMPLATES` in `tests/sagemaker/test_notebook_templates.py` — the tests fail until it exists and meets the rules above.
-2. Write it in `templates/`, then list it under **Templates** here (`TestSkillMd` fails until the list and the folder match).
+2. Write it in `notebooks/sagemaker/`, then list it under **Templates** here (`TestSkillMd` fails until the list and the folder match).
 
 ```bash
 uv run pytest tests/sagemaker -v

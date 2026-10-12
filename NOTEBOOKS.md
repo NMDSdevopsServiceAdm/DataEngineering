@@ -11,7 +11,13 @@
 - Always stop the notebook after use
 
 ## Notebook templates
-Templates for common ad-hoc tasks (compare outputs, compare before/after a filter, score rolling-average durations) are in `.claude/skills/sagemaker/templates/`; see `.claude/skills/sagemaker/SKILL.md`. Upload `sagemaker_setup.ipynb` once, then run it at the start of each piece of work: it clones or updates the repo on the instance and copies the latest templates to `~/SageMaker/templates/`.
+Templates for common ad-hoc tasks (compare outputs, compare before/after a filter, score rolling-average durations) are in `notebooks/sagemaker/`; see `.claude/skills/sagemaker/SKILL.md`. `sagemaker_setup.ipynb` clones or updates the repo on the instance and copies the latest templates to `~/SageMaker/templates/`; run it at the start of each piece of work.
+
+First time only, put the templates on the instance from a JupyterLab terminal (File → New → Terminal):
+```bash
+cd ~/SageMaker && git clone --depth 1 --branch main https://github.com/NMDSdevopsServiceAdm/DataEngineering.git && mkdir -p templates && cp DataEngineering/notebooks/sagemaker/*.ipynb templates/
+```
+Use `--branch <ticket-branch>` for a branch that hasn't merged yet.
 
 
 # Jupyter Notebooks on Amazon Web Services Elastic MapReduce (EMR)
