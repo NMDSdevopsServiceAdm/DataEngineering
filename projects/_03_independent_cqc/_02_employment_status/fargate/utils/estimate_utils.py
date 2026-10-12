@@ -47,13 +47,13 @@ def add_estimated_employment_status_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Adds estimated employment status percentages, their source, counts and estimated employees.
 
-    Each estimated percentage takes the first populated of the cleaned, short-term imputed and
+    Each estimated percentage takes the first populated of the cleaned, full imputed and
     rolling average percentages, and the source column records which was used. Each estimated
     count is the estimated percentage multiplied by the filled-post metric. Estimated employees is
     the permanent plus temporary counts. Rows with no populated percentage, or no metric, are null.
 
     Args:
-        lf (pl.LazyFrame): dataset with the cleaned, imputed and rolling average percentage
+        lf (pl.LazyFrame): dataset with the cleaned, full imputed and rolling average percentage
             columns and the job role filled-post metric.
 
     Returns:
