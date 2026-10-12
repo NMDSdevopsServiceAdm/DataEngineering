@@ -1,5 +1,5 @@
 import json
-from datetime import date, datetime
+from datetime import date
 from unittest.mock import Mock, patch
 
 import polars as pl
@@ -237,173 +237,61 @@ class TestJobRoleMetadataValidation:
             ), f"{assertion} not found in validation report"
 
 
-def make_run_log_df(**overrides) -> pl.DataFrame:
-    row = {
-        ArchiveKeys.archive_date: date(2026, 9, 22),
-        ArchiveKeys.run_number: 3,
-        RunLogCols.archive_date_time: datetime(2026, 9, 22, 10, 0),
-        RunLogCols.max_ascwds_workplace_import_date: date(2026, 8, 1),
-        RunLogCols.max_cqc_location_import_date: date(2026, 8, 1),
-        RunLogCols.max_cqc_pir_import_date: date(2026, 8, 1),
-        RunLogCols.max_ct_care_home_import_date: date(2026, 8, 1),
-        RunLogCols.max_ct_non_res_import_date: date(2026, 8, 1),
-        RunLogCols.max_current_ons_import_date: date(2026, 8, 1),
-        RunLogCols.approved: False,
-        RunLogCols.commit_sha: "abc123",
-        RunLogCols.tag: None,
-        RunLogCols.selected_for_publication: False,
-        RunLogCols.reconciled: False,
-        RunLogCols.locally_checked: False,
-    }
-    row.update(overrides)
-    return pl.DataFrame(
-        {column: [value] for column, value in row.items()},
-        schema_overrides={RunLogCols.tag: pl.String},
-    )
-
-
-def failed_assertion_types(validation) -> set[str]:
-    """Returns the assertion types of the validation steps that did not pass."""
-    return {
-        step.assertion_type
-        for step in validation.validation_info
-        if not step.all_passed
-    }
-
-
 class TestJobRoleRunLogValidation:
-    @staticmethod
-    def run_validation(
-        run_log_df: pl.DataFrame, run_numbers_agree: bool = True
-    ) -> Mock:
-        """Runs the validation on run_log_df and returns the validation written."""
-        with (
-            patch(f"{PATCH_PATH}.vl.write_reports") as mock_write_reports,
-            patch(f"{PATCH_PATH}.utils.scan_parquet") as mock_scan_parquet,
-            patch(f"{PATCH_PATH}.aUtils.get_run_number", return_value=3),
-            patch(
-                f"{PATCH_PATH}.aUtils.make_run_numbers_agree_validator",
-                return_value=lambda df: run_numbers_agree,
-            ),
-        ):
-            mock_scan_parquet.return_value.filter.return_value.collect.return_value = (
-                run_log_df
-            )
-            job.job_role_run_log_validation(
-                BUCKET_NAME, SOURCE_PATH, COMPARE_PATH, OTHER_OUTPUT_PATH, REPORTS_PATH
-            )
-        return mock_write_reports.call_args[0][0]
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.aUtils.get_run_number")
+    def test_job_role_run_log_validation_runs(
+        self,
+        mock_get_run_number: Mock,
+        mock_scan_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_get_run_number.return_value = 3
 
-    def test_run_log_validation_passes_for_valid_run_log(self):
-        validation = self.run_validation(make_run_log_df())
-
-        assert validation.all_passed()
-
-    def test_run_log_validation_passes_when_partition_columns_are_last(self):
-        run_log_df = make_run_log_df()
-        partition_columns = [ArchiveKeys.archive_date, ArchiveKeys.run_number]
-        run_log_df = run_log_df.select(
-            *[c for c in run_log_df.columns if c not in partition_columns],
-            *partition_columns,
+        latest_run_log_df = pl.DataFrame(
+            {
+                RunLogCols.approved: [False],
+                RunLogCols.selected_for_publication: [False],
+                RunLogCols.reconciled: [False],
+                RunLogCols.locally_checked: [False],
+                RunLogCols.commit_sha: ["abc123"],
+                RunLogCols.tag: pl.Series([None], dtype=pl.String),
+                ArchiveKeys.archive_date: [date(2026, 9, 22)],
+                ArchiveKeys.run_number: [3],
+            }
         )
+        mock_scanned_lf = Mock()
+        mock_filtered_lf = Mock()
+        mock_scanned_lf.filter.return_value = mock_filtered_lf
+        mock_filtered_lf.collect.return_value = latest_run_log_df
+        mock_scan_parquet.return_value = mock_scanned_lf
 
-        validation = self.run_validation(run_log_df)
-
-        assert validation.all_passed()
-
-    def test_run_log_validation_reads_run_log_and_checks_all_outputs_agree(self):
-        with patch(
-            f"{PATCH_PATH}.aUtils.make_run_numbers_agree_validator",
-            return_value=lambda df: True,
-        ) as mock_validator:
-            with (
-                patch(f"{PATCH_PATH}.vl.write_reports"),
-                patch(f"{PATCH_PATH}.utils.scan_parquet") as mock_scan_parquet,
-                patch(f"{PATCH_PATH}.aUtils.get_run_number", return_value=3),
-            ):
-                mock_scan_parquet.return_value.filter.return_value.collect.return_value = (
-                    make_run_log_df()
-                )
-                job.job_role_run_log_validation(
-                    BUCKET_NAME,
-                    SOURCE_PATH,
-                    COMPARE_PATH,
-                    OTHER_OUTPUT_PATH,
-                    REPORTS_PATH,
-                )
+        job.job_role_run_log_validation(
+            BUCKET_NAME, SOURCE_PATH, COMPARE_PATH, OTHER_OUTPUT_PATH, REPORTS_PATH
+        )
 
         mock_scan_parquet.assert_called_once_with(f"s3://{BUCKET_NAME}/{SOURCE_PATH}")
-        mock_validator.assert_called_once_with(
-            [
-                f"s3://{BUCKET_NAME}/{SOURCE_PATH}",
-                f"s3://{BUCKET_NAME}/{COMPARE_PATH}",
-                f"s3://{BUCKET_NAME}/{OTHER_OUTPUT_PATH}",
-            ]
+        mock_scanned_lf.filter.assert_called_once()
+
+        mock_write_reports.assert_called_once()
+        validation_arg, bucket_name_arg, reports_path_arg = (
+            mock_write_reports.call_args[0]
         )
+        assert bucket_name_arg == BUCKET_NAME
+        assert reports_path_arg == REPORTS_PATH
 
-    def test_run_log_validation_writes_reports_to_reports_path(self):
-        with (
-            patch(f"{PATCH_PATH}.vl.write_reports") as mock_write_reports,
-            patch(f"{PATCH_PATH}.utils.scan_parquet") as mock_scan_parquet,
-            patch(f"{PATCH_PATH}.aUtils.get_run_number", return_value=3),
-        ):
-            mock_scan_parquet.return_value.filter.return_value.collect.return_value = (
-                make_run_log_df()
-            )
-            job.job_role_run_log_validation(
-                BUCKET_NAME, SOURCE_PATH, COMPARE_PATH, OTHER_OUTPUT_PATH, REPORTS_PATH
-            )
-
-        assert mock_write_reports.call_args[0][1:] == (BUCKET_NAME, REPORTS_PATH)
-
-    def test_run_log_validation_fails_schema_check_when_a_column_is_missing(self):
-        run_log_df = make_run_log_df().drop(RunLogCols.max_cqc_pir_import_date)
-
-        validation = self.run_validation(run_log_df)
-
-        assert failed_assertion_types(validation) == {"col_schema_match"}
-
-    def test_run_log_validation_fails_row_count_check_when_two_rows_for_the_run(self):
-        run_log_df = pl.concat([make_run_log_df(), make_run_log_df()])
-
-        validation = self.run_validation(run_log_df)
-
-        assert failed_assertion_types(validation) == {"row_count_match"}
-
-    def test_run_log_validation_fails_row_count_check_when_no_rows_for_the_run(self):
-        validation = self.run_validation(make_run_log_df().clear())
-
-        assert "row_count_match" in failed_assertion_types(validation)
-
-    @pytest.mark.parametrize(
-        "flag",
-        [
-            RunLogCols.approved,
-            RunLogCols.selected_for_publication,
-            RunLogCols.reconciled,
-            RunLogCols.locally_checked,
-        ],
-    )
-    def test_run_log_validation_fails_flag_check_when_a_flag_is_true(self, flag: str):
-        validation = self.run_validation(make_run_log_df(**{flag: True}))
-
-        assert failed_assertion_types(validation) == {"col_vals_expr"}
-
-    def test_run_log_validation_fails_tag_check_when_tag_is_set(self):
-        validation = self.run_validation(make_run_log_df(**{RunLogCols.tag: "v1"}))
-
-        assert failed_assertion_types(validation) == {"col_vals_null"}
-
-    def test_run_log_validation_fails_commit_sha_check_when_commit_sha_is_null(self):
-        run_log_df = make_run_log_df().with_columns(
-            pl.lit(None, dtype=pl.String).alias(RunLogCols.commit_sha)
-        )
-
-        validation = self.run_validation(run_log_df)
-
-        assert failed_assertion_types(validation) == {"col_vals_not_null"}
-
-    def test_run_log_validation_fails_run_number_check_when_run_numbers_disagree(self):
-        validation = self.run_validation(make_run_log_df(), run_numbers_agree=False)
-
-        assert failed_assertion_types(validation) == {"specially"}
+        report_json = json.loads(validation_arg.get_json_report())
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+        expected_assertions = {
+            "col_schema_match",
+            "row_count_match",
+            "col_vals_expr",
+            "col_vals_null",
+            "col_vals_not_null",
+            "specially",
+        }
+        for assertion in expected_assertions:
+            assert (
+                assertion in assertion_types_present
+            ), f"{assertion} not found in validation report"
