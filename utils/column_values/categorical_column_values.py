@@ -590,6 +590,15 @@ class EmploymentStatusFilteringRule(ColumnValues):
 
 
 @dataclass
+class EmploymentStatusEstimateSource(ColumnValues):
+    """The percentage columns an employment status estimate can come from"""
+
+    cleaned: str = "cleaned"
+    imputed: str = "imputed"
+    rolling_avg: str = "rolling_avg"
+
+
+@dataclass
 class AscwdsJobRoleRatiosMergedSource(ColumnValues):
     """The possible values of the ASCWDS job role ratios merged source column in the independent CQC estimates pipeline"""
 

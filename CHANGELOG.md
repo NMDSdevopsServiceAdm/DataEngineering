@@ -47,6 +47,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Replaced the employment status magic-number split with estimated percentages (cleaned, then imputed, then rolling average), their source, and estimated counts and employees. Removed the rates CSV input.
 - The CQC PIR and ONS postcode directory ingests now start the Ind CQC filled posts estimates pipeline on success.
 - Changed the job group labels (`JobGroupLabels`) from snake_case to human-readable values, e.g. "direct_care" to "Direct care", so `main_job_group_labels` data values change on every run.
 - Added the Excel packages `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image, and extended the Docker pin test to cover every `requirements-extra.txt`.
