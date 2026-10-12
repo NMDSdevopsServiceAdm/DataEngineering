@@ -96,8 +96,6 @@ def score_out_of_fold(
     Coverage is those rows over all known rows, so rows without a prediction or beds are
     unscored. Imputed-target levels score every row with a target and a prediction.
 
-    The joined rows are collected once because every level reads them.
-
     Args:
         model_name (str): the model being scored
         spec (dict): the model's registry entry
@@ -112,16 +110,52 @@ def score_out_of_fold(
     is_ratio_model = (
         spec[MRKeys.dependent] == IndCQC.imputed_filled_posts_per_bed_ratio_model
     )
-    results = []
 
-    def add(level, scores_df, group_columns=None, fold_column=None):
-        results.append(
-            to_long(scores_df, model_name, level, group_columns, fold_column)
-        )
+    rows_df = _join_predictions_to_locations(oof_df, locations_lf, spec, is_ratio_model)
+    rows_lf = rows_df.lazy().filter(pl.col(PRED).is_not_null())
+    known_lf = rows_lf.filter(pl.col(KNOWN).is_not_null())
+    target_lf = rows_lf.filter(pl.col(TARGET_POSTS).is_not_null())
 
+    return pl.concat(
+        [
+            _score_coverage(model_name, known_lf, locations_lf),
+            _score_headline_totals(model_name, known_lf),
+            _score_period_totals(model_name, known_lf),
+            _score_size_bands(model_name, known_lf),
+            _score_known_rows(model_name, known_lf, is_ratio_model),
+            _score_imputed_target(model_name, target_lf),
+        ]
+    )
+
+
+def _join_predictions_to_locations(
+    oof_df: pl.DataFrame,
+    locations_lf: pl.LazyFrame,
+    spec: dict,
+    is_ratio_model: bool,
+) -> pl.DataFrame:
+    """
+    Join predictions to the columns scoring needs, as one table every level reads.
+
+    Adds filled posts predictions (clipped at 1, plus an unclipped copy), the size band,
+    the financial year and the imputed target in filled posts. Care homes also keep the raw
+    ratio prediction. Non-res size bands come from each location's mean known posts.
+
+    Collected once because every scoring level reads it.
+
+    Args:
+        oof_df (pl.DataFrame): out-of-fold predictions from `cv.predict_out_of_fold`
+        locations_lf (pl.LazyFrame): see `score_out_of_fold`
+        spec (dict): the model's registry entry
+        is_ratio_model (bool): whether the model predicts a per bed ratio (care homes)
+
+    Returns:
+        pl.DataFrame: a row per prediction, with the columns the scoring levels use
+    """
     joined_lf = cv.convert_to_filled_posts(oof_df.lazy(), locations_lf, spec).join(
         locations_lf, on=KEYS, how="left", validate="m:1"
     )
+
     if is_ratio_model:
         joined_lf = joined_lf.join(
             oof_df.lazy().select(*KEYS, pl.col(PRED).alias(RATIO_PRED)),
@@ -152,7 +186,8 @@ def score_out_of_fold(
         ),
         IndCQC.cqc_location_import_date,
     )
-    joined_df = joined_lf.select(
+
+    return joined_lf.select(
         *KEYS,
         FOLD,
         IndCQC.primary_service_type,
@@ -167,63 +202,99 @@ def score_out_of_fold(
         *([RATIO_PRED] if is_ratio_model else []),
     ).collect()
 
-    scored_lf = joined_df.lazy().filter(
-        pl.col(KNOWN).is_not_null() & pl.col(PRED).is_not_null()
-    )
+
+def _score_coverage(
+    model_name: str, known_lf: pl.LazyFrame, locations_lf: pl.LazyFrame
+) -> pl.DataFrame:
+    """Score the share of all known rows that have a prediction (level "coverage")."""
     known_rows = locations_lf.select(pl.col(KNOWN).is_not_null().sum()).collect().item()
-    scored_rows = scored_lf.select(pl.len()).collect().item()
-    add(
-        Labels.coverage,
-        pl.DataFrame(
-            {
-                ModelEvaluation.known_rows_scored: [scored_rows],
-                ModelEvaluation.known_rows: [known_rows],
-                ModelEvaluation.coverage: [scored_rows / known_rows],
-            }
-        ),
+    scored_rows = known_lf.select(pl.len()).collect().item()
+
+    scores_df = pl.DataFrame(
+        {
+            ModelEvaluation.known_rows_scored: [scored_rows],
+            ModelEvaluation.known_rows: [known_rows],
+            ModelEvaluation.coverage: [scored_rows / known_rows],
+        }
     )
 
-    service = IndCQC.primary_service_type
-    date = IndCQC.cqc_location_import_date
-    financial_year = ModelEvaluation.financial_year
-    headline_groups = [service, IndCQC.current_cssr, financial_year]
+    return to_long(scores_df, model_name, Labels.coverage)
 
-    def score_groups(groups_lf, by_columns=None):
-        scores_lf = evaluation.score_group_totals(groups_lf, PRED, KNOWN, by_columns)
-        if by_columns:
-            counts_lf = groups_lf.group_by(by_columns).agg(
-                pl.len().alias(ModelEvaluation.number_of_groups)
-            )
-            return scores_lf.join(counts_lf, on=by_columns).collect()
-        return scores_lf.join(
-            groups_lf.select(pl.len().alias(ModelEvaluation.number_of_groups)),
-            how="cross",
-        ).collect()
 
+def _score_group_totals(
+    groups_lf: pl.LazyFrame, by_columns: list[str] | None = None
+) -> pl.DataFrame:
+    """Score predicted against known group totals, with the number of groups scored."""
+    scores_lf = evaluation.score_group_totals(groups_lf, PRED, KNOWN, by_columns)
+
+    if by_columns:
+        group_counts_lf = groups_lf.group_by(by_columns).agg(
+            pl.len().alias(ModelEvaluation.number_of_groups)
+        )
+        return scores_lf.join(group_counts_lf, on=by_columns).collect()
+
+    return scores_lf.join(
+        groups_lf.select(pl.len().alias(ModelEvaluation.number_of_groups)),
+        how="cross",
+    ).collect()
+
+
+def _score_headline_totals(model_name: str, known_lf: pl.LazyFrame) -> pl.DataFrame:
+    """
+    Score service x CSSR x financial year totals (levels "headline_group_totals" and
+    "headline_by_year"), per fold and pooled across folds.
+
+    Each fold's groups are scored separately. The pooled groups sum predictions from every
+    fold, so are larger than any one fold's groups.
+    """
+    headline_groups = [
+        IndCQC.primary_service_type,
+        IndCQC.current_cssr,
+        ModelEvaluation.financial_year,
+    ]
     by_fold_lf = evaluation.aggregate_totals_by_group(
-        scored_lf, PRED, KNOWN, [FOLD, *headline_groups]
+        known_lf, PRED, KNOWN, [FOLD, *headline_groups]
     )
     pooled_lf = evaluation.aggregate_totals_by_group(
-        scored_lf, PRED, KNOWN, headline_groups
-    )
-    add(
-        Labels.headline_group_totals,
-        score_groups(by_fold_lf, [FOLD]),
-        fold_column=FOLD,
-    )
-    add(Labels.headline_group_totals, score_groups(pooled_lf))
-    add(
-        Labels.headline_by_year,
-        score_groups(pooled_lf, [financial_year]),
-        [financial_year],
+        known_lf, PRED, KNOWN, headline_groups
     )
 
+    return pl.concat(
+        [
+            to_long(
+                _score_group_totals(by_fold_lf, [FOLD]),
+                model_name,
+                Labels.headline_group_totals,
+                fold_column=FOLD,
+            ),
+            to_long(
+                _score_group_totals(pooled_lf), model_name, Labels.headline_group_totals
+            ),
+            to_long(
+                _score_group_totals(pooled_lf, [ModelEvaluation.financial_year]),
+                model_name,
+                Labels.headline_by_year,
+                [ModelEvaluation.financial_year],
+            ),
+        ]
+    )
+
+
+def _score_period_totals(model_name: str, known_lf: pl.LazyFrame) -> pl.DataFrame:
+    """
+    Score each service's national total in every period (level "period_totals"), and how its
+    bias drifts per year, per fold and pooled across folds.
+    """
+    service = IndCQC.primary_service_type
+    date = IndCQC.cqc_location_import_date
+
+    results = []
     for by_columns in ([FOLD, service], [service]):
         period_totals_lf = evaluation.aggregate_totals_by_group(
-            scored_lf, PRED, KNOWN, [*by_columns, date]
+            known_lf, PRED, KNOWN, [*by_columns, date]
         )
         bias_lf = evaluation.calculate_period_bias(
-            scored_lf, PRED, KNOWN, date, by_columns
+            known_lf, PRED, KNOWN, date, by_columns
         )
         scores_df = (
             evaluation.score_group_totals(period_totals_lf, PRED, KNOWN, by_columns)
@@ -233,65 +304,83 @@ def score_out_of_fold(
             )
             .collect()
         )
-        add(
-            Labels.period_totals,
-            scores_df,
-            [service],
-            FOLD if FOLD in by_columns else None,
+        results.append(
+            to_long(
+                scores_df,
+                model_name,
+                Labels.period_totals,
+                [service],
+                FOLD if FOLD in by_columns else None,
+            )
         )
 
-    add(
-        Labels.size_band,
-        evaluation.score_rows(scored_lf, PRED, KNOWN, [FOLD, BAND]).collect(),
-        [BAND],
-        FOLD,
-    )
-    add(
-        Labels.size_band,
-        evaluation.score_rows(scored_lf, PRED, KNOWN, [BAND]).collect(),
-        [BAND],
-    )
-    add(
-        Labels.row_level_posts,
-        evaluation.score_rows(scored_lf, PRED, KNOWN, [FOLD]).collect(),
-        fold_column=FOLD,
-    )
-    add(
-        Labels.row_level_posts,
-        evaluation.score_rows(scored_lf, PRED, KNOWN).collect(),
+    return pl.concat(results)
+
+
+def _score_size_bands(model_name: str, known_lf: pl.LazyFrame) -> pl.DataFrame:
+    """Score rows within each size band (level "size_band"), per fold and pooled."""
+    by_fold_df = evaluation.score_rows(known_lf, PRED, KNOWN, [FOLD, BAND]).collect()
+    pooled_df = evaluation.score_rows(known_lf, PRED, KNOWN, [BAND]).collect()
+
+    return pl.concat(
+        [
+            to_long(by_fold_df, model_name, Labels.size_band, [BAND], FOLD),
+            to_long(pooled_df, model_name, Labels.size_band, [BAND]),
+        ]
     )
 
-    scored_df = scored_lf.collect()
-    for fold in [*sorted(scored_df[FOLD].unique().to_list()), None]:
-        fold_df = scored_df if fold is None else scored_df.filter(pl.col(FOLD) == fold)
+
+def _score_known_rows(
+    model_name: str, known_lf: pl.LazyFrame, is_ratio_model: bool
+) -> pl.DataFrame:
+    """
+    Score known rows one by one, in filled posts ("row_level_posts") and on the model's raw
+    output scale ("row_level_metadata_scale"), per fold and pooled.
+    """
+    by_fold_df = evaluation.score_rows(known_lf, PRED, KNOWN, [FOLD]).collect()
+    pooled_df = evaluation.score_rows(known_lf, PRED, KNOWN).collect()
+    results = [
+        to_long(by_fold_df, model_name, Labels.row_level_posts, fold_column=FOLD),
+        to_long(pooled_df, model_name, Labels.row_level_posts),
+    ]
+
+    known_df = known_lf.collect()
+    for fold in [*sorted(known_df[FOLD].unique().to_list()), None]:
+        fold_df = known_df if fold is None else known_df.filter(pl.col(FOLD) == fold)
+        metrics = _metadata_scale_metrics(fold_df, model_name, is_ratio_model)
         metrics_df = pl.DataFrame(
-            {
-                metric: [value]
-                for metric, value in _metadata_scale_metrics(
-                    fold_df, model_name, is_ratio_model
-                ).items()
-            }
+            {metric: [value] for metric, value in metrics.items()}
         )
         if fold is not None:
             metrics_df = metrics_df.with_columns(pl.lit(fold).alias(FOLD))
-        add(
-            Labels.row_level_metadata_scale,
-            metrics_df,
-            fold_column=FOLD if fold is not None else None,
+        results.append(
+            to_long(
+                metrics_df,
+                model_name,
+                Labels.row_level_metadata_scale,
+                fold_column=FOLD if fold is not None else None,
+            )
         )
 
-    target_lf = joined_df.lazy().filter(
-        pl.col(TARGET_POSTS).is_not_null() & pl.col(PRED).is_not_null()
-    )
-    add(
-        Labels.imputed_target_rows,
-        evaluation.score_rows(target_lf, PRED, TARGET_POSTS, [FOLD]).collect(),
-        fold_column=FOLD,
-    )
-    add(
-        Labels.imputed_target_rows,
-        evaluation.score_rows(target_lf, PRED, TARGET_POSTS).collect(),
-    )
+    return pl.concat(results)
+
+
+def _score_imputed_target(model_name: str, target_lf: pl.LazyFrame) -> pl.DataFrame:
+    """
+    Score every row with an imputed target, in filled posts: row by row
+    ("imputed_target_rows") and bias drift per year ("imputed_target_period_bias"), per fold
+    and pooled across folds.
+    """
+    service = IndCQC.primary_service_type
+    date = IndCQC.cqc_location_import_date
+
+    by_fold_df = evaluation.score_rows(target_lf, PRED, TARGET_POSTS, [FOLD]).collect()
+    pooled_df = evaluation.score_rows(target_lf, PRED, TARGET_POSTS).collect()
+    results = [
+        to_long(by_fold_df, model_name, Labels.imputed_target_rows, fold_column=FOLD),
+        to_long(pooled_df, model_name, Labels.imputed_target_rows),
+    ]
+
     for by_columns in ([FOLD, service], [service]):
         bias_lf = evaluation.calculate_period_bias(
             target_lf, PRED, TARGET_POSTS, date, by_columns
@@ -299,11 +388,14 @@ def score_out_of_fold(
         slopes_df = evaluation.fit_bias_slope_per_year(
             bias_lf, TARGET_POSTS, date, by_columns
         ).collect()
-        add(
-            Labels.imputed_target_period_bias,
-            slopes_df,
-            [service],
-            FOLD if FOLD in by_columns else None,
+        results.append(
+            to_long(
+                slopes_df,
+                model_name,
+                Labels.imputed_target_period_bias,
+                [service],
+                FOLD if FOLD in by_columns else None,
+            )
         )
 
     return pl.concat(results)
