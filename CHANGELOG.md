@@ -37,6 +37,7 @@ All notable changes to this project will be documented in this file.
 - Added a data-quality cleaning step for the EmpStat clean job that nulls an org's permanent, temporary, bank-or-pool, agency and other employment status counts (and their percentage-share columns) where too few of its reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
 - Added a step to the EmpStat clean job that creates a `_clean` copy of each deduplicated employment status count, with a filtering-rule column recording whether each row is populated or missing data.
 - Added a `check-main-tip` job at the start of the prod plan, approval, apply and dependency deploy group that fails a main pipeline whose commit is no longer the tip of `main`, so an older pipeline reaching the group after a newer one cannot apply its older plan or sync older code.
+- Added controlled rounding (banded, rounding half away from zero) for estimated filled posts and 1dp percentage formatting for annual/monthly change, applied to the publication clean job's T0/T1/T2 download tables, for parity with the manually-published reference's own rounding convention.
 - Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock, with a gate that fails a main pipeline whose prod deploy was skipped or cancelled instead of reporting it as success.
 - Added full imputation to the employment status impute job, filling remaining gaps by carrying each location and job role's known percentages along the rolling averages, with validation of the result. Renamed the short-term imputed percentage columns to `*_imputed_for_trendline`.
 - Added published label classes and column names for the publication outputs, and used them in the publication clean job.
@@ -47,6 +48,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics (`metrics.parquet`) and coefficients beside each model run. Models are now fitted on all training rows instead of an 80/20 split, and the `metrics` in `metadata.json` are scored on known values only, so aren't comparable with earlier runs.
+- Replaced the employment status magic-number split with estimated percentages (cleaned, then imputed, then rolling average), their source, and estimated counts and employees. Removed the rates CSV input.
+- The CQC PIR and ONS postcode directory ingests now start the Ind CQC filled posts estimates pipeline on success.
 - Changed the job group labels (`JobGroupLabels`) from snake_case to human-readable values, e.g. "direct_care" to "Direct care", so `main_job_group_labels` data values change on every run.
 - Added the Excel packages `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image, and extended the Docker pin test to cover every `requirements-extra.txt`.
 - Added a `trello-cards` Claude Code skill that drafts paste-ready Trello cards from a plan or a one-line idea.
@@ -90,6 +93,7 @@ All notable changes to this project will be documented in this file.
 - Combined the three near-identical CI scripts that decide whether a push should seed the raw bucket, seed the archive sample data or run the CQC integration tests into one `scripts/select_ci_gate.py`, so adding a new gate is one entry in its list of trigger paths. Added a test that fails if a trigger path no longer exists in the repo, so a renamed file can't leave a gate silently never firing.
 - Reduced the IND CQC filled posts model features validation's memory use by scanning the wide imputed comparison dataset lazily, so only the columns its expected row count needs are read.
 - Tidied the direct payment recipients folder names, test layout, test names and docstrings to match the rest of the pipeline. No behaviour change.
+- Sped up the publication clean job by computing its cleaned data once instead of for every rollup and output table.
 - Changed the direct payment recipients ratio, proportion and estimate columns from Float64 to Float32, halving their memory use.
 - Renamed the direct payment recipients columns to shorter, lower snake_case names, dropping `estimated` from mid-stage columns. Estimate, summary and ICB output columns and the estimate source label `proportion_employing_staff` change, so downstream readers need the new names.
 
