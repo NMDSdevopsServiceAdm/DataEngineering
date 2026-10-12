@@ -1,8 +1,17 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 from typing import Any, Optional
 
 import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_worker_utils as prepare_worker_job
+from projects._03_independent_cqc._02_employment_status.fargate.utils.estimate_utils import (
+    ESTIMATED_COUNT_COLUMNS,
+    ESTIMATED_PERCENTAGE_COLUMNS,
+)
+from projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils import (
+    FULL_IMPUTED_PERCENTAGE_COLUMNS,
+    PERCENTAGE_COLUMNS,
+    ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -11,9 +20,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusImputeTempColumns as ImputeTempCols,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    EmploymentStatusMagicNumberRateColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.ascwds_labelled_vocab import (
@@ -24,6 +30,7 @@ from utils.column_values.ascwds_labelled_vocab import (
     PublishedJobRoleLabels,
 )
 from utils.column_values.categorical_column_values import (
+    EmploymentStatusEstimateSource,
     EmploymentStatusFilteringRule,
     JobGroupLabels,
     PrimaryServiceType,
@@ -280,10 +287,9 @@ class CollapseJobRoleEstimatesToPublishedLabelsTestCase:
 
 
 @dataclass
-class ApplyEmploymentStatusMagicNumbersTestCase:
+class AddEstimatedEmploymentStatusColumnsTestCase:
     id: str
-    job_role_estimates_data: dict[str, Any]
-    employment_status_rates_data: dict[str, Any]
+    input_data: dict[str, Any]
     expected_data: dict[str, Any]
 
 
@@ -574,116 +580,99 @@ class TestMergeUtilsData:
     ]
 
 
+def _estimate_row(
+    cleaned: list[float | None],
+    imputed: list[float | None],
+    rolling_avg: list[float | None],
+    metric: float | None,
+) -> dict[str, list]:
+    """One row; each list holds the 5 statuses as perm, temp, bank, agency, other."""
+    return {
+        METRIC: [metric],
+        **{col: [val] for col, val in zip(PERCENTAGE_COLUMNS, cleaned)},
+        **{col: [val] for col, val in zip(FULL_IMPUTED_PERCENTAGE_COLUMNS, imputed)},
+        **{
+            col: [val]
+            for col, val in zip(ROLLING_AVERAGE_PERCENTAGE_COLUMNS, rolling_avg)
+        },
+    }
+
+
+def _estimate_expected(
+    row: dict[str, list],
+    estimated: list[float | None],
+    source: str | None,
+    counts: list[float | None],
+    employees: float | None,
+) -> dict[str, list]:
+    return {
+        **row,
+        **{col: [val] for col, val in zip(ESTIMATED_PERCENTAGE_COLUMNS, estimated)},
+        EmpStatus.estimated_percentage_source: [source],
+        **{col: [val] for col, val in zip(ESTIMATED_COUNT_COLUMNS, counts)},
+        EmpStatus.estimated_employees: [employees],
+    }
+
+
+NULLS = [None] * 5
+CLEANED = [0.5, 0.25, 0.125, 0.0625, 0.0625]
+IMPUTED = [0.4, 0.3, 0.1, 0.1, 0.1]
+ROLLING_AVG = [0.3, 0.3, 0.2, 0.1, 0.1]
+
+
 @dataclass
-class TestMagicNumberUtilsData:
-    apply_employment_status_magic_numbers_test_cases = [
-        ApplyEmploymentStatusMagicNumbersTestCase(
-            id="splits_filled_post_metric_by_employment_status_rates",
-            job_role_estimates_data={
-                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
-                METRIC: [100.0],
-                EmpStatus.employee_count: [50],
-            },
-            employment_status_rates_data={
-                EmpStatRates.service: ["CQC Non residential"],
-                EmpStatRates.weighting_job_role: ["Care_worker"],
-                EmpStatRates.emp_stat_perm: [0.5],
-                EmpStatRates.emp_stat_temp: [0.2],
-                EmpStatRates.emp_stat_bank_or_pool: [0.15],
-                EmpStatRates.emp_stat_agency: [0.1],
-                EmpStatRates.emp_stat_other: [0.05],
-            },
-            expected_data={
-                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
-                METRIC: [100.0],
-                EmpStatus.employee_count: [50],
-                EmpStatus.estimated_emp_stat_perm: [50.0],
-                EmpStatus.estimated_emp_stat_temp: [20.0],
-                EmpStatus.estimated_emp_stat_bank_or_pool: [15.0],
-                EmpStatus.estimated_emp_stat_agency: [10.0],
-                EmpStatus.estimated_emp_stat_other: [5.0],
-                EmpStatus.estimated_employees: [70.0],
-            },
+class TestEstimateUtilsData:
+    add_estimated_employment_status_columns_test_cases = [
+        AddEstimatedEmploymentStatusColumnsTestCase(
+            id="uses_cleaned_percentages_when_populated",
+            input_data=_estimate_row(CLEANED, IMPUTED, ROLLING_AVG, 64.0),
+            expected_data=_estimate_expected(
+                _estimate_row(CLEANED, IMPUTED, ROLLING_AVG, 64.0),
+                CLEANED,
+                EmploymentStatusEstimateSource.cleaned,
+                [32.0, 16.0, 8.0, 4.0, 4.0],
+                48.0,
+            ),
         ),
-        ApplyEmploymentStatusMagicNumbersTestCase(
-            id="maps_the_two_irregular_csv_labels_and_both_care_home_service_types",
-            job_role_estimates_data={
-                IndCQC.primary_service_type: [
-                    PrimaryServiceType.care_home_only,
-                    PrimaryServiceType.care_home_with_nursing,
-                ],
-                IndCQC.published_job_role_label: [
-                    PublishedJobRoleLabels.community_support_and_outreach,
-                    PublishedJobRoleLabels.other,
-                ],
-                METRIC: [10.0, 8.0],
-                EmpStatus.employee_count: [4, 10],
-            },
-            employment_status_rates_data={
-                EmpStatRates.service: [
-                    "CQC Care only home",
-                    "CQC Care home with nursing",
-                ],
-                EmpStatRates.weighting_job_role: [
-                    "Support_and_outreach",
-                    "All_others",
-                ],
-                EmpStatRates.emp_stat_perm: [0.4, 0.5],
-                EmpStatRates.emp_stat_temp: [0.1, 0.5],
-                EmpStatRates.emp_stat_bank_or_pool: [0.2, 0.0],
-                EmpStatRates.emp_stat_agency: [0.2, 0.0],
-                EmpStatRates.emp_stat_other: [0.1, 0.0],
-            },
-            expected_data={
-                IndCQC.primary_service_type: [
-                    PrimaryServiceType.care_home_only,
-                    PrimaryServiceType.care_home_with_nursing,
-                ],
-                IndCQC.published_job_role_label: [
-                    PublishedJobRoleLabels.community_support_and_outreach,
-                    PublishedJobRoleLabels.other,
-                ],
-                METRIC: [10.0, 8.0],
-                EmpStatus.employee_count: [4, 10],
-                EmpStatus.estimated_emp_stat_perm: [4.0, 4.0],
-                EmpStatus.estimated_emp_stat_temp: [1.0, 4.0],
-                EmpStatus.estimated_emp_stat_bank_or_pool: [2.0, 0.0],
-                EmpStatus.estimated_emp_stat_agency: [2.0, 0.0],
-                EmpStatus.estimated_emp_stat_other: [1.0, 0.0],
-                EmpStatus.estimated_employees: [5.0, 8.0],
-            },
+        AddEstimatedEmploymentStatusColumnsTestCase(
+            id="uses_imputed_percentages_when_cleaned_null",
+            input_data=_estimate_row(NULLS, IMPUTED, ROLLING_AVG, 100.0),
+            expected_data=_estimate_expected(
+                _estimate_row(NULLS, IMPUTED, ROLLING_AVG, 100.0),
+                IMPUTED,
+                EmploymentStatusEstimateSource.imputed,
+                [40.0, 30.0, 10.0, 10.0, 10.0],
+                70.0,
+            ),
         ),
-        ApplyEmploymentStatusMagicNumbersTestCase(
-            id="propagates_null_metric_to_all_split_columns_and_the_estimated_employees_column",
-            job_role_estimates_data={
-                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
-                METRIC: [None],
-                EmpStatus.employee_count: [5],
-            },
-            employment_status_rates_data={
-                EmpStatRates.service: ["CQC Non residential"],
-                EmpStatRates.weighting_job_role: ["Care_worker"],
-                EmpStatRates.emp_stat_perm: [0.5],
-                EmpStatRates.emp_stat_temp: [0.2],
-                EmpStatRates.emp_stat_bank_or_pool: [0.15],
-                EmpStatRates.emp_stat_agency: [0.1],
-                EmpStatRates.emp_stat_other: [0.05],
-            },
-            expected_data={
-                IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                IndCQC.published_job_role_label: [PublishedJobRoleLabels.care_worker],
-                METRIC: [None],
-                EmpStatus.employee_count: [5],
-                EmpStatus.estimated_emp_stat_perm: [None],
-                EmpStatus.estimated_emp_stat_temp: [None],
-                EmpStatus.estimated_emp_stat_bank_or_pool: [None],
-                EmpStatus.estimated_emp_stat_agency: [None],
-                EmpStatus.estimated_emp_stat_other: [None],
-                EmpStatus.estimated_employees: [None],
-            },
+        AddEstimatedEmploymentStatusColumnsTestCase(
+            id="uses_rolling_average_percentages_when_cleaned_and_imputed_null",
+            input_data=_estimate_row(NULLS, NULLS, ROLLING_AVG, 100.0),
+            expected_data=_estimate_expected(
+                _estimate_row(NULLS, NULLS, ROLLING_AVG, 100.0),
+                ROLLING_AVG,
+                EmploymentStatusEstimateSource.rolling_avg,
+                [30.0, 30.0, 20.0, 10.0, 10.0],
+                60.0,
+            ),
+        ),
+        AddEstimatedEmploymentStatusColumnsTestCase(
+            id="leaves_estimates_null_when_all_percentages_null",
+            input_data=_estimate_row(NULLS, NULLS, NULLS, 100.0),
+            expected_data=_estimate_expected(
+                _estimate_row(NULLS, NULLS, NULLS, 100.0), NULLS, None, NULLS, None
+            ),
+        ),
+        AddEstimatedEmploymentStatusColumnsTestCase(
+            id="leaves_counts_null_when_metric_null",
+            input_data=_estimate_row(CLEANED, IMPUTED, ROLLING_AVG, None),
+            expected_data=_estimate_expected(
+                _estimate_row(CLEANED, IMPUTED, ROLLING_AVG, None),
+                CLEANED,
+                EmploymentStatusEstimateSource.cleaned,
+                NULLS,
+                None,
+            ),
         ),
     ]
 
@@ -710,12 +699,12 @@ PERCENTAGE_COLUMNS = [
     EmpStatus.agency_percentage,
     EmpStatus.other_percentage,
 ]
-IMPUTED_PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage_imputed,
-    EmpStatus.temporary_percentage_imputed,
-    EmpStatus.bank_or_pool_percentage_imputed,
-    EmpStatus.agency_percentage_imputed,
-    EmpStatus.other_percentage_imputed,
+TRENDLINE_PERCENTAGE_COLUMNS = [
+    EmpStatus.permanent_percentage_imputed_for_trendline,
+    EmpStatus.temporary_percentage_imputed_for_trendline,
+    EmpStatus.bank_or_pool_percentage_imputed_for_trendline,
+    EmpStatus.agency_percentage_imputed_for_trendline,
+    EmpStatus.other_percentage_imputed_for_trendline,
 ]
 ROLLING_AVERAGE_PERCENTAGE_COLUMNS = [
     EmpStatus.permanent_percentage_rolling_avg,
@@ -723,6 +712,13 @@ ROLLING_AVERAGE_PERCENTAGE_COLUMNS = [
     EmpStatus.bank_or_pool_percentage_rolling_avg,
     EmpStatus.agency_percentage_rolling_avg,
     EmpStatus.other_percentage_rolling_avg,
+]
+FULL_IMPUTED_PERCENTAGE_COLUMNS = [
+    EmpStatus.permanent_percentage_full_imputed,
+    EmpStatus.temporary_percentage_full_imputed,
+    EmpStatus.bank_or_pool_percentage_full_imputed,
+    EmpStatus.agency_percentage_full_imputed,
+    EmpStatus.other_percentage_full_imputed,
 ]
 FIRST_KNOWN_VALUE_COLUMNS = [
     ImputeTempCols.first_known_value_prefix + col for col in PERCENTAGE_COLUMNS
@@ -769,6 +765,7 @@ class ImputeUtilsTestCase:
 
 
 FIVE_MONTHS = [date(2024, month, 1) for month in range(1, 6)]
+TEN_DAYS_APART = [date(2024, 1, 1) + timedelta(days=10 * i) for i in range(5)]
 CARE_WORKER = PublishedJobRoleLabels.care_worker
 REGISTERED_NURSE = PublishedJobRoleLabels.registered_nurse
 
@@ -794,7 +791,7 @@ def short_term_imputation_case(
         input_data=input_data,
         expected_data={
             **input_data,
-            **status_split(expected_permanent, IMPUTED_PERCENTAGE_COLUMNS),
+            **status_split(expected_permanent, TRENDLINE_PERCENTAGE_COLUMNS),
         },
     )
 
@@ -822,7 +819,7 @@ def rolling_average_case(
         IndCQC.current_region: regions,
         IndCQC.published_job_role_label: roles,
         IndCQC.cqc_location_import_date: dates,
-        **status_split(permanent, IMPUTED_PERCENTAGE_COLUMNS),
+        **status_split(permanent, TRENDLINE_PERCENTAGE_COLUMNS),
         **(extra_columns or {}),
     }
     return ImputeUtilsTestCase(
@@ -831,6 +828,90 @@ def rolling_average_case(
         expected_data={
             **input_data,
             **status_split(expected_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+        },
+    )
+
+
+def full_imputation_case(
+    id: str,
+    dates: list[date],
+    permanent: list[Optional[float]],
+    rolling_permanent: list[Optional[float]],
+    expected_permanent: list[Optional[float]],
+) -> ImputeUtilsTestCase:
+    """
+    Build a single location and job role case from the known permanent share, its rolling
+    average and the expected full imputed share, splitting each with `status_split`.
+    """
+    input_data = {
+        IndCQC.location_id: ["loc1"] * len(dates),
+        IndCQC.published_job_role_label: [CARE_WORKER] * len(dates),
+        IndCQC.cqc_location_import_date: dates,
+        **status_split(permanent, PERCENTAGE_COLUMNS),
+        **status_split(rolling_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+    }
+    return ImputeUtilsTestCase(
+        id=id,
+        input_data=input_data,
+        expected_data={
+            **input_data,
+            **status_split(expected_permanent, FULL_IMPUTED_PERCENTAGE_COLUMNS),
+        },
+    )
+
+
+def full_imputation_five_status_case(
+    id: str,
+    dates: list[date],
+    known: list[list[Optional[float]]],
+    rolling: list[list[float]],
+    expected: list[list[Optional[float]]],
+) -> ImputeUtilsTestCase:
+    """
+    Build a single location and job role case that states every status. `known`, `rolling` and
+    `expected` each hold one list per status, in permanent, temporary, bank or pool, agency,
+    other order.
+    """
+    input_data = {
+        IndCQC.location_id: ["loc1"] * len(dates),
+        IndCQC.published_job_role_label: [CARE_WORKER] * len(dates),
+        IndCQC.cqc_location_import_date: dates,
+        **dict(zip(PERCENTAGE_COLUMNS, known)),
+        **dict(zip(ROLLING_AVERAGE_PERCENTAGE_COLUMNS, rolling)),
+    }
+    return ImputeUtilsTestCase(
+        id=id,
+        input_data=input_data,
+        expected_data={
+            **input_data,
+            **dict(zip(FULL_IMPUTED_PERCENTAGE_COLUMNS, expected)),
+        },
+    )
+
+
+def full_imputation_rows_case(
+    id: str,
+    rows: list[tuple[str, str, date, Optional[float], float]],
+    expected_permanent: list[Optional[float]],
+) -> ImputeUtilsTestCase:
+    """
+    Build a case across locations and job roles from (location, job role, date, permanent
+    share, rolling average permanent share) rows, splitting each share with `status_split`.
+    """
+    locations, roles, dates, permanent, rolling_permanent = map(list, zip(*rows))
+    input_data = {
+        IndCQC.location_id: locations,
+        IndCQC.published_job_role_label: roles,
+        IndCQC.cqc_location_import_date: dates,
+        **status_split(permanent, PERCENTAGE_COLUMNS),
+        **status_split(rolling_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+    }
+    return ImputeUtilsTestCase(
+        id=id,
+        input_data=input_data,
+        expected_data={
+            **input_data,
+            **status_split(expected_permanent, FULL_IMPUTED_PERCENTAGE_COLUMNS),
         },
     )
 
@@ -1020,11 +1101,15 @@ class TestImputeUtilsData:
                 EmpStatus.bank_or_pool_percentage: [0.1, None, 0.1],
                 EmpStatus.agency_percentage: [0.2, None, 0.2],
                 EmpStatus.other_percentage: [0.1, None, 0.1],
-                EmpStatus.permanent_percentage_imputed: [0.5, 0.4, 0.2],
-                EmpStatus.temporary_percentage_imputed: [0.1, 0.2, 0.4],
-                EmpStatus.bank_or_pool_percentage_imputed: [0.1, 0.1, 0.1],
-                EmpStatus.agency_percentage_imputed: [0.2, 0.2, 0.2],
-                EmpStatus.other_percentage_imputed: [0.1, 0.1, 0.1],
+                EmpStatus.permanent_percentage_imputed_for_trendline: [0.5, 0.4, 0.2],
+                EmpStatus.temporary_percentage_imputed_for_trendline: [0.1, 0.2, 0.4],
+                EmpStatus.bank_or_pool_percentage_imputed_for_trendline: [
+                    0.1,
+                    0.1,
+                    0.1,
+                ],
+                EmpStatus.agency_percentage_imputed_for_trendline: [0.2, 0.2, 0.2],
+                EmpStatus.other_percentage_imputed_for_trendline: [0.1, 0.1, 0.1],
             },
         ),
         short_term_imputation_case(
@@ -1132,6 +1217,109 @@ class TestImputeUtilsData:
                 0.0,
                 0.0,
             ],
+        ),
+    ]
+
+    add_full_imputed_percentages_test_cases = [
+        full_imputation_case(
+            id="does_not_change_known_values",
+            dates=FIVE_MONTHS,
+            permanent=[0.2, 0.4, 0.6, 0.8, 0.5],
+            rolling_permanent=[0.5] * 5,
+            expected_permanent=[0.2, 0.4, 0.6, 0.8, 0.5],
+        ),
+        full_imputation_case(
+            id="extrapolates_forwards_by_nominal_change_in_rolling_average",
+            dates=FIVE_MONTHS,
+            permanent=[0.2, None, None, None, None],
+            rolling_permanent=[0.5, 0.6, 0.7, 0.55, 0.5],
+            expected_permanent=[0.2, 0.3, 0.4, 0.25, 0.2],
+        ),
+        full_imputation_case(
+            id="extrapolates_backwards_by_nominal_change_in_rolling_average",
+            dates=FIVE_MONTHS,
+            permanent=[None, None, 0.4, 0.5, 0.6],
+            rolling_permanent=[0.35, 0.45, 0.5, 0.55, 0.6],
+            expected_permanent=[0.25, 0.35, 0.4, 0.5, 0.6],
+        ),
+        full_imputation_case(
+            id="interpolates_gap_along_rolling_average_trend",
+            dates=[date(2024, 1, 1) + timedelta(days=d) for d in [0, 5, 10, 30, 40]],
+            permanent=[0.2, None, None, None, 0.6],
+            rolling_permanent=[0.5, 0.6, 0.6, 0.7, 0.8],
+            expected_permanent=[0.2, 0.3125, 0.325, 0.475, 0.6],
+        ),
+        full_imputation_five_status_case(
+            id="imputes_each_status_from_its_own_rolling_average",
+            dates=FIVE_MONTHS[:2],
+            known=[[0.4, None], [0.3, None], [0.1, None], [0.1, None], [0.1, None]],
+            rolling=[[0.5, 0.45], [0.2, 0.25], [0.1, 0.1], [0.1, 0.12], [0.1, 0.08]],
+            expected=[[0.4, 0.35], [0.3, 0.35], [0.1, 0.1], [0.1, 0.12], [0.1, 0.08]],
+        ),
+        full_imputation_five_status_case(
+            id="floors_negative_values_at_zero_and_reshares_to_sum_to_one",
+            dates=FIVE_MONTHS[:2],
+            known=[[0.1, None], [0.3, None], [0.0, None], [0.6, None], [0.0, None]],
+            rolling=[[0.5, 0.2], [0.2, 0.3], [0.0, 0.0], [0.3, 0.5], [0.0, 0.0]],
+            expected=[
+                [0.1, 0.0],
+                [0.3, 1 / 3],
+                [0.0, 0.0],
+                [0.6, 2 / 3],
+                [0.0, 0.0],
+            ],
+        ),
+        full_imputation_case(
+            id="leaves_null_when_group_has_no_known_values",
+            dates=FIVE_MONTHS,
+            permanent=[None] * 5,
+            rolling_permanent=[0.3] * 5,
+            expected_permanent=[None] * 5,
+        ),
+        full_imputation_rows_case(
+            id="keeps_locations_and_job_roles_separate",
+            rows=[
+                ("loc1", CARE_WORKER, date(2024, 1, 1), 0.2, 0.5),
+                ("loc1", REGISTERED_NURSE, date(2024, 1, 1), 0.6, 0.5),
+                ("loc2", CARE_WORKER, date(2024, 1, 1), 0.4, 0.5),
+                ("loc1", CARE_WORKER, date(2024, 2, 1), None, 0.6),
+                ("loc1", REGISTERED_NURSE, date(2024, 2, 1), None, 0.3),
+                ("loc2", CARE_WORKER, date(2024, 2, 1), None, 0.6),
+            ],
+            expected_permanent=[0.2, 0.6, 0.4, 0.3, 0.4, 0.5],
+        ),
+        full_imputation_case(
+            id="drops_temporary_columns",
+            dates=TEN_DAYS_APART,
+            permanent=[None, 0.2, None, 0.4, None],
+            rolling_permanent=[0.5] * 5,
+            expected_permanent=[0.2, 0.2, 0.3, 0.4, 0.4],
+        ),
+        full_imputation_case(
+            id="fills_from_a_single_known_value",
+            dates=FIVE_MONTHS,
+            permanent=[None, None, 0.4, None, None],
+            rolling_permanent=[0.35, 0.45, 0.5, 0.6, 0.55],
+            expected_permanent=[0.25, 0.35, 0.4, 0.5, 0.45],
+        ),
+        full_imputation_case(
+            id="fills_across_gaps_of_many_years",
+            dates=[
+                date(2013, 1, 1),
+                date(2018, 1, 1),
+                date(2023, 1, 1),
+                date(2026, 1, 1),
+            ],
+            permanent=[0.2, None, 0.6, None],
+            rolling_permanent=[0.5, 0.6, 0.8, 0.7],
+            expected_permanent=[0.2, 0.35, 0.6, 0.5],
+        ),
+        full_imputation_case(
+            id="leaves_null_when_rolling_average_is_null",
+            dates=FIVE_MONTHS[:3],
+            permanent=[0.2, None, None],
+            rolling_permanent=[0.5, None, 0.6],
+            expected_permanent=[0.2, None, 0.3],
         ),
     ]
 

@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 import polars as pl
 
 from polars_utils.expressions import is_care_home, is_not_care_home
@@ -15,20 +17,18 @@ def model_imputation(
     column_with_null_values: str,
     model_column_name: str,
     imputed_column_name: str,
-    care_home: bool,
+    care_home: Optional[bool],
     extrapolation_method: str,
+    group_columns: Optional[List[str]] = None,
 ) -> pl.LazyFrame:
     """
-    Create a new column of imputed values based on known values and null values
-    being extrapolated and interpolated.
+    Create a new column of imputed values: the known values, with nulls filled by
+    extrapolation and interpolation.
 
     Extrapolation and interpolation run across the whole LazyFrame, grouped by
-    `[location_id, care_home]`. The final imputed values are coalesced into
-    'imputed_column_name' based on the given care_home argument.
-
-    The imputation model is carried out in two steps, extrapolation and
-    interpolation, which both populate null values based on the rate of change
-    of values in '<model_column_name>'.
+    `group_columns`, and fill nulls by following the change in
+    '<model_column_name>'. The known and filled values are coalesced into
+    'imputed_column_name' for the rows selected by `care_home`; other rows are null.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the column_with_null_values.
@@ -36,21 +36,18 @@ def model_imputation(
             values to be imputed.
         model_column_name (str): The name of the column containing the model
             values used for imputation.
-        imputed_column_name (str): The name of the new imputated column.
-        care_home (bool): True if imputation is for care homes, False if it is
-            for non residential.
+        imputed_column_name (str): The name of the new imputed column.
+        care_home (Optional[bool]): True to impute care homes only, False to
+            impute non residential only, None to impute every row.
         extrapolation_method (str): The choice of method.
             Must be either 'nominal' or 'ratio'.
+        group_columns (Optional[List[str]]): The columns to group by. Defaults
+            to `[location_id, care_home]`.
 
     Returns:
         pl.LazyFrame: The LazyFrame with the added column imputed_column_name.
     """
-    group_columns = [IndCqc.location_id, IndCqc.care_home]
-
-    if care_home:
-        care_home_filter_expr: pl.Expr = is_care_home()
-    else:
-        care_home_filter_expr: pl.Expr = is_not_care_home()
+    group_columns = group_columns or [IndCqc.location_id, IndCqc.care_home]
 
     lf = model_extrapolation(
         lf,
@@ -66,21 +63,19 @@ def model_imputation(
         group_columns=group_columns,
     )
 
-    lf = lf.with_columns(
-        pl.when(care_home_filter_expr)
-        .then(
-            pl.coalesce(
-                column_with_null_values,
-                IndCqc.extrapolation_model,
-                IndCqc.interpolation_model,
-            )
-        )
-        .cast(pl.Float32)
-        .alias(imputed_column_name)
+    imputed_value = pl.coalesce(
+        column_with_null_values,
+        IndCqc.extrapolation_model,
+        IndCqc.interpolation_model,
+    )
+    if care_home is not None:
+        care_home_filter_expr = is_care_home() if care_home else is_not_care_home()
+        imputed_value = pl.when(care_home_filter_expr).then(imputed_value)
+
+    return lf.with_columns(
+        imputed_value.cast(pl.Float32).alias(imputed_column_name)
     ).drop(
         IndCqc.extrapolation_forwards,
         IndCqc.extrapolation_model,
         IndCqc.interpolation_model,
     )
-
-    return lf

@@ -1,15 +1,13 @@
-import re
 from datetime import datetime
 from typing import Callable
 
-import boto3
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.file_utils import split_s3_uri
+from utils.file_utils import list_archive_runs
 
 most_recent_annual_estimate_date: str = "most_recent_annual_estimate_date"
 
@@ -101,8 +99,7 @@ def get_run_number(s3_roots: list[str]) -> int:
     Finds the highest existing run_number already archived under each of the given
     S3 roots, across all archive_dates, and confirms they agree.
 
-    Scans all objects under each s3_root and extracts the run_number values from
-    keys structured like:
+    Reads the run_numbers archived under each s3_root, e.g.
         bucket/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/
 
     run_number is a single counter shared across every archive_date, not scoped
@@ -120,21 +117,9 @@ def get_run_number(s3_roots: list[str]) -> int:
     Raises:
         ValueError: If the s3_roots disagree on the highest existing run_number.
     """
-    s3_client = boto3.client("s3")
-    paginator = s3_client.get_paginator("list_objects_v2")
-
-    run_number_by_root: dict[str, int] = {}
-    for s3_root in s3_roots:
-        bucket, prefix = split_s3_uri(s3_root.rstrip("/") + "/")
-        pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
-
-        run_numbers = [
-            int(match.group(1))
-            for page in pages
-            for obj in page.get("Contents", [])
-            if (match := re.search(r"run_number=(\d+)", obj["Key"]))
-        ]
-        run_number_by_root[s3_root] = max(run_numbers, default=0)
+    run_number_by_root = {
+        s3_root: max(list_archive_runs(s3_root), default=0) for s3_root in s3_roots
+    }
 
     distinct_run_numbers = set(run_number_by_root.values())
     if len(distinct_run_numbers) > 1:

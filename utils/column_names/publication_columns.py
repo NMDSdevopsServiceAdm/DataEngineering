@@ -74,3 +74,8 @@ class PublicationColumns:
     cqc_locations: str = "CQC locations"
     annual_percentage_change: str = "Annual percentage change"
     monthly_percentage_change: str = "Monthly percentage change"
+    period: str = "Period"
+    period_label: str = "Period label"
+    estimated_filled_posts_formatted: str = "Estimated filled posts (rounded)"
+    annual_percentage_change_formatted: str = "Annual percentage change (formatted)"
+    monthly_percentage_change_formatted: str = "Monthly percentage change (formatted)"

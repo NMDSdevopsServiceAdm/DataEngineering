@@ -18,11 +18,13 @@ class TestMain:
             IndCqcColumns.location_id: pl.String,
             IndCqcColumns.published_job_role_label: pl.String,
             IndCqcColumns.cqc_location_import_date: pl.Date,
-            **{col: pl.Float32 for col in job.IMPUTED_PERCENTAGE_COLUMNS},
+            **{col: pl.Float32 for col in job.PERCENTAGE_COLUMNS},
+            **{col: pl.Float32 for col in job.TRENDLINE_PERCENTAGE_COLUMNS},
             **{col: pl.Float32 for col in job.ROLLING_AVERAGE_PERCENTAGE_COLUMNS},
+            **{col: pl.Float32 for col in job.FULL_IMPUTED_PERCENTAGE_COLUMNS},
         }
         source_rows = [
-            ("1-001", "Care worker", date(2024, 1, 1), *[0.2] * 5, *[0.2] * 5),
+            ("1-001", "Care worker", date(2024, 1, 1), *[0.2] * 5 * 4),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])

@@ -13,14 +13,23 @@ from utils.column_names.publication_columns import PublicationColumns as Pub
 def main(
     merge_data_source: str,
     clean_destination: str,
+    t0_destination: str,
+    t1_destination: str,
+    t2_destination: str,
     filter_flags_destination: str | None = None,
 ) -> None:
     """
-    Cleans merged job role data.
+    Cleans merged job role data and builds the T0/T1/T2 data-download tables.
 
     Args:
         merge_data_source (str): source s3 directory for merged data
         clean_destination (str): destination s3 directory for the cleaned data
+        t0_destination (str): destination s3 directory for the T0 estimates
+            download table
+        t1_destination (str): destination s3 directory for the T1 filled
+            posts percentage change download table
+        t2_destination (str): destination s3 directory for the T2 location
+            count percentage change download table
         filter_flags_destination (str | None): if given, destination s3 directory
             for the per-location, per-import-date filter flags
     """
@@ -218,6 +227,34 @@ def main(
         output_path=clean_destination,
     )
 
+    t0_estimates_lf = clean_utils.build_t0_estimates_download_table(
+        publication_summary_lf, today=today
+    )
+    utils.sink_to_parquet(
+        lazy_df=t0_estimates_lf,
+        output_path=t0_destination,
+    )
+
+    t1_filled_posts_perc_change_lf = (
+        clean_utils.build_t1_filled_posts_perc_change_download_table(
+            publication_summary_lf, today=today
+        )
+    )
+    utils.sink_to_parquet(
+        lazy_df=t1_filled_posts_perc_change_lf,
+        output_path=t1_destination,
+    )
+
+    t2_location_count_perc_change_lf = (
+        clean_utils.build_t2_location_count_perc_change_download_table(
+            publication_summary_lf, today=today
+        )
+    )
+    utils.sink_to_parquet(
+        lazy_df=t2_location_count_perc_change_lf,
+        output_path=t2_destination,
+    )
+
 
 if __name__ == "__main__":
     args = utils.get_args(
@@ -230,9 +267,30 @@ if __name__ == "__main__":
             "Destination s3 directory for the cleaned data",
         ),
         (
+            "--t0_destination",
+            "Destination s3 directory for the T0 estimates download table",
+        ),
+        (
+            "--t1_destination",
+            "Destination s3 directory for the T1 filled posts percentage "
+            "change download table",
+        ),
+        (
+            "--t2_destination",
+            "Destination s3 directory for the T2 location count percentage "
+            "change download table",
+        ),
+        (
             "--filter_flags_destination",
             "Destination s3 directory for the filter flags",
             False,
         ),
     )
-    main(args.merge_data_source, args.clean_destination, args.filter_flags_destination)
+    main(
+        args.merge_data_source,
+        args.clean_destination,
+        args.t0_destination,
+        args.t1_destination,
+        args.t2_destination,
+        args.filter_flags_destination,
+    )
