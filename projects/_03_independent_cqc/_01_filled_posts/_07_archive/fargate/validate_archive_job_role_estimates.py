@@ -356,11 +356,11 @@ if __name__ == "__main__":
         ("--source_path", "The filepath of the archived dataset to validate"),
         (
             "--compare_path",
-            "The filepath of the pre-archive source to compare this run's row count against",
+            "The filepath of the pre-archive source to compare this run's row count against (run_log: the estimates archive)",
         ),
         (
             "--other_output_path",
-            "The sibling archive output's filepath, to confirm both outputs got this run's partition",
+            "The sibling archive output's filepath, to confirm both outputs got this run's partition (run_log: the metadata archive)",
         ),
         ("--reports_path", "The filepath to output reports"),
     )

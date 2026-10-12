@@ -262,6 +262,15 @@ def make_run_log_df(**overrides) -> pl.DataFrame:
     )
 
 
+def failed_assertion_types(validation) -> set[str]:
+    """Returns the assertion types of the validation steps that did not pass."""
+    return {
+        step.assertion_type
+        for step in validation.validation_info
+        if not step.all_passed
+    }
+
+
 class TestJobRoleRunLogValidation:
     @staticmethod
     def run_validation(
@@ -347,22 +356,24 @@ class TestJobRoleRunLogValidation:
 
         assert mock_write_reports.call_args[0][1:] == (BUCKET_NAME, REPORTS_PATH)
 
-    def test_run_log_validation_fails_when_a_column_is_missing(self):
-        validation = self.run_validation(make_run_log_df().drop(RunLogCols.commit_sha))
+    def test_run_log_validation_fails_schema_check_when_a_column_is_missing(self):
+        run_log_df = make_run_log_df().drop(RunLogCols.max_cqc_pir_import_date)
 
-        assert not validation.all_passed()
+        validation = self.run_validation(run_log_df)
 
-    def test_run_log_validation_fails_when_there_are_two_rows_for_the_run(self):
+        assert failed_assertion_types(validation) == {"col_schema_match"}
+
+    def test_run_log_validation_fails_row_count_check_when_two_rows_for_the_run(self):
         run_log_df = pl.concat([make_run_log_df(), make_run_log_df()])
 
         validation = self.run_validation(run_log_df)
 
-        assert not validation.all_passed()
+        assert failed_assertion_types(validation) == {"row_count_match"}
 
-    def test_run_log_validation_fails_when_there_are_no_rows_for_the_run(self):
+    def test_run_log_validation_fails_row_count_check_when_no_rows_for_the_run(self):
         validation = self.run_validation(make_run_log_df().clear())
 
-        assert not validation.all_passed()
+        assert "row_count_match" in failed_assertion_types(validation)
 
     @pytest.mark.parametrize(
         "flag",
@@ -373,26 +384,26 @@ class TestJobRoleRunLogValidation:
             RunLogCols.locally_checked,
         ],
     )
-    def test_run_log_validation_fails_when_a_flag_is_true(self, flag: str):
+    def test_run_log_validation_fails_flag_check_when_a_flag_is_true(self, flag: str):
         validation = self.run_validation(make_run_log_df(**{flag: True}))
 
-        assert not validation.all_passed()
+        assert failed_assertion_types(validation) == {"col_vals_expr"}
 
-    def test_run_log_validation_fails_when_tag_is_set(self):
+    def test_run_log_validation_fails_tag_check_when_tag_is_set(self):
         validation = self.run_validation(make_run_log_df(**{RunLogCols.tag: "v1"}))
 
-        assert not validation.all_passed()
+        assert failed_assertion_types(validation) == {"col_vals_null"}
 
-    def test_run_log_validation_fails_when_commit_sha_is_null(self):
+    def test_run_log_validation_fails_commit_sha_check_when_commit_sha_is_null(self):
         run_log_df = make_run_log_df().with_columns(
             pl.lit(None, dtype=pl.String).alias(RunLogCols.commit_sha)
         )
 
         validation = self.run_validation(run_log_df)
 
-        assert not validation.all_passed()
+        assert failed_assertion_types(validation) == {"col_vals_not_null"}
 
-    def test_run_log_validation_fails_when_run_numbers_disagree(self):
+    def test_run_log_validation_fails_run_number_check_when_run_numbers_disagree(self):
         validation = self.run_validation(make_run_log_df(), run_numbers_agree=False)
 
-        assert not validation.all_passed()
+        assert failed_assertion_types(validation) == {"specially"}
