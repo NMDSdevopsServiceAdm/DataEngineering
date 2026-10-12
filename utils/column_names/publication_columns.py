@@ -69,3 +69,5 @@ class PublicationColumns:
     cqc_locations: str = "CQC locations"
     annual_percentage_change: str = "Annual percentage change"
     monthly_percentage_change: str = "Monthly percentage change"
+    period: str = "Period"
+    period_label: str = "Period label"
