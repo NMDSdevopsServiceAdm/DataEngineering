@@ -13,6 +13,7 @@ from utils.column_names.publication_columns import PublicationColumns as Pub
 def main(
     merge_data_source: str,
     clean_destination: str,
+    filter_flags_destination: str | None = None,
 ) -> None:
     """
     Cleans merged job role data.
@@ -20,6 +21,8 @@ def main(
     Args:
         merge_data_source (str): source s3 directory for merged data
         clean_destination (str): destination s3 directory for the cleaned data
+        filter_flags_destination (str | None): if given, destination s3 directory
+            for the per-location, per-import-date filter flags
     """
     merged_lf = utils.scan_parquet(merge_data_source)
 
@@ -95,6 +98,47 @@ def main(
         short_term_from_date,
         Pub.ct_dispersion_filter_short_term,
     )
+
+    if filter_flags_destination is not None:
+        filter_flags_lf = cleaned_lf.select(
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+            IndCQC.ct_care_home_total_employed_imputed,
+            IndCQC.ct_non_res_care_workers_employed_imputed,
+            Pub.ct_total_employed_imputed,
+            Pub.consistent_service_long_term,
+            Pub.consistent_service_medium_term,
+            Pub.consistent_service_short_term,
+            Pub.ct_has_data_long_term,
+            Pub.ct_has_data_medium_term,
+            Pub.ct_has_data_short_term,
+            Pub.ct_dispersion_filter_long_term,
+            Pub.ct_dispersion_filter_medium_term,
+            Pub.ct_dispersion_filter_short_term,
+        ).unique(subset=[IndCQC.location_id, IndCQC.cqc_location_import_date])
+        filter_flags_lf = filter_flags_lf.with_columns(
+            pl.all_horizontal(
+                Pub.consistent_service_long_term,
+                Pub.ct_has_data_long_term,
+                Pub.ct_dispersion_filter_long_term,
+            ).alias(Pub.passes_all_filters_long_term),
+            pl.all_horizontal(
+                Pub.consistent_service_medium_term,
+                Pub.ct_has_data_medium_term,
+                Pub.ct_dispersion_filter_medium_term,
+            ).alias(Pub.passes_all_filters_medium_term),
+            pl.all_horizontal(
+                Pub.consistent_service_short_term,
+                Pub.ct_has_data_short_term,
+                Pub.ct_dispersion_filter_short_term,
+            ).alias(Pub.passes_all_filters_short_term),
+        )
+        utils.sink_to_parquet(
+            lazy_df=filter_flags_lf,
+            output_path=filter_flags_destination,
+        )
 
     publication_summary_lf = clean_utils.aggregate_to_publication_rows(cleaned_lf)
     publication_summary_lf = clean_utils.add_rows_for_publication_groups(
@@ -185,5 +229,10 @@ if __name__ == "__main__":
             "--clean_destination",
             "Destination s3 directory for the cleaned data",
         ),
+        (
+            "--filter_flags_destination",
+            "Destination s3 directory for the filter flags",
+            False,
+        ),
     )
-    main(args.merge_data_source, args.clean_destination)
+    main(args.merge_data_source, args.clean_destination, args.filter_flags_destination)
