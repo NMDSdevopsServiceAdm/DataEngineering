@@ -1581,16 +1581,16 @@ class RoundToPublicationBandsTestCase:
 
 round_to_publication_bands_test_cases = [
     RoundToPublicationBandsTestCase(
-        id="value_below_ten_rounds_to_zero",
+        id="value_below_ten_is_suppressed_as_null",
         column_name=Pub.estimated_filled_posts,
         column_alias=Pub.estimated_filled_posts_formatted,
-        expected_data=[(5.0, 0.0)],
+        expected_data=[(5.0, None)],
     ),
     RoundToPublicationBandsTestCase(
-        id="value_just_below_ten_still_rounds_to_zero",
+        id="value_just_below_ten_is_still_suppressed_as_null",
         column_name=Pub.estimated_filled_posts,
         column_alias=Pub.estimated_filled_posts_formatted,
-        expected_data=[(9.99, 0.0)],
+        expected_data=[(9.99, None)],
     ),
     RoundToPublicationBandsTestCase(
         id="value_of_exactly_ten_rounds_to_nearest_ten",

@@ -26,6 +26,22 @@ _DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
     Pub.main_service,
 ]
 
+# The publication's controlled-rounding bands (see round_to_publication_bands):
+# round to `nearest` for any value below `upper_bound`, ascending. A value
+# below _PUBLICATION_ROUNDING_SUPPRESSION_THRESHOLD is suppressed (null)
+# rather than rounded.
+_PUBLICATION_ROUNDING_SUPPRESSION_THRESHOLD: int = 10
+_PUBLICATION_ROUNDING_BANDS: list[tuple[int, int]] = [
+    (15, 10),
+    (500, 25),
+    (1_000, 50),
+    (10_000, 100),
+    (25_000, 500),
+    (250_000, 1_000),
+    (1_500_000, 5_000),
+]
+_PUBLICATION_ROUNDING_BAND_ABOVE_MAX: int = 10_000
+
 # Maps the raw primary_service_type category values to their published
 # display labels for the data-download tables - the rollup rows already
 # hold their published labels directly (see add_rows_for_publication_groups).
@@ -227,40 +243,31 @@ def round_to_publication_bands(column_name: str, column_alias: str) -> pl.Expr:
     rounding to a non-negative figure (e.g. a summed filled posts total),
     for parity with the manually-published reference's own banded rounding.
 
-    Rounds to the nearest: 0 below 10; 10 from 10-14; 25 from 15-499; 50
-    from 500-999; 100 from 1,000-9,999; 500 from 10,000-24,999; 1,000 from
-    25,000-249,999; 5,000 from 250,000-1,499,999; 10,000 from 1,500,000
-    upwards. Assumes a non-negative input, since every value this is
-    applied to (a sum of filled posts or locations) is always >= 0.
+    Rounds to the nearest: null (suppressed) below 10; 10 from 10-14; 25
+    from 15-499; 50 from 500-999; 100 from 1,000-9,999; 500 from
+    10,000-24,999; 1,000 from 25,000-249,999; 5,000 from 250,000-1,499,999;
+    10,000 from 1,500,000 upwards - a small figure is nulled rather than
+    rounded to 0, so it reads as suppressed rather than as a real zero.
+    Assumes a non-negative input, since every value this is applied to (a
+    sum of filled posts or locations) is always >= 0.
 
     Args:
         column_name (str): the numeric column to round.
         column_alias (str): name to alias the resulting column to.
 
     Returns:
-        pl.Expr: float expression with the banded-rounded value.
+        pl.Expr: float expression with the banded-rounded value, or null
+            for a value below the smallest band.
     """
     value = pl.col(column_name)
-    return (
-        pl.when(value < 10)
-        .then(0.0)
-        .when(value < 15)
-        .then(_round_half_away_from_zero(value, 10))
-        .when(value < 500)
-        .then(_round_half_away_from_zero(value, 25))
-        .when(value < 1_000)
-        .then(_round_half_away_from_zero(value, 50))
-        .when(value < 10_000)
-        .then(_round_half_away_from_zero(value, 100))
-        .when(value < 25_000)
-        .then(_round_half_away_from_zero(value, 500))
-        .when(value < 250_000)
-        .then(_round_half_away_from_zero(value, 1_000))
-        .when(value < 1_500_000)
-        .then(_round_half_away_from_zero(value, 5_000))
-        .otherwise(_round_half_away_from_zero(value, 10_000))
-        .alias(column_alias)
-    )
+    expr = pl.when(value < _PUBLICATION_ROUNDING_SUPPRESSION_THRESHOLD).then(None)
+    for upper_bound, nearest in _PUBLICATION_ROUNDING_BANDS:
+        expr = expr.when(value < upper_bound).then(
+            _round_half_away_from_zero(value, nearest)
+        )
+    return expr.otherwise(
+        _round_half_away_from_zero(value, _PUBLICATION_ROUNDING_BAND_ABOVE_MAX)
+    ).alias(column_alias)
 
 
 def format_percentage(column_name: str, column_alias: str) -> pl.Expr:
@@ -960,14 +967,11 @@ def build_t0_estimates_download_table(
         fy_start_month (int): month the financial year starts.
 
     Returns:
-        pl.LazyFrame: one row per (period, region, main_service), with a
-            period_label display column alongside the raw period date, and
-            an estimated_filled_posts_formatted column holding the
-            publication's banded-rounded figure (see
-            round_to_publication_bands) alongside the raw value - cqc_locations
-            is not rounded, since it already matches the published figures
-            exactly as a plain count. Sorted by period then region then
-            main_service.
+        pl.LazyFrame: one row per (period, region, main_service), with
+            filled posts estimates as unrounded and rounded (see
+            round_to_publication_bands) columns, plus an unrounded
+            cqc_locations count - already exact against the published
+            figures. Sorted by period then region then main_service.
     """
     return (
         _filter_to_all_job_roles_rollup(publication_summary_lf)
@@ -1014,11 +1018,11 @@ def build_t1_filled_posts_perc_change_download_table(
         fy_start_month (int): month the financial year starts.
 
     Returns:
-        pl.LazyFrame: one row per (period, region, main_service), with a
-            period_label display column alongside the raw period date, and
-            a 1dp formatted display string (see format_percentage)
-            alongside each raw percentage change value. Sorted by period
-            then region then main_service.
+        pl.LazyFrame: one row per (period, region, main_service), with
+            estimated filled posts' annual and monthly percentage change
+            columns, each as a raw value and a 1dp formatted string (see
+            format_percentage). Sorted by period then region then
+            main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
@@ -1070,11 +1074,11 @@ def build_t2_location_count_perc_change_download_table(
         fy_start_month (int): month the financial year starts.
 
     Returns:
-        pl.LazyFrame: one row per (period, region, main_service), with a
-            period_label display column alongside the raw period date, and
-            a 1dp formatted display string (see format_percentage)
-            alongside each raw percentage change value. Sorted by period
-            then region then main_service.
+        pl.LazyFrame: one row per (period, region, main_service), with cqc
+            location count's annual and monthly percentage change columns,
+            each as a raw value and a 1dp formatted string (see
+            format_percentage). Sorted by period then region then
+            main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
