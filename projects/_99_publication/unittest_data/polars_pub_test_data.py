@@ -142,6 +142,14 @@ has_consistent_service_since_date_test_cases = [
         ],
     ),
     HasConsistentServiceSinceDateTestCase(
+        id="ignores_a_null_service_type_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-006", date(2025, 4, 1), _CH_ONLY, True),
+            ("1-006", date(2026, 4, 1), None, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
         id="false_when_there_are_no_rows_in_the_window",
         from_date=date(2027, 4, 1),
         expected_data=[("1-005", date(2025, 4, 1), _CH_NURSING, False)],
@@ -795,8 +803,8 @@ aggregate_to_publication_rows_test_cases = [
         ],
     ),
     AggregateToPublicationRowsTestCase(
-        # Every row of 1-009 fails the consistent service filters, so it adds nothing to any
-        # term's CT total however many rows it has.
+        # Every row of 1-009 fails the consistent service filters, so it adds
+        # nothing to any term's CT total however many rows it has.
         id="ct_total_is_zero_when_a_location_fails_the_filters_on_all_its_rows",
         input_data=[
             (

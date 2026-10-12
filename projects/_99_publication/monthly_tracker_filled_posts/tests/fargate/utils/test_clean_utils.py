@@ -75,7 +75,16 @@ class TestHasConsistentServiceSinceDate:
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
-            (IndCQC.primary_service_type, pl.String()),
+            (
+                IndCQC.primary_service_type,
+                pl.Enum(
+                    [
+                        PrimaryServiceType.care_home_with_nursing,
+                        PrimaryServiceType.care_home_only,
+                        PrimaryServiceType.non_residential,
+                    ]
+                ),
+            ),
         ]
     )
 

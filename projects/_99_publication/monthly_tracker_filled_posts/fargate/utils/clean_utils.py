@@ -131,12 +131,9 @@ def has_continuous_data_since_date(
 
 def has_consistent_service_since_date(from_date: date, column_alias: str) -> pl.Expr:
     """
-    Builds a polars expression for flagging locations that have been either a
-    care home or not a care home, but not both, on every import date from
-    from_date onwards.
-
-    Care home status is taken from primary_service_type. False for a location
-    with no rows on or after from_date.
+    Builds a polars expression for flagging locations whose care home status
+    (from primary_service_type) is the same on every import date from
+    from_date onwards. False when there are no rows on or after from_date.
 
     Args:
         from_date (date): the earliest import date to check from.
