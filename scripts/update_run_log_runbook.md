@@ -26,7 +26,7 @@ aws-mfa --mfa-profile prod --token xxxxxx
 uv sync
 ```
 
-The script is a bash script, so run it from Git Bash.
+The script needs Git Bash (bash 4 or later), so run it from there. Steps 1 and 2 can be done in a separate PowerShell window: the credentials are saved in your `.aws` folder and shared. `aws` and `uv` must be on the Git Bash PATH. The `aws-mfa` login with the `prod` profile also covers `non-prod`, which assumes its role through it.
 
 ## Steps
 1. From the repo root, run:
@@ -37,7 +37,7 @@ bash scripts/update_run_log.sh
 
 2. Answer the prompts:
    - **AWS profile**: the profile with access to the bucket (for example `prod`).
-   - **Bucket**: press Enter for `sfc-main-datasets`, or type a branch bucket name.
+   - **Bucket**: press Enter for `sfc-main-datasets`, or type a branch bucket name. Give the name only, without `s3://` or a trailing `/`.
    - **Run number**: a positive whole number, for example `12`.
    - **Flag**: `approved` (the only supported flag).
 3. Check the four inputs shown and answer `y` (or `n` to cancel; nothing has been copied yet). Anything other than y/yes/n/no is asked again.
@@ -50,6 +50,7 @@ bash scripts/update_run_log.sh
 - **You answer `n` at the upload prompt (or the update fails)**: the change is reverted. `run_log_updated/` is deleted, `run_log_original/` is left as it was, and nothing is uploaded.
 - **Could not authenticate**: repeat the prerequisites (the MFA credentials have expired after 12 hours).
 - **No run log found in the bucket**: check the bucket name. Nothing is uploaded.
+- **The upload fails part way**: the run's S3 folder may hold two parquet files, the old one and the new one, which reads as two rows for the run. A rerun then fails with "matches multiple rows". List the run's folder in S3 and delete the old-named file by hand (in the production bucket you can restore from object versions instead), then check the run's row.
 
 ## Undoing an update
 - **Branch bucket**: after a successful upload the script prints a restore command (an `aws s3 cp --recursive` then `aws s3 sync --delete` from `run_log_original/`). Run it to put that run back as it was. **Run it before running the script again**: every run replaces `run_log_original/`, and restoring from a later copy puts the changed value back.

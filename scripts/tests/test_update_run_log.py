@@ -1,4 +1,5 @@
-from datetime import datetime
+from dataclasses import dataclass, fields
+from datetime import date, datetime
 from pathlib import Path
 
 import polars as pl
@@ -13,30 +14,108 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveRunLogColumns as RunLog,
 )
 
+FLAG_COLUMNS = (
+    RunLog.approved,
+    RunLog.selected_for_publication,
+    RunLog.reconciled,
+    RunLog.locally_checked,
+)
+STRING_COLUMNS = (RunLog.commit_sha, RunLog.tag)
+
+
+def _column_type(column: str) -> type[pl.DataType]:
+    if column in FLAG_COLUMNS:
+        return pl.Boolean
+    if column in STRING_COLUMNS:
+        return pl.String
+    if column == RunLog.archive_date_time:
+        return pl.Datetime
+    return pl.Date
+
+
 RUN_LOG_SCHEMA = {
     Keys.archive_date: pl.String,
     Keys.run_number: pl.Int64,
-    RunLog.archive_date_time: pl.Datetime,
-    RunLog.approved: pl.Boolean,
-    RunLog.commit_sha: pl.String,
-    RunLog.tag: pl.String,
-    RunLog.selected_for_publication: pl.Boolean,
-    RunLog.reconciled: pl.Boolean,
-    RunLog.locally_checked: pl.Boolean,
+    **{field.default: _column_type(field.default) for field in fields(RunLog)},
+}
+
+DEFAULT_VALUES = {
+    pl.Boolean: False,
+    pl.Int64: 0,
+    pl.String: "abc123",
+    pl.Datetime: datetime(2026, 9, 22, 9, 0),
+    pl.Date: date(2026, 9, 1),
 }
 
 
 def build_run_log(runs: list[tuple[str, int, bool]]) -> pl.DataFrame:
-    """Builds a run log with one row per (archive_date, run_number, approved)."""
-    return pl.DataFrame(
-        [
-            (date, number, datetime(2026, 9, 22, 9, 0), approved, "abc123", None)
-            + (False, False, False)
-            for date, number, approved in runs
-        ],
-        schema=RUN_LOG_SCHEMA,
-        orient="row",
-    )
+    """Builds a full-width run log with one row per (archive_date, run_number, approved)."""
+    rows = []
+    for archive_date, run_number, approved in runs:
+        row = {
+            column: DEFAULT_VALUES[dtype] for column, dtype in RUN_LOG_SCHEMA.items()
+        }
+        row[Keys.archive_date] = archive_date
+        row[Keys.run_number] = run_number
+        row[RunLog.approved] = approved
+        row[RunLog.tag] = None
+        rows.append(row)
+    return pl.DataFrame(rows, schema=RUN_LOG_SCHEMA)
+
+
+@dataclass
+class SetRunFlagRaisesTestCase:
+    id: str
+    runs: list[tuple[str, int, bool]]
+    run_number: int
+    flag: str
+    message: str
+
+    def as_pytest_param(self):
+        return pytest.param(
+            self.runs, self.run_number, self.flag, self.message, id=self.id
+        )
+
+
+set_run_flag_raises_cases = [
+    SetRunFlagRaisesTestCase(
+        id="raises_when_run_number_not_found",
+        runs=[("2026-09-22", 1, False)],
+        run_number=99,
+        flag=RunLog.approved,
+        message="99",
+    ),
+    SetRunFlagRaisesTestCase(
+        id="raises_when_run_number_matches_multiple_rows",
+        runs=[("2026-09-22", 1, False), ("2026-09-29", 1, False)],
+        run_number=1,
+        flag=RunLog.approved,
+        message="multiple",
+    ),
+    SetRunFlagRaisesTestCase(
+        id="raises_when_flag_already_true",
+        runs=[("2026-09-22", 1, True)],
+        run_number=1,
+        flag=RunLog.approved,
+        message="already",
+    ),
+    *[
+        SetRunFlagRaisesTestCase(
+            id=f"raises_when_flag_is_not_supported_{flag}",
+            runs=[("2026-09-22", 1, False)],
+            run_number=1,
+            flag=flag,
+            message="not supported",
+        )
+        for flag in [
+            RunLog.reconciled,
+            RunLog.selected_for_publication,
+            RunLog.locally_checked,
+            RunLog.tag,
+            "unknown",
+        ]
+    ],
+]
 
 
 class TestSetRunFlag:
@@ -72,39 +151,15 @@ class TestSetRunFlag:
             run_log_df.filter(other_runs), returned_df.filter(other_runs)
         )
 
-    def test_raises_when_run_number_not_found(self):
-        run_log_df = build_run_log([("2026-09-22", 1, False)])
-
-        with pytest.raises(ValueError, match="99"):
-            job.set_run_flag(run_log_df, 99, RunLog.approved)
-
-    def test_raises_when_run_number_matches_multiple_rows(self):
-        run_log_df = build_run_log([("2026-09-22", 1, False), ("2026-09-29", 1, False)])
-
-        with pytest.raises(ValueError, match="multiple"):
-            job.set_run_flag(run_log_df, 1, RunLog.approved)
-
-    def test_raises_when_flag_already_true(self):
-        run_log_df = build_run_log([("2026-09-22", 1, True)])
-
-        with pytest.raises(ValueError, match="already"):
-            job.set_run_flag(run_log_df, 1, RunLog.approved)
-
     @pytest.mark.parametrize(
-        "flag",
-        [
-            RunLog.reconciled,
-            RunLog.selected_for_publication,
-            RunLog.locally_checked,
-            RunLog.tag,
-            "unknown",
-        ],
+        "runs, run_number, flag, message",
+        [case.as_pytest_param() for case in set_run_flag_raises_cases],
     )
-    def test_raises_when_flag_is_not_supported(self, flag):
-        run_log_df = build_run_log([("2026-09-22", 1, False)])
+    def test_raises_for_invalid_update(self, runs, run_number, flag, message):
+        run_log_df = build_run_log(runs)
 
-        with pytest.raises(ValueError, match="not supported"):
-            job.set_run_flag(run_log_df, 1, flag)
+        with pytest.raises(ValueError, match=message):
+            job.set_run_flag(run_log_df, run_number, flag)
 
 
 def write_run_log(run_log_dir: Path, run_log_df: pl.DataFrame) -> None:
@@ -142,8 +197,11 @@ class TestWriteRunPartition:
         job.write_run_partition(run_log_df, 2, tmp_path)
 
         written_files = [p.relative_to(tmp_path) for p in tmp_path.rglob("*.parquet")]
+        expected_folder = (
+            Path(f"{Keys.archive_date}=2026-09-29") / f"{Keys.run_number}=2"
+        )
         assert len(written_files) == 1
-        assert written_files[0].parent == Path("archive_date=2026-09-29/run_number=2")
+        assert written_files[0].parent == expected_folder
 
     def test_written_files_exclude_partition_key_columns(self, tmp_path):
         run_log_df = build_run_log([("2026-09-22", 1, True)])
@@ -213,7 +271,7 @@ class TestMain:
 
         self.run_main(original_dir, updated_dir, run_number="99")
 
-        assert not updated_dir.exists() or not any(updated_dir.rglob("*"))
+        assert not updated_dir.exists()
 
     def test_prints_changed_row(self, run_log_dirs, capsys):
         original_dir, updated_dir = run_log_dirs
@@ -221,5 +279,7 @@ class TestMain:
         self.run_main(original_dir, updated_dir)
 
         printed = capsys.readouterr().out
-        assert "2026-09-29" in printed
-        assert "before" in printed.lower() and "after" in printed.lower()
+        before_text, after_text = printed.split("After:")
+        assert "2026-09-29" in before_text
+        assert f"{RunLog.approved}: False" in before_text
+        assert f"{RunLog.approved}: True" in after_text

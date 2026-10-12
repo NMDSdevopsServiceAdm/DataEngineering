@@ -25,7 +25,8 @@ trap 'rm -rf "$UPDATED_DIR"' EXIT
 confirm() {
   local answer
   while true; do
-    read -r -p "$1 [y/n]: " answer
+    # Exits on end of input (Ctrl-D, piped stdin) instead of re-asking forever.
+    read -r -p "$1 [y/n]: " answer || exit 1
     case "${answer,,}" in
       y | yes) return 0 ;;
       n | no) return 1 ;;
@@ -47,8 +48,11 @@ while [[ -z "$profile" ]]; do
   read -r -p "AWS profile (e.g. prod or non-prod): " profile
 done
 
-read -r -p "Bucket [$MAIN_BUCKET]: " bucket
-bucket="${bucket:-$MAIN_BUCKET}"
+bucket=""
+until [[ "$bucket" =~ ^[a-z0-9.-]+$ ]]; do
+  read -r -p "Bucket name only, no s3:// or / [$MAIN_BUCKET]: " bucket
+  bucket="${bucket:-$MAIN_BUCKET}"
+done
 
 run_number=""
 until [[ "$run_number" =~ ^[1-9][0-9]*$ ]]; do
@@ -108,6 +112,11 @@ fi
 # --- Replace the run's partition on S3 ---
 partition_dir="$(find "$UPDATED_DIR" -type d -name "run_number=$run_number" -print -quit)"
 partition="${partition_dir#"$UPDATED_DIR"/}"
+# An empty or unexpected partition would aim the delete-capable sync at the wrong prefix.
+if [[ ! "$partition" =~ ^archive_date=[^/]+/run_number=$run_number$ ]]; then
+  echo "Error: updated partition for run $run_number not found. Nothing was uploaded." >&2
+  exit 1
+fi
 if ! aws s3 sync "$UPDATED_DIR/$partition/" "s3://$bucket/$RUN_LOG_PREFIX/$partition/" \
   --delete --profile "$profile"; then
   echo "Error: the upload to s3://$bucket/ failed, so the run log may be unchanged or partly updated." >&2

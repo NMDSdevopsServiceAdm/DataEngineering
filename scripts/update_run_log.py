@@ -113,6 +113,14 @@ def write_run_partition(
 
 
 def _parse_arguments(argv: Optional[Sequence[str]]) -> argparse.Namespace:
+    """Parses the command line arguments.
+
+    Args:
+        argv (Optional[Sequence[str]]): Command line arguments; defaults to `sys.argv`.
+
+    Returns:
+        argparse.Namespace: The parsed arguments.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run_log_dir", type=Path, required=True, help="Local run log")
     parser.add_argument(
