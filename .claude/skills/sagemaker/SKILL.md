@@ -5,7 +5,7 @@ description: Use when creating or editing a Jupyter notebook for the `data-engin
 
 # SageMaker notebooks
 
-Ad-hoc analysis runs as Jupyter notebooks on the `data-engineering-notebook` SageMaker instance (launch steps in `NOTEBOOKS.md`). The instance has Polars preinstalled (`conda_python3` kernel) but notebooks don't import this repo (`projects/`, `utils/`) — they stay self-contained. The repo is cloned onto the instance only to deliver the templates (see below).
+Ad-hoc analysis runs as Jupyter notebooks on the `data-engineering-notebook` SageMaker instance (launch steps in `NOTEBOOKS.md`). The instance has Polars preinstalled (`conda_python3` kernel; the templates need Polars 1.24 or later for `nulls_equal` and were tested on 1.44) but notebooks don't import this repo (`projects/`, `utils/`) — they stay self-contained. The repo is cloned onto the instance only to deliver the templates (see below).
 
 Claude can't reach AWS or the instance. Claude writes the `.ipynb`; the user gets it onto the instance, runs it and stops the instance. Never run a notebook against AWS from here.
 
@@ -22,11 +22,7 @@ To use one: open it from `~/SageMaker/templates/`, **Save As** into your own fol
 
 ## Getting the templates onto the instance
 
-Start the instance (`NOTEBOOKS.md`) and open JupyterLab. `sagemaker_setup.ipynb` can't fetch itself, so the **first time only** put it on the instance by hand. In JupyterLab, **File → New → Terminal**, then run (use `--branch <ticket-branch>` instead of `main` for a branch that hasn't merged yet):
-
-```bash
-cd ~/SageMaker && git clone --depth 1 --branch main https://github.com/NMDSdevopsServiceAdm/DataEngineering.git && mkdir -p templates && cp DataEngineering/notebooks/sagemaker/*.ipynb templates/
-```
+Start the instance (`NOTEBOOKS.md`) and open JupyterLab. `sagemaker_setup.ipynb` can't fetch itself, so the **first time only** put it on the instance by hand. In JupyterLab, **File → New → Terminal**, then run the command under "Notebook templates" in `NOTEBOOKS.md` (it uses `--branch main`; use `--branch <ticket-branch>` for a branch that hasn't merged yet).
 
 All templates, including `sagemaker_setup.ipynb`, are now in `~/SageMaker/templates/`. (No git or GitHub access? Download `sagemaker_setup.ipynb` from GitHub and use **Upload files** into `~/SageMaker`.) Then:
 
@@ -70,7 +66,7 @@ No notebook editor is available, so write nbformat-4 JSON (a short throwaway scr
 
 ## Adding or changing a template
 
-1. Add its name to `EXPECTED_TEMPLATES` in `tests/sagemaker/test_notebook_templates.py` — the tests fail until it exists and meets the rules above.
+1. Add its name to `EXPECTED_TEMPLATES` in `tests/sagemaker/test_notebook_templates.py` — the tests fail until it exists and meets the rules above. Any other `.ipynb` in the folder is checked against the same rules, registered or not.
 2. Write it in `notebooks/sagemaker/`, then list it under **Templates** here (`TestSkillMd` fails until the list and the folder match).
 
 ```bash

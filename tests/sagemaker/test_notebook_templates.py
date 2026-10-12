@@ -14,7 +14,12 @@ EXPECTED_TEMPLATES = [
     "interpolation_durations",
     "sagemaker_setup",
 ]
-TEMPLATE_CASES = [pytest.param(name, id=name) for name in EXPECTED_TEMPLATES]
+TEMPLATE_CASES = [
+    pytest.param(name, id=name)
+    for name in sorted(
+        set(EXPECTED_TEMPLATES) | {path.stem for path in TEMPLATES_DIR.glob("*.ipynb")}
+    )
+]
 
 EAGER_READ = re.compile(r"\bread_(parquet|csv|ndjson|json|excel)\s*\(")
 AWS_IDENTIFIER = re.compile(r"\b\d{12}\b|\b(AKIA|ASIA)[0-9A-Z]{16}\b")
