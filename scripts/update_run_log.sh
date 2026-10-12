@@ -77,7 +77,11 @@ if ! aws sts get-caller-identity --profile "$profile" > /dev/null; then
 fi
 
 rm -rf "$ORIGINAL_DIR" "$UPDATED_DIR"
-aws s3 sync "s3://$bucket/$RUN_LOG_PREFIX/" "$ORIGINAL_DIR" --profile "$profile"
+if ! aws s3 sync "s3://$bucket/$RUN_LOG_PREFIX/" "$ORIGINAL_DIR" --profile "$profile"; then
+  echo "Error: could not copy the run log from s3://$bucket/$RUN_LOG_PREFIX/." >&2
+  echo "Check the bucket name exists and that profile '$profile' can read it. Nothing changed." >&2
+  exit 1
+fi
 
 if [[ -z "$(find "$ORIGINAL_DIR" -name '*.parquet' -print -quit 2> /dev/null)" ]]; then
   echo "Error: no run log found at s3://$bucket/$RUN_LOG_PREFIX/. Nothing changed." >&2
@@ -104,14 +108,21 @@ fi
 # --- Replace the run's partition on S3 ---
 partition_dir="$(find "$UPDATED_DIR" -type d -name "run_number=$run_number" -print -quit)"
 partition="${partition_dir#"$UPDATED_DIR"/}"
-aws s3 sync "$UPDATED_DIR/$partition/" "s3://$bucket/$RUN_LOG_PREFIX/$partition/" \
-  --delete --profile "$profile"
+if ! aws s3 sync "$UPDATED_DIR/$partition/" "s3://$bucket/$RUN_LOG_PREFIX/$partition/" \
+  --delete --profile "$profile"; then
+  echo "Error: the upload to s3://$bucket/ failed, so the run log may be unchanged or partly updated." >&2
+  echo "Check profile '$profile' can write to the bucket, then check run $run_number in S3 before retrying." >&2
+  exit 1
+fi
 
 echo
 echo "Done: run $run_number now has $flag = True in s3://$bucket/."
 
 # The main bucket is versioned, so a bad update there is fixed manually from S3 versions.
 if [[ "$bucket" != "$MAIN_BUCKET" ]]; then
-  echo "To undo this on the branch bucket, run:"
-  echo "  aws s3 sync \"$ORIGINAL_DIR/$partition/\" \"s3://$bucket/$RUN_LOG_PREFIX/$partition/\" --delete --profile $profile"
+  # cp overwrites unconditionally: sync alone skips a same-sized file that isn't newer than S3's.
+  restore_source="$ORIGINAL_DIR/$partition/"
+  restore_target="s3://$bucket/$RUN_LOG_PREFIX/$partition/"
+  echo "To undo this on the branch bucket, run this before running the script again (each run replaces $ORIGINAL_DIR):"
+  echo "  aws s3 cp \"$restore_source\" \"$restore_target\" --recursive --profile $profile && aws s3 sync \"$restore_source\" \"$restore_target\" --delete --profile $profile"
 fi

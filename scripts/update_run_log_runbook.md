@@ -52,7 +52,7 @@ bash scripts/update_run_log.sh
 - **No run log found in the bucket**: check the bucket name. Nothing is uploaded.
 
 ## Undoing an update
-- **Branch bucket**: after a successful upload the script prints a restore command (an `aws s3 sync ... --delete` from `run_log_original/`). Run it to put that run back as it was.
+- **Branch bucket**: after a successful upload the script prints a restore command (an `aws s3 cp --recursive` then `aws s3 sync --delete` from `run_log_original/`). Run it to put that run back as it was. **Run it before running the script again**: every run replaces `run_log_original/`, and restoring from a later copy puts the changed value back.
 - **Production bucket (`sfc-main-datasets`)**: the bucket is versioned. No restore command is printed; restore the previous version of the run's parquet file from S3 object versions.
 
 ## Testing safely
