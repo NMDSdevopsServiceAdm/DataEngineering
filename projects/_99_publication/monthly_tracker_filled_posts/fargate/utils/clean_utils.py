@@ -16,18 +16,6 @@ from utils.column_values.categorical_column_values import (
 _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 _DISPERSION_WEIGHT_COLUMN_SUFFIX: str = "_dispersion_months_with_data"
-_DISPERSION_MEAN_COLUMN_SUFFIX: str = "_dispersion_mean"
-_DISPERSION_STD_COLUMN_SUFFIX: str = "_dispersion_std"
-_DISPERSION_LOWER_COLUMN_SUFFIX: str = "_dispersion_lower_limit"
-_DISPERSION_UPPER_COLUMN_SUFFIX: str = "_dispersion_upper_limit"
-_DISPERSION_CALCULATION_SUFFIXES: list[str] = [
-    _DISPERSION_COLUMN_SUFFIX,
-    _DISPERSION_WEIGHT_COLUMN_SUFFIX,
-    _DISPERSION_MEAN_COLUMN_SUFFIX,
-    _DISPERSION_STD_COLUMN_SUFFIX,
-    _DISPERSION_LOWER_COLUMN_SUFFIX,
-    _DISPERSION_UPPER_COLUMN_SUFFIX,
-]
 
 _DOWNLOAD_TABLE_GROUP_COLUMNS: list[str] = [
     IndCQC.current_region,
@@ -364,11 +352,10 @@ def add_dispersion_filter(
     of import dates with data, and include locations with a single import date
     (dispersion 0).
 
-    Dispersion, its weight, the mean, standard deviation and limits are written
-    to temporary columns rather than inlined as expressions, so each is
-    evaluated once. Polars re-evaluates a repeated window expression every time
-    it is referenced - measured at 4.5x slower than materialising it once on a
-    2.4m row frame.
+    Dispersion and its weight are written to temporary columns rather than
+    inlined as expressions. The boundary check references them several times,
+    and as a single expression Polars re-evaluates the window each time -
+    measured at 4.5x slower than materialising it once on a 2.4m row frame.
 
     Args:
         lazy_df (pl.LazyFrame): data to add the filter column to.
@@ -381,73 +368,33 @@ def add_dispersion_filter(
         pl.LazyFrame: lazy_df with column_alias added, constant across all rows
             of a location.
     """
-    stat_columns = {
-        name: {suffix: name + suffix for suffix in _DISPERSION_CALCULATION_SUFFIXES}
-        for name in column_names
-    }
+    dispersion_columns = [name + _DISPERSION_COLUMN_SUFFIX for name in column_names]
+    weight_columns = [name + _DISPERSION_WEIGHT_COLUMN_SUFFIX for name in column_names]
 
     lazy_df = lazy_df.with_columns(
         [
-            _dispersion_since_date(name, from_date).alias(
-                stat_columns[name][_DISPERSION_COLUMN_SUFFIX]
-            )
-            for name in column_names
+            _dispersion_since_date(name, from_date).alias(dispersion_column)
+            for name, dispersion_column in zip(column_names, dispersion_columns)
         ]
         + [
-            _dates_with_data_since_date(name, from_date).alias(
-                stat_columns[name][_DISPERSION_WEIGHT_COLUMN_SUFFIX]
-            )
-            for name in column_names
-        ]
-    )
-    lazy_df = lazy_df.with_columns(
-        [
-            expr.alias(stat_columns[name][suffix])
-            for name in column_names
-            for suffix, expr in zip(
-                [_DISPERSION_MEAN_COLUMN_SUFFIX, _DISPERSION_STD_COLUMN_SUFFIX],
-                _dispersion_mean_and_std(
-                    stat_columns[name][_DISPERSION_COLUMN_SUFFIX],
-                    stat_columns[name][_DISPERSION_WEIGHT_COLUMN_SUFFIX],
-                ),
-            )
-        ]
-    )
-    lazy_df = lazy_df.with_columns(
-        [
-            expr.alias(stat_columns[name][suffix])
-            for name in column_names
-            for suffix, expr in zip(
-                [_DISPERSION_LOWER_COLUMN_SUFFIX, _DISPERSION_UPPER_COLUMN_SUFFIX],
-                _dispersion_limits(
-                    stat_columns[name][_DISPERSION_MEAN_COLUMN_SUFFIX],
-                    stat_columns[name][_DISPERSION_STD_COLUMN_SUFFIX],
-                ),
-            )
+            _dates_with_data_since_date(name, from_date).alias(weight_column)
+            for name, weight_column in zip(column_names, weight_columns)
         ]
     )
     lazy_df = lazy_df.with_columns(
         pl.coalesce(
             [
-                (
-                    pl.col(stat_columns[name][_DISPERSION_COLUMN_SUFFIX])
-                    > pl.col(stat_columns[name][_DISPERSION_LOWER_COLUMN_SUFFIX])
+                _within_dispersion_boundaries(dispersion_column, weight_column)
+                for dispersion_column, weight_column in zip(
+                    dispersion_columns, weight_columns
                 )
-                & (
-                    pl.col(stat_columns[name][_DISPERSION_COLUMN_SUFFIX])
-                    < pl.col(stat_columns[name][_DISPERSION_UPPER_COLUMN_SUFFIX])
-                )
-                for name in column_names
             ]
         )
         .fill_null(False)
         .alias(column_alias)
     )
 
-    calculation_columns = [
-        column for columns in stat_columns.values() for column in columns.values()
-    ]
-    return lazy_df.drop(calculation_columns)
+    return lazy_df.drop(dispersion_columns + weight_columns)
 
 
 def _dates_with_data_since_date(column_name: str, from_date: date) -> pl.Expr:
@@ -509,25 +456,26 @@ def _dispersion_since_date(column_name: str, from_date: date) -> pl.Expr:
     return dispersion.fill_nan(None)
 
 
-def _dispersion_mean_and_std(
+def _within_dispersion_boundaries(
     dispersion_column: str, weight_column: str
-) -> tuple[pl.Expr, pl.Expr]:
+) -> pl.Expr:
     """
-    Builds polars expressions for the national mean and sample standard
-    deviation of a dispersion column.
+    Builds a polars expression for whether a dispersion is within boundaries.
 
-    Takes one dispersion value per location, each weighted by weight_column.
-    Locations with a null dispersion are excluded from both. The values are cast
-    to float64 for this step: at float32 precision, accumulated rounding error
-    across the tens of thousands of locations could flip a location sitting
-    close to a limit.
+    Takes the national mean and sample standard deviation over one dispersion
+    value per location, each weighted by weight_column. Locations with a null
+    dispersion are excluded from both, and stay null in the result so a caller
+    can fall back to another column. The values are cast to float64 for this
+    step: at float32 precision, accumulated rounding error across the tens of
+    thousands of locations behind the mean and standard deviation could flip a
+    location sitting close to a boundary.
 
     Args:
         dispersion_column (str): column holding a per-location dispersion.
         weight_column (str): column holding a per-location weight.
 
     Returns:
-        tuple[pl.Expr, pl.Expr]: the mean and standard deviation expressions.
+        pl.Expr: boolean expression, null where dispersion_column is null.
     """
     one_row_per_location_with_dispersion = (
         pl.col(IndCQC.location_id).is_first_distinct()
@@ -548,28 +496,15 @@ def _dispersion_mean_and_std(
     std_dispersion = (
         ((dispersion - mean_dispersion) ** 2 * weight).sum() / (total_weight - 1)
     ).sqrt()
-    return mean_dispersion, std_dispersion
 
-
-def _dispersion_limits(mean_column: str, std_column: str) -> tuple[pl.Expr, pl.Expr]:
-    """
-    Builds polars expressions for the lower and upper dispersion limits.
-
-    Args:
-        mean_column (str): column holding the national mean dispersion.
-        std_column (str): column holding the national standard deviation.
-
-    Returns:
-        tuple[pl.Expr, pl.Expr]: the lower limit, min(0, mean - 2 standard
-            deviations), and the upper limit, mean + 2 standard deviations.
-    """
-    mean_dispersion = pl.col(mean_column)
-    std_dispersion = pl.col(std_column)
-    lower_limit = pl.min_horizontal(
+    lower_boundary = pl.min_horizontal(
         pl.lit(0.0), mean_dispersion - _DISPERSION_BOUNDARY_STD_DEVS * std_dispersion
     )
-    upper_limit = mean_dispersion + _DISPERSION_BOUNDARY_STD_DEVS * std_dispersion
-    return lower_limit, upper_limit
+    upper_boundary = mean_dispersion + _DISPERSION_BOUNDARY_STD_DEVS * std_dispersion
+
+    return (pl.col(dispersion_column) > lower_boundary) & (
+        pl.col(dispersion_column) < upper_boundary
+    )
 
 
 def aggregate_to_publication_rows(

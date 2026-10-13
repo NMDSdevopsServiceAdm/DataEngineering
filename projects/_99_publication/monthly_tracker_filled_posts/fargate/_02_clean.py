@@ -41,6 +41,7 @@ def main(
         clean_utils.reduced_data_filter_expr(cutoff_date=cutoff_date)
     )
 
+    # location_estimate_filled_posts: job role estimates summed per location per import date.
     cleaned_lf = cleaned_lf.with_columns(
         pl.coalesce(
             IndCQC.ct_care_home_total_employed_imputed,
