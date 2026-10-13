@@ -93,7 +93,7 @@ if [[ -z "$(find "$ORIGINAL_DIR" -name '*.parquet' -print -quit 2> /dev/null)" ]
 fi
 
 # --- Update the local copy ---
-if ! uv run python scripts/update_run_log.py \
+if ! uv run python -m scripts.update_run_log \
   --run_log_dir "$ORIGINAL_DIR" \
   --output_dir "$UPDATED_DIR" \
   --run_number "$run_number" \

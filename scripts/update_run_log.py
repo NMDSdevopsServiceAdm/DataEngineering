@@ -2,7 +2,8 @@
 Set a flag to True for one run in a local copy of the archive run log.
 
 Works on local files only: `update_run_log.sh` copies the run log down from S3,
-runs this script, and uploads the changed partition.
+runs this script as a module from the repo root
+(`python -m scripts.update_run_log`), and uploads the changed partition.
 """
 
 import argparse
@@ -12,14 +13,10 @@ from typing import Optional, Sequence
 
 import polars as pl
 
-# Makes the repo root importable whether run directly or under pytest, where only
-# this script's own directory would otherwise be on the path.
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-from utils.column_names.ind_cqc_pipeline_columns import (  # noqa: E402
+from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as Keys,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (  # noqa: E402
+from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveRunLogColumns as RunLog,
 )
 

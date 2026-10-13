@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
 
@@ -14,29 +14,22 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveRunLogColumns as RunLog,
 )
 
-FLAG_COLUMNS = (
-    RunLog.approved,
-    RunLog.selected_for_publication,
-    RunLog.reconciled,
-    RunLog.locally_checked,
-)
-STRING_COLUMNS = (RunLog.commit_sha, RunLog.tag)
-
-
-def _column_type(column: str) -> type[pl.DataType]:
-    if column in FLAG_COLUMNS:
-        return pl.Boolean
-    if column in STRING_COLUMNS:
-        return pl.String
-    if column == RunLog.archive_date_time:
-        return pl.Datetime
-    return pl.Date
-
-
 RUN_LOG_SCHEMA = {
     Keys.archive_date: pl.String,
     Keys.run_number: pl.Int64,
-    **{field.default: _column_type(field.default) for field in fields(RunLog)},
+    RunLog.archive_date_time: pl.Datetime,
+    RunLog.max_ascwds_workplace_import_date: pl.Date,
+    RunLog.max_cqc_location_import_date: pl.Date,
+    RunLog.max_cqc_pir_import_date: pl.Date,
+    RunLog.max_ct_care_home_import_date: pl.Date,
+    RunLog.max_ct_non_res_import_date: pl.Date,
+    RunLog.max_current_ons_import_date: pl.Date,
+    RunLog.approved: pl.Boolean,
+    RunLog.commit_sha: pl.String,
+    RunLog.tag: pl.String,
+    RunLog.selected_for_publication: pl.Boolean,
+    RunLog.reconciled: pl.Boolean,
+    RunLog.locally_checked: pl.Boolean,
 }
 
 DEFAULT_VALUES = {

@@ -50,14 +50,14 @@ bash scripts/update_run_log.sh
 - **You answer `n` at the upload prompt (or the update fails)**: the change is reverted. `run_log_updated/` is deleted, `run_log_original/` is left as it was, and nothing is uploaded.
 - **Could not authenticate**: repeat the prerequisites (the MFA credentials have expired after 12 hours).
 - **No run log found in the bucket**: check the bucket name. Nothing is uploaded.
-- **The upload fails part way**: the run's S3 folder may hold two parquet files, the old one and the new one, which reads as two rows for the run. A rerun then fails with "matches multiple rows". List the run's folder in S3 and delete the old-named file by hand (in the production bucket you can restore from object versions instead), then check the run's row.
+- **The upload fails part way**: the run's S3 folder may hold two parquet files, the old one and the new one, which reads as two rows for the run. A rerun then fails with "matches multiple rows". Restore the run's original folder, then run the script again from the start. On a branch bucket, copy `run_log_original/archive_date=<date>/run_number=<n>/` back over the same folder in S3 with `aws s3 cp --recursive`, then `aws s3 sync --delete`, as in the restore command in "Undoing an update". In the production bucket, restore the previous object versions of the run's folder from S3.
 
 ## Undoing an update
 - **Branch bucket**: after a successful upload the script prints a restore command (an `aws s3 cp --recursive` then `aws s3 sync --delete` from `run_log_original/`). Run it to put that run back as it was. **Run it before running the script again**: every run replaces `run_log_original/`, and restoring from a later copy puts the changed value back.
 - **Production bucket (`sfc-main-datasets`)**: the bucket is versioned. No restore command is printed; restore the previous version of the run's parquet file from S3 object versions.
 
 ## Testing safely
-Trial runs should use a branch dataset bucket, not production. CircleCI copies the production run log into each branch's dataset bucket (the `copy-main-data` job), so enter the branch bucket name at the Bucket prompt. Check that the bucket prompt shows the branch bucket before confirming.
+Trial runs MUST use a branch dataset bucket, never production. CircleCI copies the production run log into each branch's dataset bucket (the `copy-main-data` job), so enter the branch bucket name at the Bucket prompt. Check that the bucket prompt shows the branch bucket before confirming.
 
 ## Notes
 - `run_log_original/` and `run_log_updated/` are created in the repo root and ignored by git. Each run clears both first.
