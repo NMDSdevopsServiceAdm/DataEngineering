@@ -39,12 +39,14 @@ def main(
     ascwds_workplace_source: str,
     reconciliation_single_and_subs_destination: str,
     reconciliation_parents_destination: str,
+    potentials_count_destination: str,
 ) -> None:
     """Builds the ASC-WDS reconciliation reports for deregistered CQC locations.
 
     Produces two manual-review reports: one for single/sub accounts and one for
     parent accounts, each listing ASC-WDS workplaces associated with CQC locations
     that have deregistered (or have no registration status) and need following up.
+    Also produces a one-row count of all potential matches.
 
     Args:
         cqc_locations_snapshot_source (str): Source s3 directory for the latest run
@@ -55,6 +57,8 @@ def main(
             for the singles and subs reconciliation report.
         reconciliation_parents_destination (str): Destination s3 directory for the
             parents reconciliation report.
+        potentials_count_destination (str): Destination s3 directory for the
+            potentials count.
     """
     cqc_location_lf = utils.scan_parquet(cqc_locations_snapshot_source)
     ascwds_workplace_lf = utils.scan_parquet(ascwds_workplace_source)
@@ -93,6 +97,11 @@ def main(
 
     utils.sink_to_parquet(single_and_sub_lf, reconciliation_single_and_subs_destination)
     utils.sink_to_parquet(parents_lf, reconciliation_parents_destination)
+
+    potentials_count_lf = build_potentials_count_output(
+        merged_ascwds_cqc_lf, first_of_most_recent_month
+    )
+    utils.sink_to_parquet(potentials_count_lf, potentials_count_destination)
 
 
 def get_reconciliation_month_boundaries(
@@ -222,6 +231,32 @@ def filter_to_locations_relevant_to_reconciliation_process(
                 | (is_single_or_sub_account & deregistered_since_previous_month)
             )
         )
+    )
+
+
+def build_potentials_count_output(
+    merged_ascwds_cqc_lf: pl.LazyFrame, first_of_most_recent_month: date
+) -> pl.LazyFrame:
+    """Counts workplaces that could be matched to CQC if they fixed their location ID.
+
+    Counts every workplace with no CQC registration status, or deregistered before
+    the current month, regardless of account type or when the issue arose. Each
+    NMDS ID counts once. Aggregates to one row, so the output is tiny.
+
+    Args:
+        merged_ascwds_cqc_lf (pl.LazyFrame): ASC-WDS workplace data joined to CQC
+            location data.
+        first_of_most_recent_month (date): First day of the most recent month.
+
+    Returns:
+        pl.LazyFrame: One row with the count in `potentials_count`.
+    """
+    is_potential = pl.col(CQCL.registration_status).is_null() | (
+        (pl.col(CQCL.registration_status) == RegistrationStatus.deregistered)
+        & (pl.col(CQCL.deregistration_date) < first_of_most_recent_month)
+    )
+    return merged_ascwds_cqc_lf.filter(is_potential).select(
+        pl.col(AWPClean.nmds_id).n_unique().alias(ReconColumn.potentials_count)
     )
 
 
@@ -467,12 +502,17 @@ if __name__ == "__main__":
             "--reconciliation_parents_destination",
             "Destination s3 directory for the parents reconciliation report",
         ),
+        (
+            "--potentials_count_destination",
+            "Destination s3 directory for the potentials count",
+        ),
     )
     main(
         args.cqc_locations_snapshot_source,
         args.ascwds_workplace_source,
         args.reconciliation_single_and_subs_destination,
         args.reconciliation_parents_destination,
+        args.potentials_count_destination,
     )
 
     print("Fargate job 'reconciliation' complete")
