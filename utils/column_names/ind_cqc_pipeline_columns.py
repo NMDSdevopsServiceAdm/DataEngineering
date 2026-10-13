@@ -544,9 +544,15 @@ class EmploymentStatusColumns:
     )
     agency_percentage_full_imputed: str = agency_percentage + "_full_imputed"
     other_percentage_full_imputed: str = other_percentage + "_full_imputed"
+    estimated_permanent_percentage: str = "estimated_" + permanent_percentage
+    estimated_temporary_percentage: str = "estimated_" + temporary_percentage
+    estimated_bank_or_pool_percentage: str = "estimated_" + bank_or_pool_percentage
+    estimated_agency_percentage: str = "estimated_" + agency_percentage
+    estimated_other_percentage: str = "estimated_" + other_percentage
+    estimated_percentage_source: str = "estimated_emplstat_percentage_source"
     employee_count: str = "emplstat_employee_count"
-    estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
-    estimated_emp_stat_temp: str = "estimated_emp_stat_temp"
+    estimated_emp_stat_permanent: str = "estimated_emp_stat_permanent"
+    estimated_emp_stat_temporary: str = "estimated_emp_stat_temporary"
     estimated_emp_stat_bank_or_pool: str = "estimated_emp_stat_bank_or_pool"
     estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
     estimated_emp_stat_other: str = "estimated_emp_stat_other"
@@ -582,32 +588,61 @@ class StartersLeaversVacanciesColumns:
 
 
 @dataclass
-class EmploymentStatusMagicNumberRateColumns:
-    service: str = "service"
-    weighting_job_role: str = "weighting_job_role"
-    emp_stat_perm: str = "emp_stat_perm"
-    emp_stat_temp: str = "emp_stat_temp"
-    emp_stat_bank_or_pool: str = "emp_stat_bank_or_pool"
-    emp_stat_agency: str = "emp_stat_agency"
-    emp_stat_other: str = "emp_stat_other"
-
-
-@dataclass
 class ModelEvaluationColumns:
     """The names of the columns added when evaluating models, such as filled posts."""
 
-    fold: str = "fold"
-    never_submitted: str = "never_submitted"
-    size_band: str = "size_band"
-    column_name: str = "column_name"
-    mean_period_to_period_change: str = "mean_period_to_period_change"
-    weighted_absolute_percentage_error: str = "weighted_absolute_percentage_error"
-    financial_year: str = "financial_year"
-    number_of_rows: str = "number_of_rows"
     bias: str = "bias"
-    number_of_periods: str = "number_of_periods"
-    minimum_rows_in_period: str = "minimum_rows_in_period"
     bias_slope_per_year: str = "bias_slope_per_year"
+    column_name: str = "column_name"
+    coverage: str = "coverage"
+    financial_year: str = "financial_year"
+    fold: str = "fold"
+    group: str = "group"
+    hit_max_iter: str = "hit_max_iter"
+    imputed_target_posts: str = "imputed_target_posts"
+    known_rows: str = "known_rows"
+    known_rows_scored: str = "known_rows_scored"
+    level: str = "level"
+    locations: str = "locations"
+    log_prediction: str = "log_prediction"
+    max_iter: str = "max_iter"
+    mean_period_to_period_change: str = "mean_period_to_period_change"
+    metric: str = "metric"
+    minimum_rows_in_period: str = "minimum_rows_in_period"
+    model: str = "model"
+    n_iter: str = "n_iter"
+    never_submitted: str = "never_submitted"
+    number_of_features: str = "number_of_features"
+    number_of_groups: str = "number_of_groups"
+    number_of_periods: str = "number_of_periods"
+    number_of_rows: str = "number_of_rows"
+    prediction_unclipped: str = "prediction_unclipped"
+    ratio_prediction: str = "ratio_prediction"
+    rows: str = "rows"
+    size_band: str = "size_band"
+    value: str = "value"
+    weighted_absolute_percentage_error: str = "weighted_absolute_percentage_error"
+    zero_coefficients: str = "zero_coefficients"
+
+
+@dataclass
+class ModelEvaluationLabels:
+    """The levels and group/fold labels in long-format model evaluation scores."""
+
+    pooled: str = "pooled"
+    all_rows: str = "all_rows"
+    all_groups: str = "all"
+    coverage: str = "coverage"
+    headline_group_totals: str = "headline_group_totals"
+    headline_by_year: str = "headline_by_year"
+    period_totals: str = "period_totals"
+    size_band: str = "size_band"
+    row_level_posts: str = "row_level_posts"
+    row_level_metadata_scale: str = "row_level_metadata_scale"
+    imputed_target_rows: str = "imputed_target_rows"
+    imputed_target_period_bias: str = "imputed_target_period_bias"
+    fit_diagnostics: str = "fit_diagnostics"
+    jumpiness: str = "jumpiness"
 
 
 @dataclass

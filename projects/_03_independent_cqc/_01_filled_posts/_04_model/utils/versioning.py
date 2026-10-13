@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 import boto3
 import joblib
+import polars as pl
 from sklearn.base import BaseEstimator
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
@@ -100,6 +101,43 @@ def save_model_and_metadata(
         Bucket=bucket,
         Key=f"{run_prefix}metadata.json",
         Body=json.dumps(metadata_to_save, indent=2).encode("utf-8"),
+        ContentType="application/json",
+    )
+
+
+def save_metrics(
+    s3_root: str, run_number: int, metrics_df: pl.DataFrame, coefficients: dict
+) -> None:
+    """
+    Saves a model run's evaluation metrics and coefficients in S3, beside its model.
+
+    Structure:
+        s3_root/<run_number>/
+            ├── metrics.parquet
+            └── coefficients.json
+
+    Args:
+        s3_root (str): S3 directory prefix for a model's run outputs (e.g. "s3://pipeline-resources/models/model_A/")
+        run_number (int): The run/version number to save under.
+        metrics_df (pl.DataFrame): Long-format metrics, one row per metric value.
+        coefficients (dict): Feature name to fitted coefficient, on the standardised scale.
+    """
+    s3 = boto3.client("s3")
+    bucket, prefix = split_s3_uri(s3_root)
+    run_prefix = f"{prefix}{run_number}/"
+
+    metrics_buffer = io.BytesIO()
+    metrics_df.write_parquet(metrics_buffer)
+
+    s3.put_object(
+        Bucket=bucket,
+        Key=f"{run_prefix}metrics.parquet",
+        Body=metrics_buffer.getvalue(),
+    )
+    s3.put_object(
+        Bucket=bucket,
+        Key=f"{run_prefix}coefficients.json",
+        Body=json.dumps(coefficients, indent=2).encode("utf-8"),
         ContentType="application/json",
     )
 
