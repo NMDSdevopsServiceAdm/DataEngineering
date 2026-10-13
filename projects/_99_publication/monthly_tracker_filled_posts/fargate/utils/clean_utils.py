@@ -335,35 +335,11 @@ def format_percentage(column_name: str, column_alias: str) -> pl.Expr:
     )
 
 
-def dispersion_calculation_columns(
-    column_names: list[str], calculation_suffix: str
-) -> list[str]:
-    """
-    Names of the calculation columns add_dispersion_filter keeps when given
-    calculation_suffix.
-
-    Args:
-        column_names (list[str]): the capacity tracker columns dispersion was
-            measured on.
-        calculation_suffix (str): the suffix given to add_dispersion_filter.
-
-    Returns:
-        list[str]: dispersion, months with data, mean, standard deviation, lower
-            limit and upper limit column names for each column in column_names.
-    """
-    return [
-        name + stat_suffix + calculation_suffix
-        for name in column_names
-        for stat_suffix in _DISPERSION_CALCULATION_SUFFIXES
-    ]
-
-
 def add_dispersion_filter(
     lazy_df: pl.LazyFrame,
     column_names: list[str],
     from_date: date,
     column_alias: str,
-    calculation_suffix: str | None = None,
 ) -> pl.LazyFrame:
     """
     Flags locations whose capacity tracker data is no more volatile than average.
@@ -389,10 +365,10 @@ def add_dispersion_filter(
     (dispersion 0).
 
     Dispersion, its weight, the mean, standard deviation and limits are written
-    to columns rather than inlined as expressions, so each is evaluated once.
-    Polars re-evaluates a repeated window expression every time it is
-    referenced - measured at 4.5x slower than materialising it once on a 2.4m
-    row frame. These columns are dropped unless calculation_suffix is given.
+    to temporary columns rather than inlined as expressions, so each is
+    evaluated once. Polars re-evaluates a repeated window expression every time
+    it is referenced - measured at 4.5x slower than materialising it once on a
+    2.4m row frame.
 
     Args:
         lazy_df (pl.LazyFrame): data to add the filter column to.
@@ -400,9 +376,6 @@ def add_dispersion_filter(
             dispersion on, in coalesce priority order.
         from_date (date): the earliest import date to measure from.
         column_alias (str): name to give the resulting boolean column.
-        calculation_suffix (str | None): if given, the calculation columns are
-            kept, named by dispersion_calculation_columns. Defaults to None,
-            dropping them.
 
     Returns:
         pl.LazyFrame: lazy_df with column_alias added, constant across all rows
@@ -474,11 +447,7 @@ def add_dispersion_filter(
     calculation_columns = [
         column for columns in stat_columns.values() for column in columns.values()
     ]
-    if calculation_suffix is None:
-        return lazy_df.drop(calculation_columns)
-    return lazy_df.rename(
-        {column: column + calculation_suffix for column in calculation_columns}
-    )
+    return lazy_df.drop(calculation_columns)
 
 
 def _dates_with_data_since_date(column_name: str, from_date: date) -> pl.Expr:

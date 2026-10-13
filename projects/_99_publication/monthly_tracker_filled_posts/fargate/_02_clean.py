@@ -16,7 +16,6 @@ def main(
     t0_destination: str,
     t1_destination: str,
     t2_destination: str,
-    filter_flags_destination: str | None = None,
 ) -> None:
     """
     Cleans merged job role data and builds the T0/T1/T2 data-download tables.
@@ -30,8 +29,6 @@ def main(
             posts percentage change download table
         t2_destination (str): destination s3 directory for the T2 location
             count percentage change download table
-        filter_flags_destination (str | None): if given, destination s3 directory
-            for the per-location, per-import-date filter flags
     """
     merged_lf = utils.scan_parquet(merge_data_source)
 
@@ -98,70 +95,19 @@ def main(
         ct_employed_columns,
         long_term_from_date,
         Pub.ct_dispersion_filter_long_term,
-        calculation_suffix="_long_term",
     )
     cleaned_lf = clean_utils.add_dispersion_filter(
         cleaned_lf,
         ct_employed_columns,
         medium_term_from_date,
         Pub.ct_dispersion_filter_medium_term,
-        calculation_suffix="_medium_term",
     )
     cleaned_lf = clean_utils.add_dispersion_filter(
         cleaned_lf,
         ct_employed_columns,
         short_term_from_date,
         Pub.ct_dispersion_filter_short_term,
-        calculation_suffix="_short_term",
     )
-
-    if filter_flags_destination is not None:
-        filter_flags_lf = cleaned_lf.select(
-            IndCQC.location_id,
-            IndCQC.cqc_location_import_date,
-            IndCQC.current_region,
-            IndCQC.primary_service_type,
-            IndCQC.ct_care_home_total_employed_imputed,
-            IndCQC.ct_non_res_care_workers_employed_imputed,
-            Pub.ct_total_employed_imputed,
-            Pub.consistent_service_long_term,
-            Pub.consistent_service_medium_term,
-            Pub.consistent_service_short_term,
-            Pub.ct_has_data_long_term,
-            Pub.ct_has_data_medium_term,
-            Pub.ct_has_data_short_term,
-            Pub.ct_dispersion_filter_long_term,
-            Pub.ct_dispersion_filter_medium_term,
-            Pub.ct_dispersion_filter_short_term,
-            *[
-                column
-                for term_suffix in ("_long_term", "_medium_term", "_short_term")
-                for column in clean_utils.dispersion_calculation_columns(
-                    ct_employed_columns, term_suffix
-                )
-            ],
-        ).unique(subset=[IndCQC.location_id, IndCQC.cqc_location_import_date])
-        filter_flags_lf = filter_flags_lf.with_columns(
-            pl.all_horizontal(
-                Pub.consistent_service_long_term,
-                Pub.ct_has_data_long_term,
-                Pub.ct_dispersion_filter_long_term,
-            ).alias(Pub.passes_all_filters_long_term),
-            pl.all_horizontal(
-                Pub.consistent_service_medium_term,
-                Pub.ct_has_data_medium_term,
-                Pub.ct_dispersion_filter_medium_term,
-            ).alias(Pub.passes_all_filters_medium_term),
-            pl.all_horizontal(
-                Pub.consistent_service_short_term,
-                Pub.ct_has_data_short_term,
-                Pub.ct_dispersion_filter_short_term,
-            ).alias(Pub.passes_all_filters_short_term),
-        )
-        utils.sink_to_parquet(
-            lazy_df=filter_flags_lf,
-            output_path=filter_flags_destination,
-        )
 
     publication_summary_lf = clean_utils.aggregate_to_publication_rows(cleaned_lf)
     publication_summary_lf = clean_utils.add_rows_for_publication_groups(
@@ -294,11 +240,6 @@ if __name__ == "__main__":
             "Destination s3 directory for the T2 location count percentage "
             "change download table",
         ),
-        (
-            "--filter_flags_destination",
-            "Destination s3 directory for the filter flags",
-            False,
-        ),
     )
     main(
         args.merge_data_source,
@@ -306,5 +247,4 @@ if __name__ == "__main__":
         args.t0_destination,
         args.t1_destination,
         args.t2_destination,
-        args.filter_flags_destination,
     )
