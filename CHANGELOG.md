@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-
+- Added validation of the job role estimates archive run log.
 
 ### Changed
 
