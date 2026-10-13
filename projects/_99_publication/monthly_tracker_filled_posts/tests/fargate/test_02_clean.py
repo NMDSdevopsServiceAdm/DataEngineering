@@ -76,7 +76,7 @@ class TestMain:
             lambda from_date, column_alias: pl.lit(True).alias(column_alias)
         )
         add_dispersion_filter_mock.side_effect = (
-            lambda lazy_df, column_names, from_date, column_alias: (
+            lambda lazy_df, column_names, from_date, column_alias, **kwargs: (
                 lazy_df.with_columns(pl.lit(True).alias(column_alias))
             )
         )
@@ -416,7 +416,7 @@ class TestMain:
             lambda from_date, column_alias: pl.lit(True).alias(column_alias)
         )
         add_dispersion_filter_mock.side_effect = (
-            lambda lazy_df, column_names, from_date, column_alias: (
+            lambda lazy_df, column_names, from_date, column_alias, **kwargs: (
                 lazy_df.with_columns(pl.lit(True).alias(column_alias))
             )
         )

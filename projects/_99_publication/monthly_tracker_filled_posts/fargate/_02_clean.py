@@ -98,18 +98,21 @@ def main(
         ct_employed_columns,
         long_term_from_date,
         Pub.ct_dispersion_filter_long_term,
+        calculation_suffix="_long_term",
     )
     cleaned_lf = clean_utils.add_dispersion_filter(
         cleaned_lf,
         ct_employed_columns,
         medium_term_from_date,
         Pub.ct_dispersion_filter_medium_term,
+        calculation_suffix="_medium_term",
     )
     cleaned_lf = clean_utils.add_dispersion_filter(
         cleaned_lf,
         ct_employed_columns,
         short_term_from_date,
         Pub.ct_dispersion_filter_short_term,
+        calculation_suffix="_short_term",
     )
 
     if filter_flags_destination is not None:
@@ -130,6 +133,13 @@ def main(
             Pub.ct_dispersion_filter_long_term,
             Pub.ct_dispersion_filter_medium_term,
             Pub.ct_dispersion_filter_short_term,
+            *[
+                column
+                for term_suffix in ("_long_term", "_medium_term", "_short_term")
+                for column in clean_utils.dispersion_calculation_columns(
+                    ct_employed_columns, term_suffix
+                )
+            ],
         ).unique(subset=[IndCQC.location_id, IndCQC.cqc_location_import_date])
         filter_flags_lf = filter_flags_lf.with_columns(
             pl.all_horizontal(
