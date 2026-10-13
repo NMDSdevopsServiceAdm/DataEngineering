@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-
+- Added validation of the job role estimates archive run log.
 
 ### Changed
 
@@ -25,7 +25,6 @@ All notable changes to this project will be documented in this file.
 - Moved the job role estimates archive and its two validations from the standalone Ind-CQC-Archive step function into the Independent CQC filled posts estimates step function, and removed Ind-CQC-Archive.
 - Added a Polars scaffold for the CQC ratings flatten job, run in SfC-Internal alongside the PySpark job. It writes to separate `_polars` datasets and its failure doesn't stop the other jobs.
 - Added a run log table to the job role estimates archive, recording one row per run.
-- Added validation of the job role estimates archive run log.
 - Added validation checks for columns that are created but never checked, across the Independent CQC filled posts, employment status, starters/leavers/vacancies, CQC locations/providers ingest, CQC PIR, Capacity Tracker, ONS postcode directory and direct payment recipients validators.
 - Added a `col_vals_in_set`/distinct-count validation check for ASC-WDS workplace `region_id`, the one ASC-WDS-adjacent categorical column that previously had no validation backing it.
 - Joined worker-derived employment status counts into the SLV merge step, collapsing worker job roles to the published scheme already used by workplace and job-role-estimate data, and applying the same null-location and date-reduction filtering `_00_prepare_workplace` already uses so the worker and workplace import dates line up for the join.
