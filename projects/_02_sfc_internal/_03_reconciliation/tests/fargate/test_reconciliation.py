@@ -526,6 +526,26 @@ class TestBuildPotentialsCountOutput:
 
         assert returned_df[ReconColumn.potentials_count].item() == 3
 
+    def test_ignores_null_nmds_ids(self):
+        input_lf = pl.LazyFrame(
+            {
+                AWPClean.nmds_id: ["1", None],
+                CQCL.registration_status: [None, None],
+                CQCL.deregistration_date: [None, None],
+            },
+            schema={
+                AWPClean.nmds_id: pl.String,
+                CQCL.registration_status: pl.String,
+                CQCL.deregistration_date: pl.Date,
+            },
+        )
+
+        returned_df = job.build_potentials_count_output(
+            input_lf, FIRST_OF_MOST_RECENT_MONTH
+        ).collect()
+
+        assert returned_df[ReconColumn.potentials_count].item() == 1
+
     def test_returns_zero_when_no_workplaces_qualify(self):
         input_lf = pl.LazyFrame(
             schema={

@@ -255,8 +255,17 @@ def build_potentials_count_output(
         (pl.col(CQCL.registration_status) == RegistrationStatus.deregistered)
         & (pl.col(CQCL.deregistration_date) < first_of_most_recent_month)
     )
-    return merged_ascwds_cqc_lf.filter(is_potential).select(
-        pl.col(AWPClean.nmds_id).n_unique().alias(ReconColumn.potentials_count)
+    return (
+        merged_ascwds_cqc_lf.select(
+            AWPClean.nmds_id, CQCL.registration_status, CQCL.deregistration_date
+        )
+        .filter(is_potential)
+        .select(
+            pl.col(AWPClean.nmds_id)
+            .drop_nulls()
+            .n_unique()
+            .alias(ReconColumn.potentials_count)
+        )
     )
 
 
