@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added validation of the job role estimates archive run log.
+
+### Changed
+
+
+### Improved
+
+
+### Fixed
+
+
+
+## [v2026.09.0] - 13/10/2026
+
+### Added
 - Added scripts to mark a run as approved in the job role estimates archive run log, and copied the run log into branch dataset buckets in CircleCI.
 - Moved the job role estimates archive and its two validations from the standalone Ind-CQC-Archive step function into the Independent CQC filled posts estimates step function, and removed Ind-CQC-Archive.
 - Added a Polars scaffold for the CQC ratings flatten job, run in SfC-Internal alongside the PySpark job. It writes to separate `_polars` datasets and its failure doesn't stop the other jobs.
@@ -55,9 +70,6 @@ All notable changes to this project will be documented in this file.
 - Changed the job group labels (`JobGroupLabels`) from snake_case to human-readable values, e.g. "direct_care" to "Direct care", so `main_job_group_labels` data values change on every run.
 - Added the Excel packages `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image, and extended the Docker pin test to cover every `requirements-extra.txt`.
 - Added a `trello-cards` Claude Code skill that drafts paste-ready Trello cards from a plan or a one-line idea.
-
-
-### Changed
 - Restructured the Direct Payment Recipients pipeline to match Independent CQC: numbered job and dataset names, parallel validation, and error notification with an always-run crawler.
 - Converted the split PA filled posts into ICB areas step of the Direct Payment Recipients pipeline from PySpark to Polars.
 - Added `number_of_beds_at_provider` to the grouped providers output dataset.
