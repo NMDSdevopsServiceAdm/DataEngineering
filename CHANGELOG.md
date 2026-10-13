@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added scripts to mark a run as approved in the job role estimates archive run log, and copied the run log into branch dataset buckets in CircleCI.
+- Moved the job role estimates archive and its two validations from the standalone Ind-CQC-Archive step function into the Independent CQC filled posts estimates step function, and removed Ind-CQC-Archive.
 - Added a Polars scaffold for the CQC ratings flatten job, run in SfC-Internal alongside the PySpark job. It writes to separate `_polars` datasets and its failure doesn't stop the other jobs.
 - Added a run log table to the job role estimates archive, recording one row per run.
 - Added validation checks for columns that are created but never checked, across the Independent CQC filled posts, employment status, starters/leavers/vacancies, CQC locations/providers ingest, CQC PIR, Capacity Tracker, ONS postcode directory and direct payment recipients validators.
@@ -44,7 +46,7 @@ All notable changes to this project will be documented in this file.
 - Added a shared definition of the rows a filled posts model trains on, now used by the model training job.
 - Added filled posts model cross-validation helpers: out-of-fold predictions from a model spec and non-res size bands.
 - Added financial year, row-level, per-period bias and bias slope scoring to the project-level model evaluation utilities.
-
+- Added utilities to score filled posts models on held-out locations and save the metrics beside a model run. Not yet used by any job.
 
 ### Changed
 - Replaced the employment status magic-number split with estimated percentages (cleaned, then imputed, then rolling average), their source, and estimated counts and employees. Removed the rates CSV input.
