@@ -241,7 +241,8 @@ def build_potentials_count_output(
 
     Counts every workplace with no CQC registration status, or deregistered before
     the current month, regardless of account type or when the issue arose. Each
-    NMDS ID counts once. Aggregates to one row, so the output is tiny.
+    NMDS ID counts once. Also splits the count by whether the workplace has a
+    location ID. Aggregates to one row, so the output is tiny.
 
     Args:
         merged_ascwds_cqc_lf (pl.LazyFrame): ASC-WDS workplace data joined to CQC
@@ -249,22 +250,32 @@ def build_potentials_count_output(
         first_of_most_recent_month (date): First day of the most recent month.
 
     Returns:
-        pl.LazyFrame: One row with the count in `potentials_count`.
+        pl.LazyFrame: One row with `potentials_count` and its split into
+            `potentials_with_location_id` and `potentials_without_location_id`.
     """
     is_potential = pl.col(CQCL.registration_status).is_null() | (
         (pl.col(CQCL.registration_status) == RegistrationStatus.deregistered)
         & (pl.col(CQCL.deregistration_date) < first_of_most_recent_month)
     )
+    nmds_id = pl.col(AWPClean.nmds_id).drop_nulls()
+    has_location_id = pl.col(CQCL.location_id).is_not_null()
+
     return (
         merged_ascwds_cqc_lf.select(
-            AWPClean.nmds_id, CQCL.registration_status, CQCL.deregistration_date
+            AWPClean.nmds_id,
+            CQCL.location_id,
+            CQCL.registration_status,
+            CQCL.deregistration_date,
         )
         .filter(is_potential)
         .select(
-            pl.col(AWPClean.nmds_id)
-            .drop_nulls()
+            nmds_id.n_unique().alias(ReconColumn.potentials_count),
+            nmds_id.filter(has_location_id)
             .n_unique()
-            .alias(ReconColumn.potentials_count)
+            .alias(ReconColumn.potentials_with_location_id),
+            nmds_id.filter(~has_location_id)
+            .n_unique()
+            .alias(ReconColumn.potentials_without_location_id),
         )
     )
 

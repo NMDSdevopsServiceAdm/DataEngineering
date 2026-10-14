@@ -87,7 +87,11 @@ class TestMain:
         assert parents_df.height == 0
 
         potentials_count_df = potentials_count_args[0].collect()
-        assert potentials_count_df.columns == [ReconColumn.potentials_count]
+        assert potentials_count_df.columns == [
+            ReconColumn.potentials_count,
+            ReconColumn.potentials_with_location_id,
+            ReconColumn.potentials_without_location_id,
+        ]
         assert potentials_count_df.height == 1
 
 
@@ -478,6 +482,29 @@ potentials_count_cases = [
 
 
 class TestBuildPotentialsCountOutput:
+    def input_lf(
+        self,
+        nmds_ids,
+        location_ids=None,
+        registration_statuses=None,
+        deregistration_dates=None,
+    ) -> pl.LazyFrame:
+        n = len(nmds_ids)
+        return pl.LazyFrame(
+            {
+                AWPClean.nmds_id: nmds_ids,
+                CQCL.location_id: location_ids or ["loc"] * n,
+                CQCL.registration_status: registration_statuses or [None] * n,
+                CQCL.deregistration_date: deregistration_dates or [None] * n,
+            },
+            schema={
+                AWPClean.nmds_id: pl.String,
+                CQCL.location_id: pl.String,
+                CQCL.registration_status: pl.String,
+                CQCL.deregistration_date: pl.Date,
+            },
+        )
+
     @pytest.mark.parametrize(
         "registration_status, deregistration_date, expected_counted",
         [c.as_pytest_param() for c in potentials_count_cases],
@@ -485,17 +512,8 @@ class TestBuildPotentialsCountOutput:
     def test_counts_workplace_when_unmatched_or_deregistered_before_current_month(
         self, registration_status, deregistration_date, expected_counted
     ):
-        input_lf = pl.LazyFrame(
-            {
-                AWPClean.nmds_id: ["1"],
-                CQCL.registration_status: [registration_status],
-                CQCL.deregistration_date: [deregistration_date],
-            },
-            schema={
-                AWPClean.nmds_id: pl.String,
-                CQCL.registration_status: pl.String,
-                CQCL.deregistration_date: pl.Date,
-            },
+        input_lf = self.input_lf(
+            ["1"], None, [registration_status], [deregistration_date]
         )
 
         returned_df = job.build_potentials_count_output(
@@ -504,21 +522,8 @@ class TestBuildPotentialsCountOutput:
 
         assert returned_df[ReconColumn.potentials_count].item() == int(expected_counted)
 
-    def test_counts_each_nmds_id_once_across_account_types(self):
-        input_lf = pl.LazyFrame(
-            {
-                AWPClean.nmds_id: ["1", "2", "3", "3"],
-                AWPClean.organisation_id: ["org", "org", "org2", "org2"],
-                CQCL.registration_status: [None] * 4,
-                CQCL.deregistration_date: [None] * 4,
-            },
-            schema={
-                AWPClean.nmds_id: pl.String,
-                AWPClean.organisation_id: pl.String,
-                CQCL.registration_status: pl.String,
-                CQCL.deregistration_date: pl.Date,
-            },
-        )
+    def test_counts_each_nmds_id_once(self):
+        input_lf = self.input_lf(["1", "2", "3", "3"])
 
         returned_df = job.build_potentials_count_output(
             input_lf, FIRST_OF_MOST_RECENT_MONTH
@@ -527,18 +532,7 @@ class TestBuildPotentialsCountOutput:
         assert returned_df[ReconColumn.potentials_count].item() == 3
 
     def test_ignores_null_nmds_ids(self):
-        input_lf = pl.LazyFrame(
-            {
-                AWPClean.nmds_id: ["1", None],
-                CQCL.registration_status: [None, None],
-                CQCL.deregistration_date: [None, None],
-            },
-            schema={
-                AWPClean.nmds_id: pl.String,
-                CQCL.registration_status: pl.String,
-                CQCL.deregistration_date: pl.Date,
-            },
-        )
+        input_lf = self.input_lf(["1", None])
 
         returned_df = job.build_potentials_count_output(
             input_lf, FIRST_OF_MOST_RECENT_MONTH
@@ -546,20 +540,35 @@ class TestBuildPotentialsCountOutput:
 
         assert returned_df[ReconColumn.potentials_count].item() == 1
 
-    def test_returns_zero_when_no_workplaces_qualify(self):
-        input_lf = pl.LazyFrame(
-            schema={
-                AWPClean.nmds_id: pl.String,
-                CQCL.registration_status: pl.String,
-                CQCL.deregistration_date: pl.Date,
-            }
+    def test_splits_count_by_whether_location_id_is_present(self):
+        input_lf = self.input_lf(
+            ["1", "2", "3", "4"],
+            location_ids=["loc_1", None, "loc_3", None],
+            registration_statuses=[
+                RegistrationStatus.deregistered,
+                None,
+                None,
+                None,
+            ],
+            deregistration_dates=[date(2020, 1, 1), None, None, None],
         )
 
         returned_df = job.build_potentials_count_output(
             input_lf, FIRST_OF_MOST_RECENT_MONTH
         ).collect()
 
-        assert returned_df[ReconColumn.potentials_count].item() == 0
+        assert returned_df[ReconColumn.potentials_count].item() == 4
+        assert returned_df[ReconColumn.potentials_with_location_id].item() == 2
+        assert returned_df[ReconColumn.potentials_without_location_id].item() == 2
+
+    def test_returns_zero_counts_when_no_workplaces_qualify(self):
+        input_lf = self.input_lf([])
+
+        returned_df = job.build_potentials_count_output(
+            input_lf, FIRST_OF_MOST_RECENT_MONTH
+        ).collect()
+
+        assert returned_df.row(0) == (0, 0, 0)
 
 
 class TestBuildSingleAndSubsOutput:

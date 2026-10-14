@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
+- Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID), split by whether they have a location ID.
 - Added validation of the job role estimates archive run log.
 
 ### Changed
