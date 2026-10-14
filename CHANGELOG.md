@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added validation of the job role estimates archive run log.
 
 ### Changed
-- Split the reconciliation reports by whether a deregistered CQC location has a successor, using a new `has_successor` flag on the latest CQC snapshot.
+- Split the reconciliation reports by whether a deregistered CQC location has a successor.
 - Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 
 ### Improved

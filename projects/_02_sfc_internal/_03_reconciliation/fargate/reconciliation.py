@@ -243,10 +243,9 @@ def build_potentials_count_output(
 ) -> pl.LazyFrame:
     """Counts workplaces that could be matched to CQC if they fixed their location ID.
 
-    Counts every workplace with no CQC registration status (non-linked), or
-    deregistered before the current month (with or without a successor),
-    regardless of account type or when the issue arose. Each NMDS ID counts once.
-    Aggregates to one row, so the output is tiny.
+    Counts every workplace with no CQC registration status (non-linked) or
+    deregistered before the current month, regardless of account type or when the
+    issue arose. Each NMDS ID counts once. Aggregates to one row.
 
     Args:
         merged_ascwds_cqc_lf (pl.LazyFrame): ASC-WDS workplace data joined to CQC
@@ -254,15 +253,16 @@ def build_potentials_count_output(
         first_of_most_recent_month (date): First day of the most recent month.
 
     Returns:
-        pl.LazyFrame: One row with the total in `potentials_count` and its split into
-            deregistered with successor, deregistered without successor, and
-            non-linked.
+        pl.LazyFrame: One row with the total and its split into deregistered with
+            successor, deregistered without successor, and non-linked.
     """
     is_non_linked = pl.col(CQCL.registration_status).is_null()
     is_deregistered = (
         pl.col(CQCL.registration_status) == RegistrationStatus.deregistered
     ) & (pl.col(CQCL.deregistration_date) < first_of_most_recent_month)
-    has_successor = pl.col(CQCLClean.has_successor) == HasSuccessor.has_successor
+    has_successor = (
+        pl.col(CQCLClean.has_successor) == HasSuccessor.has_successor
+    ).fill_null(False)
 
     def count_nmds_ids(condition: pl.Expr) -> pl.Expr:
         return pl.col(AWPClean.nmds_id).filter(condition).drop_nulls().n_unique()

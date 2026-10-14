@@ -33,11 +33,10 @@ def save_latest_full_snapshot(
 
     All registered and deregistered locations in the latest full snapshot of CQC locations are saved.
     This data is used in the Skills for Care (SfC) internal reconciliation process.
-    `has_successor` is "Y" if `relationships_types` contains "HSCA Successor", otherwise "N".
+    `has_successor` is "Y" if `relationships_types` contains "HSCA Successor", else "N".
 
     Args:
-        cqc_lf (pl.LazyFrame): LazyFrame containing CQC location data, including
-            the `relationships_types` column.
+        cqc_lf (pl.LazyFrame): CQC location data with `relationships_types`.
         cqc_full_snapshot_destination (str): S3 URI to save CQC deregistered locations data.
     """
     cqc_lf = cqc_lf.select(
