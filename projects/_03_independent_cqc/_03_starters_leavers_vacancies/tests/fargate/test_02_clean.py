@@ -18,14 +18,14 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.cleanUtils.create_slv_rate_columns")
-    @patch(f"{PATCH_PATH}.cUtils.remove_repeated_values_over_time")
+    @patch(f"{PATCH_PATH}.cleaningUtils.remove_repeated_values_over_time_as_group")
     @patch(f"{PATCH_PATH}.cUtils.null_not_known_values")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         null_not_known_values_mock: Mock,
-        remove_repeated_values_over_time_mock: Mock,
+        remove_repeated_values_over_time_as_group_mock: Mock,
         create_slv_rate_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -43,7 +43,7 @@ class TestMain:
             missing_rule=SLVFilteringRule.missing_data,
             not_known_rule=SLVFilteringRule.contained_invalid_missing_data_code,
         )
-        remove_repeated_values_over_time_mock.assert_called_once_with(
+        remove_repeated_values_over_time_as_group_mock.assert_called_once_with(
             null_not_known_values_mock.return_value,
             columns_to_clean=[
                 SLVCols.starters_cleaned,
@@ -55,9 +55,11 @@ class TestMain:
                 IndCQC.published_job_role_label,
             ],
             date_column=IndCQC.cqc_location_import_date,
+            workplace_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
+            independent=True,
         )
         create_slv_rate_columns_mock.assert_called_once_with(
-            remove_repeated_values_over_time_mock.return_value
+            remove_repeated_values_over_time_as_group_mock.return_value
         )
 
         sink_to_parquet_mock.assert_called_once_with(

@@ -1,3 +1,4 @@
+import numpy as np
 import polars as pl
 import polars.testing as pl_testing
 import pytest
@@ -13,6 +14,9 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     ModelEvaluationColumns as ModelEvaluation,
 )
+
+
+ROW_COUNT_SCHEMA = {ModelEvaluation.number_of_rows: pl.UInt32}
 
 
 class TestAssignLocationFolds:
@@ -162,7 +166,7 @@ class TestAggregateTotalsByGroup:
     def test_group_totals_sum_predicted_and_known_posts(self, case):
         pl_testing.assert_frame_equal(
             self.aggregate(case),
-            pl.LazyFrame(case.expected_data),
+            pl.LazyFrame(case.expected_data, schema_overrides=ROW_COUNT_SCHEMA),
             check_row_order=False,
         )
 
@@ -176,7 +180,7 @@ class TestAggregateTotalsByGroup:
     def test_rows_without_known_posts_excluded_from_totals(self, case):
         pl_testing.assert_frame_equal(
             self.aggregate(case),
-            pl.LazyFrame(case.expected_data),
+            pl.LazyFrame(case.expected_data, schema_overrides=ROW_COUNT_SCHEMA),
             check_row_order=False,
         )
 
@@ -207,3 +211,123 @@ class TestScoreGroupTotals:
         pl_testing.assert_frame_equal(
             self.score(case), pl.LazyFrame(case.expected_data), check_row_order=False
         )
+
+
+class TestAddFinancialYear:
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in Data.financial_year_test_cases]
+    )
+    def test_financial_year_is_the_year_it_started_in(self, case):
+        input_lf = pl.LazyFrame({IndCQC.cqc_location_import_date: case.dates})
+
+        returned_lf = job.add_financial_year(input_lf, IndCQC.cqc_location_import_date)
+
+        assert returned_lf.collect()[ModelEvaluation.financial_year].to_list() == (
+            case.expected_years
+        )
+
+
+class TestScoreRows:
+    @staticmethod
+    def score(case) -> pl.LazyFrame:
+        return job.score_rows(
+            pl.LazyFrame(case.input_data),
+            predicted_column=IndCQC.estimate_filled_posts,
+            actual_column=IndCQC.ascwds_filled_posts_dedup_clean,
+            by_columns=case.by_columns,
+        )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            c.as_pytest_param()
+            for c in Data.score_rows_test_cases
+            + Data.rows_without_known_posts_not_scored_test_cases
+            + Data.scores_split_by_fold_test_cases
+        ],
+    )
+    def test_rows_scored_in_posts(self, case):
+        pl_testing.assert_frame_equal(
+            self.score(case),
+            pl.LazyFrame(case.expected_data, schema_overrides=ROW_COUNT_SCHEMA),
+            check_row_order=False,
+        )
+
+
+class TestCalculatePeriodBias:
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in Data.period_bias_test_cases]
+    )
+    def test_bias_measured_in_each_period_and_group(self, case):
+        returned_lf = job.calculate_period_bias(
+            pl.LazyFrame(case.input_data),
+            predicted_column=IndCQC.estimate_filled_posts,
+            actual_column=IndCQC.ascwds_filled_posts_dedup_clean,
+            period_column=IndCQC.cqc_location_import_date,
+            by_columns=[IndCQC.primary_service_type],
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            pl.LazyFrame(case.expected_data, schema_overrides=ROW_COUNT_SCHEMA),
+            check_row_order=False,
+        )
+
+
+class TestFitBiasSlopePerYear:
+    @staticmethod
+    def fit(period_bias_lf: pl.LazyFrame) -> pl.LazyFrame:
+        return job.fit_bias_slope_per_year(
+            period_bias_lf,
+            actual_column=IndCQC.ascwds_filled_posts_dedup_clean,
+            period_column=IndCQC.cqc_location_import_date,
+            by_columns=[IndCQC.primary_service_type],
+        )
+
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in Data.bias_slope_test_cases]
+    )
+    def test_slope_and_period_counts_reported_per_group(self, case):
+        returned_lf = self.fit(
+            pl.LazyFrame(
+                case.input_data,
+                schema_overrides=ROW_COUNT_SCHEMA,
+            )
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            pl.LazyFrame(
+                case.expected_data,
+                schema_overrides={
+                    ModelEvaluation.number_of_periods: pl.UInt32,
+                    ModelEvaluation.minimum_rows_in_period: pl.UInt32,
+                },
+            ),
+            check_row_order=False,
+        )
+
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in Data.weighted_bias_slope_test_cases]
+    )
+    def test_slope_weighted_by_known_total(self, case):
+        input_lf = pl.LazyFrame(
+            {
+                IndCQC.primary_service_type: ["group"] * len(case.dates),
+                IndCQC.cqc_location_import_date: case.dates,
+                ModelEvaluation.bias: case.biases,
+                IndCQC.ascwds_filled_posts_dedup_clean: case.known_totals,
+                ModelEvaluation.number_of_rows: [1] * len(case.dates),
+            }
+        )
+        years = [(d - case.dates[0]).days / 365.25 for d in case.dates]
+        # polyfit weights multiply the residuals, so weighting by total needs the square root.
+        expected_slope = np.polyfit(
+            years, case.biases, deg=1, w=np.sqrt(case.known_totals)
+        )[0]
+
+        returned_slope = self.fit(input_lf).collect()[
+            ModelEvaluation.bias_slope_per_year
+        ][0]
+
+        assert returned_slope == pytest.approx(expected_slope)

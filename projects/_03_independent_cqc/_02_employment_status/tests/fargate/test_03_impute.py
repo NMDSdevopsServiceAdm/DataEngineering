@@ -15,6 +15,7 @@ class TestMain:
         assert job.ROLLING_AVERAGE_PERIOD == "6mo"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.iUtils.add_full_imputed_percentages")
     @patch(f"{PATCH_PATH}.iUtils.add_rolling_average_percentages")
     @patch(f"{PATCH_PATH}.iUtils.add_short_term_imputed_percentages")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
@@ -23,6 +24,7 @@ class TestMain:
         scan_parquet_mock: Mock,
         add_short_term_imputed_percentages_mock: Mock,
         add_rolling_average_percentages_mock: Mock,
+        add_full_imputed_percentages_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -41,7 +43,11 @@ class TestMain:
             rolling_period=job.ROLLING_AVERAGE_PERIOD,
         )
 
+        add_full_imputed_percentages_mock.assert_called_once_with(
+            add_rolling_average_percentages_mock.return_value
+        )
+
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=add_rolling_average_percentages_mock.return_value,
+            lazy_df=add_full_imputed_percentages_mock.return_value,
             output_path=self.IMPUTED_DATA_DESTINATION,
         )

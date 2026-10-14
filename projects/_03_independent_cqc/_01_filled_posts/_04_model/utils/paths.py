@@ -30,6 +30,19 @@ def generate_ind_cqc_path(data_bucket: str) -> str:
     return f"s3://{data_bucket}/domain=03_ind_cqc/dataset=01_filled_posts_03_imputed/"
 
 
+def generate_cleaned_path(data_bucket: str) -> str:
+    """
+    Generate S3 path for the cleaned filled posts dataset.
+
+    Args:
+        data_bucket (str): The S3 bucket where datasets are stored.
+
+    Returns:
+        str: The S3 path for the cleaned filled posts dataset.
+    """
+    return f"s3://{data_bucket}/domain=03_ind_cqc/dataset=01_filled_posts_02_cleaned/"
+
+
 def generate_features_path(data_bucket: str, model: str) -> str:
     """
     Generate S3 path for features dataset for the specified model.
