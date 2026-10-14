@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Fixed
-- Fixed the monthly tracker publication's capacity tracker filters to match the Tableau filters: same service type is checked per term, has-value also requires positive CT and estimates, and dispersion limits use months-weighted statistics.
+- Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
 
 
 ## [v2026.09.0] - 13/10/2026

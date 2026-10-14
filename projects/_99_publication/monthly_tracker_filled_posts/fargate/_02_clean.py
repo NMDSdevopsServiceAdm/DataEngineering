@@ -41,16 +41,11 @@ def main(
         clean_utils.reduced_data_filter_expr(cutoff_date=cutoff_date)
     )
 
-    # location_estimate_filled_posts: job role estimates summed per location per import date.
     cleaned_lf = cleaned_lf.with_columns(
         pl.coalesce(
             IndCQC.ct_care_home_total_employed_imputed,
             IndCQC.ct_non_res_care_workers_employed_imputed,
-        ).alias(Pub.ct_total_employed_imputed),
-        pl.col(IndCQC.estimate_filled_posts_by_job_role)
-        .sum()
-        .over(IndCQC.location_id, IndCQC.cqc_location_import_date)
-        .alias(Pub.location_estimate_filled_posts),
+        ).alias(Pub.ct_total_employed_imputed)
     )
 
     # 1 July 2021 is the earliest date this CT data exists, so long_term_from_date
@@ -71,17 +66,17 @@ def main(
             short_term_from_date, Pub.consistent_service_short_term
         ),
         clean_utils.has_continuous_data_since_date(
-            [Pub.ct_total_employed_imputed, Pub.location_estimate_filled_posts],
+            Pub.ct_total_employed_imputed,
             long_term_from_date,
             Pub.ct_has_data_long_term,
         ),
         clean_utils.has_continuous_data_since_date(
-            [Pub.ct_total_employed_imputed, Pub.location_estimate_filled_posts],
+            Pub.ct_total_employed_imputed,
             medium_term_from_date,
             Pub.ct_has_data_medium_term,
         ),
         clean_utils.has_continuous_data_since_date(
-            [Pub.ct_total_employed_imputed, Pub.location_estimate_filled_posts],
+            Pub.ct_total_employed_imputed,
             short_term_from_date,
             Pub.ct_has_data_short_term,
         ),

@@ -160,7 +160,7 @@ has_consistent_service_since_date_test_cases = [
 @dataclass
 class HasContinuousDataSinceDateTestCase:
     id: str
-    column_names: list[str]
+    column_name: str
     from_date: date
     column_alias: str
     expected_data: list[Any]
@@ -171,8 +171,8 @@ class HasContinuousDataSinceDateTestCase:
 
 has_continuous_data_since_date_test_cases = [
     HasContinuousDataSinceDateTestCase(
-        id="true_when_all_values_are_positive_since_cutoff",
-        column_names=[IndCQC.ct_care_home_total_employed_imputed],
+        id="true_when_no_nulls_in_the_checked_column_since_cutoff",
+        column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2021, 7, 1),
         column_alias=Pub.ct_has_data_long_term,
         expected_data=[
@@ -182,7 +182,7 @@ has_continuous_data_since_date_test_cases = [
     ),
     HasContinuousDataSinceDateTestCase(
         id="false_when_the_checked_column_has_a_null_since_cutoff",
-        column_names=[IndCQC.ct_care_home_total_employed_imputed],
+        column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2021, 7, 1),
         column_alias=Pub.ct_has_data_long_term,
         expected_data=[
@@ -191,18 +191,8 @@ has_continuous_data_since_date_test_cases = [
         ],
     ),
     HasContinuousDataSinceDateTestCase(
-        id="false_when_the_checked_column_is_zero_since_cutoff",
-        column_names=[IndCQC.ct_care_home_total_employed_imputed],
-        from_date=date(2021, 7, 1),
-        column_alias=Pub.ct_has_data_long_term,
-        expected_data=[
-            ("1-009", date(2021, 7, 1), 5.0, None, False),
-            ("1-009", date(2022, 7, 1), 0.0, None, False),
-        ],
-    ),
-    HasContinuousDataSinceDateTestCase(
         id="false_for_location_with_no_rows_on_or_after_cutoff",
-        column_names=[IndCQC.ct_care_home_total_employed_imputed],
+        column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2021, 7, 1),
         column_alias=Pub.ct_has_data_long_term,
         expected_data=[
@@ -210,8 +200,8 @@ has_continuous_data_since_date_test_cases = [
         ],
     ),
     HasContinuousDataSinceDateTestCase(
-        id="honours_the_column_names_argument",
-        column_names=[IndCQC.ct_non_res_care_workers_employed_imputed],
+        id="honours_the_column_name_argument",
+        column_name=IndCQC.ct_non_res_care_workers_employed_imputed,
         from_date=date(2021, 7, 1),
         column_alias=Pub.ct_has_data_long_term,
         expected_data=[
@@ -220,25 +210,8 @@ has_continuous_data_since_date_test_cases = [
         ],
     ),
     HasContinuousDataSinceDateTestCase(
-        # 1-010 has a positive care home value throughout but a zero non-res
-        # value at one date; 1-011 is positive in both throughout.
-        id="false_unless_every_listed_column_is_positive_on_every_date",
-        column_names=[
-            IndCQC.ct_care_home_total_employed_imputed,
-            IndCQC.ct_non_res_care_workers_employed_imputed,
-        ],
-        from_date=date(2021, 7, 1),
-        column_alias=Pub.ct_has_data_long_term,
-        expected_data=[
-            ("1-010", date(2021, 7, 1), 5.0, 3.0, False),
-            ("1-010", date(2022, 7, 1), 5.0, 0.0, False),
-            ("1-011", date(2021, 7, 1), 5.0, 3.0, True),
-            ("1-011", date(2022, 7, 1), 5.0, 4.0, True),
-        ],
-    ),
-    HasContinuousDataSinceDateTestCase(
         id="honours_a_non_default_column_alias",
-        column_names=[IndCQC.ct_care_home_total_employed_imputed],
+        column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2025, 4, 1),
         column_alias=Pub.ct_has_data_medium_term,
         expected_data=[
@@ -247,7 +220,7 @@ has_continuous_data_since_date_test_cases = [
     ),
     HasContinuousDataSinceDateTestCase(
         id="false_for_location_missing_a_period_another_location_has",
-        column_names=[IndCQC.ct_care_home_total_employed_imputed],
+        column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2021, 7, 1),
         column_alias=Pub.ct_has_data_long_term,
         expected_data=[
@@ -260,7 +233,7 @@ has_continuous_data_since_date_test_cases = [
     ),
     HasContinuousDataSinceDateTestCase(
         id="duplicate_rows_at_the_same_date_do_not_inflate_the_count",
-        column_names=[IndCQC.ct_care_home_total_employed_imputed],
+        column_name=IndCQC.ct_care_home_total_employed_imputed,
         from_date=date(2021, 7, 1),
         column_alias=Pub.ct_has_data_long_term,
         expected_data=[
@@ -349,8 +322,9 @@ add_dispersion_filter_test_cases = [
         ],
     ),
     AddDispersionFilterTestCase(
-        # 1-006 repeats one import date over three job role rows. Over rows its
-        # dispersion would be 1.714, failing it; over distinct dates it is 1.2.
+        # 1-006 repeats one import date over three job role rows. Averaged over
+        # rows its dispersion would be 1.714 not 1.2, putting it outside the
+        # boundaries the other five locations set.
         id="repeated_job_role_rows_do_not_bias_the_mean",
         column_names=CT_EMPLOYED_COLUMNS,
         from_date=date(2021, 7, 1),
@@ -359,13 +333,13 @@ add_dispersion_filter_test_cases = [
             ("1-001", date(2021, 7, 1), 10.0, None, True),
             ("1-001", date(2022, 7, 1), 40.0, None, True),
             ("1-002", date(2021, 7, 1), 10.0, None, True),
-            ("1-002", date(2022, 7, 1), 42.0, None, True),
+            ("1-002", date(2022, 7, 1), 40.0, None, True),
             ("1-003", date(2021, 7, 1), 10.0, None, True),
-            ("1-003", date(2022, 7, 1), 38.0, None, True),
+            ("1-003", date(2022, 7, 1), 40.0, None, True),
             ("1-004", date(2021, 7, 1), 10.0, None, True),
-            ("1-004", date(2022, 7, 1), 41.0, None, True),
+            ("1-004", date(2022, 7, 1), 40.0, None, True),
             ("1-005", date(2021, 7, 1), 10.0, None, True),
-            ("1-005", date(2022, 7, 1), 39.0, None, True),
+            ("1-005", date(2022, 7, 1), 40.0, None, True),
             ("1-006", date(2021, 7, 1), 10.0, None, True),
             ("1-006", date(2021, 7, 1), 10.0, None, True),
             ("1-006", date(2021, 7, 1), 10.0, None, True),
@@ -381,13 +355,13 @@ add_dispersion_filter_test_cases = [
             ("1-001", date(2021, 7, 1), 10.0, None, True),
             ("1-001", date(2022, 7, 1), 40.0, None, True),
             ("1-002", date(2021, 7, 1), 10.0, None, True),
-            ("1-002", date(2022, 7, 1), 42.0, None, True),
+            ("1-002", date(2022, 7, 1), 40.0, None, True),
             ("1-003", date(2021, 7, 1), 10.0, None, True),
-            ("1-003", date(2022, 7, 1), 38.0, None, True),
+            ("1-003", date(2022, 7, 1), 40.0, None, True),
             ("1-004", date(2021, 7, 1), 10.0, None, True),
-            ("1-004", date(2022, 7, 1), 41.0, None, True),
+            ("1-004", date(2022, 7, 1), 40.0, None, True),
             ("1-005", date(2021, 7, 1), 10.0, None, True),
-            ("1-005", date(2022, 7, 1), 39.0, None, True),
+            ("1-005", date(2022, 7, 1), 40.0, None, True),
             ("1-006", date(2021, 7, 1), 10.0, None, True),
             ("1-006", date(2022, 7, 1), 40.0, None, True),
             ("1-007", date(2021, 7, 1), None, None, False),
@@ -396,32 +370,11 @@ add_dispersion_filter_test_cases = [
         ],
     ),
     AddDispersionFilterTestCase(
-        # 1-006 has one import date so its dispersion is 0. The population's
-        # mean - 2 standard deviations is above 0, so the lower boundary is 0 and
-        # 0 is not above it.
-        id="false_for_a_location_with_one_import_date_when_the_lower_boundary_is_zero",
-        column_names=CT_EMPLOYED_COLUMNS,
-        from_date=date(2021, 7, 1),
-        column_alias=Pub.ct_dispersion_filter_long_term,
-        expected_data=[
-            ("1-001", date(2021, 7, 1), 10.0, None, True),
-            ("1-001", date(2022, 7, 1), 40.0, None, True),
-            ("1-002", date(2021, 7, 1), 10.0, None, True),
-            ("1-002", date(2022, 7, 1), 42.0, None, True),
-            ("1-003", date(2021, 7, 1), 10.0, None, True),
-            ("1-003", date(2022, 7, 1), 38.0, None, True),
-            ("1-004", date(2021, 7, 1), 10.0, None, True),
-            ("1-004", date(2022, 7, 1), 41.0, None, True),
-            ("1-005", date(2021, 7, 1), 10.0, None, True),
-            ("1-005", date(2022, 7, 1), 39.0, None, True),
-            ("1-006", date(2021, 7, 1), 50.0, None, False),
-        ],
-    ),
-    AddDispersionFilterTestCase(
-        # The population's spread is wide enough that mean - 2 standard deviations
-        # is below 0, so a dispersion of 0 (1-001, and 1-006's single import date)
-        # passes.
-        id="true_for_a_location_with_one_import_date_when_the_lower_boundary_is_negative",
+        # 1-006 has only one import date in the window, so its trivial zero
+        # dispersion must not be treated as evidence of stability - the flat
+        # population here means it would otherwise land exactly on the
+        # boundary and pass.
+        id="false_for_a_location_with_only_one_import_date_in_the_window",
         column_names=CT_EMPLOYED_COLUMNS,
         from_date=date(2021, 7, 1),
         column_alias=Pub.ct_dispersion_filter_long_term,
@@ -429,17 +382,19 @@ add_dispersion_filter_test_cases = [
             ("1-001", date(2021, 7, 1), 100.0, None, True),
             ("1-001", date(2022, 7, 1), 100.0, None, True),
             ("1-002", date(2021, 7, 1), 100.0, None, True),
-            ("1-002", date(2022, 7, 1), 150.0, None, True),
+            ("1-002", date(2022, 7, 1), 100.0, None, True),
             ("1-003", date(2021, 7, 1), 100.0, None, True),
-            ("1-003", date(2022, 7, 1), 200.0, None, True),
+            ("1-003", date(2022, 7, 1), 100.0, None, True),
             ("1-004", date(2021, 7, 1), 100.0, None, True),
-            ("1-004", date(2022, 7, 1), 300.0, None, True),
+            ("1-004", date(2022, 7, 1), 100.0, None, True),
             ("1-005", date(2021, 7, 1), 100.0, None, True),
-            ("1-005", date(2022, 7, 1), 500.0, None, True),
-            ("1-006", date(2021, 7, 1), 100.0, None, True),
+            ("1-005", date(2022, 7, 1), 100.0, None, True),
+            ("1-006", date(2021, 7, 1), 50.0, None, False),
         ],
     ),
     AddDispersionFilterTestCase(
+        # A zero mean gives an undefined dispersion, which must not propagate
+        # into the boundaries and fail every other location.
         id="false_for_a_location_reporting_zero_at_every_import_date",
         column_names=CT_EMPLOYED_COLUMNS,
         from_date=date(2021, 7, 1),
@@ -448,13 +403,13 @@ add_dispersion_filter_test_cases = [
             ("1-001", date(2021, 7, 1), 10.0, None, True),
             ("1-001", date(2022, 7, 1), 40.0, None, True),
             ("1-002", date(2021, 7, 1), 10.0, None, True),
-            ("1-002", date(2022, 7, 1), 42.0, None, True),
+            ("1-002", date(2022, 7, 1), 40.0, None, True),
             ("1-003", date(2021, 7, 1), 10.0, None, True),
-            ("1-003", date(2022, 7, 1), 38.0, None, True),
+            ("1-003", date(2022, 7, 1), 40.0, None, True),
             ("1-004", date(2021, 7, 1), 10.0, None, True),
-            ("1-004", date(2022, 7, 1), 41.0, None, True),
+            ("1-004", date(2022, 7, 1), 40.0, None, True),
             ("1-005", date(2021, 7, 1), 10.0, None, True),
-            ("1-005", date(2022, 7, 1), 39.0, None, True),
+            ("1-005", date(2022, 7, 1), 40.0, None, True),
             ("1-006", date(2021, 7, 1), 10.0, None, True),
             ("1-006", date(2022, 7, 1), 40.0, None, True),
             ("1-007", date(2021, 7, 1), 0.0, None, False),
@@ -463,7 +418,7 @@ add_dispersion_filter_test_cases = [
     ),
     AddDispersionFilterTestCase(
         # 1-006's spike is before from_date. Counting it would give a dispersion
-        # far above the other locations' and fail the location.
+        # of 2.25 and fail the location.
         id="ignores_import_dates_before_from_date",
         column_names=CT_EMPLOYED_COLUMNS,
         from_date=date(2025, 4, 1),
@@ -474,146 +429,19 @@ add_dispersion_filter_test_cases = [
             ("1-001", date(2026, 4, 1), 100.0, None, True),
             ("1-002", date(2024, 4, 1), 100.0, None, True),
             ("1-002", date(2025, 4, 1), 100.0, None, True),
-            ("1-002", date(2026, 4, 1), 110.0, None, True),
+            ("1-002", date(2026, 4, 1), 100.0, None, True),
             ("1-003", date(2024, 4, 1), 100.0, None, True),
             ("1-003", date(2025, 4, 1), 100.0, None, True),
-            ("1-003", date(2026, 4, 1), 90.0, None, True),
+            ("1-003", date(2026, 4, 1), 100.0, None, True),
             ("1-004", date(2024, 4, 1), 100.0, None, True),
             ("1-004", date(2025, 4, 1), 100.0, None, True),
-            ("1-004", date(2026, 4, 1), 105.0, None, True),
+            ("1-004", date(2026, 4, 1), 100.0, None, True),
             ("1-005", date(2024, 4, 1), 100.0, None, True),
             ("1-005", date(2025, 4, 1), 100.0, None, True),
-            ("1-005", date(2026, 4, 1), 95.0, None, True),
+            ("1-005", date(2026, 4, 1), 100.0, None, True),
             ("1-006", date(2024, 4, 1), 1000.0, None, True),
             ("1-006", date(2025, 4, 1), 100.0, None, True),
-            ("1-006", date(2026, 4, 1), 102.0, None, True),
-        ],
-    ),
-    AddDispersionFilterTestCase(
-        # 1-013 has dispersion 0.923. Weighting each location by its months of
-        # data puts the upper limit at 0.899, so it fails; counting each
-        # location once would put the limit at 1.352 and pass it.
-        id="weights_the_mean_and_std_by_months_with_data",
-        column_names=CT_EMPLOYED_COLUMNS,
-        from_date=date(2025, 4, 1),
-        column_alias=Pub.ct_dispersion_filter_medium_term,
-        expected_data=[
-            ("1-001", date(2025, 4, 1), 100.0, None, True),
-            ("1-001", date(2025, 5, 1), 100.0, None, True),
-            ("1-001", date(2025, 6, 1), 100.0, None, True),
-            ("1-001", date(2025, 7, 1), 100.0, None, True),
-            ("1-001", date(2025, 8, 1), 100.0, None, True),
-            ("1-001", date(2025, 9, 1), 100.0, None, True),
-            ("1-001", date(2025, 10, 1), 100.0, None, True),
-            ("1-001", date(2025, 11, 1), 100.0, None, True),
-            ("1-001", date(2025, 12, 1), 100.0, None, True),
-            ("1-001", date(2026, 1, 1), 100.0, None, True),
-            ("1-001", date(2026, 2, 1), 100.0, None, True),
-            ("1-001", date(2026, 3, 1), 100.0, None, True),
-            ("1-002", date(2025, 4, 1), 100.0, None, True),
-            ("1-002", date(2025, 5, 1), 100.0, None, True),
-            ("1-002", date(2025, 6, 1), 100.0, None, True),
-            ("1-002", date(2025, 7, 1), 100.0, None, True),
-            ("1-002", date(2025, 8, 1), 100.0, None, True),
-            ("1-002", date(2025, 9, 1), 100.0, None, True),
-            ("1-002", date(2025, 10, 1), 100.0, None, True),
-            ("1-002", date(2025, 11, 1), 100.0, None, True),
-            ("1-002", date(2025, 12, 1), 100.0, None, True),
-            ("1-002", date(2026, 1, 1), 100.0, None, True),
-            ("1-002", date(2026, 2, 1), 100.0, None, True),
-            ("1-002", date(2026, 3, 1), 102.0, None, True),
-            ("1-003", date(2025, 4, 1), 100.0, None, True),
-            ("1-003", date(2025, 5, 1), 100.0, None, True),
-            ("1-003", date(2025, 6, 1), 100.0, None, True),
-            ("1-003", date(2025, 7, 1), 100.0, None, True),
-            ("1-003", date(2025, 8, 1), 100.0, None, True),
-            ("1-003", date(2025, 9, 1), 100.0, None, True),
-            ("1-003", date(2025, 10, 1), 100.0, None, True),
-            ("1-003", date(2025, 11, 1), 100.0, None, True),
-            ("1-003", date(2025, 12, 1), 100.0, None, True),
-            ("1-003", date(2026, 1, 1), 100.0, None, True),
-            ("1-003", date(2026, 2, 1), 100.0, None, True),
-            ("1-003", date(2026, 3, 1), 104.0, None, True),
-            ("1-004", date(2025, 4, 1), 100.0, None, True),
-            ("1-004", date(2025, 5, 1), 100.0, None, True),
-            ("1-004", date(2025, 6, 1), 100.0, None, True),
-            ("1-004", date(2025, 7, 1), 100.0, None, True),
-            ("1-004", date(2025, 8, 1), 100.0, None, True),
-            ("1-004", date(2025, 9, 1), 100.0, None, True),
-            ("1-004", date(2025, 10, 1), 100.0, None, True),
-            ("1-004", date(2025, 11, 1), 100.0, None, True),
-            ("1-004", date(2025, 12, 1), 100.0, None, True),
-            ("1-004", date(2026, 1, 1), 100.0, None, True),
-            ("1-004", date(2026, 2, 1), 100.0, None, True),
-            ("1-004", date(2026, 3, 1), 106.0, None, True),
-            ("1-005", date(2025, 4, 1), 100.0, None, True),
-            ("1-005", date(2025, 5, 1), 100.0, None, True),
-            ("1-005", date(2025, 6, 1), 100.0, None, True),
-            ("1-005", date(2025, 7, 1), 100.0, None, True),
-            ("1-005", date(2025, 8, 1), 100.0, None, True),
-            ("1-005", date(2025, 9, 1), 100.0, None, True),
-            ("1-005", date(2025, 10, 1), 100.0, None, True),
-            ("1-005", date(2025, 11, 1), 100.0, None, True),
-            ("1-005", date(2025, 12, 1), 100.0, None, True),
-            ("1-005", date(2026, 1, 1), 100.0, None, True),
-            ("1-005", date(2026, 2, 1), 100.0, None, True),
-            ("1-005", date(2026, 3, 1), 108.0, None, True),
-            ("1-006", date(2025, 4, 1), 100.0, None, True),
-            ("1-006", date(2025, 5, 1), 100.0, None, True),
-            ("1-006", date(2025, 6, 1), 100.0, None, True),
-            ("1-006", date(2025, 7, 1), 100.0, None, True),
-            ("1-006", date(2025, 8, 1), 100.0, None, True),
-            ("1-006", date(2025, 9, 1), 100.0, None, True),
-            ("1-006", date(2025, 10, 1), 100.0, None, True),
-            ("1-006", date(2025, 11, 1), 100.0, None, True),
-            ("1-006", date(2025, 12, 1), 100.0, None, True),
-            ("1-006", date(2026, 1, 1), 100.0, None, True),
-            ("1-006", date(2026, 2, 1), 100.0, None, True),
-            ("1-006", date(2026, 3, 1), 110.0, None, True),
-            ("1-007", date(2025, 4, 1), 100.0, None, True),
-            ("1-007", date(2025, 5, 1), 100.0, None, True),
-            ("1-007", date(2025, 6, 1), 100.0, None, True),
-            ("1-007", date(2025, 7, 1), 100.0, None, True),
-            ("1-007", date(2025, 8, 1), 100.0, None, True),
-            ("1-007", date(2025, 9, 1), 100.0, None, True),
-            ("1-007", date(2025, 10, 1), 100.0, None, True),
-            ("1-007", date(2025, 11, 1), 100.0, None, True),
-            ("1-007", date(2025, 12, 1), 100.0, None, True),
-            ("1-007", date(2026, 1, 1), 100.0, None, True),
-            ("1-007", date(2026, 2, 1), 100.0, None, True),
-            ("1-007", date(2026, 3, 1), 112.0, None, True),
-            ("1-008", date(2025, 4, 1), 100.0, None, True),
-            ("1-008", date(2025, 5, 1), 100.0, None, True),
-            ("1-008", date(2025, 6, 1), 100.0, None, True),
-            ("1-008", date(2025, 7, 1), 100.0, None, True),
-            ("1-008", date(2025, 8, 1), 100.0, None, True),
-            ("1-008", date(2025, 9, 1), 100.0, None, True),
-            ("1-008", date(2025, 10, 1), 100.0, None, True),
-            ("1-008", date(2025, 11, 1), 100.0, None, True),
-            ("1-008", date(2025, 12, 1), 100.0, None, True),
-            ("1-008", date(2026, 1, 1), 100.0, None, True),
-            ("1-008", date(2026, 2, 1), 100.0, None, True),
-            ("1-008", date(2026, 3, 1), 114.0, None, True),
-            ("1-009", date(2025, 4, 1), 50.0, None, False),
-            ("1-009", date(2025, 5, 1), 150.0, None, False),
-            ("1-010", date(2025, 4, 1), 50.0, None, False),
-            ("1-010", date(2025, 5, 1), 150.0, None, False),
-            ("1-011", date(2025, 4, 1), 50.0, None, False),
-            ("1-011", date(2025, 5, 1), 150.0, None, False),
-            ("1-012", date(2025, 4, 1), 50.0, None, False),
-            ("1-012", date(2025, 5, 1), 150.0, None, False),
-            ("1-013", date(2025, 4, 1), 100.0, None, False),
-            ("1-013", date(2025, 5, 1), 100.0, None, False),
-            ("1-013", date(2025, 6, 1), 100.0, None, False),
-            ("1-013", date(2025, 7, 1), 100.0, None, False),
-            ("1-013", date(2025, 8, 1), 100.0, None, False),
-            ("1-013", date(2025, 9, 1), 100.0, None, False),
-            ("1-013", date(2025, 10, 1), 100.0, None, False),
-            ("1-013", date(2025, 11, 1), 100.0, None, False),
-            ("1-013", date(2025, 12, 1), 100.0, None, False),
-            ("1-013", date(2026, 1, 1), 100.0, None, False),
-            ("1-013", date(2026, 2, 1), 100.0, None, False),
-            ("1-013", date(2026, 3, 1), 200.0, None, False),
+            ("1-006", date(2026, 4, 1), 100.0, None, True),
         ],
     ),
 ]

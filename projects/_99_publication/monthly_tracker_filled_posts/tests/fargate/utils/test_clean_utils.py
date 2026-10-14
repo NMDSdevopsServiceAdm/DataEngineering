@@ -63,7 +63,7 @@ class TestHasContinuousDataSinceDate:
 
         returned_lf = test_lf.with_columns(
             job.has_continuous_data_since_date(
-                case.column_names, case.from_date, case.column_alias
+                case.column_name, case.from_date, case.column_alias
             )
         )
 
@@ -95,7 +95,7 @@ class TestHasConsistentServiceSinceDate:
             for case in Data.has_consistent_service_since_date_test_cases
         ],
     )
-    def test_flags_locations_with_a_single_care_home_status_since_a_given_date(
+    def test_flags_locations_with_a_single_primary_service_type_since_a_given_date(
         self, case
     ):
         expected_schema = pl.Schema(

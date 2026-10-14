@@ -59,7 +59,6 @@ class TestMain:
             {
                 IndCQC.location_id: ["1-001", "1-001"],
                 IndCQC.cqc_location_import_date: [date(2025, 4, 1), date(2026, 4, 1)],
-                IndCQC.estimate_filled_posts_by_job_role: [10.0, 20.0],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0, None],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None, 6.0],
             }
@@ -68,7 +67,7 @@ class TestMain:
         date_mock.side_effect = lambda *args, **kwargs: date(*args, **kwargs)
         reduced_data_filter_expr_mock.return_value = pl.lit(True)
         has_continuous_data_since_date_mock.side_effect = (
-            lambda column_names, from_date, column_alias: pl.lit(True).alias(
+            lambda column_name, from_date, column_alias: pl.lit(True).alias(
                 column_alias
             )
         )
@@ -137,17 +136,17 @@ class TestMain:
         has_continuous_data_since_date_mock.assert_has_calls(
             [
                 call(
-                    [Pub.ct_total_employed_imputed, Pub.location_estimate_filled_posts],
+                    Pub.ct_total_employed_imputed,
                     date(2021, 7, 1),
                     Pub.ct_has_data_long_term,
                 ),
                 call(
-                    [Pub.ct_total_employed_imputed, Pub.location_estimate_filled_posts],
+                    Pub.ct_total_employed_imputed,
                     date(2025, 4, 1),
                     Pub.ct_has_data_medium_term,
                 ),
                 call(
-                    [Pub.ct_total_employed_imputed, Pub.location_estimate_filled_posts],
+                    Pub.ct_total_employed_imputed,
                     date(2026, 4, 1),
                     Pub.ct_has_data_short_term,
                 ),
@@ -185,10 +184,8 @@ class TestMain:
             {
                 IndCQC.location_id: ["1-001", "1-001"],
                 IndCQC.cqc_location_import_date: [date(2025, 4, 1), date(2026, 4, 1)],
-                IndCQC.estimate_filled_posts_by_job_role: [10.0, 20.0],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0, None],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None, 6.0],
-                Pub.location_estimate_filled_posts: [10.0, 20.0],
                 Pub.consistent_service_long_term: [True, True],
                 Pub.consistent_service_medium_term: [True, True],
                 Pub.consistent_service_short_term: [True, True],
@@ -397,9 +394,6 @@ class TestMain:
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
             {
-                IndCQC.location_id: ["1-001"],
-                IndCQC.cqc_location_import_date: [date(2033, 4, 1)],
-                IndCQC.estimate_filled_posts_by_job_role: [10.0],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None],
             }
@@ -408,7 +402,7 @@ class TestMain:
         date_mock.side_effect = lambda *args, **kwargs: date(*args, **kwargs)
         reduced_data_filter_expr_mock.return_value = pl.lit(True)
         has_continuous_data_since_date_mock.side_effect = (
-            lambda column_names, from_date, column_alias: pl.lit(True).alias(
+            lambda column_name, from_date, column_alias: pl.lit(True).alias(
                 column_alias
             )
         )
@@ -464,7 +458,7 @@ class TestMain:
             cutoff_date=date(2027, 4, 1),
         )
         has_continuous_data_since_date_mock.assert_any_call(
-            [Pub.ct_total_employed_imputed, Pub.location_estimate_filled_posts],
+            Pub.ct_total_employed_imputed,
             date(2027, 4, 1),
             Pub.ct_has_data_long_term,
         )
