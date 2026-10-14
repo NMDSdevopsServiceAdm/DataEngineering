@@ -55,7 +55,7 @@ _PUBLISHED_MAIN_SERVICE_BY_CATEGORY: dict[str, str] = {
 def reduced_data_filter_expr(
     today: date | None = None,
     fy_start_month: int = 4,
-    lookback_fy_years: int = 2,
+    lookback_fy_years: int = 1,
     quarter_months: tuple[int, ...] = (1, 4, 7, 10),
     date_col: str = IndCQC.cqc_location_import_date,
     cutoff_date: date | None = None,

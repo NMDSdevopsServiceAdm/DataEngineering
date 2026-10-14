@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - Added validation of the job role estimates archive run log.
 
 ### Changed
-
+- Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 
 ### Improved
 

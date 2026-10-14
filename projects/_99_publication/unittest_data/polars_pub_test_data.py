@@ -92,6 +92,15 @@ reduced_data_filter_test_cases = [
     ),
 ]  # fmt: skip
 
+default_lookback_input_dates = [
+    date(2024, 4, 1),  # before monthly_start, quarterly month -> included
+    date(2024, 5, 1),  # before monthly_start, non-quarter -> excluded
+    date(2025, 3, 1),  # before monthly_start, non-quarter -> excluded
+    date(2025, 4, 1),  # at boundary (monthly_start) -> included
+    date(2025, 5, 1),  # within range -> included
+]
+default_lookback_expected = [True, False, False, True, True]
+
 
 @dataclass
 class HasContinuousDataSinceDateTestCase:
