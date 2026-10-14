@@ -424,7 +424,7 @@
                 }
               },
               "Next": "Merge and Validate Prepared SLV Data"
-            },
+            },
             "Merge and Validate Prepared SLV Data": {
               "Type": "Parallel",
               "Next": "Clean and Validate Merged SLV Data",
