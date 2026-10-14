@@ -14,7 +14,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 INPUT_SCHEMA_OVERRIDES = {
-    EmpStatus.employee_count: pl.Int16,
+    EmpStatus.estimated_employees: pl.Float64,
     SLVCols.starters_cleaned_dedup: pl.Int16,
     SLVCols.leavers_cleaned_dedup: pl.Int16,
     SLVCols.vacancies_cleaned_dedup: pl.Int16,
