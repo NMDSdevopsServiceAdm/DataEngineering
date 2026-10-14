@@ -6,17 +6,19 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
 
 ### Changed
 - Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of raw counts, reading only the needed columns in the SLV merge and running the employment status steps first in Ind-CQC-SLV.
 
+- Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 
 ### Improved
 
 
 ### Fixed
-
+- Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
 
 
 ## [v2026.09.0] - 13/10/2026
@@ -59,10 +61,13 @@ All notable changes to this project will be documented in this file.
 - Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock, with a gate that fails a main pipeline whose prod deploy was skipped or cancelled instead of reporting it as success.
 - Added full imputation to the employment status impute job, filling remaining gaps by carrying each location and job role's known percentages along the rolling averages, with validation of the result. Renamed the short-term imputed percentage columns to `*_imputed_for_trendline`.
 - Added published label classes and column names for the publication outputs, and used them in the publication clean job.
+- Added a `sagemaker` skill with notebook templates for comparing outputs, comparing data before and after a filter and scoring rolling-average durations, plus a setup notebook that keeps them up to date on the SageMaker instance.
+
 - Added a shared definition of the rows a filled posts model trains on, now used by the model training job.
 - Added filled posts model cross-validation helpers: out-of-fold predictions from a model spec and non-res size bands.
 - Added financial year, row-level, per-period bias and bias slope scoring to the project-level model evaluation utilities.
 - Added utilities to score filled posts models on held-out locations and save the metrics beside a model run. Not yet used by any job.
+- Added the diagnostics workbook template for the monthly tracker publication, with a cell map and tests that check it.
 
 ### Changed
 - Replaced the employment status magic-number split with estimated percentages (cleaned, then imputed, then rolling average), their source, and estimated counts and employees. Removed the rates CSV input.

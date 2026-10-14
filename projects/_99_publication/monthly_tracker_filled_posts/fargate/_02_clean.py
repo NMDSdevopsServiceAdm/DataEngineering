@@ -32,17 +32,13 @@ def main(
     """
     merged_lf = utils.scan_parquet(merge_data_source)
 
-    # Publication policy: full retention for 2 financial years, quarterly
-    # sampling further back, nothing before 6 financial years ago.
+    # Publication policy: full retention for the previous and current financial
+    # years, quarterly sampling further back, nothing before 6 financial years ago.
     today = date.today()
     fy_year = today.year if today.month >= 4 else today.year - 1
     cutoff_date = date(fy_year - 6, 4, 1)
     cleaned_lf = merged_lf.filter(
         clean_utils.reduced_data_filter_expr(cutoff_date=cutoff_date)
-    )
-
-    cleaned_lf = cleaned_lf.with_columns(
-        (pl.col(IndCQC.care_home_status_count) == 1).alias(Pub.consistent_service)
     )
 
     cleaned_lf = cleaned_lf.with_columns(
@@ -60,6 +56,15 @@ def main(
     medium_term_from_date = date(fy_year - 1, 4, 1)
     short_term_from_date = date(fy_year, 4, 1)
     cleaned_lf = cleaned_lf.with_columns(
+        clean_utils.has_consistent_service_since_date(
+            long_term_from_date, Pub.consistent_service_long_term
+        ),
+        clean_utils.has_consistent_service_since_date(
+            medium_term_from_date, Pub.consistent_service_medium_term
+        ),
+        clean_utils.has_consistent_service_since_date(
+            short_term_from_date, Pub.consistent_service_short_term
+        ),
         clean_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             long_term_from_date,
