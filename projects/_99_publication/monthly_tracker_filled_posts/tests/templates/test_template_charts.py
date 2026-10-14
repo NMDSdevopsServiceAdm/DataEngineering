@@ -141,8 +141,14 @@ class TestChartContents:
     ):
         """Series one is the filled posts block and series two the CQC locations block."""
         sheet = cell_map.FILLED_POSTS
+        monthly_percent_notes = (
+            "monthly filled posts % change",
+            "monthly CQC locations % change",
+        )
         expected_rows = [
-            support.rows_of(f"'x'!{cells}") for cells in sheet.na_formula_ranges
+            support.rows_of(f"'x'!{r.cells}")
+            for r in sheet.input_ranges
+            if r.note in monthly_percent_notes
         ]
         wrong_order = []
         for chart in support.charts(package, sheet.name):

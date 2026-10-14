@@ -147,12 +147,3 @@ class TestFullyFilledCopy:
             ]
 
         assert changed == [], "Sheets whose charts changed on save"
-
-    def test_na_conditional_formats_are_kept(self, fully_filled):
-        """Saving keeps the white-font rule that hides #N/A on Filled posts."""
-        saved = openpyxl.load_workbook(fully_filled[0])[cell_map.FILLED_POSTS.name]
-        visible_na = support.cells_in(
-            list(cell_map.FILLED_POSTS.na_formula_ranges)
-        ) - support.hidden_na_cells(saved)
-
-        assert visible_na == set()

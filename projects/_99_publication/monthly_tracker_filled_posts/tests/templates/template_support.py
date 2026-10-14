@@ -47,11 +47,6 @@ comparison_sheet_params = [
 formula_sheet_params = [
     pytest.param(s, id=s.name) for s in cell_map.DIAGNOSTICS_SHEETS if s.formula_ranges
 ]
-na_sheet_params = [
-    pytest.param(s, id=s.name)
-    for s in cell_map.DIAGNOSTICS_SHEETS
-    if s.na_formula_ranges
-]
 bold_heading_sheet_params = [
     pytest.param(s, id=s.name)
     for s in cell_map.DIAGNOSTICS_SHEETS
@@ -94,37 +89,6 @@ def effective_style(worksheet, row: int, col: int) -> tuple:
         dimension.font.sz,
         bool(dimension.font.b),
         dimension.number_format,
-    )
-
-
-def top_left(formatting) -> str:
-    """Top-left cell of a conditional format's range, which relative formulas use."""
-    first = min(formatting.sqref.ranges, key=lambda r: (r.min_row, r.min_col))
-    return first.coord.split(":")[0]
-
-
-def hides_na(rule, anchor: str) -> bool:
-    """True for a white-font rule `ISNA(<anchor cell>)`, relative so each cell tests itself."""
-    colour = rule.dxf.font.color if rule.dxf and rule.dxf.font else None
-    is_white = colour is not None and (
-        colour.rgb == "FFFFFFFF" or (colour.theme == 0 and not colour.tint)
-    )
-    return (
-        rule.type == "expression"
-        and [f.replace(" ", "").upper() for f in rule.formula] == [f"ISNA({anchor})"]
-        and is_white
-    )
-
-
-def hidden_na_cells(worksheet) -> set[tuple[int, int]]:
-    """Cells covered by a white-font `ISNA` conditional format."""
-    return cells_in(
-        [
-            str(cell_range)
-            for formatting in worksheet.conditional_formatting
-            if any(hides_na(rule, top_left(formatting)) for rule in formatting.rules)
-            for cell_range in formatting.sqref.ranges
-        ]
     )
 
 
@@ -328,6 +292,8 @@ def fixture_cell(
     i, j = row - cells.min_row, col - cells.min_col
     note = input_range.note
     first, step, filled, growth = slot_plan(sheet, note, cells.size["rows"], full)
+    if "annual" in note and "% change" in note and "dates" not in note and not full:
+        filled -= 1  # the first year has no change to show
     is_right_hand_table = col > 8
     if "number of locations" in note and cells.size["rows"] == 1:
         return 12000 + 500 * is_right_hand_table
@@ -349,6 +315,12 @@ def fixture_cell(
         if "onwards" in note:
             return f"- Must have a Capacity Tracker figure in all months from end of {first:%B %Y} onwards."
         return "End of August 2026"
+    if "difference as percentage" in note:
+        annual = 12 if full else 10
+        monthly = 25 if full else 5
+        if i >= annual + monthly:
+            return None
+        return round(0.01 + 0.001 * j + 0.0005 * i, 6)
     if "publication" in note:
         # To date: the current block has a row for the year just ended that the
         # previous block lacks, so the previous block is padded with a blank row.
@@ -371,6 +343,13 @@ def fixture_cell(
     if "dates" in note:
         return add_months(first, i * step)
     capacity_tracker_growth = 0.8  # Capacity Tracker grows slower than the estimate
+    leaf = (
+        [4_000, 8_000, 13_500] if "locations" in note else [150_000, 300_000, 700_000]
+    )
+    if "totals" in note:
+        # C: all service types; D: the two care home types.
+        members = leaf if j == 0 else leaf[:2]
+        return round(sum(members) * (1 + growth) ** i)
     if "% change" in note:
         return round((1 + growth * (capacity_tracker_growth if j else 1)) ** i - 1, 6)
     base = {
@@ -382,9 +361,6 @@ def fixture_cell(
     if base:
         slower = capacity_tracker_growth if "CT" in note else 1
         return round(base * (1 + growth * slower) ** i)
-    leaf = (
-        [4_000, 8_000, 13_500] if "locations" in note else [150_000, 300_000, 700_000]
-    )
     return round(leaf[j] * (1 + growth) ** i)
 
 
