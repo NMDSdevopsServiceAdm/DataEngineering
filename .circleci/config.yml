@@ -490,6 +490,8 @@ jobs:
       - run:
           name: Copy main datasets to non-prod dataset bucket
           command: |
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_04_latest_snapshot/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_04_latest_snapshot/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=02_sfc/dataset=ascwds_for_sfc_internal/" "s3://$BRANCH_DATASET_BUCKET/domain=02_sfc/dataset=ascwds_for_sfc_internal/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_04_full_cleaned_registered/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_04_full_cleaned_registered/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=postcode_corrections/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_ons/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ons/dataset=postcode_directory_cleaned/" --delete
