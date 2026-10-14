@@ -1,3 +1,4 @@
+import zipfile
 from datetime import date
 
 import openpyxl
@@ -6,6 +7,7 @@ import pytest
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_utils as job
 import projects._99_publication.unittest_data.polars_pub_test_data as Data
+from projects._99_publication.unittest_data.image_test_data import make_png
 from utils.column_names.publication_columns import PublicationColumns as Pub
 
 
@@ -167,8 +169,19 @@ class TestBuildDownloadWorkbook:
             if TestBuildDownloadWorkbook.normalise(cell.value).startswith(Pub.period):
                 return cell.row
 
-    def test_sheets_are_t0_t1_t2(self, workbook):
-        assert workbook.sheetnames == ["T0", "T1", "T2"]
+    def test_sheet_order_is_frontpage_introduction_revisions_definitions_contents_t0_t1_t2(
+        self, workbook
+    ):
+        assert workbook.sheetnames == [
+            "Frontpage",
+            "Introduction",
+            "Revisions",
+            "Definitions",
+            "Contents",
+            "T0",
+            "T1",
+            "T2",
+        ]
 
     @pytest.mark.parametrize(
         "sheet,expected_columns",
@@ -261,9 +274,13 @@ class TestBuildDownloadWorkbook:
         assert (annual.number_format, monthly.number_format) == ("0.0%", "0.0%")
         assert (annual.value, monthly.value) == (0.032, 0.005)
 
-    def test_tables_use_flat_12pt_arial(self, workbook):
+    def test_pages_and_tables_use_flat_12pt_arial(self, workbook):
         t0 = workbook["T0"]
         cells = [
+            workbook["Frontpage"]["A1"],
+            workbook["Introduction"]["A1"],
+            workbook["Definitions"]["A1"],
+            workbook["Contents"]["A3"],
             t0["A1"],
             t0["A2"],
             t0.cell(self.header_row_number(t0), 1),
@@ -340,6 +357,49 @@ class TestBuildDownloadWorkbook:
         }
 
         assert len(set(widths.values())) == 1
+
+    def test_build_download_workbook_passes_the_logo_to_the_frontpage(self, tmp_path):
+        path = tmp_path / "with_logo.xlsx"
+        t0_lf = pl.LazyFrame(
+            Data.download_workbook_t0_data, self.t0_schema, orient="row"
+        )
+        perc_change_lf = pl.LazyFrame(
+            Data.download_workbook_perc_change_data,
+            self.perc_change_schema,
+            orient="row",
+        )
+
+        job.build_download_workbook(
+            t0_lf, perc_change_lf, perc_change_lf, path, logo=make_png(200, 150)
+        )
+
+        archive = zipfile.ZipFile(path)
+        assert "xl/media/image1.png" in archive.namelist()
+        assert (
+            "drawing1.xml"
+            in archive.read("xl/worksheets/_rels/sheet1.xml.rels").decode()
+        )
+
+    def test_workbook_opens_on_the_frontpage_with_only_that_tab_selected(
+        self, workbook
+    ):
+        selected_tabs = [
+            sheet.title for sheet in workbook.worksheets if sheet.sheet_view.tabSelected
+        ]
+
+        assert workbook.active.title == "Frontpage"
+        assert selected_tabs == ["Frontpage"]
+
+    def test_every_sheet_has_cell_a1_selected(self, workbook):
+        selections = {
+            sheet.title: [
+                (selection.activeCell, str(selection.sqref))
+                for selection in sheet.sheet_view.selection
+            ]
+            for sheet in workbook.worksheets
+        }
+
+        assert selections == {name: [("A1", "A1")] for name in workbook.sheetnames}
 
     def test_build_download_workbook_runs_each_table_once(self, tmp_path):
         runs = []

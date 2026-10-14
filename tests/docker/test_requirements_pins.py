@@ -63,6 +63,7 @@ PUBLICATION_PACKAGES = [
     "openpyxl",
     "pyarrow",
     "holidays",
+    "pyyaml",
 ]
 
 PYPROJECT_ALL_PINS = {
@@ -171,7 +172,7 @@ class TestExtrasFiles:
 class TestPublicationExtrasPins:
     """
     The publication image needs the Excel packages (pyarrow is for `to_pandas()`)
-    and holidays for the publication date.
+    holidays for the publication date and pyyaml for the workbook page wording.
     """
 
     @pytest.mark.parametrize("package", PUBLICATION_PACKAGES)
