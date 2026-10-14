@@ -3,6 +3,7 @@ import polars as pl
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 
+from polars_utils.expressions import is_care_home, is_not_care_home
 from projects._03_independent_cqc._01_filled_posts._04_model.utils import (
     cross_validation_utils as cv,
 )
@@ -81,6 +82,50 @@ def to_long(
             ModelEvaluation.metric,
             ModelEvaluation.value,
         )
+    )
+
+
+def build_locations_lf(
+    imputed_lf: pl.LazyFrame, cleaned_lf: pl.LazyFrame, is_ratio_model: bool
+) -> pl.LazyFrame:
+    """
+    Select the model's locations with the known values to score against.
+
+    The known value matches what each model trains on: ASC-WDS only for care homes, and
+    ASC-WDS plus PIR for non-res (`ascwds_pir_merged`).
+
+    Args:
+        imputed_lf (pl.LazyFrame): the imputed filled posts dataset
+        cleaned_lf (pl.LazyFrame): the cleaned filled posts dataset, with ASC-WDS values
+        is_ratio_model (bool): whether the model is a care home (per bed ratio) model
+
+    Returns:
+        pl.LazyFrame: a row per location and import date of the model's care home type, with
+            its known value in `ascwds_filled_posts_dedup_clean`
+    """
+    keys = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+    known_lf = cleaned_lf.select(*keys, IndCQC.ascwds_filled_posts_dedup_clean)
+
+    locations_lf = (
+        imputed_lf.filter(is_care_home() if is_ratio_model else is_not_care_home())
+        .select(
+            *keys,
+            IndCQC.primary_service_type,
+            IndCQC.current_cssr,
+            IndCQC.number_of_beds,
+            IndCQC.number_of_beds_banded,
+            IndCQC.ascwds_pir_merged,
+            IndCQC.imputed_filled_post_model,
+            IndCQC.imputed_filled_posts_per_bed_ratio_model,
+        )
+        .join(known_lf, on=keys, how="left", validate="m:1")
+    )
+
+    if is_ratio_model:
+        return locations_lf
+
+    return locations_lf.with_columns(
+        pl.col(IndCQC.ascwds_pir_merged).alias(IndCQC.ascwds_filled_posts_dedup_clean)
     )
 
 

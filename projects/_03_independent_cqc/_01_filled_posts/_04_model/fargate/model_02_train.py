@@ -1,7 +1,6 @@
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.expressions import is_care_home, is_not_care_home
 from projects._03_independent_cqc._01_filled_posts._04_model.registry.model_registry import (
     model_registry,
 )
@@ -30,50 +29,6 @@ from utils.column_names.ind_cqc_pipeline_columns import ModelMetadataKeys as MMK
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
 
-def build_locations_lf(
-    imputed_lf: pl.LazyFrame, cleaned_lf: pl.LazyFrame, is_ratio_model: bool
-) -> pl.LazyFrame:
-    """
-    Select the model's locations with the known values to score against.
-
-    The known value matches what each model trains on: ASC-WDS only for care homes, and
-    ASC-WDS plus PIR for non-res (`ascwds_pir_merged`).
-
-    Args:
-        imputed_lf (pl.LazyFrame): the imputed filled posts dataset
-        cleaned_lf (pl.LazyFrame): the cleaned filled posts dataset, with ASC-WDS values
-        is_ratio_model (bool): whether the model is a care home (per bed ratio) model
-
-    Returns:
-        pl.LazyFrame: a row per location and import date of the model's care home type, with
-            its known value in `ascwds_filled_posts_dedup_clean`
-    """
-    keys = [IndCQC.location_id, IndCQC.cqc_location_import_date]
-    known_lf = cleaned_lf.select(*keys, IndCQC.ascwds_filled_posts_dedup_clean)
-
-    locations_lf = (
-        imputed_lf.filter(is_care_home() if is_ratio_model else is_not_care_home())
-        .select(
-            *keys,
-            IndCQC.primary_service_type,
-            IndCQC.current_cssr,
-            IndCQC.number_of_beds,
-            IndCQC.number_of_beds_banded,
-            IndCQC.ascwds_pir_merged,
-            IndCQC.imputed_filled_post_model,
-            IndCQC.imputed_filled_posts_per_bed_ratio_model,
-        )
-        .join(known_lf, on=keys, how="left", validate="m:1")
-    )
-
-    if is_ratio_model:
-        return locations_lf
-
-    return locations_lf.with_columns(
-        pl.col(IndCQC.ascwds_pir_merged).alias(IndCQC.ascwds_filled_posts_dedup_clean)
-    )
-
-
 def main(bucket_name: str, model_name: str) -> None:
     """
     Scores a model on held-out locations, fits it on all training rows, and saves both.
@@ -81,7 +36,7 @@ def main(bucket_name: str, model_name: str) -> None:
     The steps in this function are:
         1. Validate the model definition and skip models with auto-retraining disabled
         2. Assign each location to a cross-validation fold
-        3. Score out-of-fold predictions against known (see build_locations_lf) and imputed
+        3. Score out-of-fold predictions against known (see metrics_utils.build_locations_lf) and imputed
            filled posts
         4. Fit the model on all training rows
         5. Describe the fit and score the jumpiness of its predictions
@@ -127,7 +82,7 @@ def main(bucket_name: str, model_name: str) -> None:
     is_ratio_model = (
         model_def[MRKeys.dependent] == IndCQC.imputed_filled_posts_per_bed_ratio_model
     )
-    locations_lf = build_locations_lf(
+    locations_lf = metricsUtils.build_locations_lf(
         utils.scan_parquet(paths.generate_ind_cqc_path(bucket_name)),
         utils.scan_parquet(paths.generate_cleaned_path(bucket_name)),
         is_ratio_model,
