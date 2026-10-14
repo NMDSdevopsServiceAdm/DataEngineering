@@ -257,6 +257,15 @@ def build_potentials_count_output(
         (pl.col(CQCL.registration_status) == RegistrationStatus.deregistered)
         & (pl.col(CQCL.deregistration_date) < first_of_most_recent_month)
     )
+    # TEMP: list the potentials for validation. Delete this return to revert.
+    return merged_ascwds_cqc_lf.filter(is_potential).select(
+        AWPClean.nmds_id,
+        AWPClean.registration_type,
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.deregistration_date,
+    )
+
     nmds_id = pl.col(AWPClean.nmds_id).drop_nulls()
     has_location_id = pl.col(CQCL.location_id).is_not_null()
 
