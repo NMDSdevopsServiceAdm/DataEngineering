@@ -29,5 +29,3 @@ class ReconciliationColumns:
     phone: str = "Phone"
     workplace_id: str = "Workplace_Id"
     potentials_count: str = "potentials_count"
-    potentials_with_location_id: str = "potentials_with_location_id"
-    potentials_without_location_id: str = "potentials_without_location_id"
