@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added validation of the job role estimates archive run log.
 
 ### Changed
+- Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics. Models now fitted on all training rows instead of an 80/20 split. Known values are ASC-WDS for care homes and ASC-WDS plus PIR for non-res, so the `metrics` in `metadata.json` aren't comparable with earlier runs.
 - Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 
 ### Improved
