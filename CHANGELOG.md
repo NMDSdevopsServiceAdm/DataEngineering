@@ -11,7 +11,6 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of raw counts, reading only the needed columns in the SLV merge and running the employment status steps first in Ind-CQC-SLV.
-
 - Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 
 ### Improved
