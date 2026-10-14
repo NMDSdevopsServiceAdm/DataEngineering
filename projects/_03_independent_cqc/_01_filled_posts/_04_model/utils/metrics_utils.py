@@ -101,7 +101,8 @@ def score_out_of_fold(
         spec (dict): the model's registry entry
         oof_df (pl.DataFrame): out-of-fold predictions from `cv.predict_out_of_fold`
         locations_lf (pl.LazyFrame): one row per location and import date of the model's care
-            home type, with known posts, service, CSSR, beds, banded beds and both imputed
+            home type, with known posts (ASC-WDS for care homes, ASC-WDS plus PIR for non-res), service,
+            CSSR, beds, banded beds and both imputed
             targets. Keys must be unique.
 
     Returns:
