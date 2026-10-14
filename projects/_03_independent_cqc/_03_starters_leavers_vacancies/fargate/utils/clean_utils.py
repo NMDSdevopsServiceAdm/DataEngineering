@@ -16,6 +16,8 @@ def create_slv_rate_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     upper bound, since leavers/starters can exceed employees for a small team in a
     period; vacancy rate is mathematically bounded to [0, 1].
 
+    Employees are the final employment status estimate (estimated_employees), which
+    can be fractional and is null where no estimate exists, so rates are then null.
     Employees can legitimately be 0 for a job role, so turnover_rate and
     starter_rate are null whenever employees is 0 (the rate is undefined,
     regardless of the numerator). vacancy_rate is still computed when there
@@ -24,28 +26,30 @@ def create_slv_rate_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     are both 0.
 
     Args:
-        lf (pl.LazyFrame): dataset containing employees and cleaned, deduplicated
+        lf (pl.LazyFrame): dataset containing estimated employees and cleaned, deduplicated
             starters, leavers and vacancies
 
     Returns:
         pl.LazyFrame: dataset with turnover_rate, starter_rate and vacancy_rate added
     """
-    employees_plus_vacancies = pl.col(EmpStatus.employee_count) + pl.col(
+    employees_plus_vacancies = pl.col(EmpStatus.estimated_employees) + pl.col(
         SLVCols.vacancies_cleaned_dedup
     )
 
     return lf.with_columns(
-        pl.when(pl.col(EmpStatus.employee_count) == 0)
+        pl.when(pl.col(EmpStatus.estimated_employees) == 0)
         .then(None)
         .otherwise(
-            pl.col(SLVCols.leavers_cleaned_dedup) / pl.col(EmpStatus.employee_count)
+            pl.col(SLVCols.leavers_cleaned_dedup)
+            / pl.col(EmpStatus.estimated_employees)
         )
         .cast(pl.Float32)
         .alias(SLVCols.turnover_rate),
-        pl.when(pl.col(EmpStatus.employee_count) == 0)
+        pl.when(pl.col(EmpStatus.estimated_employees) == 0)
         .then(None)
         .otherwise(
-            pl.col(SLVCols.starters_cleaned_dedup) / pl.col(EmpStatus.employee_count)
+            pl.col(SLVCols.starters_cleaned_dedup)
+            / pl.col(EmpStatus.estimated_employees)
         )
         .cast(pl.Float32)
         .alias(SLVCols.starter_rate),
