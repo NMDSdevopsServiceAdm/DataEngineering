@@ -482,7 +482,13 @@ class ReconciliationData:
     # fmt: on
 
     main_cqc_location_rows = [
-        ("1-001", date(2024, 4, 1), RegistrationStatus.deregistered, date(2024, 3, 15)),
+        (
+            "1-001",
+            date(2024, 4, 1),
+            RegistrationStatus.deregistered,
+            date(2024, 3, 15),
+            "Y",
+        ),
     ]
 
     main_expected_single_and_subs_nmds_ids = ["10"]

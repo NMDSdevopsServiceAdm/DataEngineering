@@ -487,6 +487,9 @@ class Subject(ColumnValues):
 @dataclass
 class SingleSubDescription(ColumnValues):
     single_sub_deregistered_description: str = "Potential (new): Deregistered ID"
+    single_sub_deregistered_no_successor_description: str = (
+        "Potential (new): Deregistered ID without successor"
+    )
     single_sub_reg_type_description: str = "Potential (new): Regtype"
 
 
@@ -532,6 +535,12 @@ class SLVFilteringRule(ColumnValues):
     populated: str = "populated"
     missing_data: str = "missing_data"
     contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
+
+
+@dataclass
+class HasSuccessor(ColumnValues):
+    has_successor: str = "Y"
+    no_successor: str = "N"
 
 
 @dataclass

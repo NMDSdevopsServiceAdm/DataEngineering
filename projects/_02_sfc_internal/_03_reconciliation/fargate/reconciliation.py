@@ -25,6 +25,7 @@ from utils.column_values.ascwds_labelled_vocab import (
     RegistrationType,
 )
 from utils.column_values.categorical_column_values import (
+    HasSuccessor,
     ParentsOrSinglesAndSubs,
     RegistrationStatus,
     SingleSubDescription,
@@ -78,7 +79,10 @@ def main(
     ) = prepare_latest_cleaned_ascwds_workforce_data(ascwds_workplace_lf)
 
     cqc_location_lf = cqc_location_lf.select(
-        CQCL.location_id, CQCL.registration_status, CQCL.deregistration_date
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.deregistration_date,
+        CQCLClean.has_successor,
     )
 
     merged_ascwds_cqc_lf = cqc_registered_workplace_lf.rename(
@@ -239,9 +243,10 @@ def build_potentials_count_output(
 ) -> pl.LazyFrame:
     """Counts workplaces that could be matched to CQC if they fixed their location ID.
 
-    Counts every workplace with no CQC registration status, or deregistered before
-    the current month, regardless of account type or when the issue arose. Each
-    NMDS ID counts once. Aggregates to one row, so the output is tiny.
+    Counts every workplace with no CQC registration status (non-linked), or
+    deregistered before the current month (with or without a successor),
+    regardless of account type or when the issue arose. Each NMDS ID counts once.
+    Aggregates to one row, so the output is tiny.
 
     Args:
         merged_ascwds_cqc_lf (pl.LazyFrame): ASC-WDS workplace data joined to CQC
@@ -249,23 +254,35 @@ def build_potentials_count_output(
         first_of_most_recent_month (date): First day of the most recent month.
 
     Returns:
-        pl.LazyFrame: One row with the count in `potentials_count`.
+        pl.LazyFrame: One row with the total in `potentials_count` and its split into
+            deregistered with successor, deregistered without successor, and
+            non-linked.
     """
-    is_potential = pl.col(CQCL.registration_status).is_null() | (
-        (pl.col(CQCL.registration_status) == RegistrationStatus.deregistered)
-        & (pl.col(CQCL.deregistration_date) < first_of_most_recent_month)
-    )
-    return (
-        merged_ascwds_cqc_lf.select(
-            AWPClean.nmds_id, CQCL.registration_status, CQCL.deregistration_date
-        )
-        .filter(is_potential)
-        .select(
-            pl.col(AWPClean.nmds_id)
-            .drop_nulls()
-            .n_unique()
-            .alias(ReconColumn.potentials_count)
-        )
+    is_non_linked = pl.col(CQCL.registration_status).is_null()
+    is_deregistered = (
+        pl.col(CQCL.registration_status) == RegistrationStatus.deregistered
+    ) & (pl.col(CQCL.deregistration_date) < first_of_most_recent_month)
+    has_successor = pl.col(CQCLClean.has_successor) == HasSuccessor.has_successor
+
+    def count_nmds_ids(condition: pl.Expr) -> pl.Expr:
+        return pl.col(AWPClean.nmds_id).filter(condition).drop_nulls().n_unique()
+
+    return merged_ascwds_cqc_lf.select(
+        AWPClean.nmds_id,
+        CQCL.registration_status,
+        CQCL.deregistration_date,
+        CQCLClean.has_successor,
+    ).select(
+        count_nmds_ids(is_non_linked | is_deregistered).alias(
+            ReconColumn.potentials_count
+        ),
+        count_nmds_ids(is_deregistered & has_successor).alias(
+            ReconColumn.potentials_deregistered_with_successor_count
+        ),
+        count_nmds_ids(is_deregistered & ~has_successor).alias(
+            ReconColumn.potentials_deregistered_no_successor_count
+        ),
+        count_nmds_ids(is_non_linked).alias(ReconColumn.potentials_non_linked_count),
     )
 
 
@@ -279,12 +296,21 @@ def build_single_and_subs_output(reconciliation_lf: pl.LazyFrame) -> pl.LazyFram
     Returns:
         pl.LazyFrame: The singles and subs reconciliation report.
     """
+    is_deregistered = pl.col(CQCL.deregistration_date).is_not_null()
+    has_successor = pl.col(CQCLClean.has_successor) == HasSuccessor.has_successor
+
     single_and_sub_lf = reconciliation_lf.filter(
         pl.col(ReconColumn.parents_or_singles_and_subs)
         == ParentsOrSinglesAndSubs.singles_and_subs
     ).with_columns(
-        pl.when(pl.col(CQCL.deregistration_date).is_not_null())
+        pl.when(is_deregistered & has_successor)
         .then(pl.lit(SingleSubDescription.single_sub_deregistered_description))
+        .when(is_deregistered)
+        .then(
+            pl.lit(
+                SingleSubDescription.single_sub_deregistered_no_successor_description
+            )
+        )
         .otherwise(pl.lit(SingleSubDescription.single_sub_reg_type_description))
         .alias(ReconColumn.description),
         pl.lit(Subject.single_sub_subject_value).alias(ReconColumn.subject),
@@ -338,9 +364,29 @@ def build_parents_output(
     ascwds_parent_accounts_lf = create_description_column_for_parent_accounts(
         ascwds_parent_accounts_lf
     )
-    ascwds_parent_accounts_lf = ascwds_parent_accounts_lf.filter(
-        pl.col(ReconColumn.description).str.len_chars() > 1
-    ).with_columns(pl.lit(Subject.parent_subject_value).alias(ReconColumn.subject))
+    successor_count_lf = (
+        parents_lf.filter(
+            pl.col(CQCL.deregistration_date).is_not_null()
+            & (pl.col(CQCLClean.has_successor) == HasSuccessor.has_successor)
+        )
+        .group_by(AWPClean.organisation_id)
+        .agg(pl.col(AWPClean.nmds_id).n_unique().alias(ReconColumn.successor_count))
+    )
+    ascwds_parent_accounts_lf = (
+        ascwds_parent_accounts_lf.filter(
+            pl.col(ReconColumn.description).str.len_chars() > 1
+        )
+        .join(successor_count_lf, on=AWPClean.organisation_id, how="left")
+        .with_columns(
+            (
+                pl.lit(f"{ReconColumn.successor_count}=")
+                + pl.col(ReconColumn.successor_count).fill_null(0).cast(pl.String)
+                + pl.lit(" ")
+                + pl.col(ReconColumn.description)
+            ).alias(ReconColumn.description),
+            pl.lit(Subject.parent_subject_value).alias(ReconColumn.subject),
+        )
+    )
 
     ascwds_parent_accounts_lf = create_missing_columns_required_for_output(
         ascwds_parent_accounts_lf

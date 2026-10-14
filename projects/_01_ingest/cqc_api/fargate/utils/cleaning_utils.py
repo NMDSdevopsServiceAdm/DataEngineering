@@ -6,6 +6,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
+    HasSuccessor,
     PrimaryServiceType,
 )
 from utils.column_values.categorical_column_values import (
@@ -32,20 +33,24 @@ def save_latest_full_snapshot(
 
     All registered and deregistered locations in the latest full snapshot of CQC locations are saved.
     This data is used in the Skills for Care (SfC) internal reconciliation process.
+    `has_successor` is "Y" if `relationships_types` contains "HSCA Successor", otherwise "N".
 
     Args:
-        cqc_lf (pl.LazyFrame): LazyFrame containing CQC location data.
+        cqc_lf (pl.LazyFrame): LazyFrame containing CQC location data, including
+            the `relationships_types` column.
         cqc_full_snapshot_destination (str): S3 URI to save CQC deregistered locations data.
     """
-    required_columns = [
+    cqc_lf = cqc_lf.select(
         CQCLClean.cqc_location_import_date,
         CQCLClean.location_id,
         CQCLClean.registration_status,
         CQCLClean.deregistration_date,
         CQCLClean.type,
-    ]
-
-    cqc_lf = cqc_lf.select(*required_columns)
+        pl.when(pl.col(CQCLClean.relationships_types).list.contains("HSCA Successor"))
+        .then(pl.lit(HasSuccessor.has_successor))
+        .otherwise(pl.lit(HasSuccessor.no_successor))
+        .alias(CQCLClean.has_successor),
+    )
 
     cqc_lf = utils.filter_to_maximum_value_in_column(
         cqc_lf, CQCLClean.cqc_location_import_date

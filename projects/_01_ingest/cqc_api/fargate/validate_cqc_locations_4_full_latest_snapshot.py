@@ -10,7 +10,10 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.validation_table_columns import Validation
-from utils.column_values.categorical_column_values import RegistrationStatus
+from utils.column_values.categorical_column_values import (
+    HasSuccessor,
+    RegistrationStatus,
+)
 
 
 def main(bucket_name: str, source_path: str, reports_path: str) -> None:
@@ -42,6 +45,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 CQCLClean.location_id,
                 CQCLClean.cqc_location_import_date,
                 CQCLClean.registration_status,
+                CQCLClean.has_successor,
             ]
         )
         # index columns
@@ -51,8 +55,13 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             CQCLClean.registration_status,
             [RegistrationStatus.registered, RegistrationStatus.deregistered],
         )
+        .col_vals_in_set(
+            CQCLClean.has_successor,
+            [HasSuccessor.has_successor, HasSuccessor.no_successor],
+        )
         # numeric column values are between (inclusive)
-        .col_vals_between(Validation.location_id_length, 3, 14).interrogate()
+        .col_vals_between(Validation.location_id_length, 3, 14)
+        .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 

@@ -87,7 +87,12 @@ class TestMain:
         assert parents_df.height == 0
 
         potentials_count_df = potentials_count_args[0].collect()
-        assert potentials_count_df.columns == [ReconColumn.potentials_count]
+        assert potentials_count_df.columns == [
+            ReconColumn.potentials_count,
+            ReconColumn.potentials_deregistered_with_successor_count,
+            ReconColumn.potentials_deregistered_no_successor_count,
+            ReconColumn.potentials_non_linked_count,
+        ]
         assert potentials_count_df.height == 1
 
 
@@ -490,11 +495,13 @@ class TestBuildPotentialsCountOutput:
                 AWPClean.nmds_id: ["1"],
                 CQCL.registration_status: [registration_status],
                 CQCL.deregistration_date: [deregistration_date],
+                CQCLClean.has_successor: [None],
             },
             schema={
                 AWPClean.nmds_id: pl.String,
                 CQCL.registration_status: pl.String,
                 CQCL.deregistration_date: pl.Date,
+                CQCLClean.has_successor: pl.String,
             },
         )
 
@@ -504,6 +511,40 @@ class TestBuildPotentialsCountOutput:
 
         assert returned_df[ReconColumn.potentials_count].item() == int(expected_counted)
 
+    def test_splits_total_into_successor_no_successor_and_non_linked(self):
+        input_lf = pl.LazyFrame(
+            {
+                AWPClean.nmds_id: ["1", "2", "3", "4", "5", "6"],
+                CQCL.registration_status: [
+                    RegistrationStatus.deregistered,
+                    RegistrationStatus.deregistered,
+                    RegistrationStatus.deregistered,
+                    None,
+                    None,
+                    RegistrationStatus.registered,
+                ],
+                CQCL.deregistration_date: [date(2024, 3, 1)] * 3 + [None] * 3,
+                CQCLClean.has_successor: ["Y", "Y", "N", None, None, "N"],
+            },
+            schema={
+                AWPClean.nmds_id: pl.String,
+                CQCL.registration_status: pl.String,
+                CQCL.deregistration_date: pl.Date,
+                CQCLClean.has_successor: pl.String,
+            },
+        )
+
+        returned_df = job.build_potentials_count_output(
+            input_lf, FIRST_OF_MOST_RECENT_MONTH
+        ).collect()
+
+        assert returned_df.row(0, named=True) == {
+            ReconColumn.potentials_count: 5,
+            ReconColumn.potentials_deregistered_with_successor_count: 2,
+            ReconColumn.potentials_deregistered_no_successor_count: 1,
+            ReconColumn.potentials_non_linked_count: 2,
+        }
+
     def test_counts_each_nmds_id_once_across_account_types(self):
         input_lf = pl.LazyFrame(
             {
@@ -511,12 +552,14 @@ class TestBuildPotentialsCountOutput:
                 AWPClean.organisation_id: ["org", "org", "org2", "org2"],
                 CQCL.registration_status: [None] * 4,
                 CQCL.deregistration_date: [None] * 4,
+                CQCLClean.has_successor: [None] * 4,
             },
             schema={
                 AWPClean.nmds_id: pl.String,
                 AWPClean.organisation_id: pl.String,
                 CQCL.registration_status: pl.String,
                 CQCL.deregistration_date: pl.Date,
+                CQCLClean.has_successor: pl.String,
             },
         )
 
@@ -532,11 +575,13 @@ class TestBuildPotentialsCountOutput:
                 AWPClean.nmds_id: ["1", None],
                 CQCL.registration_status: [None, None],
                 CQCL.deregistration_date: [None, None],
+                CQCLClean.has_successor: [None, None],
             },
             schema={
                 AWPClean.nmds_id: pl.String,
                 CQCL.registration_status: pl.String,
                 CQCL.deregistration_date: pl.Date,
+                CQCLClean.has_successor: pl.String,
             },
         )
 
@@ -552,6 +597,7 @@ class TestBuildPotentialsCountOutput:
                 AWPClean.nmds_id: pl.String,
                 CQCL.registration_status: pl.String,
                 CQCL.deregistration_date: pl.Date,
+                CQCLClean.has_successor: pl.String,
             }
         )
 
@@ -575,6 +621,7 @@ class TestBuildSingleAndSubsOutput:
                     ParentsOrSinglesAndSubs.parents,
                 ],
                 CQCL.deregistration_date: [date(2024, 3, 15), None],
+                CQCLClean.has_successor: ["Y", "N"],
             }
         )
 
@@ -588,6 +635,27 @@ class TestBuildSingleAndSubsOutput:
             SingleSubDescription.single_sub_deregistered_description
         ]
 
+    def test_uses_no_successor_description_when_deregistered_without_successor(self):
+        input_lf = pl.LazyFrame(
+            {
+                AWPClean.nmds_id: ["40"],
+                AWPClean.establishment_type: ["type_a"],
+                AWPClean.region_id: ["region_a"],
+                AWPClean.establishment_name: ["Name D"],
+                ReconColumn.parents_or_singles_and_subs: [
+                    ParentsOrSinglesAndSubs.singles_and_subs
+                ],
+                CQCL.deregistration_date: [date(2024, 3, 15)],
+                CQCLClean.has_successor: ["N"],
+            }
+        )
+
+        returned_df = job.build_single_and_subs_output(input_lf).collect()
+
+        assert returned_df[ReconColumn.description].to_list() == [
+            SingleSubDescription.single_sub_deregistered_no_successor_description
+        ]
+
     def test_uses_reg_type_description_when_not_deregistered(self):
         input_lf = pl.LazyFrame(
             {
@@ -599,6 +667,7 @@ class TestBuildSingleAndSubsOutput:
                     ParentsOrSinglesAndSubs.singles_and_subs
                 ],
                 CQCL.deregistration_date: [None],
+                CQCLClean.has_successor: [None],
             },
             schema={
                 AWPClean.nmds_id: pl.String,
@@ -607,6 +676,7 @@ class TestBuildSingleAndSubsOutput:
                 AWPClean.establishment_name: pl.String,
                 ReconColumn.parents_or_singles_and_subs: pl.String,
                 CQCL.deregistration_date: pl.Date,
+                CQCLClean.has_successor: pl.String,
             },
         )
 
@@ -645,6 +715,7 @@ class TestBuildParentsOutput:
                     None,
                     date(2024, 3, 10),
                 ],
+                CQCLClean.has_successor: ["Y", "Y", None, "Y"],
             }
         )
 
@@ -658,8 +729,39 @@ class TestBuildParentsOutput:
             Subject.parent_subject_value
         ]
         assert returned_df[ReconColumn.description].item() == (
-            "new_potential_subs: S1 old_potential_subs: S2 "
+            "successor_count=2 new_potential_subs: S1 old_potential_subs: S2 "
             "missing_or_incorrect_potential_subs: S3 "
+        )
+
+    def test_successor_count_is_zero_when_no_deregistered_sub_has_successor(self):
+        ascwds_parent_accounts_lf = pl.LazyFrame(
+            {
+                AWPClean.nmds_id: ["P1"],
+                AWPClean.establishment_id: ["E1"],
+                AWPClean.establishment_name: ["Parent Name"],
+                AWPClean.organisation_id: ["org1"],
+                AWPClean.establishment_type: ["type_a"],
+                AWPClean.region_id: ["region_a"],
+            }
+        )
+        reconciliation_lf = pl.LazyFrame(
+            {
+                AWPClean.organisation_id: ["org1"],
+                AWPClean.nmds_id: ["S1"],
+                ReconColumn.parents_or_singles_and_subs: [
+                    ParentsOrSinglesAndSubs.parents
+                ],
+                CQCL.deregistration_date: [date(2024, 3, 10)],
+                CQCLClean.has_successor: ["N"],
+            }
+        )
+
+        returned_df = job.build_parents_output(
+            ascwds_parent_accounts_lf, reconciliation_lf, date(2024, 3, 1)
+        ).collect()
+
+        assert returned_df[ReconColumn.description].item() == (
+            "successor_count=0 new_potential_subs: S1 "
         )
 
     def test_excludes_parent_accounts_with_no_outstanding_issues(self):
@@ -679,12 +781,14 @@ class TestBuildParentsOutput:
                 AWPClean.nmds_id: [],
                 ReconColumn.parents_or_singles_and_subs: [],
                 CQCL.deregistration_date: [],
+                CQCLClean.has_successor: [],
             },
             schema={
                 AWPClean.organisation_id: pl.String,
                 AWPClean.nmds_id: pl.String,
                 ReconColumn.parents_or_singles_and_subs: pl.String,
                 CQCL.deregistration_date: pl.Date,
+                CQCLClean.has_successor: pl.String,
             },
         )
 

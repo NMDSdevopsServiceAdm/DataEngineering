@@ -38,6 +38,7 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     provider_name: str = "provider_name"
     registered_manager_names: str = "registered_manager_names"
     regulated_activities_offered: str = "regulated_activities_offered"
+    has_successor: str = "has_successor"
     related_location: str = "related_location"
     relationships_types: str = "relationships_types"
     relationships_exploded: str = NewCqcLocationApiColumns.relationships + "_exploded"

@@ -29,3 +29,11 @@ class ReconciliationColumns:
     phone: str = "Phone"
     workplace_id: str = "Workplace_Id"
     potentials_count: str = "potentials_count"
+    potentials_deregistered_with_successor_count: str = (
+        "potentials_deregistered_with_successor_count"
+    )
+    potentials_deregistered_no_successor_count: str = (
+        "potentials_deregistered_no_successor_count"
+    )
+    potentials_non_linked_count: str = "potentials_non_linked_count"
+    successor_count: str = "successor_count"
