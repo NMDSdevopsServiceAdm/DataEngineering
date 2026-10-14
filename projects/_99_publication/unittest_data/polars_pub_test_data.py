@@ -1756,9 +1756,38 @@ format_percentage_test_cases = [
 
 
 @dataclass
+class RoundPercentageTestCase:
+    id: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+round_percentage_test_cases = [
+    RoundPercentageTestCase(
+        id="fraction_becomes_a_percentage_rounded_to_one_decimal_place",
+        expected_data=[(0.0321, 3.2)],
+    ),
+    RoundPercentageTestCase(
+        id="a_half_way_tie_rounds_away_from_zero",
+        expected_data=[(0.0005, 0.1), (-0.0015, -0.2)],
+    ),
+    RoundPercentageTestCase(
+        id="a_negative_value_that_rounds_to_zero_is_positive_zero",
+        expected_data=[(-0.0001, 0.0)],
+    ),
+    RoundPercentageTestCase(
+        id="null_stays_null",
+        expected_data=[(None, None)],
+    ),
+]
+
+
+@dataclass
 class GetPublicationDateTestCase:
     id: str
-    latest_period: date
+    latest_import_date: date
     expected: date
 
     def as_pytest_param(self) -> pytest.param:
@@ -1767,23 +1796,23 @@ class GetPublicationDateTestCase:
 
 get_publication_date_test_cases = [
     GetPublicationDateTestCase(
-        id="returns_15th_of_month_after_latest_period_plus_35_days",
-        latest_period=date(2026, 8, 1),
+        id="returns_15th_of_the_import_date_month",
+        latest_import_date=date(2026, 9, 1),
         expected=date(2026, 9, 15),
     ),
     GetPublicationDateTestCase(
         id="rolls_to_monday_when_15th_is_saturday",
-        latest_period=date(2026, 7, 1),
+        latest_import_date=date(2026, 8, 1),
         expected=date(2026, 8, 17),
     ),
     GetPublicationDateTestCase(
         id="rolls_to_monday_when_15th_is_sunday",
-        latest_period=date(2026, 1, 1),
+        latest_import_date=date(2026, 2, 1),
         expected=date(2026, 2, 16),
     ),
     GetPublicationDateTestCase(
         id="skips_consecutive_bank_holidays_when_15th_is_good_friday",
-        latest_period=date(2022, 3, 1),
+        latest_import_date=date(2022, 4, 1),
         expected=date(2022, 4, 19),
     ),
 ]
@@ -1942,8 +1971,8 @@ prepare_perc_change_for_publication_test_cases = [
 ]
 
 
-# Raw period dates are one month ahead of their labels,
-# so the latest period here is Aug-26 and it publishes on 2026-09-15.
+# Raw period dates are CQC import dates, one month ahead of their labels,
+# so the latest here is 2026-09-01 (Aug-26) and it publishes on 2026-09-15.
 download_workbook_t0_data = [
     (
         date(2026, 8, 1),

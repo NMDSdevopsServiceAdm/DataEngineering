@@ -10,7 +10,7 @@ import pandas as pd
 import polars as pl
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.clean_utils import (
-    _round_half_away_from_zero,
+    round_percentage,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_pages import (
     set_column_widths,
@@ -26,7 +26,6 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workboo
 )
 from utils.column_names.publication_columns import PublicationColumns as Pub
 
-_PUBLICATION_LAG_DAYS: int = 35
 _PUBLICATION_DAY_OF_MONTH: int = 15
 _FIRST_WEEKEND_WEEKDAY: int = 5  # date.weekday(): Saturday
 
@@ -60,24 +59,20 @@ _COUNT_FORMAT = {"num_format": "#,##0", "align": "right"}
 _PERCENTAGE_FORMAT = {"num_format": "0.0%", "align": "right"}
 
 
-def get_publication_date(latest_period: date) -> date:
+def get_publication_date(latest_import_date: date) -> date:
     """
-    Returns the date the publication covering the latest period is released.
-
-    That is the 15th of the month containing the latest period plus 35 days,
-    moved forward to the next working day when it falls on a weekend or an
-    England bank holiday.
+    Returns the date the publication is released: the 15th of the month of the
+    latest period's CQC import date, moved forward to the next working day when
+    it falls on a weekend or an England bank holiday.
 
     Args:
-        latest_period (date): the most recent period in the published tables.
+        latest_import_date (date): the latest value of the Period column.
 
     Returns:
         date: the publication date.
     """
     england_holidays = holidays.country_holidays("GB", subdiv="ENG")
-    publication_date = (latest_period + timedelta(days=_PUBLICATION_LAG_DAYS)).replace(
-        day=_PUBLICATION_DAY_OF_MONTH
-    )
+    publication_date = latest_import_date.replace(day=_PUBLICATION_DAY_OF_MONTH)
     while (
         publication_date.weekday() >= _FIRST_WEEKEND_WEEKDAY
         or publication_date in england_holidays
@@ -166,8 +161,7 @@ def prepare_perc_change_for_publication(perc_change_lf: pl.LazyFrame) -> pd.Data
 def _percentage_as_rounded_fraction(column: str) -> pl.Expr:
     """
     Rounds a fractional percentage change to one decimal place of a
-    percentage (0.0321 -> 0.032), half away from zero, as a Float64 free of
-    Float32 noise.
+    percentage (0.0321 -> 0.032) as a Float64 free of Float32 noise.
 
     Args:
         column (str): the fractional percentage change column.
@@ -175,8 +169,20 @@ def _percentage_as_rounded_fraction(column: str) -> pl.Expr:
     Returns:
         pl.Expr: the rounded fraction, aliased to the column's name.
     """
-    percentage = pl.col(column).cast(pl.Float64) * 100
-    return (_round_half_away_from_zero(percentage, 0.1) / 100).round(3).alias(column)
+    return (round_percentage(column) / 100).round(3).alias(column)
+
+
+def get_latest_import_date(t0_lf: pl.LazyFrame) -> date:
+    """
+    Returns the latest value of the Period column, a CQC import date.
+
+    Args:
+        t0_lf (pl.LazyFrame): output of build_t0_estimates_download_table.
+
+    Returns:
+        date: the latest import date.
+    """
+    return t0_lf.select(pl.col(Pub.period).max()).collect().item()
 
 
 def get_latest_period(t0_lf: pl.LazyFrame) -> date:
@@ -239,7 +245,9 @@ def build_download_workbook(
     """
     t0_lf = t0_lf.collect().lazy()  # T0 feeds both the latest period and its table
     latest_period = get_latest_period(t0_lf)
-    publication_date = format_publication_date(get_publication_date(latest_period))
+    publication_date = format_publication_date(
+        get_publication_date(get_latest_import_date(t0_lf))
+    )
     subtitles = [f"Skills for Care's workforce estimates as at {latest_period:%b-%Y}"]
     tables = {
         "T0": prepare_t0_for_publication(t0_lf),

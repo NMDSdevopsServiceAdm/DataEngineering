@@ -19,7 +19,7 @@ class TestGetPublicationDate:
         [case.as_pytest_param() for case in Data.get_publication_date_test_cases],
     )
     def test_function_returns_expected_date(self, case):
-        assert job.get_publication_date(case.latest_period) == case.expected
+        assert job.get_publication_date(case.latest_import_date) == case.expected
 
 
 class TestFormatPublicationDate:
