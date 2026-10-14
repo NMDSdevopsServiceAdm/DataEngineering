@@ -10,13 +10,13 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics. Models now fitted on all training rows instead of an 80/20 split. Known values are ASC-WDS for care homes and ASC-WDS plus PIR for non-res, so the `metrics` in `metadata.json` aren't comparable with earlier runs.
-
+- Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 
 ### Improved
 
 
 ### Fixed
-
+- Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
 
 
 ## [v2026.09.0] - 13/10/2026
