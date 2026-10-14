@@ -55,7 +55,15 @@ PUBLICATION_EXTRAS = (
     / "Dockerfile_and_requirements"
     / "requirements-extra.txt"
 )
-EXCEL_PACKAGES = ["gptables", "xlsxwriter", "pandas", "numpy", "openpyxl", "pyarrow"]
+PUBLICATION_PACKAGES = [
+    "gptables",
+    "xlsxwriter",
+    "pandas",
+    "numpy",
+    "openpyxl",
+    "pyarrow",
+    "holidays",
+]
 
 PYPROJECT_ALL_PINS = {
     **get_pins(
@@ -161,14 +169,17 @@ class TestExtrasFiles:
 
 
 class TestPublicationExtrasPins:
-    """The publication image needs these Excel packages; pyarrow is for `to_pandas()`."""
+    """
+    The publication image needs the Excel packages (pyarrow is for `to_pandas()`)
+    and holidays for the publication date.
+    """
 
-    @pytest.mark.parametrize("package", EXCEL_PACKAGES)
-    def test_excel_package_is_pinned(self, package):
+    @pytest.mark.parametrize("package", PUBLICATION_PACKAGES)
+    def test_publication_package_is_pinned(self, package):
         extras_pins = get_pins(PUBLICATION_EXTRAS.read_text().splitlines())
 
         assert package in extras_pins, (
             f"{package} is not pinned in {PUBLICATION_EXTRAS.name} for the "
-            "publication image, so the Excel jobs would fail at import in the "
+            "publication image, so the publication jobs would fail at import in the "
             "container despite passing locally."
         )

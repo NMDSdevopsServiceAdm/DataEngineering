@@ -1753,3 +1753,238 @@ format_percentage_test_cases = [
         expected_data=[(None, None)],
     ),
 ]
+
+
+@dataclass
+class GetPublicationDateTestCase:
+    id: str
+    latest_period: date
+    expected: date
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+get_publication_date_test_cases = [
+    GetPublicationDateTestCase(
+        id="returns_15th_of_month_after_latest_period_plus_35_days",
+        latest_period=date(2026, 8, 1),
+        expected=date(2026, 9, 15),
+    ),
+    GetPublicationDateTestCase(
+        id="rolls_to_monday_when_15th_is_saturday",
+        latest_period=date(2026, 7, 1),
+        expected=date(2026, 8, 17),
+    ),
+    GetPublicationDateTestCase(
+        id="rolls_to_monday_when_15th_is_sunday",
+        latest_period=date(2026, 1, 1),
+        expected=date(2026, 2, 16),
+    ),
+    GetPublicationDateTestCase(
+        id="skips_consecutive_bank_holidays_when_15th_is_good_friday",
+        latest_period=date(2022, 3, 1),
+        expected=date(2022, 4, 19),
+    ),
+]
+
+
+@dataclass
+class FormatPublicationDateTestCase:
+    id: str
+    publication_date: date
+    expected: str
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+format_publication_date_test_cases = [
+    FormatPublicationDateTestCase(
+        id="formats_date_as_month_ordinal_day_year",
+        publication_date=date(2026, 9, 15),
+        expected="September 15th 2026",
+    ),
+    FormatPublicationDateTestCase(
+        id="uses_st_suffix_for_21st",
+        publication_date=date(2026, 9, 21),
+        expected="September 21st 2026",
+    ),
+    FormatPublicationDateTestCase(
+        id="uses_th_suffix_for_teens",
+        publication_date=date(2026, 9, 11),
+        expected="September 11th 2026",
+    ),
+]
+
+
+@dataclass
+class PrepareTableForPublicationTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+prepare_t0_for_publication_test_cases = [
+    PrepareTableForPublicationTestCase(
+        id="t0_publishes_rounded_posts_not_unrounded",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                1234.0,
+                1200.0,
+                30,
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 1200.0, 30),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="suppressed_posts_render_as_less_than_10_not_zero",
+        input_data=[
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 4.0, None, 1),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, "< 10", 1),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="posts_at_10_or_above_stay_numeric",
+        input_data=[
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 10.0, 10.0, 1),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 10.0, 1),
+        ],
+    ),
+]
+
+prepare_perc_change_for_publication_test_cases = [
+    PrepareTableForPublicationTestCase(
+        id="null_percentage_change_renders_as_x",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                None,
+                None,
+                None,
+                None,
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, "[x]", "[x]"),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="rounds_percentage_change_to_one_decimal_place",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                0.0321,
+                "3.2%",
+                -0.0049,
+                "-0.5%",
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 0.032, -0.005),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="rounds_percentage_change_half_away_from_zero",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                0.0125,
+                "1.3%",
+                -0.0125,
+                "-1.3%",
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 0.013, -0.013),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="non_null_percentage_change_stays_fraction",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                0.032,
+                "3.2%",
+                -0.008,
+                "-0.8%",
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 0.032, -0.008),
+        ],
+    ),
+]
+
+
+# Raw period dates are one month ahead of their labels,
+# so the latest period here is Aug-26 and it publishes on 2026-09-15.
+download_workbook_t0_data = [
+    (
+        date(2026, 8, 1),
+        "Jul-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        1234567.0,
+        1230000.0,
+        22000,
+    ),
+    (
+        date(2026, 9, 1),
+        "Aug-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        1240000.0,
+        1240000.0,
+        22100,
+    ),
+    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, 5.0, None, 3),
+]
+download_workbook_perc_change_data = [
+    (
+        date(2026, 8, 1),
+        "Jul-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        None,
+        None,
+        0.0123,
+        "1.2%",
+    ),
+    (
+        date(2026, 9, 1),
+        "Aug-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        0.0321,
+        "3.2%",
+        0.0045,
+        "0.5%",
+    ),
+    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, None, None, None, None),
+]

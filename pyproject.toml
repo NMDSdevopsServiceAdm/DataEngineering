@@ -27,6 +27,7 @@ dependencies = [
     "psutil==7.2.2",
     "gptables==2.0.2",
     "xlsxwriter==3.2.9",
+    "holidays==0.106",
 ]
 
 [project.scripts]
