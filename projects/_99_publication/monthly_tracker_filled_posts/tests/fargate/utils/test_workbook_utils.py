@@ -1,5 +1,7 @@
 from datetime import date
 
+import zipfile
+
 import openpyxl
 import polars as pl
 import pytest
@@ -145,7 +147,13 @@ class TestBuildDownloadWorkbook:
             orient="row",
         )
 
-        job.build_download_workbook(t0_lf, perc_change_lf, perc_change_lf, path)
+        t2_lf = pl.LazyFrame(
+            Data.download_workbook_t2_perc_change_data,
+            self.perc_change_schema,
+            orient="row",
+        )
+
+        job.build_download_workbook(t0_lf, perc_change_lf, t2_lf, path)
 
         return path
 
@@ -251,15 +259,20 @@ class TestBuildDownloadWorkbook:
             worksheet.cell(self.header_row_number(worksheet) + 1, 1).value == "Jul-26"
         )
 
-    @pytest.mark.parametrize("sheet", ["T1", "T2"])
-    def test_percentage_columns_use_0_0_percent_format(self, workbook, sheet):
+    @pytest.mark.parametrize(
+        "sheet,expected_values",
+        [("T1", (0.032, 0.005)), ("T2", (0.065, 0.011))],
+    )
+    def test_percentage_columns_use_0_0_percent_format(
+        self, workbook, sheet, expected_values
+    ):
         worksheet = workbook[sheet]
         # second data row has numeric annual and monthly changes
         row = self.header_row_number(worksheet) + 2
         annual, monthly = worksheet.cell(row, 4), worksheet.cell(row, 5)
 
         assert (annual.number_format, monthly.number_format) == ("0.0%", "0.0%")
-        assert (annual.value, monthly.value) == (0.032, 0.005)
+        assert (annual.value, monthly.value) == expected_values
 
     def test_tables_use_flat_12pt_arial(self, workbook):
         t0 = workbook["T0"]
@@ -366,3 +379,65 @@ class TestBuildDownloadWorkbook:
         job.build_download_workbook(t0_lf, t1_lf, t2_lf, tmp_path / "once.xlsx")
 
         assert sorted(runs) == ["t0", "t1", "t2"]
+
+
+class TestEnableTableFilters:
+    table_xml = (
+        '<table xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+        'id="1" name="{name}" displayName="{name}" ref="A5:E8" totalsRowShown="0">'
+        "{filter}"
+        '<tableColumns count="1"><tableColumn id="1" name="Period"/></tableColumns>'
+        "</table>"
+    )
+
+    def write_zip(self, path, name="t0_filled_posts", table_filter=""):
+        with zipfile.ZipFile(path, "w") as archive:
+            archive.writestr(
+                "xl/tables/table1.xml",
+                self.table_xml.format(name=name, filter=table_filter),
+            )
+            archive.writestr("xl/workbook.xml", "<workbook/>")
+
+    def test_function_adds_filter_buttons_to_the_named_tables(self, tmp_path):
+        path = tmp_path / "workbook.xlsx"
+        self.write_zip(path)
+
+        job._enable_table_filters(path, ["t0_filled_posts"])
+
+        xml = zipfile.ZipFile(path).read("xl/tables/table1.xml").decode()
+        assert '<autoFilter ref="A5:E8"/><tableColumns' in xml
+
+    def test_function_leaves_other_tables_without_filter_buttons(self, tmp_path):
+        path = tmp_path / "workbook.xlsx"
+        self.write_zip(path, name="contents_table")
+
+        job._enable_table_filters(path, ["t0_filled_posts"])
+
+        xml = zipfile.ZipFile(path).read("xl/tables/table1.xml").decode()
+        assert "<autoFilter" not in xml
+
+    def test_function_does_not_duplicate_an_existing_filter(self, tmp_path):
+        path = tmp_path / "workbook.xlsx"
+        self.write_zip(path, table_filter='<autoFilter ref="A5:E8"/>')
+
+        job._enable_table_filters(path, ["t0_filled_posts"])
+
+        xml = zipfile.ZipFile(path).read("xl/tables/table1.xml").decode()
+        assert xml.count("<autoFilter") == 1
+
+    def test_function_leaves_the_original_workbook_when_the_rewrite_fails(
+        self, tmp_path, monkeypatch
+    ):
+        path = tmp_path / "workbook.xlsx"
+        self.write_zip(path)
+        original = path.read_bytes()
+
+        def fail(*args, **kwargs):
+            raise OSError("disk full")
+
+        monkeypatch.setattr(zipfile.ZipFile, "writestr", fail)
+        with pytest.raises(OSError):
+            job._enable_table_filters(path, ["t0_filled_posts"])
+
+        assert path.read_bytes() == original
+        assert [file.name for file in tmp_path.iterdir()] == ["workbook.xlsx"]
