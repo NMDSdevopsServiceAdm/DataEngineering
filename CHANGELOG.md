@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - Added validation of the job role estimates archive run log.
 
 ### Changed
-- Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of the raw permanent plus temporary counts. The SLV merge now reads the employment status estimate output, so the Ind-CQC-SLV state machine runs the employment status steps before the SLV steps.
+- Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of the raw permanent plus temporary counts. The SLV merge now reads only the columns it needs from the employment status estimate output, so the Ind-CQC-SLV state machine runs the employment status steps before the SLV steps.
 
 
 ### Improved

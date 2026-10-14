@@ -1,6 +1,9 @@
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._01_merge as job
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH = (
@@ -30,7 +33,17 @@ class TestMain:
             merged_data_destination=self.MERGED_DATA_DESTINATION,
         )
 
-        scan_parquet_mock.assert_any_call(self.EMPLOYMENT_STATUS_ESTIMATE_SOURCE)
+        scan_parquet_mock.assert_any_call(
+            source=self.EMPLOYMENT_STATUS_ESTIMATE_SOURCE,
+            selected_columns=[
+                IndCQC.location_id,
+                IndCQC.cqc_location_import_date,
+                IndCQC.establishment_id,
+                IndCQC.ascwds_workplace_import_date,
+                IndCQC.published_job_role_label,
+                EmpStatus.estimated_employees,
+            ],
+        )
         scan_parquet_mock.assert_any_call(self.PREPARED_SLV_DATASET_SOURCE)
 
         employment_status_estimate_lf.join.assert_called_once_with(
