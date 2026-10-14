@@ -38,23 +38,21 @@ class TestDiagnosticsSheets:
                 "non-res SfC", Pub.publication_filled_posts, id="non_res_filled_posts"
             ),
             pytest.param(
-                "care homes number of locations by period (unconfirmed source)",
-                Pub.publication_locationid_count,
+                "care homes number of locations by period (needs a new pipeline column)",
+                None,
                 id="care_homes_locations",
             ),
             pytest.param(
-                "non-res number of locations by period (unconfirmed source)",
-                Pub.publication_locationid_count,
+                "non-res number of locations by period (needs a new pipeline column)",
+                None,
                 id="non_res_locations",
             ),
             pytest.param("care homes CT", None, id="care_homes_capacity_tracker"),
             pytest.param("non-res CT", None, id="non_res_capacity_tracker"),
         ],
     )
-    def test_no_filters_sheet_reads_unfiltered_columns_only(
-        self, note: str, source_column: str | None
-    ):
-        """No filters uses the publication columns; no column gives unfiltered Capacity Tracker."""
+    def test_no_filters_sheet_sources(self, note: str, source_column: str | None):
+        """No filters reads publication filled posts; the other columns need new pipeline columns."""
         sources = {r.note: r.source_column for r in job.NO_FILTERS.input_ranges}
 
         assert sources[note] == source_column

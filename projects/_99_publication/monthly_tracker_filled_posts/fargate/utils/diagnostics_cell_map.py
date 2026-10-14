@@ -3,11 +3,14 @@
 Lists the cells the workbook writer fills (`InputRange`), the template formulas
 it must leave alone, and the charts and styles the template tests check.
 
-Open points the map does not settle:
-- which month's `assessment_locationid_count_<term>` fills the "Number of
-  locations" cells;
-- the unfiltered Capacity Tracker totals on `No filters - long term`, which no
-  clean dataset column provides.
+The "Number of locations" cells take the latest row per group, since every row
+in a term's period shares the same count.
+
+Open points the map does not settle (each needs a pipeline column or ticket):
+- the unfiltered Capacity Tracker totals and location counts on `No filters -
+  long term`;
+- the pipeline columns that fill the % change cells on `Filled posts` and `Comp
+  prev publication`.
 """
 
 from dataclasses import dataclass
@@ -61,8 +64,6 @@ class SheetMap:
         chart_count (int): charts on the sheet.
         chart_label_ranges (tuple[str, ...]): fixed label cells charts use as
             series names.
-        na_formula_ranges (tuple[str, ...]): formula cells that return #N/A for
-            unfilled slots so charts skip them.
         window_rows (int): date rows each chart series must span.
         percentage_chart_columns (tuple[str, ...]): value columns that mark a
             chart as a % change chart.
@@ -79,7 +80,6 @@ class SheetMap:
     input_ranges: tuple[InputRange, ...]
     chart_count: int
     chart_label_ranges: tuple[str, ...] = ()
-    na_formula_ranges: tuple[str, ...] = ()
     window_rows: int = 0
     percentage_chart_columns: tuple[str, ...] = ()
     percentage_chart_count: int = 0
@@ -111,41 +111,38 @@ FILLED_POSTS = SheetMap(
         InputRange(TITLE_CELL, note="'End of <month year>' title"),
         InputRange("B24:B36", note="annual filled posts dates", style="date"),
         InputRange("I24:I36", note="annual filled posts % change dates", style="date"),
+        InputRange("C24:D36", note="annual filled posts totals", style="count"),
         InputRange("E24:G36", note="annual filled posts, 3 spare years", style="count"),
+        InputRange("J25:N36", note="annual filled posts % change", style="percent"),
         InputRange("B44:B56", note="annual CQC locations dates", style="date"),
         InputRange("I44:I56", note="annual CQC locations % change dates", style="date"),
+        InputRange("C44:D56", note="annual CQC locations totals", style="count"),
         InputRange(
             "E44:G56", note="annual CQC locations, 3 spare years", style="count"
         ),
+        InputRange("J45:N56", note="annual CQC locations % change", style="percent"),
         InputRange("B65:B77", note="monthly filled posts dates", style="date"),
         InputRange("I65:I77", note="monthly filled posts % change dates", style="date"),
+        InputRange("C65:D77", note="monthly filled posts totals", style="count"),
         InputRange("E65:G77", note="monthly filled posts", style="count"),
+        InputRange("J65:N77", note="monthly filled posts % change", style="percent"),
         InputRange("B84:B96", note="monthly CQC locations dates", style="date"),
         InputRange(
             "I84:I96", note="monthly CQC locations % change dates", style="date"
         ),
+        InputRange("C84:D96", note="monthly CQC locations totals", style="count"),
         InputRange("E84:G96", note="monthly CQC locations", style="count"),
+        InputRange("J84:N96", note="monthly CQC locations % change", style="percent"),
         InputRange(
             "B99", note="'...since <month year>' chart heading", style="bold_text"
         ),
     ),
     chart_count=3,
     chart_label_ranges=("B61", "B80"),
-    na_formula_ranges=("J65:N77", "J84:N96"),
     window_rows=MONTHLY_SLOTS,
     percentage_chart_columns=("J", "K", "N"),
     percentage_chart_count=3,
     bold_heading_cells=("B20", "B40", "B61", "B80"),
-    formula_styles=(
-        ("C24:D36", "count"),
-        ("J25:N36", "percent"),
-        ("C44:D56", "count"),
-        ("J45:N56", "percent"),
-        ("C65:D77", "count"),
-        ("J65:N77", "percent"),
-        ("C84:D96", "count"),
-        ("J84:N96", "percent"),
-    ),
 )
 
 # Annual rows first, then monthly rows; unused slots stay blank at the end. The
@@ -159,6 +156,7 @@ COMP_PREV_PUBLICATION = SheetMap(
         InputRange("B23:B59", note="previous publication labels"),
         InputRange("C23:C59", note="previous publication dates", style="date"),
         InputRange("D23:H59", note="previous publication figures", style="count"),
+        InputRange("D106:H142", note="difference as percentage", style="percent"),
         InputRange("B64:B100", note="current publication labels"),
         InputRange("C64:C100", note="current publication dates", style="date"),
         InputRange("D64:H100", note="current publication figures", style="count"),
@@ -168,7 +166,6 @@ COMP_PREV_PUBLICATION = SheetMap(
     formula_styles=(
         ("B106:B142", "text"),
         ("C106:C142", "date"),
-        ("D106:H142", "percent"),
     ),
 )
 
@@ -181,13 +178,13 @@ def _location_count_inputs(
         InputRange(
             care_homes_cell,
             source_column,
-            "care homes number of locations (unconfirmed source)",
+            "care homes number of locations",
             "count",
         ),
         InputRange(
             non_residential_cell,
             source_column,
-            "non-res number of locations (unconfirmed source)",
+            "non-res number of locations",
             "count",
         ),
     )
@@ -301,8 +298,8 @@ COMP_LONG_TERM = _comparison_sheet(
 )
 
 # D25/M25 here are the fixed label "Varies month to month"; location counts are
-# per period in G/P instead. The unfiltered Capacity Tracker columns (D, M) have
-# no source column in the clean dataset.
+# per period in G/P instead. The unfiltered Capacity Tracker posts (D, M) and
+# location counts (G, P) need new pipeline columns.
 NO_FILTERS = _comparison_sheet(
     "No filters - long term",
     29,
@@ -313,14 +310,14 @@ NO_FILTERS = _comparison_sheet(
     extra_inputs=(
         InputRange(
             f"G29:G{29 + LONG_TERM_SLOTS - 1}",
-            Pub.publication_locationid_count,
-            "care homes number of locations by period (unconfirmed source)",
+            None,
+            "care homes number of locations by period (needs a new pipeline column)",
             "count",
         ),
         InputRange(
             f"P29:P{29 + LONG_TERM_SLOTS - 1}",
-            Pub.publication_locationid_count,
-            "non-res number of locations by period (unconfirmed source)",
+            None,
+            "non-res number of locations by period (needs a new pipeline column)",
             "count",
         ),
     ),
