@@ -58,6 +58,7 @@ class TestMain:
             "ascwds_source/",
             "single_and_subs_dest/",
             "parents_dest/",
+            "potentials_count_dest/",
         )
 
         scan_parquet_mock.assert_has_calls(
@@ -66,13 +67,15 @@ class TestMain:
                 call("ascwds_source/"),
             ]
         )
-        assert sink_to_parquet_mock.call_count == 2
+        assert sink_to_parquet_mock.call_count == 3
 
         single_and_sub_args, _ = sink_to_parquet_mock.call_args_list[0]
         parents_args, _ = sink_to_parquet_mock.call_args_list[1]
+        potentials_count_args, _ = sink_to_parquet_mock.call_args_list[2]
 
         assert single_and_sub_args[1] == "single_and_subs_dest/"
         assert parents_args[1] == "parents_dest/"
+        assert potentials_count_args[1] == "potentials_count_dest/"
 
         single_and_sub_df = single_and_sub_args[0].collect()
         assert (
@@ -82,6 +85,10 @@ class TestMain:
 
         parents_df = parents_args[0].collect()
         assert parents_df.height == 0
+
+        potentials_count_df = potentials_count_args[0].collect()
+        assert potentials_count_df.columns == [ReconColumn.potentials_count]
+        assert potentials_count_df.height == 1
 
 
 @dataclass
@@ -423,6 +430,136 @@ class TestFilterToLocationsRelevantToReconciliationProcess:
         ).collect()
 
         assert (returned_df.height == 1) == expected_included
+
+
+@dataclass
+class PotentialsCountTestCase:
+    id: str
+    registration_status: str | None
+    deregistration_date: date | None
+    expected_counted: bool
+
+    def as_pytest_param(self):
+        return pytest.param(
+            self.registration_status,
+            self.deregistration_date,
+            self.expected_counted,
+            id=self.id,
+        )
+
+
+potentials_count_cases = [
+    PotentialsCountTestCase("null_registration_status_is_counted", None, None, True),
+    PotentialsCountTestCase(
+        "deregistered_last_month_is_counted",
+        RegistrationStatus.deregistered,
+        date(2024, 3, 31),
+        True,
+    ),
+    PotentialsCountTestCase(
+        "deregistered_long_ago_is_counted",
+        RegistrationStatus.deregistered,
+        date(2020, 1, 1),
+        True,
+    ),
+    PotentialsCountTestCase(
+        "deregistered_in_current_month_is_not_counted",
+        RegistrationStatus.deregistered,
+        date(2024, 4, 1),
+        False,
+    ),
+    PotentialsCountTestCase(
+        "registered_is_not_counted",
+        RegistrationStatus.registered,
+        None,
+        False,
+    ),
+]
+
+
+class TestBuildPotentialsCountOutput:
+    @pytest.mark.parametrize(
+        "registration_status, deregistration_date, expected_counted",
+        [c.as_pytest_param() for c in potentials_count_cases],
+    )
+    def test_counts_workplace_when_unmatched_or_deregistered_before_current_month(
+        self, registration_status, deregistration_date, expected_counted
+    ):
+        input_lf = pl.LazyFrame(
+            {
+                AWPClean.nmds_id: ["1"],
+                CQCL.registration_status: [registration_status],
+                CQCL.deregistration_date: [deregistration_date],
+            },
+            schema={
+                AWPClean.nmds_id: pl.String,
+                CQCL.registration_status: pl.String,
+                CQCL.deregistration_date: pl.Date,
+            },
+        )
+
+        returned_df = job.build_potentials_count_output(
+            input_lf, FIRST_OF_MOST_RECENT_MONTH
+        ).collect()
+
+        assert returned_df[ReconColumn.potentials_count].item() == int(expected_counted)
+
+    def test_counts_each_nmds_id_once_across_account_types(self):
+        input_lf = pl.LazyFrame(
+            {
+                AWPClean.nmds_id: ["1", "2", "3", "3"],
+                AWPClean.organisation_id: ["org", "org", "org2", "org2"],
+                CQCL.registration_status: [None] * 4,
+                CQCL.deregistration_date: [None] * 4,
+            },
+            schema={
+                AWPClean.nmds_id: pl.String,
+                AWPClean.organisation_id: pl.String,
+                CQCL.registration_status: pl.String,
+                CQCL.deregistration_date: pl.Date,
+            },
+        )
+
+        returned_df = job.build_potentials_count_output(
+            input_lf, FIRST_OF_MOST_RECENT_MONTH
+        ).collect()
+
+        assert returned_df[ReconColumn.potentials_count].item() == 3
+
+    def test_ignores_null_nmds_ids(self):
+        input_lf = pl.LazyFrame(
+            {
+                AWPClean.nmds_id: ["1", None],
+                CQCL.registration_status: [None, None],
+                CQCL.deregistration_date: [None, None],
+            },
+            schema={
+                AWPClean.nmds_id: pl.String,
+                CQCL.registration_status: pl.String,
+                CQCL.deregistration_date: pl.Date,
+            },
+        )
+
+        returned_df = job.build_potentials_count_output(
+            input_lf, FIRST_OF_MOST_RECENT_MONTH
+        ).collect()
+
+        assert returned_df[ReconColumn.potentials_count].item() == 1
+
+    def test_returns_zero_when_no_workplaces_qualify(self):
+        input_lf = pl.LazyFrame(
+            schema={
+                AWPClean.nmds_id: pl.String,
+                CQCL.registration_status: pl.String,
+                CQCL.deregistration_date: pl.Date,
+            }
+        )
+
+        returned_df = job.build_potentials_count_output(
+            input_lf, FIRST_OF_MOST_RECENT_MONTH
+        ).collect()
+
+        assert returned_df[ReconColumn.potentials_count].item() == 0
 
 
 class TestBuildSingleAndSubsOutput:

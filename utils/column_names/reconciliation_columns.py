@@ -28,3 +28,4 @@ class ReconciliationColumns:
     item: str = "Item"
     phone: str = "Phone"
     workplace_id: str = "Workplace_Id"
+    potentials_count: str = "potentials_count"
