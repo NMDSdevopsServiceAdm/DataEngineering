@@ -1,3 +1,4 @@
+import os
 import re
 import zipfile
 from datetime import date, timedelta
@@ -307,24 +308,51 @@ def _enable_table_filters(filename: str | Path, table_names: list[str]) -> None:
     Adds filter buttons to the header of the named Excel tables in a saved
     workbook, which gptables always writes without them.
 
+    Rewrites the workbook through a temporary file, so a failure leaves the
+    original untouched.
+
     Args:
-        filename (str | Path): the saved .xlsx workbook, rewritten in place.
-        table_names (list[str]): names of the tables to add filter buttons to.
+        filename (str | Path): the saved .xlsx workbook, replaced in place.
+        table_names (list[str]): names of the tables to add filter buttons to;
+            a table that already has a filter is left alone.
     """
     path = Path(filename)
-    with zipfile.ZipFile(path) as source:
-        entries = [(info, source.read(info.filename)) for info in source.infolist()]
-    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as target:
-        for info, data in entries:
-            if info.filename.startswith("xl/tables/"):
-                xml = data.decode("utf-8")
-                name = re.search(r' name="([^"]+)"', xml)
-                table_range = re.search(r' ref="([^"]+)"', xml)
-                if name and table_range and name.group(1) in table_names:
-                    xml = xml.replace(
-                        "<tableColumns",
-                        f'<autoFilter ref="{table_range.group(1)}"/><tableColumns',
-                        1,
+    temp_path = path.with_suffix(".tmp")
+    try:
+        with (
+            zipfile.ZipFile(path) as source,
+            zipfile.ZipFile(temp_path, "w", zipfile.ZIP_DEFLATED) as target,
+        ):
+            for info in source.infolist():
+                data = source.read(info.filename)
+                if info.filename.startswith("xl/tables/"):
+                    data = _add_table_filter(data.decode("utf-8"), table_names).encode(
+                        "utf-8"
                     )
-                data = xml.encode("utf-8")
-            target.writestr(info, data)
+                target.writestr(info, data)
+        os.replace(temp_path, path)
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
+def _add_table_filter(xml: str, table_names: list[str]) -> str:
+    """
+    Adds a filter over the whole range of an Excel table's XML if it is one of
+    the named tables and has no filter yet.
+
+    Args:
+        xml (str): the table's XML.
+        table_names (list[str]): names of the tables to add a filter to.
+
+    Returns:
+        str: the table's XML.
+    """
+    name = re.search(r' name="([^"]+)"', xml)
+    table_range = re.search(r' ref="([^"]+)"', xml)
+    if not (name and table_range) or name.group(1) not in table_names:
+        return xml
+    if "<autoFilter" in xml:
+        return xml
+    return xml.replace(
+        "<tableColumns", f'<autoFilter ref="{table_range.group(1)}"/><tableColumns', 1
+    )

@@ -1988,3 +1988,27 @@ download_workbook_perc_change_data = [
     ),
     (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, None, None, None, None),
 ]
+
+download_workbook_t2_perc_change_data = [
+    (
+        date(2026, 8, 1),
+        "Jul-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        None,
+        None,
+        0.0201,
+        "2.0%",
+    ),
+    (
+        date(2026, 9, 1),
+        "Aug-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        0.0654,
+        "6.5%",
+        0.0112,
+        "1.1%",
+    ),
+    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, None, None, None, None),
+]
