@@ -20,8 +20,9 @@ def main(
     merged_data_destination: str,
 ) -> None:
     """
-    Merges the employment status estimates, reduced to the columns SLV needs, with
-    prepared SLV workplace data.
+    Merges the employment status estimates with prepared SLV workplace data.
+
+    The estimates are wide, so only the columns SLV needs are read.
 
     Args:
         employment_status_estimate_source (str): path to the employment status estimates
