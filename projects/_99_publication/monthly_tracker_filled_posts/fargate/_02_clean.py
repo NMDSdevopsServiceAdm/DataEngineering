@@ -32,8 +32,8 @@ def main(
     """
     merged_lf = utils.scan_parquet(merge_data_source)
 
-    # Publication policy: full retention for 2 financial years, quarterly
-    # sampling further back, nothing before 6 financial years ago.
+    # Publication policy: full retention for the previous and current financial
+    # years, quarterly sampling further back, nothing before 6 financial years ago.
     today = date.today()
     fy_year = today.year if today.month >= 4 else today.year - 1
     cutoff_date = date(fy_year - 6, 4, 1)

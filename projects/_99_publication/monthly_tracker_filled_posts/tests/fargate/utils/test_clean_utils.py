@@ -34,6 +34,17 @@ class TestReducedDataFilterExpr:
 
         assert result["keep"].to_list() == case.expected
 
+    def test_function_keeps_monthly_data_from_previous_financial_year_by_default(
+        self,
+    ):
+        date_col = IndCQC.cqc_location_import_date
+        expr = job.reduced_data_filter_expr(today=date(2026, 10, 14))
+
+        df = pl.DataFrame({date_col: Data.default_lookback_input_dates})
+        result = df.with_columns(expr.alias("keep"))
+
+        assert result["keep"].to_list() == Data.default_lookback_expected
+
 
 class TestHasContinuousDataSinceDate:
     has_continuous_data_since_data_schema = pl.Schema(
