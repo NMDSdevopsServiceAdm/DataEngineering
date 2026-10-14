@@ -28,7 +28,8 @@ def load_page_config() -> dict:
 
 def fill_placeholders(rows: list[dict], values: dict[str, str]) -> list[dict]:
     """
-    Fills the {placeholders} in a page's row text.
+    Fills the {placeholders} in a page's row text. Any other braces stay as
+    text, and non-string values become strings.
 
     Args:
         rows (list[dict]): the page's rows.
@@ -39,11 +40,28 @@ def fill_placeholders(rows: list[dict], values: dict[str, str]) -> list[dict]:
     """
     return [
         {
-            key: value.format(**values) if key in _TEXT_KEYS else value
+            key: _fill_text(value, values) if key in _TEXT_KEYS else value
             for key, value in row.items()
         }
         for row in rows
     ]
+
+
+def _fill_text(value: object, values: dict[str, str]) -> str:
+    """
+    Replaces each {placeholder} in a row's text.
+
+    Args:
+        value (object): the row's text.
+        values (dict[str, str]): placeholder name mapped to its text.
+
+    Returns:
+        str: the text with every placeholder replaced.
+    """
+    text = str(value)
+    for name, replacement in values.items():
+        text = text.replace("{" + name + "}", replacement)
+    return text
 
 
 def write_pages(

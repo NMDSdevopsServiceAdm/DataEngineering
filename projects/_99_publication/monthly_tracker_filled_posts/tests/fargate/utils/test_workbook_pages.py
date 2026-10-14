@@ -45,7 +45,12 @@ class TestFillPlaceholders:
             for value in row.values()
             if isinstance(value, str)
         ]
-        assert not [value for value in text if "{" in value or "}" in value]
+        assert not [
+            value
+            for value in text
+            for name in PLACEHOLDERS
+            if "{" + name + "}" in value
+        ]
 
     def test_function_fills_known_placeholders(self):
         rows = [{"text": "Published {publication_date}"}, {"blank": 2}]
@@ -53,6 +58,21 @@ class TestFillPlaceholders:
         assert job.fill_placeholders(rows, PLACEHOLDERS) == [
             {"text": "Published September 15th 2026"},
             {"blank": 2},
+        ]
+
+    def test_function_keeps_other_braces_as_text(self):
+        rows = [{"text": "Use {braces} and {publication_date}"}]
+
+        assert job.fill_placeholders(rows, PLACEHOLDERS) == [
+            {"text": "Use {braces} and September 15th 2026"}
+        ]
+
+    def test_function_converts_non_string_text_to_a_string(self):
+        rows = [{"text": 2026}, {"heading": True}]
+
+        assert job.fill_placeholders(rows, PLACEHOLDERS) == [
+            {"text": "2026"},
+            {"heading": "True"},
         ]
 
 
@@ -295,7 +315,7 @@ class TestFrontpageLogo:
         ],
         ids=["larger", "smaller", "exact", "wide", "high_dpi"],
     )
-    def test_frontpage_logo_is_displayed_at_100_px_whatever_its_size(
+    def test_frontpage_logo_is_100_px_wide_at_any_size(
         self, tmp_path, width, height, dpi
     ):
         emu_per_px = 9525

@@ -177,9 +177,7 @@ class TestBuildDownloadWorkbook:
             if TestBuildDownloadWorkbook.normalise(cell.value).startswith(Pub.period):
                 return cell.row
 
-    def test_sheet_order_is_frontpage_introduction_revisions_definitions_contents_t0_t1_t2(
-        self, workbook
-    ):
+    def test_sheet_order_matches_the_reference(self, workbook):
         assert workbook.sheetnames == [
             "Frontpage",
             "Introduction",
@@ -330,6 +328,20 @@ class TestBuildDownloadWorkbook:
             f"A{header_row}:E{header_row + self.published_rows}"
         ]
 
+    def test_contents_table_has_no_filter_buttons(self, workbook):
+        tables = workbook["Contents"].tables
+
+        assert [(table.name, table.autoFilter) for table in tables.values()] == [
+            ("contents_table", None)
+        ]
+
+    def test_table_sheets_hold_their_named_excel_tables(self, workbook):
+        assert {name: list(workbook[name].tables) for name in self.table_sheets} == {
+            "T0": ["t0_filled_posts"],
+            "T1": ["t1_filled_posts_perc_change"],
+            "T2": ["t2_location_count_perc_change"],
+        }
+
     @pytest.mark.parametrize("sheet", table_sheets)
     def test_no_sheet_level_filter_clashes_with_the_excel_table(self, workbook, sheet):
         assert workbook[sheet].auto_filter.ref is None
@@ -371,7 +383,7 @@ class TestBuildDownloadWorkbook:
 
         assert len(set(widths.values())) == 1
 
-    def test_build_download_workbook_passes_the_logo_to_the_frontpage(self, tmp_path):
+    def test_logo_is_added_to_the_frontpage(self, tmp_path):
         path = tmp_path / "with_logo.xlsx"
         t0_lf = pl.LazyFrame(
             Data.download_workbook_t0_data, self.t0_schema, orient="row"

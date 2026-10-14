@@ -171,7 +171,7 @@ class TestExtrasFiles:
 
 class TestPublicationExtrasPins:
     """
-    The publication image needs the Excel packages (pyarrow is for `to_pandas()`)
+    The publication image needs the Excel packages (pyarrow is for `to_pandas()`),
     holidays for the publication date and pyyaml for the workbook page wording.
     """
 
