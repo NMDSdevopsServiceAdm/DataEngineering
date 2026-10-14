@@ -53,9 +53,14 @@ class TestFillPlaceholders:
         ]
 
     def test_function_fills_known_placeholders(self):
-        rows = [{"text": "Published {publication_date}"}, {"blank": 2}]
+        rows = [
+            {"text": "Covers {latest_period}"},
+            {"text": "Published {publication_date}"},
+            {"blank": 2},
+        ]
 
         assert job.fill_placeholders(rows, PLACEHOLDERS) == [
+            {"text": "Covers August 2026"},
             {"text": "Published September 15th 2026"},
             {"blank": 2},
         ]
@@ -106,13 +111,12 @@ class TestWritePages:
         column_a = self.column_a(workbook["Frontpage"])
 
         assert "Email: Analysis@skillsforcare.org.uk" in column_a
-        assert "Telephone: 0113 245 1716" in column_a
         assert column_a[-5:] == [
             "Skills for Care",
-            "West Gate",
-            "6 Grace Street",
+            "West Village",
+            "Wellington Street",
             "Leeds",
-            "LS1 2RP",
+            "LS1 4LT",
         ]
 
     @pytest.mark.parametrize(

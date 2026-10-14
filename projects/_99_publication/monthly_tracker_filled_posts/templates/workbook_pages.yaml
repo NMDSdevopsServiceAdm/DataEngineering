@@ -17,13 +17,12 @@ frontpage:
   - blank: 1
   - text: For more information please contact;
   - text: 'Email: Analysis@skillsforcare.org.uk'
-  - text: 'Telephone: 0113 245 1716'
   - blank: 2
   - text: Skills for Care
-  - text: West Gate
-  - text: 6 Grace Street
+  - text: West Village
+  - text: Wellington Street
   - text: Leeds
-  - text: LS1 2RP
+  - text: LS1 4LT
 introduction:
   sheet: Introduction
   widths:
