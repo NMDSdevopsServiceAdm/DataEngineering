@@ -7,9 +7,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
-    ModelEvaluationColumns as ModelEvaluation,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
     ShareModelColumns as ShareModel,
 )
 from utils.column_values.ascwds_labelled_vocab import PublishedJobRoleLabels
@@ -44,42 +41,6 @@ class ModelUtilsTestCase:
     id: str
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
-
-
-@dataclass
-class FoldSafeRollingAverageTestCase:
-    id: str
-    n_folds: int
-    input_data: dict[str, Any]
-    expected_data: dict[str, Any]
-
-
-def fold_safe_case(
-    id: str,
-    folds: list[int],
-    shares: list[float | None],
-    expected_averages: list[float],
-    n_folds: int = 2,
-    existing_averages: list[float] | None = None,
-) -> FoldSafeRollingAverageTestCase:
-    """One location per row, in one service and date, so averages come from other folds."""
-    rows = {
-        IndCQC.location_id: [f"loc{i}" for i in range(len(folds))],
-        IndCQC.published_job_role_label: [CARE_WORKER] * len(folds),
-        IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * len(folds),
-        IndCQC.primary_service_type: [PrimaryServiceType.non_residential] * len(folds),
-        ModelEvaluation.fold: folds,
-        IMPUTED_SHARE: shares,
-    }
-    existing = (
-        {} if existing_averages is None else {ROLLING_AVERAGE_SHARE: existing_averages}
-    )
-    return FoldSafeRollingAverageTestCase(
-        id=id,
-        n_folds=n_folds,
-        input_data={**rows, **existing},
-        expected_data={**rows, ROLLING_AVERAGE_SHARE: expected_averages},
-    )
 
 
 @dataclass
@@ -165,36 +126,3 @@ class TestModelUtilsData:
         IndCQC.time_registered: [12, 13, 40, 41],
         IndCQC.estimate_filled_posts: [10.0, 11.0, 5.0, 5.0],
     }
-    # Averaging all 3 shares would give 0.5 on every row.
-    tested_fold_excluded_test_cases = [
-        fold_safe_case(
-            id="leaves_out_only_the_tested_fold",
-            folds=[0, 1, 2],
-            shares=[0.2, 0.4, 0.9],
-            expected_averages=[0.65, 0.55, 0.3],
-            n_folds=3,
-        ),
-        fold_safe_case(
-            id="leaves_out_every_location_in_the_tested_fold",
-            folds=[0, 1, 1],
-            shares=[0.2, 0.4, 0.9],
-            expected_averages=[0.65, 0.2, 0.2],
-        ),
-    ]
-
-    tested_fold_gets_group_value_test_cases = [
-        fold_safe_case(
-            id="location_without_its_own_share_gets_its_groups_value",
-            folds=[0, 1, 1],
-            shares=[0.2, 0.6, None],
-            expected_averages=[0.6, 0.2, 0.2],
-        ),
-    ]
-
-    existing_averages_replaced_test_case = fold_safe_case(
-        id="averages_from_all_folds_are_replaced",
-        folds=[0, 1, 1],
-        shares=[0.2, 0.4, 0.9],
-        expected_averages=[0.65, 0.2, 0.2],
-        existing_averages=[0.5, 0.5, 0.5],
-    )

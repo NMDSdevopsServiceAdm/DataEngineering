@@ -1,5 +1,3 @@
-from typing import Callable
-
 import polars as pl
 
 import projects._03_independent_cqc.utils.model_evaluation_utils as evaluationUtils
@@ -127,51 +125,3 @@ def build_modelling_dataset(
     )
 
     return lf
-
-
-def add_fold_safe_rolling_average(
-    lf: pl.LazyFrame,
-    rolling_average_function: Callable[[pl.LazyFrame], pl.LazyFrame],
-    input_columns: list[str],
-    output_columns: list[str],
-    fold_column: str,
-    n_folds: int,
-    key_columns: list[str],
-) -> pl.LazyFrame:
-    """
-    Add a rolling average where each fold's rows only get averages from the other folds.
-
-    Each fold's inputs are blanked, the function run and that fold's rows kept, then joined
-    back so every row keeps its inputs. Existing `output_columns` are replaced. Folds run one
-    at a time to limit memory, so pass a collected frame (`df.lazy()`) to avoid recomputing.
-
-    Args:
-        lf (pl.LazyFrame): dataset containing the input, fold and key columns
-        rolling_average_function (Callable[[pl.LazyFrame], pl.LazyFrame]): adds
-            `output_columns` from `input_columns`, keeping every row
-        input_columns (list[str]): the columns to average
-        output_columns (list[str]): the columns the function adds
-        fold_column (str): each row's fold, numbered from 0
-        n_folds (int): the number of folds
-        key_columns (list[str]): the columns identifying each row
-
-    Returns:
-        pl.LazyFrame: dataset with fold-safe `output_columns`
-    """
-    lf = lf.drop(output_columns, strict=False)
-
-    fold_output_lfs = []
-    for fold in range(n_folds):
-        blanked_lf = lf.with_columns(
-            pl.when(pl.col(fold_column) != fold).then(pl.col(column)).alias(column)
-            for column in input_columns
-        )
-        fold_output_lfs.append(
-            rolling_average_function(blanked_lf)
-            .filter(pl.col(fold_column) == fold)
-            .select(*key_columns, *output_columns)
-        )
-
-    return lf.join(
-        pl.concat(fold_output_lfs, parallel=False), on=key_columns, how="left"
-    )
