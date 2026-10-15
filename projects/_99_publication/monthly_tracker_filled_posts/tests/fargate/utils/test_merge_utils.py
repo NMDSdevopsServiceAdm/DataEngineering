@@ -180,3 +180,51 @@ class TestResolveRunSources:
         assert returned == [
             "s3://bucket/dataset=a/archive_date=2026-10-01/run_number=2/"
         ]
+
+
+class TestRunPartitionPath:
+    run_source = "s3://bucket/dataset=estimates/archive_date=2026-10-01/run_number=2/"
+
+    def test_joins_root_and_the_runs_partition(self):
+        returned = job.run_partition_path("s3://bucket/dataset=prep", self.run_source)
+
+        assert (
+            returned == "s3://bucket/dataset=prep/archive_date=2026-10-01/run_number=2/"
+        )
+
+    @pytest.mark.parametrize(
+        "root", ["s3://bucket/dataset=prep/", "s3://bucket/dataset=prep"]
+    )
+    def test_ignores_trailing_slash_on_root(self, root: str):
+        returned = job.run_partition_path(root, self.run_source)
+
+        assert (
+            returned == "s3://bucket/dataset=prep/archive_date=2026-10-01/run_number=2/"
+        )
+
+    def test_raises_when_source_has_no_run_partition(self):
+        with pytest.raises(ValueError, match="run partition"):
+            job.run_partition_path("s3://bucket/dataset=prep/", "s3://bucket/other/")
+
+
+class TestRunNumberFromSource:
+    def test_returns_the_run_number_of_the_partition(self):
+        returned = job.run_number_from_source(
+            "s3://bucket/dataset=prep/archive_date=2026-10-01/run_number=12/"
+        )
+
+        assert returned == 12
+
+    def test_raises_when_source_has_no_run_partition(self):
+        with pytest.raises(ValueError, match="run partition"):
+            job.run_number_from_source("s3://bucket/other/")
+
+
+class TestParseRequiredRunNumber:
+    def test_returns_whole_number(self):
+        assert job.parse_required_run_number("3") == 3
+
+    @pytest.mark.parametrize("value", ["latest", "abc", "-1", ""])
+    def test_raises_for_anything_but_a_whole_number(self, value: str):
+        with pytest.raises(ValueError, match="run_number"):
+            job.parse_required_run_number(value)
