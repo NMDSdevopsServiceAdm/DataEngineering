@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 import pytest
 
@@ -25,6 +27,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     ModelEvaluationLabels as Labels,
 )
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
+from utils.column_values.categorical_column_values import CareHome
 
 MODEL = "test_model"
 LEVELS = {
@@ -373,3 +376,78 @@ class TestScoreJumpiness:
         second_df = self.score(features_lf, seed=7, sample_size=1)
 
         assert first_df.equals(second_df)
+
+
+class TestBuildLocationsLf:
+    """
+    Rows of one care home type, scored against ASC-WDS only (care homes) or ASC-WDS plus PIR
+    (non-res).
+    """
+
+    DATE = date(2025, 1, 1)
+    # location, care home, ASC-WDS value, ASC-WDS plus PIR value
+    IMPUTED_ROWS = [
+        ("ch_asc", CareHome.care_home, 10.0, 10.0),
+        ("ch_pir", CareHome.care_home, None, 5.0),
+        ("nr_asc", CareHome.not_care_home, 20.0, 20.0),
+        ("nr_pir", CareHome.not_care_home, None, 6.0),
+        ("nr_none", CareHome.not_care_home, None, None),
+    ]
+
+    def build(self, is_ratio_model: bool) -> pl.DataFrame:
+        imputed_lf = pl.LazyFrame(
+            {
+                IndCQC.location_id: [r[0] for r in self.IMPUTED_ROWS],
+                IndCQC.cqc_location_import_date: [self.DATE] * len(self.IMPUTED_ROWS),
+                IndCQC.care_home: [r[1] for r in self.IMPUTED_ROWS],
+                IndCQC.primary_service_type: ["service"] * len(self.IMPUTED_ROWS),
+                IndCQC.current_cssr: ["cssr"] * len(self.IMPUTED_ROWS),
+                IndCQC.number_of_beds: [10] * len(self.IMPUTED_ROWS),
+                IndCQC.number_of_beds_banded: [1] * len(self.IMPUTED_ROWS),
+                IndCQC.ascwds_pir_merged: [r[3] for r in self.IMPUTED_ROWS],
+                IndCQC.imputed_filled_post_model: [1.0] * len(self.IMPUTED_ROWS),
+                IndCQC.imputed_filled_posts_per_bed_ratio_model: [0.1]
+                * len(self.IMPUTED_ROWS),
+            },
+            schema_overrides={IndCQC.ascwds_pir_merged: pl.Float64},
+        )
+        cleaned_lf = pl.LazyFrame(
+            {
+                IndCQC.location_id: [r[0] for r in self.IMPUTED_ROWS],
+                IndCQC.cqc_location_import_date: [self.DATE] * len(self.IMPUTED_ROWS),
+                IndCQC.ascwds_filled_posts_dedup_clean: [
+                    r[2] for r in self.IMPUTED_ROWS
+                ],
+            },
+            schema_overrides={IndCQC.ascwds_filled_posts_dedup_clean: pl.Float64},
+        )
+
+        return job.build_locations_lf(imputed_lf, cleaned_lf, is_ratio_model).collect()
+
+    def known_by_location(self, df: pl.DataFrame) -> dict:
+        return dict(
+            zip(
+                df[IndCQC.location_id],
+                df[IndCQC.ascwds_filled_posts_dedup_clean],
+            )
+        )
+
+    def test_non_res_known_values_include_pir(self):
+        known = self.known_by_location(self.build(is_ratio_model=False))
+
+        assert known == {"nr_asc": 20.0, "nr_pir": 6.0, "nr_none": None}
+
+    def test_care_home_known_values_exclude_pir(self):
+        known = self.known_by_location(self.build(is_ratio_model=True))
+
+        assert known == {"ch_asc": 10.0, "ch_pir": None}
+
+    def test_non_res_keeps_only_non_res_locations(self):
+        returned_df = self.build(is_ratio_model=False)
+
+        assert set(returned_df[IndCQC.location_id]) == {"nr_asc", "nr_pir", "nr_none"}
+
+    def test_care_home_keeps_only_care_home_locations(self):
+        returned_df = self.build(is_ratio_model=True)
+
+        assert set(returned_df[IndCQC.location_id]) == {"ch_asc", "ch_pir"}

@@ -56,10 +56,10 @@ def main(
             brief=f"Expects {expected_row_count} rows",
         )
         .col_vals_ge(
-            EmpStatus.employee_count,
+            EmpStatus.estimated_employees,
             0,
             na_pass=True,
-            brief="emplstat_employee_count is greater than or equal to 0",
+            brief="estimated_employees is greater than or equal to 0",
         )
         .col_vals_ge(
             SLVCols.starters_cleaned,

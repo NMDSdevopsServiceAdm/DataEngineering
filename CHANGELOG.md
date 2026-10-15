@@ -6,6 +6,24 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
+- Added validation of the job role estimates archive run log.
+
+### Changed
+- Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of raw counts, reading only the needed columns in the SLV merge and running the employment status steps first in Ind-CQC-SLV.
+- Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics. Models now fitted on all training rows instead of an 80/20 split. Known values are ASC-WDS for care homes and ASC-WDS plus PIR for non-res, so the `metrics` in `metadata.json` aren't comparable with earlier runs.
+- Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
+
+### Improved
+
+
+### Fixed
+- Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
+
+
+## [v2026.09.0] - 13/10/2026
+
+### Added
 - Added scripts to mark a run as approved in the job role estimates archive run log, and copied the run log into branch dataset buckets in CircleCI.
 - Moved the job role estimates archive and its two validations from the standalone Ind-CQC-Archive step function into the Independent CQC filled posts estimates step function, and removed Ind-CQC-Archive.
 - Added a Polars scaffold for the CQC ratings flatten job, run in SfC-Internal alongside the PySpark job. It writes to separate `_polars` datasets and its failure doesn't stop the other jobs.
@@ -43,11 +61,14 @@ All notable changes to this project will be documented in this file.
 - Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock, with a gate that fails a main pipeline whose prod deploy was skipped or cancelled instead of reporting it as success.
 - Added full imputation to the employment status impute job, filling remaining gaps by carrying each location and job role's known percentages along the rolling averages, with validation of the result. Renamed the short-term imputed percentage columns to `*_imputed_for_trendline`.
 - Added published label classes and column names for the publication outputs, and used them in the publication clean job.
+- Added a `sagemaker` skill with notebook templates for comparing outputs, comparing data before and after a filter and scoring rolling-average durations, plus a setup notebook that keeps them up to date on the SageMaker instance.
+
 - Added a shared definition of the rows a filled posts model trains on, now used by the model training job.
 - Added filled posts model cross-validation helpers: out-of-fold predictions from a model spec and non-res size bands.
 - Added financial year, row-level, per-period bias and bias slope scoring to the project-level model evaluation utilities.
 - Added utilities to score filled posts models on held-out locations and save the metrics beside a model run. Not yet used by any job.
 - Added a gptables builder for the T0, T1 and T2 tables of the public monthly statistics download workbook, with `< 10` shown for suppressed filled posts.
+- Added the diagnostics workbook template for the monthly tracker publication, with a cell map and tests that check it.
 
 ### Changed
 - Replaced the employment status magic-number split with estimated percentages (cleaned, then imputed, then rolling average), their source, and estimated counts and employees. Removed the rates CSV input.
@@ -55,9 +76,6 @@ All notable changes to this project will be documented in this file.
 - Changed the job group labels (`JobGroupLabels`) from snake_case to human-readable values, e.g. "direct_care" to "Direct care", so `main_job_group_labels` data values change on every run.
 - Added the Excel packages `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image, and extended the Docker pin test to cover every `requirements-extra.txt`.
 - Added a `trello-cards` Claude Code skill that drafts paste-ready Trello cards from a plan or a one-line idea.
-
-
-### Changed
 - Restructured the Direct Payment Recipients pipeline to match Independent CQC: numbered job and dataset names, parallel validation, and error notification with an always-run crawler.
 - Converted the split PA filled posts into ICB areas step of the Direct Payment Recipients pipeline from PySpark to Polars.
 - Added `number_of_beds_at_provider` to the grouped providers output dataset.

@@ -116,7 +116,8 @@
                         "--cqc_locations_snapshot_source", "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_04_latest_snapshot/",
                         "--ascwds_workplace_source", "${dataset_bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/",
                         "--reconciliation_single_and_subs_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_singles_and_subs/",
-                        "--reconciliation_parents_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_parents/"
+                        "--reconciliation_parents_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_parents/",
+                        "--potentials_count_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_potentials_count/"
                       ]
                     }
                   ]

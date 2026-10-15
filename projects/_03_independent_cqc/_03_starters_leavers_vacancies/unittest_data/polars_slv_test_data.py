@@ -382,13 +382,13 @@ class TestCleanUtilsData:
         CreateSlvRateColumnsTestCase(
             id="returns_expected_rates_for_typical_rows",
             input_data={
-                EmpStatus.employee_count: [8, 2],
+                EmpStatus.estimated_employees: [8, 2],
                 SLVCols.starters_cleaned_dedup: [2, 0],
                 SLVCols.leavers_cleaned_dedup: [4, 3],
                 SLVCols.vacancies_cleaned_dedup: [2, 0],
             },
             expected_data={
-                EmpStatus.employee_count: [8, 2],
+                EmpStatus.estimated_employees: [8, 2],
                 SLVCols.starters_cleaned_dedup: [2, 0],
                 SLVCols.leavers_cleaned_dedup: [4, 3],
                 SLVCols.vacancies_cleaned_dedup: [2, 0],
@@ -400,13 +400,13 @@ class TestCleanUtilsData:
         CreateSlvRateColumnsTestCase(
             id="returns_null_rates_when_employees_is_null",
             input_data={
-                EmpStatus.employee_count: [None],
+                EmpStatus.estimated_employees: [None],
                 SLVCols.starters_cleaned_dedup: [1],
                 SLVCols.leavers_cleaned_dedup: [1],
                 SLVCols.vacancies_cleaned_dedup: [1],
             },
             expected_data={
-                EmpStatus.employee_count: [None],
+                EmpStatus.estimated_employees: [None],
                 SLVCols.starters_cleaned_dedup: [1],
                 SLVCols.leavers_cleaned_dedup: [1],
                 SLVCols.vacancies_cleaned_dedup: [1],
@@ -418,13 +418,13 @@ class TestCleanUtilsData:
         CreateSlvRateColumnsTestCase(
             id="returns_null_rates_when_employees_and_vacancies_are_both_zero",
             input_data={
-                EmpStatus.employee_count: [0],
+                EmpStatus.estimated_employees: [0],
                 SLVCols.starters_cleaned_dedup: [0],
                 SLVCols.leavers_cleaned_dedup: [0],
                 SLVCols.vacancies_cleaned_dedup: [0],
             },
             expected_data={
-                EmpStatus.employee_count: [0],
+                EmpStatus.estimated_employees: [0],
                 SLVCols.starters_cleaned_dedup: [0],
                 SLVCols.leavers_cleaned_dedup: [0],
                 SLVCols.vacancies_cleaned_dedup: [0],
@@ -436,19 +436,37 @@ class TestCleanUtilsData:
         CreateSlvRateColumnsTestCase(
             id="returns_full_vacancy_rate_when_employees_is_zero_but_vacancies_exist",
             input_data={
-                EmpStatus.employee_count: [0],
+                EmpStatus.estimated_employees: [0],
                 SLVCols.starters_cleaned_dedup: [0],
                 SLVCols.leavers_cleaned_dedup: [0],
                 SLVCols.vacancies_cleaned_dedup: [1],
             },
             expected_data={
-                EmpStatus.employee_count: [0],
+                EmpStatus.estimated_employees: [0],
                 SLVCols.starters_cleaned_dedup: [0],
                 SLVCols.leavers_cleaned_dedup: [0],
                 SLVCols.vacancies_cleaned_dedup: [1],
                 SLVCols.turnover_rate: [None],
                 SLVCols.starter_rate: [None],
                 SLVCols.vacancy_rate: [1.0],
+            },
+        ),
+        CreateSlvRateColumnsTestCase(
+            id="returns_expected_rates_for_fractional_estimated_employees",
+            input_data={
+                EmpStatus.estimated_employees: [1.5, 7.5],
+                SLVCols.starters_cleaned_dedup: [3, 3],
+                SLVCols.leavers_cleaned_dedup: [3, 6],
+                SLVCols.vacancies_cleaned_dedup: [1, 5],
+            },
+            expected_data={
+                EmpStatus.estimated_employees: [1.5, 7.5],
+                SLVCols.starters_cleaned_dedup: [3, 3],
+                SLVCols.leavers_cleaned_dedup: [3, 6],
+                SLVCols.vacancies_cleaned_dedup: [1, 5],
+                SLVCols.turnover_rate: [2.0, 0.8],
+                SLVCols.starter_rate: [2.0, 0.4],
+                SLVCols.vacancy_rate: [0.4, 0.4],
             },
         ),
     ]
