@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
+- Added a gptables builder for the T0, T1 and T2 tables of the public monthly statistics download workbook, with `< 10` shown for suppressed filled posts.
 
 ### Changed
 - Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of raw counts, reading only the needed columns in the SLV merge and running the employment status steps first in Ind-CQC-SLV.
@@ -67,7 +68,6 @@ All notable changes to this project will be documented in this file.
 - Added filled posts model cross-validation helpers: out-of-fold predictions from a model spec and non-res size bands.
 - Added financial year, row-level, per-period bias and bias slope scoring to the project-level model evaluation utilities.
 - Added utilities to score filled posts models on held-out locations and save the metrics beside a model run. Not yet used by any job.
-- Added a gptables builder for the T0, T1 and T2 tables of the public monthly statistics download workbook, with `< 10` shown for suppressed filled posts.
 - Added the diagnostics workbook template for the monthly tracker publication, with a cell map and tests that check it.
 
 ### Changed
