@@ -1,0 +1,110 @@
+# Wording and layout of the workbook's non-table pages. Each page is an ordered
+# list of rows: heading (bold), text, link (display text + url), url (bare
+# link) or blank (a run of empty rows). {latest_period} and {publication_date}
+# are filled in when the workbook is built. A page's text wraps unless it sets
+# wrap: false. Contents is built from the table titles.
+frontpage:
+  sheet: Frontpage
+  widths:
+  - 76
+  rows:
+  - heading: 'Filled posts in the adult social care workforce in England: monthly statistics'
+  - text: '{latest_period}'
+  - blank: 11
+  - text: 'Publication Date: {publication_date}'
+  - blank: 1
+  - text: Prepared by Skills for Care Workforce Intelligence Analysis Team
+  - blank: 1
+  - text: For more information please contact;
+  - text: 'Email: Analysis@skillsforcare.org.uk'
+  - blank: 2
+  - text: Skills for Care
+  - text: West Village
+  - text: Wellington Street
+  - text: Leeds
+  - text: LS1 4LT
+introduction:
+  sheet: Introduction
+  widths:
+  - 175
+  rows:
+  - heading: Introduction
+  - text: This publication shows Skills for Care's estimated number of filled posts in independent CQC-regulated adult social care services.
+  - text: The trends include changes due to locations opening and closing as well as changes at existing locations.
+  - blank: 2
+  - heading: Classification of Statistics
+  - text: In 2023 Skills for Care became an official statistics provider, having been added to the Official Statistics Order 2023. This means that all official statistics provided by Skills for Care will include oversight from the Office for Statistics Regulation (OSR), ensuring it follows the Code of Practice for Statistics.
+  - blank: 1
+  - text: In July 2026, this publication was classified as an official statistic.
+  - blank: 1
+  - text: These statistics are published on the 15th of each month at 9:30am. Where the 15th falls on a weekend or England bank holiday, publication will take place on the next working day at 9:30am.
+  - blank: 1
+  - text: Revisions to this document can be found in the 'Revisions' tab.
+  - blank: 2
+  - heading: Methodology and data coverage
+  - text: The estimates cover CQC-regulated independent sector adult social care services only.
+  - text: 'For a description of how these figures were produced, please see ''Methodology: Monthly estimates of the size of the adult social care workforce''. Available at: '
+  - url: https://www.skillsforcare.org.uk/Adult-Social-Care-Workforce-Data/workforceintelligence/Trackers/Filled-posts.aspx
+  - blank: 1
+  - text: Estimated figures are revised with each publication as additional data becomes available. As a result, estimates for previously published periods may change over time.
+  - blank: 2
+  - heading: Uses of the report
+  - text: This publication may be of interest to members of the public, policy officials and other stakeholders to make local and national comparisons.
+  - text: It is appropriate to use this publication when specifically thinking about the adult social care workforce employed by CQC-regulated independent sector services.
+  - text: When discussing the whole adult social care sector workforce (including local authorities, independent providers not regulated by CQC, people working for direct payment recipients) this report should be looked at alongside other Skills for Care workforce intelligence reports.
+  - blank: 2
+  - heading: Useful links
+  - link: Skills for Care's values and adoption of the Code of Practice for Statistics
+    url: https://www.skillsforcare.org.uk/Adult-Social-Care-Workforce-Data/workforceintelligence/About-us/Compliance-with-the-Code-of-Practice-for-Statistics.aspx
+  - link: Skills for Care's publication revisions policy
+    url: https://www.skillsforcare.org.uk/Adult-Social-Care-Workforce-Data/workforceintelligence/About-us/Compliance-with-the-Code-of-Practice-for-Statistics.aspx
+  - link: Skills for Care's Workforce Intelligence website
+    url: https://www.skillsforcare.org.uk/Adult-Social-Care-Workforce-Data/workforceintelligence/home.aspx
+  - link: The Office for Statistics Regulation (OSR) website
+    url: https://osr.statisticsauthority.gov.uk/
+  - link: The Code of Practice for Statistics
+    url: https://code.statisticsauthority.gov.uk/
+  - link: The Official Statistics Order 2023
+    url: https://www.legislation.gov.uk/ukdsi/2023/9780348248975
+revisions:
+  sheet: Revisions
+  widths:
+  - 175
+  rows:
+  - heading: Revisions
+  - text: This document was originally published on 15th July 2026
+definitions:
+  sheet: Definitions
+  wrap: false
+  widths:
+  - 120
+  - 38
+  rows:
+  - heading: Definitions
+  - text: A filled post refers to any post (or job) currently filled by a person in a CQC-regulated independent sector adult social care location in England
+  - blank: 2
+  - heading: Rounding
+  - text: Estimated filled post values have been rounded.
+  - text: 'Information on our suppression and rounding rules can be found on the Workforce Intelligence website:'
+  - url: https://www.skillsforcare.org.uk/Adult-Social-Care-Workforce-Data/Workforce-intelligence/about-us/Methodology.aspx
+  - blank: 2
+  - heading: Period
+  - text: Period refers to months within the current financial year or end of March only before the current financial year.
+  - blank: 2
+  - heading: Main service
+  - text: Skills for Care have allocated a main service to each CQC-regulated location based on their services offered on the CQC register.
+  - text: A CQC-regulated location may offer multiple services, but Skills for Care have determined a main service to each of these.
+  - text: The main service was determined in order of if the location offered 'Care home service with nursing' then 'Care only home'. Any other location was determined as 'CQC non-residential'.
+  - blank: 2
+  - heading: The following table explains the shorthand notations used throughout tables in this report;
+  - text: '[x] data is not published in this report.'
+  - text: '< 10 fewer than 10 estimated filled posts. These values are suppressed, not rounded to zero.'
+contents:
+  sheet: Contents
+  title: Contents
+  headers:
+  - Table number
+  - Table title
+  widths:
+  - 17
+  - 86

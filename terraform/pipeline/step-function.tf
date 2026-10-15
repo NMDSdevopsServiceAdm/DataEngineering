@@ -5,9 +5,8 @@ locals {
     substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
   })
 
-  ind_cqc_job_role_estimates_dataset_name     = terraform.workspace == "main" ? "01_filled_posts_06_job_roles_04_estimate" : "main_01_filled_posts_06_job_roles_04_estimate"
-  ind_cqc_job_role_metadata_dataset_name      = terraform.workspace == "main" ? "01_filled_posts_06_job_roles_01_merge_metadata" : "main_01_filled_posts_06_job_roles_01_merge_metadata"
-  ind_cqc_estimated_filled_posts_dataset_name = terraform.workspace == "main" ? "01_filled_posts_05_estimated" : "main_01_filled_posts_05_estimated"
+  ind_cqc_job_role_estimates_dataset_name = terraform.workspace == "main" ? "01_filled_posts_06_job_roles_04_estimate" : "main_01_filled_posts_06_job_roles_04_estimate"
+  ind_cqc_job_role_metadata_dataset_name  = terraform.workspace == "main" ? "01_filled_posts_06_job_roles_01_merge_metadata" : "main_01_filled_posts_06_job_roles_01_merge_metadata"
 
   # Max polling attempts and per-attempt wait (seconds) for the "Wait For Worker"/
   # "Wait For Workplace" states in CQC-And-ASCWDS-Orchestrator.json, before the
@@ -91,9 +90,8 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     commit_sha = var.commit_sha
 
     # compare paths
-    ind_cqc_job_role_estimates     = local.ind_cqc_job_role_estimates_dataset_name
-    ind_cqc_job_role_metadata      = local.ind_cqc_job_role_metadata_dataset_name
-    ind_cqc_estimated_filled_posts = local.ind_cqc_estimated_filled_posts_dataset_name
+    ind_cqc_job_role_estimates = local.ind_cqc_job_role_estimates_dataset_name
+    ind_cqc_job_role_metadata  = local.ind_cqc_job_role_metadata_dataset_name
 
     # lambdas
     pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn

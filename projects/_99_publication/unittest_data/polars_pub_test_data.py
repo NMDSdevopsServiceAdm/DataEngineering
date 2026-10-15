@@ -92,6 +92,79 @@ reduced_data_filter_test_cases = [
     ),
 ]  # fmt: skip
 
+default_lookback_input_dates = [
+    date(2024, 4, 1),  # before monthly_start, quarterly month -> included
+    date(2024, 5, 1),  # before monthly_start, non-quarter -> excluded
+    date(2025, 3, 1),  # before monthly_start, non-quarter -> excluded
+    date(2025, 4, 1),  # at boundary (monthly_start) -> included
+    date(2025, 5, 1),  # within range -> included
+]
+default_lookback_expected = [True, False, False, True, True]
+
+
+@dataclass
+class HasConsistentServiceSinceDateTestCase:
+    id: str
+    from_date: date
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+_CH_NURSING = PrimaryServiceType.care_home_with_nursing
+_CH_ONLY = PrimaryServiceType.care_home_only
+_CH_NON_RES = PrimaryServiceType.non_residential
+
+has_consistent_service_since_date_test_cases = [
+    HasConsistentServiceSinceDateTestCase(
+        id="true_when_always_a_care_home_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-001", date(2025, 4, 1), _CH_NURSING, True),
+            ("1-001", date(2026, 4, 1), _CH_ONLY, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="true_when_never_a_care_home_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-002", date(2025, 4, 1), _CH_NON_RES, True),
+            ("1-002", date(2026, 4, 1), _CH_NON_RES, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="false_when_care_home_status_changes_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-003", date(2025, 4, 1), _CH_NURSING, False),
+            ("1-003", date(2026, 4, 1), _CH_NON_RES, False),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="ignores_a_status_change_before_the_window",
+        from_date=date(2026, 4, 1),
+        expected_data=[
+            ("1-004", date(2025, 4, 1), _CH_NURSING, True),
+            ("1-004", date(2026, 4, 1), _CH_NON_RES, True),
+            ("1-004", date(2026, 5, 1), _CH_NON_RES, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="ignores_a_null_service_type_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-006", date(2025, 4, 1), _CH_ONLY, True),
+            ("1-006", date(2026, 4, 1), None, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="false_when_there_are_no_rows_in_the_window",
+        from_date=date(2027, 4, 1),
+        expected_data=[("1-005", date(2025, 4, 1), _CH_NURSING, False)],
+    ),
+]
+
 
 @dataclass
 class HasContinuousDataSinceDateTestCase:
@@ -393,7 +466,8 @@ class AggregateToPublicationRowsTestCase:
         return pytest.param(self, id=self.id)
 
 
-_ALL_TRUE_FILTERS = (True, True, True, True, True, True, True)
+_ALL_TRUE_FILTERS = (True,) * 9
+_FAILS_CONSISTENT_SERVICE_FILTERS = (False,) * 3 + (True,) * 6
 _NURSE_LONDON_CARE_HOME = ("Registered nurse", "London", "Care home service")
 
 aggregate_to_publication_rows_test_cases = [
@@ -414,13 +488,7 @@ aggregate_to_publication_rows_test_cases = [
                 *_NURSE_LONDON_CARE_HOME,
                 20.0,
                 8.0,
-                False,  # consistent_service
-                True,
-                True,
-                True,
-                True,
-                True,
-                True,
+                *_FAILS_CONSISTENT_SERVICE_FILTERS,
             ),
         ],
         expected_data=[
@@ -452,7 +520,9 @@ aggregate_to_publication_rows_test_cases = [
                 *_NURSE_LONDON_CARE_HOME,
                 10.0,
                 5.0,
-                True,  # consistent_service
+                True,  # consistent_service_long_term
+                True,  # consistent_service_medium_term
+                True,  # consistent_service_short_term
                 True,  # ct_has_data_long_term
                 False,  # ct_has_data_medium_term
                 True,  # ct_has_data_short_term
@@ -476,6 +546,41 @@ aggregate_to_publication_rows_test_cases = [
                 0.0,
                 0,
                 0.0,
+            ),
+        ],
+    ),
+    AggregateToPublicationRowsTestCase(
+        # 1-010 changed service type inside the medium term window only - each
+        # term uses its own consistent service flag.
+        id="each_term_uses_its_own_consistent_service_flag",
+        input_data=[
+            (
+                "1-010",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                5.0,
+                True,  # consistent_service_long_term
+                False,  # consistent_service_medium_term
+                True,  # consistent_service_short_term
+                *(True,) * 6,
+            ),
+        ],
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                1,
+                10.0,
+                1,
+                5.0,
+                0.0,
+                0,
+                0.0,
+                10.0,
+                1,
+                5.0,
             ),
         ],
     ),
@@ -707,8 +812,8 @@ aggregate_to_publication_rows_test_cases = [
         ],
     ),
     AggregateToPublicationRowsTestCase(
-        # Every row of 1-009 fails consistent_service, so it adds nothing to any
-        # term's CT total however many rows it has.
+        # Every row of 1-009 fails the consistent service filters, so it adds
+        # nothing to any term's CT total however many rows it has.
         id="ct_total_is_zero_when_a_location_fails_the_filters_on_all_its_rows",
         input_data=[
             (
@@ -717,13 +822,7 @@ aggregate_to_publication_rows_test_cases = [
                 *_NURSE_LONDON_CARE_HOME,
                 10.0,
                 5.0,
-                False,  # consistent_service
-                True,
-                True,
-                True,
-                True,
-                True,
-                True,
+                *_FAILS_CONSISTENT_SERVICE_FILTERS,
             ),
             (
                 "1-009",
@@ -731,13 +830,7 @@ aggregate_to_publication_rows_test_cases = [
                 *_NURSE_LONDON_CARE_HOME,
                 15.0,
                 5.0,
-                False,  # consistent_service
-                True,
-                True,
-                True,
-                True,
-                True,
-                True,
+                *_FAILS_CONSISTENT_SERVICE_FILTERS,
             ),
         ],
         expected_data=[
@@ -1752,4 +1845,292 @@ format_percentage_test_cases = [
         column_alias=Pub.monthly_percentage_change_formatted,
         expected_data=[(None, None)],
     ),
+]
+
+
+@dataclass
+class RoundPercentageTestCase:
+    id: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+round_percentage_test_cases = [
+    RoundPercentageTestCase(
+        id="fraction_becomes_a_percentage_rounded_to_one_decimal_place",
+        expected_data=[(0.0321, 3.2)],
+    ),
+    RoundPercentageTestCase(
+        id="a_half_way_tie_rounds_away_from_zero",
+        expected_data=[(0.0005, 0.1), (-0.0015, -0.2)],
+    ),
+    RoundPercentageTestCase(
+        id="a_negative_value_that_rounds_to_zero_is_positive_zero",
+        expected_data=[(-0.0001, 0.0)],
+    ),
+    RoundPercentageTestCase(
+        id="null_stays_null",
+        expected_data=[(None, None)],
+    ),
+]
+
+
+@dataclass
+class GetPublicationDateTestCase:
+    id: str
+    latest_import_date: date
+    expected: date
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+get_publication_date_test_cases = [
+    GetPublicationDateTestCase(
+        id="returns_15th_of_the_import_date_month",
+        latest_import_date=date(2026, 9, 1),
+        expected=date(2026, 9, 15),
+    ),
+    GetPublicationDateTestCase(
+        id="rolls_to_monday_when_15th_is_saturday",
+        latest_import_date=date(2026, 8, 1),
+        expected=date(2026, 8, 17),
+    ),
+    GetPublicationDateTestCase(
+        id="rolls_to_monday_when_15th_is_sunday",
+        latest_import_date=date(2026, 2, 1),
+        expected=date(2026, 2, 16),
+    ),
+    GetPublicationDateTestCase(
+        id="skips_consecutive_bank_holidays_when_15th_is_good_friday",
+        latest_import_date=date(2022, 4, 1),
+        expected=date(2022, 4, 19),
+    ),
+]
+
+
+@dataclass
+class FormatPublicationDateTestCase:
+    id: str
+    publication_date: date
+    expected: str
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+format_publication_date_test_cases = [
+    FormatPublicationDateTestCase(
+        id="formats_date_as_month_ordinal_day_year",
+        publication_date=date(2026, 9, 15),
+        expected="September 15th 2026",
+    ),
+    FormatPublicationDateTestCase(
+        id="uses_st_suffix_for_21st",
+        publication_date=date(2026, 9, 21),
+        expected="September 21st 2026",
+    ),
+    FormatPublicationDateTestCase(
+        id="uses_th_suffix_for_teens",
+        publication_date=date(2026, 9, 11),
+        expected="September 11th 2026",
+    ),
+]
+
+
+@dataclass
+class PrepareTableForPublicationTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+prepare_t0_for_publication_test_cases = [
+    PrepareTableForPublicationTestCase(
+        id="t0_publishes_rounded_posts_not_unrounded",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                1234.0,
+                1200.0,
+                30,
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 1200.0, 30),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="suppressed_posts_render_as_less_than_10_not_zero",
+        input_data=[
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 4.0, None, 1),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, "< 10", 1),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="posts_at_10_or_above_stay_numeric",
+        input_data=[
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 10.0, 10.0, 1),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 10.0, 1),
+        ],
+    ),
+]
+
+prepare_perc_change_for_publication_test_cases = [
+    PrepareTableForPublicationTestCase(
+        id="null_percentage_change_renders_as_x",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                None,
+                None,
+                None,
+                None,
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, "[x]", "[x]"),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="rounds_percentage_change_to_one_decimal_place",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                0.0321,
+                "3.2%",
+                -0.0049,
+                "-0.5%",
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 0.032, -0.005),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="rounds_percentage_change_half_away_from_zero",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                0.0125,
+                "1.3%",
+                -0.0125,
+                "-1.3%",
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 0.013, -0.013),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="non_null_percentage_change_stays_fraction",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                0.032,
+                "3.2%",
+                -0.008,
+                "-0.8%",
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 0.032, -0.008),
+        ],
+    ),
+]
+
+
+# Raw period dates are CQC import dates, one month ahead of their labels,
+# so the latest here is 2026-09-01 (Aug-26) and it publishes on 2026-09-15.
+download_workbook_t0_data = [
+    (
+        date(2026, 8, 1),
+        "Jul-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        1234567.0,
+        1230000.0,
+        22000,
+    ),
+    (
+        date(2026, 9, 1),
+        "Aug-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        1240000.0,
+        1240000.0,
+        22100,
+    ),
+    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, 5.0, None, 3),
+]
+download_workbook_perc_change_data = [
+    (
+        date(2026, 8, 1),
+        "Jul-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        None,
+        None,
+        0.0123,
+        "1.2%",
+    ),
+    (
+        date(2026, 9, 1),
+        "Aug-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        0.0321,
+        "3.2%",
+        0.0045,
+        "0.5%",
+    ),
+    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, None, None, None, None),
+]
+
+download_workbook_t2_perc_change_data = [
+    (
+        date(2026, 8, 1),
+        "Jul-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        None,
+        None,
+        0.0201,
+        "2.0%",
+    ),
+    (
+        date(2026, 9, 1),
+        "Aug-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        0.0654,
+        "6.5%",
+        0.0112,
+        "1.1%",
+    ),
+    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, None, None, None, None),
 ]

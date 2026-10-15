@@ -55,7 +55,7 @@ _PUBLISHED_MAIN_SERVICE_BY_CATEGORY: dict[str, str] = {
 def reduced_data_filter_expr(
     today: date | None = None,
     fy_start_month: int = 4,
-    lookback_fy_years: int = 2,
+    lookback_fy_years: int = 1,
     quarter_months: tuple[int, ...] = (1, 4, 7, 10),
     date_col: str = IndCQC.cqc_location_import_date,
     cutoff_date: date | None = None,
@@ -164,6 +164,32 @@ def has_continuous_data_since_date(
     ).alias(column_alias)
 
 
+def has_consistent_service_since_date(from_date: date, column_alias: str) -> pl.Expr:
+    """
+    Builds a polars expression for flagging locations whose care home status
+    (from primary_service_type) is the same on every import date from
+    from_date onwards. False when there are no rows on or after from_date.
+
+    Args:
+        from_date (date): the earliest import date to check from.
+        column_alias (str): name to alias the resulting column to.
+
+    Returns:
+        pl.Expr: boolean expression aliased to column_alias, constant across
+            all rows of a location.
+    """
+    is_care_home = pl.col(IndCQC.primary_service_type).is_in(
+        [PrimaryServiceType.care_home_with_nursing, PrimaryServiceType.care_home_only]
+    )
+    care_home_statuses_in_window = (
+        is_care_home.filter(pl.col(IndCQC.cqc_location_import_date) >= from_date)
+        .drop_nulls()
+        .n_unique()
+        .over(IndCQC.location_id)
+    )
+    return (care_home_statuses_in_window == 1).alias(column_alias)
+
+
 def format_large_number(column_name: str, column_alias: str) -> pl.Expr:
     """
     Builds a polars expression formatting a number for display.
@@ -270,6 +296,22 @@ def round_to_publication_bands(column_name: str, column_alias: str) -> pl.Expr:
     ).alias(column_alias)
 
 
+def round_percentage(column_name: str) -> pl.Expr:
+    """
+    Builds a polars expression turning a percentage-change fraction into a
+    percentage rounded to 1 decimal place (0.0321 -> 3.2), half away from
+    zero, as a Float64. Null stays null.
+
+    Args:
+        column_name (str): the fractional percentage column.
+
+    Returns:
+        pl.Expr: float expression with the rounded percentage.
+    """
+    percentage = pl.col(column_name).cast(pl.Float64) * 100
+    return _round_half_away_from_zero(percentage, 0.1).round(1)
+
+
 def format_percentage(column_name: str, column_alias: str) -> pl.Expr:
     """
     Builds a polars expression formatting a percentage-change fraction (e.g.
@@ -286,12 +328,10 @@ def format_percentage(column_name: str, column_alias: str) -> pl.Expr:
     Returns:
         pl.Expr: string expression with the formatted percentage, or null.
     """
-    value = pl.col(column_name)
-    rounded_percentage = _round_half_away_from_zero(value * 100, 0.1).round(1)
     return (
-        pl.when(value.is_null())
+        pl.when(pl.col(column_name).is_null())
         .then(None)
-        .otherwise(rounded_percentage.cast(pl.Utf8) + "%")
+        .otherwise(round_percentage(column_name).cast(pl.Utf8) + "%")
         .alias(column_alias)
     )
 
@@ -451,7 +491,7 @@ def aggregate_to_publication_rows(
 
     Publication columns sum filled posts and count distinct locations across
     every row in a group. Assessment columns do the same but only over rows
-    passing that term's consistent_service, dispersion and has-data filters,
+    passing that term's consistent service, dispersion and has-data filters,
     applied independently per term within the same group_by so a row can
     contribute to one term's assessment columns without contributing to
     another's.
@@ -466,9 +506,9 @@ def aggregate_to_publication_rows(
     than summed from separately-computed per-job-role values.
 
     Args:
-        lazy_df (pl.LazyFrame): location-level data with consistent_service,
-            ct_total_employed_imputed, ct_has_data_*_term and
-            ct_dispersion_filter_*_term already added.
+        lazy_df (pl.LazyFrame): location-level data with
+            consistent_service_*_term, ct_total_employed_imputed,
+            ct_has_data_*_term and ct_dispersion_filter_*_term already added.
         group_keys (list[str] | None): columns to group by. Defaults to
             import date, job role, region and service type.
 
@@ -485,17 +525,17 @@ def aggregate_to_publication_rows(
         ]
 
     long_term_filter = (
-        pl.col(Pub.consistent_service)
+        pl.col(Pub.consistent_service_long_term)
         & pl.col(Pub.ct_dispersion_filter_long_term)
         & pl.col(Pub.ct_has_data_long_term)
     )
     medium_term_filter = (
-        pl.col(Pub.consistent_service)
+        pl.col(Pub.consistent_service_medium_term)
         & pl.col(Pub.ct_dispersion_filter_medium_term)
         & pl.col(Pub.ct_has_data_medium_term)
     )
     short_term_filter = (
-        pl.col(Pub.consistent_service)
+        pl.col(Pub.consistent_service_short_term)
         & pl.col(Pub.ct_dispersion_filter_short_term)
         & pl.col(Pub.ct_has_data_short_term)
     )
