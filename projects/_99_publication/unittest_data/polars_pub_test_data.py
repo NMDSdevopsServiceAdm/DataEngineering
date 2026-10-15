@@ -1313,7 +1313,7 @@ format_large_number_test_cases = [
     FormatLargeNumberTestCase(
         id="honours_the_column_name_and_alias_arguments",
         column_name=Pub.assessment_filled_posts_long_term,
-        column_alias=Pub.assessment_filled_posts_long_term_tableau_labels,
+        column_alias=Pub.publication_filled_posts_tableau_labels,
         expected_data=[(3500000.0, "3.500m")],
     ),
 ]

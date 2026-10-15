@@ -20,17 +20,8 @@ class PublicationColumns:
     )
     publication_locationid_count: str = "publication_locationid_count"
     assessment_filled_posts_long_term: str = "assessment_filled_posts_long_term"
-    assessment_filled_posts_long_term_tableau_labels: str = (
-        "assessment_filled_posts_long_term_tableau_labels"
-    )
     assessment_filled_posts_medium_term: str = "assessment_filled_posts_medium_term"
-    assessment_filled_posts_medium_term_tableau_labels: str = (
-        "assessment_filled_posts_medium_term_tableau_labels"
-    )
     assessment_filled_posts_short_term: str = "assessment_filled_posts_short_term"
-    assessment_filled_posts_short_term_tableau_labels: str = (
-        "assessment_filled_posts_short_term_tableau_labels"
-    )
     assessment_locationid_count_long_term: str = "assessment_locationid_count_long_term"
     assessment_locationid_count_medium_term: str = (
         "assessment_locationid_count_medium_term"

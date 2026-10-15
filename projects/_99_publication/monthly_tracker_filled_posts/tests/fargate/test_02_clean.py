@@ -276,25 +276,9 @@ class TestMain:
             Pub.publication_filled_posts_rounded,
         )
 
-        format_large_number_mock.assert_has_calls(
-            [
-                call(
-                    Pub.publication_filled_posts,
-                    Pub.publication_filled_posts_tableau_labels,
-                ),
-                call(
-                    Pub.assessment_filled_posts_long_term,
-                    Pub.assessment_filled_posts_long_term_tableau_labels,
-                ),
-                call(
-                    Pub.assessment_filled_posts_medium_term,
-                    Pub.assessment_filled_posts_medium_term_tableau_labels,
-                ),
-                call(
-                    Pub.assessment_filled_posts_short_term,
-                    Pub.assessment_filled_posts_short_term_tableau_labels,
-                ),
-            ]
+        format_large_number_mock.assert_called_once_with(
+            Pub.publication_filled_posts,
+            Pub.publication_filled_posts_tableau_labels,
         )
 
         assert sink_to_parquet_mock.call_count == 4
@@ -321,9 +305,6 @@ class TestMain:
             ),
             pl.lit(40.0).alias(Pub.publication_filled_posts_rounded),
             pl.lit("42").alias(Pub.publication_filled_posts_tableau_labels),
-            pl.lit("42").alias(Pub.assessment_filled_posts_long_term_tableau_labels),
-            pl.lit("42").alias(Pub.assessment_filled_posts_medium_term_tableau_labels),
-            pl.lit("42").alias(Pub.assessment_filled_posts_short_term_tableau_labels),
             pl.lit("Apr 2026").alias(Pub.cqc_location_import_date_abbreviated),
             pl.lit("April 2026").alias(Pub.cqc_location_import_date_full),
         )

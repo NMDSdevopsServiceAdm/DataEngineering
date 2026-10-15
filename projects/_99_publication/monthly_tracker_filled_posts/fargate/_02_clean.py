@@ -161,18 +161,6 @@ def main(
         clean_utils.format_large_number(
             Pub.publication_filled_posts, Pub.publication_filled_posts_tableau_labels
         ),
-        clean_utils.format_large_number(
-            Pub.assessment_filled_posts_long_term,
-            Pub.assessment_filled_posts_long_term_tableau_labels,
-        ),
-        clean_utils.format_large_number(
-            Pub.assessment_filled_posts_medium_term,
-            Pub.assessment_filled_posts_medium_term_tableau_labels,
-        ),
-        clean_utils.format_large_number(
-            Pub.assessment_filled_posts_short_term,
-            Pub.assessment_filled_posts_short_term_tableau_labels,
-        ),
         pl.col(IndCQC.cqc_location_import_date)
         .dt.strftime("%b %Y")
         .alias(Pub.cqc_location_import_date_abbreviated),
