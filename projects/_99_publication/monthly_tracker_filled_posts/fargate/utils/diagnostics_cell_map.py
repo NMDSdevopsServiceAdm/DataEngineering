@@ -1,7 +1,7 @@
 """Cell map for `templates/diagnostics_template.xlsx`.
 
-Lists the cells the workbook writer fills (`InputRange`), the template formulas
-it must leave alone, and the charts and styles the template tests check.
+Lists the cells the workbook writer fills (`InputRange`) and the charts and
+styles the template tests check. The template has no formulas.
 
 The "Number of locations" cells take the latest row per group, since every row
 in a term's period shares the same count.
@@ -70,10 +70,6 @@ class SheetMap:
         percentage_chart_count (int): % change charts on the sheet.
         bold_heading_cells (tuple[str, ...]): fixed table headings that must be
             bold.
-        formula_styles (tuple[tuple[str, str], ...]): template formula ranges the
-            writer must not overwrite, each with the `CELL_STYLES` key its cells
-            must have. Every formula range is a slot formula that stays blank
-            until its slot is filled.
     """
 
     name: str
@@ -84,12 +80,6 @@ class SheetMap:
     percentage_chart_columns: tuple[str, ...] = ()
     percentage_chart_count: int = 0
     bold_heading_cells: tuple[str, ...] = ()
-    formula_styles: tuple[tuple[str, str], ...] = ()
-
-    @property
-    def formula_ranges(self) -> tuple[str, ...]:
-        """The template formula ranges."""
-        return tuple(cells for cells, _ in self.formula_styles)
 
 
 TITLE_CELL = "B3"
@@ -111,27 +101,35 @@ FILLED_POSTS = SheetMap(
         InputRange(TITLE_CELL, note="'End of <month year>' title"),
         InputRange("B24:B36", note="annual filled posts dates", style="date"),
         InputRange("I24:I36", note="annual filled posts % change dates", style="date"),
-        InputRange("C24:D36", note="annual filled posts totals", style="count"),
-        InputRange("E24:G36", note="annual filled posts, 3 spare years", style="count"),
+        InputRange(
+            "C24:G36", note="annual filled posts by primary service type", style="count"
+        ),
         InputRange("J25:N36", note="annual filled posts % change", style="percent"),
         InputRange("B44:B56", note="annual CQC locations dates", style="date"),
         InputRange("I44:I56", note="annual CQC locations % change dates", style="date"),
-        InputRange("C44:D56", note="annual CQC locations totals", style="count"),
         InputRange(
-            "E44:G56", note="annual CQC locations, 3 spare years", style="count"
+            "C44:G56",
+            note="annual CQC locations by primary service type",
+            style="count",
         ),
         InputRange("J45:N56", note="annual CQC locations % change", style="percent"),
         InputRange("B65:B77", note="monthly filled posts dates", style="date"),
         InputRange("I65:I77", note="monthly filled posts % change dates", style="date"),
-        InputRange("C65:D77", note="monthly filled posts totals", style="count"),
-        InputRange("E65:G77", note="monthly filled posts", style="count"),
+        InputRange(
+            "C65:G77",
+            note="monthly filled posts by primary service type",
+            style="count",
+        ),
         InputRange("J65:N77", note="monthly filled posts % change", style="percent"),
         InputRange("B84:B96", note="monthly CQC locations dates", style="date"),
         InputRange(
             "I84:I96", note="monthly CQC locations % change dates", style="date"
         ),
-        InputRange("C84:D96", note="monthly CQC locations totals", style="count"),
-        InputRange("E84:G96", note="monthly CQC locations", style="count"),
+        InputRange(
+            "C84:G96",
+            note="monthly CQC locations by primary service type",
+            style="count",
+        ),
         InputRange("J84:N96", note="monthly CQC locations % change", style="percent"),
         InputRange(
             "B99", note="'...since <month year>' chart heading", style="bold_text"
@@ -145,10 +143,10 @@ FILLED_POSTS = SheetMap(
     bold_heading_cells=("B20", "B40", "B61", "B80"),
 )
 
-# Annual rows first, then monthly rows; unused slots stay blank at the end. The
-# difference block compares current row i with previous row i, so the writer pads
-# the previous block (a blank row where the previous publication had none) to
-# line its rows up with the current block's.
+# Annual rows first, then monthly rows; unused slots stay blank at the end. Row i
+# of the difference block compares current row i with previous row i, so the
+# writer pads the previous block (a blank row where the previous publication had
+# none) to line its rows up with the current block's.
 COMP_PREV_PUBLICATION = SheetMap(
     name="Comp prev publication",
     input_ranges=(
@@ -156,17 +154,15 @@ COMP_PREV_PUBLICATION = SheetMap(
         InputRange("B23:B59", note="previous publication labels"),
         InputRange("C23:C59", note="previous publication dates", style="date"),
         InputRange("D23:H59", note="previous publication figures", style="count"),
-        InputRange("D106:H142", note="difference as percentage", style="percent"),
         InputRange("B64:B100", note="current publication labels"),
         InputRange("C64:C100", note="current publication dates", style="date"),
         InputRange("D64:H100", note="current publication figures", style="count"),
+        InputRange("B106:B142", note="difference labels"),
+        InputRange("C106:C142", note="difference dates", style="date"),
+        InputRange("D106:H142", note="difference as percentage", style="percent"),
     ),
     chart_count=0,
     bold_heading_cells=("B20", "B61", "B103"),
-    formula_styles=(
-        ("B106:B142", "text"),
-        ("C106:C142", "date"),
-    ),
 )
 
 
@@ -268,12 +264,12 @@ def _comparison_sheet(
 
 COMP_SHORT_TERM = _comparison_sheet(
     "Comp SfC and CT - short term",
-    26,
-    26 + MONTHLY_SLOTS - 1,
+    29,
+    29 + MONTHLY_SLOTS - 1,
     Pub.assessment_filled_posts_short_term,
     Pub.assessment_ct_total_employed_short_term,
     extra_inputs=_location_count_inputs(
-        "D22", "M22", Pub.assessment_locationid_count_short_term
+        "D25", "M25", Pub.assessment_locationid_count_short_term
     ),
 )
 COMP_MEDIUM_TERM = _comparison_sheet(
