@@ -312,30 +312,6 @@ def round_percentage(column_name: str) -> pl.Expr:
     return _round_half_away_from_zero(percentage, 0.1).round(1)
 
 
-def format_percentage(column_name: str, column_alias: str) -> pl.Expr:
-    """
-    Builds a polars expression formatting a percentage-change fraction (e.g.
-    0.032 = +3.2%) to a 1 decimal place display string (e.g. "3.2%",
-    "-0.8%"), for parity with the manually-published reference's own 1dp
-    percentages. Null stays null, rather than becoming the string "null%" -
-    the annual/monthly percentage change columns this is applied to are
-    deliberately null on every row outside their own series.
-
-    Args:
-        column_name (str): the fractional percentage column to format.
-        column_alias (str): name to alias the resulting column to.
-
-    Returns:
-        pl.Expr: string expression with the formatted percentage, or null.
-    """
-    return (
-        pl.when(pl.col(column_name).is_null())
-        .then(None)
-        .otherwise(round_percentage(column_name).cast(pl.Utf8) + "%")
-        .alias(column_alias)
-    )
-
-
 def add_dispersion_filter(
     lazy_df: pl.LazyFrame,
     column_names: list[str],
@@ -1065,9 +1041,7 @@ def build_t1_filled_posts_perc_change_download_table(
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with
             estimated filled posts' annual and monthly percentage change
-            columns, each as a raw value and a 1dp formatted string (see
-            format_percentage). Sorted by period then region then
-            main_service.
+            columns. Sorted by period then region then main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
@@ -1084,13 +1058,7 @@ def build_t1_filled_posts_perc_change_download_table(
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
         pl.col(Pub.annual_percentage_change),
-        format_percentage(
-            Pub.annual_percentage_change, Pub.annual_percentage_change_formatted
-        ),
         pl.col(Pub.monthly_percentage_change),
-        format_percentage(
-            Pub.monthly_percentage_change, Pub.monthly_percentage_change_formatted
-        ),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
 
 
@@ -1120,10 +1088,8 @@ def build_t2_location_count_perc_change_download_table(
 
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with cqc
-            location count's annual and monthly percentage change columns,
-            each as a raw value and a 1dp formatted string (see
-            format_percentage). Sorted by period then region then
-            main_service.
+            location count's annual and monthly percentage change columns.
+            Sorted by period then region then main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
@@ -1140,11 +1106,5 @@ def build_t2_location_count_perc_change_download_table(
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
         pl.col(Pub.annual_percentage_change),
-        format_percentage(
-            Pub.annual_percentage_change, Pub.annual_percentage_change_formatted
-        ),
         pl.col(Pub.monthly_percentage_change),
-        format_percentage(
-            Pub.monthly_percentage_change, Pub.monthly_percentage_change_formatted
-        ),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)

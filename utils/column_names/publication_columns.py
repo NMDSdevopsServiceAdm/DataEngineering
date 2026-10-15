@@ -14,19 +14,22 @@ class PublicationColumns:
     ct_dispersion_filter_medium_term: str = "ct_dispersion_filter_medium_term"
     ct_dispersion_filter_short_term: str = "ct_dispersion_filter_short_term"
     publication_filled_posts: str = "publication_filled_posts"
-    publication_filled_posts_formatted: str = "publication_filled_posts_formatted"
+    publication_filled_posts_rounded: str = "publication_filled_posts_rounded"
+    publication_filled_posts_tableau_labels: str = (
+        "publication_filled_posts_tableau_labels"
+    )
     publication_locationid_count: str = "publication_locationid_count"
     assessment_filled_posts_long_term: str = "assessment_filled_posts_long_term"
-    assessment_filled_posts_long_term_formatted: str = (
-        "assessment_filled_posts_long_term_formatted"
+    assessment_filled_posts_long_term_tableau_labels: str = (
+        "assessment_filled_posts_long_term_tableau_labels"
     )
     assessment_filled_posts_medium_term: str = "assessment_filled_posts_medium_term"
-    assessment_filled_posts_medium_term_formatted: str = (
-        "assessment_filled_posts_medium_term_formatted"
+    assessment_filled_posts_medium_term_tableau_labels: str = (
+        "assessment_filled_posts_medium_term_tableau_labels"
     )
     assessment_filled_posts_short_term: str = "assessment_filled_posts_short_term"
-    assessment_filled_posts_short_term_formatted: str = (
-        "assessment_filled_posts_short_term_formatted"
+    assessment_filled_posts_short_term_tableau_labels: str = (
+        "assessment_filled_posts_short_term_tableau_labels"
     )
     assessment_locationid_count_long_term: str = "assessment_locationid_count_long_term"
     assessment_locationid_count_medium_term: str = (
@@ -74,5 +77,3 @@ class PublicationColumns:
     period: str = "Period"
     period_label: str = "Period label"
     estimated_filled_posts_formatted: str = "Estimated filled posts (rounded)"
-    annual_percentage_change_formatted: str = "Annual percentage change (formatted)"
-    monthly_percentage_change_formatted: str = "Monthly percentage change (formatted)"

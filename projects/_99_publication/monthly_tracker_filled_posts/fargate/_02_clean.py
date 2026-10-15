@@ -155,20 +155,23 @@ def main(
     )
 
     publication_summary_lf = publication_summary_lf.with_columns(
+        clean_utils.round_to_publication_bands(
+            Pub.publication_filled_posts, Pub.publication_filled_posts_rounded
+        ),
         clean_utils.format_large_number(
-            Pub.publication_filled_posts, Pub.publication_filled_posts_formatted
+            Pub.publication_filled_posts, Pub.publication_filled_posts_tableau_labels
         ),
         clean_utils.format_large_number(
             Pub.assessment_filled_posts_long_term,
-            Pub.assessment_filled_posts_long_term_formatted,
+            Pub.assessment_filled_posts_long_term_tableau_labels,
         ),
         clean_utils.format_large_number(
             Pub.assessment_filled_posts_medium_term,
-            Pub.assessment_filled_posts_medium_term_formatted,
+            Pub.assessment_filled_posts_medium_term_tableau_labels,
         ),
         clean_utils.format_large_number(
             Pub.assessment_filled_posts_short_term,
-            Pub.assessment_filled_posts_short_term_formatted,
+            Pub.assessment_filled_posts_short_term_tableau_labels,
         ),
         pl.col(IndCQC.cqc_location_import_date)
         .dt.strftime("%b %Y")

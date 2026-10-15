@@ -1271,49 +1271,49 @@ format_large_number_test_cases = [
     FormatLargeNumberTestCase(
         id="value_under_a_thousand_has_no_separator",
         column_name=Pub.publication_filled_posts,
-        column_alias=Pub.publication_filled_posts_formatted,
+        column_alias=Pub.publication_filled_posts_tableau_labels,
         expected_data=[(500.0, "500")],
     ),
     FormatLargeNumberTestCase(
         id="value_in_the_thousands_gets_one_comma",
         column_name=Pub.publication_filled_posts,
-        column_alias=Pub.publication_filled_posts_formatted,
+        column_alias=Pub.publication_filled_posts_tableau_labels,
         expected_data=[(800000.0, "800,000")],
     ),
     FormatLargeNumberTestCase(
         id="fractional_value_below_the_threshold_rounds_to_the_nearest_whole_number",
         column_name=Pub.publication_filled_posts,
-        column_alias=Pub.publication_filled_posts_formatted,
+        column_alias=Pub.publication_filled_posts_tableau_labels,
         expected_data=[(1234.6, "1,235")],
     ),
     FormatLargeNumberTestCase(
         id="value_just_below_one_million_stays_comma_formatted",
         column_name=Pub.publication_filled_posts,
-        column_alias=Pub.publication_filled_posts_formatted,
+        column_alias=Pub.publication_filled_posts_tableau_labels,
         expected_data=[(999999.0, "999,999")],
     ),
     FormatLargeNumberTestCase(
         id="value_exactly_one_million_is_abbreviated_to_millions",
         column_name=Pub.publication_filled_posts,
-        column_alias=Pub.publication_filled_posts_formatted,
+        column_alias=Pub.publication_filled_posts_tableau_labels,
         expected_data=[(1000000.0, "1.000m")],
     ),
     FormatLargeNumberTestCase(
         id="value_just_above_one_million_is_abbreviated_to_millions",
         column_name=Pub.publication_filled_posts,
-        column_alias=Pub.publication_filled_posts_formatted,
+        column_alias=Pub.publication_filled_posts_tableau_labels,
         expected_data=[(1175000.0, "1.175m")],
     ),
     FormatLargeNumberTestCase(
         id="whole_millions_value_still_shows_three_decimals",
         column_name=Pub.publication_filled_posts,
-        column_alias=Pub.publication_filled_posts_formatted,
+        column_alias=Pub.publication_filled_posts_tableau_labels,
         expected_data=[(2000000.0, "2.000m")],
     ),
     FormatLargeNumberTestCase(
         id="honours_the_column_name_and_alias_arguments",
         column_name=Pub.assessment_filled_posts_long_term,
-        column_alias=Pub.assessment_filled_posts_long_term_formatted,
+        column_alias=Pub.assessment_filled_posts_long_term_tableau_labels,
         expected_data=[(3500000.0, "3.500m")],
     ),
 ]
@@ -1540,9 +1540,9 @@ build_t1_filled_posts_perc_change_download_table_test_cases = [
             (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 200.0, 15),
         ],
         expected_data=[
-            (date(2024, 4, 1), "Mar-24", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
-            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, "50.0%", None, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.3333333, "33.3%", None, None),
+            (date(2024, 4, 1), "Mar-24", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.3333333, None),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1560,9 +1560,9 @@ build_t1_filled_posts_perc_change_download_table_test_cases = [
             (date(2026, 6, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 198.0, 14),
         ],
         expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.1, "10.0%"),
-            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, -0.01, "-1.0%"),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.1),
+            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, -0.01),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1577,9 +1577,9 @@ build_t1_filled_posts_perc_change_download_table_test_cases = [
             (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 220.0, 16),
         ],
         expected_data=[
-            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 1.0, "100.0%", None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.1, "10.0%"),
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 1.0, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.1),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1592,8 +1592,8 @@ build_t1_filled_posts_perc_change_download_table_test_cases = [
             (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
         ],
         expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.5, "50.0%"),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.5),
         ],
     ),
 ]  # fmt: skip
@@ -1608,9 +1608,9 @@ build_t2_location_count_perc_change_download_table_test_cases = [
             (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 15),
         ],
         expected_data=[
-            (date(2024, 4, 1), "Mar-24", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
-            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.2, "20.0%", None, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.25, "25.0%", None, None),
+            (date(2024, 4, 1), "Mar-24", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.2, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.25, None),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1625,9 +1625,9 @@ build_t2_location_count_perc_change_download_table_test_cases = [
             (date(2026, 6, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 14),
         ],
         expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.0666667, "6.7%"),
-            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, -0.0666667, "-6.7%"),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.0666667),
+            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, -0.0666667),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1639,9 +1639,9 @@ build_t2_location_count_perc_change_download_table_test_cases = [
             (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 16),
         ],
         expected_data=[
-            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, "50.0%", None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.0666667, "6.7%"),
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.0666667),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
@@ -1654,8 +1654,8 @@ build_t2_location_count_perc_change_download_table_test_cases = [
             (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
         ],
         expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.2, "20.0%"),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.2),
         ],
     ),
 ]  # fmt: skip
@@ -1783,67 +1783,6 @@ round_to_publication_bands_test_cases = [
         column_name=Pub.estimated_filled_posts,
         column_alias=Pub.estimated_filled_posts_formatted,
         expected_data=[(1999999.0, 2000000.0)],
-    ),
-]
-
-
-@dataclass
-class FormatPercentageTestCase:
-    id: str
-    column_name: str
-    column_alias: str
-    expected_data: list[Any]
-
-    def as_pytest_param(self) -> pytest.param:
-        return pytest.param(self, id=self.id)
-
-
-format_percentage_test_cases = [
-    FormatPercentageTestCase(
-        id="positive_fraction_formats_to_one_decimal_place",
-        column_name=Pub.annual_percentage_change,
-        column_alias=Pub.annual_percentage_change_formatted,
-        expected_data=[(0.032, "3.2%")],
-    ),
-    FormatPercentageTestCase(
-        id="negative_fraction_keeps_its_sign",
-        column_name=Pub.annual_percentage_change,
-        column_alias=Pub.annual_percentage_change_formatted,
-        expected_data=[(-0.008, "-0.8%")],
-    ),
-    FormatPercentageTestCase(
-        id="zero_formats_without_a_sign",
-        column_name=Pub.annual_percentage_change,
-        column_alias=Pub.annual_percentage_change_formatted,
-        expected_data=[(0.0, "0.0%")],
-    ),
-    FormatPercentageTestCase(
-        # A value that rounds to exactly zero from a negative input must not
-        # display a stray "-0.0%".
-        id="a_negative_value_that_rounds_to_zero_does_not_show_a_minus_sign",
-        column_name=Pub.annual_percentage_change,
-        column_alias=Pub.annual_percentage_change_formatted,
-        expected_data=[(-0.0001, "0.0%")],
-    ),
-    FormatPercentageTestCase(
-        # An exact half-way tie at the 1dp boundary (0.05% is equidistant
-        # from 0.0% and 0.1%) rounds away from zero to 0.1%.
-        id="a_half_way_tie_at_the_one_decimal_place_boundary_rounds_up",
-        column_name=Pub.annual_percentage_change,
-        column_alias=Pub.annual_percentage_change_formatted,
-        expected_data=[(0.0005, "0.1%")],
-    ),
-    FormatPercentageTestCase(
-        id="a_negative_half_way_tie_rounds_away_from_zero",
-        column_name=Pub.annual_percentage_change,
-        column_alias=Pub.annual_percentage_change_formatted,
-        expected_data=[(-0.0015, "-0.2%")],
-    ),
-    FormatPercentageTestCase(
-        id="null_stays_null_rather_than_becoming_the_string_null_percent",
-        column_name=Pub.monthly_percentage_change,
-        column_alias=Pub.monthly_percentage_change_formatted,
-        expected_data=[(None, None)],
     ),
 ]
 
@@ -1999,8 +1938,6 @@ prepare_perc_change_for_publication_test_cases = [
                 _ALL_CQC_LOCATIONS,
                 None,
                 None,
-                None,
-                None,
             ),
         ],
         expected_data=[
@@ -2016,9 +1953,7 @@ prepare_perc_change_for_publication_test_cases = [
                 "London",
                 _ALL_CQC_LOCATIONS,
                 0.0321,
-                "3.2%",
                 -0.0049,
-                "-0.5%",
             ),
         ],
         expected_data=[
@@ -2034,9 +1969,7 @@ prepare_perc_change_for_publication_test_cases = [
                 "London",
                 _ALL_CQC_LOCATIONS,
                 0.0125,
-                "1.3%",
                 -0.0125,
-                "-1.3%",
             ),
         ],
         expected_data=[
@@ -2052,9 +1985,7 @@ prepare_perc_change_for_publication_test_cases = [
                 "London",
                 _ALL_CQC_LOCATIONS,
                 0.032,
-                "3.2%",
                 -0.008,
-                "-0.8%",
             ),
         ],
         expected_data=[
@@ -2094,9 +2025,7 @@ download_workbook_perc_change_data = [
         "England",
         _ALL_CQC_LOCATIONS,
         None,
-        None,
         0.0123,
-        "1.2%",
     ),
     (
         date(2026, 9, 1),
@@ -2104,11 +2033,9 @@ download_workbook_perc_change_data = [
         "England",
         _ALL_CQC_LOCATIONS,
         0.0321,
-        "3.2%",
         0.0045,
-        "0.5%",
     ),
-    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, None, None, None, None),
+    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, None, None),
 ]
 
 download_workbook_t2_perc_change_data = [
@@ -2118,9 +2045,7 @@ download_workbook_t2_perc_change_data = [
         "England",
         _ALL_CQC_LOCATIONS,
         None,
-        None,
         0.0201,
-        "2.0%",
     ),
     (
         date(2026, 9, 1),
@@ -2128,9 +2053,7 @@ download_workbook_t2_perc_change_data = [
         "England",
         _ALL_CQC_LOCATIONS,
         0.0654,
-        "6.5%",
         0.0112,
-        "1.1%",
     ),
-    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, None, None, None, None),
+    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, None, None),
 ]
