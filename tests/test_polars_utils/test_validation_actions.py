@@ -116,6 +116,23 @@ class TestWriteReports(TestValidate):
         )
 
 
+class TestWriteReportsSummaryHtml:
+    @patch("boto3.client", autospec=True)
+    def test_summary_html_icons_are_not_escaped(self, mock_s3_client):
+        df = pl.DataFrame({"someId": ["1-00001", "1-00002"]})
+        validation = (
+            pb.Validate(df, thresholds=pb.Thresholds(error=1))
+            .col_vals_not_null("someId")
+            .interrogate()
+        )
+
+        vl.write_reports(validation, "bucket", "reports")
+
+        body = mock_s3_client.return_value.put_object.call_args.kwargs["Body"]
+        assert "<svg" in body
+        assert "&lt;svg" not in body
+
+
 class TestReportOnFail(TestValidate):
     @patch("polars_utils.utils.write_to_parquet", autospec=True)
     @patch("pointblank.Validate")

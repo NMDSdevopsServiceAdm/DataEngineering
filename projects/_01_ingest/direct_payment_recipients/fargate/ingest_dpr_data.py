@@ -9,23 +9,23 @@ from utils.column_names.direct_payments_column_names import (
 
 SURVEY_SCHEMA = pl.Schema(
     [
-        (DPR.YEAR, pl.Int32),
-        (DPR.TOTAL_STAFF_RECODED, pl.Float32),
+        (DPR.year, pl.Int32),
+        (DPR.total_staff_recoded, pl.Float32),
     ]
 )
 
 EXTERNAL_SCHEMA = pl.Schema(
     [
-        (DPR.SERVICE_USER_DPRS_DURING_YEAR, pl.Float32),
-        (DPR.SERVICE_USER_DPRS_AT_YEAR_END, pl.Float32),
-        (DPR.CARER_DPRS_AT_YEAR_END, pl.Float32),
-        (DPR.LA_AREA, pl.String),
-        (DPR.DPRS_ADASS, pl.Float32),
-        (DPR.DPRS_EMPLOYING_STAFF_ADASS, pl.Float32),
-        (DPR.YEAR, pl.Int32),
-        (DPR.PROPORTION_IMPORTED, pl.Float32),
-        (DPR.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE, pl.Float32),
-        (DPR.FILLED_POSTS_PER_EMPLOYER, pl.Float32),
+        (DPR.service_user_dprs_during_year, pl.Float32),
+        (DPR.service_user_dprs_at_year_end, pl.Float32),
+        (DPR.carer_dprs_at_year_end, pl.Float32),
+        (DPR.la_area, pl.String),
+        (DPR.dprs_adass, pl.Float32),
+        (DPR.dprs_employing_staff_adass, pl.Float32),
+        (DPR.year, pl.Int32),
+        (DPR.proportion_imported, pl.Float32),
+        (DPR.historic_service_users_employing_staff_estimate, pl.Float32),
+        (DPR.filled_posts_per_employer, pl.Float32),
     ]
 )
 

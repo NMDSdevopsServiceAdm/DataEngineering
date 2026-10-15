@@ -21,7 +21,7 @@ class ModelFeaturesNonResWithoutDormancyTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.fUtils.group_rural_urban_sparse_categories")
     @patch(f"{PATCH_PATH}.fUtils.add_array_column_count")
     @patch(f"{PATCH_PATH}.fUtils.cap_integer_at_max_value")
-    @patch(f"{PATCH_PATH}.fUtils.add_date_index_column")
+    @patch(f"{PATCH_PATH}.modelUtils.add_date_index")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_ind_cqc_data)
     @patch(f"{PATCH_PATH}.vUtils.validate_model_definition")
     @patch(f"{PATCH_PATH}.pUtils.generate_features_path")
@@ -34,7 +34,7 @@ class ModelFeaturesNonResWithoutDormancyTests(unittest.TestCase):
         generate_features_path_mock: Mock,
         validate_model_definition_mock: Mock,
         scan_parquet_mock: Mock,
-        add_date_index_column_mock: Mock,
+        add_date_index_mock: Mock,
         cap_integer_at_max_value_mock: Mock,
         add_array_column_count_mock: Mock,
         group_rural_urban_sparse_categories_mock: Mock,
@@ -48,7 +48,7 @@ class ModelFeaturesNonResWithoutDormancyTests(unittest.TestCase):
         generate_features_path_mock.assert_called_once()
         validate_model_definition_mock.assert_called_once()
         scan_parquet_mock.assert_called_once()
-        add_date_index_column_mock.assert_called_once()
+        add_date_index_mock.assert_called_once()
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 3)
         self.assertEqual(add_array_column_count_mock.call_count, 2)
         group_rural_urban_sparse_categories_mock.assert_called_once()

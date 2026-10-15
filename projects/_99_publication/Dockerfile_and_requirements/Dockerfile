@@ -4,8 +4,11 @@ RUN mkdir -p /polars_scratch && chmod 777 /polars_scratch
 ENV POLARS_TEMP_DIR=/polars_scratch
 ENV PYTHONPATH=/app
 
+# Dependencies. Installed before any source is copied so that a source-only
+# change doesn't invalidate the pip layer.
 COPY docker_requirements/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY projects/_99_publication/Dockerfile_and_requirements/requirements-extra.txt .
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-extra.txt
 
 # Shared libraries
 COPY polars_utils /app/polars_utils
@@ -13,9 +16,9 @@ COPY utils/file_utils.py /app/utils/file_utils.py
 COPY utils/column_names /app/utils/column_names/
 COPY utils/column_values /app/utils/column_values/
 COPY projects/_99_publication/monthly_tracker_filled_posts/fargate/utils /app/projects/_99_publication/monthly_tracker_filled_posts/fargate/utils
+COPY projects/_99_publication/monthly_tracker_filled_posts/templates /app/projects/_99_publication/monthly_tracker_filled_posts/templates
 
-# Copy python jobs to WORKDIR
-COPY projects/_99_publication/monthly_tracker_filled_posts/fargate/_01_merge.py /app/_01_merge.py
-COPY projects/_99_publication/monthly_tracker_filled_posts/fargate/_02_clean.py /app/_02_clean.py
+# Copy all python jobs to WORKDIR
+COPY projects/_99_publication/monthly_tracker_filled_posts/fargate/*.py .
 
 ENTRYPOINT ["python"]

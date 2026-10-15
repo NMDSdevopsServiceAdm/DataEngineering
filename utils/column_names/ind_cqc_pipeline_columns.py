@@ -46,6 +46,23 @@ class ArchiveDateRunNumberPartitionKeys:
 
 
 @dataclass
+class ArchiveRunLogColumns:
+    approved: str = "approved"
+    archive_date_time: str = "archive_date_time"
+    commit_sha: str = "commit_sha"
+    locally_checked: str = "locally_checked"
+    max_ascwds_workplace_import_date: str = "max_ascwds_workplace_import_date"
+    max_cqc_location_import_date: str = "max_cqc_location_import_date"
+    max_cqc_pir_import_date: str = "max_cqc_pir_import_date"
+    max_ct_care_home_import_date: str = "max_ct_care_home_import_date"
+    max_ct_non_res_import_date: str = "max_ct_non_res_import_date"
+    max_current_ons_import_date: str = "max_current_ons_import_date"
+    reconciled: str = "reconciled"
+    selected_for_publication: str = "selected_for_publication"
+    tag: str = "tag"
+
+
+@dataclass
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
     activity_count: str = "activity_count"
@@ -80,6 +97,7 @@ class IndCqcColumns:
     brand_id: str = CQCLClean.brand_id
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
+    care_home_model_run_id: str = care_home_model + "_run_id"
     care_home_status_count: str = "care_home_status_count"
     combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contemporary_constituency: str = ONSClean.contemporary_constituency
@@ -239,7 +257,11 @@ class IndCqcColumns:
     next_submission_time: str = "next_submission_time"
     non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
+    non_res_with_dormancy_model_run_id: str = non_res_with_dormancy_model + "_run_id"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
+    non_res_without_dormancy_model_run_id: str = (
+        non_res_without_dormancy_model + "_run_id"
+    )
     national_percentage_care_worker_filled_posts: str = (
         "national_percentage_care_worker_filled_posts"
     )
@@ -256,6 +278,7 @@ class IndCqcColumns:
         "national_percentage_other_filled_posts"
     )
     number_of_beds: str = CQCLClean.number_of_beds
+    number_of_beds_at_provider: str = "number_of_beds_at_provider"
     number_of_beds_banded: str = "number_of_beds_banded"
     number_of_beds_banded_for_rolling_avg: str = (
         number_of_beds_banded + "_for_rolling_avg"
@@ -368,6 +391,25 @@ class JobRoleImputeTempColumns:
 
 
 @dataclass
+class EmploymentStatusImputeTempColumns:
+    """
+    The names of the temporary columns used while imputing employment status percentages.
+
+    The `_prefix` fields are joined to each percentage column's name, since first/last known
+    values and rolling totals are needed once per employment status.
+    """
+
+    first_known_date: str = "es_impute_first_known_date"
+    last_known_date: str = "es_impute_last_known_date"
+    previous_known_date: str = "es_impute_previous_known_date"
+    next_known_date: str = "es_impute_next_known_date"
+    contributing_locations: str = "es_impute_contributing_locations"
+    first_known_value_prefix: str = "es_impute_first_known_value_"
+    last_known_value_prefix: str = "es_impute_last_known_value_"
+    rolling_total_prefix: str = "es_impute_rolling_total_"
+
+
+@dataclass
 class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
@@ -413,7 +455,6 @@ class NullGroupedProviderColumns:
     )
     count_of_cqc_locations_in_provider: str = "count_of_cqc_locations_in_provider"
     location_pir_average: str = "location_pir_average"
-    number_of_beds_at_provider: str = "number_of_beds_at_provider"
     potential_grouped_provider: str = "potential_grouped_provider"
     provider_pir_count: str = "provider_pir_count"
     provider_pir_sum: str = "provider_pir_sum"
@@ -476,13 +517,52 @@ class EmploymentStatusColumns:
     bank_or_pool_percentage: str = "emplstat_bank_or_pool_percentage"
     agency_percentage: str = "emplstat_agency_percentage"
     other_percentage: str = "emplstat_other_percentage"
+    permanent_percentage_imputed_for_trendline: str = (
+        permanent_percentage + "_imputed_for_trendline"
+    )
+    temporary_percentage_imputed_for_trendline: str = (
+        temporary_percentage + "_imputed_for_trendline"
+    )
+    bank_or_pool_percentage_imputed_for_trendline: str = (
+        bank_or_pool_percentage + "_imputed_for_trendline"
+    )
+    agency_percentage_imputed_for_trendline: str = (
+        agency_percentage + "_imputed_for_trendline"
+    )
+    other_percentage_imputed_for_trendline: str = (
+        other_percentage + "_imputed_for_trendline"
+    )
+    permanent_percentage_rolling_avg: str = permanent_percentage + "_rolling_avg"
+    temporary_percentage_rolling_avg: str = temporary_percentage + "_rolling_avg"
+    bank_or_pool_percentage_rolling_avg: str = bank_or_pool_percentage + "_rolling_avg"
+    agency_percentage_rolling_avg: str = agency_percentage + "_rolling_avg"
+    other_percentage_rolling_avg: str = other_percentage + "_rolling_avg"
+    permanent_percentage_full_imputed: str = permanent_percentage + "_full_imputed"
+    temporary_percentage_full_imputed: str = temporary_percentage + "_full_imputed"
+    bank_or_pool_percentage_full_imputed: str = (
+        bank_or_pool_percentage + "_full_imputed"
+    )
+    agency_percentage_full_imputed: str = agency_percentage + "_full_imputed"
+    other_percentage_full_imputed: str = other_percentage + "_full_imputed"
+    estimated_permanent_percentage: str = "estimated_" + permanent_percentage
+    estimated_temporary_percentage: str = "estimated_" + temporary_percentage
+    estimated_bank_or_pool_percentage: str = "estimated_" + bank_or_pool_percentage
+    estimated_agency_percentage: str = "estimated_" + agency_percentage
+    estimated_other_percentage: str = "estimated_" + other_percentage
+    estimated_percentage_source: str = "estimated_emplstat_percentage_source"
     employee_count: str = "emplstat_employee_count"
-    estimated_emp_stat_perm: str = "estimated_emp_stat_perm"
-    estimated_emp_stat_temp: str = "estimated_emp_stat_temp"
+    estimated_emp_stat_permanent: str = "estimated_emp_stat_permanent"
+    estimated_emp_stat_temporary: str = "estimated_emp_stat_temporary"
     estimated_emp_stat_bank_or_pool: str = "estimated_emp_stat_bank_or_pool"
     estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
     estimated_emp_stat_other: str = "estimated_emp_stat_other"
     estimated_employees: str = "estimated_employees"
+    permanent_count_clean: str = "emplstat_permanent_count_clean"
+    temporary_count_clean: str = "emplstat_temporary_count_clean"
+    bank_or_pool_count_clean: str = "emplstat_bank_or_pool_count_clean"
+    agency_count_clean: str = "emplstat_agency_count_clean"
+    other_count_clean: str = "emplstat_other_count_clean"
+    filtering_rule: str = "employment_status_filtering_rule"
 
 
 @dataclass
@@ -499,33 +579,70 @@ class StartersLeaversVacanciesColumns:
     starters_filtering_rule: str = starters + "_filtering_rule"
     leavers_filtering_rule: str = leavers + "_filtering_rule"
     vacancies_filtering_rule: str = vacancies + "_filtering_rule"
-    starters_cleaned_dedup: str = starters_cleaned + "_deduplicated"
-    leavers_cleaned_dedup: str = leavers_cleaned + "_deduplicated"
-    vacancies_cleaned_dedup: str = vacancies_cleaned + "_deduplicated"
+    starters_cleaned_dedup: str = starters_cleaned + "_dedup"
+    leavers_cleaned_dedup: str = leavers_cleaned + "_dedup"
+    vacancies_cleaned_dedup: str = vacancies_cleaned + "_dedup"
     turnover_rate_dedup: str = turnover_rate + "_deduplicated"
     starter_rate_dedup: str = starter_rate + "_deduplicated"
     vacancy_rate_dedup: str = vacancy_rate + "_deduplicated"
 
 
 @dataclass
-class EmploymentStatusMagicNumberRateColumns:
-    service: str = "service"
-    weighting_job_role: str = "weighting_job_role"
-    emp_stat_perm: str = "emp_stat_perm"
-    emp_stat_temp: str = "emp_stat_temp"
-    emp_stat_bank_or_pool: str = "emp_stat_bank_or_pool"
-    emp_stat_agency: str = "emp_stat_agency"
-    emp_stat_other: str = "emp_stat_other"
-
-
-@dataclass
 class ModelEvaluationColumns:
     """The names of the columns added when evaluating models, such as filled posts."""
 
-    fold: str = "fold"
-    never_submitted: str = "never_submitted"
+    bias: str = "bias"
+    bias_slope_per_year: str = "bias_slope_per_year"
     column_name: str = "column_name"
+    coverage: str = "coverage"
+    financial_year: str = "financial_year"
+    fold: str = "fold"
+    group: str = "group"
+    hit_max_iter: str = "hit_max_iter"
+    imputed_target_posts: str = "imputed_target_posts"
+    known_rows: str = "known_rows"
+    known_rows_scored: str = "known_rows_scored"
+    level: str = "level"
+    locations: str = "locations"
+    log_prediction: str = "log_prediction"
+    max_iter: str = "max_iter"
     mean_period_to_period_change: str = "mean_period_to_period_change"
+    metric: str = "metric"
+    minimum_rows_in_period: str = "minimum_rows_in_period"
+    model: str = "model"
+    n_iter: str = "n_iter"
+    never_submitted: str = "never_submitted"
+    number_of_features: str = "number_of_features"
+    number_of_groups: str = "number_of_groups"
+    number_of_periods: str = "number_of_periods"
+    number_of_rows: str = "number_of_rows"
+    prediction_unclipped: str = "prediction_unclipped"
+    ratio_prediction: str = "ratio_prediction"
+    rows: str = "rows"
+    size_band: str = "size_band"
+    value: str = "value"
+    weighted_absolute_percentage_error: str = "weighted_absolute_percentage_error"
+    zero_coefficients: str = "zero_coefficients"
+
+
+@dataclass
+class ModelEvaluationLabels:
+    """The levels and group/fold labels in long-format model evaluation scores."""
+
+    pooled: str = "pooled"
+    all_rows: str = "all_rows"
+    all_groups: str = "all"
+    coverage: str = "coverage"
+    headline_group_totals: str = "headline_group_totals"
+    headline_by_year: str = "headline_by_year"
+    period_totals: str = "period_totals"
+    size_band: str = "size_band"
+    row_level_posts: str = "row_level_posts"
+    row_level_metadata_scale: str = "row_level_metadata_scale"
+    imputed_target_rows: str = "imputed_target_rows"
+    imputed_target_period_bias: str = "imputed_target_period_bias"
+    fit_diagnostics: str = "fit_diagnostics"
+    jumpiness: str = "jumpiness"
 
 
 @dataclass
@@ -535,3 +652,6 @@ class ShareModelColumns:
     imputation_row_kind: str = "imputation_row_kind"
     provider_location_count: str = "provider_location_count"
     latest_overall_rating: str = "latest_overall_rating"
+    group_weight: str = "group_weight"
+    share: str = "share"
+    mean_absolute_error: str = "mean_absolute_error"

@@ -30,9 +30,6 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    ExtrapolationColumns as ExtrapCol,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
@@ -85,18 +82,6 @@ class FeaturesEngineeringUtilsSchemas:
     expected_add_array_column_count_schema = pl.Schema(
         list(add_array_column_count_schema.items())
         + [(IndCQC.service_count, pl.UInt32())]
-    )
-
-    add_date_index_column_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.care_home, pl.String()),
-            (IndCQC.cqc_location_import_date, pl.DataType()),
-        ]
-    )
-    expected_add_date_index_column_schema = pl.Schema(
-        list(add_date_index_column_schema.items())
-        + [(IndCQC.cqc_location_import_date_indexed, pl.UInt32())]
     )
 
     cap_integer_at_max_value_schema = pl.Schema(
@@ -190,13 +175,6 @@ class FeaturesEngineeringUtilsSchemas:
 
 @dataclass
 class ModelTrainingUtilsSchemas:
-    split_train_test_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.ascwds_filled_posts, pl.Float32()),
-        ]
-    )
-
     multiple_feature_cols = ["feature_1", "feature_2"]
     single_feature_col = ["feature_1"]
     dependent_col = "dependent"
@@ -451,6 +429,13 @@ class ValidateCleanIndCQCSchemas:
                 IndCQC.ascwds_filled_posts_source,
                 CatColType.AscwdsFilledPostsSourceEnumType,
             ),
+            (IndCQC.care_home_status_count, pl.Int32()),
+            (IndCQC.number_of_beds_banded, pl.Float64()),
+            (IndCQC.ct_care_home_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.ct_care_home_filtering_rule, pl.String()),
+            (IndCQC.ct_non_res_filtering_rule, pl.String()),
+            (IndCQC.ct_care_home_total_employed_cleaned, pl.Int64()),
+            (IndCQC.ct_non_res_care_workers_employed_cleaned, pl.Int64()),
         ]
     )
 
@@ -524,6 +509,8 @@ class ValidateImputedIndCqcAscwdsAndPir:
             (IndCQC.imputed_filled_post_model, pl.Float32()),
             (IndCQC.imputed_filled_posts_per_bed_ratio_model, pl.Float32()),
             (IndCQC.posts_rolling_average_model, pl.Float32()),
+            (IndCQC.number_of_beds_banded_for_rolling_avg, pl.Float64()),
+            (IndCQC.banded_bed_ratio_rolling_average_model, pl.Float32()),
             (IndCQC.ct_combined_care_home_and_non_res, pl.Float32()),
             (
                 IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
@@ -575,10 +562,18 @@ class ValidateEstimatedIndCQCFilledPostsSchemas:
             ),
             (IndCQC.posts_rolling_average_model, pl.Float32()),
             (IndCQC.care_home_model, pl.Float32()),
+            (IndCQC.care_home_model_run_id, pl.String()),
+            (IndCQC.imputed_posts_care_home_model, pl.Float32()),
             (IndCQC.imputed_posts_non_res_combined_model, pl.Float32()),
+            (IndCQC.non_res_combined_model, pl.Float32()),
             (IndCQC.non_res_with_dormancy_model, pl.Float32()),
+            (IndCQC.non_res_with_dormancy_model_run_id, pl.String()),
             (IndCQC.non_res_without_dormancy_model, pl.Float32()),
+            (IndCQC.non_res_without_dormancy_model_run_id, pl.String()),
             (IndCQC.imputed_pir_filled_posts_model, pl.Float32()),
+            (IndCQC.ct_non_res_all_posts, pl.Float32()),
+            (IndCQC.ct_non_res_filled_post_estimate, pl.Float32()),
+            (IndCQC.ct_non_res_filled_post_estimate_source, pl.String()),
             (IndCQC.services_offered, pl.List(pl.String())),
         ]
     )
@@ -858,7 +853,7 @@ class NullGroupedProvidersSchema:
             (NGPcol.count_of_cqc_locations_in_provider, pl.UInt32()),
             (NGPcol.count_of_awcwds_locations_in_provider, pl.UInt32()),
             (NGPcol.count_of_awcwds_locations_with_data_in_provider, pl.UInt32()),
-            (NGPcol.number_of_beds_at_provider, pl.Int64()),
+            (IndCQC.number_of_beds_at_provider, pl.Int64()),
             (NGPcol.provider_pir_count, pl.UInt32()),
             (NGPcol.provider_pir_sum, pl.Float64()),
         ]
@@ -886,7 +881,7 @@ class NullGroupedProvidersSchema:
             (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
             (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
             (IndCQC.number_of_beds, pl.Int64()),
-            (NGPcol.number_of_beds_at_provider, pl.Int64()),
+            (IndCQC.number_of_beds_at_provider, pl.Int64()),
             (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
             (NGPcol.potential_grouped_provider, pl.Boolean()),
             (IndCQC.ascwds_filtering_rule, pl.String()),
@@ -918,6 +913,7 @@ class NullGroupedProvidersSchema:
             (IndCQC.care_home, pl.String()),
             (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
             (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.number_of_beds_at_provider, pl.Int64()),
             (NGPcol.location_pir_average, pl.Float64()),
         ]
     )
@@ -934,6 +930,10 @@ class NullGroupedProvidersSchema:
             (NGPcol.grp_prov_identified_date, pl.Date()),
             (NGPcol.grp_prov_fixed_date, pl.Date()),
         ]
+    )
+
+    select_locations_populated_this_month_schema = pl.Schema(
+        [(IndCQC.location_id, pl.String())]
     )
 
 
@@ -1467,85 +1467,6 @@ class ValidateJobRoleRatiosMergedSchemas:
             "expression": pl.Boolean,
         }
     )
-
-
-class InterpolationSchema:
-    interpolation_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float64,
-        IndCQC.extrapolation_forwards: pl.Float64,
-        IndCQC.interpolation_model: pl.Float32,
-    }
-
-    calculate_residual_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float64,
-        IndCQC.extrapolation_forwards: pl.Float64,
-        IndCQC.residual: pl.Float64,
-    }
-
-    days_between_submissions_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float64,
-        IndCQC.days_between_submissions: pl.Int64,
-        IndCQC.proportion_of_days_between_submissions: pl.Float64,
-    }
-
-    calculate_interpolated_values_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float64,
-        IndCQC.previous_non_null_value: pl.Float64,
-        IndCQC.residual: pl.Float64,
-        IndCQC.days_between_submissions: pl.Int64,
-        IndCQC.proportion_of_days_between_submissions: pl.Float64,
-        IndCQC.interpolation_model: pl.Float32,
-    }
-
-
-@dataclass
-class ModelExtrapolation:
-    model_extrapolation_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float32,
-        IndCQC.posts_rolling_average_model: pl.Float32,
-        IndCQC.extrapolation_forwards: pl.Float32,
-        IndCQC.extrapolation_model: pl.Float32,
-    }
-
-    expected_extrapolation_aggregates_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float32,
-        IndCQC.posts_rolling_average_model: pl.Float32,
-        ExtrapCol.first_submission_time: pl.Date,
-        ExtrapCol.final_submission_time: pl.Date,
-        ExtrapCol.first_value: pl.Float32,
-        ExtrapCol.first_model: pl.Float32,
-    }
-
-    get_previous_value_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float32,
-        ExtrapCol.previous_value: pl.Float32,
-    }
-
-
-@dataclass
-class ModelImputation:
-    expected_model_imputation_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.care_home: pl.String,
-        "null_values": pl.Float32,
-        "trend_model": pl.Float32,
-        "imputed_values": pl.Float32,
-    }
 
 
 @dataclass

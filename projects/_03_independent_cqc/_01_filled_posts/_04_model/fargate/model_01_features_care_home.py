@@ -1,6 +1,7 @@
 import projects._03_independent_cqc._01_filled_posts._04_model.utils.feature_utils as fUtils
 import projects._03_independent_cqc._01_filled_posts._04_model.utils.paths as pUtils
 import projects._03_independent_cqc._01_filled_posts._04_model.utils.validate_model_definitions as vUtils
+import projects._03_independent_cqc.utils.model_utils as modelUtils
 from polars_utils import utils
 from polars_utils.expressions import is_care_home
 from projects._03_independent_cqc._01_filled_posts._04_model.registry.model_registry import (
@@ -46,7 +47,11 @@ def main(bucket_name: str, model_name: str) -> None:
     feature_cols = model_registry[model_name][MRKeys.features]
 
     lf = utils.scan_parquet(source).filter(is_care_home())
-    lf = fUtils.add_date_index_column(lf)
+    lf = modelUtils.add_date_index(
+        lf,
+        partition_columns=[IndCQC.care_home],
+        date_column=IndCQC.cqc_location_import_date,
+    )
 
     lf = fUtils.add_array_column_count(
         lf, IndCQC.service_count, IndCQC.services_offered

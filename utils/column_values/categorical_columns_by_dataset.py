@@ -16,7 +16,12 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import ONScol as ONS
-from utils.column_names.coverage_columns import CoverageColumns
+from utils.column_names.direct_payments_column_names import (
+    DirectPaymentColumnNames as DP,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    EmploymentStatusColumns as EmpStatus,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
@@ -42,10 +47,14 @@ from utils.column_values.categorical_column_values import (
     AscwdsJobRoleRatiosMergedSource,
     CareHome,
     ContemporaryCSSR,
+    CTFilteringRule,
+    CTNonResFilledPostEstimateSource,
     CurrentCSSR,
     Dormancy,
+    EmploymentStatusEstimateSource,
+    EmploymentStatusFilteringRule,
     EstimateFilledPostsSource,
-    InAscwds,
+    ImputedProportionEmployingStaffSource,
     JobGroupLabels,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
@@ -172,18 +181,6 @@ class MergedIndCQCCategoricalValues:
 
 
 @dataclass
-class MergedCoverageCategoricalValues:
-    care_home_column_values = CareHome(IndCQC.care_home)
-    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
-    current_region_column_values = Region(IndCQC.current_region)
-    current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
-    sector_column_values = Sector(IndCQC.cqc_sector)
-    dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
-    in_ascwds_column_values = InAscwds(CoverageColumns.in_ascwds)
-    primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
-
-
-@dataclass
 class CleanedIndCQCCategoricalValues:
     care_home_column_values = CareHome(IndCQC.care_home)
     sector_column_values = Sector(
@@ -201,6 +198,13 @@ class CleanedIndCQCCategoricalValues:
     )
     ascwds_filtering_rule_column_values = AscwdsFilteringRule(
         IndCQC.ascwds_filtering_rule
+    )
+    ct_care_home_filtering_rule_column_values = CTFilteringRule(
+        IndCQC.ct_care_home_filtering_rule
+    )
+    ct_non_res_filtering_rule_column_values = CTFilteringRule(
+        IndCQC.ct_non_res_filtering_rule,
+        value_to_remove=CTFilteringRule.beds_ratio_outlier,
     )
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
     specialism_dementia_column_values = SpecialistGeneralistOther(
@@ -266,6 +270,11 @@ class EstimatedIndCQCFilledPostsCategoricalValues:
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source
     )
+    ct_non_res_filled_post_estimate_source_column_values = (
+        CTNonResFilledPostEstimateSource(
+            IndCQC.ct_non_res_filled_post_estimate_source, contains_null_values=True
+        )
+    )
 
 
 @dataclass
@@ -306,6 +315,15 @@ class DiagnosticOnKnownFilledPostsCategoricalValues:
 
 
 @dataclass
+class DirectPaymentRecipientsEstimateCategoricalValues:
+    imputed_proportion_employing_staff_source_column_values = (
+        ImputedProportionEmployingStaffSource(
+            DP.imputed_proportion_employing_staff_source
+        )
+    )
+
+
+@dataclass
 class SLVPrepareCategoricalValues:
     published_job_role_labels_column_values = PublishedJobRoleLabels(
         AWKClean.main_job_role_clean_labelled
@@ -322,4 +340,18 @@ class SLVCleanCategoricalValues:
     )
     vacancies_filtering_rule_column_values = SLVFilteringRule(
         SLVCols.vacancies_filtering_rule
+    )
+
+
+@dataclass
+class EmploymentStatusEstimateCategoricalValues:
+    estimate_source_column_values = EmploymentStatusEstimateSource(
+        EmpStatus.estimated_percentage_source
+    )
+
+
+@dataclass
+class EmploymentStatusCleanCategoricalValues:
+    filtering_rule_column_values = EmploymentStatusFilteringRule(
+        EmpStatus.filtering_rule
     )

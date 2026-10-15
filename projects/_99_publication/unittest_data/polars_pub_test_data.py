@@ -6,7 +6,164 @@ import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_values.categorical_column_values import PrimaryServiceType
+from utils.column_values.categorical_column_values import (
+    PrimaryServiceType,
+    PublishedJobGroupLabels,
+    PublishedMainService,
+    PublishedRegion,
+)
+
+
+@dataclass
+class ReducedDataFilterTestCase:
+    id: str
+    today: date | None
+    fy_start_month: int
+    lookback_fy_years: int
+    quarter_months: tuple[int, ...]
+    input_data: list[date]
+    expected: list[bool]
+    cutoff_date: date | None = None
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+reduced_data_filter_test_cases = [
+    ReducedDataFilterTestCase(
+        id="default args",
+        today=date(2024, 6, 15),
+        fy_start_month=4,
+        lookback_fy_years=2,
+        quarter_months=(1, 4, 7, 10),
+        input_data=[
+            date(2021, 4, 1), # before monthly_start but quarterly rule matches -> included
+            date(2021, 5, 1), # before monthly_start, non-quarter -> excluded
+            date(2022, 3, 31), # before monthly_start and quarterly rule does not match -> excluded
+            date(2022, 4, 1), # at boundary (monthly_start) -> included
+            date(2023, 6, 1), # within range -> included
+        ],
+        expected=[True, False, False, True, True],
+    ),
+    ReducedDataFilterTestCase(
+        id="non_default_args",
+        today=date(2024, 6, 15),
+        fy_start_month=1,
+        lookback_fy_years=1,
+        quarter_months=(3, 6, 9, 12),
+        input_data=[
+            date(2022, 1, 1), # before monthly_start, non-quarter -> excluded
+            date(2022, 2, 1), # before monthly_start, non-quarter -> excluded
+            date(2022, 12, 1), # before monthly_start but quarterly rule matches -> included
+            date(2023, 3, 1), # before monthly_start and quarterly rule matches -> included
+            date(2024, 6, 1), # within range -> included
+        ],
+        expected=[False, False, True, True, True],
+    ),
+    ReducedDataFilterTestCase(
+        id="today_defaults_to_current_date",
+        today=None,
+        fy_start_month=4,
+        lookback_fy_years=2,
+        quarter_months=(1, 4, 7, 10),
+        input_data=[
+            date.today(),  # should be included as it's the current date
+            date(2021, 4, 1), # before monthly_start but quarterly rule matches -> included
+            date(2021, 5, 1), # before monthly_start, non-quarter -> excluded
+        ],
+        expected=[True, True, False],
+    ),
+    ReducedDataFilterTestCase(
+        id="cutoff_date_excludes_rows_before_given_date",
+        today=date(2024, 6, 15),
+        fy_start_month=4,
+        lookback_fy_years=2,
+        quarter_months=(1, 4, 7, 10),
+        cutoff_date=date(2020, 4, 1),
+        input_data=[
+            date(2019, 4, 1), # quarterly rule matches but before cutoff_date -> excluded
+            date(2020, 3, 31), # immediately before cutoff date -> excluded
+            date(2020, 4, 1), # at cutoff_date, quarterly rule matches -> included
+            date(2021, 4, 1), # before monthly_start but quarterly rule matches -> included
+            date(2022, 4, 1), # at boundary (monthly_start) -> included
+            date(2023, 6, 1), # within range -> included
+        ],
+        expected=[False, False, True, True, True, True],
+    ),
+]  # fmt: skip
+
+default_lookback_input_dates = [
+    date(2024, 4, 1),  # before monthly_start, quarterly month -> included
+    date(2024, 5, 1),  # before monthly_start, non-quarter -> excluded
+    date(2025, 3, 1),  # before monthly_start, non-quarter -> excluded
+    date(2025, 4, 1),  # at boundary (monthly_start) -> included
+    date(2025, 5, 1),  # within range -> included
+]
+default_lookback_expected = [True, False, False, True, True]
+
+
+@dataclass
+class HasConsistentServiceSinceDateTestCase:
+    id: str
+    from_date: date
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+_CH_NURSING = PrimaryServiceType.care_home_with_nursing
+_CH_ONLY = PrimaryServiceType.care_home_only
+_CH_NON_RES = PrimaryServiceType.non_residential
+
+has_consistent_service_since_date_test_cases = [
+    HasConsistentServiceSinceDateTestCase(
+        id="true_when_always_a_care_home_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-001", date(2025, 4, 1), _CH_NURSING, True),
+            ("1-001", date(2026, 4, 1), _CH_ONLY, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="true_when_never_a_care_home_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-002", date(2025, 4, 1), _CH_NON_RES, True),
+            ("1-002", date(2026, 4, 1), _CH_NON_RES, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="false_when_care_home_status_changes_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-003", date(2025, 4, 1), _CH_NURSING, False),
+            ("1-003", date(2026, 4, 1), _CH_NON_RES, False),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="ignores_a_status_change_before_the_window",
+        from_date=date(2026, 4, 1),
+        expected_data=[
+            ("1-004", date(2025, 4, 1), _CH_NURSING, True),
+            ("1-004", date(2026, 4, 1), _CH_NON_RES, True),
+            ("1-004", date(2026, 5, 1), _CH_NON_RES, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="ignores_a_null_service_type_in_the_window",
+        from_date=date(2025, 4, 1),
+        expected_data=[
+            ("1-006", date(2025, 4, 1), _CH_ONLY, True),
+            ("1-006", date(2026, 4, 1), None, True),
+        ],
+    ),
+    HasConsistentServiceSinceDateTestCase(
+        id="false_when_there_are_no_rows_in_the_window",
+        from_date=date(2027, 4, 1),
+        expected_data=[("1-005", date(2025, 4, 1), _CH_NURSING, False)],
+    ),
+]
 
 
 @dataclass
@@ -309,7 +466,8 @@ class AggregateToPublicationRowsTestCase:
         return pytest.param(self, id=self.id)
 
 
-_ALL_TRUE_FILTERS = (True, True, True, True, True, True, True)
+_ALL_TRUE_FILTERS = (True,) * 9
+_FAILS_CONSISTENT_SERVICE_FILTERS = (False,) * 3 + (True,) * 6
 _NURSE_LONDON_CARE_HOME = ("Registered nurse", "London", "Care home service")
 
 aggregate_to_publication_rows_test_cases = [
@@ -330,13 +488,7 @@ aggregate_to_publication_rows_test_cases = [
                 *_NURSE_LONDON_CARE_HOME,
                 20.0,
                 8.0,
-                False,  # consistent_service
-                True,
-                True,
-                True,
-                True,
-                True,
-                True,
+                *_FAILS_CONSISTENT_SERVICE_FILTERS,
             ),
         ],
         expected_data=[
@@ -368,7 +520,9 @@ aggregate_to_publication_rows_test_cases = [
                 *_NURSE_LONDON_CARE_HOME,
                 10.0,
                 5.0,
-                True,  # consistent_service
+                True,  # consistent_service_long_term
+                True,  # consistent_service_medium_term
+                True,  # consistent_service_short_term
                 True,  # ct_has_data_long_term
                 False,  # ct_has_data_medium_term
                 True,  # ct_has_data_short_term
@@ -396,9 +550,44 @@ aggregate_to_publication_rows_test_cases = [
         ],
     ),
     AggregateToPublicationRowsTestCase(
+        # 1-010 changed service type inside the medium term window only - each
+        # term uses its own consistent service flag.
+        id="each_term_uses_its_own_consistent_service_flag",
+        input_data=[
+            (
+                "1-010",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                5.0,
+                True,  # consistent_service_long_term
+                False,  # consistent_service_medium_term
+                True,  # consistent_service_short_term
+                *(True,) * 6,
+            ),
+        ],
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                1,
+                10.0,
+                1,
+                5.0,
+                0.0,
+                0,
+                0.0,
+                10.0,
+                1,
+                5.0,
+            ),
+        ],
+    ),
+    AggregateToPublicationRowsTestCase(
         # Both rows are the same location - publication_locationid_count must
-        # count distinct locations, not rows, while filled posts still sum
-        # across both.
+        # count distinct locations, not rows, and its location-level CT value
+        # once, while filled posts still sum across both.
         id="counts_distinct_locations_not_rows",
         input_data=[
             (
@@ -426,13 +615,13 @@ aggregate_to_publication_rows_test_cases = [
                 1,
                 25.0,
                 1,
-                10.0,
+                5.0,
                 25.0,
                 1,
-                10.0,
+                5.0,
                 25.0,
                 1,
-                10.0,
+                5.0,
             ),
         ],
     ),
@@ -574,6 +763,94 @@ aggregate_to_publication_rows_test_cases = [
             ),
         ],
     ),
+    AggregateToPublicationRowsTestCase(
+        # 1-007 has two rows (CT 5.0 each) and 1-008 has one (CT 3.0) - each
+        # location's CT value counts once, so 5.0 + 3.0 rather than 5.0 + 5.0 + 3.0.
+        id="ct_total_counts_each_location_once_across_multiple_locations",
+        input_data=[
+            (
+                "1-007",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "1-007",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                15.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "1-008",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                20.0,
+                3.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                45.0,
+                2,
+                45.0,
+                2,
+                8.0,
+                45.0,
+                2,
+                8.0,
+                45.0,
+                2,
+                8.0,
+            ),
+        ],
+    ),
+    AggregateToPublicationRowsTestCase(
+        # Every row of 1-009 fails the consistent service filters, so it adds
+        # nothing to any term's CT total however many rows it has.
+        id="ct_total_is_zero_when_a_location_fails_the_filters_on_all_its_rows",
+        input_data=[
+            (
+                "1-009",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                10.0,
+                5.0,
+                *_FAILS_CONSISTENT_SERVICE_FILTERS,
+            ),
+            (
+                "1-009",
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                15.0,
+                5.0,
+                *_FAILS_CONSISTENT_SERVICE_FILTERS,
+            ),
+        ],
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                *_NURSE_LONDON_CARE_HOME,
+                25.0,
+                1,
+                0.0,
+                0,
+                0.0,
+                0.0,
+                0,
+                0.0,
+                0.0,
+                0,
+                0.0,
+            ),
+        ],
+    ),
 ]
 
 
@@ -633,7 +910,7 @@ add_rows_for_publication_groups_test_cases = [
                 "London",
                 _CARE_HOME_WITH_NURSING,
                 20.0,
-                8.0,
+                5.0,
                 *_ALL_TRUE_FILTERS,
             ),
         ],
@@ -644,10 +921,10 @@ add_rows_for_publication_groups_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "All job roles",
+                PublishedJobGroupLabels.all_job_roles,
                 "London",
                 _CARE_HOME_WITH_NURSING,
-                *_all_terms_metrics(30.0, 1, 13.0),
+                *_all_terms_metrics(30.0, 1, 5.0),
             ),
         ],
     ),
@@ -685,14 +962,14 @@ add_rows_for_publication_groups_test_cases = [
                 date(2025, 4, 1),
                 "Registered nurse",
                 "London",
-                "All CQC locations",
+                PublishedMainService.all_locations,
                 *_all_terms_metrics(25.0, 2, 11.0),
             ),
             (
                 date(2025, 4, 1),
                 "Registered nurse",
                 "London",
-                "All CQC care homes",
+                PublishedMainService.all_care_homes,
                 *_all_terms_metrics(10.0, 1, 5.0),
             ),
         ],
@@ -731,7 +1008,7 @@ add_rows_for_publication_groups_test_cases = [
             (
                 date(2025, 4, 1),
                 "Registered nurse",
-                "England",
+                PublishedRegion.england,
                 _CARE_HOME_WITH_NURSING,
                 *_all_terms_metrics(22.0, 2, 11.0),
             ),
@@ -1039,4 +1316,821 @@ format_large_number_test_cases = [
         column_alias=Pub.assessment_filled_posts_long_term_formatted,
         expected_data=[(3500000.0, "3.500m")],
     ),
+]
+
+
+@dataclass
+class CalcPercChangeAgainstPeriodsAgoTestCase:
+    id: str
+    column_name: str
+    periods_back: int
+    group_columns: list[str]
+    column_alias: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+DOWNLOAD_TABLE_GROUP_COLUMNS = [
+    IndCQC.current_region,
+    IndCQC.primary_service_type,
+]
+_LONDON_CARE_HOME_WITH_NURSING = ("London", _CARE_HOME_WITH_NURSING)
+_SOUTH_WEST_NON_RES = ("South West", "Non-residential service")
+
+calc_perc_change_against_periods_ago_test_cases = [
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        id="change_is_measured_against_periods_back_rows_earlier",
+        column_name=Pub.publication_filled_posts,
+        periods_back=2,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=Pub.annual_percentage_change,
+        expected_data=[
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 100.0, None, None),
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 150.0, None, None),
+            (date(2025, 3, 1), *_LONDON_CARE_HOME_WITH_NURSING, 200.0, None, 1.0),
+        ],
+    ),
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        id="null_for_every_row_before_periods_back_have_elapsed",
+        column_name=Pub.publication_filled_posts,
+        periods_back=3,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=Pub.annual_percentage_change,
+        expected_data=[
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 100.0, None, None),
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 150.0, None, None),
+        ],
+    ),
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        id="null_when_the_earlier_value_is_zero",
+        column_name=Pub.publication_filled_posts,
+        periods_back=1,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=Pub.monthly_percentage_change,
+        expected_data=[
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 0.0, None, None),
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 50.0, None, None),
+        ],
+    ),
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        id="a_value_dropping_to_zero_is_a_full_decrease_not_a_null",
+        column_name=Pub.publication_filled_posts,
+        periods_back=1,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=Pub.monthly_percentage_change,
+        expected_data=[
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 100.0, None, None),
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 0.0, None, -1.0),
+        ],
+    ),
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        # Rows are deliberately out of date order within each group, so this
+        # only passes if the lag genuinely orders by import date rather than
+        # relying on physical row order.
+        id="groups_do_not_affect_each_other",
+        column_name=Pub.publication_filled_posts,
+        periods_back=1,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=Pub.monthly_percentage_change,
+        expected_data=[
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, 200.0, None, 1.0),
+            (date(2025, 2, 1), *_SOUTH_WEST_NON_RES, 25.0, None, -0.5),
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, 100.0, None, None),
+            (date(2025, 1, 1), *_SOUTH_WEST_NON_RES, 50.0, None, None),
+        ],
+    ),
+    CalcPercChangeAgainstPeriodsAgoTestCase(
+        id="honours_the_column_name_periods_back_group_columns_and_alias_arguments",
+        column_name=Pub.publication_locationid_count,
+        periods_back=1,
+        group_columns=DOWNLOAD_TABLE_GROUP_COLUMNS,
+        column_alias=Pub.annual_percentage_change,
+        expected_data=[
+            (date(2025, 1, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 40, None),
+            (date(2025, 2, 1), *_LONDON_CARE_HOME_WITH_NURSING, None, 60, 0.5),
+        ],
+    ),
+]
+
+
+@dataclass
+class BuildT0EstimatesDownloadTableTestCase:
+    id: str
+    today: date
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase:
+    id: str
+    today: date
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+_ALL_CQC_LOCATIONS = PublishedMainService.all_locations
+_ALL_CQC_CARE_HOMES = PublishedMainService.all_care_homes
+_ALL_JOB_ROLES = PublishedJobGroupLabels.all_job_roles
+_PUBLISHED_CARE_HOME_WITH_NURSING = PublishedMainService.care_home_with_nursing
+_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING = (
+    "London",
+    _PUBLISHED_CARE_HOME_WITH_NURSING,
+)
+
+# fy_start_month defaults to 4 (April), so this puts the financial year start
+# (and so the annual/monthly boundary) at 2026-04-01.
+_TODAY = date(2026, 10, 6)
+
+build_t0_estimates_download_table_test_cases = [
+    BuildT0EstimatesDownloadTableTestCase(
+        # One row per year historically (at the financial-year-start month,
+        # labelled as the year before - e.g. 2026-04-01 -> "Mar-26"), full
+        # monthly detail from the financial year start onwards. The
+        # 2025-07-01 row is a historical month other than the
+        # financial-year-start month, so it's dropped.
+        id="keeps_one_row_per_year_historically_and_full_monthly_for_the_current_financial_year",
+        today=_TODAY,
+        input_data=[
+            (date(2024, 4, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2025, 4, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 110.0, 11),
+            (date(2025, 7, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 999.0, 99),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 120.0, 12),
+            (date(2026, 5, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 121.0, 12),
+            (date(2026, 6, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 122.0, 13),
+        ],
+        expected_data=[
+            (date(2024, 4, 1), "Mar-24", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 100.0, 100.0, 10),
+            (date(2025, 4, 1), "Mar-25", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 110.0, 100.0, 11),
+            (date(2026, 4, 1), "Mar-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 120.0, 125.0, 12),
+            (date(2026, 5, 1), "Apr-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 121.0, 125.0, 12),
+            (date(2026, 6, 1), "May-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 122.0, 125.0, 13),
+        ],
+    ),
+    BuildT0EstimatesDownloadTableTestCase(
+        # The job-role rows are dropped - only the "All job roles" rollup
+        # feeds the download, which has no job-role breakdown.
+        id="filters_out_individual_job_role_rows",
+        today=_TODAY,
+        input_data=[
+            (date(2026, 4, 1), "Registered nurse", "London", _CARE_HOME_WITH_NURSING, 40.0, 10),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
+        ],
+        expected_data=[
+            (date(2026, 4, 1), "Mar-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 100.0, 100.0, 10),
+        ],
+    ),
+    BuildT0EstimatesDownloadTableTestCase(
+        # Region/service-type rollups are not job-role rows, so they pass
+        # through the "All job roles" filter like any other region/service.
+        id="keeps_region_and_service_type_rollup_rows",
+        today=_TODAY,
+        input_data=[
+            (date(2026, 4, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, "London", _ALL_CQC_CARE_HOMES, 150.0, 15),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, "London", _ALL_CQC_LOCATIONS, 200.0, 20),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, "England", _ALL_CQC_LOCATIONS, 500.0, 50),
+        ],
+        expected_data=[
+            (date(2026, 4, 1), "Mar-26", "England", _ALL_CQC_LOCATIONS, 500.0, 500.0, 50),
+            (date(2026, 4, 1), "Mar-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 100.0, 100.0, 10),
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_CARE_HOMES, 150.0, 150.0, 15),
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 200.0, 200.0, 20),
+        ],
+    ),
+    BuildT0EstimatesDownloadTableTestCase(
+        # Deliberately out of (period, region, main_service) order on input,
+        # and mixing an annual row with a current-financial-year monthly row
+        # - only passes if the output is genuinely sorted, not just passed
+        # through in input order.
+        id="sorts_by_period_then_region_then_main_service",
+        today=_TODAY,
+        input_data=[
+            (date(2026, 5, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 110.0, 11),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, "South West", _CARE_HOME_WITH_NURSING, 90.0, 9),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 100.0, 10),
+        ],
+        expected_data=[
+            (date(2026, 4, 1), "Mar-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 100.0, 100.0, 10),
+            (date(2026, 4, 1), "Mar-26", "South West", _PUBLISHED_CARE_HOME_WITH_NURSING, 90.0, 100.0, 9),
+            (date(2026, 5, 1), "Apr-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 110.0, 100.0, 11),
+        ],
+    ),
+]  # fmt: skip
+
+build_t1_filled_posts_perc_change_download_table_test_cases = [
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        # Every row here is an annual (financial-year-start-month) row, so
+        # annual_percentage_change is populated once a prior year exists and
+        # monthly_percentage_change stays null throughout - there's no
+        # monthly granularity to compare across annual rows.
+        id="annual_percentage_change_is_populated_for_annual_rows_monthly_change_stays_null",
+        today=_TODAY,
+        input_data=[
+            (date(2024, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 200.0, 15),
+        ],
+        expected_data=[
+            (date(2024, 4, 1), "Mar-24", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, "50.0%", None, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.3333333, "33.3%", None, None),
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        # The financial-year-start row itself is annual (both null, no prior
+        # year in this data) - every row after it is monthly, so
+        # monthly_percentage_change is populated and annual_percentage_change
+        # stays null. Monthly change is cumulative against the FY-start
+        # baseline (200.0), not month-over-month: the 2026-06-01 row's -0.01
+        # is (198-200)/200, not (198-220)/220.
+        id="monthly_percentage_change_is_populated_for_current_financial_year_rows_annual_change_stays_null",
+        today=_TODAY,
+        input_data=[
+            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 200.0, 15),
+            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 220.0, 16),
+            (date(2026, 6, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 198.0, 14),
+        ],
+        expected_data=[
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.1, "10.0%"),
+            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, -0.01, "-1.0%"),
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        # The first monthly row (2026-05-01) has no monthly row before it -
+        # its monthly change compares against the last annual row
+        # (2026-04-01), one month earlier, rather than being null.
+        id="first_monthly_row_compares_against_the_prior_annual_row",
+        today=_TODAY,
+        input_data=[
+            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 200.0, 15),
+            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 220.0, 16),
+        ],
+        expected_data=[
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 1.0, "100.0%", None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.1, "10.0%"),
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        id="filters_out_individual_job_role_rows_before_computing_change",
+        today=_TODAY,
+        input_data=[
+            (date(2026, 4, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 40.0, 5),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2026, 5, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 999.0, 99),
+            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
+        ],
+        expected_data=[
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.5, "50.0%"),
+        ],
+    ),
+]  # fmt: skip
+
+build_t2_location_count_perc_change_download_table_test_cases = [
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        id="annual_percentage_change_is_populated_for_annual_rows_monthly_change_stays_null",
+        today=_TODAY,
+        input_data=[
+            (date(2024, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 12),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 15),
+        ],
+        expected_data=[
+            (date(2024, 4, 1), "Mar-24", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.2, "20.0%", None, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.25, "25.0%", None, None),
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        # Monthly change is cumulative against the FY-start baseline (15),
+        # not month-over-month: the 2026-06-01 row's -0.0666667 is
+        # (14-15)/15, not (14-16)/16.
+        id="monthly_percentage_change_is_populated_for_current_financial_year_rows_annual_change_stays_null",
+        today=_TODAY,
+        input_data=[
+            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 15),
+            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 16),
+            (date(2026, 6, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 14),
+        ],
+        expected_data=[
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.0666667, "6.7%"),
+            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, -0.0666667, "-6.7%"),
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        id="first_monthly_row_compares_against_the_prior_annual_row",
+        today=_TODAY,
+        input_data=[
+            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 15),
+            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 16),
+        ],
+        expected_data=[
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, "50.0%", None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.0666667, "6.7%"),
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        id="filters_out_individual_job_role_rows_before_computing_change",
+        today=_TODAY,
+        input_data=[
+            (date(2026, 4, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 40.0, 5),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
+            (date(2026, 5, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 999.0, 99),
+            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
+        ],
+        expected_data=[
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, None, None),
+            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None, 0.2, "20.0%"),
+        ],
+    ),
+]  # fmt: skip
+
+
+@dataclass
+class RoundToPublicationBandsTestCase:
+    id: str
+    column_name: str
+    column_alias: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+round_to_publication_bands_test_cases = [
+    RoundToPublicationBandsTestCase(
+        id="value_below_ten_is_suppressed_as_null",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(5.0, None)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_just_below_ten_is_still_suppressed_as_null",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(9.99, None)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_of_exactly_ten_rounds_to_nearest_ten",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(10.0, 10.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_just_below_fifteen_still_in_the_nearest_ten_band",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(14.99, 10.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_of_exactly_fifteen_rounds_to_nearest_twenty_five",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(15.0, 25.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        # An exact half-way tie (37.5 is equidistant from 25 and 50) rounds
+        # away from zero to 50, not to the nearest even multiple (25) that
+        # polars' own .round() would give.
+        id="a_half_way_tie_rounds_away_from_zero_not_to_the_nearest_even_multiple",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(37.5, 50.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_just_below_five_hundred_still_in_the_nearest_twenty_five_band",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(499.99, 500.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_of_exactly_five_hundred_rounds_to_nearest_fifty",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(500.0, 500.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_just_below_one_thousand_still_in_the_nearest_fifty_band",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(999.99, 1000.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_of_exactly_one_thousand_rounds_to_nearest_hundred",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(1000.0, 1000.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_just_below_ten_thousand_still_in_the_nearest_hundred_band",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(9999.99, 10000.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_of_exactly_ten_thousand_rounds_to_nearest_five_hundred",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(10000.0, 10000.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_just_below_twenty_five_thousand_still_in_the_nearest_five_hundred_band",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(24999.99, 25000.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_of_exactly_twenty_five_thousand_rounds_to_nearest_thousand",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(25000.0, 25000.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_just_below_two_hundred_fifty_thousand_still_in_the_nearest_thousand_band",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(249999.99, 250000.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_of_exactly_two_hundred_fifty_thousand_rounds_to_nearest_five_thousand",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(250000.0, 250000.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_of_exactly_one_point_five_million_rounds_to_nearest_ten_thousand",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(1500000.0, 1500000.0)],
+    ),
+    RoundToPublicationBandsTestCase(
+        id="value_above_one_point_five_million_rounds_to_nearest_ten_thousand",
+        column_name=Pub.estimated_filled_posts,
+        column_alias=Pub.estimated_filled_posts_formatted,
+        expected_data=[(1999999.0, 2000000.0)],
+    ),
+]
+
+
+@dataclass
+class FormatPercentageTestCase:
+    id: str
+    column_name: str
+    column_alias: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+format_percentage_test_cases = [
+    FormatPercentageTestCase(
+        id="positive_fraction_formats_to_one_decimal_place",
+        column_name=Pub.annual_percentage_change,
+        column_alias=Pub.annual_percentage_change_formatted,
+        expected_data=[(0.032, "3.2%")],
+    ),
+    FormatPercentageTestCase(
+        id="negative_fraction_keeps_its_sign",
+        column_name=Pub.annual_percentage_change,
+        column_alias=Pub.annual_percentage_change_formatted,
+        expected_data=[(-0.008, "-0.8%")],
+    ),
+    FormatPercentageTestCase(
+        id="zero_formats_without_a_sign",
+        column_name=Pub.annual_percentage_change,
+        column_alias=Pub.annual_percentage_change_formatted,
+        expected_data=[(0.0, "0.0%")],
+    ),
+    FormatPercentageTestCase(
+        # A value that rounds to exactly zero from a negative input must not
+        # display a stray "-0.0%".
+        id="a_negative_value_that_rounds_to_zero_does_not_show_a_minus_sign",
+        column_name=Pub.annual_percentage_change,
+        column_alias=Pub.annual_percentage_change_formatted,
+        expected_data=[(-0.0001, "0.0%")],
+    ),
+    FormatPercentageTestCase(
+        # An exact half-way tie at the 1dp boundary (0.05% is equidistant
+        # from 0.0% and 0.1%) rounds away from zero to 0.1%.
+        id="a_half_way_tie_at_the_one_decimal_place_boundary_rounds_up",
+        column_name=Pub.annual_percentage_change,
+        column_alias=Pub.annual_percentage_change_formatted,
+        expected_data=[(0.0005, "0.1%")],
+    ),
+    FormatPercentageTestCase(
+        id="a_negative_half_way_tie_rounds_away_from_zero",
+        column_name=Pub.annual_percentage_change,
+        column_alias=Pub.annual_percentage_change_formatted,
+        expected_data=[(-0.0015, "-0.2%")],
+    ),
+    FormatPercentageTestCase(
+        id="null_stays_null_rather_than_becoming_the_string_null_percent",
+        column_name=Pub.monthly_percentage_change,
+        column_alias=Pub.monthly_percentage_change_formatted,
+        expected_data=[(None, None)],
+    ),
+]
+
+
+@dataclass
+class RoundPercentageTestCase:
+    id: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+round_percentage_test_cases = [
+    RoundPercentageTestCase(
+        id="fraction_becomes_a_percentage_rounded_to_one_decimal_place",
+        expected_data=[(0.0321, 3.2)],
+    ),
+    RoundPercentageTestCase(
+        id="a_half_way_tie_rounds_away_from_zero",
+        expected_data=[(0.0005, 0.1), (-0.0015, -0.2)],
+    ),
+    RoundPercentageTestCase(
+        id="a_negative_value_that_rounds_to_zero_is_positive_zero",
+        expected_data=[(-0.0001, 0.0)],
+    ),
+    RoundPercentageTestCase(
+        id="null_stays_null",
+        expected_data=[(None, None)],
+    ),
+]
+
+
+@dataclass
+class GetPublicationDateTestCase:
+    id: str
+    latest_import_date: date
+    expected: date
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+get_publication_date_test_cases = [
+    GetPublicationDateTestCase(
+        id="returns_15th_of_the_import_date_month",
+        latest_import_date=date(2026, 9, 1),
+        expected=date(2026, 9, 15),
+    ),
+    GetPublicationDateTestCase(
+        id="rolls_to_monday_when_15th_is_saturday",
+        latest_import_date=date(2026, 8, 1),
+        expected=date(2026, 8, 17),
+    ),
+    GetPublicationDateTestCase(
+        id="rolls_to_monday_when_15th_is_sunday",
+        latest_import_date=date(2026, 2, 1),
+        expected=date(2026, 2, 16),
+    ),
+    GetPublicationDateTestCase(
+        id="skips_consecutive_bank_holidays_when_15th_is_good_friday",
+        latest_import_date=date(2022, 4, 1),
+        expected=date(2022, 4, 19),
+    ),
+]
+
+
+@dataclass
+class FormatPublicationDateTestCase:
+    id: str
+    publication_date: date
+    expected: str
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+format_publication_date_test_cases = [
+    FormatPublicationDateTestCase(
+        id="formats_date_as_month_ordinal_day_year",
+        publication_date=date(2026, 9, 15),
+        expected="September 15th 2026",
+    ),
+    FormatPublicationDateTestCase(
+        id="uses_st_suffix_for_21st",
+        publication_date=date(2026, 9, 21),
+        expected="September 21st 2026",
+    ),
+    FormatPublicationDateTestCase(
+        id="uses_th_suffix_for_teens",
+        publication_date=date(2026, 9, 11),
+        expected="September 11th 2026",
+    ),
+]
+
+
+@dataclass
+class PrepareTableForPublicationTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+prepare_t0_for_publication_test_cases = [
+    PrepareTableForPublicationTestCase(
+        id="t0_publishes_rounded_posts_not_unrounded",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                1234.0,
+                1200.0,
+                30,
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 1200.0, 30),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="suppressed_posts_render_as_less_than_10_not_zero",
+        input_data=[
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 4.0, None, 1),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, "< 10", 1),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="posts_at_10_or_above_stay_numeric",
+        input_data=[
+            (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 10.0, 10.0, 1),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 10.0, 1),
+        ],
+    ),
+]
+
+prepare_perc_change_for_publication_test_cases = [
+    PrepareTableForPublicationTestCase(
+        id="null_percentage_change_renders_as_x",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                None,
+                None,
+                None,
+                None,
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, "[x]", "[x]"),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="rounds_percentage_change_to_one_decimal_place",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                0.0321,
+                "3.2%",
+                -0.0049,
+                "-0.5%",
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 0.032, -0.005),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="rounds_percentage_change_half_away_from_zero",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                0.0125,
+                "1.3%",
+                -0.0125,
+                "-1.3%",
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 0.013, -0.013),
+        ],
+    ),
+    PrepareTableForPublicationTestCase(
+        id="non_null_percentage_change_stays_fraction",
+        input_data=[
+            (
+                date(2026, 4, 1),
+                "Mar-26",
+                "London",
+                _ALL_CQC_LOCATIONS,
+                0.032,
+                "3.2%",
+                -0.008,
+                "-0.8%",
+            ),
+        ],
+        expected_data=[
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, 0.032, -0.008),
+        ],
+    ),
+]
+
+
+# Raw period dates are CQC import dates, one month ahead of their labels,
+# so the latest here is 2026-09-01 (Aug-26) and it publishes on 2026-09-15.
+download_workbook_t0_data = [
+    (
+        date(2026, 8, 1),
+        "Jul-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        1234567.0,
+        1230000.0,
+        22000,
+    ),
+    (
+        date(2026, 9, 1),
+        "Aug-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        1240000.0,
+        1240000.0,
+        22100,
+    ),
+    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, 5.0, None, 3),
+]
+download_workbook_perc_change_data = [
+    (
+        date(2026, 8, 1),
+        "Jul-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        None,
+        None,
+        0.0123,
+        "1.2%",
+    ),
+    (
+        date(2026, 9, 1),
+        "Aug-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        0.0321,
+        "3.2%",
+        0.0045,
+        "0.5%",
+    ),
+    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, None, None, None, None),
+]
+
+download_workbook_t2_perc_change_data = [
+    (
+        date(2026, 8, 1),
+        "Jul-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        None,
+        None,
+        0.0201,
+        "2.0%",
+    ),
+    (
+        date(2026, 9, 1),
+        "Aug-26",
+        "England",
+        _ALL_CQC_LOCATIONS,
+        0.0654,
+        "6.5%",
+        0.0112,
+        "1.1%",
+    ),
+    (date(2026, 9, 1), "Aug-26", "London", _ALL_CQC_LOCATIONS, None, None, None, None),
 ]

@@ -18,8 +18,8 @@ COMPARE_COLS_TO_IMPORT = [
 METRIC = IndCqcColumns.estimate_filled_posts_by_job_role
 
 EMPLOYMENT_STATUS_SPLIT_COLUMNS = [
-    EmpStatus.estimated_emp_stat_perm,
-    EmpStatus.estimated_emp_stat_temp,
+    EmpStatus.estimated_emp_stat_permanent,
+    EmpStatus.estimated_emp_stat_temporary,
     EmpStatus.estimated_emp_stat_bank_or_pool,
     EmpStatus.estimated_emp_stat_agency,
     EmpStatus.estimated_emp_stat_other,
@@ -61,10 +61,16 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        ).col_vals_ge(
+        )
+        .col_vals_ge(
             columns=EMPLOYMENT_STATUS_SPLIT_COLUMNS,
             value=0,
             brief="Employment status split columns are non-negative",
+        )
+        .col_vals_ge(
+            EmpStatus.estimated_employees,
+            0,
+            brief="estimated_employees is non-negative",
         )
     )
     for column in EMPLOYMENT_STATUS_SPLIT_COLUMNS:
@@ -80,6 +86,17 @@ def main(
             <= pl.col(METRIC).abs() * EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE
         ),
         brief="Employment status splits sum back to the filled-post metric",
+    )
+
+    employees_sum = pl.col(EmpStatus.estimated_emp_stat_permanent) + pl.col(
+        EmpStatus.estimated_emp_stat_temporary
+    )
+    validation = validation.col_vals_expr(
+        expr=(
+            (pl.col(EmpStatus.estimated_employees) - employees_sum).abs()
+            <= employees_sum.abs() * EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE
+        ),
+        brief="estimated_employees equals estimated_emp_stat_permanent + estimated_emp_stat_temporary",
     ).interrogate()
 
     vl.write_reports(validation, bucket_name, reports_path)

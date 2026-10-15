@@ -11,6 +11,41 @@ from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
+class TestReducedDataFilterExpr:
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.reduced_data_filter_test_cases],
+    )
+    def test_function_returns_expected_values(self, case):
+        date_col = IndCQC.cqc_location_import_date
+
+        expr = job.reduced_data_filter_expr(
+            today=case.today,
+            fy_start_month=case.fy_start_month,
+            lookback_fy_years=case.lookback_fy_years,
+            quarter_months=case.quarter_months,
+            date_col=date_col,
+            cutoff_date=case.cutoff_date,
+        )
+
+        df = pl.DataFrame({date_col: case.input_data})
+
+        result = df.with_columns(expr.alias("keep"))
+
+        assert result["keep"].to_list() == case.expected
+
+    def test_function_keeps_monthly_data_from_previous_financial_year_by_default(
+        self,
+    ):
+        date_col = IndCQC.cqc_location_import_date
+        expr = job.reduced_data_filter_expr(today=date(2026, 10, 14))
+
+        df = pl.DataFrame({date_col: Data.default_lookback_input_dates})
+        result = df.with_columns(expr.alias("keep"))
+
+        assert result["keep"].to_list() == Data.default_lookback_expected
+
+
 class TestHasContinuousDataSinceDate:
     has_continuous_data_since_data_schema = pl.Schema(
         [
@@ -40,6 +75,51 @@ class TestHasContinuousDataSinceDate:
         returned_lf = test_lf.with_columns(
             job.has_continuous_data_since_date(
                 case.column_name, case.from_date, case.column_alias
+            )
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestHasConsistentServiceSinceDate:
+    schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (
+                IndCQC.primary_service_type,
+                pl.Enum(
+                    [
+                        PrimaryServiceType.care_home_with_nursing,
+                        PrimaryServiceType.care_home_only,
+                        PrimaryServiceType.non_residential,
+                    ]
+                ),
+            ),
+        ]
+    )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.has_consistent_service_since_date_test_cases
+        ],
+    )
+    def test_flags_locations_with_a_single_primary_service_type_since_a_given_date(
+        self, case
+    ):
+        expected_schema = pl.Schema(
+            list(self.schema.items())
+            + [(Pub.consistent_service_short_term, pl.Boolean())]
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+
+        test_lf = expected_lf.drop(Pub.consistent_service_short_term)
+
+        returned_lf = test_lf.with_columns(
+            job.has_consistent_service_since_date(
+                case.from_date, Pub.consistent_service_short_term
             )
         )
 
@@ -109,7 +189,9 @@ class TestAggregateToPublicationRows:
                 pl.Float32(),
             ),
             (Pub.ct_total_employed_imputed, pl.Float32()),
-            (Pub.consistent_service, pl.Boolean()),
+            (Pub.consistent_service_long_term, pl.Boolean()),
+            (Pub.consistent_service_medium_term, pl.Boolean()),
+            (Pub.consistent_service_short_term, pl.Boolean()),
             (Pub.ct_has_data_long_term, pl.Boolean()),
             (Pub.ct_has_data_medium_term, pl.Boolean()),
             (Pub.ct_has_data_short_term, pl.Boolean()),
@@ -166,13 +248,7 @@ class TestAggregateToPublicationRows:
                     "Care home with nursing",
                     10.0,
                     5.0,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
+                    *[True] * 9,
                 ),
                 (
                     "1-101",
@@ -181,14 +257,8 @@ class TestAggregateToPublicationRows:
                     "London",
                     "Care home with nursing",
                     20.0,
-                    8.0,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
-                    True,
+                    5.0,
+                    *[True] * 9,
                 ),
             ],
             self.input_schema,
@@ -232,13 +302,13 @@ class TestAggregateToPublicationRows:
                     1,
                     30.0,
                     1,
-                    13.0,
+                    5.0,
                     30.0,
                     1,
-                    13.0,
+                    5.0,
                     30.0,
                     1,
-                    13.0,
+                    5.0,
                 ),
             ],
             expected_schema,
@@ -268,7 +338,9 @@ class TestAddRowsForPublicationGroups:
                 pl.Float32(),
             ),
             (Pub.ct_total_employed_imputed, pl.Float32()),
-            (Pub.consistent_service, pl.Boolean()),
+            (Pub.consistent_service_long_term, pl.Boolean()),
+            (Pub.consistent_service_medium_term, pl.Boolean()),
+            (Pub.consistent_service_short_term, pl.Boolean()),
             (Pub.ct_has_data_long_term, pl.Boolean()),
             (Pub.ct_has_data_medium_term, pl.Boolean()),
             (Pub.ct_has_data_short_term, pl.Boolean()),
@@ -398,6 +470,220 @@ class TestCalcPercChangeCumulativeFromGivenPeriodOnwards:
             job.calc_perc_change_cumulative_from_given_period_onwards(
                 case.column_name, case.from_date, case.group_columns, case.column_alias
             )
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestCalcPercChangeAgainstPeriodsAgo:
+    perc_change_schema = pl.Schema(
+        [
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+            (Pub.publication_filled_posts, pl.Float32()),
+            (Pub.publication_locationid_count, pl.UInt32()),
+        ]
+    )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.calc_perc_change_against_periods_ago_test_cases
+        ],
+    )
+    def test_returns_percentage_change_against_the_row_periods_back_earlier(self, case):
+        expected_schema = pl.Schema(
+            list(self.perc_change_schema.items()) + [(case.column_alias, pl.Float32())]
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+
+        test_lf = expected_lf.drop(case.column_alias)
+
+        returned_lf = test_lf.with_columns(
+            job.calc_perc_change_against_periods_ago(
+                case.column_name,
+                case.periods_back,
+                case.group_columns,
+                case.column_alias,
+            )
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestBuildT0EstimatesDownloadTable:
+    input_schema = pl.Schema(
+        [
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+            (Pub.publication_filled_posts, pl.Float32()),
+            (Pub.publication_locationid_count, pl.UInt32()),
+        ]
+    )
+    expected_schema = pl.Schema(
+        [
+            (Pub.period, pl.Date()),
+            (Pub.period_label, pl.String()),
+            (Pub.region, pl.String()),
+            (Pub.main_service, pl.String()),
+            (Pub.estimated_filled_posts, pl.Float32()),
+            (Pub.estimated_filled_posts_formatted, pl.Float32()),
+            (Pub.cqc_locations, pl.UInt32()),
+        ]
+    )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.build_t0_estimates_download_table_test_cases
+        ],
+    )
+    def test_returns_expected_data(self, case):
+        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
+
+        returned_lf = job.build_t0_estimates_download_table(input_lf, today=case.today)
+
+        expected_lf = pl.LazyFrame(
+            case.expected_data, self.expected_schema, orient="row"
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_output_has_no_duplicate_period_region_main_service_keys(self):
+        input_lf = pl.LazyFrame(
+            [
+                (date(2026, 4, 1), "All job roles", "London", "Care home service", 100.0, 10),
+                (date(2026, 4, 1), "Registered nurse", "London", "Care home service", 40.0, 10),
+                (date(2026, 4, 1), "All job roles", "London", "Non-residential service", 50.0, 5),
+                (date(2026, 4, 1), "All job roles", "South West", "Care home service", 60.0, 6),
+                (date(2026, 5, 1), "All job roles", "London", "Care home service", 110.0, 11),
+            ],
+            self.input_schema,
+            orient="row",
+        )  # fmt: skip
+
+        returned_df = job.build_t0_estimates_download_table(
+            input_lf, today=date(2026, 10, 6)
+        ).collect()
+
+        key_columns = [Pub.period, Pub.region, Pub.main_service]
+        assert returned_df.height == returned_df.select(key_columns).n_unique()
+
+
+class TestBuildT1FilledPostsPercChangeDownloadTable:
+    input_schema = TestBuildT0EstimatesDownloadTable.input_schema
+    expected_schema = pl.Schema(
+        [
+            (Pub.period, pl.Date()),
+            (Pub.period_label, pl.String()),
+            (Pub.region, pl.String()),
+            (Pub.main_service, pl.String()),
+            (Pub.annual_percentage_change, pl.Float32()),
+            (Pub.annual_percentage_change_formatted, pl.String()),
+            (Pub.monthly_percentage_change, pl.Float32()),
+            (Pub.monthly_percentage_change_formatted, pl.String()),
+        ]
+    )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.build_t1_filled_posts_perc_change_download_table_test_cases
+        ],
+    )
+    def test_returns_expected_data(self, case):
+        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
+
+        returned_lf = job.build_t1_filled_posts_perc_change_download_table(
+            input_lf, today=case.today
+        )
+
+        expected_lf = pl.LazyFrame(
+            case.expected_data, self.expected_schema, orient="row"
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestBuildT2LocationCountPercChangeDownloadTable:
+    input_schema = TestBuildT0EstimatesDownloadTable.input_schema
+    expected_schema = TestBuildT1FilledPostsPercChangeDownloadTable.expected_schema
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.build_t2_location_count_perc_change_download_table_test_cases
+        ],
+    )
+    def test_returns_expected_data(self, case):
+        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
+
+        returned_lf = job.build_t2_location_count_perc_change_download_table(
+            input_lf, today=case.today
+        )
+
+        expected_lf = pl.LazyFrame(
+            case.expected_data, self.expected_schema, orient="row"
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestRoundToPublicationBands:
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.round_to_publication_bands_test_cases],
+    )
+    def test_rounds_to_the_publication_controlled_rounding_bands(self, case):
+        expected_schema = pl.Schema(
+            [(case.column_name, pl.Float32()), (case.column_alias, pl.Float32())]
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+
+        test_lf = expected_lf.drop(case.column_alias)
+
+        returned_lf = test_lf.with_columns(
+            job.round_to_publication_bands(case.column_name, case.column_alias)
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestRoundPercentage:
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.round_percentage_test_cases],
+    )
+    def test_function_rounds_a_fraction_to_a_one_decimal_place_percentage(self, case):
+        schema = pl.Schema([("fraction", pl.Float64()), ("percentage", pl.Float64())])
+        expected_lf = pl.LazyFrame(case.expected_data, schema, orient="row")
+
+        returned_lf = expected_lf.select("fraction").with_columns(
+            job.round_percentage("fraction").alias("percentage")
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestFormatPercentage:
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.format_percentage_test_cases],
+    )
+    def test_formats_a_percentage_fraction_for_display(self, case):
+        expected_schema = pl.Schema(
+            [(case.column_name, pl.Float32()), (case.column_alias, pl.String())]
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+
+        test_lf = expected_lf.drop(case.column_alias)
+
+        returned_lf = test_lf.with_columns(
+            job.format_percentage(case.column_name, case.column_alias)
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

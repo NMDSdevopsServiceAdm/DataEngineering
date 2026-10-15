@@ -13,9 +13,9 @@ class TestCalculationConstants(unittest.TestCase):
     def test_calculation_constants(self):
         expected_schema = pl.Schema(
             {
-                DP.YEAR_AS_INTEGER: pl.Int32,
-                DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
-                DP.ESTIMATE_USING_MEAN: pl.Float32,
+                DP.year_as_integer: pl.Int32,
+                DP.proportion_employing_staff: pl.Float32,
+                DP.estimate_using_mean: pl.Float32,
             }
         )
         expected_lf = pl.LazyFrame(
@@ -30,7 +30,7 @@ class TestCalculationConstants(unittest.TestCase):
             schema=expected_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop(DP.ESTIMATE_USING_MEAN)
+        test_lf = expected_lf.drop(DP.estimate_using_mean)
         returned_lf = job.model_using_mean(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

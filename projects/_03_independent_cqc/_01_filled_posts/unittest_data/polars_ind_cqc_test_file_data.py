@@ -6,7 +6,14 @@ from typing import Any, Optional
 import numpy as np
 import pytest
 
+from projects._03_independent_cqc._01_filled_posts._04_model.utils.value_labels import (
+    ModelTypes,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ModelEvaluationColumns as ModelEvaluation,
+)
+from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 from utils.column_values.ascwds_labelled_vocab import MainJobRoleLabels
 from utils.column_values.categorical_column_values import (
     RUI,
@@ -108,37 +115,6 @@ class FeaturesEngineeringUtilsData:
     ]
     expected_add_array_column_count_with_null_value_rows = [
         ("1-001", None, 0),
-    ]
-
-    add_date_index_column_same_index_for_same_date_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
-    ]
-    expected_add_date_index_column_same_index_for_same_date_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 1),
-    ]
-
-    add_date_index_column_applies_incremental_index_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0003", CareHome.not_care_home, date(2025, 2, 1)),
-    ]
-    expected_add_date_index_column_applies_incremental_index_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0003", CareHome.not_care_home, date(2025, 2, 1), 2),
-    ]
-
-    add_date_index_column_indexes_by_care_home_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0002", CareHome.not_care_home, date(2025, 2, 1)),
-        ("1-0003", CareHome.care_home, date(2025, 2, 1)),
-    ]
-    expected_add_date_index_column_indexes_by_care_home_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 12, 1), 1),
-        ("1-0002", CareHome.not_care_home, date(2025, 2, 1), 2),
-        ("1-0003", CareHome.care_home, date(2025, 2, 1), 1),
     ]
 
     cap_integer_at_max_value_rows = [
@@ -249,17 +225,6 @@ class FeaturesEngineeringUtilsData:
 
 @dataclass
 class ModelTrainingUtilsData:
-    split_train_test_rows = [
-        ("1-001", 10.0),
-        ("1-001", 11.0),
-        ("1-002", 20.0),
-        ("1-002", 21.0),
-        ("1-003", 30.0),
-        ("1-003", 31.0),
-        ("1-004", 40.0),
-        ("1-004", 41.0),
-    ]
-
     convert_dataframe_to_numpy_basic_rows = [
         ("1-001", 1, 10, 5.0),
         ("1-002", 2, 20, 6.0),
@@ -372,10 +337,10 @@ class ValidateMergeIndCQCData:
 class ValidateCleanIndCQCData:
 
     cleaned_ind_cqc_data_rows = [
-        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
-        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
-        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
-        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff, 1, 1.0, 1.0, CTFilteringRule.populated, CTFilteringRule.populated, 5, 5),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff, 1, 1.0, 1.0, CTFilteringRule.populated, CTFilteringRule.populated, 5, 5),
+        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff, 1, 1.0, 1.0, CTFilteringRule.populated, CTFilteringRule.populated, 5, 5),
+        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", AscwdsFilteringRule.populated, "specialist", "specialist", "specialist", 1, 1.0, ASCWDSFilledPostsSource.worker_records_and_total_staff, 1, 1.0, 1.0, CTFilteringRule.populated, CTFilteringRule.populated, 5, 5),
     ] # fmt: skip
 
     merged_ind_cqc_data_rows = [
@@ -406,10 +371,10 @@ class ValidateImputedIndCqcAscwdsAndPir:
     # columns null, covering the na_pass path. The imputed capacity tracker values are
     # deliberately below 1, which the cleaned columns they impute cannot be.
     imputed_ind_cqc_ascwds_and_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  1.0,  5.0,  5.0,  None, 1.0,  5.0,  5.0,  1.0,  0.5,  None),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, 5.0,  5.0,  5.0,  5.0,  None, 5.0,  5.0,  1.0,  None, 0.5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  None, None, None, None, None, None, None, None, None, None),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, None, None, None, None, None, None, None, None, None, None),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  1.0,  5.0,  5.0,  None, 1.0,  5.0,  0.0,  5.0,  5.0,  1.0,  0.5,  None),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, 5.0,  5.0,  5.0,  5.0,  None, 5.0,  0.0,  5.0,  5.0,  1.0,  None, 0.5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  None, None, None, None, None, None, None, None, None, None, None, None),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, None, None, None, None, None, None, None, None, None, None, None, None),
     ] # fmt: skip
 
 
@@ -423,10 +388,10 @@ class ValidateEstimatedIndCQCFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, "run_1", 5.0, 5.0, 5.0, 5.0, "run_1", 5.0, "run_1", 5.0, 5.0, 5.0, IndCQC.ct_non_res_all_posts, [Services.care_home_service_without_nursing]),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, "run_1", 5.0, 5.0, 5.0, 5.0, "run_1", 5.0, "run_1", 5.0, 5.0, 5.0, IndCQC.ct_non_res_all_posts, [Services.care_home_service_without_nursing]),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, "run_1", 5.0, 5.0, 5.0, 5.0, "run_1", 5.0, "run_1", 5.0, 5.0, 5.0, IndCQC.ct_non_res_all_posts, [Services.care_home_service_without_nursing]),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), CurrentCSSR.barking_and_dagenham, Region.london, 5, 5, 5, ASCWDSFilledPostsSource.worker_records_and_total_staff, 5.0, 5.0, 5, 5.0, 5.0, EstimateFilledPostsSource.ascwds_pir_merged, 5.0, 5.0, "run_1", 5.0, 5.0, 5.0, 5.0, "run_1", 5.0, "run_1", 5.0, 5.0, 5.0, IndCQC.ct_non_res_all_posts, [Services.care_home_service_without_nursing]),
     ] # fmt: skip
 
 
@@ -1041,6 +1006,16 @@ class SelectGroupedProvidersCase:
 
 
 @dataclass
+class UpdateGroupedProvidersHistoryCase:
+    id: str
+    new_rows: list[tuple]
+    populated_location_ids: list[str]
+    history_rows: list[tuple]
+    snapshot_date: date
+    expected_rows: list[tuple]
+
+
+@dataclass
 class NullGroupedProvidersData:
 
     # Feb 2024 (the max date) is designed so that loc 1 (care home) and loc 4 (non-res)
@@ -1056,6 +1031,21 @@ class NullGroupedProvidersData:
         ("loc 2", "prov 1", "Location Two", date(2024, 2, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
         ("loc 4", "prov 2", "Location Four", date(2024, 2, 1), "N", "estab 4", "nmdsid_2", 60.0, 60.0, None, None, AscwdsFilteringRule.populated, 10.0),
         ("loc 5", "prov 2", "Location Five", date(2024, 2, 1), "N", None, None, None, None, None, None, AscwdsFilteringRule.missing_data, None),
+    ] # fmt: skip
+
+    # Feb 2024 (the max date) flags nothing: loc 1 stays below the minimum size, so its
+    # earlier "problem" should become "fixed" with a fixed date.
+    null_grouped_providers_no_flags_in_latest_month_rows = [
+        ("loc 1", "prov 1", "Location One", date(2024, 1, 1), "Y", "estab 1", "nmdsid_1", 13.0, 13.0, 4, 3.25, AscwdsFilteringRule.populated, 1.0),
+        ("loc 2", "prov 1", "Location Two", date(2024, 1, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
+        ("loc 1", "prov 1", "Location One", date(2024, 2, 1), "Y", "estab 1", "nmdsid_1", 14.0, 14.0, 4, 3.5, AscwdsFilteringRule.populated, 1.0),
+        ("loc 2", "prov 1", "Location Two", date(2024, 2, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
+    ] # fmt: skip
+    grouped_providers_history_before_no_flags_in_latest_month_rows = [
+        (date(2024, 1, 1), "prov 1", 2, "loc 1", "nmdsid_1", "Location One", "Y", 13.0, 4, 8, None, "problem", date(2024, 1, 1), None),
+    ] # fmt: skip
+    expected_grouped_providers_after_no_flags_in_latest_month_rows = [
+        (date(2024, 1, 1), "prov 1", 2, "loc 1", "nmdsid_1", "Location One", "Y", 13.0, 4, 8, None, "fixed", date(2024, 1, 1), date(2024, 2, 1)),
     ] # fmt: skip
 
     input_grouped_provider_rows = [
@@ -1127,77 +1117,223 @@ class NullGroupedProvidersData:
         ("1-008", CareHome.not_care_home, True, 50.0, None, 10.0, 2, 25.0, AscwdsFilteringRule.contained_invalid_missing_data_code),  # already filtered
     ] # fmt: skip
 
-    # Each case includes an unrelated anchor row at the max import date (2026-02-01)
-    # so that the max-date filter has something real to compare against.
+    # Most cases have one flagged row at 2026-02-01, which is itself the latest month;
+    # cases needing a later latest month include an unflagged row at that date.
     select_grouped_providers_test_cases = [
         SelectGroupedProvidersCase(
             id="keeps_care_home_location_actually_nulled_at_max_import_date",
             input_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
             ],
             expected_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, "problem", date(2026, 2, 1), None),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, "problem", date(2026, 2, 1), None),
             ],
         ),
         SelectGroupedProvidersCase(
             id="keeps_non_res_location_actually_nulled_at_max_import_date",
             input_rows=[
-                (date(2026, 2, 1), "prov-2", 2, "1-005", "nmdsid_5", "Location Five", "N", 1.0, 0, None, AscwdsFilteringRule.non_res_location_was_grouped_provider),
+                (date(2026, 2, 1), "prov-2", 2, "1-005", "nmdsid_5", "Location Five", "N", 1.0, 0, 0, None, AscwdsFilteringRule.non_res_location_was_grouped_provider),
             ],
             expected_rows=[
-                (date(2026, 2, 1), "prov-2", 2, "1-005", "nmdsid_5", "Location Five", "N", 1.0, 0, None, "problem", date(2026, 2, 1), None),
+                (date(2026, 2, 1), "prov-2", 2, "1-005", "nmdsid_5", "Location Five", "N", 1.0, 0, 0, None, "problem", date(2026, 2, 1), None),
             ],
         ),
         SelectGroupedProvidersCase(
             id="excludes_potential_grouped_provider_that_was_not_actually_nulled",
             input_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-002", "nmdsid_2", "Location Two", "N", 1.0, 0, None, AscwdsFilteringRule.populated),
+                (date(2026, 2, 1), "prov-1", 2, "1-002", "nmdsid_2", "Location Two", "N", 1.0, 0, 0, None, AscwdsFilteringRule.populated),
             ],
             expected_rows=[],
         ),
         SelectGroupedProvidersCase(
             id="excludes_location_nulled_at_an_earlier_import_date_than_the_latest_snapshot",
             input_rows=[
-                (date(2026, 1, 1), "prov-1", 2, "1-001", "nmdsid_1", "Location One", "N", 1.0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                (date(2026, 1, 1), "prov-1", 2, "1-001", "nmdsid_1", "Location One", "N", 1.0, 0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
             ],
             expected_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, "problem", date(2026, 2, 1), None),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, "problem", date(2026, 2, 1), None),
             ],
         ),
         SelectGroupedProvidersCase(
             id="excludes_earlier_year_row_even_when_month_number_is_higher",
             input_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-                (date(2025, 3, 1), "prov-1", 2, "1-008", "nmdsid_7", "Location Eight", "N", 1.0, 0, None, AscwdsFilteringRule.non_res_location_was_grouped_provider),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                (date(2025, 3, 1), "prov-1", 2, "1-008", "nmdsid_7", "Location Eight", "N", 1.0, 0, 0, None, AscwdsFilteringRule.non_res_location_was_grouped_provider),
             ],
             expected_rows=[
-                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, None, "problem", date(2026, 2, 1), None),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", 1.0, 0, 0, None, "problem", date(2026, 2, 1), None),
             ],
+        ),
+        SelectGroupedProvidersCase(
+            id="excludes_location_flagged_earlier_when_nothing_is_flagged_in_latest_month",
+            input_rows=[
+                (date(2026, 1, 1), "prov-1", 2, "1-001", "nmdsid_1", "Location One", "N", 1.0, 0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                (date(2026, 2, 1), "prov-1", 2, "1-002", "nmdsid_2", "Location Two", "N", 1.0, 0, 0, None, AscwdsFilteringRule.populated),
+            ],
+            expected_rows=[],
         ),
     ]  # fmt: skip
 
-    # All rows have grouped_provider_status = "problem" and last_update_date = their import date.
+    # All rows have grouped_provider_status = "problem" and grp_prov_identified_date = their import date.
     new_grouped_providers_rows = [
-        (date(2026, 2, 1), "prov-1", 2, "1-001", "nmds_1", "Location One", "N", 10.0, 0, None, "problem", date(2026, 2, 1), None),
-        (date(2026, 2, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, None, "problem", date(2026, 2, 1), None),
-        (date(2026, 2, 1), "prov-3", 2, "1-004", "nmds_4", "Location Four", "N", 40.0, 0, None, "problem", date(2026, 2, 1), None),
+        (date(2026, 2, 1), "prov-1", 2, "1-001", "nmds_1", "Location One", "N", 10.0, 0, 0, None, "problem", date(2026, 2, 1), None),
+        (date(2026, 2, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, 0, None, "problem", date(2026, 2, 1), None),
+        (date(2026, 2, 1), "prov-3", 2, "1-004", "nmds_4", "Location Four", "N", 40.0, 0, 0, None, "problem", date(2026, 2, 1), None),
     ]  # fmt: skip
 
-    # historical_grouped_providers_rows: what was previously saved to the grouped providers dataset.
-    historical_grouped_providers_rows = [
-        (date(2026, 1, 1), "prov-1", 2, "1-001", "nmds_1", "Location One", "N", 10.0, 0, None, "problem", date(2026, 1, 1), None), # Still active problem — should be retained as-is (oldest kept, last_update_date stays same).
-        (date(2026, 1, 1), "prov-1", 2, "1-002", "nmds_2", "Location Two", "N", 20.0, 0, None, "problem", date(2026, 1, 1), None), # Dropped off — not in new snapshot, should be flipped to "fixed".
-        (date(2026, 1, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, None, "fixed", date(2026, 1, 1), date(2026, 1, 1)), # Re-appearing — was fixed, now back as "problem" in new snapshot; new row appended.
+    # Input rows use select_grouped_providers_input_schema's shape.
+    select_locations_populated_this_month_test_cases = [
+        SelectGroupedProvidersCase(
+            id="includes_location_populated_at_latest_snapshot",
+            input_rows=[
+                (date(2026, 2, 1), "prov-1", 2, "1-001", "nmdsid_1", "Location One", "N", 30.0, 0, 0, None, AscwdsFilteringRule.populated),
+            ],
+            expected_rows=["1-001"],
+        ),
+        SelectGroupedProvidersCase(
+            id="excludes_location_when_rule_is_not_populated_at_latest_snapshot",
+            input_rows=[
+                (date(2026, 2, 1), "prov-1", 2, "1-002", "nmdsid_2", "Location Two", "N", None, 0, 0, None, AscwdsFilteringRule.missing_data),
+                (date(2026, 2, 1), "prov-1", 2, "1-004", "nmdsid_4", "Location Four", "N", None, 0, 0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
+                (date(2026, 2, 1), "prov-1", 2, "1-005", "nmdsid_5", "Location Five", "N", None, 0, 0, None, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                (date(2026, 2, 1), "prov-1", 2, "1-006", "nmdsid_6", "Location Six", "N", None, 0, 0, None, AscwdsFilteringRule.non_res_location_was_grouped_provider),
+                (date(2026, 2, 1), "prov-1", 2, "1-007", "nmdsid_7", "Location Seven", "N", 45.0, 0, 0, None, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+                (date(2026, 2, 1), "prov-1", 2, "1-008", "nmdsid_8", "Location Eight", "N", 45.0, 0, 0, None, AscwdsFilteringRule.brand_id_filter),
+            ],
+            expected_rows=[],
+        ),
+        SelectGroupedProvidersCase(
+            id="excludes_location_populated_only_at_an_earlier_month",
+            input_rows=[
+                (date(2026, 1, 1), "prov-1", 2, "1-003", "nmdsid_3", "Location Three", "N", 20.0, 0, 0, None, AscwdsFilteringRule.populated),
+                (date(2026, 2, 1), "prov-1", 2, "1-003", "nmdsid_3", "Location Three", "N", None, 0, 0, None, AscwdsFilteringRule.missing_data),
+            ],
+            expected_rows=[],
+        ),
     ]  # fmt: skip
 
-    # expected_update_grouped_providers_history_rows: full history after update.
-    expected_update_grouped_providers_history_rows = [
-        (date(2026, 1, 1), "prov-1", 2, "1-001", "nmds_1", "Location One", "N", 10.0, 0, None, "problem", date(2026, 1, 1), None), # Retained — oldest "problem" record kept, last_update_date unchanged.
-        (date(2026, 1, 1), "prov-1", 2, "1-002", "nmds_2", "Location Two", "N", 20.0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)), # Flipped — was "problem", now "fixed" with last_update_date = new snapshot date.
-        (date(2026, 1, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, None, "fixed", date(2026, 1, 1), date(2026, 1, 1)), # Preserved — old "fixed" row kept as part of full history.
-        (date(2026, 2, 1), "prov-2", 2, "1-003", "nmds_3", "Location Three", "N", 30.0, 0, None, "problem", date(2026, 2, 1), None), # Re-appeared — new "problem" row appended alongside the old "fixed" row.
-        (date(2026, 2, 1), "prov-3", 2, "1-004", "nmds_4", "Location Four", "N", 40.0, 0, None, "problem", date(2026, 2, 1), None), # New — first time seen, added with "problem" status.
+    update_grouped_providers_history_test_cases = [
+        UpdateGroupedProvidersHistoryCase(
+            id="keeps_status_as_problem_when_location_has_missing_data_this_month",
+            new_rows=[],
+            populated_location_ids=[],
+            history_rows=[
+                (date(2026, 1, 1), "prov-1", 2, "1-010", "nmds_10", "Location Ten", "N", 10.0, 0, 0, None, "problem", date(2026, 1, 1), None),
+            ],
+            snapshot_date=date(2026, 2, 1),
+            expected_rows=[
+                (date(2026, 1, 1), "prov-1", 2, "1-010", "nmds_10", "Location Ten", "N", 10.0, 0, 0, None, "problem", date(2026, 1, 1), None),
+            ],
+        ),
+        UpdateGroupedProvidersHistoryCase(
+            id="keeps_status_as_problem_when_location_is_absent_from_source_this_month",
+            new_rows=[],
+            populated_location_ids=[],
+            history_rows=[
+                (date(2026, 1, 1), "prov-2", 3, "1-011", "nmds_11", "Location Eleven", "N", 20.0, 0, 0, None, "problem", date(2026, 1, 1), None),
+            ],
+            snapshot_date=date(2026, 2, 1),
+            expected_rows=[
+                (date(2026, 1, 1), "prov-2", 3, "1-011", "nmds_11", "Location Eleven", "N", 20.0, 0, 0, None, "problem", date(2026, 1, 1), None),
+            ],
+        ),
+        UpdateGroupedProvidersHistoryCase(
+            id="marks_location_fixed_when_populated_this_month",
+            new_rows=[],
+            populated_location_ids=["1-012"],
+            history_rows=[
+                (date(2026, 1, 1), "prov-3", 2, "1-012", "nmds_12", "Location Twelve", "N", 15.0, 0, 0, None, "problem", date(2026, 1, 1), None),
+            ],
+            snapshot_date=date(2026, 2, 1),
+            expected_rows=[
+                (date(2026, 1, 1), "prov-3", 2, "1-012", "nmds_12", "Location Twelve", "N", 15.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)),
+            ],
+        ),
+        UpdateGroupedProvidersHistoryCase(
+            id="retains_original_identified_date_when_grouped_provider_reappears",
+            new_rows=[
+                (date(2026, 2, 1), "prov-4", 2, "1-013", "nmds_13", "Location Thirteen", "N", 70.0, 0, 0, None, "problem", date(2026, 2, 1), None),
+            ],
+            populated_location_ids=[],
+            history_rows=[
+                (date(2026, 1, 1), "prov-4", 2, "1-013", "nmds_13", "Location Thirteen", "N", 25.0, 0, 0, None, "problem", date(2026, 1, 1), None),
+            ],
+            snapshot_date=date(2026, 2, 1),
+            expected_rows=[
+                (date(2026, 1, 1), "prov-4", 2, "1-013", "nmds_13", "Location Thirteen", "N", 25.0, 0, 0, None, "problem", date(2026, 1, 1), None),
+            ],
+        ),
+        UpdateGroupedProvidersHistoryCase(
+            id="adds_new_problem_row_for_location_not_previously_in_history",
+            new_rows=[
+                (date(2026, 2, 1), "prov-6", 3, "1-015", "nmds_15", "Location Fifteen", "N", 80.0, 0, 0, None, "problem", date(2026, 2, 1), None),
+            ],
+            populated_location_ids=[],
+            history_rows=[
+                (date(2026, 1, 1), "prov-5", 2, "1-014", "nmds_14", "Location Fourteen", "N", 5.0, 0, 0, None, "problem", date(2026, 1, 1), None),
+            ],
+            snapshot_date=date(2026, 2, 1),
+            expected_rows=[
+                (date(2026, 1, 1), "prov-5", 2, "1-014", "nmds_14", "Location Fourteen", "N", 5.0, 0, 0, None, "problem", date(2026, 1, 1), None),
+                (date(2026, 2, 1), "prov-6", 3, "1-015", "nmds_15", "Location Fifteen", "N", 80.0, 0, 0, None, "problem", date(2026, 2, 1), None),
+            ],
+        ),
+        UpdateGroupedProvidersHistoryCase(
+            id="keeps_fixed_date_when_fixed_location_is_populated_again",
+            new_rows=[],
+            populated_location_ids=["1-016"],
+            history_rows=[
+                (date(2026, 1, 1), "prov-7", 2, "1-016", "nmds_16", "Location Sixteen", "N", 12.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)),
+            ],
+            snapshot_date=date(2026, 3, 1),
+            expected_rows=[
+                (date(2026, 1, 1), "prov-7", 2, "1-016", "nmds_16", "Location Sixteen", "N", 12.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)),
+            ],
+        ),
+        UpdateGroupedProvidersHistoryCase(
+            id="keeps_fixed_row_unchanged_when_fixed_location_has_missing_data_this_month",
+            new_rows=[],
+            populated_location_ids=[],
+            history_rows=[
+                (date(2026, 1, 1), "prov-8", 2, "1-017", "nmds_17", "Location Seventeen", "N", 14.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)),
+            ],
+            snapshot_date=date(2026, 3, 1),
+            expected_rows=[
+                (date(2026, 1, 1), "prov-8", 2, "1-017", "nmds_17", "Location Seventeen", "N", 14.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)),
+            ],
+        ),
+        # The next two cases document how a location flagged again after being fixed is
+        # currently handled: it is listed as both fixed and problem, and when it is
+        # fixed a second time only the first fixed row is kept.
+        UpdateGroupedProvidersHistoryCase(
+            id="shows_fixed_and_problem_rows_when_fixed_location_is_flagged_again",
+            new_rows=[
+                (date(2026, 4, 1), "prov-9", 2, "1-018", "nmds_18", "Location Eighteen", "N", 60.0, 0, 0, None, "problem", date(2026, 4, 1), None),
+            ],
+            populated_location_ids=[],
+            history_rows=[
+                (date(2026, 1, 1), "prov-9", 2, "1-018", "nmds_18", "Location Eighteen", "N", 50.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)),
+            ],
+            snapshot_date=date(2026, 4, 1),
+            expected_rows=[
+                (date(2026, 1, 1), "prov-9", 2, "1-018", "nmds_18", "Location Eighteen", "N", 50.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)),
+                (date(2026, 4, 1), "prov-9", 2, "1-018", "nmds_18", "Location Eighteen", "N", 60.0, 0, 0, None, "problem", date(2026, 4, 1), None),
+            ],
+        ),
+        UpdateGroupedProvidersHistoryCase(
+            id="keeps_first_fixed_row_when_repeat_offender_is_fixed_again",
+            new_rows=[],
+            populated_location_ids=["1-019"],
+            history_rows=[
+                (date(2026, 1, 1), "prov-10", 2, "1-019", "nmds_19", "Location Nineteen", "N", 50.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)),
+                (date(2026, 4, 1), "prov-10", 2, "1-019", "nmds_19", "Location Nineteen", "N", 60.0, 0, 0, None, "problem", date(2026, 4, 1), None),
+            ],
+            snapshot_date=date(2026, 5, 1),
+            expected_rows=[
+                (date(2026, 1, 1), "prov-10", 2, "1-019", "nmds_19", "Location Nineteen", "N", 50.0, 0, 0, None, "fixed", date(2026, 1, 1), date(2026, 2, 1)),
+            ],
+        ),
     ]  # fmt: skip
 
 
@@ -2483,488 +2619,6 @@ class ValidateJobRoleRatiosMergedData:
 
 
 @dataclass
-class ModelInterpolationTestCase:
-    id: str
-    data: list[Any]
-    method: str = None
-    max_days_between_submissions: int = None
-
-
-@dataclass
-class InterpolationData:
-    interpolation_test_cases = [
-        ModelInterpolationTestCase(
-            id="trend_interpolation_single_gap",
-            data=[
-                ("1-001", date(2023, 3, 1), 40.0, None, None),
-                ("1-001", date(2023, 6, 1), None, 46.0, 34.185792),
-                ("1-001", date(2024, 3, 1), 5.0, 52.0, None),
-            ],
-            method="trend",
-        ),
-        ModelInterpolationTestCase(
-            id="trend_interpolation_not_possible_with_single_point",
-            data=[
-                ("1-001", date(2023, 1, 1), None, None, None),
-                ("1-001", date(2023, 2, 1), 10.0, None, None),
-                ("1-001", date(2023, 3, 1), None, None, None),
-            ],
-            method="trend",
-        ),
-        ModelInterpolationTestCase(
-            id="straight_interpolation_single_gap",
-            data=[
-                ("1-001", date(2023, 3, 1), 40.0, None, None),
-                ("1-001", date(2023, 4, 1), None, 42.0, 37.035519),
-                ("1-001", date(2024, 3, 1), 5.0, 52.0, None),
-            ],
-            method="straight",
-        ),
-        ModelInterpolationTestCase(
-            id="straight_interpolation_not_possible_with_single_point",
-            data=[
-                ("1-001", date(2023, 1, 1), None, None, None),
-                ("1-001", date(2023, 2, 1), 10.0, None, None),
-                ("1-001", date(2023, 3, 1), None, None, None),
-            ],
-            method="straight",
-        ),
-    ]  # fmt: skip
-
-    calculate_residual_test_cases = [
-        ModelInterpolationTestCase(
-            id="extrapolation_forwards_is_known_rows",
-            data=[
-                ("1-001", date(2023, 5, 1), None, 44.0, -47.0),
-                ("1-001", date(2023, 4, 1), None, 42.0, -47.0),
-                ("1-001", date(2024, 3, 1), 5.0, 52.0, -47.0),
-                ("1-001", date(2024, 4, 1), None, 5.1, 9.8),
-                ("1-001", date(2024, 5, 1), 15.0, 5.2, 9.8),
-            ],
-        ),
-        ModelInterpolationTestCase(
-            id="extrapolation_forwards_is_none_rows",
-            data=[
-                ("1-001", date(2023, 1, 1), None, None, None),
-                ("1-001", date(2023, 3, 1), 40.0, None, None),
-            ],
-        ),
-        ModelInterpolationTestCase(
-            id="returns_none_date_after_final_non_null_submission_rows",
-            data=[
-                ("1-001", date(2024, 5, 1), 15.0, 5.2, 9.8),
-                ("1-001", date(2024, 6, 1), None, 15.3, None),
-            ],
-        ),
-    ]  # fmt: skip
-    calculate_days_between_submissions_test_cases = [
-        ModelInterpolationTestCase(
-            id="one_location_data",
-            data=[
-                ("1-001", date(2024, 2, 1), None, None, None),
-                ("1-001", date(2024, 3, 1), 5.0, None, None),
-                ("1-001", date(2024, 4, 1), None, 122, 0.25),
-                ("1-001", date(2024, 5, 1), None, 122, 0.5),
-                ("1-001", date(2024, 6, 1), None, 122, 0.75),
-                ("1-001", date(2024, 7, 1), 15.0, None, None),
-                ("1-001", date(2023, 8, 1), None, None, None),
-            ],
-        ),
-        ModelInterpolationTestCase(
-            id="multiple_locations_single_submission_each",
-            data=[
-                ("1-001", date(2024, 1, 1), 5.0, None, None),
-                ("1-001", date(2024, 2, 1), None, None, None),
-                ("1-002", date(2024, 1, 5), 3.0, None, None),
-                ("1-002", date(2024, 2, 5), None, None, None),
-                ("1-003", date(2024, 3, 1), 8.0, None, None),
-                ("1-003", date(2024, 4, 1), None, None, None),
-            ],
-        ),
-        ModelInterpolationTestCase(
-            id="two_locations_interleaved",
-            data=[
-                ("1-001", date(2024, 1, 1), 10.0, None, None),
-                ("1-002", date(2024, 1, 2), 10.0, None, None),
-                ("1-001", date(2024, 2, 1), None, 60, 0.51),
-                ("1-002", date(2024, 3, 2), None, 90, 0.66),
-                ("1-001", date(2024, 3, 1), 7.0, None, None),
-                ("1-002", date(2024, 4, 1), 7.0, None, None),
-            ],
-        ),
-    ]  # fmt: skip
-    calculate_interpolated_values_test_cases = [
-        ModelInterpolationTestCase(
-            id="test_function_returns_expected_values_when_within_max_days",
-            data=[
-                ("1-001", date(2025, 1, 3), 20.0, None, None, None, None, None),
-                ("1-001", date(2025, 1, 4), None, 20.0, 10.0, 4, 0.25, 22.5),
-                ("1-001", date(2025, 1, 5), None, 20.0, 10.0, 4, 0.5, 25.0),
-                ("1-001", date(2025, 1, 6), None, 20.0, 10.0, 4, 0.75, 27.5),
-                ("1-001", date(2025, 1, 7), 30.0, 20.0, 10.0, None, None, None),
-                ("1-001", date(2025, 1, 8), None, None, None, None, None, None),
-            ],
-            max_days_between_submissions=4,
-        ),
-        ModelInterpolationTestCase(
-            id="test_function_returns_expected_values_when_outside_max_days",
-            data=[
-                ("1-001", date(2025, 1, 3), 20.0, None, None, None, None, None),
-                ("1-001", date(2025, 1, 4), None, 20.0, 10.0, 3, 0.25, None),
-                ("1-001", date(2025, 1, 5), None, 20.0, 10.0, 3, 0.5, None),
-                ("1-001", date(2025, 1, 6), None, 20.0, 10.0, 3, 0.75, None),
-                ("1-001", date(2025, 1, 7), 30.0, 20.0, 10.0, None, None, None),
-                ("1-001", date(2025, 1, 8), None, None, None, None, None, None),
-            ],
-            max_days_between_submissions=2,
-        ),
-    ]  # fmt: skip
-
-
-@dataclass
-class ExtrapolationTestCase:
-    id: str
-    data: list[Any]
-
-    def as_pytest_param(self):
-        """Return test case as pytest ParameterSet."""
-        return pytest.param(self.data, id=self.id)
-
-
-@dataclass
-class ModelExtrapolation:
-    extrapolation_when_nominal_test_cases = [
-        ExtrapolationTestCase(
-            id="when_one_later_data_point_is_missing",
-            data=[
-                ("1-001", date(2026, 1, 1), 20.0, 100.0, None, None),
-                ("1-001", date(2026, 2, 1), None, 20.0, -60.0, -60.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_multiple_later_data_points_are_missing",
-            data=[
-                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 2, 1), None, 30.0, 20.0, 20.0),
-                ("1-001", date(2026, 3, 1), None, 100.0, 90.0, 90.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_one_earlier_data_point_is_missing",
-            data=[
-                ("1-001", date(2026, 1, 1), None, 10.0, None, 0.0),
-                ("1-001", date(2026, 2, 1), 10.0, 20.0, None, None),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_multiple_earlier_data_points_are_missing",
-            data=[
-                ("1-001", date(2026, 1, 1), None, 10.0, None, 0.0),
-                ("1-001", date(2026, 2, 1), None, 10.0, None, 0.0),
-                ("1-001", date(2026, 3, 1), 10.0, 20.0, None, None),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_one_intermediate_data_point_is_missing",
-            data=[
-                ("1-001", date(2026, 1, 1), 15.0, 10.0, None, None),
-                ("1-001", date(2026, 2, 1), None, 20.0, 25.0, None),
-                ("1-001", date(2026, 3, 1), 30.0, 30.0, 35.0, None),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_only_one_observed_value_exists",
-            data=[
-                ("1-001", date(2026, 1, 1), None, 10.0, None, 0.0),
-                ("1-001", date(2026, 2, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 3, 1), None, 30.0, 20.0, 20.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_model_extrapolation_only_applies_after_last_submission",
-            data=[
-                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 2, 1), None, 30.0, 20.0, None),
-                ("1-001", date(2026, 3, 1), 50.0, 40.0, 30.0, None),
-                ("1-001", date(2026, 4, 1), None, 50.0, 60.0, 60.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_multiple_gaps_exist_across_full_time_series",
-            data=[
-                ("1-001", date(2026, 1, 1), None, 10.0, None, 0.0),
-                ("1-001", date(2026, 2, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 3, 1), None, 30.0, 20.0, None), # Forwards extrapolation from previously known value (10.0)
-                ("1-001", date(2026, 4, 1), 20.0, 80.0, 70.0, None), # Forwards extrapolation from previously known value (10.0)
-                ("1-001", date(2026, 5, 1), None, 100.0, 40.0, 40.0), # Forwards extrapolation from previously known value (20.0)
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_more_than_one_location_needs_extrapolating",
-            data=[
-                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 2, 1), None, 30.0, 20.0, 20.0),
-                ("1-001", date(2026, 3, 1), None, 100.0, 90.0, 90.0),
-                ("1-002", date(2026, 1, 1), None, 10.0, None, 0.0),
-                ("1-002", date(2026, 2, 1), None, 10.0, None, 0.0),
-                ("1-002", date(2026, 3, 1), 10.0, 20.0, None, None),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_no_data_points_are_available",
-            data=[
-                ("1-001", date(2026, 3, 1), None, None, None, None),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_dates_are_not_sorted_within_group",
-            data=[
-                ("1-001", date(2026, 2, 1), None, 30.0, 20.0, 20.0),
-                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 3, 1), None, 100.0, 90.0, 90.0),
-            ],
-)
-    ] # fmt: skip
-    extrapolation_when_ratio_test_cases = [
-        ExtrapolationTestCase(
-            id="when_one_later_data_point_is_missing",
-            data=[
-                ("1-001", date(2026, 1, 1), 20.0, 100.0, None, None),
-                ("1-001", date(2026, 2, 1), None, 20.0, 4.0, 4.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_multiple_later_data_points_are_missing",
-            data=[
-                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 2, 1), None, 30.0, 15.0, 15.0),
-                ("1-001", date(2026, 3, 1), None, 100.0, 50.0, 50.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_one_earlier_data_point_is_missing",
-            data=[
-                ("1-002", date(2026, 1, 1), None, 10.0, None, 5.0),
-                ("1-002", date(2026, 2, 1), 10.0, 20.0, None, None),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_multiple_earlier_data_points_are_missing",
-            data=[
-                ("1-002", date(2026, 1, 1), None, 10.0, None, 5.0),
-                ("1-002", date(2026, 2, 1), None, 10.0, None, 5.0),
-                ("1-002", date(2026, 3, 1), 10.0, 20.0, None, None),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_one_intermediate_data_point_is_missing",
-            data=[
-                ("1-001", date(2026, 1, 1), 15.0, 10.0, None, None),
-                ("1-001", date(2026, 2, 1), None, 20.0, 30.0, None),
-                ("1-001", date(2026, 3, 1), 30.0, 30.0, 45.0, None),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_only_one_observed_value_exists",
-            data=[
-                ("1-001", date(2026, 1, 1), None, 10.0, None, 5.0),
-                ("1-001", date(2026, 2, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 3, 1), None, 30.0, 15.0, 15.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_model_extrapolation_only_applies_after_last_submission",
-            data=[
-                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 2, 1), None, 30.0, 15.0, None),
-                ("1-001", date(2026, 3, 1), 50.0, 40.0, 20.0, None),
-                ("1-001", date(2026, 4, 1), None, 20.0, 25.0, 25.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_multiple_gaps_exist_across_full_time_series",
-            data=[
-                ("1-002", date(2026, 1, 1), None, 10.0, None, 5.0),
-                ("1-002", date(2026, 2, 1), 10.0, 20.0, None, None),
-                ("1-002", date(2026, 3, 1), None, 30.0, 15.0, None), # Forwards extrapolation from previously known value (10.0)
-                ("1-002", date(2026, 4, 1), 20.0, 80.0, 40.0, None), # Forwards extrapolation from previously known value (10.0)
-                ("1-002", date(2026, 5, 1), None, 100.0, 25.0, 25.0), # Forwards extrapolation from previously known value (20.0)
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_more_than_one_location_needs_extrapolating",
-            data=[
-                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 2, 1), None, 30.0, 15.0, 15.0),
-                ("1-001", date(2026, 3, 1), None, 100.0, 50.0, 50.0),
-                ("1-002", date(2026, 1, 1), None, 10.0, None, 5.0),
-                ("1-002", date(2026, 2, 1), None, 10.0, None, 5.0),
-                ("1-002", date(2026, 3, 1), 10.0, 20.0, None, None),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_no_data_points_are_available",
-            data=[
-                ("1-003", date(2026, 3, 1), None, None, None, None),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_dates_are_not_sorted_within_group",
-            data=[
-                ("1-001", date(2026, 2, 1), None, 30.0, 15.0, 15.0),
-                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 3, 1), None, 100.0, 50.0, 50.0),
-            ],
-        ),
-    ] # fmt: skip
-    expected_extrapolation_when_error_rows = [
-        ("1-001", date(2026, 1, 1), None, 10.0, None, None),
-    ]
-
-    expected_extrapolation_aggregates_rows = [
-        ("1-001", date(2026, 1, 1), None, 10.0, date(2026, 2, 1), date(2026, 3, 1), 10.0, 20.0),
-        ("1-001", date(2026, 2, 1), 10.0, 20.0, date(2026, 2, 1), date(2026, 3, 1), 10.0, 20.0),
-        ("1-001", date(2026, 3, 1), 20.0, 30.0, date(2026, 2, 1), date(2026, 3, 1), 10.0, 20.0),
-        ("1-002", date(2026, 1, 1), 15.0, 40.0, date(2026, 1, 1), date(2026, 1, 1), 15.0, 40.0),
-        ("1-002", date(2026, 2, 1), None, 50.0, date(2026, 1, 1), date(2026, 1, 1), 15.0, 40.0),
-        ("1-003", date(2026, 1, 1), None, None, None, None, None, None),
-    ] # fmt: skip
-
-    get_previous_value_test_cases = [
-        ExtrapolationTestCase(
-            id="when_values_are_sequential_no_nulls",
-            data=[
-                ("1-001", date(2026, 1, 1), 10.0, None),
-                ("1-001", date(2026, 2, 1), 20.0, 10.0),
-                ("1-001", date(2026, 3, 1), 30.0, 20.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_values_have_null_gap",
-            data=[
-                ("1-001", date(2026, 1, 1), 10.0, None),
-                ("1-001", date(2026, 2, 1), None, 10.0),
-                ("1-001", date(2026, 3, 1), None, 10.0),
-                ("1-001", date(2026, 4, 1), 40.0, 10.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_values_have_leading_nulls",
-            data=[
-                ("1-001", date(2026, 1, 1), None, None),
-                ("1-001", date(2026, 2, 1), None, None),
-                ("1-001", date(2026, 3, 1), 30.0, None),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_multiple_groups_are_present",
-            data=[
-                ("1-001", date(2026, 1, 1), 10.0, None),
-                ("1-001", date(2026, 2, 1), None, 10.0),
-                ("1-002", date(2026, 1, 1), 5.0, None),
-                ("1-002", date(2026, 2, 1), None, 5.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_input_is_unsorted_within_group",
-            data=[
-                ("1-001", date(2026, 2, 1), None, 10.0),
-                ("1-001", date(2026, 1, 1), 10.0, None),
-                ("1-001", date(2026, 3, 1), 30.0, 10.0),
-            ],
-        ),
-        ExtrapolationTestCase(
-            id="when_all_values_are_null",
-            data=[
-                ("1-001", date(2026, 1, 1), None, None),
-                ("1-001", date(2026, 2, 1), None, None),
-            ],
-        ),
-    ]
-
-
-@dataclass
-class ModelImputationTestCase:
-    id: str
-    expected_data: list[Any]
-
-    def as_pytest_param(self):
-        """Return test case as pytest ParameterSet."""
-        return pytest.param(self.expected_data, id=self.id)
-
-
-@dataclass
-class ModelImputation:
-    column_with_null_values_name: str = "null_values"
-    model_column_name: str = "trend_model"
-    imputed_values_column_name: str = "imputed_values"
-
-    expected_model_imputation_test_cases = [
-        ModelImputationTestCase(
-            id="when_values_will_be_extrapolated",
-            expected_data=[
-                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, 19.0),
-                ("1-001", date(2023, 2, 1), CareHome.not_care_home, 20.0, 2.0, 20.0),
-                ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, 21.0),
-            ],
-        ),
-        ModelImputationTestCase(
-            id="when_values_will_be_interpolated",
-            expected_data=[
-                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 20.0, 1.0, 20.0),
-                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, 21.0),
-                ("1-001", date(2023, 3, 1), CareHome.not_care_home, 22.0, 3.0, 22.0),
-            ],
-        ),
-        ModelImputationTestCase(
-            id="when_values_will_be_extrapolated_and_interpolated",
-            expected_data=[
-                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 20.0, 1.0, 20.0),
-                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, 21.0),
-                ("1-001", date(2023, 3, 1), CareHome.not_care_home, 22.0, 3.0, 22.0),
-                ("1-001", date(2023, 4, 1), CareHome.not_care_home, None, 4.0, 23.0),
-            ],
-        ),
-        ModelImputationTestCase(
-            id="when_values_will_not_be_imputed_because_all_present",
-            expected_data=[
-                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 30.0, 1.0, 30.0),
-                ("1-001", date(2023, 2, 1), CareHome.not_care_home, 31.0, 2.0, 31.0),
-                ("1-001", date(2023, 3, 1), CareHome.not_care_home, 32.0, 3.0, 32.0),
-            ],
-        ),
-        ModelImputationTestCase(
-            id="when_values_will_not_be_imputed_because_all_null",
-            expected_data=[
-                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, None),
-                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, None),
-                ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, None),
-            ],
-        ),
-        ModelImputationTestCase(
-            id="when_given_multiple_service_types_only_non_res_gets_imputed_due_to_function_argument",
-            expected_data=[
-                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, 19.0),
-                ("1-001", date(2023, 2, 1), CareHome.not_care_home, 20.0, 2.0, 20.0),
-                ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, 21.0),
-                ("1-002", date(2023, 1, 1), CareHome.care_home, None, 1.0, None),
-                ("1-002", date(2023, 2, 1), CareHome.care_home, 20.0, 2.0, None),
-                ("1-002", date(2023, 3, 1), CareHome.care_home, None, 3.0, None),
-            ],
-        ),
-        ModelImputationTestCase(
-            id="when_location_changes_care_home_status_only_the_matching_period_is_imputed",
-            expected_data=[
-                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 50.0, 1.0, 50.0),
-                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, 51.0),
-                ("1-001", date(2023, 3, 1), CareHome.care_home, 50.0, 3.0, None),
-                ("1-001", date(2023, 4, 1), CareHome.care_home, None, 4.0, None),
-            ],
-        ),
-    ] # fmt: skip
-
-
-@dataclass
 class ModelRateOfChangeInputOutputTestCase:
     id: str
     input_data: list[Any]
@@ -3907,3 +3561,234 @@ class CombineASCWDSAndPIRData:
         ("1-004", date(2024, 1, 1), None, None),
         ("1-004", date(2024, 2, 1), 80.0, 80.0),
     ]
+
+
+CROSS_VALIDATION_LOCATIONS = [f"loc{i}" for i in range(6)]
+CROSS_VALIDATION_DATES = [date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)]
+CROSS_VALIDATION_COEFFICIENTS = (
+    2.0,
+    3.0,
+    1.0,
+)  # service count, activity count, intercept
+
+
+def exact_cross_validation_dependent(service_count: int, activity_count: int) -> float:
+    service, activity, intercept = CROSS_VALIDATION_COEFFICIENTS
+    return service * service_count + activity * activity_count + intercept
+
+
+def cross_validation_features_data() -> dict[str, list[Any]]:
+    """Three dates for each of six locations, with a dependent that is exactly linear."""
+    rows = [
+        (location, import_date, (i + j) % 4 + 1, (2 * i + j) % 3 + 1)
+        for i, location in enumerate(CROSS_VALIDATION_LOCATIONS)
+        for j, import_date in enumerate(CROSS_VALIDATION_DATES)
+    ]
+    return {
+        IndCQC.location_id: [row[0] for row in rows],
+        IndCQC.cqc_location_import_date: [row[1] for row in rows],
+        IndCQC.care_home_status_count: [1] * len(rows),
+        IndCQC.service_count_capped: [row[2] for row in rows],
+        IndCQC.activity_count_capped: [row[3] for row in rows],
+        IndCQC.imputed_filled_post_model: [
+            exact_cross_validation_dependent(row[2], row[3]) for row in rows
+        ],
+    }
+
+
+@dataclass
+class FilledPostsConversionTestCase:
+    id: str
+    dependent: str
+    predictions: list[float]
+    number_of_beds: list[int | None]
+    expected_predictions: list[float | None]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+@dataclass
+class NonResSizeBandTestCase:
+    id: str
+    location_ids: list[str]
+    known_posts: list[float | None]
+    expected_bands: list[str | None]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+class CrossValidationUtilsData:
+    spec = {
+        MRKeys.model_type: ModelTypes.linear_regression,
+        MRKeys.model_params: {},
+        MRKeys.dependent: IndCQC.imputed_filled_post_model,
+        # The reverse of the columns' order in the data, to show the spec's order is used.
+        MRKeys.features: [IndCQC.activity_count_capped, IndCQC.service_count_capped],
+    }
+
+    # Two locations in each of the three folds.
+    folds_data = {
+        IndCQC.location_id: CROSS_VALIDATION_LOCATIONS,
+        ModelEvaluation.fold: [0, 0, 1, 1, 2, 2],
+    }
+
+    garbage_dependent = 10_000.0
+
+    filled_posts_conversion_test_cases = [
+        FilledPostsConversionTestCase(
+            id="care_home_ratio_multiplied_by_beds",
+            dependent=IndCQC.imputed_filled_posts_per_bed_ratio_model,
+            predictions=[2.0, 1.5],
+            number_of_beds=[10, 20],
+            expected_predictions=[20.0, 30.0],
+        ),
+        FilledPostsConversionTestCase(
+            id="care_home_without_beds_has_no_filled_posts",
+            dependent=IndCQC.imputed_filled_posts_per_bed_ratio_model,
+            predictions=[2.0, 1.5],
+            number_of_beds=[10, None],
+            expected_predictions=[20.0, None],
+        ),
+        FilledPostsConversionTestCase(
+            id="other_dependents_already_in_filled_posts",
+            dependent=IndCQC.imputed_filled_post_model,
+            predictions=[12.0, 3.5],
+            number_of_beds=[10, 20],
+            expected_predictions=[12.0, 3.5],
+        ),
+    ]
+
+    non_res_size_band_test_cases = [
+        NonResSizeBandTestCase(
+            id="band_edges_belong_to_the_band_they_start",
+            location_ids=[f"loc{i}" for i in range(9)],
+            known_posts=[24.9, 25.0, 49.9, 50.0, 74.9, 75.0, 99.9, 100.0, 500.0],
+            expected_bands=[
+                "1-24",
+                "25-49",
+                "25-49",
+                "50-74",
+                "50-74",
+                "75-99",
+                "75-99",
+                "100+",
+                "100+",
+            ],
+        ),
+        # The mean of 10 and 50 is 30, and the row without a known value is banded too.
+        NonResSizeBandTestCase(
+            id="location_banded_by_mean_known_posts_on_every_row",
+            location_ids=["loc0"] * 3,
+            known_posts=[10.0, 50.0, None],
+            expected_bands=["25-49"] * 3,
+        ),
+        NonResSizeBandTestCase(
+            id="location_with_no_known_posts_has_no_band",
+            location_ids=["loc0", "loc1"],
+            known_posts=[None, 30.0],
+            expected_bands=[None, "25-49"],
+        ),
+    ]
+
+
+@dataclass
+class IsTrainingRowTestCase:
+    id: str
+    dependent: list[float | None]
+    care_home_status_count: list[int]
+    expected_is_training_row: list[bool]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+class IsTrainingRowData:
+    test_cases = [
+        IsTrainingRowTestCase(
+            id="known_dependent_and_one_care_home_status",
+            dependent=[12.0],
+            care_home_status_count=[1],
+            expected_is_training_row=[True],
+        ),
+        IsTrainingRowTestCase(
+            id="unknown_dependent",
+            dependent=[None],
+            care_home_status_count=[1],
+            expected_is_training_row=[False],
+        ),
+        IsTrainingRowTestCase(
+            id="location_that_has_had_two_care_home_statuses",
+            dependent=[12.0],
+            care_home_status_count=[2],
+            expected_is_training_row=[False],
+        ),
+        IsTrainingRowTestCase(
+            id="rows_decided_separately",
+            dependent=[12.0, None, 5.0],
+            care_home_status_count=[1, 1, 2],
+            expected_is_training_row=[True, False, False],
+        ),
+    ]
+
+
+def metrics_locations_data() -> dict[str, list[Any]]:
+    """
+    Non-res rows for the cross validation locations, with the known value equal to the
+    imputed target except for loc5, which has none.
+    """
+    features = cross_validation_features_data()
+    target = features[IndCQC.imputed_filled_post_model]
+    is_loc5 = [location == "loc5" for location in features[IndCQC.location_id]]
+    rows = len(target)
+    return {
+        IndCQC.location_id: features[IndCQC.location_id],
+        IndCQC.cqc_location_import_date: features[IndCQC.cqc_location_import_date],
+        IndCQC.ascwds_filled_posts_dedup_clean: [
+            None if no_known else value for no_known, value in zip(is_loc5, target)
+        ],
+        IndCQC.primary_service_type: ["non-residential"] * rows,
+        IndCQC.current_cssr: ["cssr"] * rows,
+        IndCQC.number_of_beds: [None] * rows,
+        IndCQC.number_of_beds_banded: [None] * rows,
+        IndCQC.imputed_filled_post_model: target,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model: [None] * rows,
+    }
+
+
+METRICS_CARE_HOME_BEDS = 10
+
+
+def metrics_care_home_features_data() -> dict[str, list[Any]]:
+    """The cross validation features with the dependent as a per bed ratio."""
+    data = cross_validation_features_data()
+    data[IndCQC.imputed_filled_posts_per_bed_ratio_model] = data.pop(
+        IndCQC.imputed_filled_post_model
+    )
+    return data
+
+
+def metrics_care_home_locations_data() -> dict[str, list[Any]]:
+    """
+    Care home rows for the cross validation locations, 10 beds each, with known posts equal
+    to the ratio times beds except for loc5, which has none.
+    """
+    features = metrics_care_home_features_data()
+    ratio = features[IndCQC.imputed_filled_posts_per_bed_ratio_model]
+    is_loc5 = [location == "loc5" for location in features[IndCQC.location_id]]
+    rows = len(ratio)
+    return {
+        IndCQC.location_id: features[IndCQC.location_id],
+        IndCQC.cqc_location_import_date: features[IndCQC.cqc_location_import_date],
+        IndCQC.ascwds_filled_posts_dedup_clean: [
+            None if no_known else value * METRICS_CARE_HOME_BEDS
+            for no_known, value in zip(is_loc5, ratio)
+        ],
+        IndCQC.primary_service_type: ["Care home without nursing"] * rows,
+        IndCQC.current_cssr: ["cssr"] * rows,
+        IndCQC.number_of_beds: [METRICS_CARE_HOME_BEDS] * rows,
+        IndCQC.number_of_beds_banded: [3] * rows,
+        IndCQC.imputed_filled_post_model: [None] * rows,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model: ratio,
+    }

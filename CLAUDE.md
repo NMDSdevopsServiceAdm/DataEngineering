@@ -97,6 +97,8 @@ Don't add defensive zero-guards by default — upstream steps enforce that relev
 ## Docstrings & naming
 
 - Google-style docstrings (enforced via `pydoclint`, see `pyproject.toml`); document non-obvious performance considerations (e.g. why something is kept lazy, why a collect happens where it does).
+- Docstrings, comments and names describe what the code does *now*, never the code it replaced (no "previously", "as PySpark did", `SPARK_DEDUP`). State the requirement instead and name by purpose (`DEDUP_COLUMNS`). The only exception is the `# converted to polars -> path` pointer on the old PySpark function.
+- Use as few words as possible. When editing a function, re-read its docstring and comments (within the upgrade scope above) and rewrite them as one tight unit rather than appending sentences.
 - `snake_case` for variables/functions, `PascalCase` for classes.
 - Prefer concise, intent-revealing names over long ones that encode full logic or data values. This is a known growth area for the team — naming defaults to more literal, sentence-like names (e.g. `test_function_returns_one_when_this_column_is_one_and_that_column_is_one`). Nudging towards more concise names in review and explain why a shorter name still captures the intent rather than just flagging it as wrong.
 - Flag numeric literals whose business meaning isn't obvious; don't extract universally-understood values (0, 1, simple limits/indices) into named constants just for the sake of it.
@@ -109,7 +111,7 @@ Athena names tables from the partition, so: `{dataset}_{sub_dataset_if_relevant}
 
 When making a substantive code change, keep [CHANGELOG.md](CHANGELOG.md)'s `## [Unreleased]` section up to date:
 - Add one short, plain-sentence bullet under whichever subsection fits — `### Added` (new capability), `### Changed` (modified existing behaviour), `### Improved` (performance/quality, no behaviour change), or `### Fixed` (bug fix) — matching the plain English style of existing entries (e.g. "Added validations for estimates data within Estimates by Job Roles Pipeline.").
-- One bullet per piece of work, not per edit. If the task's scope changes as it progresses, update that same bullet in place rather than adding a new one, so by the end it reflects what was actually delivered, not the original ask.
+- One bullet per piece of work, not per edit. If the task's scope changes as it progresses, update that same bullet in place rather than adding a new one, so by the end it reflects what was actually delivered, not the original ask. `open-pr` does a final tidy of this branch's own bullets (never other branches').
 
 `CHANGELOG.md` uses `merge=union` (`.gitattributes`) so concurrent branches appending to the same subsection merge without conflicting — don't take a conflict-free merge here as a sign the rule above no longer applies. This only covers appends; still update an existing bullet in place (not a fresh append) when scope changes within your own branch, before it merges.
 

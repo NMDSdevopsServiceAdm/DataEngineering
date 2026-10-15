@@ -301,6 +301,31 @@ class TestLoadBakeTargets:
 
         assert selected == [target.name for target in targets]
 
+    @pytest.mark.parametrize(
+        "changed_path",
+        [
+            pytest.param(
+                "projects/_99_publication/monthly_tracker_filled_posts/templates/diagnostics_template.xlsx",
+                id="template_file",
+            ),
+            pytest.param(
+                "projects/_99_publication/Dockerfile_and_requirements/requirements-extra.txt",
+                id="extras_file",
+            ),
+        ],
+    )
+    def test_publication_image_rebuilds_when_its_template_or_extras_change(
+        self, changed_path: str
+    ):
+        # A COPY source with a trailing slash never triggers a rebuild, so a
+        # changed template would otherwise ship without a new image.
+        repo_root = Path(job.__file__).resolve().parent.parent
+        targets = job.load_bake_targets(repo_root)
+
+        selected = job.select_targets(targets, [changed_path])
+
+        assert selected == ["_99_publication"]
+
 
 class TestTargetsMissingFromEcr:
     def test_returns_targets_without_an_image_for_this_tag(self, fake_repo: Path):

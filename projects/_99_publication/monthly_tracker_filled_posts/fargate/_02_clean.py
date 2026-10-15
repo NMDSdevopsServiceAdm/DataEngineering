@@ -3,7 +3,6 @@ from datetime import date
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.filtering_utils import reduced_data_filter_expr
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     clean_utils,
 )
@@ -14,25 +13,32 @@ from utils.column_names.publication_columns import PublicationColumns as Pub
 def main(
     merge_data_source: str,
     clean_destination: str,
+    t0_destination: str,
+    t1_destination: str,
+    t2_destination: str,
 ) -> None:
     """
-    Cleans merged job role data.
+    Cleans merged job role data and builds the T0/T1/T2 data-download tables.
 
     Args:
         merge_data_source (str): source s3 directory for merged data
         clean_destination (str): destination s3 directory for the cleaned data
+        t0_destination (str): destination s3 directory for the T0 estimates
+            download table
+        t1_destination (str): destination s3 directory for the T1 filled
+            posts percentage change download table
+        t2_destination (str): destination s3 directory for the T2 location
+            count percentage change download table
     """
     merged_lf = utils.scan_parquet(merge_data_source)
 
-    # Publication policy: full retention for 2 financial years, quarterly
-    # sampling further back, nothing before 6 financial years ago.
+    # Publication policy: full retention for the previous and current financial
+    # years, quarterly sampling further back, nothing before 6 financial years ago.
     today = date.today()
     fy_year = today.year if today.month >= 4 else today.year - 1
     cutoff_date = date(fy_year - 6, 4, 1)
-    cleaned_lf = merged_lf.filter(reduced_data_filter_expr(cutoff_date=cutoff_date))
-
-    cleaned_lf = cleaned_lf.with_columns(
-        (pl.col(IndCQC.care_home_status_count) == 1).alias(Pub.consistent_service)
+    cleaned_lf = merged_lf.filter(
+        clean_utils.reduced_data_filter_expr(cutoff_date=cutoff_date)
     )
 
     cleaned_lf = cleaned_lf.with_columns(
@@ -50,6 +56,15 @@ def main(
     medium_term_from_date = date(fy_year - 1, 4, 1)
     short_term_from_date = date(fy_year, 4, 1)
     cleaned_lf = cleaned_lf.with_columns(
+        clean_utils.has_consistent_service_since_date(
+            long_term_from_date, Pub.consistent_service_long_term
+        ),
+        clean_utils.has_consistent_service_since_date(
+            medium_term_from_date, Pub.consistent_service_medium_term
+        ),
+        clean_utils.has_consistent_service_since_date(
+            short_term_from_date, Pub.consistent_service_short_term
+        ),
         clean_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             long_term_from_date,
@@ -168,6 +183,34 @@ def main(
         output_path=clean_destination,
     )
 
+    t0_estimates_lf = clean_utils.build_t0_estimates_download_table(
+        publication_summary_lf, today=today
+    )
+    utils.sink_to_parquet(
+        lazy_df=t0_estimates_lf,
+        output_path=t0_destination,
+    )
+
+    t1_filled_posts_perc_change_lf = (
+        clean_utils.build_t1_filled_posts_perc_change_download_table(
+            publication_summary_lf, today=today
+        )
+    )
+    utils.sink_to_parquet(
+        lazy_df=t1_filled_posts_perc_change_lf,
+        output_path=t1_destination,
+    )
+
+    t2_location_count_perc_change_lf = (
+        clean_utils.build_t2_location_count_perc_change_download_table(
+            publication_summary_lf, today=today
+        )
+    )
+    utils.sink_to_parquet(
+        lazy_df=t2_location_count_perc_change_lf,
+        output_path=t2_destination,
+    )
+
 
 if __name__ == "__main__":
     args = utils.get_args(
@@ -179,5 +222,25 @@ if __name__ == "__main__":
             "--clean_destination",
             "Destination s3 directory for the cleaned data",
         ),
+        (
+            "--t0_destination",
+            "Destination s3 directory for the T0 estimates download table",
+        ),
+        (
+            "--t1_destination",
+            "Destination s3 directory for the T1 filled posts percentage "
+            "change download table",
+        ),
+        (
+            "--t2_destination",
+            "Destination s3 directory for the T2 location count percentage "
+            "change download table",
+        ),
     )
-    main(args.merge_data_source, args.clean_destination)
+    main(
+        args.merge_data_source,
+        args.clean_destination,
+        args.t0_destination,
+        args.t1_destination,
+        args.t2_destination,
+    )

@@ -1,5 +1,8 @@
 from dataclasses import asdict, dataclass
 
+from utils.column_names.direct_payments_column_names import (
+    DirectPaymentColumnNames as DP,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
@@ -182,10 +185,10 @@ class Sector(ColumnValues):
 class JobGroupLabels(ColumnValues):
     """The possible values of the job group column in ASCWDS data"""
 
-    direct_care: str = "direct_care"
-    managers: str = "managers"
-    regulated_professions: str = "regulated_professions"
-    other: str = "other"
+    direct_care: str = "Direct care"
+    managers: str = "Managers"
+    regulated_professions: str = "Regulated professions"
+    other: str = "Other"
 
 
 @dataclass
@@ -427,6 +430,24 @@ class EstimateFilledPostsSource(ColumnValues):
 
 
 @dataclass
+class CTNonResFilledPostEstimateSource(ColumnValues):
+    """The possible values of the capacity tracker non-res filled post estimate source column in the independent CQC estimates pipeline"""
+
+    ct_non_res_all_posts: str = IndCQC.ct_non_res_all_posts
+    estimate_filled_posts: str = IndCQC.estimate_filled_posts
+
+
+@dataclass
+class ImputedProportionEmployingStaffSource(ColumnValues):
+    """The possible values of the imputed proportion employing staff source column in the direct payment recipients pipeline"""
+
+    proportion_employing_staff: str = DP.proportion_employing_staff
+    estimate_using_extrapolation_ratio: str = DP.estimate_using_extrapolation_ratio
+    estimate_using_interpolation: str = DP.estimate_using_interpolation
+    estimate_using_mean: str = DP.estimate_using_mean
+
+
+@dataclass
 class CQCRatingsValues(ColumnValues):
     outstanding: str = "Outstanding"
     good: str = "Good"
@@ -439,6 +460,11 @@ class CQCRatingsValues(ColumnValues):
 class CQCCurrentOrHistoricValues(ColumnValues):
     current: str = "Current"
     historic: str = "Historic"
+
+
+@dataclass
+class CQCRatingsDatasetValues(ColumnValues):
+    pre_saf: str = "Pre SAF"
 
 
 @dataclass
@@ -551,6 +577,29 @@ class JobRoleFilteringRule(ColumnValues):
 
 
 @dataclass
+class EmploymentStatusFilteringRule(ColumnValues):
+    """The possible reasons for filtering employment status data"""
+
+    populated: str = "populated"
+    missing_data: str = "missing_data"
+    org_level_low_permanent_temporary_ratio: str = (
+        "org_level_low_permanent_temporary_ratio"
+    )
+    location_level_low_permanent_temporary_ratio: str = (
+        "location_level_low_permanent_temporary_ratio"
+    )
+
+
+@dataclass
+class EmploymentStatusEstimateSource(ColumnValues):
+    """The percentage columns an employment status estimate can come from"""
+
+    cleaned: str = "cleaned"
+    imputed: str = "imputed"
+    rolling_avg: str = "rolling_avg"
+
+
+@dataclass
 class AscwdsJobRoleRatiosMergedSource(ColumnValues):
     """The possible values of the ASCWDS job role ratios merged source column in the independent CQC estimates pipeline"""
 
@@ -566,3 +615,28 @@ class ImputationRowKind(ColumnValues):
     known: str = "known"
     interpolated: str = "interpolated"
     carried: str = "carried"
+
+
+@dataclass
+class PublishedMainService(ColumnValues):
+    """The possible values of the main service column in publication data"""
+
+    all_locations: str = "All CQC locations"
+    all_care_homes: str = "All CQC care homes"
+    care_home_with_nursing: str = " - CQC care home with nursing"
+    care_home_only: str = " - CQC care only home"
+    non_residential: str = "CQC non-residential"
+
+
+@dataclass
+class PublishedRegion(Region):
+    """The possible values of the region column in publication data"""
+
+    england: str = "England"
+
+
+@dataclass
+class PublishedJobGroupLabels(JobGroupLabels):
+    """The possible values of the job group column in publication data"""
+
+    all_job_roles: str = "All job roles"

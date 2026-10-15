@@ -17,6 +17,7 @@ COMPLETE_COLUMNS = [
     PIRClean.location_id,
     PIRClean.pir_people_directly_employed,
     PIRClean.care_home,
+    PIRClean.pir_submission_date_as_date,
 ]
 INDEX_COLUMNS = [
     PIRClean.location_id,

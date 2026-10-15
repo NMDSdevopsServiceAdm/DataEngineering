@@ -6,6 +6,30 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
+- Added validation of the job role estimates archive run log.
+- Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
+
+### Changed
+- Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of raw counts, reading only the needed columns in the SLV merge and running the employment status steps first in Ind-CQC-SLV.
+- Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics. Models now fitted on all training rows instead of an 80/20 split. Known values are ASC-WDS for care homes and ASC-WDS plus PIR for non-res, so the `metrics` in `metadata.json` aren't comparable with earlier runs.
+- Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
+
+### Improved
+
+
+### Fixed
+- Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
+
+
+## [v2026.09.0] - 13/10/2026
+
+### Added
+- Added scripts to mark a run as approved in the job role estimates archive run log, and copied the run log into branch dataset buckets in CircleCI.
+- Moved the job role estimates archive and its two validations from the standalone Ind-CQC-Archive step function into the Independent CQC filled posts estimates step function, and removed Ind-CQC-Archive.
+- Added a Polars scaffold for the CQC ratings flatten job, run in SfC-Internal alongside the PySpark job. It writes to separate `_polars` datasets and its failure doesn't stop the other jobs.
+- Added a run log table to the job role estimates archive, recording one row per run.
+- Added validation checks for columns that are created but never checked, across the Independent CQC filled posts, employment status, starters/leavers/vacancies, CQC locations/providers ingest, CQC PIR, Capacity Tracker, ONS postcode directory and direct payment recipients validators.
 - Added a `col_vals_in_set`/distinct-count validation check for ASC-WDS workplace `region_id`, the one ASC-WDS-adjacent categorical column that previously had no validation backing it.
 - Joined worker-derived employment status counts into the SLV merge step, collapsing worker job roles to the published scheme already used by workplace and job-role-estimate data, and applying the same null-location and date-reduction filtering `_00_prepare_workplace` already uses so the worker and workplace import dates line up for the join.
 - Added has_continuous_data_since_date to publication cleaning utils. It flags locations with capacity tracker data as either a care home or non-res at all periods from a given date onwards. The two capacity tracker columns are coalesced then checked for completeness.
@@ -18,13 +42,50 @@ All notable changes to this project will be documented in this file.
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
 - Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
 - Added utilities to investigate employment status models: a modelling dataset builder and a fold-safe rolling average.
+- Added short-term imputation and a rolling average to the employment status impute job: each location and job role's 5 employment status percentages are imputed by interpolating gaps of up to 5 years and carrying the first/last known value up to 2 years beyond the known range, then smoothed into a 6-month rolling average per primary service type, region and job role, with each location counted equally. Region is now carried through from the job role metadata at the merge step. Validation covers region completeness and expected values, that imputed and rolling average percentages fall between 0 and 1, that the rolling average has no nulls, and that both sum to 1.
 - Added project-level model evaluation utilities to `_03_independent_cqc` (location cross-validation folds, a never-submitted flag and a period-to-period jumpiness measure) for the filled posts and employment status models to share.
+- Added `lookback_cap_filter_expr` (12-year cap, 6-month buffer) for job-role-estimates, replacing quarterly sampling; moved `reduced_data_filter_expr` to publication's own utils as its last remaining user.
+- Added a new "Estimate SLV counts" stage to the Ind-CQC-SLV state machine (`_05_estimate_counts`), with its own row-count validation step. The stage is currently a placeholder pass-through pending the starters/leavers/vacancies count derivation logic.
+- Added project-level group-share aggregation and R²/MAE scoring utilities to `_03_independent_cqc`, for any categorical breakdown model.
+- Added group-level totals scoring (R² and weighted absolute % error) to the project-level model evaluation utilities, for scoring filled posts model predictions.
+- Added a project-level utility that nulls chosen columns for groups where a subset's share of the group total is too low, for reuse across categorical breakdowns.
+- Added a Polars scaffold for the `_02_cqc_coverage` project (pass-through job plus placeholder helper functions) and wired it to run in parallel to the existing PySpark coverage pipeline for output comparison.
+- Ported the `_02_cqc_coverage` Polars job's core merge logic from its PySpark placeholders: ASC-WDS purge-date flagging and deduplication, the aligned-date join of ASC-WDS data onto CQC locations, the in-ASC-WDS flag, merged-coverage deduplication, the latest-current-CQC-rating join, the provider-name join, and the reduced (latest-import-month) output, which now really filters instead of passing the full dataset through.
+- Added the locality manager dashboard columns (LA coverage, month-on-month change, new registrations) to the `_02_cqc_coverage` Polars job, completing its PySpark-to-Polars port.
+- Added T0/T1/T2 data-download tables (estimated filled posts and CQC locations, and their annual/monthly percentage change) to the publication clean job, one row per financial year historically and per month for the current financial year.
+- Ported the `_02_cqc_coverage` Polars job's core merge logic from its PySpark placeholders: ASC-WDS purge-date flagging and deduplication, the aligned-date join of ASC-WDS data onto CQC locations, the in-ASC-WDS flag, merged-coverage deduplication, the latest-current-CQC-rating join, the provider-name join, and the reduced (latest-import-month) output, which now really filters instead of passing the full dataset through. Also narrowed its 4 source reads to the same curated column lists the PySpark version selects, instead of reading every column from each source.
+- Added a `_clean` copy of each deduplicated employment status count and a data-quality cleaning step for the EmpStat clean job that nulls a location's or org's employment status counts (and their percentage-share columns) where too few of their reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
+- Migrated the `_02_cqc_coverage` job's core merge logic (ASC-WDS purge-date handling, the aligned-date join, deduplication, the latest-CQC-rating and provider-name joins, and the latest-month output) from PySpark to Polars, running in parallel to the existing pipeline for output comparison.
+- Added a data-quality cleaning step for the EmpStat clean job that nulls an org's permanent, temporary, bank-or-pool, agency and other employment status counts (and their percentage-share columns) where too few of its reported staff have a recorded permanent/temporary status to trust the split, and records why in a filtering-rule column.
+- Added a step to the EmpStat clean job that creates a `_clean` copy of each deduplicated employment status count, with a filtering-rule column recording whether each row is populated or missing data.
+- Added a `check-main-tip` job at the start of the prod plan, approval, apply and dependency deploy group that fails a main pipeline whose commit is no longer the tip of `main`, so an older pipeline reaching the group after a newer one cannot apply its older plan or sync older code.
+- Added controlled rounding (banded, rounding half away from zero) for estimated filled posts and 1dp percentage formatting for annual/monthly change, applied to the publication clean job's T0/T1/T2 download tables, for parity with the manually-published reference's own rounding convention.
+- Added a `merge-queue-checks` CircleCI workflow (lint and tests only, no deploy) for GitHub merge queue branches, kept those branches out of the dev deploy workflow and the dev-environment delete hook, and serialised the prod terraform plan, approval, apply and dependency deploy so overlapping merges to main cannot collide on the state lock, with a gate that fails a main pipeline whose prod deploy was skipped or cancelled instead of reporting it as success.
+- Added full imputation to the employment status impute job, filling remaining gaps by carrying each location and job role's known percentages along the rolling averages, with validation of the result. Renamed the short-term imputed percentage columns to `*_imputed_for_trendline`.
+- Added published label classes and column names for the publication outputs, and used them in the publication clean job.
+- Added a `sagemaker` skill with notebook templates for comparing outputs, comparing data before and after a filter and scoring rolling-average durations, plus a setup notebook that keeps them up to date on the SageMaker instance.
 
+- Added a shared definition of the rows a filled posts model trains on, now used by the model training job.
+- Added filled posts model cross-validation helpers: out-of-fold predictions from a model spec and non-res size bands.
+- Added financial year, row-level, per-period bias and bias slope scoring to the project-level model evaluation utilities.
+- Added utilities to score filled posts models on held-out locations and save the metrics beside a model run. Not yet used by any job.
+- Added the diagnostics workbook template for the monthly tracker publication, with a cell map and tests that check it.
 
 ### Changed
+- Replaced the employment status magic-number split with estimated percentages (cleaned, then imputed, then rolling average), their source, and estimated counts and employees. Removed the rates CSV input.
+- The CQC PIR and ONS postcode directory ingests now start the Ind CQC filled posts estimates pipeline on success.
+- Changed the job group labels (`JobGroupLabels`) from snake_case to human-readable values, e.g. "direct_care" to "Direct care", so `main_job_group_labels` data values change on every run.
+- Added the Excel packages `gptables`, `xlsxwriter`, `pandas`, `numpy`, `openpyxl` and `pyarrow` to the publication Fargate image, and extended the Docker pin test to cover every `requirements-extra.txt`.
+- Added a `trello-cards` Claude Code skill that drafts paste-ready Trello cards from a plan or a one-line idea.
+- Restructured the Direct Payment Recipients pipeline to match Independent CQC: numbered job and dataset names, parallel validation, and error notification with an always-run crawler.
+- Converted the split PA filled posts into ICB areas step of the Direct Payment Recipients pipeline from PySpark to Polars.
+- Added `number_of_beds_at_provider` to the grouped providers output dataset.
+- Increased the upper limit of CT combined trendline validation from 2.0 to 2.5.
+- Changed employment status count deduplication to judge staleness per workplace and import date rather than per job role: counts are only nulled when no job role changed.
 - Consolidated ASC-WDS code-label vocabulary (7 workplace/worker columns) into a single Python source of truth, retiring `data_labels_lookup.csv`.
 - Moved the 9 ASC-WDS `ColumnValues` classes (main job role, employment status, establishment type, parent permission, is parent, main service id, registration type) plus `PublishedJobRoleLabels` (moved alongside them to avoid a circular import, since it subclasses `MainJobRoleLabels`) from `categorical_column_values.py` into `ascwds_labelled_vocab.py`, so that module owns the classes as well as their code-to-label dicts, and retired reconciliation's own hand-rolled `region_id` label dict in favour of the shared one, which also now labels the `-1` ("not known") region_id code that dict never covered - previously left as the raw `-1` in the reconciliation report. Also removed the unused `estimate_filled_posts_geography_labels_dict`.
 - Migrated the reconciliation job (CQC deregistration reports for ASC-WDS singles/subs and parent accounts) from PySpark/Glue to Polars on the `_02_sfc_internal` shared Fargate task, folding its Dockerfile into that project's shared `Dockerfile_and_requirements` image alongside `cqc_coverage`, renumbering its folder to `_03_reconciliation`, and removing the old Glue job, its PySpark code, and their tests/fixtures.
+- Migrated the SfC Internal coverage job (merged coverage dataset, including the locality manager dashboard columns) from PySpark/Glue to Polars/ECS at its existing dataset paths, replacing the old Glue job and removing its PySpark code, Glue Terraform resources, and now-orphaned shared utils/fixtures. Outputs were compared against the previous PySpark version's output in Athena and matched exactly before cutover.
 - Moved the starters/leavers/vacancies (SLV) pipeline from its own `_07_workforce_characteristics` project into `_03_independent_cqc` as `_03_starters_leavers_vacancies`, and folded its deployment onto IND CQC's existing shared Fargate task, retiring the separate ECS task, ECR repo and Docker image it used to run on.
 - Split the SLV pipeline into two sibling pipelines under `_03_independent_cqc`: `_02_employment_status` (worker-derived data) and `_03_starters_leavers_vacancies` (workplace-derived data), each with their own prepare/merge/clean/impute/estimate stages, with SLV's merge consuming employment status's cleaned output.
 - Merged the two DPR ingestion jobs (survey and external) into a single Polars job on the shared `_01_ingest` Fargate task, taking `--source`, `--dataset` (`survey`/`external`), and `--destination` as run-time arguments instead of hardcoding the destination path in Terraform each year, and removed the now-unused PySpark CSV-reading utilities and their tests/fixtures, since this was the last remaining PySpark CSV ingestion in the repo. Added a manually-started `Ingest-DPR-Data` step function to replace the deleted Glue jobs' manual-run trigger point.
@@ -39,23 +100,41 @@ All notable changes to this project will be documented in this file.
 - Consolidated and reorganised the SLV/employment-status column-name classes in `ind_cqc_pipeline_columns.py`.
 - Moved `EmploymentStatusRatesColumns` (renamed `EmploymentStatusMagicNumberRateColumns`) into the shared `ind_cqc_pipeline_columns.py`, alongside the other column-name classes.
 - Replaced the job role archive validation's single "at least 1 row" check with schema, row-count-against-source, and primary-key uniqueness/completeness checks scoped to just the newly-written partition for each output (estimates and metadata), plus a cross-output check confirming both outputs received the same run's partition.
-
+- Moved the filled posts models' date-index step into a shared, reusable `_03_independent_cqc` utility (`add_date_index`).
+- Serialised the dev CircleCI image build, terraform plan/apply and environment destroy per branch, and added a job that fails a pipeline whose apply didn't run.
+- Moved the `_03_independent_cqc` Dockerfile out of `_01_filled_posts` and up to the project level (`projects/_03_independent_cqc/Dockerfile_and_requirements/`), as the image also builds the employment status and starters/leavers/vacancies jobs. Updated the path in `docker-bake.hcl`; the Dockerfile itself is unchanged.
+- Changed SLV starters/leavers/vacancies deduplication to judge staleness per workplace and import date rather than per job role, independently per metric, via a new `independent` mode on the shared `remove_repeated_values_over_time_as_group` utility that batches all three metrics into one pass.
+- Replaced the PySpark DPR prepare and merge Glue jobs with one Polars Fargate step, and removed the intermediate `_prepared` datasets and the remaining PySpark DPR code.
+- Moved the extrapolation, interpolation and imputation utilities, with their tests and test data, to the project-level `_03_independent_cqc` utils.
+- Added run selection to the publication merge step: start Publication with `{"run_number": N}` to merge that archived job role estimates run, or with no input for the latest run. The resolved run is logged.
 
 ### Improved
+- Selected key question ratings by name in both current and historic CQC ratings, raising an error if a name is repeated within a list.
 - Confirmed the DPR extrapolation ratio model doesn't depend on input row order, with tests that feed it reversed and interleaved rows, and added a validation check that estimated DPR data has one row per LA area and year, which the model relies on.
 - Combined the three near-identical CI scripts that decide whether a push should seed the raw bucket, seed the archive sample data or run the CQC integration tests into one `scripts/select_ci_gate.py`, so adding a new gate is one entry in its list of trigger paths. Added a test that fails if a trigger path no longer exists in the repo, so a renamed file can't leave a gate silently never firing.
 - Reduced the IND CQC filled posts model features validation's memory use by scanning the wide imputed comparison dataset lazily, so only the columns its expected row count needs are read.
+- Tidied the direct payment recipients folder names, test layout, test names and docstrings to match the rest of the pipeline. No behaviour change.
+- Sped up the publication clean job by computing its cleaned data once instead of for every rollup and output table.
+- Changed the direct payment recipients ratio, proportion and estimate columns from Float64 to Float32, halving their memory use.
+- Renamed the direct payment recipients columns to shorter, lower snake_case names, dropping `estimated` from mid-stage columns. Estimate, summary and ICB output columns and the estimate source label `proportion_employing_staff` change, so downstream readers need the new names.
 
 
 ### Fixed
 - Fixed the IND CQC filled posts model's `get_run_number` to paginate through all S3 objects under a model root instead of only the first page, so it no longer silently undercounts (and risks reusing/overwriting a run number) once a model root passes 1000 objects.
 - Fixed the Glue crawler module's `table_prefix` so Athena table names no longer start with a digit (which Athena/Presto can't query unquoted), by adding a leading underscore ahead of the numbered domain prefix.
 - Fixed the `_02_employment_status`/`_03_starters_leavers_vacancies` pipelines' `_00_prepare_worker`/`_00_prepare_workplace` and their validate jobs to reduce ASCWDS import dates to those already CQC-matched in the job role metadata, instead of an independent hardcoded quarterly/earliest-file-per-month rule that could disagree with the metadata match and cause the merge step to silently miss rows.
+- Fixed the grouped providers output marking a location as fixed when its data was only deduplicated, moving fixed dates forward on every run, taking the latest snapshot from the latest flagged month instead of the latest month, and leaving fixed dates empty in months with no flagged location.
 - Fixed the SLV clean job computing turnover/starter/vacancy rates before deduplicating starters, leavers and vacancies, which could change a location's rate even when the underlying deduplicated figure hadn't changed; rates are now calculated from the deduplicated columns.
 - Fixed `care_home` being downgraded from its `CareHomeEnumType` to a generic `Categorical` in the job role estimates merge metadata, an oversight from when the metadata schema was set up; it's now cast to the correct type at source, and its validation schema check updated to match.
 - Fixed the Ind-CQC-Archive step function hardcoding the branch-bucket-only `main_`-prefixed job role estimates/metadata dataset names, which would have broken it in production; it now uses the same workspace-aware dataset name locals as the other step functions.
 - Fixed stale Capacity Tracker S3 upload trigger prefixes that no longer matched the real raw dataset names, which meant the pipeline could never be triggered automatically by a new upload.
+- Fixed the publication clean job's monthly percentage change being computed month-over-month instead of cumulatively against the financial-year start, which caused it to drift from the published reference beyond the first month of each financial year.
+- Fixed job role estimates metadata validation to stop excluding `contained_invalid_missing_data_code`, a workaround for data the lookback cap now retains.
 - Fixed the IND CQC filled posts model's predict step to stop with an error showing both feature lists when the saved model's features differ from the model registry, rather than risk silently misaligned predictions. Also stopped its features validation requiring `posts_rolling_average_model` for the non-res with dormancy model, which doesn't use it, and made the care home check name the bed features that column was standing in for.
+- Fixed the Windows setup and deploy docs causing Terraform and MFA command-line errors: the `HOME` step no longer needs a hand-typed username, the two conflicting `non-prod` AWS profiles are now a single Terraform-compatible one (no `mfa_serial`), broken links to the setup guide are corrected, and the Terraform install step now matches the version CircleCI uses.
+- Fixed the delete-development-environments GitHub workflow to pass the deleted branch name to its log step through an environment variable instead of splicing it into the shell command (a branch name containing `$(...)` could run code on the runner), and to skip tag deletes, which have no development environment to destroy.
+- Fixed validation report summaries showing the step and table icons as raw SVG text. `great-tables` is now pinned to 0.23.0 in the Fargate image requirements and `pyproject.toml`, after the unpinned dependency picked up 1.0.0, which HTML-escapes unformatted table cells. Added tests that the report icons are not escaped and that every pin in the Docker requirements matches `pyproject.toml`.
+- Fixed over-counting of capacity tracker total employed in the monthly tracker publication aggregation.
 
 
 ## [v2026.08.1] - 11/09/2026

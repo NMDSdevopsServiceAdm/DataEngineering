@@ -369,6 +369,7 @@ jobs:
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
             cd terraform/pipeline
+            export TF_VAR_commit_sha="$CIRCLE_SHA1"
             terraform plan -out tfplan
       - store_artifacts:
           path: terraform/pipeline/tfplan
@@ -502,7 +503,7 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_05_estimated/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_04_estimate/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_01_merge_metadata/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=02_employment_status_TEMP_rates/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/" --delete
       - run:
           name: Copy models to non-prod dataset
           command: |
@@ -649,6 +650,66 @@ jobs:
             terraform workspace select default
             terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
 
+  # Fails a pipeline whose terraform-apply did not run (on main: whose
+  # plan-approve-and-apply group did not), which CircleCI would otherwise report
+  # as success.
+  flag-incomplete-deploy:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: Fail because terraform-apply did not run
+          command: |
+            echo "terraform-apply did not run. If a newer pipeline exists on this branch, this one was superseded: don't rerun it. Otherwise an earlier job failed: see above."
+            exit 1
+
+  # The serial-group stops main pipelines overlapping but doesn't order them by
+  # commit: an older commit reaching the group second would apply its older plan
+  # and sync older code over the newer. Runs first in the group so it checks at
+  # this pipeline's turn, not when queued. cimg/base for git.
+  check-main-tip:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Fail unless this commit is the tip of main
+          command: |
+            MAIN_TIP=$(git ls-remote origin refs/heads/main | cut -f1) || MAIN_TIP=""
+            if [ -z "$MAIN_TIP" ]; then
+              echo "Could not read the tip of main from origin. Rerun the workflow from failed."
+              exit 1
+            fi
+            if [ "$MAIN_TIP" != "$CIRCLE_SHA1" ]; then
+              echo "Main has moved on to $MAIN_TIP, so this pipeline ($CIRCLE_SHA1) is superseded and must not deploy. Don't rerun it: that commit's pipeline carries these changes. If that one fails, fix or rerun it."
+              exit 1
+            fi
+            echo "$CIRCLE_SHA1 is the tip of main."
+
+
+job-groups:
+  # Run as one unit via serial-group (see test-plan-approve-and-deploy-to-main).
+  plan-approve-and-apply:
+    jobs:
+      - check-main-tip
+      - terraform-plan:
+          context: prod
+          requires:
+            - check-main-tip
+      - plan-approval:
+          type: approval
+          requires:
+            - terraform-plan
+      - terraform-apply:
+          context: prod
+          requires:
+            - plan-approval
+      - deploy-dependencies:
+          context: prod
+          requires:
+            - terraform-apply
 
 workflows:
   test-plan-approve-and-deploy-to-main:
@@ -667,25 +728,51 @@ workflows:
           filters:
             branches:
               only: main
-      - terraform-plan:
-          context: prod
+      # Overlapping main pipelines would hit the state lock or a stale plan, so
+      # the next one waits for this to finish. Cancelled after 5 hours waiting:
+      # re-run it. Needs auto-cancel OFF (see DEPLOY.md).
+      - plan-approve-and-apply:
+          serial-group: << pipeline.project.slug >>/terraform-main
           requires:
             - test
             - task-containerisation
-      - plan-approval:
-          type: approval
+      # CircleCI reports a skipped (superseded) or cancelled group as success,
+      # so fail loudly instead. List the statuses: `terminal` includes success.
+      - flag-incomplete-deploy:
           requires:
-            - terraform-plan
-      - terraform-apply:
-          context: prod
-          requires:
-            - plan-approval
-      - deploy-dependencies:
-          context: prod
-          requires:
-            - terraform-apply
+            - plan-approve-and-apply:
+                - not_run
+                - canceled
+          filters:
+            branches:
+              only: main
+
+  # Merge queue branches get lint and tests only, no deploy. These four jobs
+  # are the main-merge-queue ruleset's required checks; delete that ruleset to
+  # disable the queue.
+  merge-queue-checks:
+    unless: << pipeline.parameters.GHA_Action >>
+    jobs:
+      - lint-python:
+          filters:
+            branches:
+              only: /^gh-readonly-queue\/.*/
+      - lint-terraform:
+          filters:
+            branches:
+              only: /^gh-readonly-queue\/.*/
+      - lint-docstrings:
+          filters:
+            branches:
+              only: /^gh-readonly-queue\/.*/
+      - test:
+          filters:
+            branches:
+              only: /^gh-readonly-queue\/.*/
 
 
+  # Filtered jobs also ignore gh-readonly-queue/* (merge queue branches, tested
+  # by merge-queue-checks) so queued PRs don't deploy a dev environment.
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
@@ -693,36 +780,63 @@ workflows:
           context: non-prod
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
+      # One build per branch at a time, so the newest build wins the image tag.
       - task-containerisation:
           context: non-prod
           select_targets: true
+          serial-group: << pipeline.project.slug >>/build-<< pipeline.git.branch >>
           requires:
             - decide-bake-and-seed
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - lint-python:
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - lint-terraform:
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - lint-docstrings:
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
+      # Shared per-branch key: a newer plan waits for a running apply instead
+      # of failing on the state lock. Reusing a key in one workflow is documented
+      # as unsupported but tested fine (fallback: job-groups). Keep
+      # terraform-destroy's key in sync. Needs auto-cancel OFF (see DEPLOY.md).
       - terraform-plan:
           context: non-prod
+          serial-group: << pipeline.project.slug >>/terraform-<< pipeline.git.branch >>
           requires:
             - lint-terraform
             - task-containerisation
       - terraform-apply:
           context: non-prod
+          serial-group: << pipeline.project.slug >>/terraform-<< pipeline.git.branch >>
           requires:
             - terraform-plan
+      - flag-incomplete-deploy:
+          requires:
+            - terraform-apply:
+                - not_run
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - deploy-dependencies:
           context: non-prod
           requires:
@@ -734,23 +848,31 @@ workflows:
             - decide-bake-and-seed
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - test:
           requires:
             - terraform-apply
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
       - test-cqc-integration:
           skip_if_unrelated: true
           requires:
             - decide-bake-and-seed
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^gh-readonly-queue\/.*/
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
     jobs:
+      # Same key as plan/apply, so a branch delete waits for a running apply.
       - terraform-destroy:
           context: non-prod
+          serial-group: << pipeline.project.slug >>/terraform-<< pipeline.parameters.GHA_Meta >>

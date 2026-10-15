@@ -6,6 +6,9 @@ from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_values.categorical_columns_by_dataset import (
+    SLVPrepareCategoricalValues,
+)
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
@@ -18,9 +21,8 @@ def main(
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
 
-    The merge left-joins prepared workplace data onto the cleaned employment
-    status data, so the merged output has exactly as many rows as the cleaned
-    employment status data it was built from.
+    The merge left-joins prepared workplace data onto the employment status
+    estimates, so the merged output has exactly as many rows as the estimates.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
@@ -49,7 +51,22 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        ).interrogate()
+        )
+        # categorical - confirms published_job_role_label, one of this merge's
+        # join keys, retained valid values through the join
+        .col_vals_in_set(
+            IndCqcColumns.published_job_role_label,
+            SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values,
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.published_job_role_label,
+                SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.published_job_role_label} should have exactly "
+            f"{SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values} distinct values",
+        )
+        .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 

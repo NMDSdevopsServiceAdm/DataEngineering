@@ -13,6 +13,12 @@ variable "aws_secret_key" {
   ephemeral   = true
 }
 
+variable "commit_sha" {
+  type        = string
+  description = "Commit sha of the code being deployed, recorded in the archive run log"
+  default     = "unknown"
+}
+
 variable "region" {
   default = "eu-west-2"
 }

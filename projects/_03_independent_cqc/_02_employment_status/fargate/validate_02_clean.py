@@ -1,14 +1,22 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
+from projects._03_independent_cqc._02_employment_status.fargate.utils.clean_utils import (
+    CLEAN_COUNT_COLUMNS,
+)
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_values.categorical_column_values import EmploymentStatusFilteringRule
+from utils.column_values.categorical_columns_by_dataset import (
+    EmploymentStatusCleanCategoricalValues as CatValues,
+)
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
@@ -29,6 +37,17 @@ PERCENTAGE_COLUMNS = [
     EmpStatus.agency_percentage,
     EmpStatus.other_percentage,
 ]
+
+
+def _matches_filtering_rule_expr(column: str) -> pl.Expr:
+    """Checks column is null if and only if filtering_rule isn't 'populated'.
+
+    Applies to the _clean counts and percentages, which are null for the same rows.
+    """
+    populated = pl.lit(EmploymentStatusFilteringRule.populated)
+    return (
+        (pl.col(EmpStatus.filtering_rule) != populated) & pl.col(column).is_null()
+    ) | ((pl.col(EmpStatus.filtering_rule) == populated) & pl.col(column).is_not_null())
 
 
 def main(
@@ -78,8 +97,25 @@ def main(
             na_pass=True,
             brief="employment status percentages are between 0 and 1",
         )
-        .interrogate()
+        # complete columns
+        .col_vals_not_null(
+            [
+                EmpStatus.filtering_rule,
+            ]
+        )
+        # categorical
+        .col_vals_in_set(
+            EmpStatus.filtering_rule,
+            CatValues.filtering_rule_column_values.categorical_values,
+            brief="employment_status_filtering_rule is a known reason",
+        )
     )
+    for column in [*CLEAN_COUNT_COLUMNS, *PERCENTAGE_COLUMNS]:
+        validation = validation.col_vals_expr(
+            expr=_matches_filtering_rule_expr(column),
+            brief=f"{column} must be null when {EmpStatus.filtering_rule} isn't 'populated', and non-null when it is",
+        )
+    validation = validation.interrogate()
     vl.write_reports(validation, bucket_name, reports_path)
 
 

@@ -97,56 +97,6 @@ class AddArrayColumnCountTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class AddDateIndexColumnTests(unittest.TestCase):
-    def test_returns_same_index_for_same_import_dates(self):
-        test_lf = pl.LazyFrame(
-            Data.add_date_index_column_same_index_for_same_date_rows,
-            Schemas.add_date_index_column_schema,
-            orient="row",
-        )
-        returned_lf = job.add_date_index_column(test_lf)
-
-        expected_lf = pl.LazyFrame(
-            Data.expected_add_date_index_column_same_index_for_same_date_rows,
-            Schemas.expected_add_date_index_column_schema,
-            orient="row",
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_returns_expected_dense_ranked_indexes(self):
-        test_lf = pl.LazyFrame(
-            Data.add_date_index_column_applies_incremental_index_rows,
-            Schemas.add_date_index_column_schema,
-            orient="row",
-        )
-        returned_lf = job.add_date_index_column(test_lf)
-
-        expected_lf = pl.LazyFrame(
-            Data.expected_add_date_index_column_applies_incremental_index_rows,
-            Schemas.expected_add_date_index_column_schema,
-            orient="row",
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_returns_indexes_separated_on_care_home_column(self):
-        test_lf = pl.LazyFrame(
-            Data.add_date_index_column_indexes_by_care_home_rows,
-            Schemas.add_date_index_column_schema,
-            orient="row",
-        )
-        returned_lf = job.add_date_index_column(test_lf)
-
-        expected_lf = pl.LazyFrame(
-            Data.expected_add_date_index_column_indexes_by_care_home_rows,
-            Schemas.expected_add_date_index_column_schema,
-            orient="row",
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
 class CapIntegerAtMaxValueTests(unittest.TestCase):
     def test_returns_expected_lf(self):
         test_lf = pl.LazyFrame(

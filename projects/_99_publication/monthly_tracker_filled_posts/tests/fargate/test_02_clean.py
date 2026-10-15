@@ -12,10 +12,18 @@ PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._02_
 
 TEST_SOURCE = "some/directory"
 TEST_DESTINATION = "some/other/directory"
+TEST_T0_DESTINATION = "some/t0/directory"
+TEST_T1_DESTINATION = "some/t1/directory"
+TEST_T2_DESTINATION = "some/t2/directory"
 
 
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(
+        f"{PATCH_PATH}.clean_utils.build_t2_location_count_perc_change_download_table"
+    )
+    @patch(f"{PATCH_PATH}.clean_utils.build_t1_filled_posts_perc_change_download_table")
+    @patch(f"{PATCH_PATH}.clean_utils.build_t0_estimates_download_table")
     @patch(f"{PATCH_PATH}.clean_utils.format_large_number")
     @patch(
         f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
@@ -24,8 +32,9 @@ class TestMain:
     @patch(f"{PATCH_PATH}.clean_utils.add_rows_for_publication_groups")
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
+    @patch(f"{PATCH_PATH}.clean_utils.has_consistent_service_since_date")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
-    @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
+    @patch(f"{PATCH_PATH}.clean_utils.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
@@ -34,19 +43,22 @@ class TestMain:
         date_mock: Mock,
         reduced_data_filter_expr_mock: Mock,
         has_continuous_data_since_date_mock: Mock,
+        has_consistent_service_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
         aggregate_to_publication_rows_mock: Mock,
         add_rows_for_publication_groups_mock: Mock,
         calc_perc_change_between_rows_mock: Mock,
         calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
         format_large_number_mock: Mock,
+        build_t0_estimates_download_table_mock: Mock,
+        build_t1_filled_posts_perc_change_download_table_mock: Mock,
+        build_t2_location_count_perc_change_download_table_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
             {
                 IndCQC.location_id: ["1-001", "1-001"],
                 IndCQC.cqc_location_import_date: [date(2025, 4, 1), date(2026, 4, 1)],
-                IndCQC.care_home_status_count: [1, 2],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0, None],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None, 6.0],
             }
@@ -58,6 +70,9 @@ class TestMain:
             lambda column_name, from_date, column_alias: pl.lit(True).alias(
                 column_alias
             )
+        )
+        has_consistent_service_since_date_mock.side_effect = (
+            lambda from_date, column_alias: pl.lit(True).alias(column_alias)
         )
         add_dispersion_filter_mock.side_effect = (
             lambda lazy_df, column_names, from_date, column_alias: (
@@ -86,13 +101,36 @@ class TestMain:
         format_large_number_mock.side_effect = lambda column_name, column_alias: pl.lit(
             "42"
         ).alias(column_alias)
+        build_t0_estimates_download_table_mock.return_value = pl.LazyFrame(
+            {Pub.publication_filled_posts: [42.0]}
+        )
+        build_t1_filled_posts_perc_change_download_table_mock.return_value = (
+            pl.LazyFrame({Pub.publication_filled_posts: [42.0]})
+        )
+        build_t2_location_count_perc_change_download_table_mock.return_value = (
+            pl.LazyFrame({Pub.publication_filled_posts: [42.0]})
+        )
 
-        job.main(TEST_SOURCE, TEST_DESTINATION)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_T0_DESTINATION,
+            TEST_T1_DESTINATION,
+            TEST_T2_DESTINATION,
+        )
 
         scan_parquet_mock.assert_called_once_with(TEST_SOURCE)
 
         reduced_data_filter_expr_mock.assert_called_once_with(
             cutoff_date=date(2020, 4, 1),
+        )
+
+        has_consistent_service_since_date_mock.assert_has_calls(
+            [
+                call(date(2021, 7, 1), Pub.consistent_service_long_term),
+                call(date(2025, 4, 1), Pub.consistent_service_medium_term),
+                call(date(2026, 4, 1), Pub.consistent_service_short_term),
+            ]
         )
 
         has_continuous_data_since_date_mock.assert_has_calls(
@@ -146,10 +184,11 @@ class TestMain:
             {
                 IndCQC.location_id: ["1-001", "1-001"],
                 IndCQC.cqc_location_import_date: [date(2025, 4, 1), date(2026, 4, 1)],
-                IndCQC.care_home_status_count: [1, 2],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0, None],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None, 6.0],
-                Pub.consistent_service: [True, False],
+                Pub.consistent_service_long_term: [True, True],
+                Pub.consistent_service_medium_term: [True, True],
+                Pub.consistent_service_short_term: [True, True],
                 Pub.ct_total_employed_imputed: [5.0, 6.0],
                 Pub.ct_has_data_long_term: [True, True],
                 Pub.ct_has_data_medium_term: [True, True],
@@ -248,9 +287,9 @@ class TestMain:
             ]
         )
 
-        sink_to_parquet_mock.assert_called_once()
-        sink_call_kwargs = sink_to_parquet_mock.call_args.kwargs
-        assert sink_call_kwargs["output_path"] == TEST_DESTINATION
+        assert sink_to_parquet_mock.call_count == 4
+        clean_sink_call_kwargs = sink_to_parquet_mock.call_args_list[0].kwargs
+        assert clean_sink_call_kwargs["output_path"] == TEST_DESTINATION
         expected_sink_lf = aggregate_to_publication_rows_mock.return_value.with_columns(
             pl.lit(None, dtype=pl.Float32).alias(
                 Pub.assessment_ct_period_perc_change_long_term
@@ -277,9 +316,51 @@ class TestMain:
             pl.lit("Apr 2026").alias(Pub.cqc_location_import_date_abbreviated),
             pl.lit("April 2026").alias(Pub.cqc_location_import_date_full),
         )
-        assert_frame_equal(sink_call_kwargs["lazy_df"], expected_sink_lf)
+        assert_frame_equal(clean_sink_call_kwargs["lazy_df"], expected_sink_lf)
+
+        build_t0_estimates_download_table_mock.assert_called_once()
+        assert_frame_equal(
+            build_t0_estimates_download_table_mock.call_args.args[0],
+            expected_sink_lf,
+        )
+        build_t1_filled_posts_perc_change_download_table_mock.assert_called_once()
+        assert_frame_equal(
+            build_t1_filled_posts_perc_change_download_table_mock.call_args.args[0],
+            expected_sink_lf,
+        )
+        build_t2_location_count_perc_change_download_table_mock.assert_called_once()
+        assert_frame_equal(
+            build_t2_location_count_perc_change_download_table_mock.call_args.args[0],
+            expected_sink_lf,
+        )
+
+        t0_sink_call_kwargs = sink_to_parquet_mock.call_args_list[1].kwargs
+        assert t0_sink_call_kwargs["output_path"] == TEST_T0_DESTINATION
+        assert (
+            t0_sink_call_kwargs["lazy_df"]
+            is build_t0_estimates_download_table_mock.return_value
+        )
+
+        t1_sink_call_kwargs = sink_to_parquet_mock.call_args_list[2].kwargs
+        assert t1_sink_call_kwargs["output_path"] == TEST_T1_DESTINATION
+        assert (
+            t1_sink_call_kwargs["lazy_df"]
+            is build_t1_filled_posts_perc_change_download_table_mock.return_value
+        )
+
+        t2_sink_call_kwargs = sink_to_parquet_mock.call_args_list[3].kwargs
+        assert t2_sink_call_kwargs["output_path"] == TEST_T2_DESTINATION
+        assert (
+            t2_sink_call_kwargs["lazy_df"]
+            is build_t2_location_count_perc_change_download_table_mock.return_value
+        )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(
+        f"{PATCH_PATH}.clean_utils.build_t2_location_count_perc_change_download_table"
+    )
+    @patch(f"{PATCH_PATH}.clean_utils.build_t1_filled_posts_perc_change_download_table")
+    @patch(f"{PATCH_PATH}.clean_utils.build_t0_estimates_download_table")
     @patch(f"{PATCH_PATH}.clean_utils.format_large_number")
     @patch(
         f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
@@ -288,8 +369,9 @@ class TestMain:
     @patch(f"{PATCH_PATH}.clean_utils.add_rows_for_publication_groups")
     @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
     @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
+    @patch(f"{PATCH_PATH}.clean_utils.has_consistent_service_since_date")
     @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
-    @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
+    @patch(f"{PATCH_PATH}.clean_utils.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_uses_retention_cutoff_date_for_long_term_once_it_is_later_than_the_earliest_ct_data_date(
@@ -298,17 +380,20 @@ class TestMain:
         date_mock: Mock,
         reduced_data_filter_expr_mock: Mock,
         has_continuous_data_since_date_mock: Mock,
+        has_consistent_service_since_date_mock: Mock,
         add_dispersion_filter_mock: Mock,
         aggregate_to_publication_rows_mock: Mock,
         add_rows_for_publication_groups_mock: Mock,
         calc_perc_change_between_rows_mock: Mock,
         calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
         format_large_number_mock: Mock,
+        build_t0_estimates_download_table_mock: Mock,
+        build_t1_filled_posts_perc_change_download_table_mock: Mock,
+        build_t2_location_count_perc_change_download_table_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = pl.LazyFrame(
             {
-                IndCQC.care_home_status_count: [1],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None],
             }
@@ -320,6 +405,9 @@ class TestMain:
             lambda column_name, from_date, column_alias: pl.lit(True).alias(
                 column_alias
             )
+        )
+        has_consistent_service_since_date_mock.side_effect = (
+            lambda from_date, column_alias: pl.lit(True).alias(column_alias)
         )
         add_dispersion_filter_mock.side_effect = (
             lambda lazy_df, column_names, from_date, column_alias: (
@@ -348,8 +436,23 @@ class TestMain:
         format_large_number_mock.side_effect = lambda column_name, column_alias: pl.lit(
             "42"
         ).alias(column_alias)
+        build_t0_estimates_download_table_mock.return_value = pl.LazyFrame(
+            {Pub.publication_filled_posts: [42.0]}
+        )
+        build_t1_filled_posts_perc_change_download_table_mock.return_value = (
+            pl.LazyFrame({Pub.publication_filled_posts: [42.0]})
+        )
+        build_t2_location_count_perc_change_download_table_mock.return_value = (
+            pl.LazyFrame({Pub.publication_filled_posts: [42.0]})
+        )
 
-        job.main(TEST_SOURCE, TEST_DESTINATION)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_T0_DESTINATION,
+            TEST_T1_DESTINATION,
+            TEST_T2_DESTINATION,
+        )
 
         reduced_data_filter_expr_mock.assert_called_once_with(
             cutoff_date=date(2027, 4, 1),

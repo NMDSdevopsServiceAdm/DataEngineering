@@ -25,16 +25,35 @@
             },
             "Merge Coverage Data": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${merge_coverage_data_job_name}",
-                "Arguments": {
-                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_04_full_cleaned_registered/",
-                  "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/",
-                  "--cqc_ratings_source": "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_data_requests/",
-                  "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/domain=01_cqc/dataset=providers_04_full_cleaned/",
-                  "--merged_coverage_destination": "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data/",
-                  "--reduced_coverage_destination": "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_monthly_coverage_data/"
+                "Cluster": "${model_cluster_arn}",
+                "TaskDefinition": "${sfc_internal_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${sfc_internal_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_02_sfc_internal-container",
+                      "Command": [
+                        "merge_coverage_data.py",
+                        "--cleaned_cqc_location_source", "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_04_full_cleaned_registered/",
+                        "--ascwds_workplace_source", "${dataset_bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/",
+                        "--cqc_ratings_source", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_data_requests/",
+                        "--cleaned_cqc_providers_source", "${dataset_bucket_uri}/domain=01_cqc/dataset=providers_04_full_cleaned/",
+                        "--merged_coverage_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_merged_coverage_data/",
+                        "--reduced_coverage_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_monthly_coverage_data/"
+                      ]
+                    }
+                  ]
                 }
               },
               "Next": "Validate Merge Coverage Data"
@@ -97,12 +116,65 @@
                         "--cqc_locations_snapshot_source", "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_04_latest_snapshot/",
                         "--ascwds_workplace_source", "${dataset_bucket_uri}/domain=02_sfc/dataset=ascwds_for_sfc_internal/",
                         "--reconciliation_single_and_subs_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_singles_and_subs/",
-                        "--reconciliation_parents_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_parents/"
+                        "--reconciliation_parents_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_parents/",
+                        "--potentials_count_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_reconciliation_potentials_count/"
                       ]
                     }
                   ]
                 }
               },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Flatten CQC Ratings (Polars)",
+          "States": {
+            "Flatten CQC Ratings (Polars)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${model_cluster_arn}",
+                "TaskDefinition": "${sfc_internal_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${sfc_internal_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_02_sfc_internal-container",
+                      "Command": [
+                        "flatten_cqc_ratings.py",
+                        "--cqc_full_snapshot_source", "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_04_latest_snapshot/",
+                        "--cqc_locations_api_delta_source", "${dataset_bucket_uri}/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/",
+                        "--ascwds_workplace_source", "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace/",
+                        "--cqc_ratings_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_data_requests_polars/",
+                        "--benchmark_ratings_destination", "${dataset_bucket_uri}/domain=02_sfc/dataset=sfc_cqc_ratings_for_benchmarks_polars/version=2.0.0/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "ResultPath": "$.polars_flatten_error",
+          "Next": "Polars Flatten CQC Ratings Failed"
+                }
+              ],
+              "End": true
+            },
+            "Polars Flatten CQC Ratings Failed": {
+              "Type": "Pass",
               "End": true
             }
           }

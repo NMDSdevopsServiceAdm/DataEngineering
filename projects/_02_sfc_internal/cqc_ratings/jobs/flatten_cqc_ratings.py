@@ -122,6 +122,7 @@ def main(
     )
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def keep_latest_per_key(df: DataFrame, key_col: str, order_col: str) -> DataFrame:
     """
     Retains only the latest row for each unique key in a DataFrame based on a specified ordering column.
@@ -147,6 +148,7 @@ def keep_latest_per_key(df: DataFrame, key_col: str, order_col: str) -> DataFram
     )
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def filter_to_first_import_of_most_recent_month(df: DataFrame) -> DataFrame:
     max_year = df.agg(F.max(df[Keys.year])).collect()[0][0]
     df = df.where(df[Keys.year] == max_year)
@@ -177,6 +179,7 @@ def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     return ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def flatten_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     current_ratings_df = cqc_location_df.select(
         cqc_location_df[CQCL.location_id],
@@ -206,6 +209,7 @@ def flatten_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     return current_ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     historic_ratings_df = cqc_location_df.select(
         cqc_location_df[CQCL.location_id],
