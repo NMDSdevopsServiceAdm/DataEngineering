@@ -1,7 +1,8 @@
 """A filled copy of the template saves with its values, charts and styles.
 
-The copies use illustrative values. Set DIAGNOSTICS_TEMPLATE_CHECK_DIR to keep
-them for a manual check in Excel: one filled to date, one with every slot filled.
+The copies use generic values. Set DIAGNOSTICS_TEMPLATE_CHECK_DIR to keep them
+for a manual check in Excel: one with the first half of every range filled, one
+with every slot filled.
 """
 
 import os
@@ -32,7 +33,7 @@ def _save_filled_copy(tmp_path_factory, file_name: str, full: bool):
 
 @pytest.fixture(scope="module")
 def partly_filled(tmp_path_factory) -> tuple[Path, dict]:
-    """Copy filled to date, as a real month would be."""
+    """Copy with the first half of every range filled, so blank slots are checked too."""
     return _save_filled_copy(tmp_path_factory, "diagnostics_filled_fixture", full=False)
 
 

@@ -1,10 +1,11 @@
 """Helpers for the diagnostics template tests.
 
 Reads the workbook's XML, works out what Excel shows for a cell, and fills the
-template with illustrative values (dates and figures are made up).
+template with generic values of the right type for each cell style.
 """
 
 import datetime
+import posixpath
 import re
 import zipfile
 from xml.etree import ElementTree
@@ -90,61 +91,66 @@ def effective_style(worksheet, row: int, col: int) -> tuple:
 
 
 # ------------------------------------------------------- workbook XML
+# An xlsx is a zip of XML parts. A part lists the parts it uses in
+# `_rels/<part name>.rels`, as relationship id -> target path. To reach a chart,
+# the tests walk workbook -> sheet -> drawing -> chart.
 def read_xml(package: zipfile.ZipFile, part: str) -> ElementTree.Element:
     """Parses one part of the xlsx package."""
     return ElementTree.fromstring(package.read(part))
 
 
-def _relationship_targets(package: zipfile.ZipFile, part: str) -> dict[str, str]:
-    """Maps relationship id to the full package path of the part it targets."""
-    folder, name = part.rsplit("/", 1)
+def _resolve(folder: str, target: str) -> str:
+    """Package path of a relationship target.
+
+    Example: ("xl/worksheets", "../drawings/drawing1.xml") gives
+    "xl/drawings/drawing1.xml".
+    """
+    if target.startswith("/"):
+        return target.lstrip("/")
+    return posixpath.normpath(posixpath.join(folder, target))
+
+
+def _relationships(package: zipfile.ZipFile, part: str) -> dict[str, str]:
+    """Relationship id -> package path of the part it points to, for one part."""
+    folder, name = posixpath.split(part)
     rels_part = f"{folder}/_rels/{name}.rels"
     if rels_part not in package.namelist():
         return {}
-    rels = read_xml(package, rels_part)
     return {
-        rel.get("Id"): (
-            rel.get("Target").lstrip("/")
-            if rel.get("Target").startswith("/")
-            else "/".join(p for p in f"{folder}/{rel.get('Target')}".split("/") if p)
-        )
-        for rel in rels.findall("rel:Relationship", NS)
+        rel.get("Id"): _resolve(folder, rel.get("Target"))
+        for rel in read_xml(package, rels_part).findall("rel:Relationship", NS)
     }
 
 
-def _normalise(part: str) -> str:
-    parts: list[str] = []
-    for piece in part.split("/"):
-        if piece == "..":
-            parts.pop()
-        else:
-            parts.append(piece)
-    return "/".join(parts)
+def _sheet_part(package: zipfile.ZipFile, sheet_name: str) -> str:
+    """Package path of a sheet's XML part."""
+    sheets = read_xml(package, "xl/workbook.xml").findall("main:sheets/main:sheet", NS)
+    sheet_id = next(
+        s.get(f"{{{NS['r']}}}id") for s in sheets if s.get("name") == sheet_name
+    )
+    return _relationships(package, "xl/workbook.xml")[sheet_id]
+
+
+def _drawing_part(package: zipfile.ZipFile, sheet_part: str) -> str | None:
+    """Package path of a sheet's drawing (the part that holds its charts), if any."""
+    return next(
+        (
+            path
+            for path in _relationships(package, sheet_part).values()
+            if "/drawings/drawing" in path
+        ),
+        None,
+    )
 
 
 def drawing(
     package: zipfile.ZipFile, sheet_name: str
 ) -> tuple[ElementTree.Element, str]:
     """A sheet's drawing XML and its part name; an empty element if it has none."""
-    book = read_xml(package, "xl/workbook.xml")
-    book_targets = _relationship_targets(package, "xl/workbook.xml")
-    sheet_rid = next(
-        s.get(f"{{{NS['r']}}}id")
-        for s in book.findall("main:sheets/main:sheet", NS)
-        if s.get("name") == sheet_name
-    )
-    sheet_part = _normalise(book_targets[sheet_rid])
-    drawing_part = next(
-        (
-            _normalise(t)
-            for t in _relationship_targets(package, sheet_part).values()
-            if "/drawings/drawing" in t
-        ),
-        None,
-    )
-    if drawing_part is None:
+    part = _drawing_part(package, _sheet_part(package, sheet_name))
+    if part is None:
         return ElementTree.Element("noDrawing"), ""
-    return read_xml(package, drawing_part), drawing_part
+    return read_xml(package, part), part
 
 
 def charts(package: zipfile.ZipFile, sheet_name: str) -> list[ElementTree.Element]:
@@ -156,8 +162,8 @@ def charts(package: zipfile.ZipFile, sheet_name: str) -> list[ElementTree.Elemen
     ]
     if not chart_ids:
         return []
-    targets = _relationship_targets(package, drawing_part)
-    return [read_xml(package, _normalise(targets[rid])) for rid in chart_ids]
+    chart_parts = _relationships(package, drawing_part)
+    return [read_xml(package, chart_parts[rid]) for rid in chart_ids]
 
 
 def split_reference(reference: str) -> tuple[str, str]:
@@ -248,6 +254,9 @@ def chart_signature(package: zipfile.ZipFile, sheet: cell_map.SheetMap) -> list:
 
 
 # ------------------------------------------------------------- fixtures
+FIRST_DATE = datetime.datetime(2026, 3, 1)
+
+
 def add_months(start: datetime.datetime, months: int) -> datetime.datetime:
     """The date `months` months after `start`."""
     month_index = start.month - 1 + months
@@ -256,127 +265,41 @@ def add_months(start: datetime.datetime, months: int) -> datetime.datetime:
     )
 
 
-def slot_plan(sheet: cell_map.SheetMap, note: str, rows: int, full: bool):
-    """First date, months per step, filled slots and growth per step for a range.
+def generic_value(style: str, row_offset: int, col_offset: int) -> object:
+    """A value of the right type for a cell style, at an offset into its range.
 
-    The fixture's start dates are illustrative: the real long-term start is the
-    first import date with data. `full` fills every slot in the range rather
-    than the months to date.
+    Dates are consecutive months; counts and percentages rise down the rows and
+    differ across the columns, so chart series do not sit on top of each other.
     """
-    if "annual" in note:
-        plan = datetime.datetime(2017, 3, 1), 12, 10, 0.03
-    elif "medium term" in sheet.name:
-        plan = datetime.datetime(2025, 3, 1), 1, 18, 0.004
-    elif "long term" in sheet.name:
-        plan = datetime.datetime(2021, 4, 1), 3, 22, 0.012
-    else:
-        plan = datetime.datetime(2026, 3, 1), 1, 6, 0.004
-    first, step, filled, growth = plan
-    return first, step, rows if full else filled, growth
-
-
-def fixture_cell(
-    sheet: cell_map.SheetMap,
-    input_range: cell_map.InputRange,
-    row: int,
-    col: int,
-    full: bool = False,
-):
-    """Fixture value for one input cell, or None to leave an unfilled slot empty."""
-    # Illustrative sizes: care homes about 12,000 locations, non-residential
-    # (the right-hand tables, columns after H) 500 or 1,000 more.
-    cells = CellRange(input_range.cells)
-    i, j = row - cells.min_row, col - cells.min_col
-    note = input_range.note
-    first, step, filled, growth = slot_plan(sheet, note, cells.size["rows"], full)
-    if "annual" in note and "% change" in note and "dates" not in note and not full:
-        filled -= 1  # the first year has no change to show
-    is_right_hand_table = col > 8
-    if "number of locations" in note and cells.size["rows"] == 1:
-        return 12000 + 500 * is_right_hand_table
-    if "number of locations by period" in note:
-        return (
-            round((12000 + 1000 * is_right_hand_table) * (1 + growth) ** i)
-            if i < filled
-            else None
-        )
-    if cells.size["rows"] == 1:
-        since = f"{first:%B %Y}" + (" (quarterly)" if step == 3 else "")
-        if "% change heading" in note:
-            start = f"{first:%B %Y}" if step == 3 else f"end of {first:%B %Y}"
-            return f"% change since {start}"
-        if "chart heading" in note:
-            return f"Comparison of percentage change in filled posts and CQC locations since {first:%B %Y}"
-        if "heading" in note:
-            return f"Comparison of Skills for Care's estimate of filled posts to Capacity Tracker - Since {since}"
-        if "onwards" in note:
-            return f"- Must have a Capacity Tracker figure in all months from end of {first:%B %Y} onwards."
-        return "End of August 2026"
-    if "difference as percentage" in note:
-        annual = 12 if full else 10
-        monthly = 25 if full else 5
-        if i >= annual + monthly:
-            return None
-        return round(0.01 + 0.001 * j + 0.0005 * i, 6)
-    if "publication" in note or note in ("difference labels", "difference dates"):
-        # To date: the previous publication is one month behind, so its monthly
-        # block is one row shorter.
-        annual = 12 if full else 10
-        monthly = 25 if full else (4 if "previous" in note else 5)
-        if i >= annual + monthly:
-            return None
-        if "labels" in note:
-            return "Annual" if i < annual else "Monthly"
-        if "dates" in note:
-            if i < annual:
-                return add_months(datetime.datetime(2017, 3, 1), 12 * i)
-            last_annual = add_months(datetime.datetime(2017, 3, 1), 12 * (annual - 1))
-            return add_months(last_annual, 1 + i - annual)
-        scale = 1 if "previous" in note else 1.01  # current is 1% above previous
-        return round(150_000 * (j + 1) * (1 + 0.004 * i) * scale)
-    if i >= filled:
-        return None
-    if "dates" in note:
-        return add_months(first, i * step)
-    capacity_tracker_growth = 0.8  # Capacity Tracker grows slower than the estimate
-    leaf = (
-        [4_000, 8_000, 13_500] if "locations" in note else [150_000, 300_000, 700_000]
-    )
-    if "primary service type" in note:
-        # C: total of all service types; D: total of the two care home types;
-        # E:G: the service types.
-        if j < 2:
-            members = leaf if j == 0 else leaf[:2]
-            return round(sum(members) * (1 + growth) ** i)
-        return round(leaf[j - 2] * (1 + growth) ** i)
-    if "% change" in note:
-        return round((1 + growth * (capacity_tracker_growth if j else 1)) ** i - 1, 6)
-    base = {
-        "care homes SfC": 480_000,
-        "care homes CT": 420_000,
-        "non-res SfC": 650_000,
-        "non-res CT": 560_000,
-    }.get(note)
-    if base:
-        slower = capacity_tracker_growth if "CT" in note else 1
-        return round(base * (1 + growth * slower) ** i)
-    return round(leaf[j] * (1 + growth) ** i)
+    return {
+        "text": "Text",
+        "bold_text": "Bold text",
+        "heading": "Heading",
+        "date": add_months(FIRST_DATE, row_offset),
+        "count": 1000 * (row_offset + 1) + 100 * col_offset,
+        "percent": round(0.01 * (row_offset + 1) + 0.002 * col_offset, 6),
+    }[style]
 
 
 def fill_inputs(
     workbook: openpyxl.Workbook, full: bool = False
 ) -> dict[tuple[str, str], object]:
-    """Writes a fixture value into every filled cell-map input; returns them.
+    """Writes a generic value into the cell-map inputs; returns them by cell.
 
-    `full` fills every slot, to check the formatting of all rows.
+    `full` fills every slot. Otherwise only the first half of each range's rows
+    are filled, so the copy also has empty slots.
     """
     written = {}
     for sheet in cell_map.DIAGNOSTICS_SHEETS:
         worksheet = workbook[sheet.name]
         for input_range in sheet.input_ranges:
-            for row, col in sorted(cells_in([input_range.cells])):
-                value = fixture_cell(sheet, input_range, row, col, full)
-                if value is not None:
+            cells = CellRange(input_range.cells)
+            rows = cells.size["rows"] if full else (cells.size["rows"] + 1) // 2
+            for row in range(cells.min_row, cells.min_row + rows):
+                for col in range(cells.min_col, cells.max_col + 1):
+                    value = generic_value(
+                        input_range.style, row - cells.min_row, col - cells.min_col
+                    )
                     workbook_utils.write_input_cell(worksheet, row, col, value)
                     written[(sheet.name, coordinate(row, col))] = value
     return written
