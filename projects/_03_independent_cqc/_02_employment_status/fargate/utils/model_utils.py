@@ -3,6 +3,7 @@ from typing import Callable
 import polars as pl
 
 import projects._03_independent_cqc.utils.model_evaluation_utils as evaluationUtils
+import projects._03_independent_cqc.utils.model_utils as modelUtils
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -15,30 +16,6 @@ from utils.column_values.categorical_column_values import (
     CQCRatingsValues,
     ImputationRowKind,
 )
-
-
-def add_date_index(
-    lf: pl.LazyFrame, partition_columns: list[str], date_column: str
-) -> pl.LazyFrame:
-    """
-    Add each row's index among its partition's distinct dates, as the filled posts models do.
-
-    A dense rank is used, so repeated dates share an index and no dates are skipped.
-
-    Args:
-        lf (pl.LazyFrame): dataset containing the partition and date columns
-        partition_columns (list[str]): the columns identifying each timeline
-        date_column (str): the date column
-
-    Returns:
-        pl.LazyFrame: dataset with "cqc_location_import_date_indexed" added
-    """
-    return lf.with_columns(
-        pl.col(date_column)
-        .rank(method="dense")
-        .over(partition_columns)
-        .alias(IndCQC.cqc_location_import_date_indexed)
-    )
 
 
 def add_imputation_row_kind(
@@ -84,29 +61,6 @@ def add_imputation_row_kind(
         .then(pl.lit(ImputationRowKind.carried))
         .cast(row_kind_type)
         .alias(ShareModel.imputation_row_kind)
-    )
-
-
-def add_provider_location_count(
-    lf: pl.LazyFrame, provider_column: str, location_column: str, date_column: str
-) -> pl.LazyFrame:
-    """
-    Add each provider's number of distinct locations per date, counting locations, not rows.
-
-    Args:
-        lf (pl.LazyFrame): dataset containing the provider, location and date columns
-        provider_column (str): the provider ID
-        location_column (str): the location ID
-        date_column (str): the date column
-
-    Returns:
-        pl.LazyFrame: dataset with "provider_location_count" added
-    """
-    return lf.with_columns(
-        pl.col(location_column)
-        .n_unique()
-        .over(provider_column, date_column)
-        .alias(ShareModel.provider_location_count)
     )
 
 
@@ -232,7 +186,6 @@ def build_modelling_dataset(
     lf = shares_lf.select(
         *location_role_columns,
         date_column,
-        IndCQC.provider_id,
         IndCQC.primary_service_type,
         IndCQC.care_home,
         IndCQC.current_region,
@@ -257,7 +210,7 @@ def build_modelling_dataset(
     )
     lf = lf.join(estimates_lf, on=[IndCQC.location_id, date_column], how="left")
 
-    lf = add_date_index(
+    lf = modelUtils.add_date_index(
         lf, partition_columns=location_role_columns, date_column=date_column
     )
     lf = add_imputation_row_kind(
@@ -269,12 +222,6 @@ def build_modelling_dataset(
     )
     lf = evaluationUtils.add_never_submitted_flag(
         lf, known_column=known_share_columns[0], location_column=IndCQC.location_id
-    )
-    lf = add_provider_location_count(
-        lf,
-        provider_column=IndCQC.provider_id,
-        location_column=IndCQC.location_id,
-        date_column=date_column,
     )
     lf = add_latest_overall_rating(
         lf, ratings_lf, location_column=IndCQC.location_id, date_column=date_column

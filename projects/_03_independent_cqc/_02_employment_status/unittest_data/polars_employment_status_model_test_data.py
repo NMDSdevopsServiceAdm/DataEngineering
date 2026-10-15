@@ -126,41 +126,6 @@ def fold_safe_case(
 
 @dataclass
 class TestModelUtilsData:
-    add_date_index_test_cases = [
-        ModelUtilsTestCase(
-            id="repeated_dates_share_an_index",
-            input_data={
-                IndCQC.location_id: ["loc1", "loc1", "loc1"],
-                IndCQC.cqc_location_import_date: [
-                    date(2024, 1, 1),
-                    date(2024, 1, 1),
-                    date(2024, 2, 1),
-                ],
-            },
-            expected_data={
-                IndCQC.location_id: ["loc1", "loc1", "loc1"],
-                IndCQC.cqc_location_import_date: [
-                    date(2024, 1, 1),
-                    date(2024, 1, 1),
-                    date(2024, 2, 1),
-                ],
-                IndCQC.cqc_location_import_date_indexed: [1, 1, 2],
-            },
-        ),
-        ModelUtilsTestCase(
-            id="index_is_partitioned_by_location",
-            input_data={
-                IndCQC.location_id: ["loc1", "loc2"],
-                IndCQC.cqc_location_import_date: [date(2024, 3, 1), date(2024, 1, 1)],
-            },
-            expected_data={
-                IndCQC.location_id: ["loc1", "loc2"],
-                IndCQC.cqc_location_import_date: [date(2024, 3, 1), date(2024, 1, 1)],
-                IndCQC.cqc_location_import_date_indexed: [1, 1],
-            },
-        ),
-    ]
-
     add_imputation_row_kind_test_cases = [
         ModelUtilsTestCase(
             id="labels_every_kind_along_a_location_roles_dates",
@@ -212,59 +177,6 @@ class TestModelUtilsData:
                     KNOWN,
                     CARRIED,
                 ],
-            },
-        ),
-    ]
-
-    add_provider_location_count_test_cases = [
-        ModelUtilsTestCase(
-            id="counts_a_location_once_across_its_job_roles",
-            input_data={
-                IndCQC.provider_id: ["prov1"] * 3,
-                IndCQC.location_id: ["loc1", "loc1", "loc2"],
-                IndCQC.published_job_role_label: [
-                    CARE_WORKER,
-                    REGISTERED_NURSE,
-                    CARE_WORKER,
-                ],
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 3,
-            },
-            expected_data={
-                IndCQC.provider_id: ["prov1"] * 3,
-                IndCQC.location_id: ["loc1", "loc1", "loc2"],
-                IndCQC.published_job_role_label: [
-                    CARE_WORKER,
-                    REGISTERED_NURSE,
-                    CARE_WORKER,
-                ],
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 3,
-                ShareModel.provider_location_count: [2, 2, 2],
-            },
-        ),
-        ModelUtilsTestCase(
-            id="counts_each_provider_and_date_separately",
-            input_data={
-                IndCQC.provider_id: ["prov1", "prov1", "prov1", "prov2"],
-                IndCQC.location_id: ["loc1", "loc2", "loc1", "loc3"],
-                IndCQC.published_job_role_label: [CARE_WORKER] * 4,
-                IndCQC.cqc_location_import_date: [
-                    date(2024, 1, 1),
-                    date(2024, 1, 1),
-                    date(2024, 2, 1),
-                    date(2024, 1, 1),
-                ],
-            },
-            expected_data={
-                IndCQC.provider_id: ["prov1", "prov1", "prov1", "prov2"],
-                IndCQC.location_id: ["loc1", "loc2", "loc1", "loc3"],
-                IndCQC.published_job_role_label: [CARE_WORKER] * 4,
-                IndCQC.cqc_location_import_date: [
-                    date(2024, 1, 1),
-                    date(2024, 1, 1),
-                    date(2024, 2, 1),
-                    date(2024, 1, 1),
-                ],
-                ShareModel.provider_location_count: [2, 2, 1, 1],
             },
         ),
     ]
@@ -515,7 +427,6 @@ class TestModelUtilsData:
     # loc1 has two roles, two dates and two ratings, so a bad join would duplicate its rows.
     build_modelling_dataset_shares_data = {
         IndCQC.location_id: ["loc1"] * 4 + ["loc2"] * 2,
-        IndCQC.provider_id: ["prov1"] * 6,
         IndCQC.cqc_location_import_date: JAN_TO_MAR[:2] * 3,
         IndCQC.published_job_role_label: [CARE_WORKER] * 2
         + [REGISTERED_NURSE] * 2
