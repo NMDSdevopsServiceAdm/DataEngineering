@@ -19,8 +19,6 @@ We only archive specific columns in each dataset.
 
 ## Publication
 
-![Publication-Assessment prepares and assesses each run; after a human pause, Publication-Output builds the public data for the selected run](publication_pipelines.svg)
-
 ### Preparation
 The `Publication-Assessment` step function starts automatically when the estimates pipeline succeeds, and prepares the run it has just archived.
 Preparation merges the archived job role estimates and metadata, and filters the data to import dates from April six financial years ago onwards, then each quarter up to the start of the previous financial year, then each month for within the previous and current financial years.
