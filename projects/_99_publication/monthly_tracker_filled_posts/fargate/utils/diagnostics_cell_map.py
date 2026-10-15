@@ -143,10 +143,7 @@ FILLED_POSTS = SheetMap(
     bold_heading_cells=("B20", "B40", "B61", "B80"),
 )
 
-# Annual rows first, then monthly rows; unused slots stay blank at the end. Row i
-# of the difference block compares current row i with previous row i. On the first
-# run after a year end the previous publication has no row for the year just
-# ended, so the writer pads its block with a blank row to keep the rows lined up.
+# Annual rows first, then monthly rows; unused slots stay blank at the end.
 COMP_PREV_PUBLICATION = SheetMap(
     name="Comp prev publication",
     input_ranges=(
