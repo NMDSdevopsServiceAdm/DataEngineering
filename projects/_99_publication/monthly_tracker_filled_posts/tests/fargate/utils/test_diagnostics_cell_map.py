@@ -19,12 +19,11 @@ def _cells(ranges: list[str]) -> set[tuple[int, int]]:
 
 class TestDiagnosticsSheets:
     @pytest.mark.parametrize("sheet", sheet_params)
-    def test_input_and_formula_ranges_do_not_overlap(self, sheet: job.SheetMap):
-        """The writer is never told to fill a cell that holds a formula."""
-        input_cells = _cells([r.cells for r in sheet.input_ranges])
-        formula_cells = _cells(list(sheet.formula_ranges))
+    def test_input_ranges_do_not_overlap(self, sheet: job.SheetMap):
+        """Each cell has one input range, so the writer fills it from one place."""
+        ranges = [r.cells for r in sheet.input_ranges]
 
-        assert input_cells.isdisjoint(formula_cells)
+        assert sum(len(_cells([r])) for r in ranges) == len(_cells(ranges))
 
     @pytest.mark.parametrize(
         "note, source_column",
