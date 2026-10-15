@@ -9,6 +9,9 @@ import projects._03_independent_cqc._01_filled_posts._07_archive.fargate.validat
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchiveRunLogColumns as RunLogCols,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH = "projects._03_independent_cqc._01_filled_posts._07_archive.fargate.validate_archive_job_role_estimates"
@@ -62,6 +65,30 @@ class TestMain:
             BUCKET_NAME, SOURCE_PATH, COMPARE_PATH, OTHER_OUTPUT_PATH, REPORTS_PATH
         )
         mock_estimates_validation.assert_not_called()
+
+    @patch(f"{PATCH_PATH}.job_role_run_log_validation")
+    @patch(f"{PATCH_PATH}.job_role_metadata_validation")
+    @patch(f"{PATCH_PATH}.job_role_estimates_validation")
+    def test_main_calls_run_log_validation_when_dataset_is_run_log(
+        self,
+        mock_estimates_validation: Mock,
+        mock_metadata_validation: Mock,
+        mock_run_log_validation: Mock,
+    ):
+        job.main(
+            BUCKET_NAME,
+            "run_log",
+            SOURCE_PATH,
+            COMPARE_PATH,
+            OTHER_OUTPUT_PATH,
+            REPORTS_PATH,
+        )
+
+        mock_run_log_validation.assert_called_once_with(
+            BUCKET_NAME, SOURCE_PATH, COMPARE_PATH, OTHER_OUTPUT_PATH, REPORTS_PATH
+        )
+        mock_estimates_validation.assert_not_called()
+        mock_metadata_validation.assert_not_called()
 
     def test_main_raises_on_unknown_dataset(self):
         with pytest.raises(ValueError, match="Unknown dataset"):
@@ -201,6 +228,66 @@ class TestJobRoleMetadataValidation:
             "col_schema_match",
             "row_count_match",
             "rows_distinct",
+            "col_vals_not_null",
+            "specially",
+        }
+        for assertion in expected_assertions:
+            assert (
+                assertion in assertion_types_present
+            ), f"{assertion} not found in validation report"
+
+
+class TestJobRoleRunLogValidation:
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.aUtils.get_run_number")
+    def test_job_role_run_log_validation_runs(
+        self,
+        mock_get_run_number: Mock,
+        mock_scan_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_get_run_number.return_value = 3
+
+        latest_run_log_df = pl.DataFrame(
+            {
+                RunLogCols.approved: [False],
+                RunLogCols.selected_for_publication: [False],
+                RunLogCols.reconciled: [False],
+                RunLogCols.locally_checked: [False],
+                RunLogCols.commit_sha: ["abc123"],
+                RunLogCols.tag: pl.Series([None], dtype=pl.String),
+                ArchiveKeys.archive_date: [date(2026, 9, 22)],
+                ArchiveKeys.run_number: [3],
+            }
+        )
+        mock_scanned_lf = Mock()
+        mock_filtered_lf = Mock()
+        mock_scanned_lf.filter.return_value = mock_filtered_lf
+        mock_filtered_lf.collect.return_value = latest_run_log_df
+        mock_scan_parquet.return_value = mock_scanned_lf
+
+        job.job_role_run_log_validation(
+            BUCKET_NAME, SOURCE_PATH, COMPARE_PATH, OTHER_OUTPUT_PATH, REPORTS_PATH
+        )
+
+        mock_scan_parquet.assert_called_once_with(f"s3://{BUCKET_NAME}/{SOURCE_PATH}")
+        mock_scanned_lf.filter.assert_called_once()
+
+        mock_write_reports.assert_called_once()
+        validation_arg, bucket_name_arg, reports_path_arg = (
+            mock_write_reports.call_args[0]
+        )
+        assert bucket_name_arg == BUCKET_NAME
+        assert reports_path_arg == REPORTS_PATH
+
+        report_json = json.loads(validation_arg.get_json_report())
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+        expected_assertions = {
+            "col_schema_match",
+            "row_count_match",
+            "col_vals_expr",
+            "col_vals_null",
             "col_vals_not_null",
             "specially",
         }

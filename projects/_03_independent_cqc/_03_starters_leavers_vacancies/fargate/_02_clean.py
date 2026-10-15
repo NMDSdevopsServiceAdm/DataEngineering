@@ -1,12 +1,7 @@
-import polars as pl
-
 import polars_utils.cleaning_utils as cUtils
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.clean_utils as cleanUtils
 import projects._03_independent_cqc.utils.cleaning_utils as cleaningUtils
 from polars_utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    EmploymentStatusColumns as EmpStatus,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
@@ -28,13 +23,6 @@ def main(
         cleaned_data_destination (str): destination for cleaned output
     """
     lf = utils.scan_parquet(merged_data_source)
-
-    # Employees = directly employed by the workplace (permanent + temporary) only.
-    lf = lf.with_columns(
-        (pl.col(EmpStatus.permanent_count) + pl.col(EmpStatus.temporary_count)).alias(
-            EmpStatus.employee_count
-        )
-    )
 
     # Nulls ASCWDS's 999 "not known" code in starters/leavers/vacancies, recording
     # why in a filtering-rule column per metric.
