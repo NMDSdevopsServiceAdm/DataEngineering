@@ -9,7 +9,7 @@ import holidays
 import pandas as pd
 import polars as pl
 
-from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.clean_utils import (
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.publication_utils import (
     round_percentage,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_pages import (

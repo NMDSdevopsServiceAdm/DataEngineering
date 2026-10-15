@@ -20,21 +20,23 @@ TEST_T2_DESTINATION = "some/t2/directory"
 class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(
-        f"{PATCH_PATH}.clean_utils.build_t2_location_count_perc_change_download_table"
+        f"{PATCH_PATH}.publication_utils.build_t2_location_count_perc_change_download_table"
     )
-    @patch(f"{PATCH_PATH}.clean_utils.build_t1_filled_posts_perc_change_download_table")
-    @patch(f"{PATCH_PATH}.clean_utils.build_t0_estimates_download_table")
-    @patch(f"{PATCH_PATH}.clean_utils.format_large_number")
     @patch(
-        f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
+        f"{PATCH_PATH}.publication_utils.build_t1_filled_posts_perc_change_download_table"
     )
-    @patch(f"{PATCH_PATH}.clean_utils.calc_perc_change_between_rows")
-    @patch(f"{PATCH_PATH}.clean_utils.add_rows_for_publication_groups")
-    @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
-    @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
-    @patch(f"{PATCH_PATH}.clean_utils.has_consistent_service_since_date")
-    @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
-    @patch(f"{PATCH_PATH}.clean_utils.reduced_data_filter_expr")
+    @patch(f"{PATCH_PATH}.publication_utils.build_t0_estimates_download_table")
+    @patch(f"{PATCH_PATH}.publication_utils.format_large_number")
+    @patch(
+        f"{PATCH_PATH}.publication_utils.calc_perc_change_cumulative_from_given_period_onwards"
+    )
+    @patch(f"{PATCH_PATH}.publication_utils.calc_perc_change_between_rows")
+    @patch(f"{PATCH_PATH}.publication_utils.add_rows_for_publication_groups")
+    @patch(f"{PATCH_PATH}.publication_utils.aggregate_to_publication_rows")
+    @patch(f"{PATCH_PATH}.publication_utils.add_dispersion_filter")
+    @patch(f"{PATCH_PATH}.publication_utils.has_consistent_service_since_date")
+    @patch(f"{PATCH_PATH}.publication_utils.has_continuous_data_since_date")
+    @patch(f"{PATCH_PATH}.publication_utils.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
@@ -357,21 +359,23 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(
-        f"{PATCH_PATH}.clean_utils.build_t2_location_count_perc_change_download_table"
+        f"{PATCH_PATH}.publication_utils.build_t2_location_count_perc_change_download_table"
     )
-    @patch(f"{PATCH_PATH}.clean_utils.build_t1_filled_posts_perc_change_download_table")
-    @patch(f"{PATCH_PATH}.clean_utils.build_t0_estimates_download_table")
-    @patch(f"{PATCH_PATH}.clean_utils.format_large_number")
     @patch(
-        f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
+        f"{PATCH_PATH}.publication_utils.build_t1_filled_posts_perc_change_download_table"
     )
-    @patch(f"{PATCH_PATH}.clean_utils.calc_perc_change_between_rows")
-    @patch(f"{PATCH_PATH}.clean_utils.add_rows_for_publication_groups")
-    @patch(f"{PATCH_PATH}.clean_utils.aggregate_to_publication_rows")
-    @patch(f"{PATCH_PATH}.clean_utils.add_dispersion_filter")
-    @patch(f"{PATCH_PATH}.clean_utils.has_consistent_service_since_date")
-    @patch(f"{PATCH_PATH}.clean_utils.has_continuous_data_since_date")
-    @patch(f"{PATCH_PATH}.clean_utils.reduced_data_filter_expr")
+    @patch(f"{PATCH_PATH}.publication_utils.build_t0_estimates_download_table")
+    @patch(f"{PATCH_PATH}.publication_utils.format_large_number")
+    @patch(
+        f"{PATCH_PATH}.publication_utils.calc_perc_change_cumulative_from_given_period_onwards"
+    )
+    @patch(f"{PATCH_PATH}.publication_utils.calc_perc_change_between_rows")
+    @patch(f"{PATCH_PATH}.publication_utils.add_rows_for_publication_groups")
+    @patch(f"{PATCH_PATH}.publication_utils.aggregate_to_publication_rows")
+    @patch(f"{PATCH_PATH}.publication_utils.add_dispersion_filter")
+    @patch(f"{PATCH_PATH}.publication_utils.has_consistent_service_since_date")
+    @patch(f"{PATCH_PATH}.publication_utils.has_continuous_data_since_date")
+    @patch(f"{PATCH_PATH}.publication_utils.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_uses_retention_cutoff_date_for_long_term_once_it_is_later_than_the_earliest_ct_data_date(
