@@ -296,6 +296,22 @@ def round_to_publication_bands(column_name: str, column_alias: str) -> pl.Expr:
     ).alias(column_alias)
 
 
+def round_percentage(column_name: str) -> pl.Expr:
+    """
+    Builds a polars expression turning a percentage-change fraction into a
+    percentage rounded to 1 decimal place (0.0321 -> 3.2), half away from
+    zero, as a Float64. Null stays null.
+
+    Args:
+        column_name (str): the fractional percentage column.
+
+    Returns:
+        pl.Expr: float expression with the rounded percentage.
+    """
+    percentage = pl.col(column_name).cast(pl.Float64) * 100
+    return _round_half_away_from_zero(percentage, 0.1).round(1)
+
+
 def format_percentage(column_name: str, column_alias: str) -> pl.Expr:
     """
     Builds a polars expression formatting a percentage-change fraction (e.g.
@@ -312,12 +328,10 @@ def format_percentage(column_name: str, column_alias: str) -> pl.Expr:
     Returns:
         pl.Expr: string expression with the formatted percentage, or null.
     """
-    value = pl.col(column_name)
-    rounded_percentage = _round_half_away_from_zero(value * 100, 0.1).round(1)
     return (
-        pl.when(value.is_null())
+        pl.when(pl.col(column_name).is_null())
         .then(None)
-        .otherwise(rounded_percentage.cast(pl.Utf8) + "%")
+        .otherwise(round_percentage(column_name).cast(pl.Utf8) + "%")
         .alias(column_alias)
     )
 

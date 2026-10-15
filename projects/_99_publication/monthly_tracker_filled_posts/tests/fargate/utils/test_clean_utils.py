@@ -653,6 +653,22 @@ class TestRoundToPublicationBands:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestRoundPercentage:
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.round_percentage_test_cases],
+    )
+    def test_function_rounds_a_fraction_to_a_one_decimal_place_percentage(self, case):
+        schema = pl.Schema([("fraction", pl.Float64()), ("percentage", pl.Float64())])
+        expected_lf = pl.LazyFrame(case.expected_data, schema, orient="row")
+
+        returned_lf = expected_lf.select("fraction").with_columns(
+            job.round_percentage("fraction").alias("percentage")
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestFormatPercentage:
     @pytest.mark.parametrize(
         "case",
