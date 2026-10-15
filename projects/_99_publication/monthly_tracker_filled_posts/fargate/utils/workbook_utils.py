@@ -8,10 +8,13 @@ import gptables as gpt
 import holidays
 import pandas as pd
 import polars as pl
-from xlsxwriter.worksheet import Worksheet
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.clean_utils import (
     round_percentage,
+)
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_pages import (
+    set_column_widths,
+    write_pages,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_text import (
     NOT_PUBLISHED_LABEL,
@@ -19,6 +22,7 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workboo
     T0_TITLE,
     T1_TITLE,
     T2_TITLE,
+    TABLE_TITLES,
 )
 from utils.column_names.publication_columns import PublicationColumns as Pub
 
@@ -219,10 +223,12 @@ def build_download_workbook(
     t1_lf: pl.LazyFrame,
     t2_lf: pl.LazyFrame,
     filename: str | Path,
+    logo: bytes | None = None,
 ) -> None:
     """
-    Writes the public data download workbook: one gptables sheet per table
-    (T0, T1, T2).
+    Writes the public data download workbook: the Frontpage, Introduction,
+    Revisions, Definitions and Contents pages, then one gptables sheet per
+    table (T0, T1, T2).
 
     Reading the tables and storing the workbook are left to the caller. Each
     table is collected once, as gptables needs pandas.
@@ -234,6 +240,8 @@ def build_download_workbook(
         t2_lf (pl.LazyFrame): output of
             build_t2_location_count_perc_change_download_table.
         filename (str | Path): path to write the .xlsx workbook to.
+        logo (bytes | None): PNG image shown on the Frontpage, or None for no
+            logo.
     """
     t0_lf = t0_lf.collect().lazy()  # T0 feeds both the latest period and its table
     latest_period = get_latest_period(t0_lf)
@@ -255,6 +263,15 @@ def build_download_workbook(
 
     workbook = gpt.GPWorkbook(str(filename))
     workbook.set_theme(gpt.Theme(_THEME_CONFIG))
+    write_pages(
+        workbook,
+        {
+            "latest_period": f"{latest_period:%B %Y}",
+            "publication_date": publication_date,
+        },
+        TABLE_TITLES,
+        logo,
+    )
     for sheet_name, table in tables.items():
         gptable = gpt.GPTable(
             table=table,
@@ -268,7 +285,7 @@ def build_download_workbook(
         )
         worksheet = workbook.add_worksheet(sheet_name)
         worksheet.write_gptable(gptable, False, [])
-        _set_column_widths(worksheet, _TABLE_COLUMN_WIDTHS)
+        set_column_widths(worksheet, _TABLE_COLUMN_WIDTHS)
     workbook.close()
     _enable_table_filters(filename, list(_TABLE_NAMES.values()))
 
@@ -292,18 +309,6 @@ def _table_formatting(value_format: dict) -> list[dict]:
         {"column": {"columns": [4], "format": {**value_format, "right": 1}}},
         {"row": {"rows": -1, "format": {"bottom": 1}}},
     ]
-
-
-def _set_column_widths(worksheet: Worksheet, widths: list[int]) -> None:
-    """
-    Sets the width of a worksheet's leading columns.
-
-    Args:
-        worksheet (Worksheet): the worksheet to size.
-        widths (list[int]): width of each column from the first, in characters.
-    """
-    for column, width in enumerate(widths):
-        worksheet.set_column(column, column, width)
 
 
 def _enable_table_filters(filename: str | Path, table_names: list[str]) -> None:
