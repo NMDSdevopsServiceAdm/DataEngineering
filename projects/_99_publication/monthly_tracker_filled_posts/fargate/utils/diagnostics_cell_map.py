@@ -1,0 +1,326 @@
+"""Cell map for `templates/diagnostics_template.xlsx`.
+
+Lists the cells the workbook writer fills (`InputRange`) and the charts and
+styles the template tests check. The template has no formulas.
+
+The "Number of locations" cells take the latest row per group, since every row
+in a term's period shares the same count.
+
+Open points the map does not settle (each needs a pipeline column or ticket):
+- the unfiltered Capacity Tracker totals and location counts on `No filters -
+  long term`;
+- the pipeline columns that fill the % change cells on `Filled posts` and `Comp
+  prev publication`.
+"""
+
+from dataclasses import dataclass
+from pathlib import Path
+
+from utils.column_names.publication_columns import PublicationColumns as Pub
+
+
+TEMPLATE_PATH = Path(__file__).parents[2] / "templates" / "diagnostics_template.xlsx"
+
+# Font and number format each kind of input cell must show in the template: its
+# own style, or its column's when they match (Excel stores no cell then). The
+# writer gives cells it creates their column's style (`write_input_cell`).
+CELL_STYLES = {
+    "text": ("Arial", 12.0, False, "General"),
+    "bold_text": ("Arial", 12.0, True, "General"),
+    "heading": ("Arial", 14.0, True, "General"),
+    "date": ("Arial", 12.0, False, "mmm-yy"),
+    "count": ("Arial", 12.0, False, "#,##0"),
+    "percent": ("Arial", 12.0, False, "0.0%"),
+}
+
+
+@dataclass(frozen=True)
+class InputRange:
+    """Cells the writer fills.
+
+    Attributes:
+        cells (str): A1-style range.
+        source_column (str | None): clean dataset column feeding the range;
+            None where the writer derives or builds the value (dates, text,
+            % change) or no source column exists yet.
+        note (str): what the range holds.
+        style (str): key into `CELL_STYLES` for the font and number format
+            every cell in the range must have in the template.
+    """
+
+    cells: str
+    source_column: str | None = None
+    note: str = ""
+    style: str = "text"
+
+
+@dataclass(frozen=True)
+class SheetMap:
+    """Template cells for one sheet; everything not listed is left untouched.
+
+    Attributes:
+        name (str): sheet name in the template.
+        input_ranges (tuple[InputRange, ...]): cells the writer fills.
+        chart_count (int): charts on the sheet.
+        chart_label_ranges (tuple[str, ...]): fixed label cells charts use as
+            series names.
+        window_rows (int): date rows each chart series must span.
+        percentage_chart_columns (tuple[str, ...]): value columns that mark a
+            chart as a % change chart.
+        percentage_chart_count (int): % change charts on the sheet.
+        bold_heading_cells (tuple[str, ...]): fixed table headings that must be
+            bold.
+    """
+
+    name: str
+    input_ranges: tuple[InputRange, ...]
+    chart_count: int
+    chart_label_ranges: tuple[str, ...] = ()
+    window_rows: int = 0
+    percentage_chart_columns: tuple[str, ...] = ()
+    percentage_chart_count: int = 0
+    bold_heading_cells: tuple[str, ...] = ()
+
+
+TITLE_CELL = "B3"
+HEADING_CELL = "B7"
+# Notes are cells, not text boxes: openpyxl drops drawing shapes on save.
+CRITERIA_NOTE_CELL = "B14"
+
+# End-of-March baseline plus the 12 months of the financial year.
+MONTHLY_SLOTS = 13
+# Medium term: baseline plus 24 months, spanning two financial years.
+MEDIUM_TERM_SLOTS = 25
+# Long term is quarterly from the first import date with data, plus 3 spare
+# years. Writer dates are the import date minus one month.
+LONG_TERM_SLOTS = 34
+
+FILLED_POSTS = SheetMap(
+    name="Filled posts",
+    input_ranges=(
+        InputRange(TITLE_CELL, note="'End of <month year>' title"),
+        InputRange("B24:B36", note="annual filled posts dates", style="date"),
+        InputRange("I24:I36", note="annual filled posts % change dates", style="date"),
+        InputRange(
+            "C24:G36", note="annual filled posts by primary service type", style="count"
+        ),
+        InputRange("J25:N36", note="annual filled posts % change", style="percent"),
+        InputRange("B44:B56", note="annual CQC locations dates", style="date"),
+        InputRange("I44:I56", note="annual CQC locations % change dates", style="date"),
+        InputRange(
+            "C44:G56",
+            note="annual CQC locations by primary service type",
+            style="count",
+        ),
+        InputRange("J45:N56", note="annual CQC locations % change", style="percent"),
+        InputRange("B65:B77", note="monthly filled posts dates", style="date"),
+        InputRange("I65:I77", note="monthly filled posts % change dates", style="date"),
+        InputRange(
+            "C65:G77",
+            note="monthly filled posts by primary service type",
+            style="count",
+        ),
+        InputRange("J65:N77", note="monthly filled posts % change", style="percent"),
+        InputRange("B84:B96", note="monthly CQC locations dates", style="date"),
+        InputRange(
+            "I84:I96", note="monthly CQC locations % change dates", style="date"
+        ),
+        InputRange(
+            "C84:G96",
+            note="monthly CQC locations by primary service type",
+            style="count",
+        ),
+        InputRange("J84:N96", note="monthly CQC locations % change", style="percent"),
+        InputRange(
+            "B99", note="'...since <month year>' chart heading", style="bold_text"
+        ),
+    ),
+    chart_count=3,
+    chart_label_ranges=("B61", "B80"),
+    window_rows=MONTHLY_SLOTS,
+    percentage_chart_columns=("J", "K", "N"),
+    percentage_chart_count=3,
+    bold_heading_cells=("B20", "B40", "B61", "B80"),
+)
+
+# Annual rows first, then monthly rows; unused slots stay blank at the end.
+COMP_PREV_PUBLICATION = SheetMap(
+    name="Comp prev publication",
+    input_ranges=(
+        InputRange(TITLE_CELL, note="'End of <month year>' title"),
+        InputRange("B23:B59", note="previous publication labels"),
+        InputRange("C23:C59", note="previous publication dates", style="date"),
+        InputRange("D23:H59", note="previous publication figures", style="count"),
+        InputRange("B64:B100", note="current publication labels"),
+        InputRange("C64:C100", note="current publication dates", style="date"),
+        InputRange("D64:H100", note="current publication figures", style="count"),
+        InputRange("B106:B142", note="difference labels"),
+        InputRange("C106:C142", note="difference dates", style="date"),
+        InputRange("D106:H142", note="difference as percentage", style="percent"),
+    ),
+    chart_count=0,
+    bold_heading_cells=("B20", "B61", "B103"),
+)
+
+
+def _location_count_inputs(
+    care_homes_cell: str, non_residential_cell: str, source_column: str
+) -> tuple[InputRange, InputRange]:
+    """The two "Number of locations" cells on a comparison sheet."""
+    return (
+        InputRange(
+            care_homes_cell,
+            source_column,
+            "care homes number of locations",
+            "count",
+        ),
+        InputRange(
+            non_residential_cell,
+            source_column,
+            "non-res number of locations",
+            "count",
+        ),
+    )
+
+
+def _comparison_sheet(
+    name: str,
+    first_row: int,
+    last_row: int,
+    filled_posts: str,
+    ct_employed: str | None,
+    extra_inputs: tuple[InputRange, ...] = (),
+    has_criteria_note: bool = True,
+) -> SheetMap:
+    """Builds the map for a care homes (B:F) and non-residential (K:O) sheet.
+
+    Args:
+        name (str): sheet name in the template.
+        first_row (int): first date row.
+        last_row (int): last date row.
+        filled_posts (str): clean dataset column for Skills for Care filled posts.
+        ct_employed (str | None): clean dataset column for Capacity Tracker
+            employed; None where no column provides it.
+        extra_inputs (tuple[InputRange, ...]): sheet-specific input ranges, such
+            as the number of locations.
+        has_criteria_note (bool): whether the notes carry a dated criteria line.
+
+    Returns:
+        SheetMap: the sheet's cell map.
+    """
+    ranges = [
+        InputRange(TITLE_CELL, note="'End of <month year>' title"),
+        InputRange(
+            HEADING_CELL, note="heading incl. 'Since <month year>'", style="heading"
+        ),
+        InputRange(f"E{first_row - 2}", note="care homes % change heading"),
+        InputRange(f"N{first_row - 2}", note="non-res % change heading"),
+        InputRange(f"B{first_row}:B{last_row}", note="care homes dates", style="date"),
+        InputRange(
+            f"K{first_row}:K{last_row}", note="non-residential dates", style="date"
+        ),
+        InputRange(
+            f"C{first_row}:C{last_row}", filled_posts, "care homes SfC", "count"
+        ),
+        InputRange(f"D{first_row}:D{last_row}", ct_employed, "care homes CT", "count"),
+        InputRange(f"L{first_row}:L{last_row}", filled_posts, "non-res SfC", "count"),
+        InputRange(f"M{first_row}:M{last_row}", ct_employed, "non-res CT", "count"),
+        InputRange(
+            f"E{first_row}:F{last_row}",
+            note="care homes % change, writer-derived",
+            style="percent",
+        ),
+        InputRange(
+            f"N{first_row}:O{last_row}",
+            note="non-res % change, writer-derived",
+            style="percent",
+        ),
+    ]
+    if has_criteria_note:
+        ranges.append(
+            InputRange(
+                CRITERIA_NOTE_CELL, note="'...from end of <month year> onwards' note"
+            )
+        )
+    header_row = first_row - 1
+    table_heading_row = first_row - 6
+    return SheetMap(
+        name,
+        tuple(ranges) + extra_inputs,
+        chart_count=4,
+        chart_label_ranges=(
+            f"C{header_row}:F{header_row}",
+            f"L{header_row}:O{header_row}",
+        ),
+        window_rows=last_row - first_row + 1,
+        percentage_chart_columns=("E", "F", "N", "O"),
+        percentage_chart_count=2,
+        bold_heading_cells=(f"B{table_heading_row}", f"K{table_heading_row}"),
+    )
+
+
+COMP_SHORT_TERM = _comparison_sheet(
+    "Comp SfC and CT - short term",
+    29,
+    29 + MONTHLY_SLOTS - 1,
+    Pub.assessment_filled_posts_short_term,
+    Pub.assessment_ct_total_employed_short_term,
+    extra_inputs=_location_count_inputs(
+        "D25", "M25", Pub.assessment_locationid_count_short_term
+    ),
+)
+COMP_MEDIUM_TERM = _comparison_sheet(
+    "Comp SfC and CT - medium term",
+    29,
+    29 + MEDIUM_TERM_SLOTS - 1,
+    Pub.assessment_filled_posts_medium_term,
+    Pub.assessment_ct_total_employed_medium_term,
+    extra_inputs=_location_count_inputs(
+        "D25", "M25", Pub.assessment_locationid_count_medium_term
+    ),
+)
+COMP_LONG_TERM = _comparison_sheet(
+    "Comp SfC and CT - long term",
+    29,
+    29 + LONG_TERM_SLOTS - 1,
+    Pub.assessment_filled_posts_long_term,
+    Pub.assessment_ct_total_employed_long_term,
+    extra_inputs=_location_count_inputs(
+        "D25", "M25", Pub.assessment_locationid_count_long_term
+    ),
+)
+
+# D25/M25 here are the fixed label "Varies month to month"; location counts are
+# per period in G/P instead. The unfiltered Capacity Tracker posts (D, M) and
+# location counts (G, P) need new pipeline columns.
+NO_FILTERS = _comparison_sheet(
+    "No filters - long term",
+    29,
+    29 + LONG_TERM_SLOTS - 1,
+    Pub.publication_filled_posts,
+    None,
+    has_criteria_note=False,
+    extra_inputs=(
+        InputRange(
+            f"G29:G{29 + LONG_TERM_SLOTS - 1}",
+            None,
+            "care homes number of locations by period (needs a new pipeline column)",
+            "count",
+        ),
+        InputRange(
+            f"P29:P{29 + LONG_TERM_SLOTS - 1}",
+            None,
+            "non-res number of locations by period (needs a new pipeline column)",
+            "count",
+        ),
+    ),
+)
+
+DIAGNOSTICS_SHEETS: tuple[SheetMap, ...] = (
+    FILLED_POSTS,
+    COMP_PREV_PUBLICATION,
+    COMP_SHORT_TERM,
+    COMP_MEDIUM_TERM,
+    COMP_LONG_TERM,
+    NO_FILTERS,
+)
