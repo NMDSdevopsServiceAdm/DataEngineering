@@ -281,8 +281,13 @@ def fixture_cell(
     row: int,
     col: int,
     full: bool = False,
+    year_end: bool = False,
 ):
-    """Fixture value for one input cell, or None to leave an unfilled slot empty."""
+    """Fixture value for one input cell, or None to leave an unfilled slot empty.
+
+    `year_end` is the first run after a year end: the previous publication has no
+    row for the year just ended, so its block is padded with a blank row.
+    """
     # Illustrative sizes: care homes about 12,000 locations, non-residential
     # (the right-hand tables, columns after H) 500 or 1,000 more.
     cells = CellRange(input_range.cells)
@@ -319,11 +324,11 @@ def fixture_cell(
             return None
         return round(0.01 + 0.001 * j + 0.0005 * i, 6)
     if "publication" in note or note in ("difference labels", "difference dates"):
-        # To date: the current block has a row for the year just ended that the
-        # previous block lacks, so the previous block is padded with a blank row.
+        # To date: the previous publication is one month behind, so its monthly
+        # block is one row shorter.
         annual = 12 if full else 10
         monthly = 25 if full else (4 if "previous" in note else 5)
-        is_padding_row = "previous" in note and not full and i == annual - 1
+        is_padding_row = year_end and "previous" in note and i == annual - 1
         if i >= annual + monthly or is_padding_row:
             return None
         if "labels" in note:
@@ -365,18 +370,19 @@ def fixture_cell(
 
 
 def fill_inputs(
-    workbook: openpyxl.Workbook, full: bool = False
+    workbook: openpyxl.Workbook, full: bool = False, year_end: bool = False
 ) -> dict[tuple[str, str], object]:
     """Writes a fixture value into every filled cell-map input; returns them.
 
-    `full` fills every slot, to check the formatting of all rows.
+    `full` fills every slot, to check the formatting of all rows. `year_end`
+    pads the previous publication block (see `fixture_cell`).
     """
     written = {}
     for sheet in cell_map.DIAGNOSTICS_SHEETS:
         worksheet = workbook[sheet.name]
         for input_range in sheet.input_ranges:
             for row, col in sorted(cells_in([input_range.cells])):
-                value = fixture_cell(sheet, input_range, row, col, full)
+                value = fixture_cell(sheet, input_range, row, col, full, year_end)
                 if value is not None:
                     workbook_utils.write_input_cell(worksheet, row, col, value)
                     written[(sheet.name, coordinate(row, col))] = value
