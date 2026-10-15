@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
-from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
@@ -13,15 +12,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     ShareModelColumns as ShareModel,
 )
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_values.ascwds_labelled_vocab import PublishedJobRoleLabels
 from utils.column_values.categorical_column_values import (
     RUI,
     CareHome,
-    CQCLatestRating,
-    CQCRatingsValues,
     CurrentCSSR,
     ImputationRowKind,
     PrimaryServiceType,
@@ -44,48 +38,12 @@ CARRIED = ImputationRowKind.carried
 JAN_TO_JUN = [date(2024, month, 1) for month in range(1, 7)]
 JAN_TO_MAR = JAN_TO_JUN[:3]
 
-LATEST = CQCLatestRating.is_latest_rating
-NOT_LATEST = CQCLatestRating.not_latest_rating
-
 
 @dataclass
 class ModelUtilsTestCase:
     id: str
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
-
-
-@dataclass
-class AddLatestOverallRatingTestCase:
-    id: str
-    input_data: dict[str, Any]
-    ratings_data: dict[str, Any]
-    expected_data: dict[str, Any]
-
-
-def one_location_rating_case(
-    id: str,
-    ratings: list[tuple[str | None, str, str | None, int]],
-    expected_rating: str,
-) -> AddLatestOverallRatingTestCase:
-    """One location, dated after its ratings: (rating, date, assessment date, latest flag)."""
-    overall_ratings, rating_dates, assessment_dates, flags = map(list, zip(*ratings))
-    location = {
-        IndCQC.location_id: ["loc1"],
-        IndCQC.cqc_location_import_date: [date(2025, 1, 1)],
-    }
-    return AddLatestOverallRatingTestCase(
-        id=id,
-        input_data=location,
-        ratings_data={
-            IndCQC.location_id: ["loc1"] * len(ratings),
-            CQCRatings.overall_rating: overall_ratings,
-            CQCRatings.date: rating_dates,
-            CQCL.assessment_date: assessment_dates,
-            CQCRatings.latest_rating_flag: flags,
-        },
-        expected_data={**location, ShareModel.latest_overall_rating: [expected_rating]},
-    )
 
 
 @dataclass
@@ -181,250 +139,7 @@ class TestModelUtilsData:
         ),
     ]
 
-    latest_rating_joined_per_location_test_cases = [
-        AddLatestOverallRatingTestCase(
-            id="uses_the_latest_rating_not_older_ones",
-            input_data={
-                IndCQC.location_id: ["loc1", "loc1"],
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 2, 1)],
-            },
-            ratings_data={
-                IndCQC.location_id: ["loc1", "loc1"],
-                CQCRatings.overall_rating: [
-                    CQCRatingsValues.requires_improvement,
-                    CQCRatingsValues.good,
-                ],
-                CQCRatings.date: ["2023-01-01", "2024-01-01"],
-                CQCL.assessment_date: [None, None],
-                CQCRatings.latest_rating_flag: [NOT_LATEST, LATEST],
-            },
-            expected_data={
-                IndCQC.location_id: ["loc1", "loc1"],
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1), date(2024, 2, 1)],
-                ShareModel.latest_overall_rating: [CQCRatingsValues.good] * 2,
-            },
-        ),
-        AddLatestOverallRatingTestCase(
-            id="each_location_gets_its_own_rating",
-            input_data={
-                IndCQC.location_id: ["loc1", "loc2"],
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 2,
-            },
-            ratings_data={
-                IndCQC.location_id: ["loc1", "loc2"],
-                CQCRatings.overall_rating: [
-                    CQCRatingsValues.good,
-                    CQCRatingsValues.outstanding,
-                ],
-                CQCRatings.date: ["2024-01-01", "2024-01-01"],
-                CQCL.assessment_date: [None, None],
-                CQCRatings.latest_rating_flag: [LATEST, LATEST],
-            },
-            expected_data={
-                IndCQC.location_id: ["loc1", "loc2"],
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 2,
-                ShareModel.latest_overall_rating: [
-                    CQCRatingsValues.good,
-                    CQCRatingsValues.outstanding,
-                ],
-            },
-        ),
-    ]
-
-    # A rating counts from its own date, so the 2023-01-01 row gets it.
-    rating_as_of_import_date_test_cases = [
-        AddLatestOverallRatingTestCase(
-            id="uses_the_rating_in_place_on_each_date",
-            input_data={
-                IndCQC.location_id: ["loc1"] * 3,
-                IndCQC.cqc_location_import_date: [
-                    date(2022, 6, 1),
-                    date(2023, 1, 1),
-                    date(2024, 6, 1),
-                ],
-            },
-            ratings_data={
-                IndCQC.location_id: ["loc1", "loc1"],
-                CQCRatings.overall_rating: [
-                    CQCRatingsValues.requires_improvement,
-                    CQCRatingsValues.good,
-                ],
-                CQCRatings.date: ["2023-01-01", "2024-01-01"],
-                CQCL.assessment_date: [None, None],
-                CQCRatings.latest_rating_flag: [NOT_LATEST, LATEST],
-            },
-            expected_data={
-                IndCQC.location_id: ["loc1"] * 3,
-                IndCQC.cqc_location_import_date: [
-                    date(2022, 6, 1),
-                    date(2023, 1, 1),
-                    date(2024, 6, 1),
-                ],
-                ShareModel.latest_overall_rating: [
-                    CQCRatingsValues.not_yet_rated,
-                    CQCRatingsValues.requires_improvement,
-                    CQCRatingsValues.good,
-                ],
-            },
-        ),
-        # Rows and ratings are out of date order, so this fails if either isn't sorted.
-        AddLatestOverallRatingTestCase(
-            id="rows_and_ratings_out_of_date_order",
-            input_data={
-                IndCQC.location_id: ["loc1"] * 6 + ["loc2"] * 2,
-                IndCQC.cqc_location_import_date: [
-                    date(2024, 6, 1),
-                    date(2021, 6, 1),
-                    date(2023, 6, 1),
-                    date(2022, 6, 1),
-                    date(2024, 1, 1),
-                    date(2021, 1, 1),
-                    date(2024, 6, 1),
-                    date(2022, 6, 1),
-                ],
-            },
-            ratings_data={
-                IndCQC.location_id: ["loc1", "loc2", "loc1", "loc1"],
-                CQCRatings.overall_rating: [
-                    CQCRatingsValues.outstanding,
-                    CQCRatingsValues.requires_improvement,
-                    CQCRatingsValues.requires_improvement,
-                    CQCRatingsValues.good,
-                ],
-                CQCRatings.date: [
-                    "2024-01-01",
-                    "2023-01-01",
-                    "2021-03-01",
-                    "2022-03-01",
-                ],
-                CQCL.assessment_date: [None] * 4,
-                CQCRatings.latest_rating_flag: [LATEST, LATEST, NOT_LATEST, NOT_LATEST],
-            },
-            expected_data={
-                IndCQC.location_id: ["loc1"] * 6 + ["loc2"] * 2,
-                IndCQC.cqc_location_import_date: [
-                    date(2024, 6, 1),
-                    date(2021, 6, 1),
-                    date(2023, 6, 1),
-                    date(2022, 6, 1),
-                    date(2024, 1, 1),
-                    date(2021, 1, 1),
-                    date(2024, 6, 1),
-                    date(2022, 6, 1),
-                ],
-                ShareModel.latest_overall_rating: [
-                    CQCRatingsValues.outstanding,
-                    CQCRatingsValues.requires_improvement,
-                    CQCRatingsValues.good,
-                    CQCRatingsValues.good,
-                    CQCRatingsValues.outstanding,
-                    CQCRatingsValues.not_yet_rated,
-                    CQCRatingsValues.requires_improvement,
-                    CQCRatingsValues.not_yet_rated,
-                ],
-            },
-        ),
-    ]
-
-    blank_latest_rating_test_cases = [
-        one_location_rating_case(
-            id="uses_the_most_recent_real_rating",
-            ratings=[
-                (CQCRatingsValues.requires_improvement, "2022-01-01", None, NOT_LATEST),
-                (CQCRatingsValues.good, "2023-01-01", None, NOT_LATEST),
-                (None, "2024-01-01", None, LATEST),
-            ],
-            expected_rating=CQCRatingsValues.good,
-        ),
-    ]
-
-    # The expected rating is listed second, so these fail if row order decides.
-    same_date_ratings_test_cases = [
-        one_location_rating_case(
-            id="later_assessment_date_comes_first",
-            ratings=[
-                (CQCRatingsValues.good, "2024-06-01", "2024-03-01", NOT_LATEST),
-                (CQCRatingsValues.outstanding, "2024-06-01", "2024-04-01", NOT_LATEST),
-                (None, "2024-07-01", None, LATEST),
-            ],
-            expected_rating=CQCRatingsValues.outstanding,
-        ),
-        one_location_rating_case(
-            id="latest_rating_flag_breaks_a_tie",
-            ratings=[
-                (CQCRatingsValues.outstanding, "2024-06-01", "2024-04-01", NOT_LATEST),
-                (CQCRatingsValues.good, "2024-06-01", "2024-04-01", LATEST),
-            ],
-            expected_rating=CQCRatingsValues.good,
-        ),
-        one_location_rating_case(
-            id="best_rating_breaks_any_remaining_tie",
-            ratings=[
-                (
-                    CQCRatingsValues.requires_improvement,
-                    "2024-06-01",
-                    "2024-04-01",
-                    NOT_LATEST,
-                ),
-                (CQCRatingsValues.good, "2024-06-01", "2024-04-01", NOT_LATEST),
-                (None, "2024-07-01", None, LATEST),
-            ],
-            expected_rating=CQCRatingsValues.good,
-        ),
-    ]
-
-    unrated_location_test_cases = [
-        AddLatestOverallRatingTestCase(
-            id="location_missing_from_the_ratings",
-            input_data={
-                IndCQC.location_id: ["loc1"],
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
-            },
-            ratings_data={
-                IndCQC.location_id: ["loc2"],
-                CQCRatings.overall_rating: [CQCRatingsValues.good],
-                CQCRatings.date: ["2024-01-01"],
-                CQCL.assessment_date: [None],
-                CQCRatings.latest_rating_flag: [LATEST],
-            },
-            expected_data={
-                IndCQC.location_id: ["loc1"],
-                IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
-                ShareModel.latest_overall_rating: [CQCRatingsValues.not_yet_rated],
-            },
-        ),
-        one_location_rating_case(
-            id="location_with_only_blank_ratings",
-            ratings=[
-                (None, "2023-01-01", None, NOT_LATEST),
-                (None, "2024-01-01", None, LATEST),
-            ],
-            expected_rating=CQCRatingsValues.not_yet_rated,
-        ),
-    ]
-
-    existing_rating_replaced_test_case = AddLatestOverallRatingTestCase(
-        id="rating_from_an_earlier_run",
-        input_data={
-            IndCQC.location_id: ["loc1"],
-            IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
-            ShareModel.latest_overall_rating: [CQCRatingsValues.inadequate],
-        },
-        ratings_data={
-            IndCQC.location_id: ["loc1"],
-            CQCRatings.overall_rating: [CQCRatingsValues.good],
-            CQCRatings.date: ["2024-01-01"],
-            CQCL.assessment_date: [None],
-            CQCRatings.latest_rating_flag: [LATEST],
-        },
-        expected_data={
-            IndCQC.location_id: ["loc1"],
-            IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
-            ShareModel.latest_overall_rating: [CQCRatingsValues.good],
-        },
-    )
-
-    # loc1 has two roles, two dates and two ratings, so a bad join would duplicate its rows.
+    # loc1 has two roles and two dates, so a bad join would duplicate its rows.
     build_modelling_dataset_shares_data = {
         IndCQC.location_id: ["loc1"] * 4 + ["loc2"] * 2,
         IndCQC.cqc_location_import_date: JAN_TO_MAR[:2] * 3,
@@ -450,18 +165,6 @@ class TestModelUtilsData:
         IndCQC.time_registered: [12, 13, 40, 41],
         IndCQC.estimate_filled_posts: [10.0, 11.0, 5.0, 5.0],
     }
-    build_modelling_dataset_ratings_data = {
-        IndCQC.location_id: ["loc1", "loc1", "loc2"],
-        CQCRatings.overall_rating: [
-            CQCRatingsValues.requires_improvement,
-            CQCRatingsValues.good,
-            CQCRatingsValues.outstanding,
-        ],
-        CQCRatings.date: ["2023-01-01", "2024-01-01", "2024-01-01"],
-        CQCL.assessment_date: [None, None, None],
-        CQCRatings.latest_rating_flag: [NOT_LATEST, LATEST, LATEST],
-    }
-
     # Averaging all 3 shares would give 0.5 on every row.
     tested_fold_excluded_test_cases = [
         fold_safe_case(

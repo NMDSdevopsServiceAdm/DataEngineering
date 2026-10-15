@@ -4,18 +4,11 @@ import polars as pl
 
 import projects._03_independent_cqc.utils.model_evaluation_utils as evaluationUtils
 import projects._03_independent_cqc.utils.model_utils as modelUtils
-from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     ShareModelColumns as ShareModel,
 )
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
-from utils.column_values.categorical_column_values import (
-    CQCRatingsValues,
-    ImputationRowKind,
-)
+from utils.column_values.categorical_column_values import ImputationRowKind
 
 
 def add_imputation_row_kind(
@@ -64,99 +57,9 @@ def add_imputation_row_kind(
     )
 
 
-def add_latest_overall_rating(
-    lf: pl.LazyFrame, ratings_lf: pl.LazyFrame, location_column: str, date_column: str
-) -> pl.LazyFrame:
-    """
-    Add each location's latest real overall CQC rating as of each row's date.
-
-    Blank (e.g. "Inspected but not rated") and undated ratings are skipped, and locations
-    with no rating yet get "Not yet rated". Same-date ratings are ordered by assessment date,
-    then the ratings job's latest rating flag, then the best rating. Found once per location
-    and date, then joined on. Replaces any existing rating.
-
-    Args:
-        lf (pl.LazyFrame): dataset containing the location and date columns
-        ratings_lf (pl.LazyFrame): CQC ratings dataset, with the same location column name
-        location_column (str): the location ID
-        date_column (str): the date each rating must be in place by
-
-    Returns:
-        pl.LazyFrame: dataset with categorical "latest_overall_rating" added
-    """
-    # Ratings store location IDs as strings, so match this dataset's type for the as-of join.
-    location_type = lf.collect_schema()[location_column]
-
-    # The ratings job's numerical values, so the best rating wins any remaining tie.
-    rating_value = (
-        pl.col(CQCRatings.overall_rating)
-        .str.to_lowercase()
-        .replace_strict(
-            {
-                CQCRatingsValues.outstanding.lower(): 4,
-                CQCRatingsValues.good.lower(): 3,
-                CQCRatingsValues.requires_improvement.lower(): 2,
-                CQCRatingsValues.inadequate.lower(): 1,
-            },
-            default=0,
-        )
-    )
-
-    ratings_by_date_lf = (
-        ratings_lf.filter(
-            pl.col(CQCRatings.overall_rating).is_not_null()
-            & pl.col(CQCRatings.date).is_not_null()
-        )
-        .group_by(location_column, CQCRatings.date)
-        .agg(
-            pl.col(CQCRatings.overall_rating)
-            .sort_by(
-                [CQCL.assessment_date, CQCRatings.latest_rating_flag, rating_value],
-                descending=True,
-                nulls_last=True,
-            )
-            .first()
-            .cast(pl.Categorical)
-            .alias(ShareModel.latest_overall_rating)
-        )
-        .with_columns(
-            pl.col(location_column).cast(location_type),
-            pl.col(CQCRatings.date).str.to_date("%Y-%m-%d"),
-        )
-        .sort(CQCRatings.date)
-    )
-
-    # join_asof needs both sides sorted by date, which Polars can't check when using `by`.
-    location_date_ratings_lf = (
-        lf.select(location_column, date_column)
-        .unique()
-        .sort(date_column)
-        .join_asof(
-            ratings_by_date_lf,
-            left_on=date_column,
-            right_on=CQCRatings.date,
-            by=location_column,
-            strategy="backward",
-            check_sortedness=False,
-        )
-        .drop(CQCRatings.date)
-    )
-
-    lf = lf.drop(ShareModel.latest_overall_rating, strict=False).join(
-        location_date_ratings_lf, on=[location_column, date_column], how="left"
-    )
-
-    return lf.with_columns(
-        pl.col(ShareModel.latest_overall_rating).fill_null(
-            CQCRatingsValues.not_yet_rated
-        )
-    )
-
-
 def build_modelling_dataset(
     shares_lf: pl.LazyFrame,
     estimates_lf: pl.LazyFrame,
-    ratings_lf: pl.LazyFrame,
     known_share_columns: list[str],
     imputed_share_columns: list[str],
     rolling_average_columns: list[str],
@@ -165,14 +68,13 @@ def build_modelling_dataset(
     Build the dataset for modelling a share breakdown, such as employment status.
 
     Only the needed columns are selected, as the sources are wide. Neither join duplicates
-    rows: estimates are unique per location and date, and ratings are reduced to one per
-    location and date. Build before filtering rows, so each location's flags use all its data.
+    rows: estimates are unique per location and date. Build before filtering rows, so each
+    location's flags use all its data.
 
     Args:
         shares_lf (pl.LazyFrame): the breakdown's imputed dataset, a row per location, job role
             and date
         estimates_lf (pl.LazyFrame): the filled posts estimates dataset
-        ratings_lf (pl.LazyFrame): the CQC ratings dataset
         known_share_columns (list[str]): the known share columns
         imputed_share_columns (list[str]): the imputed share columns
         rolling_average_columns (list[str]): the rolling average share columns
@@ -222,9 +124,6 @@ def build_modelling_dataset(
     )
     lf = evaluationUtils.add_never_submitted_flag(
         lf, known_column=known_share_columns[0], location_column=IndCQC.location_id
-    )
-    lf = add_latest_overall_rating(
-        lf, ratings_lf, location_column=IndCQC.location_id, date_column=date_column
     )
 
     return lf

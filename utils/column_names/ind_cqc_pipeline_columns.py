@@ -650,7 +650,6 @@ class ShareModelColumns:
     """The names of the columns added when modelling and scoring share breakdowns."""
 
     imputation_row_kind: str = "imputation_row_kind"
-    latest_overall_rating: str = "latest_overall_rating"
     group_weight: str = "group_weight"
     share: str = "share"
     mean_absolute_error: str = "mean_absolute_error"
