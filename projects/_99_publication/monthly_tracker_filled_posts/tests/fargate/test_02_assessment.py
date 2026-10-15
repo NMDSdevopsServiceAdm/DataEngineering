@@ -90,7 +90,7 @@ def mocks():
         mocks.scan_parquet.return_value = pl.LazyFrame(
             {
                 IndCQC.location_id: ["1-001", "1-001"],
-                IndCQC.cqc_location_import_date: [date(2025, 4, 1), date(2026, 4, 1)],
+                IndCQC.cqc_location_import_date: [date(2021, 4, 1), date(2026, 4, 1)],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0, None],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None, 6.0],
             }
@@ -179,10 +179,17 @@ class TestMain:
             ),
         ]
 
-    def test_main_uses_retention_cutoff_date_for_long_term_once_it_is_later_than_the_earliest_ct_data_date(
+    def test_main_uses_earliest_prepared_date_for_long_term_once_it_is_later_than_the_earliest_ct_data_date(
         self, mocks
     ):
-        mocks.date.today.return_value = date(2033, 9, 1)
+        mocks.scan_parquet.return_value = pl.LazyFrame(
+            {
+                IndCQC.location_id: ["1-001", "1-001"],
+                IndCQC.cqc_location_import_date: [date(2027, 4, 1), date(2027, 5, 1)],
+                IndCQC.ct_care_home_total_employed_imputed: [5.0, None],
+                IndCQC.ct_non_res_care_workers_employed_imputed: [None, 6.0],
+            }
+        )
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
 

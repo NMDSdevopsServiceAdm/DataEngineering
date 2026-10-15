@@ -129,5 +129,5 @@ if __name__ == "__main__":
         t0_destination=args.t0_destination,
         t1_destination=args.t1_destination,
         t2_destination=args.t2_destination,
-        run_number=merge_utils.parse_required_run_number(args.run_number),
+        run_number=merge_utils.parse_run_number(args.run_number, required=True),
     )

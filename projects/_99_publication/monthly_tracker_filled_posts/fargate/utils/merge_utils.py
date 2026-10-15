@@ -3,43 +3,26 @@ from utils.file_utils import RUN_PARTITION_PATTERN, list_archive_runs
 LATEST_RUN = "latest"
 
 
-def parse_run_number(value: str | None) -> int | None:
+def parse_run_number(value: str | None, required: bool = False) -> int | None:
     """
     Converts the run_number command line value into a run number.
 
     Args:
         value (str | None): a run number, "latest", or None when not given
+        required (bool): whether a whole number must be given, rejecting "latest"
+            and None. Defaults to False
 
     Returns:
         int | None: the run number, or None for the latest run
 
     Raises:
-        ValueError: if the value is neither "latest" nor a whole number
+        ValueError: if the value is not a whole number, or "latest" when not required
     """
-    if value is None or value == LATEST_RUN:
+    if not required and (value is None or value == LATEST_RUN):
         return None
-    if not value.isdecimal():
-        raise ValueError(
-            f"run_number must be a whole number or 'latest', got '{value}'"
-        )
-    return int(value)
-
-
-def parse_required_run_number(value: str) -> int:
-    """
-    Converts the run_number command line value into a run number.
-
-    Args:
-        value (str): a whole number
-
-    Returns:
-        int: the run number
-
-    Raises:
-        ValueError: if the value is not a whole number
-    """
-    if not value.isdecimal():
-        raise ValueError(f"run_number must be a whole number, got '{value}'")
+    if value is None or not value.isdecimal():
+        accepted = "a whole number" if required else "a whole number or 'latest'"
+        raise ValueError(f"run_number must be {accepted}, got '{value}'")
     return int(value)
 
 

@@ -39,6 +39,14 @@ class TestParseRunNumber:
         with pytest.raises(ValueError, match="run_number"):
             job.parse_run_number(value)
 
+    def test_returns_whole_number_when_required(self):
+        assert job.parse_run_number("3", required=True) == 3
+
+    @pytest.mark.parametrize("value", [None, "latest", "abc", "-1", ""])
+    def test_raises_when_required_and_not_a_whole_number(self, value: str | None):
+        with pytest.raises(ValueError, match="run_number must be a whole number"):
+            job.parse_run_number(value, required=True)
+
 
 @dataclass
 class SelectRunNumberTestCase:
@@ -218,13 +226,3 @@ class TestRunNumberFromSource:
     def test_raises_when_source_has_no_run_partition(self):
         with pytest.raises(ValueError, match="run partition"):
             job.run_number_from_source("s3://bucket/other/")
-
-
-class TestParseRequiredRunNumber:
-    def test_returns_whole_number(self):
-        assert job.parse_required_run_number("3") == 3
-
-    @pytest.mark.parametrize("value", ["latest", "abc", "-1", ""])
-    def test_raises_for_anything_but_a_whole_number(self, value: str):
-        with pytest.raises(ValueError, match="run_number"):
-            job.parse_required_run_number(value)

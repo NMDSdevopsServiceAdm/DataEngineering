@@ -39,7 +39,13 @@ def main(
 
     today = date.today()
     fy_year = today.year if today.month >= 4 else today.year - 1
-    cutoff_date = publication_utils.get_retention_cutoff_date(today)
+    # The prep step already applied the retention filter, so the earliest prepared
+    # import date is the cutoff_date this run was prepared with.
+    cutoff_date = (
+        prepared_lf.select(pl.col(IndCQC.cqc_location_import_date).min())
+        .collect()
+        .item()
+    )
 
     # 1 July 2021 is the earliest date this CT data exists, so long_term_from_date
     # stays pinned there rather than rolling forward every year - unless/until the
