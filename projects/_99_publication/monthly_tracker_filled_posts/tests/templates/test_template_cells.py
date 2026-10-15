@@ -16,22 +16,11 @@ from projects._99_publication.monthly_tracker_filled_posts.tests.templates impor
 PLACEHOLDERS = {"-", "–"}
 TYPED_VALUE_TYPES = (int, float, datetime.date, datetime.datetime)
 
-# Comp prev publication's label columns: the previous and current blocks (inputs)
-# and the difference block (formulas).
+# Comp prev publication's label columns: the previous, current and difference blocks.
 LABEL_COLUMN_BLOCKS = [
-    tuple(cells.split(":"))
-    for cells in (
-        [
-            r.cells
-            for r in cell_map.COMP_PREV_PUBLICATION.input_ranges
-            if r.note.endswith("labels")
-        ]
-        + [
-            cells
-            for cells, _ in cell_map.COMP_PREV_PUBLICATION.formula_styles
-            if cells.startswith("B")
-        ]
-    )
+    tuple(r.cells.split(":"))
+    for r in cell_map.COMP_PREV_PUBLICATION.input_ranges
+    if r.note.endswith("labels")
 ]
 
 
@@ -88,19 +77,19 @@ class TestTemplateCells:
 
         assert wrong_style == [], "Input cells with the wrong font or number format"
 
-    @pytest.mark.parametrize("sheet", support.formula_sheet_params)
-    def test_formula_cells_have_expected_style(self, sheet: cell_map.SheetMap):
-        """Formula cells show the font and number format the cell map expects."""
-        worksheet = openpyxl.load_workbook(cell_map.TEMPLATE_PATH)[sheet.name]
-        wrong_style = [
-            f"{cells}: {support.coordinate(row, col)}"
-            for cells, style in sheet.formula_styles
-            for row, col in sorted(support.cells_in([cells]))
-            if support.effective_style(worksheet, row, col)
-            != cell_map.CELL_STYLES[style]
+    @pytest.mark.parametrize("sheet", support.sheet_params)
+    def test_has_no_formulas(
+        self, sheet: cell_map.SheetMap, workbook: openpyxl.Workbook
+    ):
+        """Every value comes from the writer, so no cell calculates anything."""
+        formulas = [
+            cell.coordinate
+            for row in workbook[sheet.name].iter_rows()
+            for cell in row
+            if cell.data_type == "f"
         ]
 
-        assert wrong_style == [], "Formula cells with the wrong font or number format"
+        assert formulas == [], "Cells that hold formulas"
 
     @pytest.mark.parametrize("sheet", support.bold_heading_sheet_params)
     def test_table_headings_are_bold(

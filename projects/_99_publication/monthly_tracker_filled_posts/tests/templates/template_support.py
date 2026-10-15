@@ -44,9 +44,6 @@ comparison_sheet_params = [
     for s in cell_map.DIAGNOSTICS_SHEETS
     if s.percentage_chart_columns == ("E", "F", "N", "O")
 ]
-formula_sheet_params = [
-    pytest.param(s, id=s.name) for s in cell_map.DIAGNOSTICS_SHEETS if s.formula_ranges
-]
 bold_heading_sheet_params = [
     pytest.param(s, id=s.name)
     for s in cell_map.DIAGNOSTICS_SHEETS
@@ -321,7 +318,7 @@ def fixture_cell(
         if i >= annual + monthly:
             return None
         return round(0.01 + 0.001 * j + 0.0005 * i, 6)
-    if "publication" in note:
+    if "publication" in note or note in ("difference labels", "difference dates"):
         # To date: the current block has a row for the year just ended that the
         # previous block lacks, so the previous block is padded with a blank row.
         annual = 12 if full else 10
@@ -346,10 +343,13 @@ def fixture_cell(
     leaf = (
         [4_000, 8_000, 13_500] if "locations" in note else [150_000, 300_000, 700_000]
     )
-    if "totals" in note:
-        # C: all service types; D: the two care home types.
-        members = leaf if j == 0 else leaf[:2]
-        return round(sum(members) * (1 + growth) ** i)
+    if "primary service type" in note:
+        # C: total of all service types; D: total of the two care home types;
+        # E:G: the service types.
+        if j < 2:
+            members = leaf if j == 0 else leaf[:2]
+            return round(sum(members) * (1 + growth) ** i)
+        return round(leaf[j - 2] * (1 + growth) ** i)
     if "% change" in note:
         return round((1 + growth * (capacity_tracker_growth if j else 1)) ** i - 1, 6)
     base = {

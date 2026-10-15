@@ -47,9 +47,7 @@ class TestChartContents:
         """Charts only read cells the cell map lists."""
         mapped_cells = {
             s.name: support.cells_in(
-                [r.cells for r in s.input_ranges]
-                + list(s.formula_ranges)
-                + list(s.chart_label_ranges)
+                [r.cells for r in s.input_ranges] + list(s.chart_label_ranges)
             )
             for s in cell_map.DIAGNOSTICS_SHEETS
         }

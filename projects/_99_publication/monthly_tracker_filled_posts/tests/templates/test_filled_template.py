@@ -1,4 +1,4 @@
-"""A filled copy of the template saves with its values, formulas, charts and styles.
+"""A filled copy of the template saves with its values, charts and styles.
 
 The copies use illustrative values. Set DIAGNOSTICS_TEMPLATE_CHECK_DIR to keep
 them for a manual check in Excel: one filled to date, one with every slot filled.
@@ -118,21 +118,6 @@ class TestFullyFilledCopy:
         ]
 
         assert wrong_style == [], "Written cells with the wrong font or number format"
-
-    def test_template_formulas_are_unchanged(
-        self, fully_filled, workbook: openpyxl.Workbook
-    ):
-        """Saving a filled copy does not alter any template formula."""
-        saved = openpyxl.load_workbook(fully_filled[0])
-        changed = [
-            f"{sheet.name}!{workbook[sheet.name].cell(row, col).coordinate}"
-            for sheet in cell_map.DIAGNOSTICS_SHEETS
-            for row, col in sorted(support.cells_in(list(sheet.formula_ranges)))
-            if saved[sheet.name].cell(row, col).value
-            != workbook[sheet.name].cell(row, col).value
-        ]
-
-        assert changed == [], "Formulas that changed on save"
 
     def test_charts_keep_what_they_plot_and_how_they_look(
         self, fully_filled, package: zipfile.ZipFile
