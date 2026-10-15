@@ -244,6 +244,7 @@ class IndCqcColumns:
     last_filled_posts: str = "last_filled_posts"
     last_pir_submission: str = "last_pir_submission"
     last_rolling_average: str = "last_rolling_average"
+    latest_overall_rating: str = "latest_overall_rating"
     location_id: str = CQCLClean.location_id
     lower_percentile: str = "lower_percentile"
     main_job_group_labelled: str = "main_job_group_labels"

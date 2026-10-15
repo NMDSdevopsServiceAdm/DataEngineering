@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
+- Added `add_latest_overall_rating` util to add each location's latest CQC overall rating as of a date column.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 
 ### Changed

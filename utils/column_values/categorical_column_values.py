@@ -453,6 +453,7 @@ class CQCRatingsValues(ColumnValues):
     good: str = "Good"
     requires_improvement: str = "Requires improvement"
     inadequate: str = "Inadequate"
+    not_yet_rated: str = "Not yet rated"
 
 
 @dataclass
