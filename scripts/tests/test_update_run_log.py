@@ -196,6 +196,11 @@ select_raises_cases = [
         message="before 2026-10-01",
     ),
     SelectRaisesTestCase(
+        id="raises_when_run_is_archived_the_day_before_the_month_start",
+        runs=[("2026-09-30", 1, True)],
+        message="before 2026-10-01",
+    ),
+    SelectRaisesTestCase(
         id="raises_when_selected_run_is_before_the_month_start",
         runs=[("2026-09-22", 1, True)],
         selected_runs=(1,),
@@ -245,6 +250,47 @@ class TestSetRunFlagForSelection:
 
         assert returned_df[RunLog.selected_for_publication].to_list() == [True, True]
 
+    def test_selects_run_archived_on_the_month_start(self):
+        run_log_df = build_run_log([("2026-10-01", 1, True)])
+
+        returned_df = job.set_run_flag(
+            run_log_df, 1, RunLog.selected_for_publication, MONTH_START
+        )
+
+        assert returned_df[RunLog.selected_for_publication].to_list() == [True]
+
+    def test_clears_every_other_selected_run_this_month(self):
+        run_log_df = build_run_log(
+            [("2026-10-01", 1, True), ("2026-10-08", 2, True), ("2026-10-12", 3, True)],
+            selected_runs=(1, 2),
+        )
+
+        returned_df = job.set_run_flag(
+            run_log_df, 3, RunLog.selected_for_publication, MONTH_START
+        )
+
+        assert returned_df[RunLog.selected_for_publication].to_list() == [
+            False,
+            False,
+            True,
+        ]
+
+    def test_moving_selection_changes_only_the_selected_column(self):
+        run_log_df = build_run_log(
+            [("2026-10-01", 1, True), ("2026-10-08", 2, True)], selected_runs=(1,)
+        )
+
+        returned_df = job.set_run_flag(
+            run_log_df, 2, RunLog.selected_for_publication, MONTH_START
+        )
+
+        other_columns = [
+            c for c in run_log_df.columns if c != RunLog.selected_for_publication
+        ]
+        pl_testing.assert_frame_equal(
+            run_log_df.select(other_columns), returned_df.select(other_columns)
+        )
+
 
 class TestGetChangedRunNumbers:
     def test_returns_only_runs_where_the_flag_changed(self):
@@ -266,6 +312,25 @@ class TestGetChangedRunNumbers:
     def test_returns_both_runs_when_the_selection_moves(self):
         run_log_df = build_run_log(
             [("2026-10-01", 1, True), ("2026-10-08", 2, True)], selected_runs=(1,)
+        )
+        updated_df = job.set_run_flag(
+            run_log_df, 2, RunLog.selected_for_publication, MONTH_START
+        )
+
+        returned_run_numbers = job.get_changed_run_numbers(
+            run_log_df, updated_df, RunLog.selected_for_publication
+        )
+
+        assert returned_run_numbers == [1, 2]
+
+    def test_returns_run_whose_flag_changed_from_null(self):
+        run_log_df = build_run_log(
+            [("2026-10-01", 1, True), ("2026-10-08", 2, True)], selected_runs=(1,)
+        ).with_columns(
+            pl.when(pl.col(Keys.run_number) == 2)
+            .then(None)
+            .otherwise(pl.col(RunLog.selected_for_publication))
+            .alias(RunLog.selected_for_publication)
         )
         updated_df = job.set_run_flag(
             run_log_df, 2, RunLog.selected_for_publication, MONTH_START
@@ -518,3 +583,24 @@ class TestMain:
         assert exit_code == 0
         assert "2026-10-08" in printed
         assert "2026-09-22" not in printed
+
+    def test_leaves_output_dir_empty_when_selection_is_rejected(self, selection_dirs):
+        original_dir, updated_dir = selection_dirs
+
+        exit_code = job.main(
+            [
+                "--run_log_dir",
+                str(original_dir),
+                "--output_dir",
+                str(updated_dir),
+                "--run_number",
+                "1",
+                "--flag",
+                RunLog.selected_for_publication,
+                "--month_start",
+                "2026-10-01",
+            ]
+        )
+
+        assert exit_code != 0
+        assert not updated_dir.exists()

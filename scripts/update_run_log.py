@@ -111,9 +111,9 @@ def get_changed_run_numbers(
         flag (str): The flag column that was updated.
 
     Returns:
-        list[int]: The run numbers whose flag changed.
+        list[int]: The run numbers whose flag changed, counting a null as different.
     """
-    return updated_df.filter(updated_df[flag] != run_log_df[flag])[
+    return updated_df.filter(updated_df[flag].ne_missing(run_log_df[flag]))[
         Keys.run_number
     ].to_list()
 
@@ -236,9 +236,8 @@ def _format_row(row_df: pl.DataFrame) -> str:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     """Lists the month's runs, or updates one run's flag.
 
-    An update writes only the runs whose flag changed to the output dir. Nothing
-    is written unless the whole update succeeds. The input directory is never
-    modified.
+    An update writes only the runs whose flag changed to the output dir, and
+    nothing if the update is rejected. The input directory is never modified.
 
     Args:
         argv (Optional[Sequence[str]]): Command line arguments; defaults to `sys.argv`.
