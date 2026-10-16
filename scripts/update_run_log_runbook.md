@@ -55,6 +55,8 @@ Only one run is selected from the 1st of the month. If another run this month is
 
 After the upload the script offers to start the `<workspace>-Publication-Output` step function (`main-Publication-Output` for `sfc-main-datasets`; `<branch>-Publication-Output` for a branch bucket `sfc-<branch>-datasets`) with `{"run_number": <n>}`. It shows the state machine name, its ARN and the input before asking. Answer `n` to start it yourself later with the same input. The prompt only appears when you select a run.
 
+`Publication-Output` builds the public data from the run's prepared data, which `Publication-Assessment` stores per run. `Publication-Assessment` starts itself when the estimates pipeline succeeds in `main`, but on a branch it must be started by hand with `{"run_number": <n>}`. The script does not check that the run was prepared.
+
 ## If something is wrong
 - **Run number not found, flag already True, or flag unsupported**: the script stops with an error and uploads nothing. Fix the input and run it again.
 - **Run is not approved, or was archived before the 1st of the month** (selecting only): the script stops with an error and uploads nothing. Approve the run first, or pick a run from the list.
@@ -63,6 +65,7 @@ After the upload the script offers to start the `<workspace>-Publication-Output`
 - **No run log found in the bucket**: check the bucket name. Nothing is uploaded.
 - **The upload fails part way**: the script names the runs it had already uploaded and the one that failed. The failed run's S3 folder may hold two parquet files, the old one and the new one, which reads as two rows for the run. A rerun then fails with "matches multiple rows". When a selection moved, one run may be updated and the other not, which leaves two runs selected or none. Restore each affected run's original folder, then run the script again from the start. On a branch bucket, copy `run_log_original/archive_date=<date>/run_number=<n>/` back over the same folder in S3 with `aws s3 cp --recursive`, then `aws s3 sync --delete`, as in the restore commands in "Undoing an update". In the production bucket, restore the previous object versions of each affected run's folder from S3.
 - **Publication-Output is not found, you are not allowed to list or start it, or it fails to start**: the selection is already saved. The script says so and prints the input; start `<workspace>-Publication-Output` by hand with `{"run_number": <n>}`. The step function only exists on a branch once the branch has deployed it.
+- **Publication-Output starts but fails with "run_number N not found ... Available runs"**: the run was never prepared. The selection stays set. Start `<workspace>-Publication-Assessment` with `{"run_number": <n>}`, wait for it to finish, then start `Publication-Output` again with the same input.
 
 ## Undoing an update
 - **Branch bucket**: after a successful upload the script prints one restore command per changed run (an `aws s3 cp --recursive` then `aws s3 sync --delete` from `run_log_original/`). Run all of them to put the runs back as they were. **Run them before running the script again**: every run replaces `run_log_original/`, and restoring from a later copy puts the changed value back. Undoing does not stop a step function execution that was already started.

@@ -35,7 +35,8 @@ We investigate and resolve irregularities until we are satisfied the outputs are
 We must publish an output on the 15th of each month at 09:30, unless that is outside working time, upon which we will publish as soon as possible afterwards.
 
 ### Publishing a run
-Once a run has been assessed and approved (see `scripts/update_run_log_runbook.md`) and selected, start the `Publication-Output` step function with `{"run_number": N}`.
+Once a run has been assessed, approve it and select it with `scripts/update_run_log.sh` (see `scripts/update_run_log_runbook.md`).
+The script can then start the `Publication-Output` step function with `{"run_number": N}`; otherwise start it by hand with that input.
 It builds the public data from that run's prepared data: the publication summary behind the Tableau output and the T0, T1 and T2 data-download tables.
 Public data is only built for a selected run, so the step function fails without a `run_number`.
 
