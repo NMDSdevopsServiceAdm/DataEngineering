@@ -10,13 +10,16 @@ import pandas as pd
 import polars as pl
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.publication_utils import (
+    import_date_to_period_month,
     round_percentage,
 )
-from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_pages import (
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_helpers import (
     set_column_widths,
+)
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_workbook_pages import (
     write_pages,
 )
-from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_text import (
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_workbook_text import (
     NOT_PUBLISHED_LABEL,
     SUPPRESSED_LABEL,
     T0_TITLE,
@@ -196,7 +199,11 @@ def get_latest_period(t0_lf: pl.LazyFrame) -> date:
     Returns:
         date: the first day of the latest period's month.
     """
-    return t0_lf.select(pl.col(Pub.period).max().dt.offset_by("-1mo")).collect().item()
+    return (
+        t0_lf.select(import_date_to_period_month(pl.col(Pub.period).max()))
+        .collect()
+        .item()
+    )
 
 
 def _collect_with_labels(lf: pl.LazyFrame, null_labels: dict[str, str]) -> pd.DataFrame:

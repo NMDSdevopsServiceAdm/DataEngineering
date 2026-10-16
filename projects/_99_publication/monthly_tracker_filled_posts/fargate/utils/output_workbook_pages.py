@@ -1,11 +1,17 @@
 from io import BytesIO
-from pathlib import Path
 
 import gptables as gpt
 import yaml
 from xlsxwriter.image import Image
 
-_PAGE_CONFIG_PATH = Path(__file__).parents[2] / "templates" / "workbook_pages.yaml"
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.template_paths import (
+    TEMPLATES_DIR,
+)
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_helpers import (
+    set_column_widths,
+)
+
+_PAGE_CONFIG_PATH = TEMPLATES_DIR / "output_workbook_pages.yaml"
 _TEXT_KEYS = ("heading", "text", "link", "url")
 _TEXT_PAGES = ["frontpage", "introduction", "revisions", "definitions"]
 _FONT = {"font_name": "Arial", "font_size": 12}
@@ -88,18 +94,6 @@ def write_pages(
             workbook, config[page], placeholders, logo if page == "frontpage" else None
         )
     _write_contents_page(workbook, config["contents"], table_titles)
-
-
-def set_column_widths(worksheet: object, widths: list[int]) -> None:
-    """
-    Sets the width of a worksheet's leading columns.
-
-    Args:
-        worksheet (object): the worksheet to size.
-        widths (list[int]): width of each column from the first, in characters.
-    """
-    for column, width in enumerate(widths):
-        worksheet.set_column(column, column, width)
 
 
 def _write_text_page(

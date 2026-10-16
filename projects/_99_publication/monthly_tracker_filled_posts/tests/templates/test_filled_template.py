@@ -1,6 +1,6 @@
 """A filled copy of the template saves with its values, charts and styles.
 
-The copies use generic values. Set DIAGNOSTICS_TEMPLATE_CHECK_DIR to keep them
+The copies use generic values. Set ASSESSMENT_TEMPLATE_CHECK_DIR to keep them
 for a manual check in Excel: one with the first half of every range filled, one
 with every slot filled.
 """
@@ -13,13 +13,13 @@ import openpyxl
 import pytest
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
-    diagnostics_cell_map as cell_map,
+    assessment_cell_map as cell_map,
 )
 from projects._99_publication.monthly_tracker_filled_posts.tests.templates import (
     template_support as support,
 )
 
-CHECK_DIR_ENV = "DIAGNOSTICS_TEMPLATE_CHECK_DIR"
+CHECK_DIR_ENV = "ASSESSMENT_TEMPLATE_CHECK_DIR"
 
 
 def _save_filled_copy(tmp_path_factory, file_name: str, full: bool):
@@ -34,14 +34,14 @@ def _save_filled_copy(tmp_path_factory, file_name: str, full: bool):
 @pytest.fixture(scope="module")
 def partly_filled(tmp_path_factory) -> tuple[Path, dict]:
     """Copy with the first half of every range filled, so blank slots are checked too."""
-    return _save_filled_copy(tmp_path_factory, "diagnostics_filled_fixture", full=False)
+    return _save_filled_copy(tmp_path_factory, "assessment_filled_fixture", full=False)
 
 
 @pytest.fixture(scope="module")
 def fully_filled(tmp_path_factory) -> tuple[Path, dict]:
     """Copy with every slot filled, to check the formatting of all rows."""
     return _save_filled_copy(
-        tmp_path_factory, "diagnostics_filled_fixture_full", full=True
+        tmp_path_factory, "assessment_filled_fixture_full", full=True
     )
 
 
@@ -66,7 +66,7 @@ class TestFullyFilledCopy:
         written = fully_filled[1]
         empty = [
             f"{sheet.name}: {r.cells}: {support.coordinate(row, col)}"
-            for sheet in cell_map.DIAGNOSTICS_SHEETS
+            for sheet in cell_map.ASSESSMENT_SHEETS
             for r in sheet.input_ranges
             for row, col in sorted(support.cells_in([r.cells]))
             if (sheet.name, support.coordinate(row, col)) not in written
@@ -85,7 +85,7 @@ class TestFullyFilledCopy:
             for r in sheet.input_ranges
             for row, col in sorted(support.cells_in([r.cells]))
             if support.effective_number_format(worksheet, row, col)
-            != cell_map.NUMBER_FORMATS[r.style]
+            != cell_map.NUMBER_FORMATS[r.number_format]
         ]
 
         assert wrong_format == [], "Written cells with the wrong number format"
@@ -97,7 +97,7 @@ class TestFullyFilledCopy:
         with zipfile.ZipFile(fully_filled[0]) as saved_package:
             changed = [
                 sheet.name
-                for sheet in cell_map.DIAGNOSTICS_SHEETS
+                for sheet in cell_map.ASSESSMENT_SHEETS
                 if support.chart_signature(saved_package, sheet)
                 != support.chart_signature(package, sheet)
             ]

@@ -5,7 +5,7 @@ import openpyxl
 import pytest
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
-    diagnostics_cell_map as cell_map,
+    assessment_cell_map as cell_map,
 )
 
 

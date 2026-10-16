@@ -799,3 +799,21 @@ class TestRoundPercentage:
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestImportDateToPeriodMonth:
+    @pytest.mark.parametrize(
+        "import_date, expected",
+        [
+            pytest.param(date(2026, 9, 1), date(2026, 8, 1), id="mid_year"),
+            pytest.param(
+                date(2026, 1, 1), date(2025, 12, 1), id="january_goes_to_prior_december"
+            ),
+        ],
+    )
+    def test_returns_month_before_import_date(self, import_date, expected):
+        df = pl.DataFrame({"import_date": [import_date]})
+
+        returned = df.select(job.import_date_to_period_month(pl.col("import_date")))
+
+        assert returned.item() == expected
