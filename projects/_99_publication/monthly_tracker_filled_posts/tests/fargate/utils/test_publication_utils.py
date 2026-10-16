@@ -665,7 +665,7 @@ class TestBuildT0EstimatesDownloadTable:
             (Pub.region, pl.String()),
             (Pub.main_service, pl.String()),
             (Pub.estimated_filled_posts, pl.Float32()),
-            (Pub.estimated_filled_posts_formatted, pl.Float32()),
+            (Pub.estimated_filled_posts_rounded, pl.Float32()),
             (Pub.cqc_locations, pl.UInt32()),
         ]
     )

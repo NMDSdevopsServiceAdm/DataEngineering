@@ -65,4 +65,4 @@ class PublicationColumns:
     monthly_percentage_change: str = "Monthly percentage change"
     period: str = "Period"
     period_label: str = "Period label"
-    estimated_filled_posts_formatted: str = "Estimated filled posts (rounded)"
+    estimated_filled_posts_rounded: str = "Estimated filled posts (rounded)"

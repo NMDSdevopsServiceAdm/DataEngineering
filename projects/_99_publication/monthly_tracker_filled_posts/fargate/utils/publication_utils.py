@@ -1016,7 +1016,7 @@ def build_t0_estimates_download_table(
             .alias(Pub.main_service),
             pl.col(Pub.publication_filled_posts).alias(Pub.estimated_filled_posts),
             round_to_publication_bands(
-                Pub.publication_filled_posts, Pub.estimated_filled_posts_formatted
+                Pub.publication_filled_posts, Pub.estimated_filled_posts_rounded
             ),
             pl.col(Pub.publication_locationid_count).alias(Pub.cqc_locations),
         )

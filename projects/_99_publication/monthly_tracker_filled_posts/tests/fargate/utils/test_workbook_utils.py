@@ -39,7 +39,7 @@ class TestPrepareT0ForPublication:
             (Pub.region, pl.String),
             (Pub.main_service, pl.String),
             (Pub.estimated_filled_posts, pl.Float64),
-            (Pub.estimated_filled_posts_formatted, pl.Float64),
+            (Pub.estimated_filled_posts_rounded, pl.Float64),
             (Pub.cqc_locations, pl.Int64),
         ]
     )
