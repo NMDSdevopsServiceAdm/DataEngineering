@@ -1,7 +1,7 @@
 """Cell map for `templates/diagnostics_template.xlsx`.
 
 Lists the cells the workbook writer fills (`InputRange`) and the charts and
-styles the template tests check. The template has no formulas.
+number formats the template tests check. The template has no formulas.
 
 The "Number of locations" cells take the latest row per group, since every row
 in a term's period shares the same count.
@@ -21,16 +21,14 @@ from utils.column_names.publication_columns import PublicationColumns as Pub
 
 TEMPLATE_PATH = Path(__file__).parents[2] / "templates" / "diagnostics_template.xlsx"
 
-# Font and number format each kind of input cell must show in the template: its
-# own style, or its column's when they match (Excel stores no cell then). The
-# writer gives cells it creates their column's style (`write_input_cell`).
-CELL_STYLES = {
-    "text": ("Arial", 12.0, False, "General"),
-    "bold_text": ("Arial", 12.0, True, "General"),
-    "heading": ("Arial", 14.0, True, "General"),
-    "date": ("Arial", 12.0, False, "mmm-yy"),
-    "count": ("Arial", 12.0, False, "#,##0"),
-    "percent": ("Arial", 12.0, False, "0.0%"),
+# Number format each kind of input cell must show in the template: its own, or
+# its column's when they match (Excel stores no cell then). The writer gives cells
+# it creates their column's style (`write_input_cell`).
+NUMBER_FORMATS = {
+    "text": "General",
+    "date": "mmm-yy",
+    "count": "#,##0",
+    "percent": "0.0%",
 }
 
 
@@ -44,8 +42,8 @@ class InputRange:
             None where the writer derives or builds the value (dates, text,
             % change) or no source column exists yet.
         note (str): what the range holds.
-        style (str): key into `CELL_STYLES` for the font and number format
-            every cell in the range must have in the template.
+        style (str): key into `NUMBER_FORMATS` for the number format every cell
+            in the range must have in the template.
     """
 
     cells: str
@@ -65,11 +63,6 @@ class SheetMap:
         chart_label_ranges (tuple[str, ...]): fixed label cells charts use as
             series names.
         window_rows (int): date rows each chart series must span.
-        percentage_chart_columns (tuple[str, ...]): value columns that mark a
-            chart as a % change chart.
-        percentage_chart_count (int): % change charts on the sheet.
-        bold_heading_cells (tuple[str, ...]): fixed table headings that must be
-            bold.
     """
 
     name: str
@@ -77,9 +70,6 @@ class SheetMap:
     chart_count: int
     chart_label_ranges: tuple[str, ...] = ()
     window_rows: int = 0
-    percentage_chart_columns: tuple[str, ...] = ()
-    percentage_chart_count: int = 0
-    bold_heading_cells: tuple[str, ...] = ()
 
 
 TITLE_CELL = "B3"
@@ -131,16 +121,11 @@ FILLED_POSTS = SheetMap(
             style="count",
         ),
         InputRange("J84:N96", note="monthly CQC locations % change", style="percent"),
-        InputRange(
-            "B99", note="'...since <month year>' chart heading", style="bold_text"
-        ),
+        InputRange("B99", note="'...since <month year>' chart heading"),
     ),
     chart_count=3,
     chart_label_ranges=("B61", "B80"),
     window_rows=MONTHLY_SLOTS,
-    percentage_chart_columns=("J", "K", "N"),
-    percentage_chart_count=3,
-    bold_heading_cells=("B20", "B40", "B61", "B80"),
 )
 
 # Annual rows first, then monthly rows; unused slots stay blank at the end.
@@ -159,7 +144,6 @@ COMP_PREV_PUBLICATION = SheetMap(
         InputRange("D106:H142", note="difference as percentage", style="percent"),
     ),
     chart_count=0,
-    bold_heading_cells=("B20", "B61", "B103"),
 )
 
 
@@ -210,9 +194,7 @@ def _comparison_sheet(
     """
     ranges = [
         InputRange(TITLE_CELL, note="'End of <month year>' title"),
-        InputRange(
-            HEADING_CELL, note="heading incl. 'Since <month year>'", style="heading"
-        ),
+        InputRange(HEADING_CELL, note="heading incl. 'Since <month year>'"),
         InputRange(f"E{first_row - 2}", note="care homes % change heading"),
         InputRange(f"N{first_row - 2}", note="non-res % change heading"),
         InputRange(f"B{first_row}:B{last_row}", note="care homes dates", style="date"),
@@ -243,7 +225,6 @@ def _comparison_sheet(
             )
         )
     header_row = first_row - 1
-    table_heading_row = first_row - 6
     return SheetMap(
         name,
         tuple(ranges) + extra_inputs,
@@ -253,9 +234,6 @@ def _comparison_sheet(
             f"L{header_row}:O{header_row}",
         ),
         window_rows=last_row - first_row + 1,
-        percentage_chart_columns=("E", "F", "N", "O"),
-        percentage_chart_count=2,
-        bold_heading_cells=(f"B{table_heading_row}", f"K{table_heading_row}"),
     )
 
 
