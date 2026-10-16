@@ -1,13 +1,15 @@
 """
-Set a flag to True for one run in a local copy of the archive run log.
+Set a flag to True for one run in a local copy of the archive run log, or list
+the month's runs.
 
 Works on local files only: `update_run_log.sh` copies the run log down from S3,
 runs this script as a module from the repo root
-(`python -m scripts.update_run_log`), and uploads the changed partition.
+(`python -m scripts.update_run_log`), and uploads the changed partitions.
 """
 
 import argparse
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Optional, Sequence
 
@@ -20,23 +22,42 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveRunLogColumns as RunLog,
 )
 
-SUPPORTED_FLAGS: tuple[str, ...] = (RunLog.approved,)
+SUPPORTED_FLAGS: tuple[str, ...] = (
+    RunLog.approved,
+    RunLog.selected_for_publication,
+    RunLog.reconciled,
+    RunLog.locally_checked,
+)
+RUN_TABLE_COLUMNS: tuple[str, ...] = (
+    Keys.run_number,
+    Keys.archive_date,
+    *SUPPORTED_FLAGS,
+    RunLog.tag,
+)
 
 
-def set_run_flag(run_log_df: pl.DataFrame, run_number: int, flag: str) -> pl.DataFrame:
+def set_run_flag(
+    run_log_df: pl.DataFrame, run_number: int, flag: str, month_start: date
+) -> pl.DataFrame:
     """Sets a flag to True for one run.
 
     Args:
         run_log_df (pl.DataFrame): The run log, including the partition key columns.
         run_number (int): The run to update.
-        flag (str): The flag column to set. Only `approved` is supported.
+        flag (str): The flag column to set. One of `SUPPORTED_FLAGS`.
+        month_start (date): The first day of the month being worked on.
 
     Returns:
-        pl.DataFrame: The run log with the flag set to True for the run.
+        pl.DataFrame: The run log with the flag set to True for the run. Selecting
+            a run clears `selected_for_publication` on the runs archived since
+            `month_start`.
 
     Raises:
         ValueError: If the flag is not supported, the run number matches no row or
-            more than one row, or the flag is already True for the run.
+            more than one row, or the flag is already True for the run. For
+            `selected_for_publication`, also if the run is not approved or was
+            archived before `month_start`; these are checked before the flag is
+            already True.
     """
     if flag not in SUPPORTED_FLAGS:
         raise ValueError(
@@ -52,11 +73,76 @@ def set_run_flag(run_log_df: pl.DataFrame, run_number: int, flag: str) -> pl.Dat
         raise ValueError(
             f"Run number {run_number} matches multiple rows in the run log."
         )
+
+    is_selection = flag == RunLog.selected_for_publication
+    if is_selection:
+        if not run_df[RunLog.approved].item():
+            raise ValueError(f"Run number {run_number} is not approved.")
+        if run_df[Keys.archive_date].item() < month_start.isoformat():
+            raise ValueError(
+                f"Run number {run_number} was archived before {month_start}."
+            )
+
     if run_df[flag].item() is True:
         raise ValueError(f"Run number {run_number} is already {flag}.")
 
+    if is_selection:
+        run_log_df = run_log_df.with_columns(
+            pl.when(pl.col(Keys.archive_date) >= month_start.isoformat())
+            .then(False)
+            .otherwise(pl.col(flag))
+            .alias(flag)
+        )
+
     return run_log_df.with_columns(
         pl.when(is_run).then(True).otherwise(pl.col(flag)).alias(flag)
+    )
+
+
+def get_changed_run_numbers(
+    run_log_df: pl.DataFrame, updated_df: pl.DataFrame, flag: str
+) -> list[int]:
+    """Finds the runs whose flag differs between two versions of the run log.
+
+    Args:
+        run_log_df (pl.DataFrame): The run log before the update.
+        updated_df (pl.DataFrame): The run log after the update, in the same row order.
+        flag (str): The flag column that was updated.
+
+    Returns:
+        list[int]: The run numbers whose flag changed.
+    """
+    return updated_df.filter(updated_df[flag] != run_log_df[flag])[
+        Keys.run_number
+    ].to_list()
+
+
+def format_run_table(run_log_df: pl.DataFrame, month_start: date) -> str:
+    """Formats the runs archived on or after `month_start` as an aligned text table.
+
+    Args:
+        run_log_df (pl.DataFrame): The run log, including the partition key columns.
+        month_start (date): The first day of the month being worked on.
+
+    Returns:
+        str: One header line and one line per run, ordered by run number, or a
+            message when no run is in the window.
+    """
+    runs_df = (
+        run_log_df.filter(pl.col(Keys.archive_date) >= month_start.isoformat())
+        .sort(Keys.run_number)
+        .select(RUN_TABLE_COLUMNS)
+    )
+    if runs_df.is_empty():
+        return f"No runs archived on or after {month_start}."
+
+    rows = [list(RUN_TABLE_COLUMNS)] + [
+        ["" if value is None else str(value) for value in row] for row in runs_df.rows()
+    ]
+    widths = [max(len(row[i]) for row in rows) for i in range(len(RUN_TABLE_COLUMNS))]
+    return "\n".join(
+        "  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip()
+        for row in rows
     )
 
 
@@ -120,12 +206,25 @@ def _parse_arguments(argv: Optional[Sequence[str]]) -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run_log_dir", type=Path, required=True, help="Local run log")
+    parser.add_argument("--output_dir", type=Path, help="Updated partitions")
+    parser.add_argument("--run_number", type=int)
+    parser.add_argument("--flag")
     parser.add_argument(
-        "--output_dir", type=Path, required=True, help="Updated partition"
+        "--month_start",
+        type=date.fromisoformat,
+        default=date.today().replace(day=1),
+        help="First day of the month being worked on (yyyy-mm-dd); default this month",
     )
-    parser.add_argument("--run_number", type=int, required=True)
-    parser.add_argument("--flag", required=True)
-    return parser.parse_args(argv)
+    parser.add_argument(
+        "--list", action="store_true", help="List the month's runs and exit"
+    )
+    args = parser.parse_args(argv)
+
+    if not args.list and None in (args.output_dir, args.run_number, args.flag):
+        parser.error(
+            "--output_dir, --run_number and --flag are required without --list"
+        )
+    return args
 
 
 def _format_row(row_df: pl.DataFrame) -> str:
@@ -135,33 +234,41 @@ def _format_row(row_df: pl.DataFrame) -> str:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    """Updates one run's flag and writes only that run's partition to the output dir.
+    """Lists the month's runs, or updates one run's flag.
 
-    Nothing is written unless the whole update succeeds. The input directory is
-    never modified.
+    An update writes only the runs whose flag changed to the output dir. Nothing
+    is written unless the whole update succeeds. The input directory is never
+    modified.
 
     Args:
         argv (Optional[Sequence[str]]): Command line arguments; defaults to `sys.argv`.
 
     Returns:
-        int: 0 on success, 1 if the update was rejected.
+        int: 0 on success, 1 if the run log could not be read or the update was
+            rejected.
     """
     args = _parse_arguments(argv)
 
     try:
         run_log_df = read_run_log(args.run_log_dir)
-        updated_df = set_run_flag(run_log_df, args.run_number, args.flag)
+        if args.list:
+            print(format_run_table(run_log_df, args.month_start))
+            return 0
+        updated_df = set_run_flag(
+            run_log_df, args.run_number, args.flag, args.month_start
+        )
     except (ValueError, FileNotFoundError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
 
-    is_run = pl.col(Keys.run_number) == args.run_number
-    print("Before:")
-    print(_format_row(run_log_df.filter(is_run)))
-    print("After:")
-    print(_format_row(updated_df.filter(is_run)))
-
-    write_run_partition(updated_df, args.run_number, args.output_dir)
+    for run_number in get_changed_run_numbers(run_log_df, updated_df, args.flag):
+        is_run = pl.col(Keys.run_number) == run_number
+        print(f"Run {run_number}:")
+        print("Before:")
+        print(_format_row(run_log_df.filter(is_run)))
+        print("After:")
+        print(_format_row(updated_df.filter(is_run)))
+        write_run_partition(updated_df, run_number, args.output_dir)
     return 0
 
 
