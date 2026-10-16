@@ -40,7 +40,7 @@ class TestPrepareT0ForPublication:
             (Pub.region, pl.String),
             (Pub.main_service, pl.String),
             (Pub.estimated_filled_posts, pl.Float64),
-            (Pub.estimated_filled_posts_formatted, pl.Float64),
+            (Pub.estimated_filled_posts_rounded, pl.Float64),
             (Pub.cqc_locations, pl.Int64),
         ]
     )
@@ -73,9 +73,7 @@ class TestPreparePercChangeForPublication:
             (Pub.region, pl.String),
             (Pub.main_service, pl.String),
             (Pub.annual_percentage_change, pl.Float64),
-            (Pub.annual_percentage_change_formatted, pl.String),
             (Pub.monthly_percentage_change, pl.Float64),
-            (Pub.monthly_percentage_change_formatted, pl.String),
         ]
     )
     expected_columns = [
@@ -109,9 +107,7 @@ class TestPreparePercChangeForPublication:
                 Pub.region: ["London"],
                 Pub.main_service: ["All CQC locations"],
                 Pub.annual_percentage_change: pl.Series([0.1], dtype=pl.Float32),
-                Pub.annual_percentage_change_formatted: ["10.0%"],
                 Pub.monthly_percentage_change: pl.Series([0.0123456], dtype=pl.Float32),
-                Pub.monthly_percentage_change_formatted: ["1.2%"],
             }
         )
 

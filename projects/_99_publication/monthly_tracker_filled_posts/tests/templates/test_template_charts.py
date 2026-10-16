@@ -45,7 +45,9 @@ class TestChartContents:
         for chart in support.charts(package, sheet.name):
             for formula in chart.findall(".//c:f", NS):
                 ref_sheet, ref_cells = support.split_reference(formula.text)
-                if not support.cells_in([ref_cells]) <= mapped_cells[ref_sheet]:
+                if not support.cells_in([ref_cells]) <= mapped_cells.get(
+                    ref_sheet, set()
+                ):
                     unmapped_refs.append(formula.text)
 
         assert unmapped_refs == [], "Chart references outside the cell map"

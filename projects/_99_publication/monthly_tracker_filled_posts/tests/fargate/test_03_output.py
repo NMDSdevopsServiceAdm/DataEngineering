@@ -84,10 +84,10 @@ def mocks(io_mocks):
                 name,
                 stack.enter_context(patch(f"{PATCH_PATH}.publication_utils.{name}")),
             )
-        io_mocks.format_large_number = stack.enter_context(
+        io_mocks.round_to_publication_bands = stack.enter_context(
             patch(
-                f"{PATCH_PATH}.publication_utils.format_large_number",
-                side_effect=lambda column_name, column_alias: pl.lit("42").alias(
+                f"{PATCH_PATH}.publication_utils.round_to_publication_bands",
+                side_effect=lambda column_name, column_alias: pl.lit(40.0).alias(
                     column_alias
                 ),
             )
@@ -133,14 +133,14 @@ class TestMain:
             include_assessment=False,
         )
 
-    def test_main_adds_formatted_columns_and_import_date_labels(self, mocks):
+    def test_main_adds_rounded_filled_posts_and_import_date_labels(self, mocks):
         _run_main()
 
-        mocks.format_large_number.assert_called_once_with(
-            Pub.publication_filled_posts, Pub.publication_filled_posts_formatted
+        mocks.round_to_publication_bands.assert_called_once_with(
+            Pub.publication_filled_posts, Pub.publication_filled_posts_rounded
         )
         expected_lf = mocks.aggregate_to_publication_rows.return_value.with_columns(
-            pl.lit("42").alias(Pub.publication_filled_posts_formatted),
+            pl.lit(40.0).alias(Pub.publication_filled_posts_rounded),
             pl.lit("Apr 2026").alias(Pub.cqc_location_import_date_abbreviated),
             pl.lit("April 2026").alias(Pub.cqc_location_import_date_full),
         )

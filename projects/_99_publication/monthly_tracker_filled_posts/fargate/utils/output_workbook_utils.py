@@ -120,7 +120,7 @@ def prepare_t0_for_publication(t0_lf: pl.LazyFrame) -> pd.DataFrame:
         pl.col(Pub.period_label).alias(Pub.period),
         Pub.region,
         Pub.main_service,
-        pl.col(Pub.estimated_filled_posts_formatted).alias(Pub.estimated_filled_posts),
+        pl.col(Pub.estimated_filled_posts_rounded).alias(Pub.estimated_filled_posts),
         Pub.cqc_locations,
     )
     return _collect_with_labels(
