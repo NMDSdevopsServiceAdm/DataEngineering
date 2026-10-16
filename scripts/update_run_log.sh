@@ -2,12 +2,10 @@
 # Sets a flag to True for one run in the archive run log on S3.
 #
 # Copies the run log down, lists this month's runs, updates a local copy with
-# update_run_log.py, shows the changed rows, and replaces only the changed runs'
-# partitions on S3. Selecting a run for publication moves the selection, so two
-# partitions can change. The original and updated copies are kept until you
-# confirm the changed rows; if you decline, the updated copy is deleted and
-# nothing is uploaded. After a selection is uploaded you can start the bucket's
-# Publication-Output state machine for the run.
+# update_run_log.py, shows the changed rows, and after you confirm replaces only
+# the changed runs' partitions on S3; declining deletes the updated copy and
+# uploads nothing. Selecting a run for publication can change two runs, and
+# offers to start the bucket's Publication-Output state machine for it.
 #
 # Prerequisites: see update_run_log_runbook.md (aws-mfa login, uv sync).
 set -euo pipefail
@@ -53,8 +51,7 @@ start_publication_output() {
   workspace="${BASH_REMATCH[1]}"
   name="$workspace-Publication-Output"
 
-  # The CLI pages the listing and applies --query to each page, so a filtering
-  # query prints one line per page. List every name and ARN and filter here instead.
+  # The listing is paged and --query runs per page, so filter here, not in the query.
   arn="$(aws stepfunctions list-state-machines --profile "$profile" \
     --query "stateMachines[].[name,stateMachineArn]" --output text |
     awk -v name="$name" '$1 == name { print $2 }')" || {

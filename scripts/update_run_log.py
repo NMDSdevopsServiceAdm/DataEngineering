@@ -41,6 +41,9 @@ def set_run_flag(
 ) -> pl.DataFrame:
     """Sets a flag to True for one run.
 
+    Selecting a run moves the month's selection: `selected_for_publication` is
+    cleared on the other runs archived since `month_start`.
+
     Args:
         run_log_df (pl.DataFrame): The run log, including the partition key columns.
         run_number (int): The run to update.
@@ -48,16 +51,13 @@ def set_run_flag(
         month_start (date): The first day of the month being worked on.
 
     Returns:
-        pl.DataFrame: The run log with the flag set to True for the run. Selecting
-            a run clears `selected_for_publication` on the runs archived since
-            `month_start`.
+        pl.DataFrame: The run log with the flag set to True for the run.
 
     Raises:
         ValueError: If the flag is not supported, the run number matches no row or
-            more than one row, or the flag is already True for the run. For
-            `selected_for_publication`, also if the run is not approved or was
-            archived before `month_start`; these are checked before the flag is
-            already True.
+            more than one row, or the flag is already True for the run. Selecting
+            also raises if the run is not approved or was archived before
+            `month_start`.
     """
     if flag not in SUPPORTED_FLAGS:
         raise ValueError(
@@ -75,6 +75,7 @@ def set_run_flag(
         )
 
     is_selection = flag == RunLog.selected_for_publication
+    # Before the already-True check, so an earlier month's selection says why it can't be reselected.
     if is_selection:
         if not run_df[RunLog.approved].item():
             raise ValueError(f"Run number {run_number} is not approved.")
@@ -125,8 +126,7 @@ def format_run_table(run_log_df: pl.DataFrame, month_start: date) -> str:
         month_start (date): The first day of the month being worked on.
 
     Returns:
-        str: One header line and one line per run, ordered by run number, or a
-            message when no run is in the window.
+        str: The table, or a message when no run is in the window.
     """
     runs_df = (
         run_log_df.filter(pl.col(Keys.archive_date) >= month_start.isoformat())
