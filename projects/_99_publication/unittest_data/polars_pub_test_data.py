@@ -103,6 +103,30 @@ default_lookback_expected = [True, False, False, True, True]
 
 
 @dataclass
+class RetentionCutoffDateTestCase:
+    id: str
+    today: date
+    expected: date
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+retention_cutoff_date_test_cases = [
+    RetentionCutoffDateTestCase(
+        id="before_april_uses_previous_financial_year",
+        today=date(2026, 3, 31),
+        expected=date(2019, 4, 1),
+    ),
+    RetentionCutoffDateTestCase(
+        id="from_april_uses_current_financial_year",
+        today=date(2026, 4, 1),
+        expected=date(2020, 4, 1),
+    ),
+]
+
+
+@dataclass
 class HasConsistentServiceSinceDateTestCase:
     id: str
     from_date: date
