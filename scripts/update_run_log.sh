@@ -37,6 +37,20 @@ confirm() {
   done
 }
 
+# Prints the commands that put the given runs' partitions back as they were. The main
+# bucket is versioned, so a bad update there is fixed manually from S3 versions.
+print_restore_commands() {
+  [[ "$bucket" != "$MAIN_BUCKET" ]] || return 0
+  local partition restore_source restore_target
+  echo "To undo this on the branch bucket, run these before running the script again (each run replaces $ORIGINAL_DIR):"
+  for partition in "$@"; do
+    restore_source="$ORIGINAL_DIR/$partition/"
+    restore_target="s3://$bucket/$RUN_LOG_PREFIX/$partition/"
+    # cp overwrites unconditionally: sync alone skips a same-sized file that isn't newer than S3's.
+    echo "  aws s3 cp \"$restore_source\" \"$restore_target\" --recursive --profile $profile && aws s3 sync \"$restore_source\" \"$restore_target\" --delete --profile $profile"
+  done
+}
+
 # Starts the bucket's Publication-Output state machine for the selected run.
 # Returns 0 if it started or you declined, 1 if it could not be started.
 start_publication_output() {
@@ -193,6 +207,8 @@ for partition in "${partitions[@]}"; do
     echo "Error: the upload to s3://$bucket/ failed, so the run log may be unchanged or partly updated." >&2
     echo "Uploaded before the failure: ${uploaded[*]:-none}. Failed: $partition." >&2
     echo "Check profile '$profile' can write to the bucket, then check these runs in S3 before retrying." >&2
+    # The failed run's folder may be half written, so it is restored too.
+    print_restore_commands "${uploaded[@]+"${uploaded[@]}"}" "$partition" >&2
     exit 1
   fi
   uploaded+=("$partition")
@@ -204,16 +220,7 @@ if [[ ${#partitions[@]} -gt 1 ]]; then
   echo "The selection moved, so these runs were changed: ${partitions[*]}"
 fi
 
-# The main bucket is versioned, so a bad update there is fixed manually from S3 versions.
-if [[ "$bucket" != "$MAIN_BUCKET" ]]; then
-  # cp overwrites unconditionally: sync alone skips a same-sized file that isn't newer than S3's.
-  echo "To undo this on the branch bucket, run these before running the script again (each run replaces $ORIGINAL_DIR):"
-  for partition in "${partitions[@]}"; do
-    restore_source="$ORIGINAL_DIR/$partition/"
-    restore_target="s3://$bucket/$RUN_LOG_PREFIX/$partition/"
-    echo "  aws s3 cp \"$restore_source\" \"$restore_target\" --recursive --profile $profile && aws s3 sync \"$restore_source\" \"$restore_target\" --delete --profile $profile"
-  done
-fi
+print_restore_commands "${partitions[@]}"
 
 # --- Start the public output for a selected run ---
 if [[ "$flag" == "$SELECTION_FLAG" ]]; then
