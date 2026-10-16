@@ -53,13 +53,20 @@ start_publication_output() {
   workspace="${BASH_REMATCH[1]}"
   name="$workspace-Publication-Output"
 
+  # The CLI pages the listing and applies --query to each page, so a filtering
+  # query prints one line per page. List every name and ARN and filter here instead.
   arn="$(aws stepfunctions list-state-machines --profile "$profile" \
-    --query "stateMachines[?name=='$name'].stateMachineArn | [0]" --output text)" || {
+    --query "stateMachines[].[name,stateMachineArn]" --output text |
+    awk -v name="$name" '$1 == name { print $2 }')" || {
     echo "Error: could not list state machines with profile '$profile'." >&2
     return 1
   }
-  if [[ -z "$arn" || "$arn" == "None" ]]; then
+  if [[ -z "$arn" ]]; then
     echo "State machine '$name' was not found. It may not be deployed yet." >&2
+    return 1
+  fi
+  if [[ "$arn" == *$'\n'* ]]; then
+    echo "Error: more than one state machine is named '$name'." >&2
     return 1
   fi
 
