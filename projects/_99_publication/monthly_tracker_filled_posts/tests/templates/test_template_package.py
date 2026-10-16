@@ -6,8 +6,9 @@ import zipfile
 import openpyxl
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
-    diagnostics_cell_map as cell_map,
+    assessment_cell_map as cell_map,
 )
+from projects._99_publication.monthly_tracker_filled_posts.tests import xlsx_support
 from projects._99_publication.monthly_tracker_filled_posts.tests.templates import (
     template_support as support,
 )
@@ -39,7 +40,7 @@ class TestTemplatePackage:
         """openpyxl drops shapes on save, so notes are cells and no shape remains."""
         shapes = [
             sheet.name
-            for sheet in cell_map.DIAGNOSTICS_SHEETS
+            for sheet in cell_map.ASSESSMENT_SHEETS
             for tag in ("xdr:sp", "xdr:grpSp", "xdr:pic")
             if support.drawing(package, sheet.name)[0].findall(f".//{tag}", NS)
         ]
@@ -97,20 +98,10 @@ class TestTemplatePackage:
         self, workbook: openpyxl.Workbook
     ):
         """No tab opens scrolled down or with another cell selected."""
-        not_at_a1 = [
-            ws.title
-            for ws in workbook
-            if ws.sheet_view.topLeftCell not in (None, "A1")
-            or any(
-                (sel.activeCell, str(sel.sqref)) != ("A1", "A1")
-                for sel in ws.sheet_view.selection
-            )
-        ]
-
-        assert not_at_a1 == []
+        assert xlsx_support.sheets_not_at_a1(workbook) == []
 
     def test_only_the_first_tab_is_selected(self, workbook: openpyxl.Workbook):
         """Grouped tabs would make an edit change several sheets at once."""
-        selected_tabs = [ws.title for ws in workbook if ws.sheet_view.tabSelected]
-
-        assert selected_tabs == [cell_map.FILLED_POSTS.name]
+        assert xlsx_support.selected_tab_titles(workbook) == [
+            cell_map.FILLED_POSTS.name
+        ]

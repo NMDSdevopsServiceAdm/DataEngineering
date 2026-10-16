@@ -5,9 +5,9 @@ import gptables as gpt
 import openpyxl
 import pytest
 
-import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_pages as job
+import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_workbook_pages as job
 from projects._99_publication.unittest_data.image_test_data import make_png
-from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_text import (
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_workbook_text import (
     TABLE_TITLES,
 )
 

@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
-- Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
+- Added a builder for the public monthly statistics download workbook: pages written from `templates/output_workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 
 ### Changed
 - Split the monthly tracker publication into `Publication-Assessment`, which starts when filled post estimates succeed, and `Publication-Output`, which builds the public data for a selected `run_number`.
@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 
 ### Improved
+- Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
 
 
 ### Fixed
@@ -69,7 +70,7 @@ All notable changes to this project will be documented in this file.
 - Added filled posts model cross-validation helpers: out-of-fold predictions from a model spec and non-res size bands.
 - Added financial year, row-level, per-period bias and bias slope scoring to the project-level model evaluation utilities.
 - Added utilities to score filled posts models on held-out locations and save the metrics beside a model run. Not yet used by any job.
-- Added the diagnostics workbook template for the monthly tracker publication, with a cell map and tests that check it.
+- Added the assessment workbook template for the monthly tracker publication, with a cell map and tests that check it.
 
 ### Changed
 - Replaced the employment status magic-number split with estimated percentages (cleaned, then imputed, then rolling average), their source, and estimated counts and employees. Removed the rates CSV input.

@@ -2,11 +2,11 @@ import pytest
 from openpyxl.worksheet.cell_range import CellRange
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
-    diagnostics_cell_map as job,
+    assessment_cell_map as job,
 )
 from utils.column_names.publication_columns import PublicationColumns as Pub
 
-sheet_params = [pytest.param(s, id=s.name) for s in job.DIAGNOSTICS_SHEETS]
+sheet_params = [pytest.param(s, id=s.name) for s in job.ASSESSMENT_SHEETS]
 
 
 def _cells(ranges: list[str]) -> set[tuple[int, int]]:
@@ -17,7 +17,7 @@ def _cells(ranges: list[str]) -> set[tuple[int, int]]:
     }
 
 
-class TestDiagnosticsSheets:
+class TestAssessmentSheets:
     @pytest.mark.parametrize("sheet", sheet_params)
     def test_input_ranges_do_not_overlap(self, sheet: job.SheetMap):
         """Each cell has one input range, so the writer fills it from one place."""

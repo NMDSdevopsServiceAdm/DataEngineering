@@ -5,7 +5,7 @@ import zipfile
 import pytest
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
-    diagnostics_cell_map as cell_map,
+    assessment_cell_map as cell_map,
 )
 from projects._99_publication.monthly_tracker_filled_posts.tests.templates import (
     template_support as support,
@@ -37,9 +37,9 @@ class TestChartContents:
         """Charts only read cells the cell map lists."""
         mapped_cells = {
             s.name: support.cells_in(
-                [r.cells for r in s.input_ranges] + list(s.chart_label_ranges)
+                [r.cells for r in s.input_ranges] + list(s.series_name_cells)
             )
-            for s in cell_map.DIAGNOSTICS_SHEETS
+            for s in cell_map.ASSESSMENT_SHEETS
         }
         unmapped_refs = []
         for chart in support.charts(package, sheet.name):
@@ -60,10 +60,10 @@ class TestChartContents:
             for chart in support.charts(package, sheet.name)
             for formula in chart.findall(".//c:ser//c:cat//c:f", NS)
             + chart.findall(".//c:ser//c:val//c:f", NS)
-            if support.row_count(formula.text) != sheet.window_rows
+            if support.row_count(formula.text) != sheet.slot_count
         }
 
-        assert wrong_height == set(), f"Series not spanning {sheet.window_rows} rows"
+        assert wrong_height == set(), f"Series not spanning {sheet.slot_count} rows"
 
     @pytest.mark.parametrize("sheet", support.charted_sheet_params)
     def test_series_in_a_chart_share_one_category_range(
@@ -145,7 +145,7 @@ class TestChartContents:
             names = [
                 support.split_reference(s.find("c:tx//c:f", NS).text)[1] for s in series
             ]
-            if (rows, names) != (expected_rows, list(sheet.chart_label_ranges)):
+            if (rows, names) != (expected_rows, list(sheet.series_name_cells)):
                 wrong_order.append(support.chart_title(chart))
 
         assert wrong_order == [], "Charts whose series are in a different order"

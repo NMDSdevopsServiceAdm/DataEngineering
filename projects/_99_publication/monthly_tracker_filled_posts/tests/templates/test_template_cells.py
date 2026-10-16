@@ -6,7 +6,7 @@ import openpyxl
 import pytest
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
-    diagnostics_cell_map as cell_map,
+    assessment_cell_map as cell_map,
 )
 from projects._99_publication.monthly_tracker_filled_posts.tests.templates import (
     template_support as support,
@@ -20,7 +20,7 @@ TYPED_VALUE_TYPES = (int, float, datetime.date, datetime.datetime)
 class TestTemplateCells:
     def test_has_expected_sheet_names_in_order(self, workbook: openpyxl.Workbook):
         """The six sheets keep their undated names, in order."""
-        assert workbook.sheetnames == [s.name for s in cell_map.DIAGNOSTICS_SHEETS]
+        assert workbook.sheetnames == [s.name for s in cell_map.ASSESSMENT_SHEETS]
 
     @pytest.mark.parametrize("sheet", support.sheet_params)
     def test_input_cells_are_empty(

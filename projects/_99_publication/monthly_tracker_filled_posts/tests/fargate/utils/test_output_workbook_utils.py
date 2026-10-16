@@ -7,8 +7,9 @@ import openpyxl
 import polars as pl
 import pytest
 
-import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_utils as job
+import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_workbook_utils as job
 import projects._99_publication.unittest_data.polars_pub_test_data as Data
+from projects._99_publication.monthly_tracker_filled_posts.tests import xlsx_support
 from projects._99_publication.unittest_data.image_test_data import make_png
 from utils.column_names.publication_columns import PublicationColumns as Pub
 
@@ -408,23 +409,11 @@ class TestBuildDownloadWorkbook:
     def test_workbook_opens_on_the_frontpage_with_only_that_tab_selected(
         self, workbook
     ):
-        selected_tabs = [
-            sheet.title for sheet in workbook.worksheets if sheet.sheet_view.tabSelected
-        ]
-
         assert workbook.active.title == "Frontpage"
-        assert selected_tabs == ["Frontpage"]
+        assert xlsx_support.selected_tab_titles(workbook) == ["Frontpage"]
 
     def test_every_sheet_has_cell_a1_selected(self, workbook):
-        selections = {
-            sheet.title: [
-                (selection.activeCell, str(selection.sqref))
-                for selection in sheet.sheet_view.selection
-            ]
-            for sheet in workbook.worksheets
-        }
-
-        assert selections == {name: [("A1", "A1")] for name in workbook.sheetnames}
+        assert xlsx_support.sheets_not_at_a1(workbook) == []
 
     def test_build_download_workbook_runs_each_table_once(self, tmp_path):
         runs = []

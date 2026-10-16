@@ -921,6 +921,20 @@ def _filter_to_all_job_roles_rollup(
     )
 
 
+def import_date_to_period_month(import_date: pl.Expr) -> pl.Expr:
+    """
+    Maps a CQC import date to the month it reports on: one month earlier
+    (2026-04-01 -> 2026-03-01).
+
+    Args:
+        import_date (pl.Expr): expression of CQC import dates.
+
+    Returns:
+        pl.Expr: the period month.
+    """
+    return import_date.dt.offset_by("-1mo")
+
+
 def _period_label_expr() -> pl.Expr:
     """
     Builds a polars expression for a short display label of the period
@@ -933,8 +947,7 @@ def _period_label_expr() -> pl.Expr:
     keeps the real underlying date.
     """
     return (
-        pl.col(IndCQC.cqc_location_import_date)
-        .dt.offset_by("-1mo")
+        import_date_to_period_month(pl.col(IndCQC.cqc_location_import_date))
         .dt.strftime("%b-%y")
         .alias(Pub.period_label)
     )

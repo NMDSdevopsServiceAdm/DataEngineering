@@ -1,4 +1,4 @@
-"""Helpers for the diagnostics template tests.
+"""Helpers for the assessment template tests.
 
 Reads the workbook's XML, works out what Excel shows for a cell, and fills the
 template with generic values of the right type for each cell style.
@@ -16,10 +16,10 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.cell_range import CellRange
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
-    diagnostics_cell_map as cell_map,
+    assessment_cell_map as cell_map,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
-    diagnostics_workbook_utils as workbook_utils,
+    assessment_workbook_utils as workbook_utils,
 )
 
 NS = {
@@ -31,9 +31,9 @@ NS = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
 }
 
-sheet_params = [pytest.param(s, id=s.name) for s in cell_map.DIAGNOSTICS_SHEETS]
+sheet_params = [pytest.param(s, id=s.name) for s in cell_map.ASSESSMENT_SHEETS]
 charted_sheet_params = [
-    pytest.param(s, id=s.name) for s in cell_map.DIAGNOSTICS_SHEETS if s.chart_count
+    pytest.param(s, id=s.name) for s in cell_map.ASSESSMENT_SHEETS if s.chart_count
 ]
 comparison_sheet_params = [
     pytest.param(s, id=s.name)
@@ -241,11 +241,11 @@ def generic_value(
     if CellRange(input_range.cells).size["rows"] > 1:
         label = f"{label} {row_offset + 1}"
     return {
-        "text": label,
+        "general": label,
         "date": add_months(FIRST_DATE, row_offset),
         "count": 1000 * (row_offset + 1) + 100 * col_offset,
         "percent": round(0.01 * (row_offset + 1) + 0.002 * col_offset, 6),
-    }[input_range.style]
+    }[input_range.number_format]
 
 
 def fill_inputs(
@@ -257,7 +257,7 @@ def fill_inputs(
     are filled, so the copy also has empty slots.
     """
     written = {}
-    for sheet in cell_map.DIAGNOSTICS_SHEETS:
+    for sheet in cell_map.ASSESSMENT_SHEETS:
         worksheet = workbook[sheet.name]
         for input_range in sheet.input_ranges:
             cells = CellRange(input_range.cells)
