@@ -47,8 +47,8 @@ def main(
     )
 
     publication_summary_lf = publication_summary_lf.with_columns(
-        publication_utils.format_large_number(
-            Pub.publication_filled_posts, Pub.publication_filled_posts_formatted
+        publication_utils.round_to_publication_bands(
+            Pub.publication_filled_posts, Pub.publication_filled_posts_rounded
         ),
         pl.col(IndCQC.cqc_location_import_date)
         .dt.strftime("%b %Y")

@@ -230,55 +230,6 @@ def has_consistent_service_since_date(from_date: date, column_alias: str) -> pl.
     return (care_home_statuses_in_window == 1).alias(column_alias)
 
 
-def format_large_number(column_name: str, column_alias: str) -> pl.Expr:
-    """
-    Builds a polars expression formatting a number for display.
-
-    Values at or above 1,000,000 are abbreviated to millions with three
-    decimal places and an "m" suffix (e.g. 1175000 -> "1.175m", and
-    2000000 -> "2.000m" rather than "2,000,000", so round-million values
-    are formatted consistently with the rest of that bucket). Values below
-    1,000,000 keep their full value with comma thousands separators (e.g.
-    800000 -> "800,000"). Both branches round to the nearest whole number
-    first, since fractional posts aren't meaningful for display.
-
-    Args:
-        column_name (str): the numeric column to format.
-        column_alias (str): name to alias the resulting column to.
-
-    Returns:
-        pl.Expr: string expression with the formatted value.
-    """
-    thousandths_of_millions = (
-        (pl.col(column_name) / 1_000_000 * 1000).round(0).cast(pl.Int64)
-    )
-    millions_format = (
-        (thousandths_of_millions // 1000).cast(pl.Utf8)
-        + "."
-        + (thousandths_of_millions % 1000).cast(pl.Utf8).str.zfill(3)
-        + "m"
-    )
-
-    # Groups every 3 digits from the right (via a reverse/group/reverse round trip,
-    # since polars' regex engine doesn't support the lookahead a single-pass
-    # left-to-right version would need), then drops the comma this leaves
-    # trailing whenever the digit count is itself a multiple of 3.
-    rounded_whole = pl.col(column_name).round(0).cast(pl.Int64).cast(pl.Utf8)
-    comma_format = (
-        rounded_whole.str.reverse()
-        .str.replace_all(r"(\d{3})", r"$1,")
-        .str.strip_chars_end(",")
-        .str.reverse()
-    )
-
-    return (
-        pl.when(pl.col(column_name) >= 1_000_000)
-        .then(millions_format)
-        .otherwise(comma_format)
-        .alias(column_alias)
-    )
-
-
 def _round_half_away_from_zero(value: pl.Expr, nearest: float) -> pl.Expr:
     """
     Rounds value to the nearest multiple of nearest, rounding an exact half
@@ -350,30 +301,6 @@ def round_percentage(column_name: str) -> pl.Expr:
     """
     percentage = pl.col(column_name).cast(pl.Float64) * 100
     return _round_half_away_from_zero(percentage, 0.1).round(1)
-
-
-def format_percentage(column_name: str, column_alias: str) -> pl.Expr:
-    """
-    Builds a polars expression formatting a percentage-change fraction (e.g.
-    0.032 = +3.2%) to a 1 decimal place display string (e.g. "3.2%",
-    "-0.8%"), for parity with the manually-published reference's own 1dp
-    percentages. Null stays null, rather than becoming the string "null%" -
-    the annual/monthly percentage change columns this is applied to are
-    deliberately null on every row outside their own series.
-
-    Args:
-        column_name (str): the fractional percentage column to format.
-        column_alias (str): name to alias the resulting column to.
-
-    Returns:
-        pl.Expr: string expression with the formatted percentage, or null.
-    """
-    return (
-        pl.when(pl.col(column_name).is_null())
-        .then(None)
-        .otherwise(round_percentage(column_name).cast(pl.Utf8) + "%")
-        .alias(column_alias)
-    )
 
 
 def add_dispersion_filter(
@@ -1089,7 +1016,7 @@ def build_t0_estimates_download_table(
             .alias(Pub.main_service),
             pl.col(Pub.publication_filled_posts).alias(Pub.estimated_filled_posts),
             round_to_publication_bands(
-                Pub.publication_filled_posts, Pub.estimated_filled_posts_formatted
+                Pub.publication_filled_posts, Pub.estimated_filled_posts_rounded
             ),
             pl.col(Pub.publication_locationid_count).alias(Pub.cqc_locations),
         )
@@ -1123,9 +1050,7 @@ def build_t1_filled_posts_perc_change_download_table(
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with
             estimated filled posts' annual and monthly percentage change
-            columns, each as a raw value and a 1dp formatted string (see
-            format_percentage). Sorted by period then region then
-            main_service.
+            columns. Sorted by period then region then main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
@@ -1142,13 +1067,7 @@ def build_t1_filled_posts_perc_change_download_table(
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
         pl.col(Pub.annual_percentage_change),
-        format_percentage(
-            Pub.annual_percentage_change, Pub.annual_percentage_change_formatted
-        ),
         pl.col(Pub.monthly_percentage_change),
-        format_percentage(
-            Pub.monthly_percentage_change, Pub.monthly_percentage_change_formatted
-        ),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
 
 
@@ -1178,10 +1097,8 @@ def build_t2_location_count_perc_change_download_table(
 
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with cqc
-            location count's annual and monthly percentage change columns,
-            each as a raw value and a 1dp formatted string (see
-            format_percentage). Sorted by period then region then
-            main_service.
+            location count's annual and monthly percentage change columns.
+            Sorted by period then region then main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
@@ -1198,11 +1115,5 @@ def build_t2_location_count_perc_change_download_table(
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
         pl.col(Pub.annual_percentage_change),
-        format_percentage(
-            Pub.annual_percentage_change, Pub.annual_percentage_change_formatted
-        ),
         pl.col(Pub.monthly_percentage_change),
-        format_percentage(
-            Pub.monthly_percentage_change, Pub.monthly_percentage_change_formatted
-        ),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)

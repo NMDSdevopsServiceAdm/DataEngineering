@@ -142,26 +142,6 @@ class TestHasConsistentServiceSinceDate:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestFormatLargeNumber:
-    @pytest.mark.parametrize(
-        "case",
-        [case.as_pytest_param() for case in Data.format_large_number_test_cases],
-    )
-    def test_formats_a_number_for_display(self, case):
-        expected_schema = pl.Schema(
-            [(case.column_name, pl.Float32()), (case.column_alias, pl.String())]
-        )
-        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
-
-        test_lf = expected_lf.drop(case.column_alias)
-
-        returned_lf = test_lf.with_columns(
-            job.format_large_number(case.column_name, case.column_alias)
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
 class TestAddDispersionFilter:
     dispersion_filter_schema = pl.Schema(
         [
@@ -685,7 +665,7 @@ class TestBuildT0EstimatesDownloadTable:
             (Pub.region, pl.String()),
             (Pub.main_service, pl.String()),
             (Pub.estimated_filled_posts, pl.Float32()),
-            (Pub.estimated_filled_posts_formatted, pl.Float32()),
+            (Pub.estimated_filled_posts_rounded, pl.Float32()),
             (Pub.cqc_locations, pl.UInt32()),
         ]
     )
@@ -737,9 +717,7 @@ class TestBuildT1FilledPostsPercChangeDownloadTable:
             (Pub.region, pl.String()),
             (Pub.main_service, pl.String()),
             (Pub.annual_percentage_change, pl.Float32()),
-            (Pub.annual_percentage_change_formatted, pl.String()),
             (Pub.monthly_percentage_change, pl.Float32()),
-            (Pub.monthly_percentage_change_formatted, pl.String()),
         ]
     )
 
@@ -818,26 +796,6 @@ class TestRoundPercentage:
 
         returned_lf = expected_lf.select("fraction").with_columns(
             job.round_percentage("fraction").alias("percentage")
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
-class TestFormatPercentage:
-    @pytest.mark.parametrize(
-        "case",
-        [case.as_pytest_param() for case in Data.format_percentage_test_cases],
-    )
-    def test_formats_a_percentage_fraction_for_display(self, case):
-        expected_schema = pl.Schema(
-            [(case.column_name, pl.Float32()), (case.column_alias, pl.String())]
-        )
-        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
-
-        test_lf = expected_lf.drop(case.column_alias)
-
-        returned_lf = test_lf.with_columns(
-            job.format_percentage(case.column_name, case.column_alias)
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
