@@ -9,8 +9,11 @@ All notable changes to this project will be documented in this file.
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
 - Extended the run log update script to set the `selected_for_publication`, `reconciled` and `locally_checked` flags, list the month's runs, move the month's selection to a newly selected approved run, and start the Publication-Output step function for a selected run.
+- Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 
 ### Changed
+- Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of raw counts, reading only the needed columns in the SLV merge and running the employment status steps first in Ind-CQC-SLV.
+- Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics. Models now fitted on all training rows instead of an 80/20 split. Known values are ASC-WDS for care homes and ASC-WDS plus PIR for non-res, so the `metrics` in `metadata.json` aren't comparable with earlier runs.
 - Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 
 ### Improved

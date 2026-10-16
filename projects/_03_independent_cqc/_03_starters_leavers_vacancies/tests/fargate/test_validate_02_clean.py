@@ -22,7 +22,7 @@ class TestMain:
     def setup(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
-            EmpStatus.employee_count: pl.Int64,
+            EmpStatus.estimated_employees: pl.Float64,
             SLVCols.starters_cleaned: pl.Int64,
             SLVCols.leavers_cleaned: pl.Int64,
             SLVCols.vacancies_cleaned: pl.Int64,
@@ -39,7 +39,7 @@ class TestMain:
         source_rows = [
             (
                 "1-001",
-                2,
+                2.0,
                 1,
                 1,
                 1,

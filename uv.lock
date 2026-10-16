@@ -311,6 +311,7 @@ dependencies = [
     { name = "css-inline" },
     { name = "gptables" },
     { name = "great-tables" },
+    { name = "holidays" },
     { name = "numpy" },
     { name = "openpyxl" },
     { name = "pandas" },
@@ -320,6 +321,7 @@ dependencies = [
     { name = "pydeequ" },
     { name = "pydoclint" },
     { name = "pyspark" },
+    { name = "pyyaml" },
     { name = "ratelimit" },
     { name = "requests" },
     { name = "scikit-learn" },
@@ -352,6 +354,7 @@ requires-dist = [
     { name = "css-inline", specifier = "==0.17.0" },
     { name = "gptables", specifier = "==2.0.2" },
     { name = "great-tables", specifier = "==0.23.0" },
+    { name = "holidays", specifier = "==0.106" },
     { name = "numpy", specifier = "==2.3.2" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "pandas", specifier = "==2.3.2" },
@@ -361,6 +364,7 @@ requires-dist = [
     { name = "pydeequ", specifier = "==1.5.0" },
     { name = "pydoclint", specifier = "==0.6.11" },
     { name = "pyspark", specifier = "==3.5.4" },
+    { name = "pyyaml", specifier = "==6.0.3" },
     { name = "ratelimit", specifier = "==2.2.1" },
     { name = "requests", specifier = "==2.32.5" },
     { name = "scikit-learn", specifier = "==1.7.1" },
@@ -531,6 +535,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ad/f0/72c6d96ffbd8ae7ce75dc3420573aea7ba24b09ecd2cdab48ddabf84ea5a/great_tables-0.23.0.tar.gz", hash = "sha256:dc45bb80642e109608688e38edd88e6883cbf38fd00e4617fc0dadfa51b9bad4", size = 26910044, upload-time = "2026-07-27T23:35:15.476Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/af/6a/5962971b5a4015ca5ded52def3b21f323a4521d5946552abaefff7516682/great_tables-0.23.0-py3-none-any.whl", hash = "sha256:6a0f20b2ce66cdd45c6633d01ca3d0970c17e9be8397ea932ad17ef9603af531", size = 1464927, upload-time = "2026-07-27T23:35:13.207Z" },
+]
+
+[[package]]
+name = "holidays"
+version = "0.106"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dateutil" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a4/85/30fadb3b2014177299eea883bfd74d7e893d495fb4b37adc3f4968004d87/holidays-0.106.tar.gz", hash = "sha256:2e635a59102acb47e79a751c37fb04eff5ac77069a3b33d58cbfad66d243ffb3", size = 1048446, upload-time = "2026-10-05T19:23:13.417Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a0/f6/59f817df052a81e39bbc23cb10795cf721d14b36a4cf0d897bfe11648a22/holidays-0.106-py3-none-any.whl", hash = "sha256:4be3fb5be6a88a232e92f96825e4fab9b80710caabde90b7c476e57ba0ed9f5d", size = 1656690, upload-time = "2026-10-05T19:23:11.32Z" },
 ]
 
 [[package]]

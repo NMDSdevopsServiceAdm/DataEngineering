@@ -4,7 +4,7 @@ import polars as pl
 
 from polars_utils import utils
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
-    clean_utils,
+    publication_utils,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
@@ -38,7 +38,7 @@ def main(
     fy_year = today.year if today.month >= 4 else today.year - 1
     cutoff_date = date(fy_year - 6, 4, 1)
     cleaned_lf = merged_lf.filter(
-        clean_utils.reduced_data_filter_expr(cutoff_date=cutoff_date)
+        publication_utils.reduced_data_filter_expr(cutoff_date=cutoff_date)
     )
 
     cleaned_lf = cleaned_lf.with_columns(
@@ -56,26 +56,26 @@ def main(
     medium_term_from_date = date(fy_year - 1, 4, 1)
     short_term_from_date = date(fy_year, 4, 1)
     cleaned_lf = cleaned_lf.with_columns(
-        clean_utils.has_consistent_service_since_date(
+        publication_utils.has_consistent_service_since_date(
             long_term_from_date, Pub.consistent_service_long_term
         ),
-        clean_utils.has_consistent_service_since_date(
+        publication_utils.has_consistent_service_since_date(
             medium_term_from_date, Pub.consistent_service_medium_term
         ),
-        clean_utils.has_consistent_service_since_date(
+        publication_utils.has_consistent_service_since_date(
             short_term_from_date, Pub.consistent_service_short_term
         ),
-        clean_utils.has_continuous_data_since_date(
+        publication_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             long_term_from_date,
             Pub.ct_has_data_long_term,
         ),
-        clean_utils.has_continuous_data_since_date(
+        publication_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             medium_term_from_date,
             Pub.ct_has_data_medium_term,
         ),
-        clean_utils.has_continuous_data_since_date(
+        publication_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             short_term_from_date,
             Pub.ct_has_data_short_term,
@@ -86,27 +86,27 @@ def main(
         IndCQC.ct_care_home_total_employed_imputed,
         IndCQC.ct_non_res_care_workers_employed_imputed,
     ]
-    cleaned_lf = clean_utils.add_dispersion_filter(
+    cleaned_lf = publication_utils.add_dispersion_filter(
         cleaned_lf,
         ct_employed_columns,
         long_term_from_date,
         Pub.ct_dispersion_filter_long_term,
     )
-    cleaned_lf = clean_utils.add_dispersion_filter(
+    cleaned_lf = publication_utils.add_dispersion_filter(
         cleaned_lf,
         ct_employed_columns,
         medium_term_from_date,
         Pub.ct_dispersion_filter_medium_term,
     )
-    cleaned_lf = clean_utils.add_dispersion_filter(
+    cleaned_lf = publication_utils.add_dispersion_filter(
         cleaned_lf,
         ct_employed_columns,
         short_term_from_date,
         Pub.ct_dispersion_filter_short_term,
     )
 
-    publication_summary_lf = clean_utils.aggregate_to_publication_rows(cleaned_lf)
-    publication_summary_lf = clean_utils.add_rows_for_publication_groups(
+    publication_summary_lf = publication_utils.aggregate_to_publication_rows(cleaned_lf)
+    publication_summary_lf = publication_utils.add_rows_for_publication_groups(
         cleaned_lf, publication_summary_lf
     )
 
@@ -116,37 +116,37 @@ def main(
         IndCQC.primary_service_type,
     ]
     publication_summary_lf = publication_summary_lf.with_columns(
-        clean_utils.calc_perc_change_between_rows(
+        publication_utils.calc_perc_change_between_rows(
             Pub.assessment_ct_total_employed_long_term,
             long_term_from_date,
             group_columns,
             Pub.assessment_ct_period_perc_change_long_term,
         ),
-        clean_utils.calc_perc_change_between_rows(
+        publication_utils.calc_perc_change_between_rows(
             Pub.assessment_ct_total_employed_medium_term,
             medium_term_from_date,
             group_columns,
             Pub.assessment_ct_period_perc_change_medium_term,
         ),
-        clean_utils.calc_perc_change_between_rows(
+        publication_utils.calc_perc_change_between_rows(
             Pub.assessment_ct_total_employed_short_term,
             short_term_from_date,
             group_columns,
             Pub.assessment_ct_period_perc_change_short_term,
         ),
-        clean_utils.calc_perc_change_cumulative_from_given_period_onwards(
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.assessment_ct_total_employed_long_term,
             long_term_from_date,
             group_columns,
             Pub.assessment_ct_cumulative_perc_change_long_term,
         ),
-        clean_utils.calc_perc_change_cumulative_from_given_period_onwards(
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.assessment_ct_total_employed_medium_term,
             medium_term_from_date,
             group_columns,
             Pub.assessment_ct_cumulative_perc_change_medium_term,
         ),
-        clean_utils.calc_perc_change_cumulative_from_given_period_onwards(
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.assessment_ct_total_employed_short_term,
             short_term_from_date,
             group_columns,
@@ -155,18 +155,18 @@ def main(
     )
 
     publication_summary_lf = publication_summary_lf.with_columns(
-        clean_utils.format_large_number(
+        publication_utils.format_large_number(
             Pub.publication_filled_posts, Pub.publication_filled_posts_formatted
         ),
-        clean_utils.format_large_number(
+        publication_utils.format_large_number(
             Pub.assessment_filled_posts_long_term,
             Pub.assessment_filled_posts_long_term_formatted,
         ),
-        clean_utils.format_large_number(
+        publication_utils.format_large_number(
             Pub.assessment_filled_posts_medium_term,
             Pub.assessment_filled_posts_medium_term_formatted,
         ),
-        clean_utils.format_large_number(
+        publication_utils.format_large_number(
             Pub.assessment_filled_posts_short_term,
             Pub.assessment_filled_posts_short_term_formatted,
         ),
@@ -183,7 +183,7 @@ def main(
         output_path=clean_destination,
     )
 
-    t0_estimates_lf = clean_utils.build_t0_estimates_download_table(
+    t0_estimates_lf = publication_utils.build_t0_estimates_download_table(
         publication_summary_lf, today=today
     )
     utils.sink_to_parquet(
@@ -192,7 +192,7 @@ def main(
     )
 
     t1_filled_posts_perc_change_lf = (
-        clean_utils.build_t1_filled_posts_perc_change_download_table(
+        publication_utils.build_t1_filled_posts_perc_change_download_table(
             publication_summary_lf, today=today
         )
     )
@@ -202,7 +202,7 @@ def main(
     )
 
     t2_location_count_perc_change_lf = (
-        clean_utils.build_t2_location_count_perc_change_download_table(
+        publication_utils.build_t2_location_count_perc_change_download_table(
             publication_summary_lf, today=today
         )
     )

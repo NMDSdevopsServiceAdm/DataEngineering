@@ -36,7 +36,7 @@ class TestMain:
 
         scan_parquet_mock.assert_called_once_with(self.MERGED_DATA_SOURCE)
         null_not_known_values_mock.assert_called_once_with(
-            scan_parquet_mock.return_value.with_columns.return_value,
+            scan_parquet_mock.return_value,
             columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
             not_known_code=job.NOT_KNOWN_CODE,
             populated_rule=SLVFilteringRule.populated,
