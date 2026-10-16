@@ -20,17 +20,27 @@ We only archive specific columns in each dataset.
 ## Publication
 
 ### Preparation
-The archived output from the 1st run of each month is assessed for publication readiness.
-Assessing the data for publication requires merging the three archived datasets, creating filters for external benchmarking and splitting the data into two sets; one for publication and one for assessment.
-We filter the data to import dates from April 2020 onwards, then each quarter up to the start of the previous financial year, then each month for within the previous and current financial years.
-The assessment dataset is going to be benchmarked against external data, therefore we only want to include rows that have a value in the external data (all rows receive a filled posts estimate from our pipeline).
-Each of those datasets requires aggregating into high level groupings by region, service and job role.
+The `Publication-Assessment` step function starts automatically when the estimates pipeline succeeds, and prepares the run it has just archived.
+Preparation merges the archived job role estimates and metadata, and filters the data to import dates from April six financial years ago onwards, then each quarter up to the start of the previous financial year, then each month for within the previous and current financial years.
+The prepared data is stored per run, partitioned on archive date and run number, so a run can still be published after later runs have been archived.
+The assessment data is then built from the prepared run, with filters for external benchmarking.
+The assessment columns are going to be benchmarked against external data, therefore we only want to include rows that have a value in the external data (all rows receive a filled posts estimate from our pipeline).
+The assessment data is aggregated into high level groupings by region, service and job role.
+The assessment data holds only the latest assessed run, and carries a `run_number` column showing which run that is.
 
 ### Assessment of readiness
 We look at the cumulative percentage change in filled posts per month over time.
 We benchmark our trend against external data.
 We investigate and resolve irregularities until we are satisfied the outputs are accurate.
 We must publish an output on the 15th of each month at 09:30, unless that is outside working time, upon which we will publish as soon as possible afterwards.
+
+### Publishing a run
+Once a run has been assessed and approved (see `scripts/update_run_log_runbook.md`) and selected, start the `Publication-Output` step function with `{"run_number": N}`.
+It builds the public data from that run's prepared data: the publication summary behind the Tableau output and the T0, T1 and T2 data-download tables.
+Public data is only built for a selected run, so the step function fails without a `run_number`.
+
+If a second estimates run finishes while `Publication-Assessment` is still running for the previous run, the assessment step may read the other run's prepared data.
+Start `Publication-Assessment` again with that run's `run_number` to build its assessment data.
 
 ### Long term storage
 When the data for publication is signed-off then the archived output used to make it is copied into a long-term storage bucket.

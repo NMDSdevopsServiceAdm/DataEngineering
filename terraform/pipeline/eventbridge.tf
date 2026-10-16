@@ -117,7 +117,8 @@ resource "aws_iam_policy" "start_state_machines" {
           aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Care-Home"].arn,
           aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Non-Res"].arn,
           aws_sfn_state_machine.sf_pipelines["Ingest-ONSPD"].arn,
-          aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
+          aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn,
+          aws_sfn_state_machine.sf_pipelines["Publication-Assessment"].arn
         ]
       }
     ]
@@ -285,6 +286,41 @@ resource "aws_cloudwatch_event_target" "trigger_ind_cqc_estimates_state_machine"
   rule      = aws_cloudwatch_event_rule.ingest_pir_onspd_succeeded.name
   target_id = "${local.workspace_prefix}-StartIndCqcEstimatesStateMachine"
   arn       = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
+  role_arn  = aws_iam_role.start_state_machines.arn
+
+  input_transformer {
+    input_paths = {
+      execution_arn = "$.detail.executionArn",
+    }
+    input_template = <<EOF
+    {
+        "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID": "<execution_arn>"
+    }
+    EOF
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "ind_cqc_filled_post_estimates_succeeded" {
+  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  name        = "${local.workspace_prefix}-ind-cqc-filled-post-estimates-succeeded"
+  description = "Captures when the independent CQC filled post estimates state machine succeeds"
+
+  event_pattern = jsonencode({
+    source        = ["aws.states"]
+    "detail-type" = ["Step Functions Execution Status Change"]
+    detail = {
+      status = ["SUCCEEDED"]
+      stateMachineArn = [
+        aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
+      ]
+    }
+  })
+}
+
+resource "aws_cloudwatch_event_target" "trigger_publication_assessment_state_machine" {
+  rule      = aws_cloudwatch_event_rule.ind_cqc_filled_post_estimates_succeeded.name
+  target_id = "${local.workspace_prefix}-StartPublicationAssessmentStateMachine"
+  arn       = aws_sfn_state_machine.sf_pipelines["Publication-Assessment"].arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {

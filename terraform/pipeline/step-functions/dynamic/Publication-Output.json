@@ -1,0 +1,136 @@
+{
+  "Comment": "Builds the public data of one selected, prepared run. Start with {\"run_number\": N}",
+  "StartAt": "Check run",
+  "States": {
+    "Check run": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.run_number",
+          "IsPresent": false,
+          "Next": "Run number required"
+        },
+        {
+          "Variable": "$.run_number",
+          "IsNull": true,
+          "Next": "Run number required"
+        },
+        {
+          "Variable": "$.run_number",
+          "StringEquals": "latest",
+          "Next": "Run number required"
+        }
+      ],
+      "Default": "Build public data"
+    },
+    "Run number required": {
+      "Type": "Fail",
+      "Error": "RunNumberRequired",
+      "Cause": "Start Publication-Output with the selected run, e.g. {\"run_number\": 3}"
+    },
+    "Build public data": {
+      "Type": "Parallel",
+      "Next": "Handle Error and Run Crawlers",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Handle Error and Run Crawlers",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Branches": [
+        {
+          "StartAt": "Build output",
+          "States": {
+            "Build output": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${publication_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${publication_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_99_publication-container",
+                      "Command.$": "States.Array('_03_output.py', '--prep_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge_and_prep/', '--output_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_03_output/', '--t0_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_03_t0_estimates/', '--t1_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_03_t1_filled_posts_perc_change/', '--t2_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_03_t2_location_count_perc_change/', '--run_number', States.Format('{}', $.run_number))"
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "Handle Error and Run Crawlers": {
+      "Type": "Parallel",
+      "End": true,
+      "Branches": [
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
+        },
+        {
+          "StartAt": "Run Publication Crawler",
+          "States": {
+            "Run Publication Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${run_crawler_state_machine_arn}",
+                "Input": {
+                  "crawler_name": "${publication_crawler_name}",
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ]
+    }
+  }
+}
