@@ -608,6 +608,15 @@ class AscwdsJobRoleRatiosMergedSource(ColumnValues):
 
 
 @dataclass
+class ImputationRowKind(ColumnValues):
+    """The possible values of the imputation row kind column"""
+
+    known: str = "known"
+    interpolated: str = "interpolated"
+    carried: str = "carried"
+
+
+@dataclass
 class PublishedMainService(ColumnValues):
     """The possible values of the main service column in publication data"""
 
