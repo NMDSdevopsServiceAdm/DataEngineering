@@ -19,7 +19,7 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
     assessment_cell_map as cell_map,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
-    assessment_workbook_utils as workbook_utils,
+    assessment_workbook_utils,
 )
 
 NS = {
@@ -67,9 +67,9 @@ def effective_number_format(worksheet, row: int, col: int) -> str:
     Use a freshly loaded workbook: reading a missing cell with `worksheet.cell()`
     creates it with the default style.
     """
-    if workbook_utils.cell_exists(worksheet, row, col):
+    if assessment_workbook_utils.cell_exists(worksheet, row, col):
         return worksheet.cell(row, col).number_format
-    dimension = workbook_utils.column_dimension(worksheet, col)
+    dimension = assessment_workbook_utils.column_dimension(worksheet, col)
     return "General" if dimension is None else dimension.number_format
 
 
@@ -267,6 +267,8 @@ def fill_inputs(
                     value = generic_value(
                         input_range, row - cells.min_row, col - cells.min_col
                     )
-                    workbook_utils.write_input_cell(worksheet, row, col, value)
+                    assessment_workbook_utils.write_input_cell(
+                        worksheet, row, col, value
+                    )
                     written[(sheet.name, coordinate(row, col))] = value
     return written

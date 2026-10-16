@@ -1,4 +1,5 @@
 from io import BytesIO
+
 import gptables as gpt
 import yaml
 from xlsxwriter.image import Image
