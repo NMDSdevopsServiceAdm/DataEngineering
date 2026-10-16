@@ -25,7 +25,6 @@ class TestMain:
     @patch(f"{PATCH_PATH}.clean_utils.build_t1_filled_posts_perc_change_download_table")
     @patch(f"{PATCH_PATH}.clean_utils.build_t0_estimates_download_table")
     @patch(f"{PATCH_PATH}.clean_utils.round_to_publication_bands")
-    @patch(f"{PATCH_PATH}.clean_utils.format_large_number")
     @patch(
         f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
     )
@@ -50,7 +49,6 @@ class TestMain:
         add_rows_for_publication_groups_mock: Mock,
         calc_perc_change_between_rows_mock: Mock,
         calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
-        format_large_number_mock: Mock,
         round_to_publication_bands_mock: Mock,
         build_t0_estimates_download_table_mock: Mock,
         build_t1_filled_posts_perc_change_download_table_mock: Mock,
@@ -100,9 +98,6 @@ class TestMain:
                 None, dtype=pl.Float32
             ).alias(column_alias)
         )
-        format_large_number_mock.side_effect = lambda column_name, column_alias: pl.lit(
-            "42"
-        ).alias(column_alias)
         round_to_publication_bands_mock.side_effect = (
             lambda column_name, column_alias: pl.lit(40.0).alias(column_alias)
         )
@@ -276,11 +271,6 @@ class TestMain:
             Pub.publication_filled_posts_rounded,
         )
 
-        format_large_number_mock.assert_called_once_with(
-            Pub.publication_filled_posts,
-            Pub.publication_filled_posts_tableau_labels,
-        )
-
         assert sink_to_parquet_mock.call_count == 4
         clean_sink_call_kwargs = sink_to_parquet_mock.call_args_list[0].kwargs
         assert clean_sink_call_kwargs["output_path"] == TEST_DESTINATION
@@ -304,7 +294,6 @@ class TestMain:
                 Pub.assessment_ct_cumulative_perc_change_short_term
             ),
             pl.lit(40.0).alias(Pub.publication_filled_posts_rounded),
-            pl.lit("42").alias(Pub.publication_filled_posts_tableau_labels),
             pl.lit("Apr 2026").alias(Pub.cqc_location_import_date_abbreviated),
             pl.lit("April 2026").alias(Pub.cqc_location_import_date_full),
         )
@@ -354,7 +343,6 @@ class TestMain:
     @patch(f"{PATCH_PATH}.clean_utils.build_t1_filled_posts_perc_change_download_table")
     @patch(f"{PATCH_PATH}.clean_utils.build_t0_estimates_download_table")
     @patch(f"{PATCH_PATH}.clean_utils.round_to_publication_bands")
-    @patch(f"{PATCH_PATH}.clean_utils.format_large_number")
     @patch(
         f"{PATCH_PATH}.clean_utils.calc_perc_change_cumulative_from_given_period_onwards"
     )
@@ -379,7 +367,6 @@ class TestMain:
         add_rows_for_publication_groups_mock: Mock,
         calc_perc_change_between_rows_mock: Mock,
         calc_perc_change_cumulative_from_given_period_onwards_mock: Mock,
-        format_large_number_mock: Mock,
         round_to_publication_bands_mock: Mock,
         build_t0_estimates_download_table_mock: Mock,
         build_t1_filled_posts_perc_change_download_table_mock: Mock,
@@ -427,9 +414,6 @@ class TestMain:
                 None, dtype=pl.Float32
             ).alias(column_alias)
         )
-        format_large_number_mock.side_effect = lambda column_name, column_alias: pl.lit(
-            "42"
-        ).alias(column_alias)
         round_to_publication_bands_mock.side_effect = (
             lambda column_name, column_alias: pl.lit(40.0).alias(column_alias)
         )

@@ -15,9 +15,6 @@ class PublicationColumns:
     ct_dispersion_filter_short_term: str = "ct_dispersion_filter_short_term"
     publication_filled_posts: str = "publication_filled_posts"
     publication_filled_posts_rounded: str = "publication_filled_posts_rounded"
-    publication_filled_posts_tableau_labels: str = (
-        "publication_filled_posts_tableau_labels"
-    )
     publication_locationid_count: str = "publication_locationid_count"
     assessment_filled_posts_long_term: str = "assessment_filled_posts_long_term"
     assessment_filled_posts_medium_term: str = "assessment_filled_posts_medium_term"
