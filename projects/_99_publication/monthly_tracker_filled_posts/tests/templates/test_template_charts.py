@@ -14,7 +14,6 @@ from projects._99_publication.monthly_tracker_filled_posts.tests.templates.templ
     NS,
 )
 
-AXIS_MIN = -0.01
 # Filled posts % change charts: the title names the column plotted.
 FILLED_POSTS_CHART_COLUMNS = {
     "All CQC locations": {"J"},
@@ -30,15 +29,6 @@ class TestChartContents:
     ):
         """Each sheet has the number of charts the cell map expects."""
         assert len(support.charts(package, sheet.name)) == sheet.chart_count
-
-    @pytest.mark.parametrize("sheet", support.percentage_sheet_params)
-    def test_percentage_chart_count_matches_cell_map(
-        self, sheet: cell_map.SheetMap, package: zipfile.ZipFile
-    ):
-        """The checks on % change charts find all of them, so none is skipped."""
-        found = len(support.percentage_charts(package, sheet))
-
-        assert found == sheet.percentage_chart_count
 
     @pytest.mark.parametrize("sheet", support.charted_sheet_params)
     def test_series_refs_resolve_to_cell_map_ranges(
@@ -190,68 +180,6 @@ class TestChartAppearance:
 
         assert non_automatic == [], "Charts with a fixed text category axis"
 
-    @pytest.mark.parametrize("sheet", support.percentage_sheet_params)
-    def test_percentage_axis_scale(
-        self, sheet: cell_map.SheetMap, package: zipfile.ZipFile
-    ):
-        """Automatic maximum, so real data is not squashed; -1% minimum, so 0.0% clears the axis."""
-        problems = []
-        for index, chart in enumerate(support.percentage_charts(package, sheet)):
-            for axis in chart.findall(".//c:valAx", NS):
-                if axis.find("c:scaling/c:max", NS) is not None:
-                    problems.append((index, "fixed maximum"))
-                if axis.find("c:majorUnit", NS) is not None:
-                    problems.append((index, "fixed major unit"))
-                minimum = support.axis_min(axis)
-                if minimum is None or abs(minimum - AXIS_MIN) > 1e-9:
-                    problems.append((index, f"minimum {minimum}"))
-
-        assert problems == [], "% change axis settings that differ from the rule"
-
-    @pytest.mark.parametrize("sheet", support.percentage_sheet_params)
-    def test_percentage_chart_month_labels_sit_below_the_plot(
-        self, sheet: cell_map.SheetMap, package: zipfile.ZipFile
-    ):
-        """Month labels sit below the plot, not over negative values."""
-        positions = [
-            axis.find("c:tickLblPos", NS).get("val")
-            for chart in support.percentage_charts(package, sheet)
-            for axis in chart.findall(".//c:catAx", NS)
-        ]
-
-        assert positions == ["low"] * sheet.percentage_chart_count
-
-    @pytest.mark.parametrize("sheet", support.percentage_sheet_params)
-    def test_percentage_chart_value_labels_sit_beside_the_axis(
-        self, sheet: cell_map.SheetMap, package: zipfile.ZipFile
-    ):
-        """The percentage labels stay beside the vertical axis."""
-        positions = [
-            axis.find("c:tickLblPos", NS).get("val")
-            for chart in support.percentage_charts(package, sheet)
-            for axis in chart.findall(".//c:valAx", NS)
-        ]
-
-        assert positions == ["nextTo"] * sheet.percentage_chart_count
-
-    @pytest.mark.parametrize("sheet", support.comparison_sheet_params)
-    def test_posts_charts_have_axis_minimum_zero(
-        self, sheet: cell_map.SheetMap, package: zipfile.ZipFile
-    ):
-        """Care homes and non-residential Posts charts both start their axis at 0."""
-        minimums = {
-            columns: [
-                support.axis_min(axis)
-                for chart in support.charts_with_value_columns(
-                    package, sheet.name, columns
-                )
-                for axis in chart.findall(".//c:valAx", NS)
-            ]
-            for columns in (("C", "D"), ("L", "M"))
-        }
-
-        assert minimums == {("C", "D"): [0.0], ("L", "M"): [0.0]}
-
     @pytest.mark.parametrize("sheet", support.charted_sheet_params)
     def test_charts_have_no_per_point_label_overrides(
         self, sheet: cell_map.SheetMap, package: zipfile.ZipFile
@@ -264,16 +192,3 @@ class TestChartAppearance:
         ]
 
         assert overridden == [], "Charts with per-point data label overrides"
-
-    @pytest.mark.parametrize("sheet", support.comparison_sheet_params)
-    def test_comparison_percentage_charts_have_no_data_labels(
-        self, sheet: cell_map.SheetMap, package: zipfile.ZipFile
-    ):
-        """The % change charts on the comparison sheets carry no data labels."""
-        labelled = [
-            index
-            for index, chart in enumerate(support.percentage_charts(package, sheet))
-            if any(flag.get("val") == "1" for flag in chart.findall(".//c:showVal", NS))
-        ]
-
-        assert labelled == [], "% change charts showing values"

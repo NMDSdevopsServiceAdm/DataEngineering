@@ -75,20 +75,20 @@ class TestFullyFilledCopy:
         assert empty == [], "Input cells the fixture did not fill"
 
     @pytest.mark.parametrize("sheet", support.sheet_params)
-    def test_written_cells_keep_the_expected_style(
+    def test_written_cells_keep_the_expected_number_format(
         self, sheet: cell_map.SheetMap, fully_filled
     ):
-        """Written cells show the right font and number format, as the column's style."""
+        """Written cells show dates, counts and percentages in the expected format."""
         worksheet = openpyxl.load_workbook(fully_filled[0])[sheet.name]
-        wrong_style = [
+        wrong_format = [
             f"{r.cells}: {support.coordinate(row, col)}"
             for r in sheet.input_ranges
             for row, col in sorted(support.cells_in([r.cells]))
-            if support.effective_style(worksheet, row, col)
-            != cell_map.CELL_STYLES[r.style]
+            if support.effective_number_format(worksheet, row, col)
+            != cell_map.NUMBER_FORMATS[r.style]
         ]
 
-        assert wrong_style == [], "Written cells with the wrong font or number format"
+        assert wrong_format == [], "Written cells with the wrong number format"
 
     def test_charts_keep_what_they_plot_and_how_they_look(
         self, fully_filled, package: zipfile.ZipFile

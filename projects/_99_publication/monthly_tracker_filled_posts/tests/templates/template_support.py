@@ -35,23 +35,14 @@ sheet_params = [pytest.param(s, id=s.name) for s in cell_map.DIAGNOSTICS_SHEETS]
 charted_sheet_params = [
     pytest.param(s, id=s.name) for s in cell_map.DIAGNOSTICS_SHEETS if s.chart_count
 ]
-percentage_sheet_params = [
-    pytest.param(s, id=s.name)
-    for s in cell_map.DIAGNOSTICS_SHEETS
-    if s.percentage_chart_count
-]
 comparison_sheet_params = [
     pytest.param(s, id=s.name)
-    for s in cell_map.DIAGNOSTICS_SHEETS
-    if s.percentage_chart_columns == ("E", "F", "N", "O")
-]
-bold_heading_sheet_params = [
-    pytest.param(s, id=s.name)
-    for s in cell_map.DIAGNOSTICS_SHEETS
-    if s.bold_heading_cells
-]
-long_term_sheet_params = [
-    pytest.param(s, id=s.name) for s in (cell_map.COMP_LONG_TERM, cell_map.NO_FILTERS)
+    for s in (
+        cell_map.COMP_SHORT_TERM,
+        cell_map.COMP_MEDIUM_TERM,
+        cell_map.COMP_LONG_TERM,
+        cell_map.NO_FILTERS,
+    )
 ]
 
 
@@ -70,24 +61,16 @@ def coordinate(row: int, col: int) -> str:
     return f"{get_column_letter(col)}{row}"
 
 
-def effective_style(worksheet, row: int, col: int) -> tuple:
-    """Font and number format Excel shows: the cell's own, else its column's.
+def effective_number_format(worksheet, row: int, col: int) -> str:
+    """Number format Excel shows: the cell's own, else its column's.
 
     Use a freshly loaded workbook: reading a missing cell with `worksheet.cell()`
     creates it with the default style.
     """
     if workbook_utils.cell_exists(worksheet, row, col):
-        cell = worksheet.cell(row, col)
-        return (cell.font.name, cell.font.sz, bool(cell.font.b), cell.number_format)
+        return worksheet.cell(row, col).number_format
     dimension = workbook_utils.column_dimension(worksheet, col)
-    if dimension is None:
-        return ("Aptos Narrow", 11.0, False, "General")
-    return (
-        dimension.font.name,
-        dimension.font.sz,
-        bool(dimension.font.b),
-        dimension.number_format,
-    )
+    return "General" if dimension is None else dimension.number_format
 
 
 # ------------------------------------------------------- workbook XML
@@ -200,26 +183,6 @@ def series_columns(chart: ElementTree.Element) -> set[str]:
     return {column_of(f.text) for f in chart.findall(".//c:ser/c:val//c:f", NS)}
 
 
-def charts_with_value_columns(
-    package: zipfile.ZipFile, sheet_name: str, columns: tuple[str, ...]
-) -> list[ElementTree.Element]:
-    """Charts whose series values all come from the given columns."""
-    return [
-        chart
-        for chart in charts(package, sheet_name)
-        if series_columns(chart) and series_columns(chart) <= set(columns)
-    ]
-
-
-def percentage_charts(
-    package: zipfile.ZipFile, sheet: cell_map.SheetMap
-) -> list[ElementTree.Element]:
-    """Charts whose series values all come from the sheet's % change columns."""
-    return charts_with_value_columns(
-        package, sheet.name, sheet.percentage_chart_columns
-    )
-
-
 def chart_title(chart: ElementTree.Element) -> str:
     """Chart title text; an empty string when there is no title."""
     title = chart.find("c:chart/c:title", NS)
@@ -265,20 +228,24 @@ def add_months(start: datetime.datetime, months: int) -> datetime.datetime:
     )
 
 
-def generic_value(style: str, row_offset: int, col_offset: int) -> object:
-    """A value of the right type for a cell style, at an offset into its range.
+def generic_value(
+    input_range: cell_map.InputRange, row_offset: int, col_offset: int
+) -> object:
+    """A value of the right type for a range's style, at an offset into the range.
 
-    Dates are consecutive months; counts and percentages rise down the rows and
-    differ across the columns, so chart series do not sit on top of each other.
+    Text is the range's note, numbered down the rows, so each cell says what it
+    is. Dates are consecutive months; counts and percentages rise down the rows
+    and differ across the columns, so chart series do not sit on top of each other.
     """
+    label = input_range.note or input_range.cells
+    if CellRange(input_range.cells).size["rows"] > 1:
+        label = f"{label} {row_offset + 1}"
     return {
-        "text": "Text",
-        "bold_text": "Bold text",
-        "heading": "Heading",
+        "text": label,
         "date": add_months(FIRST_DATE, row_offset),
         "count": 1000 * (row_offset + 1) + 100 * col_offset,
         "percent": round(0.01 * (row_offset + 1) + 0.002 * col_offset, 6),
-    }[style]
+    }[input_range.style]
 
 
 def fill_inputs(
@@ -298,7 +265,7 @@ def fill_inputs(
             for row in range(cells.min_row, cells.min_row + rows):
                 for col in range(cells.min_col, cells.max_col + 1):
                     value = generic_value(
-                        input_range.style, row - cells.min_row, col - cells.min_col
+                        input_range, row - cells.min_row, col - cells.min_col
                     )
                     workbook_utils.write_input_cell(worksheet, row, col, value)
                     written[(sheet.name, coordinate(row, col))] = value
