@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
+- Extended the run log update script to select a run for publication and start Publication-Output for it, set the `reconciled` and `locally_checked` flags, and list the month's runs.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 
 ### Changed

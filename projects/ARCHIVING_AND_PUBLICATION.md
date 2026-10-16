@@ -32,10 +32,15 @@ The assessment data holds only the latest assessed run, and carries a `run_numbe
 We look at the cumulative percentage change in filled posts per month over time.
 We benchmark our trend against external data.
 We investigate and resolve irregularities until we are satisfied the outputs are accurate.
+Assessing a run and approving it are separate: assessing is the review, approving is our decision that the run is accurate.
+We record approval by setting `approved` for the run in the run log with `scripts/update_run_log.sh` (see `scripts/update_run_log_runbook.md`).
 We must publish an output on the 15th of each month at 09:30, unless that is outside working time, upon which we will publish as soon as possible afterwards.
 
 ### Publishing a run
-Once a run has been assessed and approved (see `scripts/update_run_log_runbook.md`) and selected, start the `Publication-Output` step function with `{"run_number": N}`.
+Several runs can be approved in a month, so choosing the one to publish is a separate decision and a separate run log update.
+Select it with `scripts/update_run_log.sh`, setting `selected_for_publication`.
+Only an approved run archived since the 1st of the month can be selected, and selecting another run moves the selection.
+The script can then start the `Publication-Output` step function with `{"run_number": N}`; otherwise start it by hand with that input.
 It builds the public data from that run's prepared data: the publication summary behind the Tableau output and the T0, T1 and T2 data-download tables.
 Public data is only built for a selected run, so the step function fails without a `run_number`.
 
