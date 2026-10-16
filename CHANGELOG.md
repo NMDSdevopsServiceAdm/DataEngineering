@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics. Models now fitted on all training rows instead of an 80/20 split. Known values are ASC-WDS for care homes and ASC-WDS plus PIR for non-res, so the `metrics` in `metadata.json` aren't comparable with earlier runs.
 - Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 - Tidied monthly tracker publication columns: added a rounded filled posts column, and removed the Tableau label (`_formatted`) columns from the publication output and the formatted percentage columns from the T1/T2 download tables.
+- Removed the `cqc_location_import_date_abbreviated` and `cqc_location_import_date_full` columns from the monthly tracker publication output.
 
 ### Improved
 - Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
