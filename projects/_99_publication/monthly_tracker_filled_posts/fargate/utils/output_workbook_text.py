@@ -1,4 +1,4 @@
-SUPPRESSED_LABEL: str = "< 10"
+SUPPRESSED_LABEL: str = "[s]"
 NOT_PUBLISHED_LABEL: str = "[x]"
 
 TABLE_TITLES: dict[str, str] = {

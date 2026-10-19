@@ -1874,7 +1874,7 @@ prepare_t0_for_publication_test_cases = [
             (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 4.0, None, 1),
         ],
         expected_data=[
-            ("Mar-26", "London", _ALL_CQC_LOCATIONS, "< 10", 1),
+            ("Mar-26", "London", _ALL_CQC_LOCATIONS, "[s]", 1),
         ],
     ),
     PrepareTableForPublicationTestCase(

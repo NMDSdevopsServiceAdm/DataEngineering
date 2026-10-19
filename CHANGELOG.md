@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics. Models now fitted on all training rows instead of an 80/20 split. Known values are ASC-WDS for care homes and ASC-WDS plus PIR for non-res, so the `metrics` in `metadata.json` aren't comparable with earlier runs.
 - Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 - Changed the CircleCI archive sample seed to also sync archive run 2 of 2026-10-15 for the job role estimates and metadata.
+- Changed the suppressed filled posts label in the public monthly workbook from `< 10` to `[s]`.
 - Tidied monthly tracker publication columns: added a rounded filled posts column, and removed the Tableau label (`_formatted`) columns from the publication output and the formatted percentage columns from the T1/T2 download tables.
 
 ### Improved

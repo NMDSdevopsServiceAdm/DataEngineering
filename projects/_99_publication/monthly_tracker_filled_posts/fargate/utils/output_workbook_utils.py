@@ -105,7 +105,7 @@ def prepare_t0_for_publication(t0_lf: pl.LazyFrame) -> pd.DataFrame:
     """
     Builds the published T0 table: the period label as "Period" and the
     rounded filled posts as "Estimated filled posts", with a suppressed (null)
-    value shown as "< 10".
+    value shown as "[s]".
 
     Collects once, after selecting the published columns, as gptables needs
     pandas.
