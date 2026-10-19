@@ -1869,7 +1869,7 @@ prepare_t0_for_publication_test_cases = [
         ],
     ),
     PrepareTableForPublicationTestCase(
-        id="suppressed_posts_render_as_less_than_10_not_zero",
+        id="suppressed_posts_render_as_s_not_zero",
         input_data=[
             (date(2026, 4, 1), "Mar-26", "London", _ALL_CQC_LOCATIONS, 4.0, None, 1),
         ],
