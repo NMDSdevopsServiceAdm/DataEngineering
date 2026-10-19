@@ -155,6 +155,12 @@ def main(
             group_columns,
             Pub.assessment_ct_cumulative_perc_change_short_term,
         ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.publication_filled_posts,
+            long_term_from_date,
+            group_columns,
+            Pub.publication_filled_posts_cumulative_perc_change_long_term,
+        ),
         pl.lit(merge_utils.run_number_from_source(run_source)).alias(Pub.run_number),
     )
 

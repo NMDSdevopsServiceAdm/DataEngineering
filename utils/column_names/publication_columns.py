@@ -45,6 +45,9 @@ class PublicationColumns:
     assessment_ct_cumulative_perc_change_short_term: str = (
         "assessment_ct_cumulative_perc_change_short_term"
     )
+    publication_filled_posts_cumulative_perc_change_long_term: str = (
+        "publication_filled_posts_cumulative_perc_change_long_term"
+    )
     publication_filled_posts_cumulative_perc_change_short_term: str = (
         "publication_filled_posts_cumulative_perc_change_short_term"
     )

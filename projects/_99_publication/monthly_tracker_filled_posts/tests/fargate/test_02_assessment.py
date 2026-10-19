@@ -27,6 +27,7 @@ PERC_CHANGE_COLUMNS = [
     Pub.assessment_ct_cumulative_perc_change_long_term,
     Pub.assessment_ct_cumulative_perc_change_medium_term,
     Pub.assessment_ct_cumulative_perc_change_short_term,
+    Pub.publication_filled_posts_cumulative_perc_change_long_term,
 ]
 
 
@@ -258,6 +259,12 @@ class TestMain:
                     date(2026, 4, 1),
                     group_columns,
                     Pub.assessment_ct_cumulative_perc_change_short_term,
+                ),
+                call(
+                    Pub.publication_filled_posts,
+                    date(2021, 7, 1),
+                    group_columns,
+                    Pub.publication_filled_posts_cumulative_perc_change_long_term,
                 ),
             ]
         )
