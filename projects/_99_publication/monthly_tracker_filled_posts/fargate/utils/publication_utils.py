@@ -42,6 +42,7 @@ _ASSESSMENT_METRIC_COLUMNS: list[str] = [
     Pub.assessment_filled_posts_short_term,
     Pub.assessment_locationid_count_short_term,
     Pub.assessment_ct_total_employed_short_term,
+    Pub.assessment_ct_total_employed_long_term_no_filter,
 ]
 
 # The publication's controlled-rounding bands (see round_to_publication_bands):
@@ -459,7 +460,8 @@ def _assessment_aggregations() -> list[pl.Expr]:
     service, dispersion and has-data filters. CT values are location-level and
     repeat on each of a location's job role rows, so CT totals sum one row per
     location per group; the term filters are location-level, so the first row
-    is representative.
+    is representative. A final column sums CT employed across all locations
+    with no term filters.
 
     Returns:
         list[pl.Expr]: aggregation expressions, one per assessment column.
@@ -520,6 +522,10 @@ def _assessment_aggregations() -> list[pl.Expr]:
         .filter(short_term_filter & first_row_per_location)
         .sum()
         .alias(Pub.assessment_ct_total_employed_short_term),
+        pl.col(Pub.ct_total_employed_imputed)
+        .filter(first_row_per_location)
+        .sum()
+        .alias(Pub.assessment_ct_total_employed_long_term_no_filter),
     ]
 
 

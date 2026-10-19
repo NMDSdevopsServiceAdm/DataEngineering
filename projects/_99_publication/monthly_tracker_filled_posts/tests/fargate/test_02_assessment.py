@@ -28,6 +28,7 @@ PERC_CHANGE_COLUMNS = [
     Pub.assessment_ct_cumulative_perc_change_medium_term,
     Pub.assessment_ct_cumulative_perc_change_short_term,
     Pub.publication_filled_posts_cumulative_perc_change_long_term,
+    Pub.assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter,
 ]
 
 
@@ -265,6 +266,12 @@ class TestMain:
                     date(2021, 7, 1),
                     group_columns,
                     Pub.publication_filled_posts_cumulative_perc_change_long_term,
+                ),
+                call(
+                    Pub.assessment_ct_total_employed_long_term_no_filter,
+                    date(2021, 7, 1),
+                    group_columns,
+                    Pub.assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter,
                 ),
             ]
         )

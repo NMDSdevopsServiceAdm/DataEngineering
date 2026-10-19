@@ -213,6 +213,7 @@ class TestAggregateToPublicationRows:
             (Pub.assessment_filled_posts_short_term, pl.Float32()),
             (Pub.assessment_locationid_count_short_term, pl.UInt32()),
             (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
+            (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
         ]
     )
 
@@ -286,6 +287,7 @@ class TestAggregateToPublicationRows:
                 (Pub.assessment_filled_posts_short_term, pl.Float32()),
                 (Pub.assessment_locationid_count_short_term, pl.UInt32()),
                 (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
+                (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
             ]
         )
         expected_lf = pl.LazyFrame(
@@ -304,6 +306,7 @@ class TestAggregateToPublicationRows:
                     5.0,
                     30.0,
                     1,
+                    5.0,
                     5.0,
                 ),
             ],
@@ -442,6 +445,7 @@ class TestAddRowsForPublicationGroups:
             (Pub.assessment_filled_posts_short_term, pl.Float32()),
             (Pub.assessment_locationid_count_short_term, pl.UInt32()),
             (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
+            (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
         ]
     )
 

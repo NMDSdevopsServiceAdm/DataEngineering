@@ -530,6 +530,7 @@ aggregate_to_publication_rows_test_cases = [
                 10.0,
                 1,
                 5.0,
+                13.0,
             ),
         ],
     ),
@@ -570,6 +571,7 @@ aggregate_to_publication_rows_test_cases = [
                 0.0,
                 0,
                 0.0,
+                5.0,
             ),
         ],
     ),
@@ -604,6 +606,7 @@ aggregate_to_publication_rows_test_cases = [
                 0.0,
                 10.0,
                 1,
+                5.0,
                 5.0,
             ),
         ],
@@ -645,6 +648,7 @@ aggregate_to_publication_rows_test_cases = [
                 5.0,
                 25.0,
                 1,
+                5.0,
                 5.0,
             ),
         ],
@@ -718,6 +722,7 @@ aggregate_to_publication_rows_test_cases = [
                 10.0,
                 1,
                 5.0,
+                5.0,
             ),
             (
                 date(2026, 4, 1),
@@ -732,6 +737,7 @@ aggregate_to_publication_rows_test_cases = [
                 5.0,
                 10.0,
                 1,
+                5.0,
                 5.0,
             ),
             (
@@ -750,6 +756,7 @@ aggregate_to_publication_rows_test_cases = [
                 10.0,
                 1,
                 5.0,
+                5.0,
             ),
             (
                 date(2025, 4, 1),
@@ -767,6 +774,7 @@ aggregate_to_publication_rows_test_cases = [
                 10.0,
                 1,
                 5.0,
+                5.0,
             ),
             (
                 date(2025, 4, 1),
@@ -783,6 +791,7 @@ aggregate_to_publication_rows_test_cases = [
                 5.0,
                 10.0,
                 1,
+                5.0,
                 5.0,
             ),
         ],
@@ -832,6 +841,7 @@ aggregate_to_publication_rows_test_cases = [
                 45.0,
                 2,
                 8.0,
+                8.0,
             ),
         ],
     ),
@@ -872,6 +882,7 @@ aggregate_to_publication_rows_test_cases = [
                 0.0,
                 0,
                 0.0,
+                5.0,
             ),
         ],
     ),
@@ -881,8 +892,9 @@ aggregate_to_publication_rows_test_cases = [
 def _all_terms_metrics(
     filled_posts: float, locationid_count: int, ct_total_employed: float
 ) -> tuple:
-    """Publication + long/medium/short assessment metrics, identical across
-    all three terms since every input row's filters pass in these tests."""
+    """Publication + long/medium/short assessment metrics and the unfiltered CT
+    total, identical across all three terms since every input row's filters
+    pass in these tests."""
     return (
         filled_posts,
         locationid_count,
@@ -894,6 +906,7 @@ def _all_terms_metrics(
         ct_total_employed,
         filled_posts,
         locationid_count,
+        ct_total_employed,
         ct_total_employed,
     )
 

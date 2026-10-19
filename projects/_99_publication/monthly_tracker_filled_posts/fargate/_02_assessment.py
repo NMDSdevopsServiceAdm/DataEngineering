@@ -161,6 +161,12 @@ def main(
             group_columns,
             Pub.publication_filled_posts_cumulative_perc_change_long_term,
         ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.assessment_ct_total_employed_long_term_no_filter,
+            long_term_from_date,
+            group_columns,
+            Pub.assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter,
+        ),
         pl.lit(merge_utils.run_number_from_source(run_source)).alias(Pub.run_number),
     )
 

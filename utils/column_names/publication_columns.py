@@ -36,6 +36,9 @@ class PublicationColumns:
     assessment_ct_total_employed_short_term: str = (
         "assessment_ct_total_employed_short_term"
     )
+    assessment_ct_total_employed_long_term_no_filter: str = (
+        "assessment_ct_total_employed_long_term_no_filter"
+    )
     assessment_ct_cumulative_perc_change_long_term: str = (
         "assessment_ct_cumulative_perc_change_long_term"
     )
@@ -44,6 +47,9 @@ class PublicationColumns:
     )
     assessment_ct_cumulative_perc_change_short_term: str = (
         "assessment_ct_cumulative_perc_change_short_term"
+    )
+    assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter: str = (
+        "assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter"
     )
     publication_filled_posts_cumulative_perc_change_long_term: str = (
         "publication_filled_posts_cumulative_perc_change_long_term"
