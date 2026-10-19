@@ -2,7 +2,7 @@ import openpyxl
 from openpyxl.styles import Font
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
-    diagnostics_workbook_utils as job,
+    assessment_workbook_utils as job,
 )
 
 

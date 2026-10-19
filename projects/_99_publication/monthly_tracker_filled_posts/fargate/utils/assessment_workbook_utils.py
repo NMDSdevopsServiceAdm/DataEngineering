@@ -1,4 +1,4 @@
-"""Helpers for writing input cells into the diagnostics template."""
+"""Helpers for writing input cells into the assessment template."""
 
 from copy import copy
 

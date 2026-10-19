@@ -26,6 +26,24 @@ _DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
     Pub.main_service,
 ]
 
+# The summed columns of the publication summary, and the extra ones added for
+# the assessment (see aggregate_to_publication_rows).
+_PUBLICATION_METRIC_COLUMNS: list[str] = [
+    Pub.publication_filled_posts,
+    Pub.publication_locationid_count,
+]
+_ASSESSMENT_METRIC_COLUMNS: list[str] = [
+    Pub.assessment_filled_posts_long_term,
+    Pub.assessment_locationid_count_long_term,
+    Pub.assessment_ct_total_employed_long_term,
+    Pub.assessment_filled_posts_medium_term,
+    Pub.assessment_locationid_count_medium_term,
+    Pub.assessment_ct_total_employed_medium_term,
+    Pub.assessment_filled_posts_short_term,
+    Pub.assessment_locationid_count_short_term,
+    Pub.assessment_ct_total_employed_short_term,
+]
+
 # The publication's controlled-rounding bands (see round_to_publication_bands):
 # round to `nearest` for any value below `upper_bound`, ascending. A value
 # below _PUBLICATION_ROUNDING_SUPPRESSION_THRESHOLD is suppressed (null)
@@ -125,6 +143,28 @@ def reduced_data_filter_expr(
     return expr
 
 
+def get_retention_cutoff_date(
+    today: date | None = None,
+    fy_start_month: int = 4,
+    retention_fy_years: int = 6,
+) -> date:
+    """
+    Gets the earliest date the publication retains: the start of the financial
+    year `retention_fy_years` before the one containing today.
+
+    Args:
+        today (date | None): reference date. Defaults to the current system
+            date when None.
+        fy_start_month (int): month the financial year starts.
+        retention_fy_years (int): number of financial years back to retain.
+
+    Returns:
+        date: the first day of the earliest financial year retained.
+    """
+    fy_start = _financial_year_start(today, fy_start_month)
+    return fy_start.replace(year=fy_start.year - retention_fy_years)
+
+
 def has_continuous_data_since_date(
     column_name: str, from_date: date, column_alias: str
 ) -> pl.Expr:
@@ -188,55 +228,6 @@ def has_consistent_service_since_date(from_date: date, column_alias: str) -> pl.
         .over(IndCQC.location_id)
     )
     return (care_home_statuses_in_window == 1).alias(column_alias)
-
-
-def format_large_number(column_name: str, column_alias: str) -> pl.Expr:
-    """
-    Builds a polars expression formatting a number for display.
-
-    Values at or above 1,000,000 are abbreviated to millions with three
-    decimal places and an "m" suffix (e.g. 1175000 -> "1.175m", and
-    2000000 -> "2.000m" rather than "2,000,000", so round-million values
-    are formatted consistently with the rest of that bucket). Values below
-    1,000,000 keep their full value with comma thousands separators (e.g.
-    800000 -> "800,000"). Both branches round to the nearest whole number
-    first, since fractional posts aren't meaningful for display.
-
-    Args:
-        column_name (str): the numeric column to format.
-        column_alias (str): name to alias the resulting column to.
-
-    Returns:
-        pl.Expr: string expression with the formatted value.
-    """
-    thousandths_of_millions = (
-        (pl.col(column_name) / 1_000_000 * 1000).round(0).cast(pl.Int64)
-    )
-    millions_format = (
-        (thousandths_of_millions // 1000).cast(pl.Utf8)
-        + "."
-        + (thousandths_of_millions % 1000).cast(pl.Utf8).str.zfill(3)
-        + "m"
-    )
-
-    # Groups every 3 digits from the right (via a reverse/group/reverse round trip,
-    # since polars' regex engine doesn't support the lookahead a single-pass
-    # left-to-right version would need), then drops the comma this leaves
-    # trailing whenever the digit count is itself a multiple of 3.
-    rounded_whole = pl.col(column_name).round(0).cast(pl.Int64).cast(pl.Utf8)
-    comma_format = (
-        rounded_whole.str.reverse()
-        .str.replace_all(r"(\d{3})", r"$1,")
-        .str.strip_chars_end(",")
-        .str.reverse()
-    )
-
-    return (
-        pl.when(pl.col(column_name) >= 1_000_000)
-        .then(millions_format)
-        .otherwise(comma_format)
-        .alias(column_alias)
-    )
 
 
 def _round_half_away_from_zero(value: pl.Expr, nearest: float) -> pl.Expr:
@@ -310,30 +301,6 @@ def round_percentage(column_name: str) -> pl.Expr:
     """
     percentage = pl.col(column_name).cast(pl.Float64) * 100
     return _round_half_away_from_zero(percentage, 0.1).round(1)
-
-
-def format_percentage(column_name: str, column_alias: str) -> pl.Expr:
-    """
-    Builds a polars expression formatting a percentage-change fraction (e.g.
-    0.032 = +3.2%) to a 1 decimal place display string (e.g. "3.2%",
-    "-0.8%"), for parity with the manually-published reference's own 1dp
-    percentages. Null stays null, rather than becoming the string "null%" -
-    the annual/monthly percentage change columns this is applied to are
-    deliberately null on every row outside their own series.
-
-    Args:
-        column_name (str): the fractional percentage column to format.
-        column_alias (str): name to alias the resulting column to.
-
-    Returns:
-        pl.Expr: string expression with the formatted percentage, or null.
-    """
-    return (
-        pl.when(pl.col(column_name).is_null())
-        .then(None)
-        .otherwise(round_percentage(column_name).cast(pl.Utf8) + "%")
-        .alias(column_alias)
-    )
 
 
 def add_dispersion_filter(
@@ -483,47 +450,20 @@ def _within_dispersion_boundaries(dispersion_column: str) -> pl.Expr:
     )
 
 
-def aggregate_to_publication_rows(
-    lazy_df: pl.LazyFrame, group_keys: list[str] | None = None
-) -> pl.LazyFrame:
+def _assessment_aggregations() -> list[pl.Expr]:
     """
-    Aggregates location-level rows up to publication level.
+    Builds the assessment aggregations for aggregate_to_publication_rows.
 
-    Publication columns sum filled posts and count distinct locations across
-    every row in a group. Assessment columns do the same but only over rows
-    passing that term's consistent service, dispersion and has-data filters,
-    applied independently per term within the same group_by so a row can
-    contribute to one term's assessment columns without contributing to
-    another's.
-
-    Capacity tracker (CT) values are location-level and repeat on each of a
-    location's job role rows, so CT totals sum one row per location per group.
-    The term filters are location-level, so the first row is representative.
-
-    group_keys defaults to (import date, job role, region, service type). A
-    narrower set (e.g. dropping job role) still counts each location once,
-    since location counts and CT totals are recomputed at that grain rather
-    than summed from separately-computed per-job-role values.
-
-    Args:
-        lazy_df (pl.LazyFrame): location-level data with
-            consistent_service_*_term, ct_total_employed_imputed,
-            ct_has_data_*_term and ct_dispersion_filter_*_term already added.
-        group_keys (list[str] | None): columns to group by. Defaults to
-            import date, job role, region and service type.
+    Each term sums filled posts, counts distinct locations and sums capacity
+    tracker (CT) employed, only over rows passing that term's consistent
+    service, dispersion and has-data filters. CT values are location-level and
+    repeat on each of a location's job role rows, so CT totals sum one row per
+    location per group; the term filters are location-level, so the first row
+    is representative.
 
     Returns:
-        pl.LazyFrame: one row per group_keys combination, with publication_*
-            and assessment_*_term columns.
+        list[pl.Expr]: aggregation expressions, one per assessment column.
     """
-    if group_keys is None:
-        group_keys = [
-            IndCQC.cqc_location_import_date,
-            IndCQC.main_job_role_clean_labelled,
-            IndCQC.current_region,
-            IndCQC.primary_service_type,
-        ]
-
     long_term_filter = (
         pl.col(Pub.consistent_service_long_term)
         & pl.col(Pub.ct_dispersion_filter_long_term)
@@ -543,9 +483,7 @@ def aggregate_to_publication_rows(
     filled_posts_col = IndCQC.estimate_filled_posts_by_job_role
     first_row_per_location = pl.col(IndCQC.location_id).is_first_distinct()
 
-    return lazy_df.group_by(group_keys).agg(
-        pl.col(filled_posts_col).sum().alias(Pub.publication_filled_posts),
-        pl.col(IndCQC.location_id).n_unique().alias(Pub.publication_locationid_count),
+    return [
         pl.col(filled_posts_col)
         .filter(long_term_filter)
         .sum()
@@ -582,11 +520,65 @@ def aggregate_to_publication_rows(
         .filter(short_term_filter & first_row_per_location)
         .sum()
         .alias(Pub.assessment_ct_total_employed_short_term),
-    )
+    ]
+
+
+def aggregate_to_publication_rows(
+    lazy_df: pl.LazyFrame,
+    group_keys: list[str] | None = None,
+    include_assessment: bool = True,
+) -> pl.LazyFrame:
+    """
+    Aggregates location-level rows up to publication level.
+
+    Publication columns sum filled posts and count distinct locations across
+    every row in a group. Assessment columns (see _assessment_aggregations) do
+    the same but only over rows passing each term's filters, applied
+    independently per term within the same group_by so a row can contribute to
+    one term's assessment columns without contributing to another's.
+
+    group_keys defaults to (import date, job role, region, service type). A
+    narrower set (e.g. dropping job role) still counts each location once,
+    since location counts and CT totals are recomputed at that grain rather
+    than summed from separately-computed per-job-role values.
+
+    Args:
+        lazy_df (pl.LazyFrame): location-level data. With include_assessment,
+            it must also hold consistent_service_*_term,
+            ct_total_employed_imputed, ct_has_data_*_term and
+            ct_dispersion_filter_*_term.
+        group_keys (list[str] | None): columns to group by. Defaults to
+            import date, job role, region and service type.
+        include_assessment (bool): whether to add the assessment columns.
+
+    Returns:
+        pl.LazyFrame: one row per group_keys combination, with publication_*
+            columns and, with include_assessment, assessment_*_term columns.
+    """
+    if group_keys is None:
+        group_keys = [
+            IndCQC.cqc_location_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+        ]
+
+    aggregations = [
+        pl.col(IndCQC.estimate_filled_posts_by_job_role)
+        .sum()
+        .alias(Pub.publication_filled_posts),
+        pl.col(IndCQC.location_id).n_unique().alias(Pub.publication_locationid_count),
+    ]
+    if include_assessment:
+        aggregations += _assessment_aggregations()
+
+    return lazy_df.group_by(group_keys).agg(aggregations)
 
 
 def add_rows_for_publication_groups(
-    cleaned_lf: pl.LazyFrame, publication_summary_lf: pl.LazyFrame
+    prepared_lf: pl.LazyFrame,
+    publication_summary_lf: pl.LazyFrame,
+    include_assessment: bool = True,
 ) -> pl.LazyFrame:
     """
     Adds "All job roles", "All CQC care homes", "All CQC locations" and
@@ -596,7 +588,7 @@ def add_rows_for_publication_groups(
     England has a row for every job role/service type combination,
     including the other rollups.
 
-    Job role is rebuilt from cleaned_lf via aggregate_to_publication_rows
+    Job role is rebuilt from prepared_lf via aggregate_to_publication_rows
     with job role dropped from the group keys, since summing per-job-role
     counts would double-count a location (one row per job role it employs).
     Region and service type are single-valued per location, so those
@@ -608,14 +600,16 @@ def add_rows_for_publication_groups(
     category-count validation also uses it.
 
     The job role rows (small, post-aggregation) are collected so every
-    rollup and sink reuses one evaluation of cleaned_lf; left lazy, Polars
+    rollup and sink reuses one evaluation of prepared_lf; left lazy, Polars
     re-runs the whole upstream plan per consumer.
 
     Args:
-        cleaned_lf (pl.LazyFrame): location-level data, as passed into
+        prepared_lf (pl.LazyFrame): location-level data, as passed into
             aggregate_to_publication_rows.
         publication_summary_lf (pl.LazyFrame): output of
-            aggregate_to_publication_rows on cleaned_lf.
+            aggregate_to_publication_rows on prepared_lf.
+        include_assessment (bool): whether publication_summary_lf has the
+            assessment columns, as passed to aggregate_to_publication_rows.
 
     Returns:
         pl.LazyFrame: publication_summary_lf with rollup rows added for
@@ -628,28 +622,19 @@ def add_rows_for_publication_groups(
     column_schema = publication_summary_lf.collect_schema()
     column_order = column_schema.names()
 
-    metric_columns = [
-        Pub.publication_filled_posts,
-        Pub.publication_locationid_count,
-        Pub.assessment_filled_posts_long_term,
-        Pub.assessment_locationid_count_long_term,
-        Pub.assessment_ct_total_employed_long_term,
-        Pub.assessment_filled_posts_medium_term,
-        Pub.assessment_locationid_count_medium_term,
-        Pub.assessment_ct_total_employed_medium_term,
-        Pub.assessment_filled_posts_short_term,
-        Pub.assessment_locationid_count_short_term,
-        Pub.assessment_ct_total_employed_short_term,
-    ]
+    metric_columns = _PUBLICATION_METRIC_COLUMNS + (
+        _ASSESSMENT_METRIC_COLUMNS if include_assessment else []
+    )
 
     all_job_roles_lf = (
         aggregate_to_publication_rows(
-            cleaned_lf,
+            prepared_lf,
             group_keys=[
                 IndCQC.cqc_location_import_date,
                 IndCQC.current_region,
                 IndCQC.primary_service_type,
             ],
+            include_assessment=include_assessment,
         )
         .with_columns(
             pl.lit(PublishedJobGroupLabels.all_job_roles)
@@ -863,6 +848,20 @@ def _filter_to_all_job_roles_rollup(
     )
 
 
+def import_date_to_period_month(import_date: pl.Expr) -> pl.Expr:
+    """
+    Maps a CQC import date to the month it reports on: one month earlier
+    (2026-04-01 -> 2026-03-01).
+
+    Args:
+        import_date (pl.Expr): expression of CQC import dates.
+
+    Returns:
+        pl.Expr: the period month.
+    """
+    return import_date.dt.offset_by("-1mo")
+
+
 def _period_label_expr() -> pl.Expr:
     """
     Builds a polars expression for a short display label of the period
@@ -875,8 +874,7 @@ def _period_label_expr() -> pl.Expr:
     keeps the real underlying date.
     """
     return (
-        pl.col(IndCQC.cqc_location_import_date)
-        .dt.offset_by("-1mo")
+        import_date_to_period_month(pl.col(IndCQC.cqc_location_import_date))
         .dt.strftime("%b-%y")
         .alias(Pub.period_label)
     )
@@ -1031,7 +1029,7 @@ def build_t0_estimates_download_table(
             .alias(Pub.main_service),
             pl.col(Pub.publication_filled_posts).alias(Pub.estimated_filled_posts),
             round_to_publication_bands(
-                Pub.publication_filled_posts, Pub.estimated_filled_posts_formatted
+                Pub.publication_filled_posts, Pub.estimated_filled_posts_rounded
             ),
             pl.col(Pub.publication_locationid_count).alias(Pub.cqc_locations),
         )
@@ -1065,9 +1063,7 @@ def build_t1_filled_posts_perc_change_download_table(
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with
             estimated filled posts' annual and monthly percentage change
-            columns, each as a raw value and a 1dp formatted string (see
-            format_percentage). Sorted by period then region then
-            main_service.
+            columns. Sorted by period then region then main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
@@ -1084,13 +1080,7 @@ def build_t1_filled_posts_perc_change_download_table(
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
         pl.col(Pub.annual_percentage_change),
-        format_percentage(
-            Pub.annual_percentage_change, Pub.annual_percentage_change_formatted
-        ),
         pl.col(Pub.monthly_percentage_change),
-        format_percentage(
-            Pub.monthly_percentage_change, Pub.monthly_percentage_change_formatted
-        ),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
 
 
@@ -1120,10 +1110,8 @@ def build_t2_location_count_perc_change_download_table(
 
     Returns:
         pl.LazyFrame: one row per (period, region, main_service), with cqc
-            location count's annual and monthly percentage change columns,
-            each as a raw value and a 1dp formatted string (see
-            format_percentage). Sorted by period then region then
-            main_service.
+            location count's annual and monthly percentage change columns.
+            Sorted by period then region then main_service.
     """
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
@@ -1140,11 +1128,5 @@ def build_t2_location_count_perc_change_download_table(
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
         pl.col(Pub.annual_percentage_change),
-        format_percentage(
-            Pub.annual_percentage_change, Pub.annual_percentage_change_formatted
-        ),
         pl.col(Pub.monthly_percentage_change),
-        format_percentage(
-            Pub.monthly_percentage_change, Pub.monthly_percentage_change_formatted
-        ),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)

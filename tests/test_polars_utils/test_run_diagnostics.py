@@ -1,5 +1,6 @@
 import json
 import os
+from unittest.mock import MagicMock
 
 import boto3
 import polars as pl
@@ -117,32 +118,25 @@ class TestCheckpoint:
         assert "/" not in keys[0].removeprefix(f"{diagnostics.prefix}/checkpoints/")
 
     @mock_aws
-    def test_num_threads_excludes_run_diagnostics_own_background_threads(self):
+    def test_snapshot_num_threads_excludes_own_background_threads(self):
         create_pipeline_resources_bucket()
         diagnostics = job.RunDiagnostics(
             JOB_NAME, DATASETS_BUCKET, sample_interval_seconds=60
         )
+        process_threads = 10
+        diagnostics._process = MagicMock()
+        diagnostics._process.num_threads.return_value = process_threads
 
-        diagnostics.checkpoint("before_start")
+        before = diagnostics._snapshot()["num_threads"]
         diagnostics.start()
         try:
-            diagnostics.checkpoint("after_start")
+            after = diagnostics._snapshot()["num_threads"]
         finally:
             diagnostics.stop()
 
-        s3 = boto3.client("s3", region_name="eu-west-2")
-        keys = [
-            obj["Key"]
-            for obj in s3.list_objects_v2(
-                Bucket=PIPELINE_RESOURCES_BUCKET,
-                Prefix=f"{diagnostics.prefix}/checkpoints/",
-            )["Contents"]
-        ]
-        bodies = [read_json_object(PIPELINE_RESOURCES_BUCKET, key) for key in keys]
-        before = next(b for b in bodies if b["stage"] == "before_start")
-        after = next(b for b in bodies if b["stage"] == "after_start")
-
-        assert after["num_threads"] == before["num_threads"]
+        own_threads = 3  # sampler, stderr tee, stderr flush
+        assert before == process_threads
+        assert after == process_threads - own_threads
 
 
 class TestStartAndStop:

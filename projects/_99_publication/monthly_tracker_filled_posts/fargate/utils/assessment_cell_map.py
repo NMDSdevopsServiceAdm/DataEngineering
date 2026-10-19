@@ -1,7 +1,7 @@
-"""Cell map for `templates/diagnostics_template.xlsx`.
+"""Cell map for `templates/assessment_template.xlsx`.
 
 Lists the cells the workbook writer fills (`InputRange`) and the charts and
-styles the template tests check. The template has no formulas.
+number formats the template tests check. The template has no formulas.
 
 The "Number of locations" cells take the latest row per group, since every row
 in a term's period shares the same count.
@@ -14,23 +14,22 @@ Open points the map does not settle (each needs a pipeline column or ticket):
 """
 
 from dataclasses import dataclass
-from pathlib import Path
-
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.template_paths import (
+    TEMPLATES_DIR,
+)
 from utils.column_names.publication_columns import PublicationColumns as Pub
 
 
-TEMPLATE_PATH = Path(__file__).parents[2] / "templates" / "diagnostics_template.xlsx"
+TEMPLATE_PATH = TEMPLATES_DIR / "assessment_template.xlsx"
 
-# Font and number format each kind of input cell must show in the template: its
-# own style, or its column's when they match (Excel stores no cell then). The
-# writer gives cells it creates their column's style (`write_input_cell`).
-CELL_STYLES = {
-    "text": ("Arial", 12.0, False, "General"),
-    "bold_text": ("Arial", 12.0, True, "General"),
-    "heading": ("Arial", 14.0, True, "General"),
-    "date": ("Arial", 12.0, False, "mmm-yy"),
-    "count": ("Arial", 12.0, False, "#,##0"),
-    "percent": ("Arial", 12.0, False, "0.0%"),
+# Number format each kind of input cell must show in the template: its own, or
+# its column's when they match (Excel stores no cell then). The writer gives cells
+# it creates their column's style (`write_input_cell`).
+NUMBER_FORMATS = {
+    "general": "General",
+    "date": "mmm-yy",
+    "count": "#,##0",
+    "percent": "0.0%",
 }
 
 
@@ -44,14 +43,14 @@ class InputRange:
             None where the writer derives or builds the value (dates, text,
             % change) or no source column exists yet.
         note (str): what the range holds.
-        style (str): key into `CELL_STYLES` for the font and number format
-            every cell in the range must have in the template.
+        number_format (str): key into `NUMBER_FORMATS` for the format every cell
+            in the range must have in the template.
     """
 
     cells: str
     source_column: str | None = None
     note: str = ""
-    style: str = "text"
+    number_format: str = "general"
 
 
 @dataclass(frozen=True)
@@ -62,24 +61,16 @@ class SheetMap:
         name (str): sheet name in the template.
         input_ranges (tuple[InputRange, ...]): cells the writer fills.
         chart_count (int): charts on the sheet.
-        chart_label_ranges (tuple[str, ...]): fixed label cells charts use as
+        series_name_cells (tuple[str, ...]): fixed label cells charts use as
             series names.
-        window_rows (int): date rows each chart series must span.
-        percentage_chart_columns (tuple[str, ...]): value columns that mark a
-            chart as a % change chart.
-        percentage_chart_count (int): % change charts on the sheet.
-        bold_heading_cells (tuple[str, ...]): fixed table headings that must be
-            bold.
+        slot_count (int): date rows each chart series must span.
     """
 
     name: str
     input_ranges: tuple[InputRange, ...]
     chart_count: int
-    chart_label_ranges: tuple[str, ...] = ()
-    window_rows: int = 0
-    percentage_chart_columns: tuple[str, ...] = ()
-    percentage_chart_count: int = 0
-    bold_heading_cells: tuple[str, ...] = ()
+    series_name_cells: tuple[str, ...] = ()
+    slot_count: int = 0
 
 
 TITLE_CELL = "B3"
@@ -99,48 +90,59 @@ FILLED_POSTS = SheetMap(
     name="Filled posts",
     input_ranges=(
         InputRange(TITLE_CELL, note="'End of <month year>' title"),
-        InputRange("B24:B36", note="annual filled posts dates", style="date"),
-        InputRange("I24:I36", note="annual filled posts % change dates", style="date"),
+        InputRange("B24:B36", note="annual filled posts dates", number_format="date"),
         InputRange(
-            "C24:G36", note="annual filled posts by primary service type", style="count"
+            "I24:I36", note="annual filled posts % change dates", number_format="date"
         ),
-        InputRange("J25:N36", note="annual filled posts % change", style="percent"),
-        InputRange("B44:B56", note="annual CQC locations dates", style="date"),
-        InputRange("I44:I56", note="annual CQC locations % change dates", style="date"),
+        InputRange(
+            "C24:G36",
+            note="annual filled posts by primary service type",
+            number_format="count",
+        ),
+        InputRange(
+            "J25:N36", note="annual filled posts % change", number_format="percent"
+        ),
+        InputRange("B44:B56", note="annual CQC locations dates", number_format="date"),
+        InputRange(
+            "I44:I56", note="annual CQC locations % change dates", number_format="date"
+        ),
         InputRange(
             "C44:G56",
             note="annual CQC locations by primary service type",
-            style="count",
+            number_format="count",
         ),
-        InputRange("J45:N56", note="annual CQC locations % change", style="percent"),
-        InputRange("B65:B77", note="monthly filled posts dates", style="date"),
-        InputRange("I65:I77", note="monthly filled posts % change dates", style="date"),
+        InputRange(
+            "J45:N56", note="annual CQC locations % change", number_format="percent"
+        ),
+        InputRange("B65:B77", note="monthly filled posts dates", number_format="date"),
+        InputRange(
+            "I65:I77", note="monthly filled posts % change dates", number_format="date"
+        ),
         InputRange(
             "C65:G77",
             note="monthly filled posts by primary service type",
-            style="count",
+            number_format="count",
         ),
-        InputRange("J65:N77", note="monthly filled posts % change", style="percent"),
-        InputRange("B84:B96", note="monthly CQC locations dates", style="date"),
         InputRange(
-            "I84:I96", note="monthly CQC locations % change dates", style="date"
+            "J65:N77", note="monthly filled posts % change", number_format="percent"
+        ),
+        InputRange("B84:B96", note="monthly CQC locations dates", number_format="date"),
+        InputRange(
+            "I84:I96", note="monthly CQC locations % change dates", number_format="date"
         ),
         InputRange(
             "C84:G96",
             note="monthly CQC locations by primary service type",
-            style="count",
+            number_format="count",
         ),
-        InputRange("J84:N96", note="monthly CQC locations % change", style="percent"),
         InputRange(
-            "B99", note="'...since <month year>' chart heading", style="bold_text"
+            "J84:N96", note="monthly CQC locations % change", number_format="percent"
         ),
+        InputRange("B99", note="'...since <month year>' chart heading"),
     ),
     chart_count=3,
-    chart_label_ranges=("B61", "B80"),
-    window_rows=MONTHLY_SLOTS,
-    percentage_chart_columns=("J", "K", "N"),
-    percentage_chart_count=3,
-    bold_heading_cells=("B20", "B40", "B61", "B80"),
+    series_name_cells=("B61", "B80"),
+    slot_count=MONTHLY_SLOTS,
 )
 
 # Annual rows first, then monthly rows; unused slots stay blank at the end.
@@ -149,17 +151,22 @@ COMP_PREV_PUBLICATION = SheetMap(
     input_ranges=(
         InputRange(TITLE_CELL, note="'End of <month year>' title"),
         InputRange("B23:B59", note="previous publication labels"),
-        InputRange("C23:C59", note="previous publication dates", style="date"),
-        InputRange("D23:H59", note="previous publication figures", style="count"),
+        InputRange("C23:C59", note="previous publication dates", number_format="date"),
+        InputRange(
+            "D23:H59", note="previous publication figures", number_format="count"
+        ),
         InputRange("B64:B100", note="current publication labels"),
-        InputRange("C64:C100", note="current publication dates", style="date"),
-        InputRange("D64:H100", note="current publication figures", style="count"),
+        InputRange("C64:C100", note="current publication dates", number_format="date"),
+        InputRange(
+            "D64:H100", note="current publication figures", number_format="count"
+        ),
         InputRange("B106:B142", note="difference labels"),
-        InputRange("C106:C142", note="difference dates", style="date"),
-        InputRange("D106:H142", note="difference as percentage", style="percent"),
+        InputRange("C106:C142", note="difference dates", number_format="date"),
+        InputRange(
+            "D106:H142", note="difference as percentage", number_format="percent"
+        ),
     ),
     chart_count=0,
-    bold_heading_cells=("B20", "B61", "B103"),
 )
 
 
@@ -210,14 +217,16 @@ def _comparison_sheet(
     """
     ranges = [
         InputRange(TITLE_CELL, note="'End of <month year>' title"),
-        InputRange(
-            HEADING_CELL, note="heading incl. 'Since <month year>'", style="heading"
-        ),
+        InputRange(HEADING_CELL, note="heading incl. 'Since <month year>'"),
         InputRange(f"E{first_row - 2}", note="care homes % change heading"),
         InputRange(f"N{first_row - 2}", note="non-res % change heading"),
-        InputRange(f"B{first_row}:B{last_row}", note="care homes dates", style="date"),
         InputRange(
-            f"K{first_row}:K{last_row}", note="non-residential dates", style="date"
+            f"B{first_row}:B{last_row}", note="care homes dates", number_format="date"
+        ),
+        InputRange(
+            f"K{first_row}:K{last_row}",
+            note="non-residential dates",
+            number_format="date",
         ),
         InputRange(
             f"C{first_row}:C{last_row}", filled_posts, "care homes SfC", "count"
@@ -228,12 +237,12 @@ def _comparison_sheet(
         InputRange(
             f"E{first_row}:F{last_row}",
             note="care homes % change, writer-derived",
-            style="percent",
+            number_format="percent",
         ),
         InputRange(
             f"N{first_row}:O{last_row}",
             note="non-res % change, writer-derived",
-            style="percent",
+            number_format="percent",
         ),
     ]
     if has_criteria_note:
@@ -243,19 +252,15 @@ def _comparison_sheet(
             )
         )
     header_row = first_row - 1
-    table_heading_row = first_row - 6
     return SheetMap(
         name,
         tuple(ranges) + extra_inputs,
         chart_count=4,
-        chart_label_ranges=(
+        series_name_cells=(
             f"C{header_row}:F{header_row}",
             f"L{header_row}:O{header_row}",
         ),
-        window_rows=last_row - first_row + 1,
-        percentage_chart_columns=("E", "F", "N", "O"),
-        percentage_chart_count=2,
-        bold_heading_cells=(f"B{table_heading_row}", f"K{table_heading_row}"),
+        slot_count=last_row - first_row + 1,
     )
 
 
@@ -316,7 +321,7 @@ NO_FILTERS = _comparison_sheet(
     ),
 )
 
-DIAGNOSTICS_SHEETS: tuple[SheetMap, ...] = (
+ASSESSMENT_SHEETS: tuple[SheetMap, ...] = (
     FILLED_POSTS,
     COMP_PREV_PUBLICATION,
     COMP_SHORT_TERM,

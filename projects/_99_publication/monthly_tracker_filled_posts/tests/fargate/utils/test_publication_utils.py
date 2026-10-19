@@ -8,7 +8,12 @@ import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.publi
 import projects._99_publication.unittest_data.polars_pub_test_data as Data
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_values.categorical_column_values import PrimaryServiceType
+from utils.column_values.categorical_column_values import (
+    PrimaryServiceType,
+    PublishedJobGroupLabels,
+    PublishedMainService,
+    PublishedRegion,
+)
 
 
 class TestReducedDataFilterExpr:
@@ -44,6 +49,17 @@ class TestReducedDataFilterExpr:
         result = df.with_columns(expr.alias("keep"))
 
         assert result["keep"].to_list() == Data.default_lookback_expected
+
+
+class TestGetRetentionCutoffDate:
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.retention_cutoff_date_test_cases],
+    )
+    def test_returns_start_of_financial_year_six_years_back(self, case):
+        returned_date = job.get_retention_cutoff_date(case.today)
+
+        assert returned_date == case.expected
 
 
 class TestHasContinuousDataSinceDate:
@@ -121,26 +137,6 @@ class TestHasConsistentServiceSinceDate:
             job.has_consistent_service_since_date(
                 case.from_date, Pub.consistent_service_short_term
             )
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
-class TestFormatLargeNumber:
-    @pytest.mark.parametrize(
-        "case",
-        [case.as_pytest_param() for case in Data.format_large_number_test_cases],
-    )
-    def test_formats_a_number_for_display(self, case):
-        expected_schema = pl.Schema(
-            [(case.column_name, pl.Float32()), (case.column_alias, pl.String())]
-        )
-        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
-
-        test_lf = expected_lf.drop(case.column_alias)
-
-        returned_lf = test_lf.with_columns(
-            job.format_large_number(case.column_name, case.column_alias)
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
@@ -316,6 +312,86 @@ class TestAggregateToPublicationRows:
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
+    def test_returns_only_publication_columns_when_assessment_is_excluded(self):
+        input_lf = pl.LazyFrame(
+            [
+                (
+                    "1-101",
+                    date(2025, 4, 1),
+                    "Registered nurse",
+                    "London",
+                    "Care home with nursing",
+                    10.0,
+                    5.0,
+                    *[True] * 9,
+                ),
+                (
+                    "1-102",
+                    date(2025, 4, 1),
+                    "Registered nurse",
+                    "London",
+                    "Care home with nursing",
+                    20.0,
+                    6.0,
+                    *[True] * 9,
+                ),
+            ],
+            self.input_schema,
+            orient="row",
+        )
+
+        returned_lf = job.aggregate_to_publication_rows(
+            input_lf, include_assessment=False
+        )
+
+        expected_schema = pl.Schema(
+            [
+                (IndCQC.cqc_location_import_date, pl.Date()),
+                (IndCQC.main_job_role_clean_labelled, pl.String()),
+                (IndCQC.current_region, pl.String()),
+                (IndCQC.primary_service_type, pl.String()),
+                (Pub.publication_filled_posts, pl.Float32()),
+                (Pub.publication_locationid_count, pl.UInt32()),
+            ]
+        )
+        expected_lf = pl.LazyFrame(
+            [
+                (
+                    date(2025, 4, 1),
+                    "Registered nurse",
+                    "London",
+                    "Care home with nursing",
+                    30.0,
+                    2,
+                ),
+            ],
+            expected_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+    def test_excluding_assessment_needs_no_term_filter_columns(self):
+        input_lf = pl.LazyFrame(
+            [
+                (
+                    "1-101",
+                    date(2025, 4, 1),
+                    "Registered nurse",
+                    "London",
+                    "Care home with nursing",
+                    10.0,
+                )
+            ],
+            pl.Schema(list(self.input_schema.items())[:6]),
+            orient="row",
+        )
+
+        returned_df = job.aggregate_to_publication_rows(
+            input_lf, include_assessment=False
+        ).collect()
+
+        assert returned_df[Pub.publication_filled_posts].to_list() == [10.0]
+
 
 class TestAddRowsForPublicationGroups:
     # Real closed Enum in production - exercises the cast-to-Categorical.
@@ -399,6 +475,64 @@ class TestAddRowsForPublicationGroups:
             expected_lf.select(key_columns), on=key_columns, how="semi"
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+    def test_adds_rollup_rows_without_assessment_columns(self):
+        input_lf = pl.LazyFrame(
+            [
+                (
+                    "1-101",
+                    date(2025, 4, 1),
+                    "Registered nurse",
+                    "London",
+                    "Care home with nursing",
+                    10.0,
+                    5.0,
+                    *[True] * 9,
+                ),
+                (
+                    "1-101",
+                    date(2025, 4, 1),
+                    "Care worker",
+                    "London",
+                    "Care home with nursing",
+                    20.0,
+                    5.0,
+                    *[True] * 9,
+                ),
+            ],
+            self.input_schema,
+            orient="row",
+        )
+        publication_summary_lf = job.aggregate_to_publication_rows(
+            input_lf, include_assessment=False
+        )
+
+        returned_lf = job.add_rows_for_publication_groups(
+            input_lf, publication_summary_lf, include_assessment=False
+        )
+
+        assert returned_lf.collect_schema().names() == [
+            IndCQC.cqc_location_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+            Pub.publication_filled_posts,
+            Pub.publication_locationid_count,
+        ]
+        england_total_row = returned_lf.filter(
+            (pl.col(IndCQC.current_region) == PublishedRegion.england)
+            & (
+                pl.col(IndCQC.main_job_role_clean_labelled)
+                == PublishedJobGroupLabels.all_job_roles
+            )
+            & (
+                pl.col(IndCQC.primary_service_type).cast(pl.String)
+                == PublishedMainService.all_locations
+            )
+        ).collect()
+        assert england_total_row.select(
+            Pub.publication_filled_posts, Pub.publication_locationid_count
+        ).row(0) == (30.0, 1)
 
 
 class TestCalcPercChangeBetweenRows:
@@ -531,7 +665,7 @@ class TestBuildT0EstimatesDownloadTable:
             (Pub.region, pl.String()),
             (Pub.main_service, pl.String()),
             (Pub.estimated_filled_posts, pl.Float32()),
-            (Pub.estimated_filled_posts_formatted, pl.Float32()),
+            (Pub.estimated_filled_posts_rounded, pl.Float32()),
             (Pub.cqc_locations, pl.UInt32()),
         ]
     )
@@ -583,9 +717,7 @@ class TestBuildT1FilledPostsPercChangeDownloadTable:
             (Pub.region, pl.String()),
             (Pub.main_service, pl.String()),
             (Pub.annual_percentage_change, pl.Float32()),
-            (Pub.annual_percentage_change_formatted, pl.String()),
             (Pub.monthly_percentage_change, pl.Float32()),
-            (Pub.monthly_percentage_change_formatted, pl.String()),
         ]
     )
 
@@ -669,21 +801,19 @@ class TestRoundPercentage:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestFormatPercentage:
+class TestImportDateToPeriodMonth:
     @pytest.mark.parametrize(
-        "case",
-        [case.as_pytest_param() for case in Data.format_percentage_test_cases],
+        "import_date, expected",
+        [
+            pytest.param(date(2026, 9, 1), date(2026, 8, 1), id="mid_year"),
+            pytest.param(
+                date(2026, 1, 1), date(2025, 12, 1), id="january_goes_to_prior_december"
+            ),
+        ],
     )
-    def test_formats_a_percentage_fraction_for_display(self, case):
-        expected_schema = pl.Schema(
-            [(case.column_name, pl.Float32()), (case.column_alias, pl.String())]
-        )
-        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
+    def test_returns_month_before_import_date(self, import_date, expected):
+        df = pl.DataFrame({"import_date": [import_date]})
 
-        test_lf = expected_lf.drop(case.column_alias)
+        returned = df.select(job.import_date_to_period_month(pl.col("import_date")))
 
-        returned_lf = test_lf.with_columns(
-            job.format_percentage(case.column_name, case.column_alias)
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        assert returned.item() == expected
