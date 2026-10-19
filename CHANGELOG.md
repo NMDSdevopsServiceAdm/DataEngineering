@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 
 
 ### Fixed
+- Fixed SLV deduplication keeping repeated values at workplaces where a job role stays blank.
+
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
 - Fixed a flaky thread-count test in the run diagnostics tests.
 
