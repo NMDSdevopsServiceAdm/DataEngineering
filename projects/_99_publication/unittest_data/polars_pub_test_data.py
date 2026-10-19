@@ -1217,6 +1217,18 @@ calc_perc_change_from_previous_april_test_cases = [
         ],
     ),
     CalcPercChangeFromPreviousAprilTestCase(
+        # No row at all for 2025-04-01 - the comparison silently spans the gap
+        # to the last present April rather than returning null.
+        id="compares_with_the_last_present_april_when_one_is_missing",
+        column_name=Pub.publication_filled_posts,
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.publication_filled_posts_april_perc_change,
+        expected_data=[
+            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 150.0, 1, 0.5),
+        ],
+    ),
+    CalcPercChangeFromPreviousAprilTestCase(
         id="null_when_the_previous_april_is_zero",
         column_name=Pub.publication_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
