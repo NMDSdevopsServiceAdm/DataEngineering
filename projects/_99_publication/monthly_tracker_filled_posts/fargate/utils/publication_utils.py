@@ -722,10 +722,8 @@ def calc_perc_change_from_previous_april(
     previous April, as a net change fraction: (current - previous) / previous,
     so 0.25 = +25%.
 
-    Null on non-April rows, on a group's first April, and (not inf/NaN) when
-    the previous April is exactly 0, since column_name is a sum over a filter
-    and can legitimately be 0. column_name is cast to Float32 before dividing,
-    so an integer count column (e.g. a location count) doesn't widen the
+    Null on non-April rows, a group's first April, and (not inf/NaN) when the
+    previous April is 0. Cast to Float32 so integer counts don't widen the
     result to Float64.
 
     Args:

@@ -13,19 +13,22 @@ All notable changes to this project will be documented in this file.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 
 ### Changed
-- Replaced the CT period percentage change columns in the monthly tracker assessment with cumulative (long-term for filled posts, short-term for filled posts and location counts) and April-on-April percentage change columns for publication filled posts and location counts, plus an unfiltered long-term CT total employed with its cumulative percentage change.
+- Replaced the monthly tracker assessment's CT period percentage change columns with cumulative and April-on-April percentage change columns for filled posts and location counts, and added an unfiltered long-term CT total with its cumulative change.
 - Split the monthly tracker publication into `Publication-Assessment`, which starts when filled post estimates succeed, and `Publication-Output`, which builds the public data for a selected `run_number`.
 - Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of raw counts, reading only the needed columns in the SLV merge and running the employment status steps first in Ind-CQC-SLV.
 - Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics. Models now fitted on all training rows instead of an 80/20 split. Known values are ASC-WDS for care homes and ASC-WDS plus PIR for non-res, so the `metrics` in `metadata.json` aren't comparable with earlier runs.
 - Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 - Changed the CircleCI archive sample seed to also sync archive run 2 of 2026-10-15 for the job role estimates and metadata.
 - Tidied monthly tracker publication columns: added a rounded filled posts column, and removed the Tableau label (`_formatted`) columns from the publication output and the formatted percentage columns from the T1/T2 download tables.
+- Removed the `cqc_location_import_date_abbreviated` and `cqc_location_import_date_full` columns from the monthly tracker publication output.
 
 ### Improved
 - Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
 
 
 ### Fixed
+- Fixed SLV deduplication keeping repeated values at workplaces where a job role stays blank.
+
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
 - Fixed a flaky thread-count test in the run diagnostics tests.
 

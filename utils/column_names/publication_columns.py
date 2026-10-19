@@ -66,8 +66,6 @@ class PublicationColumns:
     publication_locationid_count_april_perc_change: str = (
         "publication_locationid_count_april_perc_change"
     )
-    cqc_location_import_date_abbreviated: str = "cqc_location_import_date_abbreviated"
-    cqc_location_import_date_full: str = "cqc_location_import_date_full"
     main_service: str = "Main service"
     job_group: str = "Job group"
     region: str = "Region"
