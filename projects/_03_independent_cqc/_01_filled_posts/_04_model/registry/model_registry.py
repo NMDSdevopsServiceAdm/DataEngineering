@@ -11,7 +11,7 @@ from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRK
 
 model_registry = {
     IndCQC.care_home_model: {
-        MRKeys.version: "7.0.0",
+        MRKeys.version: "7.0.1",
         MRKeys.auto_retrain: True,
         MRKeys.model_type: ModelTypes.lasso,
         MRKeys.model_params: {"alpha": 0.001},
@@ -52,7 +52,7 @@ model_registry = {
         ),
     },
     IndCQC.non_res_with_dormancy_model: {
-        MRKeys.version: "6.0.0",
+        MRKeys.version: "6.0.1",
         MRKeys.auto_retrain: True,
         MRKeys.model_type: ModelTypes.lasso,
         MRKeys.model_params: {"alpha": 0.001},

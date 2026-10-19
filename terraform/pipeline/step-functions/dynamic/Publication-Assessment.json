@@ -1,4 +1,5 @@
 {
+  "Comment": "Prepares the data of one archived run and builds its assessment data",
   "StartAt": "Choose run",
   "States": {
     "Choose run": {
@@ -17,16 +18,16 @@
       "Parameters": {
         "run_number.$": "$.run_number"
       },
-      "Next": "Merge and clean publication data"
+      "Next": "Prepare and assess publication data"
     },
     "Use latest run": {
       "Type": "Pass",
       "Result": {
         "run_number": "latest"
       },
-      "Next": "Merge and clean publication data"
+      "Next": "Prepare and assess publication data"
     },
-    "Merge and clean publication data": {
+    "Prepare and assess publication data": {
       "Type": "Parallel",
       "Next": "Handle Error and Run Crawlers",
       "Catch": [
@@ -38,9 +39,9 @@
       ],
       "Branches": [
         {
-          "StartAt": "Merge data",
+          "StartAt": "Merge and prep data",
           "States": {
-            "Merge data": {
+            "Merge and prep data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
@@ -58,14 +59,15 @@
                   "ContainerOverrides": [
                     {
                       "Name": "_99_publication-container",
-                      "Command.$": "States.Array('_01_merge.py', '--jr_archive_estimates_source', '${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/', '--jr_archive_metadata_source', '${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/', '--merge_data_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge/', '--run_number', States.Format('{}', $.run_number))"
+                      "Command.$": "States.Array('_01_merge_and_prep.py', '--jr_archive_estimates_source', '${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/', '--jr_archive_metadata_source', '${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/', '--prep_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge_and_prep/', '--run_number', States.Format('{}', $.run_number))"
                     }
                   ]
                 }
               },
-              "Next": "Clean data"
+              "ResultPath": null,
+              "Next": "Assess data"
             },
-            "Clean data": {
+            "Assess data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
@@ -83,14 +85,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "_99_publication-container",
-                      "Command": [
-                        "_02_clean.py",
-                        "--merge_data_source", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge/",
-                        "--clean_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_clean/",
-                        "--t0_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t0_estimates/",
-                        "--t1_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t1_filled_posts_perc_change/",
-                        "--t2_destination", "${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_t2_location_count_perc_change/"
-                      ]
+                      "Command.$": "States.Array('_02_assessment.py', '--prep_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge_and_prep/', '--assessment_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/', '--run_number', States.Format('{}', $.run_number))"
                     }
                   ]
                 }
@@ -148,9 +143,13 @@
           "States": {
             "Run Publication Crawler": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
               "Parameters": {
-                "Name": "${publication_crawler_name}"
+                "StateMachineArn": "${run_crawler_state_machine_arn}",
+                "Input": {
+                  "crawler_name": "${publication_crawler_name}",
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
               },
               "End": true
             }

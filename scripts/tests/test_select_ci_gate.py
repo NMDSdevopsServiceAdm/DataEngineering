@@ -121,7 +121,7 @@ trigger_cases = [
     ),
     pytest.param(
         "archive-sample",
-        "projects/_99_publication/monthly_tracker_filled_posts/fargate/_01_merge.py",
+        "projects/_99_publication/monthly_tracker_filled_posts/fargate/_01_merge_and_prep.py",
         id="returns_true_when_changed_path_is_under_publication_dir",
     ),
     pytest.param(
