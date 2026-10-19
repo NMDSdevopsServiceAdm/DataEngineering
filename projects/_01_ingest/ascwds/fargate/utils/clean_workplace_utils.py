@@ -356,16 +356,14 @@ class BoundingExpressions:
 
 def null_slv_job_roles_when_total_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Null the job role columns of each starters/leavers/vacancies measure whose total is not known.
+    Null starters, leavers and vacancies job role columns where their total is not known.
 
-    A total is not known when it is negative (-1/-2 are the not known/recorded
-    codes) or a positive multiple of 999 (a proxy for not known, summed when
-    repeated across rows e.g. 2997). 0 is a valid total. Null totals are left
-    as they are. Total columns are unchanged.
+    Each measure is handled independently. A total is not known when it is
+    negative (-1/-2) or a positive multiple of 999 (a proxy for not known,
+    which sums when repeated e.g. 2997). 0 and null totals are left as is.
 
     Args:
-        lf (pl.LazyFrame): Workplace LazyFrame with integer total starters,
-            leavers and vacancies columns, and job role columns.
+        lf (pl.LazyFrame): Workplace LazyFrame with integer total and job role columns.
 
     Returns:
         pl.LazyFrame: lf with job role columns nulled where their total is not known.
