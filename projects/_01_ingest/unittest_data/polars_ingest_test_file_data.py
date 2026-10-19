@@ -1572,6 +1572,13 @@ class JobRoleExpressionBoundsTestCase:
 
 
 @dataclass
+class NullSlvJobRolesTestCase:
+    id: str
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
+@dataclass
 class PurgedLfsTestCase:
     id: str
     test_data: list[Any]
@@ -2221,6 +2228,87 @@ class TestCleanAscwdsWorkplaceUtilsData:
             expected_data={
                 AWPClean.establishment_id: [],
                 AWPClean.import_date: [],
+            },
+        ),
+    ]
+
+    null_slv_job_roles_when_total_not_known_test_cases = [
+        NullSlvJobRolesTestCase(
+            id="nulls_job_roles_when_total_is_negative",
+            input_data={
+                AWPClean.total_starters: [-1, -2],
+                AWPClean.total_leavers: [-1, -2],
+                AWPClean.total_vacancies: [-1, -2],
+                AWPClean.job_role_01_starters: [1, 2],
+                AWPClean.job_role_01_leavers: [1, 2],
+                AWPClean.job_role_01_vacancies: [1, 2],
+            },
+            expected_data={
+                AWPClean.total_starters: [-1, -2],
+                AWPClean.total_leavers: [-1, -2],
+                AWPClean.total_vacancies: [-1, -2],
+                AWPClean.job_role_01_starters: [None, None],
+                AWPClean.job_role_01_leavers: [None, None],
+                AWPClean.job_role_01_vacancies: [None, None],
+            },
+        ),
+        NullSlvJobRolesTestCase(
+            id="nulls_job_roles_when_total_is_multiple_of_999",
+            input_data={
+                AWPClean.total_starters: [999, 2997],
+                AWPClean.total_leavers: [999, 2997],
+                AWPClean.total_vacancies: [999, 2997],
+                AWPClean.job_role_01_starters: [1, 2],
+                AWPClean.job_role_01_leavers: [1, 2],
+                AWPClean.job_role_01_vacancies: [1, 2],
+            },
+            expected_data={
+                AWPClean.total_starters: [999, 2997],
+                AWPClean.total_leavers: [999, 2997],
+                AWPClean.total_vacancies: [999, 2997],
+                AWPClean.job_role_01_starters: [None, None],
+                AWPClean.job_role_01_leavers: [None, None],
+                AWPClean.job_role_01_vacancies: [None, None],
+            },
+        ),
+        NullSlvJobRolesTestCase(
+            id="keeps_job_roles_when_total_is_zero_null_or_known",
+            input_data={
+                AWPClean.total_starters: [0, None, 5],
+                AWPClean.total_leavers: [0, None, 5],
+                AWPClean.total_vacancies: [0, None, 5],
+                AWPClean.job_role_01_starters: [0, 1, 2],
+                AWPClean.job_role_01_leavers: [0, 1, 2],
+                AWPClean.job_role_01_vacancies: [0, 1, 2],
+            },
+            expected_data={
+                AWPClean.total_starters: [0, None, 5],
+                AWPClean.total_leavers: [0, None, 5],
+                AWPClean.total_vacancies: [0, None, 5],
+                AWPClean.job_role_01_starters: [0, 1, 2],
+                AWPClean.job_role_01_leavers: [0, 1, 2],
+                AWPClean.job_role_01_vacancies: [0, 1, 2],
+            },
+        ),
+        NullSlvJobRolesTestCase(
+            id="only_nulls_job_roles_of_the_measure_with_unknown_total",
+            input_data={
+                AWPClean.total_starters: [-1],
+                AWPClean.total_leavers: [3],
+                AWPClean.total_vacancies: [3],
+                AWPClean.job_role_01_starters: [1],
+                AWPClean.job_role_01_leavers: [2],
+                AWPClean.job_role_01_vacancies: [3],
+                AWPClean.job_role_01_employees: [4],
+            },
+            expected_data={
+                AWPClean.total_starters: [-1],
+                AWPClean.total_leavers: [3],
+                AWPClean.total_vacancies: [3],
+                AWPClean.job_role_01_starters: [None],
+                AWPClean.job_role_01_leavers: [2],
+                AWPClean.job_role_01_vacancies: [3],
+                AWPClean.job_role_01_employees: [4],
             },
         ),
     ]

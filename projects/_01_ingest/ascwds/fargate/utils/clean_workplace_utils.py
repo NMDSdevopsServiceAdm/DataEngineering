@@ -354,6 +354,41 @@ class BoundingExpressions:
     )
 
 
+def null_slv_job_roles_when_total_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Null the job role columns of each starters/leavers/vacancies measure whose total is not known.
+
+    A total is not known when it is negative (-1/-2 are the not known/recorded
+    codes) or a positive multiple of 999 (a proxy for not known, summed when
+    repeated across rows e.g. 2997). 0 is a valid total. Null totals are left
+    as they are. Total columns are unchanged.
+
+    Args:
+        lf (pl.LazyFrame): Workplace LazyFrame with integer total starters,
+            leavers and vacancies columns, and job role columns.
+
+    Returns:
+        pl.LazyFrame: lf with job role columns nulled where their total is not known.
+    """
+    total_to_job_role_columns = {
+        AWPClean.total_starters: cs.starts_with("jr") & cs.ends_with("strt"),
+        AWPClean.total_leavers: cs.starts_with("jr") & cs.ends_with("stop"),
+        AWPClean.total_vacancies: cs.starts_with("jr") & cs.ends_with("vacy"),
+    }
+    not_known_multiple = 999
+
+    return lf.with_columns(
+        pl.when(
+            (pl.col(total) < 0)
+            | ((pl.col(total) > 0) & (pl.col(total) % not_known_multiple == 0))
+        )
+        .then(None)
+        .otherwise(job_role_columns)
+        .name.keep()
+        for total, job_role_columns in total_to_job_role_columns.items()
+    )
+
+
 def merge_legacy_job_role_columns(
     lf: pl.LazyFrame, job_role_mapping: dict[str, list[str]]
 ) -> pl.LazyFrame:
