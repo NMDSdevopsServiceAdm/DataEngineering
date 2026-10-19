@@ -53,8 +53,6 @@ class PublicationColumns:
     assessment_ct_cumulative_perc_change_short_term: str = (
         "assessment_ct_cumulative_perc_change_short_term"
     )
-    cqc_location_import_date_abbreviated: str = "cqc_location_import_date_abbreviated"
-    cqc_location_import_date_full: str = "cqc_location_import_date_full"
     main_service: str = "Main service"
     job_group: str = "Job group"
     region: str = "Region"

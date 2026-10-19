@@ -10,7 +10,6 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
 )
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 
 RUN_PARTITION_COLUMNS = [ArchiveKeys.archive_date, ArchiveKeys.run_number]
@@ -55,12 +54,6 @@ def main(
         publication_utils.round_to_publication_bands(
             Pub.publication_filled_posts, Pub.publication_filled_posts_rounded
         ),
-        pl.col(IndCQC.cqc_location_import_date)
-        .dt.strftime("%b %Y")
-        .alias(Pub.cqc_location_import_date_abbreviated),
-        pl.col(IndCQC.cqc_location_import_date)
-        .dt.strftime("%B %Y")
-        .alias(Pub.cqc_location_import_date_full),
     )
 
     utils.sink_to_parquet(

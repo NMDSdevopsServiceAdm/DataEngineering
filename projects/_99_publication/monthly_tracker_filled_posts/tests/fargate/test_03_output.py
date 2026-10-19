@@ -142,7 +142,7 @@ class TestMain:
             include_assessment=False,
         )
 
-    def test_main_adds_rounded_filled_posts_and_import_date_labels(self, mocks):
+    def test_main_adds_rounded_filled_posts(self, mocks):
         _run_main()
 
         mocks.round_to_publication_bands.assert_called_once_with(
@@ -150,8 +150,6 @@ class TestMain:
         )
         expected_lf = mocks.aggregate_to_publication_rows.return_value.with_columns(
             pl.lit(40.0).alias(Pub.publication_filled_posts_rounded),
-            pl.lit("Apr 2026").alias(Pub.cqc_location_import_date_abbreviated),
-            pl.lit("April 2026").alias(Pub.cqc_location_import_date_full),
         )
         output_sink_kwargs = mocks.sink_to_parquet.call_args_list[0].kwargs
         assert_frame_equal(output_sink_kwargs["lazy_df"], expected_lf)
