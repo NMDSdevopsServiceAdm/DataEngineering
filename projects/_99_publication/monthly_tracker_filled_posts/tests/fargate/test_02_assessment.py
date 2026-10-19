@@ -8,6 +8,9 @@ import pytest
 from polars.testing import assert_frame_equal
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate._02_assessment as job
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 
@@ -262,13 +265,21 @@ class TestMain:
         mocks.sink_to_parquet.assert_called_once()
         sink_kwargs = mocks.sink_to_parquet.call_args.kwargs
         assert sink_kwargs["output_path"] == TEST_DESTINATION
+        assert sink_kwargs["partition_cols"] == [
+            ArchiveKeys.archive_date,
+            ArchiveKeys.run_number,
+        ]
         expected_lf = mocks.aggregate.return_value.with_columns(
             [pl.lit(None, dtype=pl.Float32).alias(c) for c in PERC_CHANGE_COLUMNS]
-        ).with_columns(pl.lit(2).alias(Pub.run_number))
+        ).with_columns(
+            pl.lit("2026-10-01").alias(ArchiveKeys.archive_date),
+            pl.lit(2).alias(ArchiveKeys.run_number),
+        )
         assert_frame_equal(sink_kwargs["lazy_df"], expected_lf)
 
-    def test_main_adds_the_runs_number_as_a_column(self, mocks):
+    def test_main_adds_the_runs_archive_date_and_number_as_columns(self, mocks):
         job.main(TEST_SOURCE, TEST_DESTINATION)
 
-        sunk_lf = mocks.sink_to_parquet.call_args.kwargs["lazy_df"]
-        assert sunk_lf.collect()[Pub.run_number].to_list() == [2]
+        sunk_df = mocks.sink_to_parquet.call_args.kwargs["lazy_df"].collect()
+        assert sunk_df[ArchiveKeys.archive_date].to_list() == ["2026-10-01"]
+        assert sunk_df[ArchiveKeys.run_number].to_list() == [2]

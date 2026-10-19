@@ -7,8 +7,13 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
     merge_utils,
     publication_utils,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+
+RUN_PARTITION_COLUMNS = [ArchiveKeys.archive_date, ArchiveKeys.run_number]
 
 
 def main(
@@ -22,7 +27,7 @@ def main(
     """
     Builds the public data for one selected, prepared run: the publication
     summary by import date, job role, region and service type, and the
-    T0/T1/T2 data-download tables.
+    T0/T1/T2 data-download tables, each partitioned by archive_date and run_number.
 
     Args:
         prep_source (str): s3 directory holding the prepared data of every run
@@ -59,8 +64,11 @@ def main(
     )
 
     utils.sink_to_parquet(
-        lazy_df=publication_summary_lf,
+        lazy_df=merge_utils.add_run_partition_columns(
+            publication_summary_lf, run_source
+        ),
         output_path=output_destination,
+        partition_cols=RUN_PARTITION_COLUMNS,
     )
 
     today = date.today()
@@ -69,8 +77,9 @@ def main(
         publication_summary_lf, today=today
     )
     utils.sink_to_parquet(
-        lazy_df=t0_estimates_lf,
+        lazy_df=merge_utils.add_run_partition_columns(t0_estimates_lf, run_source),
         output_path=t0_destination,
+        partition_cols=RUN_PARTITION_COLUMNS,
     )
 
     t1_filled_posts_perc_change_lf = (
@@ -79,8 +88,11 @@ def main(
         )
     )
     utils.sink_to_parquet(
-        lazy_df=t1_filled_posts_perc_change_lf,
+        lazy_df=merge_utils.add_run_partition_columns(
+            t1_filled_posts_perc_change_lf, run_source
+        ),
         output_path=t1_destination,
+        partition_cols=RUN_PARTITION_COLUMNS,
     )
 
     t2_location_count_perc_change_lf = (
@@ -89,8 +101,11 @@ def main(
         )
     )
     utils.sink_to_parquet(
-        lazy_df=t2_location_count_perc_change_lf,
+        lazy_df=merge_utils.add_run_partition_columns(
+            t2_location_count_perc_change_lf, run_source
+        ),
         output_path=t2_destination,
+        partition_cols=RUN_PARTITION_COLUMNS,
     )
 
 

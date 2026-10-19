@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from unittest.mock import Mock, patch
 
+import polars as pl
 import pytest
+from polars.testing import assert_frame_equal
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.merge_utils as job
 
@@ -226,3 +228,31 @@ class TestRunNumberFromSource:
     def test_raises_when_source_has_no_run_partition(self):
         with pytest.raises(ValueError, match="run partition"):
             job.run_number_from_source("s3://bucket/other/")
+
+
+class TestArchiveDateFromSource:
+    def test_returns_the_archive_date_of_the_partition(self):
+        returned = job.archive_date_from_source(
+            "s3://bucket/dataset=prep/archive_date=2026-10-01/run_number=12/"
+        )
+
+        assert returned == "2026-10-01"
+
+    def test_raises_when_source_has_no_run_partition(self):
+        with pytest.raises(ValueError, match="run partition"):
+            job.archive_date_from_source("s3://bucket/other/")
+
+
+class TestAddRunPartitionColumns:
+    def test_adds_archive_date_and_run_number_of_the_run(self):
+        lf = pl.LazyFrame({"a": [1, 2]})
+
+        returned = job.add_run_partition_columns(
+            lf, "s3://bucket/archive_date=2026-10-01/run_number=12/"
+        )
+
+        expected = pl.LazyFrame(
+            {"a": [1, 2], "archive_date": ["2026-10-01"] * 2, "run_number": [12] * 2},
+            schema_overrides={"run_number": pl.Int32},
+        )
+        assert_frame_equal(returned, expected)

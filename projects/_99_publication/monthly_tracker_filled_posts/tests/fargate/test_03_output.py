@@ -8,6 +8,9 @@ import pytest
 from polars.testing import assert_frame_equal
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate._03_output as job
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import PrimaryServiceType
@@ -90,6 +93,12 @@ def mocks(io_mocks):
                 side_effect=lambda column_name, column_alias: pl.lit(40.0).alias(
                     column_alias
                 ),
+            )
+        )
+        stack.enter_context(
+            patch(
+                f"{PATCH_PATH}.merge_utils.add_run_partition_columns",
+                side_effect=lambda lf, run_source: lf,
             )
         )
         io_mocks.aggregate_to_publication_rows.return_value = pl.LazyFrame(
@@ -199,3 +208,31 @@ class TestMain:
             for column in output_columns
             if column.startswith(("assessment_", "ct_", "consistent_service"))
         ]
+
+    def test_main_partitions_every_sink_by_the_runs_archive_date_and_number(
+        self, io_mocks
+    ):
+        io_mocks.scan_parquet.return_value = pl.LazyFrame(
+            {
+                IndCQC.location_id: ["1-001"],
+                IndCQC.cqc_location_import_date: [date(2026, 4, 1)],
+                IndCQC.main_job_role_clean_labelled: ["Care worker"],
+                IndCQC.current_region: ["London"],
+                IndCQC.primary_service_type: [PrimaryServiceType.care_home_only],
+                IndCQC.estimate_filled_posts_by_job_role: [10.0],
+            },
+            schema_overrides={IndCQC.primary_service_type: _service_type_enum},
+        )
+
+        _run_main()
+
+        sink_calls = io_mocks.sink_to_parquet.call_args_list
+        assert len(sink_calls) == 4
+        for sink_call in sink_calls:
+            assert sink_call.kwargs["partition_cols"] == [
+                ArchiveKeys.archive_date,
+                ArchiveKeys.run_number,
+            ]
+            sunk_df = sink_call.kwargs["lazy_df"].collect()
+            assert set(sunk_df[ArchiveKeys.archive_date]) == {"2026-10-01"}
+            assert set(sunk_df[ArchiveKeys.run_number]) == {2}
