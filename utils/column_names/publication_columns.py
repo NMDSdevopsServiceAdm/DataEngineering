@@ -36,15 +36,6 @@ class PublicationColumns:
     assessment_ct_total_employed_short_term: str = (
         "assessment_ct_total_employed_short_term"
     )
-    assessment_ct_period_perc_change_long_term: str = (
-        "assessment_ct_period_perc_change_long_term"
-    )
-    assessment_ct_period_perc_change_medium_term: str = (
-        "assessment_ct_period_perc_change_medium_term"
-    )
-    assessment_ct_period_perc_change_short_term: str = (
-        "assessment_ct_period_perc_change_short_term"
-    )
     assessment_ct_cumulative_perc_change_long_term: str = (
         "assessment_ct_cumulative_perc_change_long_term"
     )
@@ -53,6 +44,18 @@ class PublicationColumns:
     )
     assessment_ct_cumulative_perc_change_short_term: str = (
         "assessment_ct_cumulative_perc_change_short_term"
+    )
+    publication_filled_posts_cumulative_perc_change_short_term: str = (
+        "publication_filled_posts_cumulative_perc_change_short_term"
+    )
+    publication_locationid_count_cumulative_perc_change_short_term: str = (
+        "publication_locationid_count_cumulative_perc_change_short_term"
+    )
+    publication_filled_posts_april_perc_change: str = (
+        "publication_filled_posts_april_perc_change"
+    )
+    publication_locationid_count_april_perc_change: str = (
+        "publication_locationid_count_april_perc_change"
     )
     cqc_location_import_date_abbreviated: str = "cqc_location_import_date_abbreviated"
     cqc_location_import_date_full: str = "cqc_location_import_date_full"

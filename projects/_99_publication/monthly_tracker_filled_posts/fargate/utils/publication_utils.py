@@ -706,44 +706,41 @@ def add_rows_for_publication_groups(
     return pl.concat([service_type_enlarged_lf, england_lf], how="vertical")
 
 
-def calc_perc_change_between_rows(
+def calc_perc_change_from_previous_april(
     column_name: str,
-    from_date: date,
     group_columns: list[str],
     column_alias: str,
 ) -> pl.Expr:
     """
-    Row-over-row percentage change in column_name within each group, as a
-    net change fraction: (current - previous) / previous, so 0.25 = +25%.
+    Percentage change in column_name on April rows against the group's
+    previous April, as a net change fraction: (current - previous) / previous,
+    so 0.25 = +25%.
 
-    Restricted to periods on or after from_date: earlier periods are null,
-    and so is a group's first in-window period, since a term's window
-    never borrows a value from before its own start. "Previous" is the
-    last present period in the group's data, not necessarily the prior
-    calendar date, so a missing row spans the gap silently. Null (not
-    inf/NaN) when the previous value is exactly 0, since column_name is a
-    sum over a filter and can legitimately be 0.
+    Null on non-April rows, on a group's first April, and (not inf/NaN) when
+    the previous April is exactly 0, since column_name is a sum over a filter
+    and can legitimately be 0. column_name is cast to Float32 before dividing,
+    so an integer count column (e.g. a location count) doesn't widen the
+    result to Float64.
 
     Args:
         column_name (str): the value column to measure change in.
-        from_date (date): the earliest import date this term's window covers.
         group_columns (list[str]): columns identifying a group, e.g. region,
             job role and service type.
         column_alias (str): name to alias the resulting column to.
 
     Returns:
-        pl.Expr: float expression with the row-over-row percentage change.
+        pl.Expr: float expression with the April-on-April percentage change.
     """
-    in_window_value = (
-        pl.when(pl.col(IndCQC.cqc_location_import_date) >= from_date)
-        .then(pl.col(column_name))
+    april_value = (
+        pl.when(pl.col(IndCQC.cqc_location_import_date).dt.month() == 4)
+        .then(pl.col(column_name).cast(pl.Float32))
         .otherwise(None)
     )
-    previous_value = in_window_value.shift(1)
+    previous_april_value = april_value.forward_fill().shift(1)
     return (
-        pl.when(previous_value == 0)
+        pl.when(previous_april_value == 0)
         .then(None)
-        .otherwise((in_window_value - previous_value) / previous_value)
+        .otherwise((april_value - previous_april_value) / previous_april_value)
         .over(group_columns, order_by=IndCQC.cqc_location_import_date)
         .alias(column_alias)
     )
@@ -763,8 +760,8 @@ def calc_perc_change_cumulative_from_given_period_onwards(
 
     Restricted to periods on or after from_date: earlier periods are null,
     since a term's window never borrows a baseline from before its own
-    start. Null (not inf/NaN) when the baseline is exactly 0 - see
-    calc_perc_change_between_rows for why column_name can legitimately be 0.
+    start. Null (not inf/NaN) when the baseline is exactly 0, since column_name
+    is a sum over a filter and can legitimately be 0.
     column_name is cast to Float32 before dividing, so an integer count
     column (e.g. a location count) doesn't widen the result to Float64.
 
@@ -804,9 +801,8 @@ def calc_perc_change_against_periods_ago(
     earlier within each group, as a net change fraction: (current -
     previous) / previous, so 0.25 = +25%.
 
-    Unlike calc_perc_change_between_rows, this has no from_date window - the
-    download tables compare across a group's whole history rather than a
-    term's assessment window. "periods_back periods earlier" is the row that
+    The download tables compare across a group's whole history, with no
+    from_date window. "periods_back periods earlier" is the row that
     many places earlier in the group's data ordered by import date, not
     necessarily that many calendar periods back, so a missing row shifts the
     comparison silently. Null for a group's first periods_back rows, and
