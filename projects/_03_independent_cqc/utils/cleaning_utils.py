@@ -23,7 +23,7 @@ def remove_repeated_values_over_time_as_group(
     null-safe struct comparison: any one column changing keeps all of them. With
     `independent=True`, each column is instead judged on its own, but all
     columns are still computed in one batched set of `.over()` passes rather
-    than one per column.
+    than one per column. A blank following a blank is not a change.
 
     If `workplace_columns` is given, a row is only nulled when no row sharing
     those values changed - broadcast with `.over()` rather than a group_by +
@@ -67,7 +67,7 @@ def remove_repeated_values_over_time_as_group(
                     order_by=[*partition_columns, date_column],
                 )
             )
-            # ne_missing: blank to blank is unchanged, blank to value (or back) is a change.
+            # null-safe: blank to blank is unchanged, blank to value (or back) changed
             changed_exprs.append(
                 pl.col(column).ne_missing(last_value).alias(changed_columns[column])
             )

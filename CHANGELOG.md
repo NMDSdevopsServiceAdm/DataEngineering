@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Fixed
-- Fixed SLV deduplication keeping repeated values at workplaces with any blank job role, because a role that stayed blank counted as changed.
+- Fixed SLV deduplication keeping repeated values at workplaces where a job role stays blank.
 
 
 
