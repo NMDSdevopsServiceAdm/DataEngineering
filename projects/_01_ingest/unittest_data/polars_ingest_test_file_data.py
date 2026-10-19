@@ -2311,6 +2311,25 @@ class TestCleanAscwdsWorkplaceUtilsData:
                 AWPClean.job_role_01_employees: [4],
             },
         ),
+        NullSlvJobRolesTestCase(
+            id="only_nulls_leavers_job_roles_when_only_total_leavers_is_999",
+            input_data={
+                AWPClean.total_starters: [3],
+                AWPClean.total_leavers: [999],
+                AWPClean.total_vacancies: [3],
+                AWPClean.job_role_01_starters: [1],
+                AWPClean.job_role_01_leavers: [2],
+                AWPClean.job_role_01_vacancies: [3],
+            },
+            expected_data={
+                AWPClean.total_starters: [3],
+                AWPClean.total_leavers: [999],
+                AWPClean.total_vacancies: [3],
+                AWPClean.job_role_01_starters: [1],
+                AWPClean.job_role_01_leavers: [None],
+                AWPClean.job_role_01_vacancies: [3],
+            },
+        ),
     ]
 
     job_role_expression_bounds_test_cases = [
