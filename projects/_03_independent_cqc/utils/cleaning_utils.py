@@ -67,10 +67,9 @@ def remove_repeated_values_over_time_as_group(
                     order_by=[*partition_columns, date_column],
                 )
             )
+            # ne_missing: blank to blank is unchanged, blank to value (or back) is a change.
             changed_exprs.append(
-                (last_value.is_null() | (pl.col(column) != last_value)).alias(
-                    changed_columns[column]
-                )
+                pl.col(column).ne_missing(last_value).alias(changed_columns[column])
             )
         lf = lf.with_columns(changed_exprs)
 
