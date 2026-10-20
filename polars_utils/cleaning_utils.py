@@ -4,10 +4,6 @@ import polars as pl
 import polars.selectors as cs
 
 from polars_utils.expressions import is_care_home, is_not_care_home
-from polars_utils.filtering_utils import (
-    add_filtering_rule_column,
-    update_filtering_rule,
-)
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
