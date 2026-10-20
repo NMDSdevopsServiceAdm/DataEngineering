@@ -268,7 +268,6 @@ def null_care_home_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = update_filtering_rule(
         lf,
         IndCQC.ascwds_filtering_rule,
-        IndCQC.ascwds_filled_posts_dedup,
         IndCQC.ascwds_filled_posts_dedup_clean,
         AscwdsFilteringRule.populated,
         AscwdsFilteringRule.care_home_location_was_grouped_provider,
@@ -340,7 +339,6 @@ def null_non_residential_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = update_filtering_rule(
         lf,
         IndCQC.ascwds_filtering_rule,
-        IndCQC.ascwds_filled_posts_dedup,
         IndCQC.ascwds_filled_posts_dedup_clean,
         AscwdsFilteringRule.populated,
         AscwdsFilteringRule.non_res_location_was_grouped_provider,

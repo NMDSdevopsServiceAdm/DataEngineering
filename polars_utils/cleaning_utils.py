@@ -392,7 +392,6 @@ def null_not_known_values(
         lf = update_filtering_rule(
             lf,
             filtering_rule_column,
-            column,
             clean_column,
             populated_rule,
             not_known_rule,

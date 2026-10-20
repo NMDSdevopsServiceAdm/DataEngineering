@@ -82,7 +82,6 @@ def null_values_exceeding_repetition_limit(
     lf = update_filtering_rule(
         lf=lf,
         filter_rule_col_name=filter_rule_column_name,
-        raw_col_name=column_to_clean,
         clean_col_name=column_to_clean,
         populated_rule=CTFilteringRule.populated,
         new_rule_name=CTFilteringRule.location_repeats_total_posts,

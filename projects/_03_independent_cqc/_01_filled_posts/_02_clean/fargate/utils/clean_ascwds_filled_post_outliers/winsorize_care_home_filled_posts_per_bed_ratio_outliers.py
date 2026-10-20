@@ -100,10 +100,10 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     winsorized_lf = update_filtering_rule(
         winsorized_lf,
         IndCQC.ascwds_filtering_rule,
-        IndCQC.ascwds_filled_posts_dedup,
         IndCQC.ascwds_filled_posts_dedup_clean,
         AscwdsFilteringRule.populated,
         AscwdsFilteringRule.winsorized_beds_ratio_outlier,
+        uncapped_col_name=IndCQC.ascwds_filled_posts_dedup,
     )
 
     output_lf = combine_data(winsorized_lf, data_not_relevant_to_filter_lf)
