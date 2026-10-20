@@ -553,6 +553,103 @@ class TestAddRowsForPublicationGroups:
         ).row(0) == (30.0, 1)
 
 
+class TestAddPreviousPublicationColumns:
+    key_schema = pl.Schema(
+        [
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+        ]
+    )
+    previous_schema = pl.Schema(
+        list(key_schema.items())
+        + [
+            (Pub.publication_filled_posts_april_perc_change, pl.Float32()),
+            (
+                Pub.publication_filled_posts_cumulative_perc_change_short_term,
+                pl.Float32(),
+            ),
+        ]
+    )
+    output_columns = [
+        Pub.previous_publication_filled_posts_april_perc_change,
+        Pub.previous_publication_filled_posts_cumulative_perc_change_short_term,
+    ]
+
+    def _current_lf(self) -> pl.LazyFrame:
+        return pl.LazyFrame(
+            [
+                (date(2026, 4, 1), "A", "North", "care"),
+                (date(2026, 5, 1), "A", "North", "care"),
+            ],
+            self.key_schema,
+            orient="row",
+        )
+
+    def test_adds_previous_values_on_matching_keys_and_null_on_new_keys(self):
+        previous_lf = pl.LazyFrame(
+            [(date(2026, 4, 1), "A", "North", "care", 0.1, 0.2)],
+            self.previous_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_previous_publication_columns(
+            self._current_lf(), previous_lf
+        ).collect()
+
+        assert returned_df[self.output_columns[0]].to_list() == [
+            pytest.approx(0.1),
+            None,
+        ]
+        assert returned_df[self.output_columns[1]].to_list() == [
+            pytest.approx(0.2),
+            None,
+        ]
+
+    def test_keeps_current_rows_and_columns_unchanged(self):
+        previous_lf = pl.LazyFrame(
+            [(date(2026, 4, 1), "A", "North", "care", 0.1, 0.2)],
+            self.previous_schema,
+            orient="row",
+        )
+
+        returned_lf = job.add_previous_publication_columns(
+            self._current_lf(), previous_lf
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf.select(self.key_schema.names()), self._current_lf()
+        )
+
+    def test_aligns_previous_key_dtypes_to_current(self):
+        current_lf = self._current_lf().with_columns(
+            pl.col(IndCQC.primary_service_type).cast(pl.Categorical)
+        )
+        previous_lf = pl.LazyFrame(
+            [(date(2026, 4, 1), "A", "North", "care", 0.1, 0.2)],
+            self.previous_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_previous_publication_columns(
+            current_lf, previous_lf
+        ).collect()
+
+        assert returned_df[self.output_columns[0]].to_list() == [
+            pytest.approx(0.1),
+            None,
+        ]
+
+    def test_adds_null_float32_columns_when_there_is_no_previous_run(self):
+        returned_lf = job.add_previous_publication_columns(self._current_lf(), None)
+
+        returned_df = returned_lf.collect()
+        for column in self.output_columns:
+            assert returned_df.schema[column] == pl.Float32()
+            assert returned_df[column].null_count() == returned_df.height
+
+
 class TestCalcPercChangeFromPreviousApril:
     perc_change_schema = pl.Schema(
         [

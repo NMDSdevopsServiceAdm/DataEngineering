@@ -192,6 +192,35 @@ class TestResolveRunSources:
         ]
 
 
+class TestResolvePreviousRunSource:
+    root = "s3://bucket/dataset=assessment/"
+
+    @patch(f"{PATCH_PATH}.list_archive_runs")
+    def test_returns_the_highest_run_below_the_current_run(
+        self, list_archive_runs_mock: Mock
+    ):
+        list_archive_runs_mock.return_value = {
+            1: "2026-08-01",
+            3: "2026-09-01",
+            5: "2026-10-01",
+        }
+
+        returned = job.resolve_previous_run_source(self.root, 5)
+
+        assert returned == (
+            "s3://bucket/dataset=assessment/archive_date=2026-09-01/run_number=3/"
+        )
+
+    @pytest.mark.parametrize("runs", [{}, {2: "2026-10-01"}, {3: "2026-10-01"}])
+    @patch(f"{PATCH_PATH}.list_archive_runs")
+    def test_returns_none_when_no_earlier_run(
+        self, list_archive_runs_mock: Mock, runs: dict[int, str]
+    ):
+        list_archive_runs_mock.return_value = runs
+
+        assert job.resolve_previous_run_source(self.root, 2) is None
+
+
 class TestRunPartitionPath:
     run_source = "s3://bucket/dataset=estimates/archive_date=2026-10-01/run_number=2/"
 

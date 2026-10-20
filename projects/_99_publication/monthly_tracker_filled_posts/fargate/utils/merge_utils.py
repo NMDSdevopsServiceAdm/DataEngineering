@@ -91,6 +91,31 @@ def resolve_run_sources(s3_roots: list[str], run_number: int | None) -> list[str
     ]
 
 
+def resolve_previous_run_source(s3_root: str, run_number: int) -> str | None:
+    """
+    Finds the S3 directory of the latest run archived before the given run.
+
+    Args:
+        s3_root (str): S3 directory of an archive partitioned by archive_date and
+            run_number
+        run_number (int): the current run number
+
+    Returns:
+        str | None: the S3 directory of the highest run_number below run_number,
+            or None when there is no earlier run
+    """
+    earlier_runs = {
+        number: archive_date
+        for number, archive_date in list_archive_runs(s3_root).items()
+        if number < run_number
+    }
+    if not earlier_runs:
+        return None
+
+    previous_run = max(earlier_runs)
+    return f"{s3_root.rstrip('/')}/archive_date={earlier_runs[previous_run]}/run_number={previous_run}/"
+
+
 def run_partition_path(s3_root: str, run_source: str) -> str:
     """
     Builds a run's directory under an S3 root from the run's source directory.

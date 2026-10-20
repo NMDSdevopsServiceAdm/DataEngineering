@@ -24,7 +24,8 @@ def main(
     """
     Builds the assessment data for one prepared run: publication and assessment
     columns by import date, job role, region and service type, with rollup rows
-    and capacity tracker (CT) percentage changes.
+    capacity tracker (CT) percentage changes and the previous run's filled posts
+    percentage changes.
 
     Args:
         prep_source (str): s3 directory holding the prepared data of every run
@@ -173,6 +174,19 @@ def main(
             group_columns,
             Pub.assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter,
         ),
+    )
+
+    previous_run_source = merge_utils.resolve_previous_run_source(
+        assessment_destination, merge_utils.run_number_from_source(run_source)
+    )
+    if previous_run_source is None:
+        print("No previous assessment run found; previous publication columns are null")
+        previous_assessment_lf = None
+    else:
+        print(f"Comparing to previous assessment run: {previous_run_source}")
+        previous_assessment_lf = utils.scan_parquet(previous_run_source)
+    assessment_summary_lf = publication_utils.add_previous_publication_columns(
+        assessment_summary_lf, previous_assessment_lf
     )
 
     utils.sink_to_parquet(

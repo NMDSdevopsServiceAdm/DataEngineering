@@ -844,6 +844,60 @@ def calc_perc_change_against_periods_ago(
     )
 
 
+def add_previous_publication_columns(
+    assessment_summary_lf: pl.LazyFrame,
+    previous_assessment_lf: pl.LazyFrame | None,
+) -> pl.LazyFrame:
+    """
+    Adds the previous run's filled posts April and short term cumulative
+    percentage changes, matched on import date, job role, region and service type.
+
+    Only the join keys and the two source columns are kept from the previous
+    run, and its keys are cast to the current dtypes so the join is not blocked
+    by Enum/Categorical differences. The previous run has one row per key, so
+    the left join does not change the row count. Rows with no match, and every
+    row when there is no previous run, are null.
+
+    Args:
+        assessment_summary_lf (pl.LazyFrame): the current run's assessment data.
+        previous_assessment_lf (pl.LazyFrame | None): the previous run's
+            assessment data, or None when there is no earlier run.
+
+    Returns:
+        pl.LazyFrame: assessment_summary_lf with the two previous publication
+            columns added.
+    """
+    source_to_previous_column = {
+        Pub.publication_filled_posts_april_perc_change: Pub.previous_publication_filled_posts_april_perc_change,
+        Pub.publication_filled_posts_cumulative_perc_change_short_term: Pub.previous_publication_filled_posts_cumulative_perc_change_short_term,
+    }
+    if previous_assessment_lf is None:
+        return assessment_summary_lf.with_columns(
+            [
+                pl.lit(None, dtype=pl.Float32).alias(previous_column)
+                for previous_column in source_to_previous_column.values()
+            ]
+        )
+
+    join_keys = [
+        IndCQC.cqc_location_import_date,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.current_region,
+        IndCQC.primary_service_type,
+    ]
+    key_schema = assessment_summary_lf.collect_schema()
+    previous_assessment_lf = previous_assessment_lf.select(
+        [pl.col(key).cast(key_schema[key]) for key in join_keys]
+        + [
+            pl.col(source_column).cast(pl.Float32).alias(previous_column)
+            for source_column, previous_column in source_to_previous_column.items()
+        ]
+    )
+    return assessment_summary_lf.join(
+        previous_assessment_lf, on=join_keys, how="left", validate="1:1"
+    )
+
+
 def _filter_to_all_job_roles_rollup(
     publication_summary_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:

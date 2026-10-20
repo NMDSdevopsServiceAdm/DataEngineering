@@ -21,6 +21,7 @@ PATCH_PATH = (
 TEST_SOURCE = "some/prep/directory/"
 TEST_RUN_SOURCE = "some/prep/directory/archive_date=2026-10-01/run_number=2/"
 TEST_DESTINATION = "some/other/directory"
+TEST_PREVIOUS_RUN_SOURCE = "some/other/directory/archive_date=2026-09-01/run_number=1/"
 
 PERC_CHANGE_COLUMNS = [
     Pub.publication_filled_posts_april_perc_change,
@@ -62,7 +63,15 @@ def mocks():
             resolve_run_sources=stack.enter_context(
                 patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources")
             ),
+            resolve_previous_run_source=stack.enter_context(
+                patch(f"{PATCH_PATH}.merge_utils.resolve_previous_run_source")
+            ),
             date=stack.enter_context(patch(f"{PATCH_PATH}.date")),
+            add_previous_columns=_patch_publication_utils(
+                stack,
+                "add_previous_publication_columns",
+                side_effect=lambda lazy_df, previous_lf: lazy_df,
+            ),
             has_consistent_service=_patch_publication_utils(
                 stack,
                 "has_consistent_service_since_date",
@@ -98,6 +107,7 @@ def mocks():
             ),
         )
         mocks.resolve_run_sources.return_value = [TEST_RUN_SOURCE]
+        mocks.resolve_previous_run_source.return_value = None
         mocks.scan_parquet.return_value = pl.LazyFrame(
             {
                 IndCQC.location_id: ["1-001", "1-001"],
@@ -300,6 +310,23 @@ class TestMain:
             pl.lit(2).alias(ArchiveKeys.run_number),
         )
         assert_frame_equal(sink_kwargs["lazy_df"], expected_lf)
+
+    def test_main_adds_previous_publication_columns_from_the_previous_run(self, mocks):
+        mocks.resolve_previous_run_source.return_value = TEST_PREVIOUS_RUN_SOURCE
+        previous_lf = pl.LazyFrame({"previous": [1]})
+        mocks.scan_parquet.side_effect = [mocks.scan_parquet.return_value, previous_lf]
+
+        job.main(TEST_SOURCE, TEST_DESTINATION)
+
+        mocks.resolve_previous_run_source.assert_called_once_with(TEST_DESTINATION, 2)
+        assert mocks.scan_parquet.call_args_list[-1] == call(TEST_PREVIOUS_RUN_SOURCE)
+        assert mocks.add_previous_columns.call_args.args[1] is previous_lf
+
+    def test_main_passes_no_previous_run_when_there_is_none(self, mocks):
+        job.main(TEST_SOURCE, TEST_DESTINATION)
+
+        mocks.scan_parquet.assert_called_once_with(TEST_RUN_SOURCE)
+        assert mocks.add_previous_columns.call_args.args[1] is None
 
     def test_main_adds_the_runs_archive_date_and_number_as_columns(self, mocks):
         job.main(TEST_SOURCE, TEST_DESTINATION)
