@@ -101,7 +101,7 @@ def format_publication_date(publication_date: date) -> str:
     return f"{publication_date:%B} {day}{suffix} {publication_date.year}"
 
 
-def prepare_t0_for_publication(t0_lf: pl.LazyFrame) -> pd.DataFrame:
+def prepare_t0_for_publication(publication_lf: pl.LazyFrame) -> pd.DataFrame:
     """
     Builds the published T0 table: the period label as "Period" and the
     rounded filled posts as "Estimated filled posts", with a suppressed (null)
@@ -111,12 +111,13 @@ def prepare_t0_for_publication(t0_lf: pl.LazyFrame) -> pd.DataFrame:
     pandas.
 
     Args:
-        t0_lf (pl.LazyFrame): output of build_t0_estimates_download_table.
+        publication_lf (pl.LazyFrame): the publication data written by the
+            output stage.
 
     Returns:
         pd.DataFrame: the table to publish.
     """
-    published_lf = t0_lf.select(
+    published_lf = publication_lf.select(
         pl.col(Pub.period_label).alias(Pub.period),
         Pub.region,
         Pub.main_service,
@@ -128,29 +129,39 @@ def prepare_t0_for_publication(t0_lf: pl.LazyFrame) -> pd.DataFrame:
     )
 
 
-def prepare_perc_change_for_publication(perc_change_lf: pl.LazyFrame) -> pd.DataFrame:
+def prepare_perc_change_for_publication(
+    publication_lf: pl.LazyFrame, april_column: str, cumulative_column: str
+) -> pd.DataFrame:
     """
     Builds a published percentage change table (T1 or T2): the period label
-    as "Period" and the annual and monthly change as fractions rounded to one
-    decimal place of a percentage, with a null value shown as "[x]".
+    as "Period", the change since April as "Annual percentage change" and the
+    cumulative short-term change as "Monthly percentage change", both as
+    fractions rounded to one decimal place of a percentage, with a null value
+    shown as "[x]".
 
     Collects once, after selecting the published columns, as gptables needs
     pandas.
 
     Args:
-        perc_change_lf (pl.LazyFrame): output of
-            build_t1_filled_posts_perc_change_download_table or
-            build_t2_location_count_perc_change_download_table.
+        publication_lf (pl.LazyFrame): the publication data written by the
+            output stage.
+        april_column (str): the change since April column to publish.
+        cumulative_column (str): the cumulative short-term change column to
+            publish.
 
     Returns:
         pd.DataFrame: the table to publish.
     """
-    published_lf = perc_change_lf.select(
+    published_lf = publication_lf.select(
         pl.col(Pub.period_label).alias(Pub.period),
         Pub.region,
         Pub.main_service,
-        _percentage_as_rounded_fraction(Pub.annual_percentage_change),
-        _percentage_as_rounded_fraction(Pub.monthly_percentage_change),
+        _percentage_as_rounded_fraction(april_column).alias(
+            Pub.annual_percentage_change
+        ),
+        _percentage_as_rounded_fraction(cumulative_column).alias(
+            Pub.monthly_percentage_change
+        ),
     )
     return _collect_with_labels(
         published_lf,
@@ -170,37 +181,39 @@ def _percentage_as_rounded_fraction(column: str) -> pl.Expr:
         column (str): the fractional percentage change column.
 
     Returns:
-        pl.Expr: the rounded fraction, aliased to the column's name.
+        pl.Expr: the rounded fraction.
     """
-    return (round_percentage(column) / 100).round(3).alias(column)
+    return (round_percentage(column) / 100).round(3)
 
 
-def get_latest_import_date(t0_lf: pl.LazyFrame) -> date:
+def get_latest_import_date(publication_lf: pl.LazyFrame) -> date:
     """
     Returns the latest value of the Period column, a CQC import date.
 
     Args:
-        t0_lf (pl.LazyFrame): output of build_t0_estimates_download_table.
+        publication_lf (pl.LazyFrame): the publication data written by the
+            output stage.
 
     Returns:
         date: the latest import date.
     """
-    return t0_lf.select(pl.col(Pub.period).max()).collect().item()
+    return publication_lf.select(pl.col(Pub.period).max()).collect().item()
 
 
-def get_latest_period(t0_lf: pl.LazyFrame) -> date:
+def get_latest_period(publication_lf: pl.LazyFrame) -> date:
     """
     Returns the month of the latest published period: the latest period date
     moved back one month, as in the period label.
 
     Args:
-        t0_lf (pl.LazyFrame): output of build_t0_estimates_download_table.
+        publication_lf (pl.LazyFrame): the publication data written by the
+            output stage.
 
     Returns:
         date: the first day of the latest period's month.
     """
     return (
-        t0_lf.select(import_date_to_period_month(pl.col(Pub.period).max()))
+        publication_lf.select(import_date_to_period_month(pl.col(Pub.period).max()))
         .collect()
         .item()
     )
@@ -226,40 +239,45 @@ def _collect_with_labels(lf: pl.LazyFrame, null_labels: dict[str, str]) -> pd.Da
 
 
 def build_download_workbook(
-    t0_lf: pl.LazyFrame,
-    t1_lf: pl.LazyFrame,
-    t2_lf: pl.LazyFrame,
+    publication_lf: pl.LazyFrame,
     filename: str | Path,
     logo: bytes | None = None,
 ) -> None:
     """
     Writes the public data download workbook: the Frontpage, Introduction,
     Revisions, Definitions and Contents pages, then one gptables sheet per
-    table (T0, T1, T2).
+    table (T0, T1, T2), each a column selection of the publication data.
 
-    Reading the tables and storing the workbook are left to the caller. Each
-    table is collected once, as gptables needs pandas.
+    Reading the data and storing the workbook are left to the caller. The data
+    is collected once, as it feeds every sheet and the latest period, and each
+    table is then collected as gptables needs pandas. The data is small (one
+    row per year, plus monthly for the current financial year).
 
     Args:
-        t0_lf (pl.LazyFrame): output of build_t0_estimates_download_table.
-        t1_lf (pl.LazyFrame): output of
-            build_t1_filled_posts_perc_change_download_table.
-        t2_lf (pl.LazyFrame): output of
-            build_t2_location_count_perc_change_download_table.
+        publication_lf (pl.LazyFrame): the publication data written by the
+            output stage.
         filename (str | Path): path to write the .xlsx workbook to.
         logo (bytes | None): PNG image shown on the Frontpage, or None for no
             logo.
     """
-    t0_lf = t0_lf.collect().lazy()  # T0 feeds both the latest period and its table
-    latest_period = get_latest_period(t0_lf)
+    publication_lf = publication_lf.collect().lazy()
+    latest_period = get_latest_period(publication_lf)
     publication_date = format_publication_date(
-        get_publication_date(get_latest_import_date(t0_lf))
+        get_publication_date(get_latest_import_date(publication_lf))
     )
     subtitles = [f"Skills for Care's workforce estimates as at {latest_period:%b-%Y}"]
     tables = {
-        "T0": prepare_t0_for_publication(t0_lf),
-        "T1": prepare_perc_change_for_publication(t1_lf),
-        "T2": prepare_perc_change_for_publication(t2_lf),
+        "T0": prepare_t0_for_publication(publication_lf),
+        "T1": prepare_perc_change_for_publication(
+            publication_lf,
+            Pub.publication_filled_posts_april_perc_change,
+            Pub.publication_filled_posts_cumulative_perc_change_short_term,
+        ),
+        "T2": prepare_perc_change_for_publication(
+            publication_lf,
+            Pub.publication_locationid_count_april_perc_change,
+            Pub.publication_locationid_count_cumulative_perc_change_short_term,
+        ),
     }
     titles = {"T0": T0_TITLE, "T1": T1_TITLE, "T2": T2_TITLE}
     value_formats = {

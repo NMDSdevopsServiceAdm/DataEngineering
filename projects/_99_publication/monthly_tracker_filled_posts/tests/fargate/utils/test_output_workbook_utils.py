@@ -32,18 +32,27 @@ class TestFormatPublicationDate:
         assert job.format_publication_date(case.publication_date) == case.expected
 
 
+PUBLICATION_SCHEMA = pl.Schema(
+    [
+        (Pub.period, pl.Date),
+        (Pub.period_label, pl.String),
+        (Pub.region, pl.String),
+        (Pub.main_service, pl.String),
+        (Pub.estimated_filled_posts_rounded, pl.Float64),
+        (Pub.cqc_locations, pl.Int64),
+        (Pub.publication_filled_posts_april_perc_change, pl.Float64),
+        (Pub.publication_filled_posts_cumulative_perc_change_short_term, pl.Float64),
+        (Pub.publication_locationid_count_april_perc_change, pl.Float64),
+        (
+            Pub.publication_locationid_count_cumulative_perc_change_short_term,
+            pl.Float64,
+        ),
+    ]
+)
+
+
 class TestPrepareT0ForPublication:
-    input_schema = pl.Schema(
-        [
-            (Pub.period, pl.Date),
-            (Pub.period_label, pl.String),
-            (Pub.region, pl.String),
-            (Pub.main_service, pl.String),
-            (Pub.estimated_filled_posts, pl.Float64),
-            (Pub.estimated_filled_posts_rounded, pl.Float64),
-            (Pub.cqc_locations, pl.Int64),
-        ]
-    )
+    input_schema = PUBLICATION_SCHEMA
     expected_columns = [
         Pub.period,
         Pub.region,
@@ -66,16 +75,9 @@ class TestPrepareT0ForPublication:
 
 
 class TestPreparePercChangeForPublication:
-    input_schema = pl.Schema(
-        [
-            (Pub.period, pl.Date),
-            (Pub.period_label, pl.String),
-            (Pub.region, pl.String),
-            (Pub.main_service, pl.String),
-            (Pub.annual_percentage_change, pl.Float64),
-            (Pub.monthly_percentage_change, pl.Float64),
-        ]
-    )
+    input_schema = PUBLICATION_SCHEMA
+    april_column = Pub.publication_filled_posts_april_perc_change
+    cumulative_column = Pub.publication_filled_posts_cumulative_perc_change_short_term
     expected_columns = [
         Pub.period,
         Pub.region,
@@ -94,7 +96,9 @@ class TestPreparePercChangeForPublication:
     def test_function_returns_expected_table(self, case):
         input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
 
-        returned_df = job.prepare_perc_change_for_publication(input_lf)
+        returned_df = job.prepare_perc_change_for_publication(
+            input_lf, self.april_column, self.cumulative_column
+        )
 
         assert list(returned_df.columns) == self.expected_columns
         assert returned_df.values.tolist() == [list(r) for r in case.expected_data]
@@ -106,12 +110,14 @@ class TestPreparePercChangeForPublication:
                 Pub.period_label: ["Mar 2026"],
                 Pub.region: ["London"],
                 Pub.main_service: ["All CQC locations"],
-                Pub.annual_percentage_change: pl.Series([0.1], dtype=pl.Float32),
-                Pub.monthly_percentage_change: pl.Series([0.0123456], dtype=pl.Float32),
+                self.april_column: pl.Series([0.1], dtype=pl.Float32),
+                self.cumulative_column: pl.Series([0.0123456], dtype=pl.Float32),
             }
         )
 
-        returned_df = job.prepare_perc_change_for_publication(input_lf)
+        returned_df = job.prepare_perc_change_for_publication(
+            input_lf, self.april_column, self.cumulative_column
+        )
 
         assert returned_df[Pub.annual_percentage_change].tolist() == [0.1]
         assert returned_df[Pub.monthly_percentage_change].tolist() == [0.012]
@@ -119,40 +125,32 @@ class TestPreparePercChangeForPublication:
 
 class TestGetLatestPeriod:
     def test_function_returns_month_before_latest_period_date(self):
-        t0_lf = pl.LazyFrame(
-            Data.download_workbook_t0_data,
-            TestPrepareT0ForPublication.input_schema,
+        publication_lf = pl.LazyFrame(
+            Data.download_workbook_publication_data,
+            PUBLICATION_SCHEMA,
             orient="row",
         )
 
-        assert job.get_latest_period(t0_lf) == date(2026, 8, 1)
+        assert job.get_latest_period(publication_lf) == date(2026, 8, 1)
 
 
 class TestBuildDownloadWorkbook:
-    t0_schema = TestPrepareT0ForPublication.input_schema
-    perc_change_schema = TestPreparePercChangeForPublication.input_schema
     table_sheets = ["T0", "T1", "T2"]
-    published_rows = len(Data.download_workbook_t0_data)
+    published_rows = len(Data.download_workbook_publication_data)
+
+    @staticmethod
+    def publication_lf():
+        return pl.LazyFrame(
+            Data.download_workbook_publication_data,
+            PUBLICATION_SCHEMA,
+            orient="row",
+        )
 
     @pytest.fixture(scope="class")
     def workbook_path(self, tmp_path_factory):
         path = tmp_path_factory.mktemp("workbook") / "download.xlsx"
-        t0_lf = pl.LazyFrame(
-            Data.download_workbook_t0_data, self.t0_schema, orient="row"
-        )
-        perc_change_lf = pl.LazyFrame(
-            Data.download_workbook_perc_change_data,
-            self.perc_change_schema,
-            orient="row",
-        )
 
-        t2_lf = pl.LazyFrame(
-            Data.download_workbook_t2_perc_change_data,
-            self.perc_change_schema,
-            orient="row",
-        )
-
-        job.build_download_workbook(t0_lf, perc_change_lf, t2_lf, path)
+        job.build_download_workbook(self.publication_lf(), path)
 
         return path
 
@@ -382,17 +380,9 @@ class TestBuildDownloadWorkbook:
 
     def test_logo_is_added_to_the_frontpage(self, tmp_path):
         path = tmp_path / "with_logo.xlsx"
-        t0_lf = pl.LazyFrame(
-            Data.download_workbook_t0_data, self.t0_schema, orient="row"
-        )
-        perc_change_lf = pl.LazyFrame(
-            Data.download_workbook_perc_change_data,
-            self.perc_change_schema,
-            orient="row",
-        )
 
         job.build_download_workbook(
-            t0_lf, perc_change_lf, perc_change_lf, path, logo=make_png(200, 150)
+            self.publication_lf(), path, logo=make_png(200, 150)
         )
 
         archive = zipfile.ZipFile(path)
@@ -411,31 +401,18 @@ class TestBuildDownloadWorkbook:
     def test_every_sheet_has_cell_a1_selected(self, workbook):
         assert xlsx_support.sheets_not_at_a1(workbook) == []
 
-    def test_build_download_workbook_runs_each_table_once(self, tmp_path):
+    def test_build_download_workbook_runs_the_publication_data_once(self, tmp_path):
         runs = []
 
-        def counted(name):
-            def count(df):
-                runs.append(name)
-                return df
+        def count(df):
+            runs.append(1)
+            return df
 
-            return count
+        publication_lf = self.publication_lf().map_batches(count)
 
-        t0_lf = pl.LazyFrame(
-            Data.download_workbook_t0_data, self.t0_schema, orient="row"
-        ).map_batches(counted("t0"))
-        t1_lf, t2_lf = (
-            pl.LazyFrame(
-                Data.download_workbook_perc_change_data,
-                self.perc_change_schema,
-                orient="row",
-            ).map_batches(counted(name))
-            for name in ("t1", "t2")
-        )
+        job.build_download_workbook(publication_lf, tmp_path / "once.xlsx")
 
-        job.build_download_workbook(t0_lf, t1_lf, t2_lf, tmp_path / "once.xlsx")
-
-        assert sorted(runs) == ["t0", "t1", "t2"]
+        assert len(runs) == 1
 
 
 class TestEnableTableFilters:

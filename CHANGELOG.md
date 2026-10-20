@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 
 ### Changed
+- Changed the public monthly statistics download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Changed Publication-Output to read the assessed data without re-aggregating it and write one table with the T0, T1 and T2 download columns, using the assessment's April-on-April and cumulative short-term percentage changes, instead of three separate tables.
 - Partitioned the publication assessment data by archive date and run number so each assessed run is kept.
 - Split the starters, leavers and vacancies filtering rule into one class per metric, each with its own allowed values.
