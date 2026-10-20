@@ -181,9 +181,7 @@ class TestNullCountsForLowOrgRatio:
         test_lf = build_input_lf(case.input_data)
         expected_lf = build_expected_lf(case.expected_data)
 
-        returned_lf = job.null_counts_for_low_org_ratio(
-            job.create_clean_count_columns(test_lf)
-        )
+        returned_lf = job.null_counts_for_low_org_ratio(test_lf)
 
         pl_testing.assert_frame_equal(
             returned_lf,
