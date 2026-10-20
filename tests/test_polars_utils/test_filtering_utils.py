@@ -76,21 +76,21 @@ class TestUpdateFilteringRule:
             returned_lf.sort(IndCQC.location_id), expected_lf.sort(IndCQC.location_id)
         )
 
-    def test_updates_rule_when_populated_values_are_nulled_without_raw_col(self):
+    def test_updates_rule_when_populated_values_are_nulled_without_uncapped_col(self):
         self.run(
             Data.update_filtering_rule_populated_to_nulled_rows,
             Data.expected_update_filtering_rule_populated_to_nulled_rows,
             new_rule_name=AscwdsFilteringRule.contained_invalid_missing_data_code,
         )
 
-    def test_ignores_changed_values_without_raw_col(self):
+    def test_ignores_changed_values_without_uncapped_col(self):
         self.run(
             Data.update_filtering_rule_populated_to_winsorized_rows,
             Data.update_filtering_rule_populated_to_winsorized_rows,
             new_rule_name=AscwdsFilteringRule.winsorized_beds_ratio_outlier,
         )
 
-    def test_updates_rule_when_populated_values_are_nulled_with_raw_col(self):
+    def test_updates_rule_when_populated_values_are_nulled_with_uncapped_col(self):
         self.run(
             Data.update_filtering_rule_populated_to_nulled_rows,
             Data.expected_update_filtering_rule_populated_to_nulled_rows,
@@ -98,7 +98,7 @@ class TestUpdateFilteringRule:
             uncapped_col_name=IndCQC.ascwds_filled_posts_dedup,
         )
 
-    def test_updates_rule_when_populated_values_are_changed_with_raw_col(self):
+    def test_updates_rule_when_populated_values_are_changed_with_uncapped_col(self):
         self.run(
             Data.update_filtering_rule_populated_to_winsorized_rows,
             Data.expected_update_filtering_rule_populated_to_winsorized_rows,
