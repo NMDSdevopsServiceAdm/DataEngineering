@@ -117,7 +117,7 @@ class TestMain:
     ):
         starters_lf, leavers_lf, vacancies_lf = Mock(), Mock(), Mock()
         add_rule_mock.side_effect = [starters_lf, leavers_lf, vacancies_lf]
-        with_columns_lf = dedup_mock.return_value.with_columns.return_value
+        dropped_lf = dedup_mock.return_value.with_columns.return_value.drop.return_value
 
         job.main(self.MERGED_DATA_SOURCE, self.CLEANED_DATA_DESTINATION)
 
@@ -129,11 +129,16 @@ class TestMain:
             SLVCols.vacancies,
         ]
         helper_inputs = [c.args[0] for c in add_rule_mock.call_args_list]
-        assert helper_inputs == [with_columns_lf, starters_lf, leavers_lf]
-        vacancies_lf.drop.assert_called_once_with(
+        assert helper_inputs == [dropped_lf, starters_lf, leavers_lf]
+        dedup_mock.return_value.with_columns.return_value.drop.assert_called_once_with(
             [SLVCols.starters_dedup, SLVCols.leavers_dedup, SLVCols.vacancies_dedup]
         )
-        rate_mock.assert_called_once_with(vacancies_lf.drop.return_value)
+        assert [c.args[2] for c in add_rule_mock.call_args_list] == [
+            SLVCols.starters_cleaned,
+            SLVCols.leavers_cleaned,
+            SLVCols.vacancies_cleaned,
+        ]
+        rate_mock.assert_called_once_with(vacancies_lf)
         sink_mock.assert_called_once_with(
             lazy_df=rate_mock.return_value,
             output_path=self.CLEANED_DATA_DESTINATION,

@@ -44,10 +44,13 @@ def main(
         pl.col(SLVCols.leavers_dedup).alias(SLVCols.leavers_cleaned),
         pl.col(SLVCols.vacancies_dedup).alias(SLVCols.vacancies_cleaned),
     )
+    lf = lf.drop(
+        [SLVCols.starters_dedup, SLVCols.leavers_dedup, SLVCols.vacancies_dedup]
+    )
     lf = add_filtering_rule_column(
         lf,
         SLVCols.starters_filtering_rule,
-        SLVCols.starters_dedup,
+        SLVCols.starters_cleaned,
         StartersFilteringRule.populated,
         StartersFilteringRule.missing_data,
         pl.Categorical,
@@ -55,7 +58,7 @@ def main(
     lf = add_filtering_rule_column(
         lf,
         SLVCols.leavers_filtering_rule,
-        SLVCols.leavers_dedup,
+        SLVCols.leavers_cleaned,
         LeaversFilteringRule.populated,
         LeaversFilteringRule.missing_data,
         pl.Categorical,
@@ -63,14 +66,10 @@ def main(
     lf = add_filtering_rule_column(
         lf,
         SLVCols.vacancies_filtering_rule,
-        SLVCols.vacancies_dedup,
+        SLVCols.vacancies_cleaned,
         VacanciesFilteringRule.populated,
         VacanciesFilteringRule.missing_data,
         pl.Categorical,
-    )
-
-    lf = lf.drop(
-        [SLVCols.starters_dedup, SLVCols.leavers_dedup, SLVCols.vacancies_dedup]
     )
 
     lf = cleanUtils.create_slv_rate_columns(lf)
