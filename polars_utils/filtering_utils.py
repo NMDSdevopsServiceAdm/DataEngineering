@@ -57,8 +57,6 @@ def create_cleaned_column_with_filtering_rule(
     """
     Copies a column to a cleaned column and adds its filtering rule column.
 
-    The source column is left unchanged.
-
     Args:
         lf (pl.LazyFrame): A LazyFrame containing the `source_column`.
         source_column (str): The column to copy.
@@ -66,7 +64,7 @@ def create_cleaned_column_with_filtering_rule(
         filtering_rule_column (str): The name of the new filtering rule column.
         populated_rule (str): The rule to assign when the cleaned value is present.
         missing_rule (str): The rule to assign when the cleaned value is null.
-        categorical_type (pl.Categorical | None, optional): If provided, the rule column is this type. Defaults to None.
+        categorical_type (pl.Categorical | None, optional): Dtype to cast the rule column to. Defaults to None.
 
     Returns:
         pl.LazyFrame: The input LazyFrame with the cleaned and filtering rule columns added.
