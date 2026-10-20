@@ -544,11 +544,10 @@ def aggregate_to_publication_rows(
     one term's assessment columns without contributing to another's.
 
     group_keys defaults to (import date, period label, job role, region,
-    service type). The period label is one-to-one with import date, so it
-    adds no groups. A
-    narrower set (e.g. dropping job role) still counts each location once,
-    since location counts and CT totals are recomputed at that grain rather
-    than summed from separately-computed per-job-role values.
+    service type); the period label is one-to-one with import date, so it
+    adds no groups. A narrower set (e.g. dropping job role) still counts each
+    location once, since location counts and CT totals are recomputed at that
+    grain rather than summed from separately-computed per-job-role values.
 
     Args:
         lazy_df (pl.LazyFrame): location-level data. With include_assessment,
