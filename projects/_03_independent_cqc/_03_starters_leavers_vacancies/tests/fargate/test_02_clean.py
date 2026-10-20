@@ -69,16 +69,17 @@ class TestMain:
         assert result_df[cleaned].to_list() == [result_df[raw][0], None, None]
 
     @pytest.mark.parametrize(
-        "cleaned, rule, rule_class",
+        "raw, cleaned, rule, rule_class",
         [
-            (METRICS[0][1], METRICS[0][2], StartersFilteringRule),
-            (METRICS[1][1], METRICS[1][2], LeaversFilteringRule),
-            (METRICS[2][1], METRICS[2][2], VacanciesFilteringRule),
+            (*METRICS[0], StartersFilteringRule),
+            (*METRICS[1], LeaversFilteringRule),
+            (*METRICS[2], VacanciesFilteringRule),
         ],
     )
     def test_main_creates_cleaned_column_and_rule_per_metric(
-        self, result_df, cleaned, rule, rule_class
+        self, result_df, raw, cleaned, rule, rule_class
     ):
+        assert result_df[cleaned].to_list() == [result_df[raw][0], None, None]
         assert result_df[rule].dtype == pl.Categorical
         assert result_df[rule].cast(pl.String).to_list() == [
             rule_class.populated,

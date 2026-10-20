@@ -12,7 +12,11 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
 )
-from utils.column_values.categorical_column_values import SLVFilteringRule
+from utils.column_values.categorical_column_values import (
+    LeaversFilteringRule,
+    StartersFilteringRule,
+    VacanciesFilteringRule,
+)
 
 PATCH_PATH = "projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_02_clean"
 
@@ -49,9 +53,9 @@ class TestMain:
                 0.1,
                 0.2,
                 0.3,
-                SLVFilteringRule.populated,
-                SLVFilteringRule.populated,
-                SLVFilteringRule.populated,
+                StartersFilteringRule.populated,
+                LeaversFilteringRule.populated,
+                VacanciesFilteringRule.populated,
             ),
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
@@ -117,7 +121,7 @@ class TestMain:
     ):
         # cleaned populated but rule says missing, and cleaned differs from raw
         bad_df = self.source_df.with_columns(
-            pl.lit(SLVFilteringRule.missing_data)
+            pl.lit(StartersFilteringRule.missing_data)
             .cast(pl.Categorical)
             .alias(SLVCols.starters_filtering_rule),
             pl.lit(99).alias(SLVCols.leavers_cleaned),
