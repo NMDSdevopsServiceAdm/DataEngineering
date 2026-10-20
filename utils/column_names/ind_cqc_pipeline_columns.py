@@ -582,9 +582,6 @@ class StartersLeaversVacanciesColumns:
     starters_dedup: str = starters + "_dedup"
     leavers_dedup: str = leavers + "_dedup"
     vacancies_dedup: str = vacancies + "_dedup"
-    turnover_rate_dedup: str = turnover_rate + "_deduplicated"
-    starter_rate_dedup: str = starter_rate + "_deduplicated"
-    vacancy_rate_dedup: str = vacancy_rate + "_deduplicated"
 
 
 @dataclass
