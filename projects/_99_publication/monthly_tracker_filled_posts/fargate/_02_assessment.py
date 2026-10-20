@@ -158,12 +158,11 @@ def main(
             Pub.assessment_ct_cumulative_perc_change_short_term,
         ),
     )
-    assessment_summary_lf = merge_utils.add_run_partition_columns(
-        assessment_summary_lf, run_source
-    )
 
     utils.sink_to_parquet(
-        lazy_df=assessment_summary_lf,
+        lazy_df=merge_utils.add_run_partition_columns(
+            assessment_summary_lf, run_source
+        ),
         output_path=assessment_destination,
         partition_cols=RUN_PARTITION_COLUMNS,
     )

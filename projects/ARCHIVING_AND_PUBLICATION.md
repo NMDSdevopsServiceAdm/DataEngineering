@@ -26,7 +26,7 @@ The prepared data is stored per run, partitioned on archive date and run number,
 The assessment data is then built from the prepared run, with filters for external benchmarking.
 The assessment columns are going to be benchmarked against external data, therefore we only want to include rows that have a value in the external data (all rows receive a filled posts estimate from our pipeline).
 The assessment data is aggregated into high level groupings by region, service and job role.
-The assessment data and the public output and T0, T1 and T2 data download tables are each partitioned on archive date and run number, so every run is kept and earlier runs are not overwritten. Rebuilding a run replaces that run's partition only.
+The assessment data is partitioned on archive date and run number, so every assessed run is kept. Rebuilding a run replaces that run's partition only.
 
 ### Assessment of readiness
 We look at the cumulative percentage change in filled posts per month over time.
