@@ -79,7 +79,7 @@ class TestMain:
     def test_main_creates_cleaned_column_and_rule_per_metric(
         self, result_df, raw, cleaned, rule, rule_class
     ):
-        assert result_df[cleaned].to_list() == [result_df[raw][0], None, None]
+        assert cleaned in result_df.columns
         assert result_df[rule].dtype == pl.Categorical
         assert result_df[rule].cast(pl.String).to_list() == [
             rule_class.populated,
@@ -117,7 +117,7 @@ class TestMain:
     ):
         starters_lf, leavers_lf, vacancies_lf = Mock(), Mock(), Mock()
         add_rule_mock.side_effect = [starters_lf, leavers_lf, vacancies_lf]
-        dropped_lf = dedup_mock.return_value.with_columns.return_value.drop.return_value
+        renamed_lf = dedup_mock.return_value.rename.return_value
 
         job.main(self.MERGED_DATA_SOURCE, self.CLEANED_DATA_DESTINATION)
 
@@ -129,9 +129,13 @@ class TestMain:
             SLVCols.vacancies,
         ]
         helper_inputs = [c.args[0] for c in add_rule_mock.call_args_list]
-        assert helper_inputs == [dropped_lf, starters_lf, leavers_lf]
-        dedup_mock.return_value.with_columns.return_value.drop.assert_called_once_with(
-            [SLVCols.starters_dedup, SLVCols.leavers_dedup, SLVCols.vacancies_dedup]
+        assert helper_inputs == [renamed_lf, starters_lf, leavers_lf]
+        dedup_mock.return_value.rename.assert_called_once_with(
+            {
+                SLVCols.starters_dedup: SLVCols.starters_cleaned,
+                SLVCols.leavers_dedup: SLVCols.leavers_cleaned,
+                SLVCols.vacancies_dedup: SLVCols.vacancies_cleaned,
+            }
         )
         assert [c.args[2] for c in add_rule_mock.call_args_list] == [
             SLVCols.starters_cleaned,

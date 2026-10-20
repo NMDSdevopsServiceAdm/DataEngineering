@@ -39,13 +39,12 @@ def main(
         independent=True,
     )
 
-    lf = lf.with_columns(
-        pl.col(SLVCols.starters_dedup).alias(SLVCols.starters_cleaned),
-        pl.col(SLVCols.leavers_dedup).alias(SLVCols.leavers_cleaned),
-        pl.col(SLVCols.vacancies_dedup).alias(SLVCols.vacancies_cleaned),
-    )
-    lf = lf.drop(
-        [SLVCols.starters_dedup, SLVCols.leavers_dedup, SLVCols.vacancies_dedup]
+    lf = lf.rename(
+        {
+            SLVCols.starters_dedup: SLVCols.starters_cleaned,
+            SLVCols.leavers_dedup: SLVCols.leavers_cleaned,
+            SLVCols.vacancies_dedup: SLVCols.vacancies_cleaned,
+        }
     )
     lf = add_filtering_rule_column(
         lf,
