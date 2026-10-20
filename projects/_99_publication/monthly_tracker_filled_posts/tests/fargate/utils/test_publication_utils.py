@@ -20,12 +20,6 @@ def _with_period_label(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf.with_columns(job.period_label_expr())
 
 
-def _with_period_label_after_import_date(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds the period label as the second column, where aggregation puts it."""
-    columns = lf.collect_schema().names()
-    return _with_period_label(lf).select(columns[:1] + [Pub.period_label] + columns[1:])
-
-
 class TestReducedDataFilterExpr:
     @pytest.mark.parametrize(
         "case",
@@ -209,6 +203,7 @@ class TestAggregateToPublicationRows:
     expected_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
+            (Pub.period_label, pl.String()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
@@ -241,8 +236,8 @@ class TestAggregateToPublicationRows:
 
         returned_lf = job.aggregate_to_publication_rows(input_lf)
 
-        expected_lf = _with_period_label_after_import_date(
-            pl.LazyFrame(case.expected_data, self.expected_schema, orient="row")
+        expected_lf = pl.LazyFrame(
+            case.expected_data, self.expected_schema, orient="row"
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
@@ -445,6 +440,7 @@ class TestAddRowsForPublicationGroups:
     expected_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
+            (Pub.period_label, pl.String()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.Categorical()),
@@ -482,8 +478,8 @@ class TestAddRowsForPublicationGroups:
 
         assert returned_lf.collect().height == case.expected_row_count
 
-        expected_lf = _with_period_label_after_import_date(
-            pl.LazyFrame(case.expected_data, self.expected_schema, orient="row")
+        expected_lf = pl.LazyFrame(
+            case.expected_data, self.expected_schema, orient="row"
         )
         key_columns = [
             IndCQC.cqc_location_import_date,
