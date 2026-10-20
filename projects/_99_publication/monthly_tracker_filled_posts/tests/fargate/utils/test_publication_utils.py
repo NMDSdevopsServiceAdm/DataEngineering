@@ -629,44 +629,6 @@ class TestCalcPercChangeCumulativeFromGivenPeriodOnwards:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestCalcPercChangeAgainstPeriodsAgo:
-    perc_change_schema = pl.Schema(
-        [
-            (IndCQC.cqc_location_import_date, pl.Date()),
-            (IndCQC.current_region, pl.String()),
-            (IndCQC.primary_service_type, pl.String()),
-            (Pub.publication_filled_posts, pl.Float32()),
-            (Pub.publication_locationid_count, pl.UInt32()),
-        ]
-    )
-
-    @pytest.mark.parametrize(
-        "case",
-        [
-            case.as_pytest_param()
-            for case in Data.calc_perc_change_against_periods_ago_test_cases
-        ],
-    )
-    def test_returns_percentage_change_against_the_row_periods_back_earlier(self, case):
-        expected_schema = pl.Schema(
-            list(self.perc_change_schema.items()) + [(case.column_alias, pl.Float32())]
-        )
-        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
-
-        test_lf = expected_lf.drop(case.column_alias)
-
-        returned_lf = test_lf.with_columns(
-            job.calc_perc_change_against_periods_ago(
-                case.column_name,
-                case.periods_back,
-                case.group_columns,
-                case.column_alias,
-            )
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
 class TestRoundToPublicationBands:
     @pytest.mark.parametrize(
         "case",

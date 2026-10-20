@@ -57,9 +57,8 @@ _PUBLICATION_ROUNDING_BANDS: list[tuple[int, int]] = [
 ]
 _PUBLICATION_ROUNDING_BAND_ABOVE_MAX: int = 10_000
 
-# Maps the raw primary_service_type category values to their published
-# display labels for the data-download tables - the rollup rows already
-# hold their published labels directly (see add_rows_for_publication_groups).
+# Published label for each primary_service_type category; the rollup rows
+# already hold their published labels (see add_rows_for_publication_groups).
 PUBLISHED_MAIN_SERVICE_BY_CATEGORY: dict[str, str] = {
     PrimaryServiceType.care_home_with_nursing: PublishedMainService.care_home_with_nursing,
     PrimaryServiceType.care_home_only: PublishedMainService.care_home_only,
@@ -791,51 +790,6 @@ def calc_perc_change_cumulative_from_given_period_onwards(
         .then(None)
         .otherwise((in_window_value - baseline_value) / baseline_value)
         .over(group_columns, order_by=IndCQC.cqc_location_import_date)
-        .alias(column_alias)
-    )
-
-
-def calc_perc_change_against_periods_ago(
-    column_name: str,
-    periods_back: int,
-    group_columns: list[str],
-    column_alias: str,
-) -> pl.Expr:
-    """
-    Percentage change in column_name against the row periods_back periods
-    earlier within each group, as a net change fraction: (current -
-    previous) / previous, so 0.25 = +25%.
-
-    The download tables compare across a group's whole history, with no
-    from_date window. "periods_back periods earlier" is the row that
-    many places earlier in the group's data ordered by import date, not
-    necessarily that many calendar periods back, so a missing row shifts the
-    comparison silently. Null for a group's first periods_back rows, and
-    null (not inf/NaN) when the earlier value is exactly 0 or missing, since
-    column_name is a sum and can legitimately be 0. column_name is cast to
-    Float32 before dividing, so an integer count column (e.g. a location
-    count) doesn't widen the result to Float64.
-
-    Args:
-        column_name (str): the value column to measure change in.
-        periods_back (int): how many rows earlier, within the group, to
-            compare against (e.g. 1 for month-over-month, 12 for
-            year-over-year on monthly data).
-        group_columns (list[str]): columns identifying a group, e.g. region
-            and service type.
-        column_alias (str): name to alias the resulting column to.
-
-    Returns:
-        pl.Expr: float expression with the lagged percentage change.
-    """
-    current_value = pl.col(column_name).cast(pl.Float32)
-    previous_value = current_value.shift(periods_back).over(
-        group_columns, order_by=IndCQC.cqc_location_import_date
-    )
-    return (
-        pl.when(previous_value.is_null() | (previous_value == 0))
-        .then(None)
-        .otherwise((current_value - previous_value) / previous_value)
         .alias(column_alias)
     )
 

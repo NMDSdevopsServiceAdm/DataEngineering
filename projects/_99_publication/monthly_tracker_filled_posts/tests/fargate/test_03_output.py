@@ -17,8 +17,8 @@ from utils.column_values.categorical_column_values import (
 
 PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._03_output"
 
-TEST_SOURCE = "some/prep/directory/"
-TEST_RUN_SOURCE = "some/prep/directory/archive_date=2026-10-01/run_number=2/"
+TEST_SOURCE = "some/assessment/directory/"
+TEST_RUN_SOURCE = "some/assessment/directory/archive_date=2026-10-01/run_number=2/"
 TEST_DESTINATION = "some/other/directory"
 TEST_TODAY = date(2026, 10, 6)
 
@@ -182,3 +182,32 @@ class TestMain:
             (date(2026, 4, 1), "South West"),
             (date(2026, 5, 1), "London"),
         ]
+
+    def test_main_passes_percentage_change_columns_through_unchanged(self, mocks):
+        input_rows = [
+            _input_row(date(2025, 7, 1), values=(1.0, 1, 0.9, 0.9, 0.9, 0.9)),
+            _input_row(date(2026, 4, 1), values=(2.0, 2, 0.1, 0.2, 0.3, 0.4)),
+            _input_row(date(2026, 5, 1), values=(3.0, 3, None, 0.5, None, 0.6)),
+        ]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.select(
+            Pub.publication_filled_posts_april_perc_change,
+            Pub.publication_filled_posts_cumulative_perc_change_short_term,
+            Pub.publication_locationid_count_april_perc_change,
+            Pub.publication_locationid_count_cumulative_perc_change_short_term,
+        ).collect().rows() == [
+            (
+                pytest.approx(0.1),
+                pytest.approx(0.2),
+                pytest.approx(0.3),
+                pytest.approx(0.4),
+            ),
+            (None, pytest.approx(0.5), None, pytest.approx(0.6)),
+        ]
+
+    def test_main_labels_a_financial_year_start_row_as_the_previous_month(self, mocks):
+        returned_lf = _run_main(mocks, [_input_row(date(2026, 4, 1))])
+
+        assert returned_lf.collect()[Pub.period_label].to_list() == ["Mar 2026"]
