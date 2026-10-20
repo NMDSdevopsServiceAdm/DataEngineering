@@ -59,7 +59,7 @@ class TestAssessmentSheets:
         ],
     )
     def test_no_filters_sheet_sources(self, note: str, source_column: str | None):
-        """No filters reads the unfiltered publication and Capacity Tracker columns."""
+        """No filters reads the unfiltered filled posts and Capacity Tracker posts columns."""
         sources = {r.note: r.source_column for r in job.NO_FILTERS.input_ranges}
 
         assert sources[note] == source_column
