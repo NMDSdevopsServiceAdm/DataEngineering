@@ -124,7 +124,7 @@ class TestMain:
             [
                 (
                     date(2026, 5, 1),
-                    "Apr-26",
+                    "Apr 2026",
                     "London",
                     PublishedMainService.care_home_with_nursing,
                     125.0,
