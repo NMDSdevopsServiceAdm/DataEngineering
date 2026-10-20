@@ -7,8 +7,13 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
     merge_utils,
     publication_utils,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+
+RUN_PARTITION_COLUMNS = [ArchiveKeys.archive_date, ArchiveKeys.run_number]
 
 
 def main(
@@ -23,7 +28,8 @@ def main(
 
     Args:
         prep_source (str): s3 directory holding the prepared data of every run
-        assessment_destination (str): destination s3 directory for the assessment data
+        assessment_destination (str): destination s3 directory for the assessment data,
+            partitioned by archive_date and run_number
         run_number (int | None): the prepared run to use. Defaults to None, the latest run
     """
     run_source = merge_utils.resolve_run_sources([prep_source], run_number)[0]
@@ -167,12 +173,14 @@ def main(
             group_columns,
             Pub.assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter,
         ),
-        pl.lit(merge_utils.run_number_from_source(run_source)).alias(Pub.run_number),
     )
 
     utils.sink_to_parquet(
-        lazy_df=assessment_summary_lf,
+        lazy_df=merge_utils.add_run_partition_columns(
+            assessment_summary_lf, run_source
+        ),
         output_path=assessment_destination,
+        partition_cols=RUN_PARTITION_COLUMNS,
     )
 
 
