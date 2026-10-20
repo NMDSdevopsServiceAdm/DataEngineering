@@ -153,7 +153,6 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
         lf,
         EmpStatus.filtering_rule,
         EmpStatus.permanent_count_clean,
-        EmpStatus.permanent_count_clean,
         EmploymentStatusFilteringRule.populated,
         EmploymentStatusFilteringRule.org_level_low_permanent_temporary_ratio,
         categorical_type=CatColType.EmploymentStatusFilteringRuleCatType,
@@ -194,7 +193,6 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     return filtering_utils.update_filtering_rule(
         lf,
         EmpStatus.filtering_rule,
-        EmpStatus.permanent_count_clean,
         EmpStatus.permanent_count_clean,
         EmploymentStatusFilteringRule.populated,
         EmploymentStatusFilteringRule.location_level_low_permanent_temporary_ratio,

@@ -48,11 +48,11 @@ def add_filtering_rule_column(
 def update_filtering_rule(
     lf: pl.LazyFrame,
     filter_rule_col_name: str,
-    raw_col_name: str,
     clean_col_name: str,
     populated_rule: str,
     new_rule_name: str,
     winsorized_rule: str | None = None,
+    uncapped_col_name: str | None = None,
     categorical_type: pl.Categorical | None = None,
 ) -> pl.LazyFrame:
     """
@@ -60,33 +60,38 @@ def update_filtering_rule(
 
     This function updates the filtering rule in 2 cases:
     1) Where the cleaned data has been nulled but the rule says "populated" or "winsorized"
-    2) Where the cleaned data has been changed (winsorized) but the rule says "populated"
+    2) Where the cleaned data differs from `uncapped_col_name` (winsorized) but the
+       rule says "populated". Only applies when `uncapped_col_name` is provided.
 
     Args:
-        lf (pl.LazyFrame): A LazyFrame containing the raw column,
-            cleaned column, and filtering rule column.
+        lf (pl.LazyFrame): A LazyFrame containing the cleaned column,
+            filtering rule column and, if provided, the uncapped column.
         filter_rule_col_name (str): The name of the filtering rule column.
-        raw_col_name (str): The name of the original column with values.
         clean_col_name (str): The name of the cleaned column with values.
         populated_rule (str): The rule name when original data is being used.
         new_rule_name (str): The name of the new rule to add.
         winsorized_rule (str | None, optional): The rule name assigned if data
             has been winsorized (capped). Defaults to None.
+        uncapped_col_name (str | None, optional): The name of the column with
+            values before winsorizing. Defaults to None.
         categorical_type (pl.Categorical | None, optional): If provided, creates a pl.Categorical col. Defaults to None.
 
     Returns:
         pl.LazyFrame: A LazyFrame with the filtering rule column updated.
     """
     clean_col_is_null = pl.col(clean_col_name).is_null()
-    clean_col_has_changed = pl.col(clean_col_name) != pl.col(raw_col_name)
     rule_is_populated = pl.col(filter_rule_col_name) == populated_rule
     rule_is_winsorised = pl.col(filter_rule_col_name) == winsorized_rule
 
-    expr = (
-        pl.when(
-            (clean_col_is_null & (rule_is_populated | rule_is_winsorised))
-            | (clean_col_has_changed & rule_is_populated)
+    rule_needs_update = clean_col_is_null & (rule_is_populated | rule_is_winsorised)
+    if uncapped_col_name is not None:
+        clean_col_has_changed = pl.col(clean_col_name) != pl.col(uncapped_col_name)
+        rule_needs_update = rule_needs_update | (
+            clean_col_has_changed & rule_is_populated
         )
+
+    expr = (
+        pl.when(rule_needs_update)
         .then(pl.lit(new_rule_name))
         .otherwise(pl.col(filter_rule_col_name))
     )

@@ -12,9 +12,11 @@ All notable changes to this project will be documented in this file.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/output_workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 - Extended the run log update script to select a run for publication and start Publication-Output for it, set the `reconciled` and `locally_checked` flags, and list the month's runs.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
+- Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
 
 ### Changed
 - Renamed the employment status deduplicated count columns to `_clean` in the clean step instead of copying them, so no `_dedup` columns are output.
+- Made the raw column optional in `update_filtering_rule` (now `uncapped_col_name`, only needed when winsorizing) and updated all callers.
 - Partitioned the publication assessment data by archive date and run number so each assessed run is kept.
 - Split the starters, leavers and vacancies filtering rule into one class per metric, each with its own allowed values.
 - Replaced the monthly tracker assessment's CT period percentage change columns with cumulative and April-on-April percentage change columns for filled posts and location counts, and added an unfiltered long-term CT total with its cumulative change.
