@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 
 ### Changed
+- Renamed the employment status deduplicated count columns to `_clean` in the clean step instead of copying them, so no `_dedup` columns are output.
 - Partitioned the publication assessment data by archive date and run number so each assessed run is kept.
 - Split the starters, leavers and vacancies filtering rule into one class per metric, each with its own allowed values.
 - Replaced the monthly tracker assessment's CT period percentage change columns with cumulative and April-on-April percentage change columns for filled posts and location counts, and added an unfiltered long-term CT total with its cumulative change.
