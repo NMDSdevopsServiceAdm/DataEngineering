@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a period label column (e.g. "Mar 2026") to the prepared publication data, used by the download tables.
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/output_workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
@@ -14,6 +15,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Changed Publication-Output to read the assessed data without re-aggregating it and write one table with the T0, T1 and T2 download columns, using the assessment's April-on-April and cumulative short-term percentage changes, instead of three separate tables.
+- Partitioned the publication assessment data by archive date and run number so each assessed run is kept.
+- Split the starters, leavers and vacancies filtering rule into one class per metric, each with its own allowed values.
 - Replaced the monthly tracker assessment's CT period percentage change columns with cumulative and April-on-April percentage change columns for filled posts and location counts, and added an unfiltered long-term CT total with its cumulative change.
 - Split the monthly tracker publication into `Publication-Assessment`, which starts when filled post estimates succeed, and `Publication-Output`, which builds the public data for a selected `run_number`.
 - Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of raw counts, reading only the needed columns in the SLV merge and running the employment status steps first in Ind-CQC-SLV.

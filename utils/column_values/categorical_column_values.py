@@ -535,6 +535,33 @@ class SLVFilteringRule(ColumnValues):
 
 
 @dataclass
+class StartersFilteringRule(ColumnValues):
+    """The possible reasons for filtering starters data"""
+
+    populated: str = "populated"
+    missing_data: str = "missing_data"
+    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
+
+
+@dataclass
+class LeaversFilteringRule(ColumnValues):
+    """The possible reasons for filtering leavers data"""
+
+    populated: str = "populated"
+    missing_data: str = "missing_data"
+    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
+
+
+@dataclass
+class VacanciesFilteringRule(ColumnValues):
+    """The possible reasons for filtering vacancies data"""
+
+    populated: str = "populated"
+    missing_data: str = "missing_data"
+    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
+
+
+@dataclass
 class RelatedLocation(ColumnValues):
     has_related_location: str = "Y"
     no_related_location: str = "N"

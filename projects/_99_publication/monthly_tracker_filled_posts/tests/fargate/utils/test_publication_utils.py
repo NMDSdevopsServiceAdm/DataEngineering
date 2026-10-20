@@ -16,6 +16,10 @@ from utils.column_values.categorical_column_values import (
 )
 
 
+def _with_period_label(lf: pl.LazyFrame) -> pl.LazyFrame:
+    return lf.with_columns(job.period_label_expr())
+
+
 class TestReducedDataFilterExpr:
     @pytest.mark.parametrize(
         "case",
@@ -199,6 +203,7 @@ class TestAggregateToPublicationRows:
     expected_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
+            (Pub.period_label, pl.String()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
@@ -225,7 +230,9 @@ class TestAggregateToPublicationRows:
         ],
     )
     def test_returns_expected_data(self, case):
-        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
+        input_lf = _with_period_label(
+            pl.LazyFrame(case.input_data, self.input_schema, orient="row")
+        )
 
         returned_lf = job.aggregate_to_publication_rows(input_lf)
 
@@ -344,12 +351,13 @@ class TestAggregateToPublicationRows:
         )
 
         returned_lf = job.aggregate_to_publication_rows(
-            input_lf, include_assessment=False
+            _with_period_label(input_lf), include_assessment=False
         )
 
         expected_schema = pl.Schema(
             [
                 (IndCQC.cqc_location_import_date, pl.Date()),
+                (Pub.period_label, pl.String()),
                 (IndCQC.main_job_role_clean_labelled, pl.String()),
                 (IndCQC.current_region, pl.String()),
                 (IndCQC.primary_service_type, pl.String()),
@@ -361,6 +369,7 @@ class TestAggregateToPublicationRows:
             [
                 (
                     date(2025, 4, 1),
+                    "Mar 2025",
                     "Registered nurse",
                     "London",
                     "Care home with nursing",
@@ -390,7 +399,7 @@ class TestAggregateToPublicationRows:
         )
 
         returned_df = job.aggregate_to_publication_rows(
-            input_lf, include_assessment=False
+            _with_period_label(input_lf), include_assessment=False
         ).collect()
 
         assert returned_df[Pub.publication_filled_posts].to_list() == [10.0]
@@ -431,6 +440,7 @@ class TestAddRowsForPublicationGroups:
     expected_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
+            (Pub.period_label, pl.String()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.Categorical()),
@@ -457,7 +467,9 @@ class TestAddRowsForPublicationGroups:
         ],
     )
     def test_adds_rollup_rows_for_job_role_service_type_and_region(self, case):
-        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
+        input_lf = _with_period_label(
+            pl.LazyFrame(case.input_data, self.input_schema, orient="row")
+        )
         publication_summary_lf = job.aggregate_to_publication_rows(input_lf)
 
         returned_lf = job.add_rows_for_publication_groups(
@@ -507,6 +519,7 @@ class TestAddRowsForPublicationGroups:
             self.input_schema,
             orient="row",
         )
+        input_lf = _with_period_label(input_lf)
         publication_summary_lf = job.aggregate_to_publication_rows(
             input_lf, include_assessment=False
         )
@@ -517,6 +530,7 @@ class TestAddRowsForPublicationGroups:
 
         assert returned_lf.collect_schema().names() == [
             IndCQC.cqc_location_import_date,
+            Pub.period_label,
             IndCQC.main_job_role_clean_labelled,
             IndCQC.current_region,
             IndCQC.primary_service_type,
@@ -704,4 +718,21 @@ class TestImportDateToPeriodMonth:
 
         returned = df.select(job.import_date_to_period_month(pl.col("import_date")))
 
+        assert returned.item() == expected
+
+
+class TestPeriodLabelExpr:
+    @pytest.mark.parametrize(
+        "import_date, expected",
+        [
+            pytest.param(date(2026, 4, 1), "Mar 2026", id="financial_year_start"),
+            pytest.param(date(2026, 1, 1), "Dec 2025", id="january_goes_to_prior_year"),
+        ],
+    )
+    def test_returns_month_and_year_before_import_date(self, import_date, expected):
+        df = pl.DataFrame({IndCQC.cqc_location_import_date: [import_date]})
+
+        returned = df.select(job.period_label_expr())
+
+        assert returned.columns == [Pub.period_label]
         assert returned.item() == expected
