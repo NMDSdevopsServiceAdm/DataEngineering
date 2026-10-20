@@ -16,7 +16,7 @@ from utils.column_values.categorical_column_values import (
 _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 
-_DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
+DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
     Pub.period,
     Pub.region,
     Pub.main_service,
@@ -60,7 +60,7 @@ _PUBLICATION_ROUNDING_BAND_ABOVE_MAX: int = 10_000
 # Maps the raw primary_service_type category values to their published
 # display labels for the data-download tables - the rollup rows already
 # hold their published labels directly (see add_rows_for_publication_groups).
-_PUBLISHED_MAIN_SERVICE_BY_CATEGORY: dict[str, str] = {
+PUBLISHED_MAIN_SERVICE_BY_CATEGORY: dict[str, str] = {
     PrimaryServiceType.care_home_with_nursing: PublishedMainService.care_home_with_nursing,
     PrimaryServiceType.care_home_only: PublishedMainService.care_home_only,
     PrimaryServiceType.non_residential: PublishedMainService.non_residential,
@@ -835,15 +835,6 @@ def calc_perc_change_against_periods_ago(
     )
 
 
-def _filter_to_all_job_roles_rollup(
-    publication_summary_lf: pl.LazyFrame,
-) -> pl.LazyFrame:
-    return publication_summary_lf.filter(
-        pl.col(IndCQC.main_job_role_clean_labelled)
-        == PublishedJobGroupLabels.all_job_roles
-    )
-
-
 def import_date_to_period_month(import_date: pl.Expr) -> pl.Expr:
     """
     Maps a CQC import date to the month it reports on: one month earlier
@@ -858,7 +849,7 @@ def import_date_to_period_month(import_date: pl.Expr) -> pl.Expr:
     return import_date.dt.offset_by("-1mo")
 
 
-def _period_label_expr() -> pl.Expr:
+def period_label_expr() -> pl.Expr:
     """
     Builds a polars expression for a short display label of the period
     column, one month behind the raw date (e.g. 2026-04-01 -> "Mar-26").
@@ -892,178 +883,3 @@ def _financial_year_start(today: date | None, fy_start_month: int) -> date:
     today = today or date.today()
     fy_year = today.year if today.month >= fy_start_month else today.year - 1
     return date(fy_year, fy_start_month, 1)
-
-
-def _annual_sampling_filter_expr(today: date | None, fy_start_month: int) -> pl.Expr:
-    """
-    Builds a polars expression reducing historical rows to one per year,
-    keeping every row from the current financial year's start onwards in
-    full, for the data-download tables.
-
-    Reuses reduced_data_filter_expr with lookback_fy_years=0 (so the full
-    retention window is the current financial year alone) and
-    quarter_months=(fy_start_month,) (so the one historical month kept each
-    year is the financial-year-start month itself, e.g. April - the row
-    _period_label_expr then labels as the prior financial year's year-end,
-    e.g. "Mar-26").
-
-    Args:
-        today (date | None): reference date. Defaults to the current system
-            date when None.
-        fy_start_month (int): month the financial year starts.
-
-    Returns:
-        pl.Expr: boolean expression usable inside a `.filter()`.
-    """
-    return reduced_data_filter_expr(
-        today=today,
-        fy_start_month=fy_start_month,
-        lookback_fy_years=0,
-        quarter_months=(fy_start_month,),
-    )
-
-
-def build_t0_estimates_download_table(
-    publication_summary_lf: pl.LazyFrame,
-    today: date | None = None,
-    fy_start_month: int = 4,
-) -> pl.LazyFrame:
-    """
-    Builds the T0 data-download table: estimated filled posts and CQC
-    location count, one row per period, region and main service.
-
-    Filters to the "All job roles" rollup row, since the download has no
-    job-role breakdown, reduces historical periods to one per year with
-    full monthly detail for the current financial year (see
-    _annual_sampling_filter_expr), then renames the publication-level
-    totals to the download's output column names.
-
-    Args:
-        publication_summary_lf (pl.LazyFrame): output of
-            add_rows_for_publication_groups.
-        today (date | None): reference date for the financial year split.
-            Defaults to the current system date when None.
-        fy_start_month (int): month the financial year starts.
-
-    Returns:
-        pl.LazyFrame: one row per (period, region, main_service), with
-            filled posts estimates as unrounded and rounded (see
-            round_to_publication_bands) columns, plus an unrounded
-            cqc_locations count - already exact against the published
-            figures. Sorted by period then region then main_service.
-    """
-    return (
-        _filter_to_all_job_roles_rollup(publication_summary_lf)
-        .filter(_annual_sampling_filter_expr(today, fy_start_month))
-        .select(
-            pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
-            _period_label_expr(),
-            pl.col(IndCQC.current_region).alias(Pub.region),
-            pl.col(IndCQC.primary_service_type)
-            .cast(pl.Utf8)
-            .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
-            .alias(Pub.main_service),
-            pl.col(Pub.publication_filled_posts).alias(Pub.estimated_filled_posts),
-            round_to_publication_bands(
-                Pub.publication_filled_posts, Pub.estimated_filled_posts_rounded
-            ),
-            pl.col(Pub.publication_locationid_count).alias(Pub.cqc_locations),
-        )
-        .sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
-    )
-
-
-def build_t1_filled_posts_perc_change_download_table(
-    publication_summary_lf: pl.LazyFrame,
-    today: date | None = None,
-    fy_start_month: int = 4,
-) -> pl.LazyFrame:
-    """
-    Builds the T1 data-download table: annual and monthly percentage change
-    of estimated filled posts, one row per period, region and main service.
-
-    Filters to the "All job roles" rollup row, since the download has no
-    job-role breakdown, reduces historical periods to one per year with
-    full monthly detail for the current financial year (see
-    _annual_sampling_filter_expr), then selects the pre-computed
-    April-on-April (annual) and cumulative short-term (monthly) percentage
-    changes of filled posts.
-
-    Args:
-        publication_summary_lf (pl.LazyFrame): output of
-            add_rows_for_publication_groups.
-        today (date | None): reference date for the financial year split.
-            Defaults to the current system date when None.
-        fy_start_month (int): month the financial year starts.
-
-    Returns:
-        pl.LazyFrame: one row per (period, region, main_service), with
-            estimated filled posts' annual and monthly percentage change
-            columns. Sorted by period then region then main_service.
-    """
-    all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
-        _annual_sampling_filter_expr(today, fy_start_month)
-    )
-    return all_job_roles_lf.select(
-        pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
-        _period_label_expr(),
-        pl.col(IndCQC.current_region).alias(Pub.region),
-        pl.col(IndCQC.primary_service_type)
-        .cast(pl.Utf8)
-        .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
-        .alias(Pub.main_service),
-        pl.col(Pub.publication_filled_posts_april_perc_change).alias(
-            Pub.annual_percentage_change
-        ),
-        pl.col(Pub.publication_filled_posts_cumulative_perc_change_short_term).alias(
-            Pub.monthly_percentage_change
-        ),
-    ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
-
-
-def build_t2_location_count_perc_change_download_table(
-    publication_summary_lf: pl.LazyFrame,
-    today: date | None = None,
-    fy_start_month: int = 4,
-) -> pl.LazyFrame:
-    """
-    Builds the T2 data-download table: annual and monthly percentage change
-    of CQC location count, one row per period, region and main service.
-
-    Filters to the "All job roles" rollup row, since the download has no
-    job-role breakdown, reduces historical periods to one per year with
-    full monthly detail for the current financial year (see
-    _annual_sampling_filter_expr), then selects the pre-computed
-    April-on-April (annual) and cumulative short-term (monthly) percentage
-    changes of CQC location count.
-
-    Args:
-        publication_summary_lf (pl.LazyFrame): output of
-            add_rows_for_publication_groups.
-        today (date | None): reference date for the financial year split.
-            Defaults to the current system date when None.
-        fy_start_month (int): month the financial year starts.
-
-    Returns:
-        pl.LazyFrame: one row per (period, region, main_service), with cqc
-            location count's annual and monthly percentage change columns.
-            Sorted by period then region then main_service.
-    """
-    all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
-        _annual_sampling_filter_expr(today, fy_start_month)
-    )
-    return all_job_roles_lf.select(
-        pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
-        _period_label_expr(),
-        pl.col(IndCQC.current_region).alias(Pub.region),
-        pl.col(IndCQC.primary_service_type)
-        .cast(pl.Utf8)
-        .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
-        .alias(Pub.main_service),
-        pl.col(Pub.publication_locationid_count_april_perc_change).alias(
-            Pub.annual_percentage_change
-        ),
-        pl.col(
-            Pub.publication_locationid_count_cumulative_perc_change_short_term
-        ).alias(Pub.monthly_percentage_change),
-    ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
