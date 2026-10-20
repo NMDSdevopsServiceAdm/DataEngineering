@@ -16,10 +16,10 @@ class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.null_values_exceeding_repetition_limit")
     @patch(f"{PATCH_PATH}.null_posts_per_bed_outliers")
     @patch(f"{PATCH_PATH}.aggregate_values_to_provider_level")
-    @patch(f"{PATCH_PATH}.add_filtering_rule_column")
+    @patch(f"{PATCH_PATH}.create_cleaned_column_with_filtering_rule")
     def test_functions_are_called(
         self,
-        add_filtering_rule_column_mock: Mock,
+        create_cleaned_column_with_filtering_rule_mock: Mock,
         aggregate_values_to_provider_level_mock: Mock,
         null_posts_per_bed_outliers_mock: Mock,
         clean_longitudinal_outliers_mock: Mock,
@@ -27,7 +27,7 @@ class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
     ):
         job.clean_capacity_tracker_care_home_outliers(self.test_lf)
 
-        add_filtering_rule_column_mock.assert_called_once()
+        create_cleaned_column_with_filtering_rule_mock.assert_called_once()
         aggregate_values_to_provider_level_mock.assert_called_once()
         null_posts_per_bed_outliers_mock.assert_called_once()
         null_values_exceeding_repetition_limit_mock.assert_called_once()

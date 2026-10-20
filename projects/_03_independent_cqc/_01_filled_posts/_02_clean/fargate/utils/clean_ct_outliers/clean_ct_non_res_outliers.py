@@ -1,6 +1,6 @@
 import polars as pl
 
-from polars_utils.filtering_utils import add_filtering_rule_column
+from polars_utils.filtering_utils import create_cleaned_column_with_filtering_rule
 from projects._03_independent_cqc._01_filled_posts._02_clean.fargate.utils.clean_ct_outliers.null_longitudinal_outliers import (
     null_longitudinal_outliers,
 )
@@ -32,16 +32,11 @@ def clean_capacity_tracker_non_res_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     print("Cleaning Capacity Tracker non-residential data...")
 
-    lf = lf.with_columns(
-        pl.col(IndCQC.ct_non_res_care_workers_employed).alias(
-            IndCQC.ct_non_res_care_workers_employed_cleaned
-        )
-    )
-
-    lf = add_filtering_rule_column(
+    lf = create_cleaned_column_with_filtering_rule(
         lf,
-        IndCQC.ct_non_res_filtering_rule,
+        IndCQC.ct_non_res_care_workers_employed,
         IndCQC.ct_non_res_care_workers_employed_cleaned,
+        IndCQC.ct_non_res_filtering_rule,
         CTFilteringRule.populated,
         CTFilteringRule.missing_data,
     )
