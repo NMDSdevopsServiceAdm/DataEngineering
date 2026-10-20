@@ -530,6 +530,7 @@ aggregate_to_publication_rows_test_cases = [
                 10.0,
                 1,
                 5.0,
+                13.0,
             ),
         ],
     ),
@@ -570,6 +571,7 @@ aggregate_to_publication_rows_test_cases = [
                 0.0,
                 0,
                 0.0,
+                5.0,
             ),
         ],
     ),
@@ -604,6 +606,7 @@ aggregate_to_publication_rows_test_cases = [
                 0.0,
                 10.0,
                 1,
+                5.0,
                 5.0,
             ),
         ],
@@ -645,6 +648,7 @@ aggregate_to_publication_rows_test_cases = [
                 5.0,
                 25.0,
                 1,
+                5.0,
                 5.0,
             ),
         ],
@@ -718,6 +722,7 @@ aggregate_to_publication_rows_test_cases = [
                 10.0,
                 1,
                 5.0,
+                5.0,
             ),
             (
                 date(2026, 4, 1),
@@ -732,6 +737,7 @@ aggregate_to_publication_rows_test_cases = [
                 5.0,
                 10.0,
                 1,
+                5.0,
                 5.0,
             ),
             (
@@ -750,6 +756,7 @@ aggregate_to_publication_rows_test_cases = [
                 10.0,
                 1,
                 5.0,
+                5.0,
             ),
             (
                 date(2025, 4, 1),
@@ -767,6 +774,7 @@ aggregate_to_publication_rows_test_cases = [
                 10.0,
                 1,
                 5.0,
+                5.0,
             ),
             (
                 date(2025, 4, 1),
@@ -783,6 +791,7 @@ aggregate_to_publication_rows_test_cases = [
                 5.0,
                 10.0,
                 1,
+                5.0,
                 5.0,
             ),
         ],
@@ -832,6 +841,7 @@ aggregate_to_publication_rows_test_cases = [
                 45.0,
                 2,
                 8.0,
+                8.0,
             ),
         ],
     ),
@@ -872,6 +882,7 @@ aggregate_to_publication_rows_test_cases = [
                 0.0,
                 0,
                 0.0,
+                5.0,
             ),
         ],
     ),
@@ -881,8 +892,9 @@ aggregate_to_publication_rows_test_cases = [
 def _all_terms_metrics(
     filled_posts: float, locationid_count: int, ct_total_employed: float
 ) -> tuple:
-    """Publication + long/medium/short assessment metrics, identical across
-    all three terms since every input row's filters pass in these tests."""
+    """Publication + long/medium/short assessment metrics and the unfiltered CT
+    total, identical across all three terms since every input row's filters
+    pass in these tests."""
     return (
         filled_posts,
         locationid_count,
@@ -894,6 +906,7 @@ def _all_terms_metrics(
         ct_total_employed,
         filled_posts,
         locationid_count,
+        ct_total_employed,
         ct_total_employed,
     )
 
@@ -1042,19 +1055,6 @@ add_rows_for_publication_groups_test_cases = [
 
 
 @dataclass
-class CalcPercChangeBetweenRowsTestCase:
-    id: str
-    column_name: str
-    from_date: date
-    group_columns: list[str]
-    column_alias: str
-    expected_data: list[Any]
-
-    def as_pytest_param(self) -> pytest.param:
-        return pytest.param(self, id=self.id)
-
-
-@dataclass
 class CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase:
     id: str
     column_name: str
@@ -1077,106 +1077,6 @@ _CARE_WORKER_SOUTH_WEST_NON_RES = (
     "South West",
     "Non-residential service",
 )
-
-calc_perc_change_between_rows_test_cases = [
-    CalcPercChangeBetweenRowsTestCase(
-        id="change_is_measured_against_the_previous_period_in_the_group",
-        column_name=Pub.assessment_ct_total_employed_long_term,
-        from_date=date(2025, 4, 1),
-        group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.assessment_ct_period_perc_change_long_term,
-        expected_data=[
-            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
-            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
-            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, -0.5),
-        ],
-    ),
-    CalcPercChangeBetweenRowsTestCase(
-        id="periods_before_from_date_are_null",
-        column_name=Pub.assessment_ct_total_employed_long_term,
-        from_date=date(2025, 4, 1),
-        group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.assessment_ct_period_perc_change_long_term,
-        expected_data=[
-            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 999.0, None, None),
-            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
-            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
-        ],
-    ),
-    CalcPercChangeBetweenRowsTestCase(
-        id="null_for_every_period_when_none_are_in_the_window",
-        column_name=Pub.assessment_ct_total_employed_long_term,
-        from_date=date(2025, 4, 1),
-        group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.assessment_ct_period_perc_change_long_term,
-        expected_data=[
-            (date(2023, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
-            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, None),
-        ],
-    ),
-    CalcPercChangeBetweenRowsTestCase(
-        id="null_when_the_previous_period_is_zero",
-        column_name=Pub.assessment_ct_total_employed_long_term,
-        from_date=date(2025, 4, 1),
-        group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.assessment_ct_period_perc_change_long_term,
-        expected_data=[
-            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, None, None),
-            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 50.0, None, None),
-        ],
-    ),
-    CalcPercChangeBetweenRowsTestCase(
-        id="a_period_dropping_to_zero_is_a_full_decrease_not_a_null",
-        column_name=Pub.assessment_ct_total_employed_long_term,
-        from_date=date(2025, 4, 1),
-        group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.assessment_ct_period_perc_change_long_term,
-        expected_data=[
-            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
-            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, None, -1.0),
-        ],
-    ),
-    CalcPercChangeBetweenRowsTestCase(
-        # No row at all for 2026-04-01 - the comparison silently spans the gap
-        # to the last present period rather than treating it as a missing value.
-        id="compares_with_the_last_present_period_when_one_is_missing",
-        column_name=Pub.assessment_ct_total_employed_long_term,
-        from_date=date(2025, 4, 1),
-        group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.assessment_ct_period_perc_change_long_term,
-        expected_data=[
-            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
-            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
-        ],
-    ),
-    CalcPercChangeBetweenRowsTestCase(
-        # Rows are deliberately out of date order within each group, so this
-        # only passes if the window genuinely orders by import date rather
-        # than relying on physical row order.
-        id="groups_do_not_affect_each_other",
-        column_name=Pub.assessment_ct_total_employed_long_term,
-        from_date=date(2025, 4, 1),
-        group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.assessment_ct_period_perc_change_long_term,
-        expected_data=[
-            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
-            (date(2027, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 25.0, None, -0.5),
-            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
-            (date(2026, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 50.0, None, None),
-        ],
-    ),
-    CalcPercChangeBetweenRowsTestCase(
-        id="honours_the_column_name_from_date_and_alias_arguments",
-        column_name=Pub.assessment_ct_total_employed_medium_term,
-        from_date=date(2026, 4, 1),
-        group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.assessment_ct_period_perc_change_medium_term,
-        expected_data=[
-            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 40.0, None),
-            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 60.0, 0.5),
-        ],
-    ),
-]
 
 calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
     CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
@@ -1275,6 +1175,101 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
         expected_data=[
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 40.0, 0.0),
             (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 60.0, 0.5),
+        ],
+    ),
+]
+
+
+@dataclass
+class CalcPercChangeFromPreviousAprilTestCase:
+    id: str
+    column_name: str
+    group_columns: list[str]
+    column_alias: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+calc_perc_change_from_previous_april_test_cases = [
+    CalcPercChangeFromPreviousAprilTestCase(
+        id="april_rows_are_compared_with_the_previous_april_across_quarterly_and_monthly_data",
+        column_name=Pub.publication_filled_posts,
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.publication_filled_posts_april_perc_change,
+        expected_data=[
+            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
+            (date(2024, 7, 1), *_NURSE_LONDON_CARE_HOME, 150.0, 1, None),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, 1, 1.0),
+            (date(2025, 5, 1), *_NURSE_LONDON_CARE_HOME, 250.0, 1, None),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, -0.5),
+        ],
+    ),
+    CalcPercChangeFromPreviousAprilTestCase(
+        id="first_april_in_the_group_has_no_change_to_report",
+        column_name=Pub.publication_filled_posts,
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.publication_filled_posts_april_perc_change,
+        expected_data=[
+            (date(2024, 10, 1), *_NURSE_LONDON_CARE_HOME, 50.0, 1, None),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
+        ],
+    ),
+    CalcPercChangeFromPreviousAprilTestCase(
+        # No row at all for 2025-04-01 - the comparison silently spans the gap
+        # to the last present April rather than returning null.
+        id="compares_with_the_last_present_april_when_one_is_missing",
+        column_name=Pub.publication_filled_posts,
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.publication_filled_posts_april_perc_change,
+        expected_data=[
+            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 150.0, 1, 0.5),
+        ],
+    ),
+    CalcPercChangeFromPreviousAprilTestCase(
+        id="null_when_the_previous_april_is_zero",
+        column_name=Pub.publication_filled_posts,
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.publication_filled_posts_april_perc_change,
+        expected_data=[
+            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, 1, None),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 50.0, 1, None),
+        ],
+    ),
+    CalcPercChangeFromPreviousAprilTestCase(
+        id="an_april_dropping_to_zero_is_a_full_decrease_not_a_null",
+        column_name=Pub.publication_filled_posts,
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.publication_filled_posts_april_perc_change,
+        expected_data=[
+            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, 1, -1.0),
+        ],
+    ),
+    CalcPercChangeFromPreviousAprilTestCase(
+        # Rows are deliberately out of date order within each group, so this
+        # only passes if the window genuinely orders by import date.
+        id="groups_do_not_affect_each_other",
+        column_name=Pub.publication_filled_posts,
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.publication_filled_posts_april_perc_change,
+        expected_data=[
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, 1, 1.0),
+            (date(2025, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 30.0, 1, 0.5),
+            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
+            (date(2024, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 20.0, 1, None),
+        ],
+    ),
+    CalcPercChangeFromPreviousAprilTestCase(
+        id="honours_the_column_name_and_alias_arguments",
+        column_name=Pub.publication_locationid_count,
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.publication_locationid_count_april_perc_change,
+        expected_data=[
+            (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 10, None),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 15, 0.5),
         ],
     ),
 ]

@@ -115,23 +115,27 @@ def main(
         IndCQC.primary_service_type,
     ]
     assessment_summary_lf = assessment_summary_lf.with_columns(
-        publication_utils.calc_perc_change_between_rows(
-            Pub.assessment_ct_total_employed_long_term,
-            long_term_from_date,
+        publication_utils.calc_perc_change_from_previous_april(
+            Pub.publication_filled_posts,
             group_columns,
-            Pub.assessment_ct_period_perc_change_long_term,
+            Pub.publication_filled_posts_april_perc_change,
         ),
-        publication_utils.calc_perc_change_between_rows(
-            Pub.assessment_ct_total_employed_medium_term,
-            medium_term_from_date,
+        publication_utils.calc_perc_change_from_previous_april(
+            Pub.publication_locationid_count,
             group_columns,
-            Pub.assessment_ct_period_perc_change_medium_term,
+            Pub.publication_locationid_count_april_perc_change,
         ),
-        publication_utils.calc_perc_change_between_rows(
-            Pub.assessment_ct_total_employed_short_term,
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.publication_filled_posts,
             short_term_from_date,
             group_columns,
-            Pub.assessment_ct_period_perc_change_short_term,
+            Pub.publication_filled_posts_cumulative_perc_change_short_term,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.publication_locationid_count,
+            short_term_from_date,
+            group_columns,
+            Pub.publication_locationid_count_cumulative_perc_change_short_term,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.assessment_ct_total_employed_long_term,
@@ -150,6 +154,18 @@ def main(
             short_term_from_date,
             group_columns,
             Pub.assessment_ct_cumulative_perc_change_short_term,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.publication_filled_posts,
+            long_term_from_date,
+            group_columns,
+            Pub.assessment_filled_posts_cumulative_perc_change_long_term,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.assessment_ct_total_employed_long_term_no_filter,
+            long_term_from_date,
+            group_columns,
+            Pub.assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter,
         ),
         pl.lit(merge_utils.run_number_from_source(run_source)).alias(Pub.run_number),
     )

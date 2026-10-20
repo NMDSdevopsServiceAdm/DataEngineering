@@ -20,12 +20,15 @@ TEST_RUN_SOURCE = "some/prep/directory/archive_date=2026-10-01/run_number=2/"
 TEST_DESTINATION = "some/other/directory"
 
 PERC_CHANGE_COLUMNS = [
-    Pub.assessment_ct_period_perc_change_long_term,
-    Pub.assessment_ct_period_perc_change_medium_term,
-    Pub.assessment_ct_period_perc_change_short_term,
+    Pub.publication_filled_posts_april_perc_change,
+    Pub.publication_locationid_count_april_perc_change,
+    Pub.publication_filled_posts_cumulative_perc_change_short_term,
+    Pub.publication_locationid_count_cumulative_perc_change_short_term,
     Pub.assessment_ct_cumulative_perc_change_long_term,
     Pub.assessment_ct_cumulative_perc_change_medium_term,
     Pub.assessment_ct_cumulative_perc_change_short_term,
+    Pub.assessment_filled_posts_cumulative_perc_change_long_term,
+    Pub.assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter,
 ]
 
 
@@ -42,6 +45,9 @@ def mocks():
     that add constant columns, so each test can assert on how main calls them.
     """
     null_perc_change = lambda column_name, from_date, group_columns, column_alias: (
+        pl.lit(None, dtype=pl.Float32).alias(column_alias)
+    )
+    null_april_perc_change = lambda column_name, group_columns, column_alias: (
         pl.lit(None, dtype=pl.Float32).alias(column_alias)
     )
     with ExitStack() as stack:
@@ -77,8 +83,10 @@ def mocks():
             ),
             aggregate=_patch_publication_utils(stack, "aggregate_to_publication_rows"),
             add_rows=_patch_publication_utils(stack, "add_rows_for_publication_groups"),
-            perc_change_between=_patch_publication_utils(
-                stack, "calc_perc_change_between_rows", side_effect=null_perc_change
+            perc_change_april=_patch_publication_utils(
+                stack,
+                "calc_perc_change_from_previous_april",
+                side_effect=null_april_perc_change,
             ),
             perc_change_cumulative=_patch_publication_utils(
                 stack,
@@ -207,30 +215,34 @@ class TestMain:
             IndCQC.current_region,
             IndCQC.primary_service_type,
         ]
-        mocks.perc_change_between.assert_has_calls(
+        mocks.perc_change_april.assert_has_calls(
             [
                 call(
-                    Pub.assessment_ct_total_employed_long_term,
-                    date(2021, 7, 1),
+                    Pub.publication_filled_posts,
                     group_columns,
-                    Pub.assessment_ct_period_perc_change_long_term,
+                    Pub.publication_filled_posts_april_perc_change,
                 ),
                 call(
-                    Pub.assessment_ct_total_employed_medium_term,
-                    date(2025, 4, 1),
+                    Pub.publication_locationid_count,
                     group_columns,
-                    Pub.assessment_ct_period_perc_change_medium_term,
-                ),
-                call(
-                    Pub.assessment_ct_total_employed_short_term,
-                    date(2026, 4, 1),
-                    group_columns,
-                    Pub.assessment_ct_period_perc_change_short_term,
+                    Pub.publication_locationid_count_april_perc_change,
                 ),
             ]
         )
         mocks.perc_change_cumulative.assert_has_calls(
             [
+                call(
+                    Pub.publication_filled_posts,
+                    date(2026, 4, 1),
+                    group_columns,
+                    Pub.publication_filled_posts_cumulative_perc_change_short_term,
+                ),
+                call(
+                    Pub.publication_locationid_count,
+                    date(2026, 4, 1),
+                    group_columns,
+                    Pub.publication_locationid_count_cumulative_perc_change_short_term,
+                ),
                 call(
                     Pub.assessment_ct_total_employed_long_term,
                     date(2021, 7, 1),
@@ -248,6 +260,18 @@ class TestMain:
                     date(2026, 4, 1),
                     group_columns,
                     Pub.assessment_ct_cumulative_perc_change_short_term,
+                ),
+                call(
+                    Pub.publication_filled_posts,
+                    date(2021, 7, 1),
+                    group_columns,
+                    Pub.assessment_filled_posts_cumulative_perc_change_long_term,
+                ),
+                call(
+                    Pub.assessment_ct_total_employed_long_term_no_filter,
+                    date(2021, 7, 1),
+                    group_columns,
+                    Pub.assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter,
                 ),
             ]
         )
