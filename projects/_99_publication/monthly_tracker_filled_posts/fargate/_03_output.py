@@ -11,7 +11,7 @@ from utils.column_names.publication_columns import PublicationColumns as Pub
 
 
 def main(
-    prep_source: str,
+    assessment_source: str,
     output_destination: str,
     t0_destination: str,
     t1_destination: str,
@@ -19,12 +19,11 @@ def main(
     run_number: int,
 ) -> None:
     """
-    Builds the public data for one selected, prepared run: the publication
-    summary by import date, job role, region and service type, and the
-    T0/T1/T2 data-download tables.
+    Builds the public data for one selected assessed run: the rounded
+    publication summary and the T0/T1/T2 data-download tables.
 
     Args:
-        prep_source (str): s3 directory holding the prepared data of every run
+        assessment_source (str): s3 directory holding the assessed data of every run
         output_destination (str): destination s3 directory for the publication summary
         t0_destination (str): destination s3 directory for the T0 estimates
             download table
@@ -32,18 +31,11 @@ def main(
             posts percentage change download table
         t2_destination (str): destination s3 directory for the T2 location
             count percentage change download table
-        run_number (int): the prepared run to publish
+        run_number (int): the assessed run to publish
     """
-    run_source = merge_utils.resolve_run_sources([prep_source], run_number)[0]
-    print(f"Publishing prepared run: {run_source}")
-    prepared_lf = utils.scan_parquet(run_source)
-
-    publication_summary_lf = publication_utils.aggregate_to_publication_rows(
-        prepared_lf, include_assessment=False
-    )
-    publication_summary_lf = publication_utils.add_rows_for_publication_groups(
-        prepared_lf, publication_summary_lf, include_assessment=False
-    )
+    run_source = merge_utils.resolve_run_sources([assessment_source], run_number)[0]
+    print(f"Publishing assessed run: {run_source}")
+    publication_summary_lf = utils.scan_parquet(run_source)
 
     publication_summary_lf = publication_summary_lf.with_columns(
         publication_utils.round_to_publication_bands(
@@ -90,8 +82,8 @@ def main(
 if __name__ == "__main__":
     args = utils.get_args(
         (
-            "--prep_source",
-            "S3 directory holding the prepared data of every run",
+            "--assessment_source",
+            "S3 directory holding the assessed data of every run",
         ),
         (
             "--output_destination",
@@ -113,11 +105,11 @@ if __name__ == "__main__":
         ),
         (
             "--run_number",
-            "Prepared run number to publish",
+            "Assessed run number to publish",
         ),
     )
     main(
-        prep_source=args.prep_source,
+        assessment_source=args.assessment_source,
         output_destination=args.output_destination,
         t0_destination=args.t0_destination,
         t1_destination=args.t1_destination,

@@ -10,7 +10,6 @@ from polars.testing import assert_frame_equal
 import projects._99_publication.monthly_tracker_filled_posts.fargate._03_output as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_values.categorical_column_values import PrimaryServiceType
 
 PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._03_output"
 
@@ -21,14 +20,6 @@ TEST_T0_DESTINATION = "some/t0/directory"
 TEST_T1_DESTINATION = "some/t1/directory"
 TEST_T2_DESTINATION = "some/t2/directory"
 TEST_TODAY = date(2026, 9, 1)
-
-_service_type_enum = pl.Enum(
-    [
-        PrimaryServiceType.care_home_with_nursing,
-        PrimaryServiceType.care_home_only,
-        PrimaryServiceType.non_residential,
-    ]
-)
 
 
 def _run_main(run_number: int = 2) -> None:
@@ -73,8 +64,6 @@ def mocks(io_mocks):
     """Also replaces the publication_utils functions with stand-ins returning small frames."""
     with ExitStack() as stack:
         for name in [
-            "aggregate_to_publication_rows",
-            "add_rows_for_publication_groups",
             "build_t0_estimates_download_table",
             "build_t1_filled_posts_perc_change_download_table",
             "build_t2_location_count_perc_change_download_table",
@@ -92,14 +81,11 @@ def mocks(io_mocks):
                 ),
             )
         )
-        io_mocks.aggregate_to_publication_rows.return_value = pl.LazyFrame(
+        io_mocks.scan_parquet.return_value = pl.LazyFrame(
             {
                 IndCQC.cqc_location_import_date: [date(2026, 4, 1)],
                 Pub.publication_filled_posts: [42.0],
             }
-        )
-        io_mocks.add_rows_for_publication_groups.return_value = (
-            io_mocks.aggregate_to_publication_rows.return_value
         )
         yield io_mocks
 
@@ -111,35 +97,13 @@ class TestMain:
         mocks.resolve_run_sources.assert_called_once_with([TEST_SOURCE], 3)
         mocks.scan_parquet.assert_called_once_with(TEST_RUN_SOURCE)
 
-    def test_main_does_not_add_ct_flags_or_dispersion_filters(self, mocks):
-        _run_main()
-
-        aggregated_lf = mocks.aggregate_to_publication_rows.call_args.args[0]
-        assert (
-            aggregated_lf.collect_schema().names()
-            == mocks.scan_parquet.return_value.collect_schema().names()
-        )
-
-    def test_main_aggregates_and_adds_rollups_without_assessment_columns(self, mocks):
-        _run_main()
-
-        prepared_lf = mocks.scan_parquet.return_value
-        mocks.aggregate_to_publication_rows.assert_called_once_with(
-            prepared_lf, include_assessment=False
-        )
-        mocks.add_rows_for_publication_groups.assert_called_once_with(
-            prepared_lf,
-            mocks.aggregate_to_publication_rows.return_value,
-            include_assessment=False,
-        )
-
     def test_main_adds_rounded_filled_posts(self, mocks):
         _run_main()
 
         mocks.round_to_publication_bands.assert_called_once_with(
             Pub.publication_filled_posts, Pub.publication_filled_posts_rounded
         )
-        expected_lf = mocks.aggregate_to_publication_rows.return_value.with_columns(
+        expected_lf = mocks.scan_parquet.return_value.with_columns(
             pl.lit(40.0).alias(Pub.publication_filled_posts_rounded),
         )
         output_sink_kwargs = mocks.sink_to_parquet.call_args_list[0].kwargs
@@ -170,30 +134,3 @@ class TestMain:
         assert [
             c.kwargs["lazy_df"] for c in mocks.sink_to_parquet.call_args_list[1:]
         ] == [builder.return_value for builder in builders]
-
-    def test_main_output_has_no_assessment_columns(self, io_mocks):
-        io_mocks.scan_parquet.return_value = pl.LazyFrame(
-            {
-                IndCQC.location_id: ["1-001", "1-001"],
-                IndCQC.cqc_location_import_date: [date(2026, 4, 1)] * 2,
-                IndCQC.main_job_role_clean_labelled: [
-                    "Care worker",
-                    "Registered nurse",
-                ],
-                IndCQC.current_region: ["London"] * 2,
-                IndCQC.primary_service_type: [PrimaryServiceType.care_home_only] * 2,
-                IndCQC.estimate_filled_posts_by_job_role: [10.0, 20.0],
-            },
-            schema_overrides={IndCQC.primary_service_type: _service_type_enum},
-        )
-
-        _run_main()
-
-        output_lf = io_mocks.sink_to_parquet.call_args_list[0].kwargs["lazy_df"]
-        output_columns = output_lf.collect_schema().names()
-        assert Pub.publication_filled_posts in output_columns
-        assert not [
-            column
-            for column in output_columns
-            if column.startswith(("assessment_", "ct_", "consistent_service"))
-        ]

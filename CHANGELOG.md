@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 
 ### Changed
-- Changed the monthly tracker T1 and T2 download tables to use the assessment's April-on-April and cumulative short-term percentage change columns instead of recalculating them.
+- Changed the monthly tracker T1 and T2 download tables to use the assessment's April-on-April and cumulative short-term percentage change columns instead of recalculating them, and made Publication-Output read the assessed data without re-aggregating it.
 - Replaced the monthly tracker assessment's CT period percentage change columns with cumulative and April-on-April percentage change columns for filled posts and location counts, and added an unfiltered long-term CT total with its cumulative change.
 - Split the monthly tracker publication into `Publication-Assessment`, which starts when filled post estimates succeed, and `Publication-Output`, which builds the public data for a selected `run_number`.
 - Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of raw counts, reading only the needed columns in the SLV merge and running the employment status steps first in Ind-CQC-SLV.
