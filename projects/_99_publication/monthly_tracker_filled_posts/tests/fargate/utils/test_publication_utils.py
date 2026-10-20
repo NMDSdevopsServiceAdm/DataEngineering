@@ -213,6 +213,7 @@ class TestAggregateToPublicationRows:
             (Pub.assessment_filled_posts_short_term, pl.Float32()),
             (Pub.assessment_locationid_count_short_term, pl.UInt32()),
             (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
+            (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
         ]
     )
 
@@ -286,6 +287,7 @@ class TestAggregateToPublicationRows:
                 (Pub.assessment_filled_posts_short_term, pl.Float32()),
                 (Pub.assessment_locationid_count_short_term, pl.UInt32()),
                 (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
+                (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
             ]
         )
         expected_lf = pl.LazyFrame(
@@ -304,6 +306,7 @@ class TestAggregateToPublicationRows:
                     5.0,
                     30.0,
                     1,
+                    5.0,
                     5.0,
                 ),
             ],
@@ -442,6 +445,7 @@ class TestAddRowsForPublicationGroups:
             (Pub.assessment_filled_posts_short_term, pl.Float32()),
             (Pub.assessment_locationid_count_short_term, pl.UInt32()),
             (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
+            (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
         ]
     )
 
@@ -535,15 +539,15 @@ class TestAddRowsForPublicationGroups:
         ).row(0) == (30.0, 1)
 
 
-class TestCalcPercChangeBetweenRows:
+class TestCalcPercChangeFromPreviousApril:
     perc_change_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.assessment_ct_total_employed_long_term, pl.Float32()),
-            (Pub.assessment_ct_total_employed_medium_term, pl.Float32()),
+            (Pub.publication_filled_posts, pl.Float32()),
+            (Pub.publication_locationid_count, pl.UInt32()),
         ]
     )
 
@@ -551,10 +555,12 @@ class TestCalcPercChangeBetweenRows:
         "case",
         [
             case.as_pytest_param()
-            for case in Data.calc_perc_change_between_rows_test_cases
+            for case in Data.calc_perc_change_from_previous_april_test_cases
         ],
     )
-    def test_returns_percentage_change_against_the_previous_period(self, case):
+    def test_returns_percentage_change_on_april_rows_against_the_previous_april(
+        self, case
+    ):
         expected_schema = pl.Schema(
             list(self.perc_change_schema.items()) + [(case.column_alias, pl.Float32())]
         )
@@ -563,8 +569,8 @@ class TestCalcPercChangeBetweenRows:
         test_lf = expected_lf.drop(case.column_alias)
 
         returned_lf = test_lf.with_columns(
-            job.calc_perc_change_between_rows(
-                case.column_name, case.from_date, case.group_columns, case.column_alias
+            job.calc_perc_change_from_previous_april(
+                case.column_name, case.group_columns, case.column_alias
             )
         )
 

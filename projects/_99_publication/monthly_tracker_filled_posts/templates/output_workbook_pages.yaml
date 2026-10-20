@@ -98,7 +98,7 @@ definitions:
   - blank: 2
   - heading: The following table explains the shorthand notations used throughout tables in this report;
   - text: '[x] data is not published in this report.'
-  - text: '< 10 fewer than 10 estimated filled posts. These values are suppressed, not rounded to zero.'
+  - text: '[s] fewer than 10 estimated filled posts. These values are suppressed, not rounded to zero.'
 contents:
   sheet: Contents
   title: Contents
