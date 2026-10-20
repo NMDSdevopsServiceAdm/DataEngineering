@@ -103,7 +103,7 @@ class TestPreparePercChangeForPublication:
         input_lf = pl.LazyFrame(
             {
                 Pub.period: [date(2026, 4, 1)],
-                Pub.period_label: ["Mar-26"],
+                Pub.period_label: ["Mar 2026"],
                 Pub.region: ["London"],
                 Pub.main_service: ["All CQC locations"],
                 Pub.annual_percentage_change: pl.Series([0.1], dtype=pl.Float32),
@@ -264,7 +264,7 @@ class TestBuildDownloadWorkbook:
         worksheet = workbook["T0"]
 
         assert (
-            worksheet.cell(self.header_row_number(worksheet) + 1, 1).value == "Jul-26"
+            worksheet.cell(self.header_row_number(worksheet) + 1, 1).value == "Jul 2026"
         )
 
     @pytest.mark.parametrize(

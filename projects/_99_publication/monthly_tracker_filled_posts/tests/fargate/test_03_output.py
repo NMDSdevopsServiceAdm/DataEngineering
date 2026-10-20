@@ -176,6 +176,7 @@ class TestMain:
             {
                 IndCQC.location_id: ["1-001", "1-001"],
                 IndCQC.cqc_location_import_date: [date(2026, 4, 1)] * 2,
+                Pub.period_label: ["Mar 2026"] * 2,
                 IndCQC.main_job_role_clean_labelled: [
                     "Care worker",
                     "Registered nurse",
