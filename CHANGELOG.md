@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a period label column (e.g. "Mar 2026") to the prepared publication data, used by the download tables.
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/output_workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.

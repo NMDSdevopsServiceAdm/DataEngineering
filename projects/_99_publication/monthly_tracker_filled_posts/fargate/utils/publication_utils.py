@@ -543,7 +543,9 @@ def aggregate_to_publication_rows(
     independently per term within the same group_by so a row can contribute to
     one term's assessment columns without contributing to another's.
 
-    group_keys defaults to (import date, job role, region, service type). A
+    group_keys defaults to (import date, period label, job role, region,
+    service type). The period label is one-to-one with import date, so it
+    adds no groups. A
     narrower set (e.g. dropping job role) still counts each location once,
     since location counts and CT totals are recomputed at that grain rather
     than summed from separately-computed per-job-role values.
@@ -554,7 +556,7 @@ def aggregate_to_publication_rows(
             ct_total_employed_imputed, ct_has_data_*_term and
             ct_dispersion_filter_*_term.
         group_keys (list[str] | None): columns to group by. Defaults to
-            import date, job role, region and service type.
+            import date, period label, job role, region and service type.
         include_assessment (bool): whether to add the assessment columns.
 
     Returns:
@@ -564,6 +566,7 @@ def aggregate_to_publication_rows(
     if group_keys is None:
         group_keys = [
             IndCQC.cqc_location_import_date,
+            Pub.period_label,
             IndCQC.main_job_role_clean_labelled,
             IndCQC.current_region,
             IndCQC.primary_service_type,
@@ -637,6 +640,7 @@ def add_rows_for_publication_groups(
             prepared_lf,
             group_keys=[
                 IndCQC.cqc_location_import_date,
+                Pub.period_label,
                 IndCQC.current_region,
                 IndCQC.primary_service_type,
             ],
@@ -657,6 +661,7 @@ def add_rows_for_publication_groups(
 
     service_type_group_keys = [
         IndCQC.cqc_location_import_date,
+        Pub.period_label,
         IndCQC.main_job_role_clean_labelled,
         IndCQC.current_region,
     ]
@@ -695,6 +700,7 @@ def add_rows_for_publication_groups(
 
     england_group_keys = [
         IndCQC.cqc_location_import_date,
+        Pub.period_label,
         IndCQC.main_job_role_clean_labelled,
         IndCQC.primary_service_type,
     ]
@@ -862,20 +868,21 @@ def import_date_to_period_month(import_date: pl.Expr) -> pl.Expr:
     return import_date.dt.offset_by("-1mo")
 
 
-def _period_label_expr() -> pl.Expr:
+def period_label_expr() -> pl.Expr:
     """
-    Builds a polars expression for a short display label of the period
-    column, one month behind the raw date (e.g. 2026-04-01 -> "Mar-26").
+    Builds a polars expression for the display label of the period, one
+    month behind the import date (e.g. 2026-04-01 -> "Mar 2026").
 
-    The download tables label a row by the financial year it closes out,
-    not its own snapshot date: a row dated at a financial-year-start month
-    (e.g. April) represents the year ending the month before, so the label
-    is offset back by one month for display while the period column itself
-    keeps the real underlying date.
+    A row dated at a financial-year-start month (e.g. April) represents the
+    year ending the month before, so the label is offset back by one month
+    while the import date keeps the real underlying date.
+
+    Returns:
+        pl.Expr: the label, aliased to the period label column.
     """
     return (
         import_date_to_period_month(pl.col(IndCQC.cqc_location_import_date))
-        .dt.strftime("%b-%y")
+        .dt.strftime("%b %Y")
         .alias(Pub.period_label)
     )
 
@@ -908,8 +915,8 @@ def _annual_sampling_filter_expr(today: date | None, fy_start_month: int) -> pl.
     retention window is the current financial year alone) and
     quarter_months=(fy_start_month,) (so the one historical month kept each
     year is the financial-year-start month itself, e.g. April - the row
-    _period_label_expr then labels as the prior financial year's year-end,
-    e.g. "Mar-26").
+    period_label_expr then labels as the prior financial year's year-end,
+    e.g. "Mar 2026").
 
     Args:
         today (date | None): reference date. Defaults to the current system
@@ -1021,7 +1028,7 @@ def build_t0_estimates_download_table(
         .filter(_annual_sampling_filter_expr(today, fy_start_month))
         .select(
             pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
-            _period_label_expr(),
+            pl.col(Pub.period_label),
             pl.col(IndCQC.current_region).alias(Pub.region),
             pl.col(IndCQC.primary_service_type)
             .cast(pl.Utf8)
@@ -1073,7 +1080,7 @@ def build_t1_filled_posts_perc_change_download_table(
     )
     return all_job_roles_lf.select(
         pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
-        _period_label_expr(),
+        pl.col(Pub.period_label),
         pl.col(IndCQC.current_region).alias(Pub.region),
         pl.col(IndCQC.primary_service_type)
         .cast(pl.Utf8)
@@ -1121,7 +1128,7 @@ def build_t2_location_count_perc_change_download_table(
     )
     return all_job_roles_lf.select(
         pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
-        _period_label_expr(),
+        pl.col(Pub.period_label),
         pl.col(IndCQC.current_region).alias(Pub.region),
         pl.col(IndCQC.primary_service_type)
         .cast(pl.Utf8)
