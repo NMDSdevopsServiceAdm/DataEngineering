@@ -22,6 +22,16 @@ def test_slv_rule_classes_have_populated_and_missing_values(rule_class):
 
 
 @pytest.mark.parametrize(
+    "rule_class", [StartersFilteringRule, LeaversFilteringRule, VacanciesFilteringRule]
+)
+def test_slv_rule_classes_include_not_known_code_value(rule_class):
+    assert (
+        rule_class.contained_invalid_missing_data_code
+        == "contained_invalid_missing_data_code"
+    )
+
+
+@pytest.mark.parametrize(
     "attribute, rule_class, column",
     [
         (

@@ -540,6 +540,7 @@ class StartersFilteringRule(ColumnValues):
 
     populated: str = "populated"
     missing_data: str = "missing_data"
+    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
 
 
 @dataclass
@@ -548,6 +549,7 @@ class LeaversFilteringRule(ColumnValues):
 
     populated: str = "populated"
     missing_data: str = "missing_data"
+    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
 
 
 @dataclass
@@ -556,6 +558,7 @@ class VacanciesFilteringRule(ColumnValues):
 
     populated: str = "populated"
     missing_data: str = "missing_data"
+    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
 
 
 @dataclass
