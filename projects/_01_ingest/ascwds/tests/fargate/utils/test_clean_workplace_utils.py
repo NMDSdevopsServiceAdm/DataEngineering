@@ -284,6 +284,26 @@ class TestBoundingExpressions:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestNullSlvJobRolesWhenTotalNotKnown:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.null_slv_job_roles_when_total_not_known_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_data,
+            schema=pl.Schema({col: pl.Int32 for col in case.input_data}),
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, schema=input_lf.collect_schema())
+
+        returned_lf = job.null_slv_job_roles_when_total_not_known(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestMergeLegacyJobRoleColumns:
     @pytest.mark.parametrize(
         "case",
