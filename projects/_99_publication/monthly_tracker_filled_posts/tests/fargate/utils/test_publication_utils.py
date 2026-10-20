@@ -715,7 +715,19 @@ class TestBuildT0EstimatesDownloadTable:
 
 
 class TestBuildT1FilledPostsPercChangeDownloadTable:
-    input_schema = TestBuildT0EstimatesDownloadTable.input_schema
+    input_schema = pl.Schema(
+        [
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+            (Pub.publication_filled_posts_april_perc_change, pl.Float32()),
+            (
+                Pub.publication_filled_posts_cumulative_perc_change_short_term,
+                pl.Float32(),
+            ),
+        ]
+    )
     expected_schema = pl.Schema(
         [
             (Pub.period, pl.Date()),
@@ -748,7 +760,19 @@ class TestBuildT1FilledPostsPercChangeDownloadTable:
 
 
 class TestBuildT2LocationCountPercChangeDownloadTable:
-    input_schema = TestBuildT0EstimatesDownloadTable.input_schema
+    input_schema = pl.Schema(
+        [
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+            (Pub.publication_locationid_count_april_perc_change, pl.Float32()),
+            (
+                Pub.publication_locationid_count_cumulative_perc_change_short_term,
+                pl.Float32(),
+            ),
+        ]
+    )
     expected_schema = TestBuildT1FilledPostsPercChangeDownloadTable.expected_schema
 
     @pytest.mark.parametrize(

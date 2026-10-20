@@ -1482,139 +1482,68 @@ build_t0_estimates_download_table_test_cases = [
     ),
 ]  # fmt: skip
 
-build_t1_filled_posts_perc_change_download_table_test_cases = [
+# Input rows: (period, job role, region, main service, April-on-April change,
+# cumulative short-term change). The same rows serve T1 and T2, which differ
+# only in which metric's columns they read.
+_PERC_CHANGE_DOWNLOAD_TABLE_TEST_CASES = [
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
-        # Every row here is an annual (financial-year-start-month) row, so
-        # annual_percentage_change is populated once a prior year exists and
-        # monthly_percentage_change stays null throughout - there's no
-        # monthly granularity to compare across annual rows.
-        id="annual_percentage_change_is_populated_for_annual_rows_monthly_change_stays_null",
+        id="returns_april_change_as_annual_and_cumulative_change_as_monthly",
         today=_TODAY,
         input_data=[
-            (date(2024, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
-            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
-            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 200.0, 15),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 0.5, None),
+            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, None, 0.1),
         ],
         expected_data=[
-            (date(2024, 4, 1), "Mar-24", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
-            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.3333333, None),
-        ],
-    ),
-    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
-        # The financial-year-start row itself is annual (both null, no prior
-        # year in this data) - every row after it is monthly, so
-        # monthly_percentage_change is populated and annual_percentage_change
-        # stays null. Monthly change is cumulative against the FY-start
-        # baseline (200.0), not month-over-month: the 2026-06-01 row's -0.01
-        # is (198-200)/200, not (198-220)/220.
-        id="monthly_percentage_change_is_populated_for_current_financial_year_rows_annual_change_stays_null",
-        today=_TODAY,
-        input_data=[
-            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 200.0, 15),
-            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 220.0, 16),
-            (date(2026, 6, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 198.0, 14),
-        ],
-        expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.1),
-            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, -0.01),
-        ],
-    ),
-    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
-        # The first monthly row (2026-05-01) has no monthly row before it -
-        # its monthly change compares against the last annual row
-        # (2026-04-01), one month earlier, rather than being null.
-        id="first_monthly_row_compares_against_the_prior_annual_row",
-        today=_TODAY,
-        input_data=[
-            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
-            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 200.0, 15),
-            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 220.0, 16),
-        ],
-        expected_data=[
-            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 1.0, None),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, None),
             (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.1),
         ],
     ),
     BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
-        id="filters_out_individual_job_role_rows_before_computing_change",
+        id="filters_out_individual_job_role_rows",
         today=_TODAY,
         input_data=[
-            (date(2026, 4, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 40.0, 5),
-            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
-            (date(2026, 5, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 999.0, 99),
-            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
+            (date(2026, 4, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 0.9, 0.9),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 0.5, 0.1),
         ],
         expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.5),
+            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, 0.1),
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        # 2025-07-01 is a historical month other than the financial-year-start
+        # month, so it's dropped.
+        id="drops_historical_months_other_than_financial_year_start",
+        today=_TODAY,
+        input_data=[
+            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 0.2, None),
+            (date(2025, 7, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 0.9, None),
+        ],
+        expected_data=[
+            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.2, None),
+        ],
+    ),
+    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
+        id="sorts_by_period_then_region_then_main_service",
+        today=_TODAY,
+        input_data=[
+            (date(2026, 5, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, None, 0.1),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, "South West", _CARE_HOME_WITH_NURSING, 0.3, None),
+            (date(2026, 4, 1), _ALL_JOB_ROLES, "London", _CARE_HOME_WITH_NURSING, 0.5, None),
+        ],
+        expected_data=[
+            (date(2026, 4, 1), "Mar-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, None),
+            (date(2026, 4, 1), "Mar-26", "South West", _PUBLISHED_CARE_HOME_WITH_NURSING, 0.3, None),
+            (date(2026, 5, 1), "Apr-26", "London", _PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.1),
         ],
     ),
 ]  # fmt: skip
 
-build_t2_location_count_perc_change_download_table_test_cases = [
-    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
-        id="annual_percentage_change_is_populated_for_annual_rows_monthly_change_stays_null",
-        today=_TODAY,
-        input_data=[
-            (date(2024, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
-            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 12),
-            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 15),
-        ],
-        expected_data=[
-            (date(2024, 4, 1), "Mar-24", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
-            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.2, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.25, None),
-        ],
-    ),
-    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
-        # Monthly change is cumulative against the FY-start baseline (15),
-        # not month-over-month: the 2026-06-01 row's -0.0666667 is
-        # (14-15)/15, not (14-16)/16.
-        id="monthly_percentage_change_is_populated_for_current_financial_year_rows_annual_change_stays_null",
-        today=_TODAY,
-        input_data=[
-            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 15),
-            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 16),
-            (date(2026, 6, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 14),
-        ],
-        expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.0666667),
-            (date(2026, 6, 1), "May-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, -0.0666667),
-        ],
-    ),
-    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
-        id="first_monthly_row_compares_against_the_prior_annual_row",
-        today=_TODAY,
-        input_data=[
-            (date(2025, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
-            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 15),
-            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 16),
-        ],
-        expected_data=[
-            (date(2025, 4, 1), "Mar-25", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, 0.5, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.0666667),
-        ],
-    ),
-    BuildFilledPostsOrLocationCountPercChangeDownloadTableTestCase(
-        id="filters_out_individual_job_role_rows_before_computing_change",
-        today=_TODAY,
-        input_data=[
-            (date(2026, 4, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 40.0, 5),
-            (date(2026, 4, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 100.0, 10),
-            (date(2026, 5, 1), "Registered nurse", *_LONDON_CARE_HOME_WITH_NURSING, 999.0, 99),
-            (date(2026, 5, 1), _ALL_JOB_ROLES, *_LONDON_CARE_HOME_WITH_NURSING, 150.0, 12),
-        ],
-        expected_data=[
-            (date(2026, 4, 1), "Mar-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, None),
-            (date(2026, 5, 1), "Apr-26", *_LONDON_PUBLISHED_CARE_HOME_WITH_NURSING, None, 0.2),
-        ],
-    ),
-]  # fmt: skip
+build_t1_filled_posts_perc_change_download_table_test_cases = (
+    _PERC_CHANGE_DOWNLOAD_TABLE_TEST_CASES
+)
+build_t2_location_count_perc_change_download_table_test_cases = (
+    _PERC_CHANGE_DOWNLOAD_TABLE_TEST_CASES
+)
 
 
 @dataclass

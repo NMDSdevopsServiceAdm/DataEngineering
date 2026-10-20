@@ -16,10 +16,6 @@ from utils.column_values.categorical_column_values import (
 _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 
-_DOWNLOAD_TABLE_GROUP_COLUMNS: list[str] = [
-    IndCQC.current_region,
-    IndCQC.primary_service_type,
-]
 _DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
     Pub.period,
     Pub.region,
@@ -927,66 +923,6 @@ def _annual_sampling_filter_expr(today: date | None, fy_start_month: int) -> pl.
     )
 
 
-def _split_annual_and_monthly_perc_change(
-    lazy_df: pl.LazyFrame,
-    column_name: str,
-    today: date | None,
-    fy_start_month: int,
-) -> pl.LazyFrame:
-    """
-    Adds annual_percentage_change and monthly_percentage_change to an
-    annual-sampling-filtered frame.
-
-    annual_percentage_change is a row-over-row change (the annual series is
-    exactly one year apart row-to-row). monthly_percentage_change is
-    cumulative against the financial-year-start baseline (the last annual
-    row), not month-over-month - matching the published reference's own
-    convention. The first monthly row's change is the same under either
-    definition, since it's a single step from that baseline either way.
-    Whichever period a row falls into gets that change, the other column
-    stays null, since a row is never in both series.
-
-    Args:
-        lazy_df (pl.LazyFrame): output of _annual_sampling_filter_expr,
-            filtered to the "All job roles" rollup.
-        column_name (str): the value column to measure change in.
-        today (date | None): reference date for the financial year split.
-        fy_start_month (int): month the financial year starts.
-
-    Returns:
-        pl.LazyFrame: lazy_df with annual_percentage_change and
-            monthly_percentage_change added.
-    """
-    fy_start = _financial_year_start(today, fy_start_month)
-    raw_annual_change_column = "_raw_annual_perc_change"
-    raw_monthly_change_column = "_raw_monthly_perc_change"
-    lazy_df = lazy_df.with_columns(
-        calc_perc_change_against_periods_ago(
-            column_name,
-            1,
-            _DOWNLOAD_TABLE_GROUP_COLUMNS,
-            raw_annual_change_column,
-        ),
-        calc_perc_change_cumulative_from_given_period_onwards(
-            column_name,
-            fy_start,
-            _DOWNLOAD_TABLE_GROUP_COLUMNS,
-            raw_monthly_change_column,
-        ),
-    )
-    is_monthly_row = pl.col(IndCQC.cqc_location_import_date) > fy_start
-    return lazy_df.with_columns(
-        pl.when(is_monthly_row)
-        .then(None)
-        .otherwise(pl.col(raw_annual_change_column))
-        .alias(Pub.annual_percentage_change),
-        pl.when(is_monthly_row)
-        .then(pl.col(raw_monthly_change_column))
-        .otherwise(None)
-        .alias(Pub.monthly_percentage_change),
-    ).drop(raw_annual_change_column, raw_monthly_change_column)
-
-
 def build_t0_estimates_download_table(
     publication_summary_lf: pl.LazyFrame,
     today: date | None = None,
@@ -1049,9 +985,9 @@ def build_t1_filled_posts_perc_change_download_table(
     Filters to the "All job roles" rollup row, since the download has no
     job-role breakdown, reduces historical periods to one per year with
     full monthly detail for the current financial year (see
-    _annual_sampling_filter_expr), then computes the annual/monthly
-    percentage change split against publication_filled_posts within each
-    (region, main_service) group (see _split_annual_and_monthly_perc_change).
+    _annual_sampling_filter_expr), then selects the pre-computed
+    April-on-April (annual) and cumulative short-term (monthly) percentage
+    changes of filled posts.
 
     Args:
         publication_summary_lf (pl.LazyFrame): output of
@@ -1068,9 +1004,6 @@ def build_t1_filled_posts_perc_change_download_table(
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
     )
-    all_job_roles_lf = _split_annual_and_monthly_perc_change(
-        all_job_roles_lf, Pub.publication_filled_posts, today, fy_start_month
-    )
     return all_job_roles_lf.select(
         pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
         _period_label_expr(),
@@ -1079,8 +1012,12 @@ def build_t1_filled_posts_perc_change_download_table(
         .cast(pl.Utf8)
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
-        pl.col(Pub.annual_percentage_change),
-        pl.col(Pub.monthly_percentage_change),
+        pl.col(Pub.publication_filled_posts_april_perc_change).alias(
+            Pub.annual_percentage_change
+        ),
+        pl.col(Pub.publication_filled_posts_cumulative_perc_change_short_term).alias(
+            Pub.monthly_percentage_change
+        ),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
 
 
@@ -1096,10 +1033,9 @@ def build_t2_location_count_perc_change_download_table(
     Filters to the "All job roles" rollup row, since the download has no
     job-role breakdown, reduces historical periods to one per year with
     full monthly detail for the current financial year (see
-    _annual_sampling_filter_expr), then computes the annual/monthly
-    percentage change split against publication_locationid_count within
-    each (region, main_service) group (see
-    _split_annual_and_monthly_perc_change).
+    _annual_sampling_filter_expr), then selects the pre-computed
+    April-on-April (annual) and cumulative short-term (monthly) percentage
+    changes of CQC location count.
 
     Args:
         publication_summary_lf (pl.LazyFrame): output of
@@ -1116,9 +1052,6 @@ def build_t2_location_count_perc_change_download_table(
     all_job_roles_lf = _filter_to_all_job_roles_rollup(publication_summary_lf).filter(
         _annual_sampling_filter_expr(today, fy_start_month)
     )
-    all_job_roles_lf = _split_annual_and_monthly_perc_change(
-        all_job_roles_lf, Pub.publication_locationid_count, today, fy_start_month
-    )
     return all_job_roles_lf.select(
         pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
         _period_label_expr(),
@@ -1127,6 +1060,10 @@ def build_t2_location_count_perc_change_download_table(
         .cast(pl.Utf8)
         .replace(_PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
         .alias(Pub.main_service),
-        pl.col(Pub.annual_percentage_change),
-        pl.col(Pub.monthly_percentage_change),
+        pl.col(Pub.publication_locationid_count_april_perc_change).alias(
+            Pub.annual_percentage_change
+        ),
+        pl.col(
+            Pub.publication_locationid_count_cumulative_perc_change_short_term
+        ).alias(Pub.monthly_percentage_change),
     ).sort(_DOWNLOAD_TABLE_SORT_COLUMNS)
