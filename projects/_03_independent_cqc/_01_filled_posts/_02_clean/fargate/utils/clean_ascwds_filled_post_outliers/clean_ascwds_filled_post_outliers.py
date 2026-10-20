@@ -1,7 +1,7 @@
 import polars as pl
 
 from polars_utils.filtering_utils import (
-    add_filtering_rule_column,
+    create_cleaned_column_with_filtering_rule,
 )
 from projects._03_independent_cqc._01_filled_posts._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.non_res_brand_id_filter import (
     non_res_brand_id_filter,
@@ -40,15 +40,11 @@ def clean_ascwds_filled_post_outliers(
     """
     print("Cleaning ascwds_filled_posts_dedup...")
 
-    lf = lf.with_columns(
-        pl.col(IndCQC.ascwds_filled_posts_dedup).alias(
-            IndCQC.ascwds_filled_posts_dedup_clean
-        )
-    )
-    lf = add_filtering_rule_column(
+    lf = create_cleaned_column_with_filtering_rule(
         lf,
-        IndCQC.ascwds_filtering_rule,
+        IndCQC.ascwds_filled_posts_dedup,
         IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.ascwds_filtering_rule,
         AscwdsFilteringRule.populated,
         AscwdsFilteringRule.missing_data,
     )

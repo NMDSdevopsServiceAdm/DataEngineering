@@ -45,6 +45,43 @@ def add_filtering_rule_column(
     return lf.with_columns(expr.alias(filter_rule_col_name))
 
 
+def create_cleaned_column_with_filtering_rule(
+    lf: pl.LazyFrame,
+    source_column: str,
+    cleaned_column: str,
+    filtering_rule_column: str,
+    populated_rule: str,
+    missing_rule: str,
+    categorical_type: pl.Categorical | None = None,
+) -> pl.LazyFrame:
+    """
+    Copies a column to a cleaned column and adds its filtering rule column.
+
+    The source column is left unchanged.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame containing the `source_column`.
+        source_column (str): The column to copy.
+        cleaned_column (str): The name of the new cleaned column.
+        filtering_rule_column (str): The name of the new filtering rule column.
+        populated_rule (str): The rule to assign when the cleaned value is present.
+        missing_rule (str): The rule to assign when the cleaned value is null.
+        categorical_type (pl.Categorical | None, optional): If provided, the rule column is this type. Defaults to None.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with the cleaned and filtering rule columns added.
+    """
+    lf = lf.with_columns(pl.col(source_column).alias(cleaned_column))
+    return add_filtering_rule_column(
+        lf,
+        filtering_rule_column,
+        cleaned_column,
+        populated_rule,
+        missing_rule,
+        categorical_type,
+    )
+
+
 def update_filtering_rule(
     lf: pl.LazyFrame,
     filter_rule_col_name: str,

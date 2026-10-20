@@ -281,3 +281,54 @@ class TestNotNullFilterExpr:
         expr = job.not_null_filter_expr("some_other_column")
 
         assert set(expr.meta.root_names()) == {"some_other_column"}
+
+
+class TestCreateCleanedColumnWithFilteringRule:
+    SOURCE = "source"
+    CLEANED = "cleaned"
+    RULE = "rule"
+
+    def run_helper(self, categorical_type=None) -> pl.DataFrame:
+        lf = pl.LazyFrame({self.SOURCE: [1.0, None, 3.0]})
+        return job.create_cleaned_column_with_filtering_rule(
+            lf,
+            self.SOURCE,
+            self.CLEANED,
+            self.RULE,
+            "populated",
+            "missing_data",
+            categorical_type,
+        ).collect()
+
+    def test_create_cleaned_column_copies_source_values(self):
+        returned_df = self.run_helper()
+
+        assert returned_df[self.CLEANED].to_list() == [1.0, None, 3.0]
+
+    def test_rule_is_populated_when_value_present(self):
+        returned_df = self.run_helper()
+
+        assert returned_df[self.RULE][0] == "populated"
+        assert returned_df[self.RULE][2] == "populated"
+
+    def test_rule_is_missing_data_when_value_null(self):
+        returned_df = self.run_helper()
+
+        assert returned_df[self.RULE][1] == "missing_data"
+
+    def test_source_column_unchanged(self):
+        returned_df = self.run_helper()
+
+        assert returned_df[self.SOURCE].to_list() == [1.0, None, 3.0]
+
+    @pytest.mark.parametrize(
+        "categorical_type, expected_dtype",
+        [
+            (None, pl.String),
+            (pl.Categorical, pl.Categorical),
+        ],
+    )
+    def test_rule_column_dtype(self, categorical_type, expected_dtype):
+        returned_df = self.run_helper(categorical_type)
+
+        assert returned_df.schema[self.RULE] == expected_dtype
