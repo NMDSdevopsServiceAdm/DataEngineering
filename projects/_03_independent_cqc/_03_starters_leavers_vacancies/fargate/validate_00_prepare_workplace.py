@@ -93,7 +93,7 @@ def main(
             brief="Primary key (establishment_id, ascwds_workplace_import_date, "
             "published_job_role_label) should be unique",
         )
-        # numeric (999 "not known" is nulled in ingest, so only non-negativity is checked here)
+        # numeric (only non-negativity is checked here)
         .col_vals_ge(SLVCols.starters, 0, na_pass=True)
         .col_vals_ge(SLVCols.leavers, 0, na_pass=True)
         .col_vals_ge(SLVCols.vacancies, 0, na_pass=True)
