@@ -1,14 +1,18 @@
-import polars_utils.cleaning_utils as cUtils
+import polars as pl
+
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.clean_utils as cleanUtils
 import projects._03_independent_cqc.utils.cleaning_utils as cleaningUtils
 from polars_utils import utils
+from polars_utils.filtering_utils import add_filtering_rule_column
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
 )
-from utils.column_values.categorical_column_values import SLVFilteringRule
-
-NOT_KNOWN_CODE = 999  # '999' is used elsewhere in ASCWDS to represent not known.
+from utils.column_values.categorical_column_values import (
+    LeaversFilteringRule,
+    StartersFilteringRule,
+    VacanciesFilteringRule,
+)
 
 
 def main(
@@ -24,30 +28,49 @@ def main(
     """
     lf = utils.scan_parquet(merged_data_source)
 
-    # Nulls ASCWDS's 999 "not known" code in starters/leavers/vacancies, recording
-    # why in a filtering-rule column per metric.
-    lf = cUtils.null_not_known_values(
-        lf,
-        columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
-        not_known_code=NOT_KNOWN_CODE,
-        populated_rule=SLVFilteringRule.populated,
-        missing_rule=SLVFilteringRule.missing_data,
-        not_known_rule=SLVFilteringRule.contained_invalid_missing_data_code,
-    )
-
     # Each metric is deduplicated independently; a job role's value is only
     # nulled when no job role at that workplace/date changed it.
     lf = cleaningUtils.remove_repeated_values_over_time_as_group(
         lf,
-        columns_to_clean=[
-            SLVCols.starters_cleaned,
-            SLVCols.leavers_cleaned,
-            SLVCols.vacancies_cleaned,
-        ],
+        columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
         partition_by_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
         date_column=IndCQC.cqc_location_import_date,
         workplace_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
         independent=True,
+    )
+
+    lf = lf.with_columns(
+        pl.col(SLVCols.starters_dedup).alias(SLVCols.starters_cleaned),
+        pl.col(SLVCols.leavers_dedup).alias(SLVCols.leavers_cleaned),
+        pl.col(SLVCols.vacancies_dedup).alias(SLVCols.vacancies_cleaned),
+    )
+    lf = add_filtering_rule_column(
+        lf,
+        SLVCols.starters_filtering_rule,
+        SLVCols.starters_dedup,
+        StartersFilteringRule.populated,
+        StartersFilteringRule.missing_data,
+        pl.Categorical,
+    )
+    lf = add_filtering_rule_column(
+        lf,
+        SLVCols.leavers_filtering_rule,
+        SLVCols.leavers_dedup,
+        LeaversFilteringRule.populated,
+        LeaversFilteringRule.missing_data,
+        pl.Categorical,
+    )
+    lf = add_filtering_rule_column(
+        lf,
+        SLVCols.vacancies_filtering_rule,
+        SLVCols.vacancies_dedup,
+        VacanciesFilteringRule.populated,
+        VacanciesFilteringRule.missing_data,
+        pl.Categorical,
+    )
+
+    lf = lf.drop(
+        [SLVCols.starters_dedup, SLVCols.leavers_dedup, SLVCols.vacancies_dedup]
     )
 
     lf = cleanUtils.create_slv_rate_columns(lf)

@@ -23,18 +23,18 @@ class TestMain:
         source_schema = {
             IndCqcColumns.location_id: pl.String,
             EmpStatus.estimated_employees: pl.Float64,
+            SLVCols.starters: pl.Int64,
+            SLVCols.leavers: pl.Int64,
+            SLVCols.vacancies: pl.Int64,
             SLVCols.starters_cleaned: pl.Int64,
             SLVCols.leavers_cleaned: pl.Int64,
             SLVCols.vacancies_cleaned: pl.Int64,
-            SLVCols.starters_cleaned_dedup: pl.Int64,
-            SLVCols.leavers_cleaned_dedup: pl.Int64,
-            SLVCols.vacancies_cleaned_dedup: pl.Int64,
             SLVCols.turnover_rate: pl.Float32,
             SLVCols.starter_rate: pl.Float32,
             SLVCols.vacancy_rate: pl.Float32,
-            SLVCols.starters_filtering_rule: pl.String,
-            SLVCols.leavers_filtering_rule: pl.String,
-            SLVCols.vacancies_filtering_rule: pl.String,
+            SLVCols.starters_filtering_rule: pl.Categorical,
+            SLVCols.leavers_filtering_rule: pl.Categorical,
+            SLVCols.vacancies_filtering_rule: pl.Categorical,
         }
         source_rows = [
             (
@@ -100,9 +100,35 @@ class TestMain:
             "col_vals_ge",
             "col_vals_between",
             "col_vals_in_set",
+            "col_vals_expr",
         }
 
         for assertion in expected_assertions:
             assert (
                 assertion in assertion_types_present
             ), f"{assertion} not found in validation report"
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_validation_flags_rows_where_cleaned_breaks_rules(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        # cleaned populated but rule says missing, and cleaned differs from raw
+        bad_df = self.source_df.with_columns(
+            pl.lit(SLVFilteringRule.missing_data)
+            .cast(pl.Categorical)
+            .alias(SLVCols.starters_filtering_rule),
+            pl.lit(99).alias(SLVCols.leavers_cleaned),
+        )
+        mock_read_parquet.side_effect = [bad_df, self.compare_df]
+
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+
+        report_json = json.loads(mock_write_reports.call_args[0][0].get_json_report())
+        failed_briefs = {item["brief"] for item in report_json if item["n_failed"] > 0}
+        assert failed_briefs == {
+            "starters_cleaned is populated exactly when starters_filtering_rule is populated",
+            "leavers_cleaned equals leavers where populated",
+        }
