@@ -217,11 +217,11 @@ class TestWritePages:
 
         assert cell.alignment.wrap_text is True
 
-    def test_definitions_notation_key_defines_x_and_less_than_10(self, workbook):
+    def test_definitions_notation_key_defines_x_and_s(self, workbook):
         column_a = self.column_a(workbook["Definitions"])
 
         assert "[x] data is not published in this report." in column_a
-        assert any(str(value).startswith("< 10 ") for value in column_a)
+        assert any(str(value).startswith("[s] ") for value in column_a)
 
     def test_contents_lists_each_table_number_and_title_without_table_prefix(
         self, workbook
