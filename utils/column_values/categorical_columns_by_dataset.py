@@ -56,6 +56,7 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     ImputedProportionEmployingStaffSource,
     JobGroupLabels,
+    LeaversFilteringRule,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
     Region,
@@ -63,9 +64,10 @@ from utils.column_values.categorical_column_values import (
     RelatedLocation,
     Sector,
     Services,
-    SLVFilteringRule,
     Specialisms,
     SpecialistGeneralistOther,
+    StartersFilteringRule,
+    VacanciesFilteringRule,
 )
 
 
@@ -332,13 +334,13 @@ class SLVPrepareCategoricalValues:
 
 @dataclass
 class SLVCleanCategoricalValues:
-    starters_filtering_rule_column_values = SLVFilteringRule(
+    starters_filtering_rule_column_values = StartersFilteringRule(
         SLVCols.starters_filtering_rule
     )
-    leavers_filtering_rule_column_values = SLVFilteringRule(
+    leavers_filtering_rule_column_values = LeaversFilteringRule(
         SLVCols.leavers_filtering_rule
     )
-    vacancies_filtering_rule_column_values = SLVFilteringRule(
+    vacancies_filtering_rule_column_values = VacanciesFilteringRule(
         SLVCols.vacancies_filtering_rule
     )
 
