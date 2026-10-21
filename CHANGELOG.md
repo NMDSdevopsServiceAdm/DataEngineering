@@ -6,7 +6,6 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added the previous run's filled posts and the percentage change from them to the assessment data.
 - Added a period label column (e.g. "Mar 2026") to the prepared publication data, used by the download tables.
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
@@ -14,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Extended the run log update script to select a run for publication and start Publication-Output for it, set the `reconciled` and `locally_checked` flags, and list the month's runs.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 - Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
+- Added the previous run's filled posts and the percentage change from them to the assessment data.
 
 ### Changed
 - Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
