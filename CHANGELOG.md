@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
+- Renamed the employment status deduplicated count columns to `_clean` in the clean step instead of copying them, so no `_dedup` columns are output.
 - Made the raw column optional in `update_filtering_rule` (now `uncapped_col_name`, only needed when winsorizing) and updated all callers.
 - Partitioned the publication assessment data by archive date and run number so each assessed run is kept.
 - Split the starters, leavers and vacancies filtering rule into one class per metric, each with its own allowed values.
