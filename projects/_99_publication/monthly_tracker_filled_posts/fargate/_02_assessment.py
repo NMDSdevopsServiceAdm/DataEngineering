@@ -23,7 +23,7 @@ def main(
 ) -> None:
     """
     Builds the assessment data for one prepared run: publication and assessment
-    columns by import date, job role, region and service type, with rollup rows
+    columns by import date, job role, region and service type, with rollup rows,
     capacity tracker (CT) percentage changes and the previous run's filled posts
     percentage changes.
 
