@@ -220,12 +220,13 @@ def main(
         workplace_lf, still_matching_duplicates_lf
     )
 
+    # Must run before bounding, which nulls the negative job role values this checks.
+    workplace_lf = wUtils.null_slv_job_roles_when_not_known(workplace_lf)
+
     workplace_lf = workplace_lf.with_columns(
         bounds.filled_posts_expr,
         bounds.slv_expr,
     )
-
-    workplace_lf = wUtils.null_slv_job_roles_when_total_not_known(workplace_lf)
 
     workplace_lf = wUtils.merge_legacy_job_role_columns(
         workplace_lf, legacy_job_roles_dict

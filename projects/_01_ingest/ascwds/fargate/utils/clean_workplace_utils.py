@@ -354,24 +354,25 @@ class BoundingExpressions:
     )
 
 
-def null_slv_job_roles_when_total_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
+def null_slv_job_roles_when_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Null starters, leavers and vacancies job role columns where their total is not known.
+    Null starters, leavers and vacancies job role columns where the total or any role is not known.
 
-    The total columns are workplace summary columns: a not known total is the
-    source of truth and nulls every job role value, even where some are
-    populated, as unpopulated roles auto-populate as 0 which could be a false
-    zero rather than a true one. Each measure is handled independently.
+    A workplace's measure is either wholly in or out, so one not known value
+    nulls every job role of that measure, even where some are populated, as
+    unpopulated roles auto-populate as 0 which could be a false zero. Each
+    measure is handled independently.
 
-    A total is not known when it is negative (-1/-2) or a positive multiple
+    A value is not known when it is negative (-1/-2) or a positive multiple
     of 999 (a proxy for not known, which sums when repeated e.g. 2997).
-    0 and null totals are left as is.
+    0 and null values are left as is. Must run before negative job role values
+    are bounded to null.
 
     Args:
         lf (pl.LazyFrame): Workplace LazyFrame with integer total and job role columns.
 
     Returns:
-        pl.LazyFrame: lf with job role columns nulled where their total is not known.
+        pl.LazyFrame: lf with job role columns nulled where the total or any role is not known.
     """
     total_to_job_role_columns = {
         AWPClean.total_starters: cs.starts_with("jr") & cs.ends_with("strt"),
@@ -380,10 +381,14 @@ def null_slv_job_roles_when_total_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
     }
     not_known_multiple = 999
 
+    def is_not_known(values: pl.Expr) -> pl.Expr:
+        return (values < 0) | ((values > 0) & (values % not_known_multiple == 0))
+
     return lf.with_columns(
         pl.when(
-            (pl.col(total) < 0)
-            | ((pl.col(total) > 0) & (pl.col(total) % not_known_multiple == 0))
+            pl.any_horizontal(
+                is_not_known(pl.col(total)), is_not_known(job_role_columns.as_expr())
+            )
         )
         .then(None)
         .otherwise(job_role_columns)
