@@ -69,7 +69,7 @@ def mocks():
             date=stack.enter_context(patch(f"{PATCH_PATH}.date")),
             add_previous_columns=_patch_publication_utils(
                 stack,
-                "add_previous_publication_columns",
+                "add_prev_run_filled_posts_columns",
                 side_effect=lambda lazy_df, previous_lf: lazy_df,
             ),
             has_consistent_service=_patch_publication_utils(
@@ -311,7 +311,7 @@ class TestMain:
         )
         assert_frame_equal(sink_kwargs["lazy_df"], expected_lf)
 
-    def test_main_adds_previous_publication_columns_from_the_previous_run(self, mocks):
+    def test_main_adds_prev_run_filled_posts_columns_from_the_previous_run(self, mocks):
         mocks.resolve_previous_run_source.return_value = TEST_PREVIOUS_RUN_SOURCE
         previous_lf = pl.LazyFrame({"previous": [1]})
         prepared_lf = mocks.scan_parquet.return_value

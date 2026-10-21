@@ -65,11 +65,9 @@ class PublicationColumns:
     publication_locationid_count_april_perc_change: str = (
         "publication_locationid_count_april_perc_change"
     )
-    previous_publication_filled_posts_april_perc_change: str = (
-        "previous_publication_filled_posts_april_perc_change"
-    )
-    previous_publication_filled_posts_cumulative_perc_change_short_term: str = (
-        "previous_publication_filled_posts_cumulative_perc_change_short_term"
+    prev_run_filled_posts: str = "prev_run_filled_posts"
+    publication_filled_posts_perc_change_vs_prev_run: str = (
+        "publication_filled_posts_perc_change_vs_prev_run"
     )
     main_service: str = "Main service"
     job_group: str = "Job group"
