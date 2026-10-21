@@ -25,6 +25,7 @@ TEST_TODAY = date(2026, 10, 6)
 input_schema = pl.Schema(
     [
         (IndCQC.cqc_location_import_date, pl.Date()),
+        (Pub.period_label, pl.String()),
         (IndCQC.main_job_role_clean_labelled, pl.String()),
         (IndCQC.current_region, pl.String()),
         (IndCQC.primary_service_type, pl.String()),
@@ -63,9 +64,11 @@ def _input_row(
     job_role: str = PublishedJobGroupLabels.all_job_roles,
     region: str = "London",
     values: tuple = (100.0, 10, None, None, None, None),
+    period_label: str = "Mar 2026",
 ) -> tuple:
     return (
         import_date,
+        period_label,
         job_role,
         region,
         PrimaryServiceType.care_home_with_nursing,
@@ -115,7 +118,11 @@ class TestMain:
 
     def test_main_selects_and_renames_the_download_table_columns(self, mocks):
         input_rows = [
-            _input_row(date(2026, 5, 1), values=(121.0, 12, 0.1, 0.2, 0.3, 0.4)),
+            _input_row(
+                date(2026, 5, 1),
+                values=(121.0, 12, 0.1, 0.2, 0.3, 0.4),
+                period_label="Apr 2026",
+            ),
         ]
 
         returned_lf = _run_main(mocks, input_rows)
@@ -207,7 +214,9 @@ class TestMain:
             (None, pytest.approx(0.5), None, pytest.approx(0.6)),
         ]
 
-    def test_main_labels_a_financial_year_start_row_as_the_previous_month(self, mocks):
-        returned_lf = _run_main(mocks, [_input_row(date(2026, 4, 1))])
+    def test_main_passes_the_period_label_through(self, mocks):
+        input_rows = [_input_row(date(2026, 4, 1), period_label="Some label")]
 
-        assert returned_lf.collect()[Pub.period_label].to_list() == ["Mar 2026"]
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.collect()[Pub.period_label].to_list() == ["Some label"]

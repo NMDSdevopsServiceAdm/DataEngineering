@@ -48,7 +48,7 @@ def main(
         publication_summary_lf.filter(annual_sampling_expr)
         .select(
             pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
-            publication_utils.period_label_expr(),
+            Pub.period_label,
             pl.col(IndCQC.current_region).alias(Pub.region),
             pl.col(IndCQC.primary_service_type)
             .cast(pl.Utf8)
