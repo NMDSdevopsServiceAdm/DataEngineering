@@ -8,24 +8,29 @@ STEP_FUNCTIONS_DIR = (
     Path(__file__).parents[2] / "terraform" / "pipeline" / "step-functions" / "dynamic"
 )
 
+DATASET_BUCKET_URI_PREFIX = "${dataset_bucket_uri}/"
 
-def get_command_path(step_function_filename: str, flag: str) -> str:
+
+def get_command_paths(step_function_filename: str, flag: str) -> list[str]:
     """
-    Extracts a path argument from a publication task's command in a step function.
+    Extracts every path passed to a flag in a step function's publication commands.
+
+    A task given the bucket separately (e.g. validation) passes a path relative to
+    the bucket, so the dataset bucket URI prefix is removed to compare paths.
 
     Args:
         step_function_filename (str): Filename under terraform/pipeline/step-functions/dynamic/.
-        flag (str): The CLI flag whose value to extract, e.g. "--prep_source" or "--assessment_source".
+        flag (str): The CLI flag whose values to extract, e.g. "--prep_source" or "--assessment_source".
 
     Returns:
-        str: The path passed to that flag.
+        list[str]: The paths passed to that flag, in file order.
     """
     step_function_path = STEP_FUNCTIONS_DIR / step_function_filename
-    flag_match = re.search(
+    flag_matches = re.findall(
         rf"'{re.escape(flag)}',\s*'([^']+)'", step_function_path.read_text()
     )
-    assert flag_match, f"Flag '{flag}' not found in {step_function_path}"
-    return flag_match.group(1)
+    assert flag_matches, f"Flag '{flag}' not found in {step_function_path}"
+    return [path.removeprefix(DATASET_BUCKET_URI_PREFIX) for path in flag_matches]
 
 
 @dataclass
@@ -62,11 +67,13 @@ class TestPublicationPrepStorePathConsistency:
 
     def test_every_command_uses_the_same_prep_store_path(self):
         paths = {
-            case.id: get_command_path(case.step_function_filename, case.flag)
+            case.id: get_command_paths(case.step_function_filename, case.flag)
             for case in prep_store_command_test_cases
         }
 
-        assert len(set(paths.values())) == 1, paths
+        assert (
+            len({path for case_paths in paths.values() for path in case_paths}) == 1
+        ), paths
 
     @pytest.mark.parametrize(
         "step_function_filename,flag",
@@ -75,9 +82,12 @@ class TestPublicationPrepStorePathConsistency:
     def test_prep_store_path_is_the_merge_and_prep_dataset(
         self, step_function_filename, flag
     ):
-        path = get_command_path(step_function_filename, flag)
+        paths = get_command_paths(step_function_filename, flag)
 
-        assert path.endswith("/dataset=monthly_tracker_filled_posts_01_merge_and_prep/")
+        assert all(
+            path.endswith("/dataset=monthly_tracker_filled_posts_01_merge_and_prep/")
+            for path in paths
+        ), paths
 
 
 assessment_store_command_test_cases = [
@@ -102,11 +112,13 @@ class TestPublicationAssessmentStorePathConsistency:
 
     def test_every_command_uses_the_same_assessment_store_path(self):
         paths = {
-            case.id: get_command_path(case.step_function_filename, case.flag)
+            case.id: get_command_paths(case.step_function_filename, case.flag)
             for case in assessment_store_command_test_cases
         }
 
-        assert len(set(paths.values())) == 1, paths
+        assert (
+            len({path for case_paths in paths.values() for path in case_paths}) == 1
+        ), paths
 
     @pytest.mark.parametrize(
         "step_function_filename,flag",
@@ -115,6 +127,9 @@ class TestPublicationAssessmentStorePathConsistency:
     def test_assessment_store_path_is_the_assessment_dataset(
         self, step_function_filename, flag
     ):
-        path = get_command_path(step_function_filename, flag)
+        paths = get_command_paths(step_function_filename, flag)
 
-        assert path.endswith("/dataset=monthly_tracker_filled_posts_02_assessment/")
+        assert all(
+            path.endswith("/dataset=monthly_tracker_filled_posts_02_assessment/")
+            for path in paths
+        ), paths
