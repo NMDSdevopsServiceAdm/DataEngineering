@@ -579,12 +579,9 @@ class StartersLeaversVacanciesColumns:
     starters_filtering_rule: str = starters + "_filtering_rule"
     leavers_filtering_rule: str = leavers + "_filtering_rule"
     vacancies_filtering_rule: str = vacancies + "_filtering_rule"
-    starters_cleaned_dedup: str = starters_cleaned + "_dedup"
-    leavers_cleaned_dedup: str = leavers_cleaned + "_dedup"
-    vacancies_cleaned_dedup: str = vacancies_cleaned + "_dedup"
-    turnover_rate_dedup: str = turnover_rate + "_deduplicated"
-    starter_rate_dedup: str = starter_rate + "_deduplicated"
-    vacancy_rate_dedup: str = vacancy_rate + "_deduplicated"
+    starters_dedup: str = starters + "_dedup"
+    leavers_dedup: str = leavers + "_dedup"
+    vacancies_dedup: str = vacancies + "_dedup"
 
 
 @dataclass

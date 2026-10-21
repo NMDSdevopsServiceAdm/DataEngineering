@@ -43,7 +43,6 @@ def null_posts_per_bed_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = update_filtering_rule(
         lf,
         IndCQC.ct_care_home_filtering_rule,
-        IndCQC.ct_care_home_total_employed,
         IndCQC.ct_care_home_total_employed_cleaned,
         CTFilteringRule.populated,
         CTFilteringRule.beds_ratio_outlier,

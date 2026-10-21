@@ -54,7 +54,6 @@ def non_res_brand_id_filter(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = update_filtering_rule(
         lf=lf,
         filter_rule_col_name=IndCQC.ascwds_filtering_rule,
-        raw_col_name=IndCQC.ascwds_filled_posts_dedup_clean,
         clean_col_name=IndCQC.ascwds_filled_posts_dedup_clean,
         populated_rule=AscwdsFilteringRule.populated,
         new_rule_name=AscwdsFilteringRule.brand_id_filter,

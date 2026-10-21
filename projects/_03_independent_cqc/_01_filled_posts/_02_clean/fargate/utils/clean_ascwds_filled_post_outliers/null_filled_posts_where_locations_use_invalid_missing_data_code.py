@@ -42,7 +42,6 @@ def null_filled_posts_where_locations_use_invalid_missing_data_code(
     lf = update_filtering_rule(
         lf,
         IndCQC.ascwds_filtering_rule,
-        IndCQC.ascwds_filled_posts_dedup,
         IndCQC.ascwds_filled_posts_dedup_clean,
         AscwdsFilteringRule.populated,
         AscwdsFilteringRule.contained_invalid_missing_data_code,
