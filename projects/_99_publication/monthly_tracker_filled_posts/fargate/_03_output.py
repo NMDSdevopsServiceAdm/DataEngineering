@@ -47,7 +47,7 @@ def main(
 
     publication_summary_lf = publication_summary_lf.with_columns(
         publication_utils.round_to_publication_bands(
-            Pub.publication_filled_posts, Pub.publication_filled_posts_rounded
+            Pub.filled_posts, Pub.filled_posts_rounded
         ),
     )
 

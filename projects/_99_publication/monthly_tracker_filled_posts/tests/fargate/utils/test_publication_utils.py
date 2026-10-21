@@ -130,16 +130,15 @@ class TestHasConsistentServiceSinceDate:
         self, case
     ):
         expected_schema = pl.Schema(
-            list(self.schema.items())
-            + [(Pub.consistent_service_short_term, pl.Boolean())]
+            list(self.schema.items()) + [(Pub.consistent_service_short, pl.Boolean())]
         )
         expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
 
-        test_lf = expected_lf.drop(Pub.consistent_service_short_term)
+        test_lf = expected_lf.drop(Pub.consistent_service_short)
 
         returned_lf = test_lf.with_columns(
             job.has_consistent_service_since_date(
-                case.from_date, Pub.consistent_service_short_term
+                case.from_date, Pub.consistent_service_short
             )
         )
 
@@ -189,15 +188,15 @@ class TestAggregateToPublicationRows:
                 pl.Float32(),
             ),
             (Pub.ct_total_employed_imputed, pl.Float32()),
-            (Pub.consistent_service_long_term, pl.Boolean()),
-            (Pub.consistent_service_medium_term, pl.Boolean()),
-            (Pub.consistent_service_short_term, pl.Boolean()),
-            (Pub.ct_has_data_long_term, pl.Boolean()),
-            (Pub.ct_has_data_medium_term, pl.Boolean()),
-            (Pub.ct_has_data_short_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_long_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_medium_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_short_term, pl.Boolean()),
+            (Pub.consistent_service_long, pl.Boolean()),
+            (Pub.consistent_service_medium, pl.Boolean()),
+            (Pub.consistent_service_short, pl.Boolean()),
+            (Pub.ct_has_data_long, pl.Boolean()),
+            (Pub.ct_has_data_medium, pl.Boolean()),
+            (Pub.ct_has_data_short, pl.Boolean()),
+            (Pub.ct_dispersion_filter_long, pl.Boolean()),
+            (Pub.ct_dispersion_filter_medium, pl.Boolean()),
+            (Pub.ct_dispersion_filter_short, pl.Boolean()),
         ]
     )
     expected_schema = pl.Schema(
@@ -207,18 +206,18 @@ class TestAggregateToPublicationRows:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.publication_filled_posts, pl.Float32()),
-            (Pub.publication_locationid_count, pl.UInt32()),
-            (Pub.assessment_filled_posts_long_term, pl.Float32()),
-            (Pub.assessment_locationid_count_long_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_long_term, pl.Float32()),
-            (Pub.assessment_filled_posts_medium_term, pl.Float32()),
-            (Pub.assessment_locationid_count_medium_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_medium_term, pl.Float32()),
-            (Pub.assessment_filled_posts_short_term, pl.Float32()),
-            (Pub.assessment_locationid_count_short_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
-            (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
+            (Pub.filled_posts, pl.Float32()),
+            (Pub.locationid_count, pl.UInt32()),
+            (Pub.filtered_filled_posts_long, pl.Float32()),
+            (Pub.filtered_locationid_count_long, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_long, pl.Float32()),
+            (Pub.filtered_filled_posts_medium, pl.Float32()),
+            (Pub.filtered_locationid_count_medium, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_medium, pl.Float32()),
+            (Pub.filtered_filled_posts_short, pl.Float32()),
+            (Pub.filtered_locationid_count_short, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_short, pl.Float32()),
+            (Pub.unfiltered_ct_total_employed_long, pl.Float32()),
         ]
     )
 
@@ -283,18 +282,18 @@ class TestAggregateToPublicationRows:
                 (IndCQC.cqc_location_import_date, pl.Date()),
                 (IndCQC.current_region, pl.String()),
                 (IndCQC.primary_service_type, pl.String()),
-                (Pub.publication_filled_posts, pl.Float32()),
-                (Pub.publication_locationid_count, pl.UInt32()),
-                (Pub.assessment_filled_posts_long_term, pl.Float32()),
-                (Pub.assessment_locationid_count_long_term, pl.UInt32()),
-                (Pub.assessment_ct_total_employed_long_term, pl.Float32()),
-                (Pub.assessment_filled_posts_medium_term, pl.Float32()),
-                (Pub.assessment_locationid_count_medium_term, pl.UInt32()),
-                (Pub.assessment_ct_total_employed_medium_term, pl.Float32()),
-                (Pub.assessment_filled_posts_short_term, pl.Float32()),
-                (Pub.assessment_locationid_count_short_term, pl.UInt32()),
-                (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
-                (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
+                (Pub.filled_posts, pl.Float32()),
+                (Pub.locationid_count, pl.UInt32()),
+                (Pub.filtered_filled_posts_long, pl.Float32()),
+                (Pub.filtered_locationid_count_long, pl.UInt32()),
+                (Pub.filtered_ct_total_employed_long, pl.Float32()),
+                (Pub.filtered_filled_posts_medium, pl.Float32()),
+                (Pub.filtered_locationid_count_medium, pl.UInt32()),
+                (Pub.filtered_ct_total_employed_medium, pl.Float32()),
+                (Pub.filtered_filled_posts_short, pl.Float32()),
+                (Pub.filtered_locationid_count_short, pl.UInt32()),
+                (Pub.filtered_ct_total_employed_short, pl.Float32()),
+                (Pub.unfiltered_ct_total_employed_long, pl.Float32()),
             ]
         )
         expected_lf = pl.LazyFrame(
@@ -361,8 +360,8 @@ class TestAggregateToPublicationRows:
                 (IndCQC.main_job_role_clean_labelled, pl.String()),
                 (IndCQC.current_region, pl.String()),
                 (IndCQC.primary_service_type, pl.String()),
-                (Pub.publication_filled_posts, pl.Float32()),
-                (Pub.publication_locationid_count, pl.UInt32()),
+                (Pub.filled_posts, pl.Float32()),
+                (Pub.locationid_count, pl.UInt32()),
             ]
         )
         expected_lf = pl.LazyFrame(
@@ -402,7 +401,7 @@ class TestAggregateToPublicationRows:
             _with_period_label(input_lf), include_assessment=False
         ).collect()
 
-        assert returned_df[Pub.publication_filled_posts].to_list() == [10.0]
+        assert returned_df[Pub.filled_posts].to_list() == [10.0]
 
 
 class TestAddRowsForPublicationGroups:
@@ -426,15 +425,15 @@ class TestAddRowsForPublicationGroups:
                 pl.Float32(),
             ),
             (Pub.ct_total_employed_imputed, pl.Float32()),
-            (Pub.consistent_service_long_term, pl.Boolean()),
-            (Pub.consistent_service_medium_term, pl.Boolean()),
-            (Pub.consistent_service_short_term, pl.Boolean()),
-            (Pub.ct_has_data_long_term, pl.Boolean()),
-            (Pub.ct_has_data_medium_term, pl.Boolean()),
-            (Pub.ct_has_data_short_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_long_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_medium_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_short_term, pl.Boolean()),
+            (Pub.consistent_service_long, pl.Boolean()),
+            (Pub.consistent_service_medium, pl.Boolean()),
+            (Pub.consistent_service_short, pl.Boolean()),
+            (Pub.ct_has_data_long, pl.Boolean()),
+            (Pub.ct_has_data_medium, pl.Boolean()),
+            (Pub.ct_has_data_short, pl.Boolean()),
+            (Pub.ct_dispersion_filter_long, pl.Boolean()),
+            (Pub.ct_dispersion_filter_medium, pl.Boolean()),
+            (Pub.ct_dispersion_filter_short, pl.Boolean()),
         ]
     )
     expected_schema = pl.Schema(
@@ -444,18 +443,18 @@ class TestAddRowsForPublicationGroups:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.Categorical()),
-            (Pub.publication_filled_posts, pl.Float32()),
-            (Pub.publication_locationid_count, pl.UInt32()),
-            (Pub.assessment_filled_posts_long_term, pl.Float32()),
-            (Pub.assessment_locationid_count_long_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_long_term, pl.Float32()),
-            (Pub.assessment_filled_posts_medium_term, pl.Float32()),
-            (Pub.assessment_locationid_count_medium_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_medium_term, pl.Float32()),
-            (Pub.assessment_filled_posts_short_term, pl.Float32()),
-            (Pub.assessment_locationid_count_short_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
-            (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
+            (Pub.filled_posts, pl.Float32()),
+            (Pub.locationid_count, pl.UInt32()),
+            (Pub.filtered_filled_posts_long, pl.Float32()),
+            (Pub.filtered_locationid_count_long, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_long, pl.Float32()),
+            (Pub.filtered_filled_posts_medium, pl.Float32()),
+            (Pub.filtered_locationid_count_medium, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_medium, pl.Float32()),
+            (Pub.filtered_filled_posts_short, pl.Float32()),
+            (Pub.filtered_locationid_count_short, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_short, pl.Float32()),
+            (Pub.unfiltered_ct_total_employed_long, pl.Float32()),
         ]
     )
 
@@ -534,8 +533,8 @@ class TestAddRowsForPublicationGroups:
             IndCQC.main_job_role_clean_labelled,
             IndCQC.current_region,
             IndCQC.primary_service_type,
-            Pub.publication_filled_posts,
-            Pub.publication_locationid_count,
+            Pub.filled_posts,
+            Pub.locationid_count,
         ]
         england_total_row = returned_lf.filter(
             (pl.col(IndCQC.current_region) == PublishedRegion.england)
@@ -548,9 +547,9 @@ class TestAddRowsForPublicationGroups:
                 == PublishedMainService.all_locations
             )
         ).collect()
-        assert england_total_row.select(
-            Pub.publication_filled_posts, Pub.publication_locationid_count
-        ).row(0) == (30.0, 1)
+        assert england_total_row.select(Pub.filled_posts, Pub.locationid_count).row(
+            0
+        ) == (30.0, 1)
 
 
 class TestCalcPercChangeFromPreviousApril:
@@ -560,8 +559,8 @@ class TestCalcPercChangeFromPreviousApril:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.publication_filled_posts, pl.Float32()),
-            (Pub.publication_locationid_count, pl.UInt32()),
+            (Pub.filled_posts, pl.Float32()),
+            (Pub.locationid_count, pl.UInt32()),
         ]
     )
 
@@ -598,8 +597,8 @@ class TestCalcPercChangeCumulativeFromGivenPeriodOnwards:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.assessment_ct_total_employed_long_term, pl.Float32()),
-            (Pub.assessment_ct_total_employed_medium_term, pl.Float32()),
+            (Pub.filtered_ct_total_employed_long, pl.Float32()),
+            (Pub.filtered_ct_total_employed_medium, pl.Float32()),
         ]
     )
 
@@ -635,8 +634,8 @@ class TestCalcPercChangeAgainstPeriodsAgo:
             (IndCQC.cqc_location_import_date, pl.Date()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.publication_filled_posts, pl.Float32()),
-            (Pub.publication_locationid_count, pl.UInt32()),
+            (Pub.filled_posts, pl.Float32()),
+            (Pub.locationid_count, pl.UInt32()),
         ]
     )
 
@@ -674,8 +673,8 @@ class TestBuildT0EstimatesDownloadTable:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.publication_filled_posts, pl.Float32()),
-            (Pub.publication_locationid_count, pl.UInt32()),
+            (Pub.filled_posts, pl.Float32()),
+            (Pub.locationid_count, pl.UInt32()),
         ]
     )
     expected_schema = pl.Schema(

@@ -95,7 +95,7 @@ def mocks(io_mocks):
         io_mocks.aggregate_to_publication_rows.return_value = pl.LazyFrame(
             {
                 IndCQC.cqc_location_import_date: [date(2026, 4, 1)],
-                Pub.publication_filled_posts: [42.0],
+                Pub.filled_posts: [42.0],
             }
         )
         io_mocks.add_rows_for_publication_groups.return_value = (
@@ -137,10 +137,10 @@ class TestMain:
         _run_main()
 
         mocks.round_to_publication_bands.assert_called_once_with(
-            Pub.publication_filled_posts, Pub.publication_filled_posts_rounded
+            Pub.filled_posts, Pub.filled_posts_rounded
         )
         expected_lf = mocks.aggregate_to_publication_rows.return_value.with_columns(
-            pl.lit(40.0).alias(Pub.publication_filled_posts_rounded),
+            pl.lit(40.0).alias(Pub.filled_posts_rounded),
         )
         output_sink_kwargs = mocks.sink_to_parquet.call_args_list[0].kwargs
         assert_frame_equal(output_sink_kwargs["lazy_df"], expected_lf)
@@ -192,7 +192,7 @@ class TestMain:
 
         output_lf = io_mocks.sink_to_parquet.call_args_list[0].kwargs["lazy_df"]
         output_columns = output_lf.collect_schema().names()
-        assert Pub.publication_filled_posts in output_columns
+        assert Pub.filled_posts in output_columns
         assert not [
             column
             for column in output_columns

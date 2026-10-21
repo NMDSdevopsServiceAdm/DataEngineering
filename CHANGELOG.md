@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
 
 ### Changed
+- Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
 - Made the raw column optional in `update_filtering_rule` (now `uncapped_col_name`, only needed when winsorizing) and updated all callers.
 - Partitioned the publication assessment data by archive date and run number so each assessed run is kept.
 - Split the starters, leavers and vacancies filtering rule into one class per metric, each with its own allowed values.
