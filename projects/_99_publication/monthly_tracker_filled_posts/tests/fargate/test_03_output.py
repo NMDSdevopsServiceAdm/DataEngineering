@@ -29,13 +29,13 @@ input_schema = pl.Schema(
         (IndCQC.main_job_role_clean_labelled, pl.String()),
         (IndCQC.current_region, pl.String()),
         (IndCQC.primary_service_type, pl.String()),
-        (Pub.publication_filled_posts, pl.Float32()),
-        (Pub.publication_locationid_count, pl.UInt32()),
-        (Pub.publication_filled_posts_april_perc_change, pl.Float32()),
-        (Pub.publication_filled_posts_cumulative_perc_change_short_term, pl.Float32()),
-        (Pub.publication_locationid_count_april_perc_change, pl.Float32()),
+        (Pub.filled_posts, pl.Float32()),
+        (Pub.locationid_count, pl.UInt32()),
+        (Pub.filled_posts_april_perc_change, pl.Float32()),
+        (Pub.filled_posts_cum_perc_change_short, pl.Float32()),
+        (Pub.locationid_count_april_perc_change, pl.Float32()),
         (
-            Pub.publication_locationid_count_cumulative_perc_change_short_term,
+            Pub.locationid_count_cum_perc_change_short,
             pl.Float32(),
         ),
     ]
@@ -48,11 +48,11 @@ expected_schema = pl.Schema(
         (Pub.main_service, pl.String()),
         (Pub.estimated_filled_posts_rounded, pl.Float32()),
         (Pub.cqc_locations, pl.UInt32()),
-        (Pub.publication_filled_posts_april_perc_change, pl.Float32()),
-        (Pub.publication_filled_posts_cumulative_perc_change_short_term, pl.Float32()),
-        (Pub.publication_locationid_count_april_perc_change, pl.Float32()),
+        (Pub.filled_posts_april_perc_change, pl.Float32()),
+        (Pub.filled_posts_cum_perc_change_short, pl.Float32()),
+        (Pub.locationid_count_april_perc_change, pl.Float32()),
         (
-            Pub.publication_locationid_count_cumulative_perc_change_short_term,
+            Pub.locationid_count_cum_perc_change_short,
             pl.Float32(),
         ),
     ]
@@ -200,10 +200,10 @@ class TestMain:
         returned_lf = _run_main(mocks, input_rows)
 
         assert returned_lf.select(
-            Pub.publication_filled_posts_april_perc_change,
-            Pub.publication_filled_posts_cumulative_perc_change_short_term,
-            Pub.publication_locationid_count_april_perc_change,
-            Pub.publication_locationid_count_cumulative_perc_change_short_term,
+            Pub.filled_posts_april_perc_change,
+            Pub.filled_posts_cum_perc_change_short,
+            Pub.locationid_count_april_perc_change,
+            Pub.locationid_count_cum_perc_change_short,
         ).collect().rows() == [
             (
                 pytest.approx(0.1),

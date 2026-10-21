@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
 
 ### Changed
+- Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
 - Changed Publication-Output to write one download table of rounded filled posts, location counts and percentage changes from the assessed data, instead of three tables.
 - Renamed the employment status deduplicated count columns to `_clean` in the clean step instead of copying them, so no `_dedup` columns are output.
 - Made the raw column optional in `update_filtering_rule` (now `uncapped_col_name`, only needed when winsorizing) and updated all callers.

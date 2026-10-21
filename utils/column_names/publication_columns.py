@@ -4,67 +4,41 @@ from dataclasses import dataclass
 @dataclass
 class PublicationColumns:
     ct_total_employed_imputed: str = "ct_total_employed_imputed"
-    ct_has_data_long_term: str = "ct_has_data_long_term"
-    ct_has_data_medium_term: str = "ct_has_data_medium_term"
-    ct_has_data_short_term: str = "ct_has_data_short_term"
-    consistent_service_long_term: str = "consistent_service_long_term"
-    consistent_service_medium_term: str = "consistent_service_medium_term"
-    consistent_service_short_term: str = "consistent_service_short_term"
-    ct_dispersion_filter_long_term: str = "ct_dispersion_filter_long_term"
-    ct_dispersion_filter_medium_term: str = "ct_dispersion_filter_medium_term"
-    ct_dispersion_filter_short_term: str = "ct_dispersion_filter_short_term"
-    publication_filled_posts: str = "publication_filled_posts"
-    publication_filled_posts_rounded: str = "publication_filled_posts_rounded"
-    publication_locationid_count: str = "publication_locationid_count"
-    assessment_filled_posts_long_term: str = "assessment_filled_posts_long_term"
-    assessment_filled_posts_medium_term: str = "assessment_filled_posts_medium_term"
-    assessment_filled_posts_short_term: str = "assessment_filled_posts_short_term"
-    assessment_locationid_count_long_term: str = "assessment_locationid_count_long_term"
-    assessment_locationid_count_medium_term: str = (
-        "assessment_locationid_count_medium_term"
+    ct_has_data_long: str = "ct_has_data_long"
+    ct_has_data_medium: str = "ct_has_data_medium"
+    ct_has_data_short: str = "ct_has_data_short"
+    consistent_service_long: str = "consistent_service_long"
+    consistent_service_medium: str = "consistent_service_medium"
+    consistent_service_short: str = "consistent_service_short"
+    ct_dispersion_filter_long: str = "ct_dispersion_filter_long"
+    ct_dispersion_filter_medium: str = "ct_dispersion_filter_medium"
+    ct_dispersion_filter_short: str = "ct_dispersion_filter_short"
+    filled_posts: str = "filled_posts"
+    filled_posts_rounded: str = "filled_posts_rounded"
+    locationid_count: str = "locationid_count"
+    filtered_filled_posts_long: str = "filtered_filled_posts_long"
+    filtered_filled_posts_medium: str = "filtered_filled_posts_medium"
+    filtered_filled_posts_short: str = "filtered_filled_posts_short"
+    filtered_locationid_count_long: str = "filtered_locationid_count_long"
+    filtered_locationid_count_medium: str = "filtered_locationid_count_medium"
+    filtered_locationid_count_short: str = "filtered_locationid_count_short"
+    filtered_ct_total_employed_long: str = "filtered_ct_total_employed_long"
+    filtered_ct_total_employed_medium: str = "filtered_ct_total_employed_medium"
+    filtered_ct_total_employed_short: str = "filtered_ct_total_employed_short"
+    unfiltered_ct_total_employed_long: str = "unfiltered_ct_total_employed_long"
+    filtered_ct_cum_perc_change_long: str = "filtered_ct_cum_perc_change_long"
+    filtered_ct_cum_perc_change_medium: str = "filtered_ct_cum_perc_change_medium"
+    filtered_ct_cum_perc_change_short: str = "filtered_ct_cum_perc_change_short"
+    unfiltered_ct_total_employed_cum_perc_change_long: str = (
+        "unfiltered_ct_total_employed_cum_perc_change_long"
     )
-    assessment_locationid_count_short_term: str = (
-        "assessment_locationid_count_short_term"
+    filled_posts_cum_perc_change_long: str = "filled_posts_cum_perc_change_long"
+    filled_posts_cum_perc_change_short: str = "filled_posts_cum_perc_change_short"
+    locationid_count_cum_perc_change_short: str = (
+        "locationid_count_cum_perc_change_short"
     )
-    assessment_ct_total_employed_long_term: str = (
-        "assessment_ct_total_employed_long_term"
-    )
-    assessment_ct_total_employed_medium_term: str = (
-        "assessment_ct_total_employed_medium_term"
-    )
-    assessment_ct_total_employed_short_term: str = (
-        "assessment_ct_total_employed_short_term"
-    )
-    assessment_ct_total_employed_long_term_no_filter: str = (
-        "assessment_ct_total_employed_long_term_no_filter"
-    )
-    assessment_ct_cumulative_perc_change_long_term: str = (
-        "assessment_ct_cumulative_perc_change_long_term"
-    )
-    assessment_ct_cumulative_perc_change_medium_term: str = (
-        "assessment_ct_cumulative_perc_change_medium_term"
-    )
-    assessment_ct_cumulative_perc_change_short_term: str = (
-        "assessment_ct_cumulative_perc_change_short_term"
-    )
-    assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter: str = (
-        "assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter"
-    )
-    assessment_filled_posts_cumulative_perc_change_long_term: str = (
-        "assessment_filled_posts_cumulative_perc_change_long_term"
-    )
-    publication_filled_posts_cumulative_perc_change_short_term: str = (
-        "publication_filled_posts_cumulative_perc_change_short_term"
-    )
-    publication_locationid_count_cumulative_perc_change_short_term: str = (
-        "publication_locationid_count_cumulative_perc_change_short_term"
-    )
-    publication_filled_posts_april_perc_change: str = (
-        "publication_filled_posts_april_perc_change"
-    )
-    publication_locationid_count_april_perc_change: str = (
-        "publication_locationid_count_april_perc_change"
-    )
+    filled_posts_april_perc_change: str = "filled_posts_april_perc_change"
+    locationid_count_april_perc_change: str = "locationid_count_april_perc_change"
     main_service: str = "Main service"
     job_group: str = "Job group"
     region: str = "Region"

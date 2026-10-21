@@ -30,30 +30,28 @@ class TestAssessmentSheets:
         [
             pytest.param(
                 "care homes SfC",
-                Pub.publication_filled_posts,
+                Pub.filled_posts,
                 id="care_homes_filled_posts",
             ),
-            pytest.param(
-                "non-res SfC", Pub.publication_filled_posts, id="non_res_filled_posts"
-            ),
+            pytest.param("non-res SfC", Pub.filled_posts, id="non_res_filled_posts"),
             pytest.param(
                 "care homes number of locations by period",
-                Pub.publication_locationid_count,
+                Pub.locationid_count,
                 id="care_homes_locations",
             ),
             pytest.param(
                 "non-res number of locations by period",
-                Pub.publication_locationid_count,
+                Pub.locationid_count,
                 id="non_res_locations",
             ),
             pytest.param(
                 "care homes CT",
-                Pub.assessment_ct_total_employed_long_term_no_filter,
+                Pub.unfiltered_ct_total_employed_long,
                 id="care_homes_capacity_tracker",
             ),
             pytest.param(
                 "non-res CT",
-                Pub.assessment_ct_total_employed_long_term_no_filter,
+                Pub.unfiltered_ct_total_employed_long,
                 id="non_res_capacity_tracker",
             ),
         ],
