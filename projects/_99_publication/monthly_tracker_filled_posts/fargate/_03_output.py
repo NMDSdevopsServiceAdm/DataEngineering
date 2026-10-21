@@ -7,120 +7,88 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
     merge_utils,
     publication_utils,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_values.categorical_column_values import PublishedJobGroupLabels
 
 
 def main(
-    prep_source: str,
+    assessment_source: str,
     output_destination: str,
-    t0_destination: str,
-    t1_destination: str,
-    t2_destination: str,
     run_number: int,
 ) -> None:
     """
-    Builds the public data for one selected, prepared run: the publication
-    summary by import date, job role, region and service type, and the
-    T0/T1/T2 data-download tables.
+    Writes the publication data for one assessed run: "All job roles" rows,
+    one per year historically and monthly for the current financial year,
+    with period, region, main service, rounded filled posts, location count
+    and percentage change columns.
 
     Args:
-        prep_source (str): s3 directory holding the prepared data of every run
-        output_destination (str): destination s3 directory for the publication summary
-        t0_destination (str): destination s3 directory for the T0 estimates
-            download table
-        t1_destination (str): destination s3 directory for the T1 filled
-            posts percentage change download table
-        t2_destination (str): destination s3 directory for the T2 location
-            count percentage change download table
-        run_number (int): the prepared run to publish
+        assessment_source (str): s3 directory holding the assessed data of every run
+        output_destination (str): destination s3 directory for the publication data
+        run_number (int): the assessed run to publish
     """
-    run_source = merge_utils.resolve_run_sources([prep_source], run_number)[0]
-    print(f"Publishing prepared run: {run_source}")
-    prepared_lf = utils.scan_parquet(run_source)
+    run_source = merge_utils.resolve_run_sources([assessment_source], run_number)[0]
+    print(f"Publishing assessed run: {run_source}")
+    publication_summary_lf = utils.scan_parquet(run_source)
 
-    publication_summary_lf = publication_utils.aggregate_to_publication_rows(
-        prepared_lf, include_assessment=False
-    )
-    publication_summary_lf = publication_utils.add_rows_for_publication_groups(
-        prepared_lf, publication_summary_lf, include_assessment=False
+    publication_summary_lf = publication_summary_lf.filter(
+        pl.col(IndCQC.main_job_role_clean_labelled)
+        == PublishedJobGroupLabels.all_job_roles
     )
 
-    publication_summary_lf = publication_summary_lf.with_columns(
-        publication_utils.round_to_publication_bands(
-            Pub.publication_filled_posts, Pub.publication_filled_posts_rounded
-        ),
+    # Historical rows are kept for April only (the financial year start month).
+    annual_sampling_expr = publication_utils.reduced_data_filter_expr(
+        today=date.today(),
+        lookback_fy_years=0,
+        quarter_months=(4,),
+    )
+
+    publication_output_lf = (
+        publication_summary_lf.filter(annual_sampling_expr)
+        .select(
+            pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
+            Pub.period_label,
+            pl.col(IndCQC.current_region).alias(Pub.region),
+            pl.col(IndCQC.primary_service_type)
+            .cast(pl.Utf8)
+            .replace(publication_utils.PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
+            .alias(Pub.main_service),
+            publication_utils.round_to_publication_bands(
+                Pub.publication_filled_posts, Pub.estimated_filled_posts_rounded
+            ),
+            pl.col(Pub.publication_locationid_count).alias(Pub.cqc_locations),
+            Pub.publication_filled_posts_april_perc_change,
+            Pub.publication_filled_posts_cumulative_perc_change_short_term,
+            Pub.publication_locationid_count_april_perc_change,
+            Pub.publication_locationid_count_cumulative_perc_change_short_term,
+        )
+        .sort(publication_utils.DOWNLOAD_TABLE_SORT_COLUMNS)
     )
 
     utils.sink_to_parquet(
-        lazy_df=publication_summary_lf,
+        lazy_df=publication_output_lf,
         output_path=output_destination,
-    )
-
-    today = date.today()
-
-    t0_estimates_lf = publication_utils.build_t0_estimates_download_table(
-        publication_summary_lf, today=today
-    )
-    utils.sink_to_parquet(
-        lazy_df=t0_estimates_lf,
-        output_path=t0_destination,
-    )
-
-    t1_filled_posts_perc_change_lf = (
-        publication_utils.build_t1_filled_posts_perc_change_download_table(
-            publication_summary_lf, today=today
-        )
-    )
-    utils.sink_to_parquet(
-        lazy_df=t1_filled_posts_perc_change_lf,
-        output_path=t1_destination,
-    )
-
-    t2_location_count_perc_change_lf = (
-        publication_utils.build_t2_location_count_perc_change_download_table(
-            publication_summary_lf, today=today
-        )
-    )
-    utils.sink_to_parquet(
-        lazy_df=t2_location_count_perc_change_lf,
-        output_path=t2_destination,
     )
 
 
 if __name__ == "__main__":
     args = utils.get_args(
         (
-            "--prep_source",
-            "S3 directory holding the prepared data of every run",
+            "--assessment_source",
+            "S3 directory holding the assessed data of every run",
         ),
         (
             "--output_destination",
-            "Destination s3 directory for the publication summary",
-        ),
-        (
-            "--t0_destination",
-            "Destination s3 directory for the T0 estimates download table",
-        ),
-        (
-            "--t1_destination",
-            "Destination s3 directory for the T1 filled posts percentage "
-            "change download table",
-        ),
-        (
-            "--t2_destination",
-            "Destination s3 directory for the T2 location count percentage "
-            "change download table",
+            "Destination s3 directory for the publication data",
         ),
         (
             "--run_number",
-            "Prepared run number to publish",
+            "Assessed run number to publish",
         ),
     )
     main(
-        prep_source=args.prep_source,
+        assessment_source=args.assessment_source,
         output_destination=args.output_destination,
-        t0_destination=args.t0_destination,
-        t1_destination=args.t1_destination,
-        t2_destination=args.t2_destination,
         run_number=merge_utils.parse_run_number(args.run_number, required=True),
     )
