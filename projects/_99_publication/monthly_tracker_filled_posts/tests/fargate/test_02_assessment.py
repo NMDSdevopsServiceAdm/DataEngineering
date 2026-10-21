@@ -314,12 +314,16 @@ class TestMain:
     def test_main_adds_previous_publication_columns_from_the_previous_run(self, mocks):
         mocks.resolve_previous_run_source.return_value = TEST_PREVIOUS_RUN_SOURCE
         previous_lf = pl.LazyFrame({"previous": [1]})
-        mocks.scan_parquet.side_effect = [mocks.scan_parquet.return_value, previous_lf]
+        prepared_lf = mocks.scan_parquet.return_value
+        mocks.scan_parquet.side_effect = lambda path: {
+            TEST_RUN_SOURCE: prepared_lf,
+            TEST_PREVIOUS_RUN_SOURCE: previous_lf,
+        }[path]
 
         job.main(TEST_SOURCE, TEST_DESTINATION)
 
         mocks.resolve_previous_run_source.assert_called_once_with(TEST_DESTINATION, 2)
-        assert mocks.scan_parquet.call_args_list[-1] == call(TEST_PREVIOUS_RUN_SOURCE)
+        mocks.scan_parquet.assert_any_call(TEST_PREVIOUS_RUN_SOURCE)
         assert mocks.add_previous_columns.call_args.args[1] is previous_lf
 
     def test_main_passes_no_previous_run_when_there_is_none(self, mocks):

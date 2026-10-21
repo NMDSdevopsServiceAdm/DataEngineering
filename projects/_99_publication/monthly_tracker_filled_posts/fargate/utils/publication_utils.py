@@ -849,14 +849,12 @@ def add_previous_publication_columns(
     previous_assessment_lf: pl.LazyFrame | None,
 ) -> pl.LazyFrame:
     """
-    Adds the previous run's filled posts April and short term cumulative
+    Adds the previous run's April and short term cumulative filled posts
     percentage changes, matched on import date, job role, region and service type.
 
-    Only the join keys and the two source columns are kept from the previous
-    run, and its keys are cast to the current dtypes so the join is not blocked
-    by Enum/Categorical differences. The previous run has one row per key, so
-    the left join does not change the row count. Rows with no match, and every
-    row when there is no previous run, are null.
+    Rows with no match are null, as is every row when there is no previous run or
+    it lacks the source columns. The previous keys are cast to the current dtypes
+    so Enum/Categorical differences don't block the join.
 
     Args:
         assessment_summary_lf (pl.LazyFrame): the current run's assessment data.
@@ -871,7 +869,10 @@ def add_previous_publication_columns(
         Pub.publication_filled_posts_april_perc_change: Pub.previous_publication_filled_posts_april_perc_change,
         Pub.publication_filled_posts_cumulative_perc_change_short_term: Pub.previous_publication_filled_posts_cumulative_perc_change_short_term,
     }
-    if previous_assessment_lf is None:
+    has_source_columns = previous_assessment_lf is not None and set(
+        source_to_previous_column
+    ).issubset(previous_assessment_lf.collect_schema().names())
+    if not has_source_columns:
         return assessment_summary_lf.with_columns(
             [
                 pl.lit(None, dtype=pl.Float32).alias(previous_column)
@@ -894,7 +895,11 @@ def add_previous_publication_columns(
         ]
     )
     return assessment_summary_lf.join(
-        previous_assessment_lf, on=join_keys, how="left", validate="1:1"
+        previous_assessment_lf,
+        on=join_keys,
+        how="left",
+        validate="1:1",
+        nulls_equal=True,
     )
 
 

@@ -622,9 +622,12 @@ class TestAddPreviousPublicationColumns:
             returned_lf.select(self.key_schema.names()), self._current_lf()
         )
 
-    def test_aligns_previous_key_dtypes_to_current(self):
+    @pytest.mark.parametrize(
+        "current_dtype", [pl.Categorical, pl.Enum(["care", "other"])]
+    )
+    def test_aligns_previous_key_dtypes_to_current(self, current_dtype):
         current_lf = self._current_lf().with_columns(
-            pl.col(IndCQC.primary_service_type).cast(pl.Categorical)
+            pl.col(IndCQC.primary_service_type).cast(current_dtype)
         )
         previous_lf = pl.LazyFrame(
             [(date(2026, 4, 1), "A", "North", "care", 0.1, 0.2)],
@@ -640,6 +643,43 @@ class TestAddPreviousPublicationColumns:
             pytest.approx(0.1),
             None,
         ]
+
+    def test_matches_rows_where_a_key_is_null(self):
+        current_lf = self._current_lf().with_columns(
+            pl.when(pl.col(IndCQC.cqc_location_import_date) == date(2026, 4, 1))
+            .then(None)
+            .otherwise(pl.col(IndCQC.current_region))
+            .alias(IndCQC.current_region)
+        )
+        previous_lf = pl.LazyFrame(
+            [(date(2026, 4, 1), "A", None, "care", 0.1, 0.2)],
+            self.previous_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_previous_publication_columns(
+            current_lf, previous_lf
+        ).collect()
+
+        assert returned_df[self.output_columns[0]].to_list() == [
+            pytest.approx(0.1),
+            None,
+        ]
+
+    def test_adds_null_columns_when_previous_run_lacks_the_source_columns(self):
+        previous_lf = pl.LazyFrame(
+            [(date(2026, 4, 1), "A", "North", "care")],
+            self.key_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_previous_publication_columns(
+            self._current_lf(), previous_lf
+        ).collect()
+
+        for column in self.output_columns:
+            assert returned_df.schema[column] == pl.Float32()
+            assert returned_df[column].null_count() == returned_df.height
 
     def test_adds_null_float32_columns_when_there_is_no_previous_run(self):
         returned_lf = job.add_previous_publication_columns(self._current_lf(), None)
