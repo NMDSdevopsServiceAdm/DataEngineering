@@ -526,15 +526,6 @@ class CTFilteringRule(ColumnValues):
 
 
 @dataclass
-class SLVFilteringRule(ColumnValues):
-    """The possible reasons for filtering SLV (starters/leavers/vacancies) data"""
-
-    populated: str = "populated"
-    missing_data: str = "missing_data"
-    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
-
-
-@dataclass
 class StartersFilteringRule(ColumnValues):
     """The possible reasons for filtering starters data"""
 

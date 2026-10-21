@@ -63,28 +63,28 @@ def main(
     short_term_from_date = date(fy_year, 4, 1)
     prepared_lf = prepared_lf.with_columns(
         publication_utils.has_consistent_service_since_date(
-            long_term_from_date, Pub.consistent_service_long_term
+            long_term_from_date, Pub.consistent_service_long
         ),
         publication_utils.has_consistent_service_since_date(
-            medium_term_from_date, Pub.consistent_service_medium_term
+            medium_term_from_date, Pub.consistent_service_medium
         ),
         publication_utils.has_consistent_service_since_date(
-            short_term_from_date, Pub.consistent_service_short_term
+            short_term_from_date, Pub.consistent_service_short
         ),
         publication_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             long_term_from_date,
-            Pub.ct_has_data_long_term,
+            Pub.ct_has_data_long,
         ),
         publication_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             medium_term_from_date,
-            Pub.ct_has_data_medium_term,
+            Pub.ct_has_data_medium,
         ),
         publication_utils.has_continuous_data_since_date(
             Pub.ct_total_employed_imputed,
             short_term_from_date,
-            Pub.ct_has_data_short_term,
+            Pub.ct_has_data_short,
         ),
     )
 
@@ -96,19 +96,19 @@ def main(
         prepared_lf,
         ct_employed_columns,
         long_term_from_date,
-        Pub.ct_dispersion_filter_long_term,
+        Pub.ct_dispersion_filter_long,
     )
     prepared_lf = publication_utils.add_dispersion_filter(
         prepared_lf,
         ct_employed_columns,
         medium_term_from_date,
-        Pub.ct_dispersion_filter_medium_term,
+        Pub.ct_dispersion_filter_medium,
     )
     prepared_lf = publication_utils.add_dispersion_filter(
         prepared_lf,
         ct_employed_columns,
         short_term_from_date,
-        Pub.ct_dispersion_filter_short_term,
+        Pub.ct_dispersion_filter_short,
     )
 
     assessment_summary_lf = publication_utils.aggregate_to_publication_rows(prepared_lf)
@@ -123,56 +123,56 @@ def main(
     ]
     assessment_summary_lf = assessment_summary_lf.with_columns(
         publication_utils.calc_perc_change_from_previous_april(
-            Pub.publication_filled_posts,
+            Pub.filled_posts,
             group_columns,
-            Pub.publication_filled_posts_april_perc_change,
+            Pub.filled_posts_april_perc_change,
         ),
         publication_utils.calc_perc_change_from_previous_april(
-            Pub.publication_locationid_count,
+            Pub.locationid_count,
             group_columns,
-            Pub.publication_locationid_count_april_perc_change,
+            Pub.locationid_count_april_perc_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.publication_filled_posts,
+            Pub.filled_posts,
             short_term_from_date,
             group_columns,
-            Pub.publication_filled_posts_cumulative_perc_change_short_term,
+            Pub.filled_posts_cum_perc_change_short,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.publication_locationid_count,
+            Pub.locationid_count,
             short_term_from_date,
             group_columns,
-            Pub.publication_locationid_count_cumulative_perc_change_short_term,
+            Pub.locationid_count_cum_perc_change_short,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.assessment_ct_total_employed_long_term,
+            Pub.filtered_ct_total_employed_long,
             long_term_from_date,
             group_columns,
-            Pub.assessment_ct_cumulative_perc_change_long_term,
+            Pub.filtered_ct_cum_perc_change_long,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.assessment_ct_total_employed_medium_term,
+            Pub.filtered_ct_total_employed_medium,
             medium_term_from_date,
             group_columns,
-            Pub.assessment_ct_cumulative_perc_change_medium_term,
+            Pub.filtered_ct_cum_perc_change_medium,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.assessment_ct_total_employed_short_term,
+            Pub.filtered_ct_total_employed_short,
             short_term_from_date,
             group_columns,
-            Pub.assessment_ct_cumulative_perc_change_short_term,
+            Pub.filtered_ct_cum_perc_change_short,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.publication_filled_posts,
+            Pub.filled_posts,
             long_term_from_date,
             group_columns,
-            Pub.assessment_filled_posts_cumulative_perc_change_long_term,
+            Pub.filled_posts_cum_perc_change_long,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.assessment_ct_total_employed_long_term_no_filter,
+            Pub.unfiltered_ct_total_employed_long,
             long_term_from_date,
             group_columns,
-            Pub.assessment_ct_total_employed_cumulative_perc_change_long_term_no_filter,
+            Pub.unfiltered_ct_total_employed_cum_perc_change_long,
         ),
     )
 

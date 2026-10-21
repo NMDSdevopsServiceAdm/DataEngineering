@@ -6,9 +6,7 @@ number formats the template tests check. The template has no formulas.
 The "Number of locations" cells take the latest row per group, since every row
 in a term's period shares the same count.
 
-Open points the map does not settle (each needs a pipeline column or ticket):
-- the unfiltered Capacity Tracker totals and location counts on `No filters -
-  long term`;
+Open point the map does not settle (needs a pipeline column or ticket):
 - the pipeline columns that fill the % change cells on `Filled posts` and `Comp
   prev publication`.
 """
@@ -268,54 +266,53 @@ COMP_SHORT_TERM = _comparison_sheet(
     "Comp SfC and CT - short term",
     29,
     29 + MONTHLY_SLOTS - 1,
-    Pub.assessment_filled_posts_short_term,
-    Pub.assessment_ct_total_employed_short_term,
+    Pub.filtered_filled_posts_short,
+    Pub.filtered_ct_total_employed_short,
     extra_inputs=_location_count_inputs(
-        "D25", "M25", Pub.assessment_locationid_count_short_term
+        "D25", "M25", Pub.filtered_locationid_count_short
     ),
 )
 COMP_MEDIUM_TERM = _comparison_sheet(
     "Comp SfC and CT - medium term",
     29,
     29 + MEDIUM_TERM_SLOTS - 1,
-    Pub.assessment_filled_posts_medium_term,
-    Pub.assessment_ct_total_employed_medium_term,
+    Pub.filtered_filled_posts_medium,
+    Pub.filtered_ct_total_employed_medium,
     extra_inputs=_location_count_inputs(
-        "D25", "M25", Pub.assessment_locationid_count_medium_term
+        "D25", "M25", Pub.filtered_locationid_count_medium
     ),
 )
 COMP_LONG_TERM = _comparison_sheet(
     "Comp SfC and CT - long term",
     29,
     29 + LONG_TERM_SLOTS - 1,
-    Pub.assessment_filled_posts_long_term,
-    Pub.assessment_ct_total_employed_long_term,
+    Pub.filtered_filled_posts_long,
+    Pub.filtered_ct_total_employed_long,
     extra_inputs=_location_count_inputs(
-        "D25", "M25", Pub.assessment_locationid_count_long_term
+        "D25", "M25", Pub.filtered_locationid_count_long
     ),
 )
 
 # D25/M25 here are the fixed label "Varies month to month"; location counts are
-# per period in G/P instead. The unfiltered Capacity Tracker posts (D, M) and
-# location counts (G, P) need new pipeline columns.
+# per period in G/P instead.
 NO_FILTERS = _comparison_sheet(
     "No filters - long term",
     29,
     29 + LONG_TERM_SLOTS - 1,
-    Pub.publication_filled_posts,
-    None,
+    Pub.filled_posts,
+    Pub.unfiltered_ct_total_employed_long,
     has_criteria_note=False,
     extra_inputs=(
         InputRange(
             f"G29:G{29 + LONG_TERM_SLOTS - 1}",
-            None,
-            "care homes number of locations by period (needs a new pipeline column)",
+            Pub.locationid_count,
+            "care homes number of locations by period",
             "count",
         ),
         InputRange(
             f"P29:P{29 + LONG_TERM_SLOTS - 1}",
-            None,
-            "non-res number of locations by period (needs a new pipeline column)",
+            Pub.locationid_count,
+            "non-res number of locations by period",
             "count",
         ),
     ),
