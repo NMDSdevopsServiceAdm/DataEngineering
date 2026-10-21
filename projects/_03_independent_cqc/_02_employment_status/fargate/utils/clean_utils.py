@@ -62,31 +62,25 @@ def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def create_clean_count_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Creates a _clean copy of each _dedup count and starts
-    employment_status_filtering_rule.
+    Renames the _dedup counts to _clean and starts employment_status_filtering_rule.
 
     The rule is 'populated' where the counts are present and 'missing_data'
     where they're null, meaning the workplace hasn't submitted new data (ASC-WDS
-    repeats its last submission, which dedup nulls). The 5 _dedup columns are
-    null together, so permanent_count_dedup stands in for all of them.
+    repeats its last submission, which dedup nulls). The 5 counts are null
+    together, so permanent_count_clean stands in for all of them.
 
     Args:
         lf (pl.LazyFrame): dataset with the 5 "<count>_dedup" columns.
 
     Returns:
-        pl.LazyFrame: lf with 5 "<count>_clean" columns and
+        pl.LazyFrame: lf with the 5 counts renamed "<count>_clean" and
             employment_status_filtering_rule added.
     """
-    lf = lf.with_columns(
-        [
-            pl.col(dedup).alias(clean)
-            for dedup, clean in DEDUP_TO_CLEAN_COUNT_COLUMNS.items()
-        ]
-    )
+    lf = lf.rename(DEDUP_TO_CLEAN_COUNT_COLUMNS)
     return filtering_utils.add_filtering_rule_column(
         lf,
         EmpStatus.filtering_rule,
-        EmpStatus.permanent_count_dedup,
+        EmpStatus.permanent_count_clean,
         EmploymentStatusFilteringRule.populated,
         EmploymentStatusFilteringRule.missing_data,
         categorical_type=CatColType.EmploymentStatusFilteringRuleCatType,
@@ -130,7 +124,7 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     Nulls an org's _clean counts where permanent+temporary is 5% or less of its
     staff, and updates employment_status_filtering_rule where still 'populated'.
 
-    The ratio uses raw counts, not _dedup: dedup nulls every row of a workplace
+    The ratio uses raw counts, not _clean: dedup nulls every row of a workplace
     whose counts are unchanged, so a small stable location would drop out of the
     org total. (location_id, published_job_role_label,
     ascwds_workplace_import_date) is a unique key, so raw counts can't
@@ -171,10 +165,11 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     its staff, and updates employment_status_filtering_rule where still
     'populated', so an org-level reason stands if both rules fail.
 
-    The ratio uses the _dedup counts.
+    The ratio uses the _clean counts, so rows already nulled by the org rule
+    drop out of the group.
 
     Args:
-        lf (pl.LazyFrame): dataset with the _dedup and _clean counts and
+        lf (pl.LazyFrame): dataset with the _clean counts and
             employment_status_filtering_rule.
 
     Returns:
@@ -187,10 +182,10 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
             IndCQC.location_id,
             IndCQC.ascwds_workplace_import_date,
         ],
-        total_columns=list(DEDUP_TO_CLEAN_COUNT_COLUMNS),
+        total_columns=CLEAN_COUNT_COLUMNS,
         share_columns=[
-            EmpStatus.permanent_count_dedup,
-            EmpStatus.temporary_count_dedup,
+            EmpStatus.permanent_count_clean,
+            EmpStatus.temporary_count_clean,
         ],
         columns_to_null=CLEAN_COUNT_COLUMNS,
         maximum_share=LOCATION_PERMANENT_TEMPORARY_RATIO_THRESHOLD,
