@@ -1,3 +1,8 @@
+import polars as pl
+
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
+)
 from utils.file_utils import RUN_PARTITION_PATTERN, list_archive_runs
 
 LATEST_RUN = "latest"
@@ -126,3 +131,40 @@ def run_number_from_source(run_source: str) -> int:
         raise ValueError(f"No run partition found in {run_source}")
 
     return int(partition.group(2))
+
+
+def archive_date_from_source(run_source: str) -> str:
+    """
+    Gets the archive date from a run's source directory.
+
+    Args:
+        run_source (str): S3 directory of a run, from resolve_run_sources
+
+    Returns:
+        str: the archive date, as YYYY-MM-DD
+
+    Raises:
+        ValueError: if run_source has no archive_date and run_number partitions
+    """
+    partition = RUN_PARTITION_PATTERN.search(run_source)
+    if partition is None:
+        raise ValueError(f"No run partition found in {run_source}")
+
+    return partition.group(1)
+
+
+def add_run_partition_columns(lf: pl.LazyFrame, run_source: str) -> pl.LazyFrame:
+    """
+    Adds the archive_date and run_number columns of a run, to partition its outputs on.
+
+    Args:
+        lf (pl.LazyFrame): Data built from the run.
+        run_source (str): S3 directory of the run, from resolve_run_sources
+
+    Returns:
+        pl.LazyFrame: lf with archive_date and run_number columns.
+    """
+    return lf.with_columns(
+        pl.lit(archive_date_from_source(run_source)).alias(ArchiveKeys.archive_date),
+        pl.lit(run_number_from_source(run_source)).alias(ArchiveKeys.run_number),
+    )

@@ -53,7 +53,7 @@ Every flag uses the same script and the same prompts:
 ### Use case
 After a run has been assessed, record that we are satisfied it is accurate. Several runs can be approved in a month, for example the first run of the month and a rerun after more source data arrives. Approving does not publish anything and does not start any pipeline. A run must be approved before it can be selected for publication.
 
-Do this when you have reviewed the run's assessment data and are satisfied with it. The assessment data's `run_number` column shows which run you assessed.
+Do this when you have reviewed the run's assessment data and are satisfied with it. The assessment data's `archive_date` and `run_number` partitions show which run you assessed.
 
 ### Steps
 1. From the repo root, in Git Bash, run `bash scripts/update_run_log.sh`.
