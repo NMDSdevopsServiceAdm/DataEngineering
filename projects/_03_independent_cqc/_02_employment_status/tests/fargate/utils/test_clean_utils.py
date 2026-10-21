@@ -85,7 +85,7 @@ class TestDeduplicateEmploymentStatusCounts:
 
 
 class TestCreateCleanCountColumns:
-    def test_copies_dedup_counts_and_sets_filtering_rule(self):
+    def test_renames_dedup_counts_to_clean_and_sets_filtering_rule(self):
         input_lf = pl.LazyFrame(
             {
                 EmpStatus.permanent_count_dedup: [3, None],
@@ -98,12 +98,7 @@ class TestCreateCleanCountColumns:
                 column: pl.Int64 for column in job.DEDUP_TO_CLEAN_COUNT_COLUMNS
             },
         )
-        expected_lf = input_lf.with_columns(
-            [
-                pl.col(dedup).alias(clean)
-                for dedup, clean in job.DEDUP_TO_CLEAN_COUNT_COLUMNS.items()
-            ]
-        ).with_columns(
+        expected_lf = input_lf.rename(job.DEDUP_TO_CLEAN_COUNT_COLUMNS).with_columns(
             pl.Series(
                 EmpStatus.filtering_rule,
                 [
@@ -186,9 +181,7 @@ class TestNullCountsForLowOrgRatio:
         test_lf = build_input_lf(case.input_data)
         expected_lf = build_expected_lf(case.expected_data)
 
-        returned_lf = job.null_counts_for_low_org_ratio(
-            job.create_clean_count_columns(test_lf)
-        )
+        returned_lf = job.null_counts_for_low_org_ratio(test_lf)
 
         pl_testing.assert_frame_equal(
             returned_lf,
