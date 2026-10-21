@@ -60,7 +60,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "_99_publication-container",
-                      "Command.$": "States.Array('_03_output.py', '--prep_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge_and_prep/', '--output_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_03_output/', '--t0_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_03_t0_estimates/', '--t1_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_03_t1_filled_posts_perc_change/', '--t2_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_03_t2_location_count_perc_change/', '--run_number', States.Format('{}', $.run_number))"
+                      "Command.$": "States.Array('_03_output.py', '--assessment_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/', '--output_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_03_output/', '--run_number', States.Format('{}', $.run_number))"
                     }
                   ]
                 }

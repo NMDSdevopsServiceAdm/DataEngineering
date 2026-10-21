@@ -15,7 +15,7 @@ def get_command_path(step_function_filename: str, flag: str) -> str:
 
     Args:
         step_function_filename (str): Filename under terraform/pipeline/step-functions/dynamic/.
-        flag (str): The CLI flag whose value to extract, e.g. "--prep_source".
+        flag (str): The CLI flag whose value to extract, e.g. "--prep_source" or "--assessment_source".
 
     Returns:
         str: The path passed to that flag.
@@ -50,11 +50,6 @@ prep_store_command_test_cases = [
         step_function_filename="Publication-Assessment.json",
         flag="--prep_source",
     ),
-    PrepStoreCommandTestCase(
-        id="output_reads_the_store",
-        step_function_filename="Publication-Output.json",
-        flag="--prep_source",
-    ),
 ]
 
 
@@ -83,3 +78,43 @@ class TestPublicationPrepStorePathConsistency:
         path = get_command_path(step_function_filename, flag)
 
         assert path.endswith("/dataset=monthly_tracker_filled_posts_01_merge_and_prep/")
+
+
+assessment_store_command_test_cases = [
+    PrepStoreCommandTestCase(
+        id="assessment_writes_the_store",
+        step_function_filename="Publication-Assessment.json",
+        flag="--assessment_destination",
+    ),
+    PrepStoreCommandTestCase(
+        id="output_reads_the_store",
+        step_function_filename="Publication-Output.json",
+        flag="--assessment_source",
+    ),
+]
+
+
+class TestPublicationAssessmentStorePathConsistency:
+    """
+    Guards against the assessed data store's path drifting between the task that
+    writes it and the task that reads it.
+    """
+
+    def test_every_command_uses_the_same_assessment_store_path(self):
+        paths = {
+            case.id: get_command_path(case.step_function_filename, case.flag)
+            for case in assessment_store_command_test_cases
+        }
+
+        assert len(set(paths.values())) == 1, paths
+
+    @pytest.mark.parametrize(
+        "step_function_filename,flag",
+        [case.as_pytest_param() for case in assessment_store_command_test_cases],
+    )
+    def test_assessment_store_path_is_the_assessment_dataset(
+        self, step_function_filename, flag
+    ):
+        path = get_command_path(step_function_filename, flag)
+
+        assert path.endswith("/dataset=monthly_tracker_filled_posts_02_assessment/")
