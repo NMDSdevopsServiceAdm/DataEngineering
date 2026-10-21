@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
 
 ### Changed
+- Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
 - Renamed the employment status deduplicated count columns to `_clean` in the clean step instead of copying them, so no `_dedup` columns are output.
 - Made the raw column optional in `update_filtering_rule` (now `uncapped_col_name`, only needed when winsorizing) and updated all callers.
 - Partitioned the publication assessment data by archive date and run number so each assessed run is kept.

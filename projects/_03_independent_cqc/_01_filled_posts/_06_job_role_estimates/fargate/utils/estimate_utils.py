@@ -34,12 +34,8 @@ def calculate_estimated_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyFra
                 IndCQC.ascwds_job_role_rolling_ratio,
             ],
             name=IndCQC.ascwds_job_role_ratios_merged,
+            source_dtype=CatColType.AscwdsJobRoleRatiosMergedSourceEnumType,
         ),
-    )
-    lf = lf.with_columns(
-        pl.col(IndCQC.ascwds_job_role_ratios_merged_source).cast(
-            CatColType.AscwdsJobRoleRatiosMergedSourceEnumType
-        )
     )
 
     lf = lf.with_columns(

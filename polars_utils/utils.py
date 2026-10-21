@@ -324,24 +324,31 @@ def filter_to_maximum_value_in_column(
     return lf.drop(max_value)
 
 
-def coalesce_with_source_labels(cols: list[str], name: str) -> tuple[pl.Expr, pl.Expr]:
+def coalesce_with_source_labels(
+    cols: list[str], name: str, *, source_dtype: pl.Enum | None = None
+) -> tuple[pl.Expr, pl.Expr]:
     """Return expressions for the coalesced value and its source label.
 
     Args:
         cols (list[str]): The columns to coalesce from left-to-right.
         name (str): The root name for the new columns.
+        source_dtype (pl.Enum | None): Enum to cast the source label to. The
+            label stays String when None.
 
     Returns:
         tuple[pl.Expr, pl.Expr]: Tuple of expressions:
-            - Coalesce expression aliased with `name`.
+            - Float32 coalesce expression aliased with `name`.
             - Coalesce source label expression aliased name with suffix "_source".
     """
-    val_expr = pl.coalesce(cols).alias(name)
+    val_expr = pl.coalesce(cols).cast(pl.Float32).alias(name)
 
     # Build the label logic
     label_expr = pl.when(pl.col(cols[0]).is_not_null()).then(pl.lit(cols[0]))
     for c in cols[1:]:
         label_expr = label_expr.when(pl.col(c).is_not_null()).then(pl.lit(c))
+
+    if source_dtype is not None:
+        label_expr = label_expr.cast(source_dtype)
 
     return (val_expr, label_expr.alias(f"{name}_source"))
 
