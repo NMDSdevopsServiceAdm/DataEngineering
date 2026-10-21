@@ -61,172 +61,90 @@ class AddFilteringRuleColumnTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class UpdateFilteringRuleTests(unittest.TestCase):
-    def test_returns_expected_labels_when_populated_values_are_nulled(self):
-        test_lf = pl.LazyFrame(
-            Data.update_filtering_rule_populated_to_nulled_rows,
-            Schemas.update_filtering_rule_schema,
-            orient="row",
-        )
+class TestUpdateFilteringRule:
+    @staticmethod
+    def run(rows, expected_rows, schema=Schemas.update_filtering_rule_schema, **kwargs):
         returned_lf = job.update_filtering_rule(
-            test_lf,
-            IndCQC.ascwds_filtering_rule,
-            IndCQC.ascwds_filled_posts_dedup,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            AscwdsFilteringRule.populated,
-            AscwdsFilteringRule.contained_invalid_missing_data_code,
-        )
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_update_filtering_rule_populated_to_nulled_rows,
-            schema=Schemas.update_filtering_rule_schema,
-            orient="row",
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_returns_expected_labels_when_populated_values_are_changed(self):
-        test_lf = pl.LazyFrame(
-            data=Data.update_filtering_rule_populated_to_winsorized_rows,
-            schema=Schemas.update_filtering_rule_schema,
-            orient="row",
-        )
-        returned_lf = job.update_filtering_rule(
-            test_lf,
-            IndCQC.ascwds_filtering_rule,
-            IndCQC.ascwds_filled_posts_dedup,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            AscwdsFilteringRule.populated,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        )
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_update_filtering_rule_populated_to_winsorized_rows,
-            schema=Schemas.update_filtering_rule_schema,
-            orient="row",
-        )
-        pl_testing.assert_frame_equal(
-            returned_lf.sort(IndCQC.location_id).collect(), expected_lf.collect()
-        )
-
-    def test_returns_expected_labels_when_populated_values_are_nulled_after_winsorization(
-        self,
-    ):
-        test_lf = pl.LazyFrame(
-            data=Data.update_filtering_rule_winsorized_to_nulled_rows,
-            schema=Schemas.update_filtering_rule_schema,
-            orient="row",
-        )
-        returned_lf = job.update_filtering_rule(
-            test_lf,
-            IndCQC.ascwds_filtering_rule,
-            IndCQC.ascwds_filled_posts_dedup,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            AscwdsFilteringRule.populated,
-            AscwdsFilteringRule.contained_invalid_missing_data_code,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        )
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_update_filtering_rule_winsorized_to_nulled_rows,
-            schema=Schemas.update_filtering_rule_schema,
-            orient="row",
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_returns_expected_labels_when_populated_values_are_nulled_and_label_is_categorical(
-        self,
-    ):
-        test_lf = pl.LazyFrame(
-            Data.update_filtering_rule_populated_to_nulled_rows,
-            Schemas.update_filtering_rule_schema_categorical,
-            orient="row",
-        )
-        returned_lf = job.update_filtering_rule(
-            test_lf,
+            pl.LazyFrame(rows, schema, orient="row"),
             filter_rule_col_name=IndCQC.ascwds_filtering_rule,
-            raw_col_name=IndCQC.ascwds_filled_posts_dedup,
             clean_col_name=IndCQC.ascwds_filled_posts_dedup_clean,
             populated_rule=AscwdsFilteringRule.populated,
+            **kwargs,
+        )
+        expected_lf = pl.LazyFrame(expected_rows, schema, orient="row")
+        pl_testing.assert_frame_equal(
+            returned_lf.sort(IndCQC.location_id), expected_lf.sort(IndCQC.location_id)
+        )
+
+    def test_updates_rule_when_populated_values_are_nulled_without_uncapped_col(self):
+        self.run(
+            Data.update_filtering_rule_populated_to_nulled_rows,
+            Data.expected_update_filtering_rule_populated_to_nulled_rows,
             new_rule_name=AscwdsFilteringRule.contained_invalid_missing_data_code,
-            categorical_type=CatColType.JobRoleFilteringRuleCatType,
         )
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_update_filtering_rule_populated_to_nulled_rows,
-            schema=Schemas.update_filtering_rule_schema_categorical,
-            orient="row",
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_returns_expected_labels_when_populated_values_are_changed_and_label_is_categorical(
-        self,
-    ):
-        test_lf = pl.LazyFrame(
-            data=Data.update_filtering_rule_populated_to_winsorized_rows,
-            schema=Schemas.update_filtering_rule_schema_categorical,
-            orient="row",
-        )
-        returned_lf = job.update_filtering_rule(
-            test_lf,
-            filter_rule_col_name=IndCQC.ascwds_filtering_rule,
-            raw_col_name=IndCQC.ascwds_filled_posts_dedup,
-            clean_col_name=IndCQC.ascwds_filled_posts_dedup_clean,
-            populated_rule=AscwdsFilteringRule.populated,
+    def test_ignores_changed_values_without_uncapped_col(self):
+        self.run(
+            Data.update_filtering_rule_populated_to_winsorized_rows,
+            Data.update_filtering_rule_populated_to_winsorized_rows,
             new_rule_name=AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-            categorical_type=CatColType.JobRoleFilteringRuleCatType,
-        )
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_update_filtering_rule_populated_to_winsorized_rows,
-            schema=Schemas.update_filtering_rule_schema_categorical,
-            orient="row",
-        )
-        pl_testing.assert_frame_equal(
-            returned_lf.sort(IndCQC.location_id).collect(), expected_lf.collect()
         )
 
-    def test_returns_expected_labels_when_populated_values_are_nulled_after_winsorization_and_label_is_categorical(
-        self,
-    ):
-        test_lf = pl.LazyFrame(
-            data=Data.update_filtering_rule_winsorized_to_nulled_rows,
-            schema=Schemas.update_filtering_rule_schema_categorical,
-            orient="row",
+    def test_updates_rule_when_populated_values_are_nulled_with_uncapped_col(self):
+        self.run(
+            Data.update_filtering_rule_populated_to_nulled_rows,
+            Data.expected_update_filtering_rule_populated_to_nulled_rows,
+            new_rule_name=AscwdsFilteringRule.contained_invalid_missing_data_code,
+            uncapped_col_name=IndCQC.ascwds_filled_posts_dedup,
         )
-        returned_lf = job.update_filtering_rule(
-            test_lf,
-            filter_rule_col_name=IndCQC.ascwds_filtering_rule,
-            raw_col_name=IndCQC.ascwds_filled_posts_dedup,
-            clean_col_name=IndCQC.ascwds_filled_posts_dedup_clean,
-            populated_rule=AscwdsFilteringRule.populated,
+
+    def test_updates_rule_when_populated_values_are_changed_with_uncapped_col(self):
+        self.run(
+            Data.update_filtering_rule_populated_to_winsorized_rows,
+            Data.expected_update_filtering_rule_populated_to_winsorized_rows,
+            new_rule_name=AscwdsFilteringRule.winsorized_beds_ratio_outlier,
+            uncapped_col_name=IndCQC.ascwds_filled_posts_dedup,
+        )
+
+    def test_updates_rule_when_winsorized_values_are_nulled(self):
+        self.run(
+            Data.update_filtering_rule_winsorized_to_nulled_rows,
+            Data.expected_update_filtering_rule_winsorized_to_nulled_rows,
             new_rule_name=AscwdsFilteringRule.contained_invalid_missing_data_code,
             winsorized_rule=AscwdsFilteringRule.winsorized_beds_ratio_outlier,
+            uncapped_col_name=IndCQC.ascwds_filled_posts_dedup,
+        )
+
+    @pytest.mark.parametrize(
+        "rows, expected_rows, new_rule_name, uncapped",
+        [
+            pytest.param(
+                Data.update_filtering_rule_populated_to_nulled_rows,
+                Data.expected_update_filtering_rule_populated_to_nulled_rows,
+                AscwdsFilteringRule.contained_invalid_missing_data_code,
+                None,
+                id="nulled",
+            ),
+            pytest.param(
+                Data.update_filtering_rule_populated_to_winsorized_rows,
+                Data.expected_update_filtering_rule_populated_to_winsorized_rows,
+                AscwdsFilteringRule.winsorized_beds_ratio_outlier,
+                IndCQC.ascwds_filled_posts_dedup,
+                id="changed",
+            ),
+        ],
+    )
+    def test_returns_categorical_rule_col_when_type_provided(
+        self, rows, expected_rows, new_rule_name, uncapped
+    ):
+        self.run(
+            rows,
+            expected_rows,
+            Schemas.update_filtering_rule_schema_categorical,
+            new_rule_name=new_rule_name,
+            uncapped_col_name=uncapped,
             categorical_type=CatColType.JobRoleFilteringRuleCatType,
         )
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_update_filtering_rule_winsorized_to_nulled_rows,
-            schema=Schemas.update_filtering_rule_schema_categorical,
-            orient="row",
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_returns_expected_labels_when_raw_and_clean_col_args_refer_to_same_col(
-        self,
-    ):
-        test_lf = pl.LazyFrame(
-            Data.update_filtering_rule_populated_to_nulled_rows,
-            Schemas.update_filtering_rule_schema,
-            orient="row",
-        )
-        returned_lf = job.update_filtering_rule(
-            test_lf,
-            IndCQC.ascwds_filtering_rule,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            AscwdsFilteringRule.populated,
-            AscwdsFilteringRule.contained_invalid_missing_data_code,
-        )
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_update_filtering_rule_populated_to_nulled_rows,
-            schema=Schemas.update_filtering_rule_schema,
-            orient="row",
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class TestLookbackCapFilterExpr:
