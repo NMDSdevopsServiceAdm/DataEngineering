@@ -130,16 +130,15 @@ class TestHasConsistentServiceSinceDate:
         self, case
     ):
         expected_schema = pl.Schema(
-            list(self.schema.items())
-            + [(Pub.consistent_service_short_term, pl.Boolean())]
+            list(self.schema.items()) + [(Pub.consistent_service_short, pl.Boolean())]
         )
         expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
 
-        test_lf = expected_lf.drop(Pub.consistent_service_short_term)
+        test_lf = expected_lf.drop(Pub.consistent_service_short)
 
         returned_lf = test_lf.with_columns(
             job.has_consistent_service_since_date(
-                case.from_date, Pub.consistent_service_short_term
+                case.from_date, Pub.consistent_service_short
             )
         )
 
@@ -189,15 +188,15 @@ class TestAggregateToPublicationRows:
                 pl.Float32(),
             ),
             (Pub.ct_total_employed_imputed, pl.Float32()),
-            (Pub.consistent_service_long_term, pl.Boolean()),
-            (Pub.consistent_service_medium_term, pl.Boolean()),
-            (Pub.consistent_service_short_term, pl.Boolean()),
-            (Pub.ct_has_data_long_term, pl.Boolean()),
-            (Pub.ct_has_data_medium_term, pl.Boolean()),
-            (Pub.ct_has_data_short_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_long_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_medium_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_short_term, pl.Boolean()),
+            (Pub.consistent_service_long, pl.Boolean()),
+            (Pub.consistent_service_medium, pl.Boolean()),
+            (Pub.consistent_service_short, pl.Boolean()),
+            (Pub.ct_has_data_long, pl.Boolean()),
+            (Pub.ct_has_data_medium, pl.Boolean()),
+            (Pub.ct_has_data_short, pl.Boolean()),
+            (Pub.ct_dispersion_filter_long, pl.Boolean()),
+            (Pub.ct_dispersion_filter_medium, pl.Boolean()),
+            (Pub.ct_dispersion_filter_short, pl.Boolean()),
         ]
     )
     expected_schema = pl.Schema(
@@ -207,18 +206,18 @@ class TestAggregateToPublicationRows:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.publication_filled_posts, pl.Float32()),
-            (Pub.publication_locationid_count, pl.UInt32()),
-            (Pub.assessment_filled_posts_long_term, pl.Float32()),
-            (Pub.assessment_locationid_count_long_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_long_term, pl.Float32()),
-            (Pub.assessment_filled_posts_medium_term, pl.Float32()),
-            (Pub.assessment_locationid_count_medium_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_medium_term, pl.Float32()),
-            (Pub.assessment_filled_posts_short_term, pl.Float32()),
-            (Pub.assessment_locationid_count_short_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
-            (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
+            (Pub.filled_posts, pl.Float32()),
+            (Pub.locationid_count, pl.UInt32()),
+            (Pub.filtered_filled_posts_long, pl.Float32()),
+            (Pub.filtered_locationid_count_long, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_long, pl.Float32()),
+            (Pub.filtered_filled_posts_medium, pl.Float32()),
+            (Pub.filtered_locationid_count_medium, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_medium, pl.Float32()),
+            (Pub.filtered_filled_posts_short, pl.Float32()),
+            (Pub.filtered_locationid_count_short, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_short, pl.Float32()),
+            (Pub.unfiltered_ct_total_employed_long, pl.Float32()),
         ]
     )
 
@@ -283,18 +282,18 @@ class TestAggregateToPublicationRows:
                 (IndCQC.cqc_location_import_date, pl.Date()),
                 (IndCQC.current_region, pl.String()),
                 (IndCQC.primary_service_type, pl.String()),
-                (Pub.publication_filled_posts, pl.Float32()),
-                (Pub.publication_locationid_count, pl.UInt32()),
-                (Pub.assessment_filled_posts_long_term, pl.Float32()),
-                (Pub.assessment_locationid_count_long_term, pl.UInt32()),
-                (Pub.assessment_ct_total_employed_long_term, pl.Float32()),
-                (Pub.assessment_filled_posts_medium_term, pl.Float32()),
-                (Pub.assessment_locationid_count_medium_term, pl.UInt32()),
-                (Pub.assessment_ct_total_employed_medium_term, pl.Float32()),
-                (Pub.assessment_filled_posts_short_term, pl.Float32()),
-                (Pub.assessment_locationid_count_short_term, pl.UInt32()),
-                (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
-                (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
+                (Pub.filled_posts, pl.Float32()),
+                (Pub.locationid_count, pl.UInt32()),
+                (Pub.filtered_filled_posts_long, pl.Float32()),
+                (Pub.filtered_locationid_count_long, pl.UInt32()),
+                (Pub.filtered_ct_total_employed_long, pl.Float32()),
+                (Pub.filtered_filled_posts_medium, pl.Float32()),
+                (Pub.filtered_locationid_count_medium, pl.UInt32()),
+                (Pub.filtered_ct_total_employed_medium, pl.Float32()),
+                (Pub.filtered_filled_posts_short, pl.Float32()),
+                (Pub.filtered_locationid_count_short, pl.UInt32()),
+                (Pub.filtered_ct_total_employed_short, pl.Float32()),
+                (Pub.unfiltered_ct_total_employed_long, pl.Float32()),
             ]
         )
         expected_lf = pl.LazyFrame(
@@ -361,8 +360,8 @@ class TestAggregateToPublicationRows:
                 (IndCQC.main_job_role_clean_labelled, pl.String()),
                 (IndCQC.current_region, pl.String()),
                 (IndCQC.primary_service_type, pl.String()),
-                (Pub.publication_filled_posts, pl.Float32()),
-                (Pub.publication_locationid_count, pl.UInt32()),
+                (Pub.filled_posts, pl.Float32()),
+                (Pub.locationid_count, pl.UInt32()),
             ]
         )
         expected_lf = pl.LazyFrame(
@@ -402,7 +401,7 @@ class TestAggregateToPublicationRows:
             _with_period_label(input_lf), include_assessment=False
         ).collect()
 
-        assert returned_df[Pub.publication_filled_posts].to_list() == [10.0]
+        assert returned_df[Pub.filled_posts].to_list() == [10.0]
 
 
 class TestAddRowsForPublicationGroups:
@@ -426,15 +425,15 @@ class TestAddRowsForPublicationGroups:
                 pl.Float32(),
             ),
             (Pub.ct_total_employed_imputed, pl.Float32()),
-            (Pub.consistent_service_long_term, pl.Boolean()),
-            (Pub.consistent_service_medium_term, pl.Boolean()),
-            (Pub.consistent_service_short_term, pl.Boolean()),
-            (Pub.ct_has_data_long_term, pl.Boolean()),
-            (Pub.ct_has_data_medium_term, pl.Boolean()),
-            (Pub.ct_has_data_short_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_long_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_medium_term, pl.Boolean()),
-            (Pub.ct_dispersion_filter_short_term, pl.Boolean()),
+            (Pub.consistent_service_long, pl.Boolean()),
+            (Pub.consistent_service_medium, pl.Boolean()),
+            (Pub.consistent_service_short, pl.Boolean()),
+            (Pub.ct_has_data_long, pl.Boolean()),
+            (Pub.ct_has_data_medium, pl.Boolean()),
+            (Pub.ct_has_data_short, pl.Boolean()),
+            (Pub.ct_dispersion_filter_long, pl.Boolean()),
+            (Pub.ct_dispersion_filter_medium, pl.Boolean()),
+            (Pub.ct_dispersion_filter_short, pl.Boolean()),
         ]
     )
     expected_schema = pl.Schema(
@@ -444,18 +443,18 @@ class TestAddRowsForPublicationGroups:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.Categorical()),
-            (Pub.publication_filled_posts, pl.Float32()),
-            (Pub.publication_locationid_count, pl.UInt32()),
-            (Pub.assessment_filled_posts_long_term, pl.Float32()),
-            (Pub.assessment_locationid_count_long_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_long_term, pl.Float32()),
-            (Pub.assessment_filled_posts_medium_term, pl.Float32()),
-            (Pub.assessment_locationid_count_medium_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_medium_term, pl.Float32()),
-            (Pub.assessment_filled_posts_short_term, pl.Float32()),
-            (Pub.assessment_locationid_count_short_term, pl.UInt32()),
-            (Pub.assessment_ct_total_employed_short_term, pl.Float32()),
-            (Pub.assessment_ct_total_employed_long_term_no_filter, pl.Float32()),
+            (Pub.filled_posts, pl.Float32()),
+            (Pub.locationid_count, pl.UInt32()),
+            (Pub.filtered_filled_posts_long, pl.Float32()),
+            (Pub.filtered_locationid_count_long, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_long, pl.Float32()),
+            (Pub.filtered_filled_posts_medium, pl.Float32()),
+            (Pub.filtered_locationid_count_medium, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_medium, pl.Float32()),
+            (Pub.filtered_filled_posts_short, pl.Float32()),
+            (Pub.filtered_locationid_count_short, pl.UInt32()),
+            (Pub.filtered_ct_total_employed_short, pl.Float32()),
+            (Pub.unfiltered_ct_total_employed_long, pl.Float32()),
         ]
     )
 
@@ -534,8 +533,8 @@ class TestAddRowsForPublicationGroups:
             IndCQC.main_job_role_clean_labelled,
             IndCQC.current_region,
             IndCQC.primary_service_type,
-            Pub.publication_filled_posts,
-            Pub.publication_locationid_count,
+            Pub.filled_posts,
+            Pub.locationid_count,
         ]
         england_total_row = returned_lf.filter(
             (pl.col(IndCQC.current_region) == PublishedRegion.england)
@@ -548,9 +547,9 @@ class TestAddRowsForPublicationGroups:
                 == PublishedMainService.all_locations
             )
         ).collect()
-        assert england_total_row.select(
-            Pub.publication_filled_posts, Pub.publication_locationid_count
-        ).row(0) == (30.0, 1)
+        assert england_total_row.select(Pub.filled_posts, Pub.locationid_count).row(
+            0
+        ) == (30.0, 1)
 
 
 class TestCalcPercChangeFromPreviousApril:
@@ -560,8 +559,8 @@ class TestCalcPercChangeFromPreviousApril:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.publication_filled_posts, pl.Float32()),
-            (Pub.publication_locationid_count, pl.UInt32()),
+            (Pub.filled_posts, pl.Float32()),
+            (Pub.locationid_count, pl.UInt32()),
         ]
     )
 
@@ -598,8 +597,8 @@ class TestCalcPercChangeCumulativeFromGivenPeriodOnwards:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.assessment_ct_total_employed_long_term, pl.Float32()),
-            (Pub.assessment_ct_total_employed_medium_term, pl.Float32()),
+            (Pub.filtered_ct_total_employed_long, pl.Float32()),
+            (Pub.filtered_ct_total_employed_medium, pl.Float32()),
         ]
     )
 
@@ -626,168 +625,6 @@ class TestCalcPercChangeCumulativeFromGivenPeriodOnwards:
             )
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
-class TestCalcPercChangeAgainstPeriodsAgo:
-    perc_change_schema = pl.Schema(
-        [
-            (IndCQC.cqc_location_import_date, pl.Date()),
-            (IndCQC.current_region, pl.String()),
-            (IndCQC.primary_service_type, pl.String()),
-            (Pub.publication_filled_posts, pl.Float32()),
-            (Pub.publication_locationid_count, pl.UInt32()),
-        ]
-    )
-
-    @pytest.mark.parametrize(
-        "case",
-        [
-            case.as_pytest_param()
-            for case in Data.calc_perc_change_against_periods_ago_test_cases
-        ],
-    )
-    def test_returns_percentage_change_against_the_row_periods_back_earlier(self, case):
-        expected_schema = pl.Schema(
-            list(self.perc_change_schema.items()) + [(case.column_alias, pl.Float32())]
-        )
-        expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
-
-        test_lf = expected_lf.drop(case.column_alias)
-
-        returned_lf = test_lf.with_columns(
-            job.calc_perc_change_against_periods_ago(
-                case.column_name,
-                case.periods_back,
-                case.group_columns,
-                case.column_alias,
-            )
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
-class TestBuildT0EstimatesDownloadTable:
-    input_schema = pl.Schema(
-        [
-            (IndCQC.cqc_location_import_date, pl.Date()),
-            (IndCQC.main_job_role_clean_labelled, pl.String()),
-            (IndCQC.current_region, pl.String()),
-            (IndCQC.primary_service_type, pl.String()),
-            (Pub.publication_filled_posts, pl.Float32()),
-            (Pub.publication_locationid_count, pl.UInt32()),
-        ]
-    )
-    expected_schema = pl.Schema(
-        [
-            (Pub.period, pl.Date()),
-            (Pub.period_label, pl.String()),
-            (Pub.region, pl.String()),
-            (Pub.main_service, pl.String()),
-            (Pub.estimated_filled_posts, pl.Float32()),
-            (Pub.estimated_filled_posts_rounded, pl.Float32()),
-            (Pub.cqc_locations, pl.UInt32()),
-        ]
-    )
-
-    @pytest.mark.parametrize(
-        "case",
-        [
-            case.as_pytest_param()
-            for case in Data.build_t0_estimates_download_table_test_cases
-        ],
-    )
-    def test_returns_expected_data(self, case):
-        input_lf = _with_period_label(
-            pl.LazyFrame(case.input_data, self.input_schema, orient="row")
-        )
-
-        returned_lf = job.build_t0_estimates_download_table(input_lf, today=case.today)
-
-        expected_lf = pl.LazyFrame(
-            case.expected_data, self.expected_schema, orient="row"
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_output_has_no_duplicate_period_region_main_service_keys(self):
-        input_lf = pl.LazyFrame(
-            [
-                (date(2026, 4, 1), "All job roles", "London", "Care home service", 100.0, 10),
-                (date(2026, 4, 1), "Registered nurse", "London", "Care home service", 40.0, 10),
-                (date(2026, 4, 1), "All job roles", "London", "Non-residential service", 50.0, 5),
-                (date(2026, 4, 1), "All job roles", "South West", "Care home service", 60.0, 6),
-                (date(2026, 5, 1), "All job roles", "London", "Care home service", 110.0, 11),
-            ],
-            self.input_schema,
-            orient="row",
-        )  # fmt: skip
-
-        returned_df = job.build_t0_estimates_download_table(
-            _with_period_label(input_lf), today=date(2026, 10, 6)
-        ).collect()
-
-        key_columns = [Pub.period, Pub.region, Pub.main_service]
-        assert returned_df.height == returned_df.select(key_columns).n_unique()
-
-
-class TestBuildT1FilledPostsPercChangeDownloadTable:
-    input_schema = TestBuildT0EstimatesDownloadTable.input_schema
-    expected_schema = pl.Schema(
-        [
-            (Pub.period, pl.Date()),
-            (Pub.period_label, pl.String()),
-            (Pub.region, pl.String()),
-            (Pub.main_service, pl.String()),
-            (Pub.annual_percentage_change, pl.Float32()),
-            (Pub.monthly_percentage_change, pl.Float32()),
-        ]
-    )
-
-    @pytest.mark.parametrize(
-        "case",
-        [
-            case.as_pytest_param()
-            for case in Data.build_t1_filled_posts_perc_change_download_table_test_cases
-        ],
-    )
-    def test_returns_expected_data(self, case):
-        input_lf = _with_period_label(
-            pl.LazyFrame(case.input_data, self.input_schema, orient="row")
-        )
-
-        returned_lf = job.build_t1_filled_posts_perc_change_download_table(
-            input_lf, today=case.today
-        )
-
-        expected_lf = pl.LazyFrame(
-            case.expected_data, self.expected_schema, orient="row"
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
-class TestBuildT2LocationCountPercChangeDownloadTable:
-    input_schema = TestBuildT0EstimatesDownloadTable.input_schema
-    expected_schema = TestBuildT1FilledPostsPercChangeDownloadTable.expected_schema
-
-    @pytest.mark.parametrize(
-        "case",
-        [
-            case.as_pytest_param()
-            for case in Data.build_t2_location_count_perc_change_download_table_test_cases
-        ],
-    )
-    def test_returns_expected_data(self, case):
-        input_lf = _with_period_label(
-            pl.LazyFrame(case.input_data, self.input_schema, orient="row")
-        )
-
-        returned_lf = job.build_t2_location_count_perc_change_download_table(
-            input_lf, today=case.today
-        )
-
-        expected_lf = pl.LazyFrame(
-            case.expected_data, self.expected_schema, orient="row"
-        )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
