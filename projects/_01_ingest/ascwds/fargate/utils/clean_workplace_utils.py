@@ -381,21 +381,27 @@ def null_slv_job_roles_when_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
     }
     not_known_multiple = 999
 
-    def is_not_known(values: pl.Expr) -> pl.Expr:
-        """Flag values that are negative or a positive multiple of 999."""
-        return (values < 0) | ((values > 0) & (values % not_known_multiple == 0))
-
-    return lf.with_columns(
-        pl.when(
-            pl.any_horizontal(
-                is_not_known(pl.col(total)), is_not_known(job_role_columns.as_expr())
+    null_expressions = []
+    for total, job_role_columns in total_to_job_role_columns.items():
+        total_and_job_roles = (
+            cs.by_name(total, require_all=False) | job_role_columns
+        ).as_expr()
+        null_expressions.append(
+            pl.when(
+                pl.any_horizontal(
+                    (total_and_job_roles < 0)
+                    | (
+                        (total_and_job_roles > 0)
+                        & (total_and_job_roles % not_known_multiple == 0)
+                    )
+                )
             )
+            .then(None)
+            .otherwise(job_role_columns)
+            .name.keep()
         )
-        .then(None)
-        .otherwise(job_role_columns)
-        .name.keep()
-        for total, job_role_columns in total_to_job_role_columns.items()
-    )
+
+    return lf.with_columns(null_expressions)
 
 
 def merge_legacy_job_role_columns(
