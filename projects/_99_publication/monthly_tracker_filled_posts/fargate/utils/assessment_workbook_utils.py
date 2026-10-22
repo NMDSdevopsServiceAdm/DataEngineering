@@ -126,9 +126,9 @@ def fill_assessment_workbook(
         output_path (Path): local path to save to.
 
     Raises:
-        TemplateMismatchError: if the template does not match the cell map.
         ValueError: if a value targets a sheet or cell outside the mapped input
-            ranges.
+            ranges, or the template does not match the cell map
+            (`TemplateMismatchError`).
     """
     workbook = openpyxl.load_workbook(template_path)
     check_template(workbook)
