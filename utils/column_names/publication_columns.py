@@ -37,6 +37,8 @@ class PublicationColumns:
     locationid_count_cum_perc_change_short: str = (
         "locationid_count_cum_perc_change_short"
     )
+    prev_run_filled_posts: str = "prev_run_filled_posts"
+    filled_posts_perc_change_vs_prev_run: str = "filled_posts_perc_change_vs_prev_run"
     filled_posts_april_perc_change: str = "filled_posts_april_perc_change"
     locationid_count_april_perc_change: str = "locationid_count_april_perc_change"
     main_service: str = "Main service"
