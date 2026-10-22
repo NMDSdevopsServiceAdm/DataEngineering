@@ -86,46 +86,9 @@ def resolve_run_sources(s3_roots: list[str], run_number: int | None) -> list[str
     selected_run = select_run_number(runs_by_root, run_number)
 
     return [
-        _run_source(root, runs[selected_run], selected_run)
+        f"{root.rstrip('/')}/archive_date={runs[selected_run]}/run_number={selected_run}/"
         for root, runs in runs_by_root.items()
     ]
-
-
-def _run_source(s3_root: str, archive_date: str, run_number: int) -> str:
-    """
-    Builds the S3 directory of a run under an archive root.
-
-    Args:
-        s3_root (str): S3 directory of an archive partitioned by archive_date and
-            run_number
-        archive_date (str): the run's archive date, as YYYY-MM-DD
-        run_number (int): the run number
-
-    Returns:
-        str: the S3 directory of the run
-    """
-    return f"{s3_root.rstrip('/')}/archive_date={archive_date}/run_number={run_number}/"
-
-
-def resolve_previous_run_source(s3_root: str, run_number: int) -> str | None:
-    """
-    Finds the S3 directory of the latest run archived before the given run.
-
-    Args:
-        s3_root (str): S3 directory of an archive partitioned by archive_date and
-            run_number
-        run_number (int): the current run number
-
-    Returns:
-        str | None: the S3 directory of the highest run_number below run_number,
-            or None when there is no earlier run
-    """
-    runs = list_archive_runs(s3_root)
-    previous_run = max((number for number in runs if number < run_number), default=None)
-    if previous_run is None:
-        return None
-
-    return _run_source(s3_root, runs[previous_run], previous_run)
 
 
 def run_partition_path(s3_root: str, run_source: str) -> str:

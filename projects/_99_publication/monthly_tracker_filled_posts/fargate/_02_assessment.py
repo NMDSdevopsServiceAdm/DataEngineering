@@ -6,6 +6,7 @@ from polars_utils import utils
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     merge_utils,
     publication_utils,
+    run_log_utils,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
@@ -19,18 +20,21 @@ RUN_PARTITION_COLUMNS = [ArchiveKeys.archive_date, ArchiveKeys.run_number]
 def main(
     prep_source: str,
     assessment_destination: str,
+    run_log_source: str,
     run_number: int | None = None,
 ) -> None:
     """
     Builds the assessment data for one prepared run: publication and assessment
     columns by import date, job role, region and service type, with rollup rows,
-    capacity tracker (CT) percentage changes, and the previous run's filled posts
-    with the percentage change from them.
+    capacity tracker (CT) percentage changes, and the previously published run's
+    filled posts with the percentage change from them.
 
     Args:
         prep_source (str): s3 directory holding the prepared data of every run
         assessment_destination (str): destination s3 directory for the assessment data,
             partitioned by archive_date and run_number
+        run_log_source (str): s3 directory of the archive run log, used to find the
+            previously published run
         run_number (int | None): the prepared run to use. Defaults to None, the latest run
     """
     run_source = merge_utils.resolve_run_sources([prep_source], run_number)[0]
@@ -176,17 +180,18 @@ def main(
         ),
     )
 
-    previous_run_source = merge_utils.resolve_previous_run_source(
-        assessment_destination, merge_utils.run_number_from_source(run_source)
+    prev_run_number = run_log_utils.get_previous_published_run_number(
+        run_log_source, merge_utils.run_number_from_source(run_source)
     )
-    if previous_run_source is None:
-        print(
-            "No previous assessment run found; previous run filled posts columns are null"
-        )
+    if prev_run_number is None:
+        print("No previously published run found; previous run columns are null")
         prev_assessment_lf = None
     else:
-        print(f"Comparing to previous assessment run: {previous_run_source}")
-        prev_assessment_lf = utils.scan_parquet(previous_run_source)
+        prev_run_source = merge_utils.resolve_run_sources(
+            [assessment_destination], prev_run_number
+        )[0]
+        print(f"Comparing to previously published run: {prev_run_source}")
+        prev_assessment_lf = utils.scan_parquet(prev_run_source)
     assessment_summary_lf = publication_utils.add_prev_run_filled_posts_columns(
         assessment_summary_lf, prev_assessment_lf
     )
@@ -211,6 +216,10 @@ if __name__ == "__main__":
             "Destination s3 directory for the assessment data",
         ),
         (
+            "--run_log_source",
+            "S3 directory of the archive run log",
+        ),
+        (
             "--run_number",
             "Prepared run number to use, or 'latest'",
             False,
@@ -220,5 +229,6 @@ if __name__ == "__main__":
     main(
         prep_source=args.prep_source,
         assessment_destination=args.assessment_destination,
+        run_log_source=args.run_log_source,
         run_number=merge_utils.parse_run_number(args.run_number),
     )
