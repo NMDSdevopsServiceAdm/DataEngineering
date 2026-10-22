@@ -115,8 +115,9 @@ def fill_assessment_workbook(
     """Writes values into the template's input cells and saves a copy.
 
     Nothing is written unless the template matches the cell map and every value
-    targets a mapped input cell. Charts and every other cell are left as in the
-    template.
+    targets a mapped input cell. Other cells are left as in the template, and
+    charts keep their series references; openpyxl can drop other chart styling,
+    so check a saved workbook's charts in Excel.
 
     Args:
         values (dict[str, dict[str, object]]): values to write, keyed by sheet
