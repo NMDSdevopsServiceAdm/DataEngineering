@@ -55,13 +55,13 @@ def main(
             .replace(publication_utils.PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
             .alias(Pub.main_service),
             publication_utils.round_to_publication_bands(
-                Pub.publication_filled_posts, Pub.estimated_filled_posts_rounded
+                Pub.filled_posts, Pub.estimated_filled_posts_rounded
             ),
-            pl.col(Pub.publication_locationid_count).alias(Pub.cqc_locations),
-            Pub.publication_filled_posts_april_perc_change,
-            Pub.publication_filled_posts_cumulative_perc_change_short_term,
-            Pub.publication_locationid_count_april_perc_change,
-            Pub.publication_locationid_count_cumulative_perc_change_short_term,
+            pl.col(Pub.locationid_count).alias(Pub.cqc_locations),
+            Pub.filled_posts_april_perc_change,
+            Pub.filled_posts_cum_perc_change_short,
+            Pub.locationid_count_april_perc_change,
+            Pub.locationid_count_cum_perc_change_short,
         )
         .sort(publication_utils.DOWNLOAD_TABLE_SORT_COLUMNS)
     )

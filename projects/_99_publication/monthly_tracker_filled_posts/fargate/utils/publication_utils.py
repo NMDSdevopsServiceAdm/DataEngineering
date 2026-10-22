@@ -25,20 +25,20 @@ DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
 # The summed columns of the publication summary, and the extra ones added for
 # the assessment (see aggregate_to_publication_rows).
 _PUBLICATION_METRIC_COLUMNS: list[str] = [
-    Pub.publication_filled_posts,
-    Pub.publication_locationid_count,
+    Pub.filled_posts,
+    Pub.locationid_count,
 ]
 _ASSESSMENT_METRIC_COLUMNS: list[str] = [
-    Pub.assessment_filled_posts_long_term,
-    Pub.assessment_locationid_count_long_term,
-    Pub.assessment_ct_total_employed_long_term,
-    Pub.assessment_filled_posts_medium_term,
-    Pub.assessment_locationid_count_medium_term,
-    Pub.assessment_ct_total_employed_medium_term,
-    Pub.assessment_filled_posts_short_term,
-    Pub.assessment_locationid_count_short_term,
-    Pub.assessment_ct_total_employed_short_term,
-    Pub.assessment_ct_total_employed_long_term_no_filter,
+    Pub.filtered_filled_posts_long,
+    Pub.filtered_locationid_count_long,
+    Pub.filtered_ct_total_employed_long,
+    Pub.filtered_filled_posts_medium,
+    Pub.filtered_locationid_count_medium,
+    Pub.filtered_ct_total_employed_medium,
+    Pub.filtered_filled_posts_short,
+    Pub.filtered_locationid_count_short,
+    Pub.filtered_ct_total_employed_short,
+    Pub.unfiltered_ct_total_employed_long,
 ]
 
 # The publication's controlled-rounding bands (see round_to_publication_bands):
@@ -462,19 +462,19 @@ def _assessment_aggregations() -> list[pl.Expr]:
         list[pl.Expr]: aggregation expressions, one per assessment column.
     """
     long_term_filter = (
-        pl.col(Pub.consistent_service_long_term)
-        & pl.col(Pub.ct_dispersion_filter_long_term)
-        & pl.col(Pub.ct_has_data_long_term)
+        pl.col(Pub.consistent_service_long)
+        & pl.col(Pub.ct_dispersion_filter_long)
+        & pl.col(Pub.ct_has_data_long)
     )
     medium_term_filter = (
-        pl.col(Pub.consistent_service_medium_term)
-        & pl.col(Pub.ct_dispersion_filter_medium_term)
-        & pl.col(Pub.ct_has_data_medium_term)
+        pl.col(Pub.consistent_service_medium)
+        & pl.col(Pub.ct_dispersion_filter_medium)
+        & pl.col(Pub.ct_has_data_medium)
     )
     short_term_filter = (
-        pl.col(Pub.consistent_service_short_term)
-        & pl.col(Pub.ct_dispersion_filter_short_term)
-        & pl.col(Pub.ct_has_data_short_term)
+        pl.col(Pub.consistent_service_short)
+        & pl.col(Pub.ct_dispersion_filter_short)
+        & pl.col(Pub.ct_has_data_short)
     )
 
     filled_posts_col = IndCQC.estimate_filled_posts_by_job_role
@@ -484,43 +484,43 @@ def _assessment_aggregations() -> list[pl.Expr]:
         pl.col(filled_posts_col)
         .filter(long_term_filter)
         .sum()
-        .alias(Pub.assessment_filled_posts_long_term),
+        .alias(Pub.filtered_filled_posts_long),
         pl.col(IndCQC.location_id)
         .filter(long_term_filter)
         .n_unique()
-        .alias(Pub.assessment_locationid_count_long_term),
+        .alias(Pub.filtered_locationid_count_long),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(long_term_filter & first_row_per_location)
         .sum()
-        .alias(Pub.assessment_ct_total_employed_long_term),
+        .alias(Pub.filtered_ct_total_employed_long),
         pl.col(filled_posts_col)
         .filter(medium_term_filter)
         .sum()
-        .alias(Pub.assessment_filled_posts_medium_term),
+        .alias(Pub.filtered_filled_posts_medium),
         pl.col(IndCQC.location_id)
         .filter(medium_term_filter)
         .n_unique()
-        .alias(Pub.assessment_locationid_count_medium_term),
+        .alias(Pub.filtered_locationid_count_medium),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(medium_term_filter & first_row_per_location)
         .sum()
-        .alias(Pub.assessment_ct_total_employed_medium_term),
+        .alias(Pub.filtered_ct_total_employed_medium),
         pl.col(filled_posts_col)
         .filter(short_term_filter)
         .sum()
-        .alias(Pub.assessment_filled_posts_short_term),
+        .alias(Pub.filtered_filled_posts_short),
         pl.col(IndCQC.location_id)
         .filter(short_term_filter)
         .n_unique()
-        .alias(Pub.assessment_locationid_count_short_term),
+        .alias(Pub.filtered_locationid_count_short),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(short_term_filter & first_row_per_location)
         .sum()
-        .alias(Pub.assessment_ct_total_employed_short_term),
+        .alias(Pub.filtered_ct_total_employed_short),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(first_row_per_location)
         .sum()
-        .alias(Pub.assessment_ct_total_employed_long_term_no_filter),
+        .alias(Pub.unfiltered_ct_total_employed_long),
     ]
 
 
@@ -532,11 +532,11 @@ def aggregate_to_publication_rows(
     """
     Aggregates location-level rows up to publication level.
 
-    Publication columns sum filled posts and count distinct locations across
-    every row in a group. Assessment columns (see _assessment_aggregations) do
+    Unfiltered columns sum filled posts and count distinct locations across
+    every row in a group. Filtered columns (see _assessment_aggregations) do
     the same but only over rows passing each term's filters, applied
     independently per term within the same group_by so a row can contribute to
-    one term's assessment columns without contributing to another's.
+    one term's filtered columns without contributing to another's.
 
     group_keys defaults to (import date, period label, job role, region,
     service type); the period label is one-to-one with import date, so it
@@ -546,16 +546,16 @@ def aggregate_to_publication_rows(
 
     Args:
         lazy_df (pl.LazyFrame): location-level data. With include_assessment,
-            it must also hold consistent_service_*_term,
-            ct_total_employed_imputed, ct_has_data_*_term and
-            ct_dispersion_filter_*_term.
+            it must also hold consistent_service_*,
+            ct_total_employed_imputed, ct_has_data_* and
+            ct_dispersion_filter_*.
         group_keys (list[str] | None): columns to group by. Defaults to
             import date, period label, job role, region and service type.
         include_assessment (bool): whether to add the assessment columns.
 
     Returns:
-        pl.LazyFrame: one row per group_keys combination, with publication_*
-            columns and, with include_assessment, assessment_*_term columns.
+        pl.LazyFrame: one row per group_keys combination, with unfiltered
+            columns and, with include_assessment, filtered_* columns.
     """
     if group_keys is None:
         group_keys = [
@@ -567,10 +567,8 @@ def aggregate_to_publication_rows(
         ]
 
     aggregations = [
-        pl.col(IndCQC.estimate_filled_posts_by_job_role)
-        .sum()
-        .alias(Pub.publication_filled_posts),
-        pl.col(IndCQC.location_id).n_unique().alias(Pub.publication_locationid_count),
+        pl.col(IndCQC.estimate_filled_posts_by_job_role).sum().alias(Pub.filled_posts),
+        pl.col(IndCQC.location_id).n_unique().alias(Pub.locationid_count),
     ]
     if include_assessment:
         aggregations += _assessment_aggregations()
