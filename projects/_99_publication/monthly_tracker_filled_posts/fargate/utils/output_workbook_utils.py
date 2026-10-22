@@ -249,9 +249,8 @@ def build_download_workbook(
     table (T0, T1, T2), each a column selection of the publication data.
 
     Reading the data and storing the workbook are left to the caller. The data
-    is collected once, as it feeds every sheet and the latest period, and each
-    table is then collected as gptables needs pandas. The data is small (one
-    row per year, plus monthly for the current financial year).
+    is small, so it is collected once as it feeds every sheet and the latest
+    period; each table is then collected as gptables needs pandas.
 
     Args:
         publication_lf (pl.LazyFrame): the publication data written by the
