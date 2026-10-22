@@ -4,6 +4,9 @@ from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 
 
 @dataclass
@@ -623,6 +626,27 @@ class EmploymentStatusEstimateSource(ColumnValues):
     cleaned: str = "cleaned"
     imputed: str = "imputed"
     rolling_avg: str = "rolling_avg"
+
+
+@dataclass
+class StarterRateEstimateSource(ColumnValues):
+    """The columns an estimated starter rate can come from"""
+
+    starter_rate: str = SLVCols.starter_rate
+
+
+@dataclass
+class TurnoverRateEstimateSource(ColumnValues):
+    """The columns an estimated turnover rate can come from"""
+
+    turnover_rate: str = SLVCols.turnover_rate
+
+
+@dataclass
+class VacancyRateEstimateSource(ColumnValues):
+    """The columns an estimated vacancy rate can come from"""
+
+    vacancy_rate: str = SLVCols.vacancy_rate
 
 
 @dataclass

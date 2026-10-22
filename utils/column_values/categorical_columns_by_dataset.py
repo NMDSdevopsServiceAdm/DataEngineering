@@ -66,8 +66,11 @@ from utils.column_values.categorical_column_values import (
     Services,
     Specialisms,
     SpecialistGeneralistOther,
+    StarterRateEstimateSource,
     StartersFilteringRule,
+    TurnoverRateEstimateSource,
     VacanciesFilteringRule,
+    VacancyRateEstimateSource,
 )
 
 
@@ -342,6 +345,19 @@ class SLVCleanCategoricalValues:
     )
     vacancies_filtering_rule_column_values = VacanciesFilteringRule(
         SLVCols.vacancies_filtering_rule
+    )
+
+
+@dataclass
+class SLVEstimateCategoricalValues:
+    starter_rate_source_column_values = StarterRateEstimateSource(
+        SLVCols.estimated_starter_rate_source
+    )
+    turnover_rate_source_column_values = TurnoverRateEstimateSource(
+        SLVCols.estimated_turnover_rate_source
+    )
+    vacancy_rate_source_column_values = VacancyRateEstimateSource(
+        SLVCols.estimated_vacancy_rate_source
     )
 
 
