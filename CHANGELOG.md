@@ -15,8 +15,7 @@ All notable changes to this project will be documented in this file.
 - Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
 
 ### Changed
-- Changed the public monthly statistics download workbook to build its T0, T1 and T2 sheets from the single publication output table.
-- Changed Publication-Output to read the assessed data without re-aggregating it and write one table with the T0, T1 and T2 download columns, using the assessment's April-on-April and cumulative short-term percentage changes, instead of three separate tables.
+- Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Changed Publication-Output to write one download table of rounded filled posts, location counts and percentage changes from the assessed data, instead of three tables.
 - Renamed the employment status deduplicated count columns to `_clean` in the clean step instead of copying them, so no `_dedup` columns are output.
 - Made the raw column optional in `update_filtering_rule` (now `uncapped_col_name`, only needed when winsorizing) and updated all callers.
