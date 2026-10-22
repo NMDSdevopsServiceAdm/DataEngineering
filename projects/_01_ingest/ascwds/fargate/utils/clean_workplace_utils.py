@@ -363,10 +363,9 @@ def null_slv_job_roles_when_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
     unpopulated roles auto-populate as 0 which could be a false zero. Each
     measure is handled independently.
 
-    A value is not known when it is negative (-1/-2) or a positive multiple
-    of 999 (a proxy for not known, which sums when repeated e.g. 2997).
-    0 and null values are left as is. Must run before negative job role values
-    are bounded to null.
+    A value is not known when it is negative (-1/-2) or 999 (a proxy for not
+    known). 0 and null values are left as is. Must run before negative job
+    role values are bounded to null.
 
     Args:
         lf (pl.LazyFrame): Workplace LazyFrame with integer total and job role columns.
@@ -379,7 +378,7 @@ def null_slv_job_roles_when_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
         AWPClean.total_leavers: cs.starts_with("jr") & cs.ends_with("stop"),
         AWPClean.total_vacancies: cs.starts_with("jr") & cs.ends_with("vacy"),
     }
-    not_known_multiple = 999
+    not_known_value = 999
 
     null_expressions = []
     for total, job_role_columns in total_to_job_role_columns.items():
@@ -389,11 +388,7 @@ def null_slv_job_roles_when_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
         null_expressions.append(
             pl.when(
                 pl.any_horizontal(
-                    (total_and_job_roles < 0)
-                    | (
-                        (total_and_job_roles > 0)
-                        & (total_and_job_roles % not_known_multiple == 0)
-                    )
+                    (total_and_job_roles < 0) | (total_and_job_roles == not_known_value)
                 )
             )
             .then(None)

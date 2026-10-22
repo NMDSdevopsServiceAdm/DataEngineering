@@ -2253,22 +2253,22 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
         NullSlvJobRolesTestCase(
-            id="nulls_job_roles_when_total_is_multiple_of_999",
+            id="nulls_job_roles_when_total_is_999",
             input_data={
-                AWPClean.total_starters: [999, 2997],
-                AWPClean.total_leavers: [999, 2997],
-                AWPClean.total_vacancies: [999, 2997],
-                AWPClean.job_role_01_starters: [1, 2],
-                AWPClean.job_role_01_leavers: [1, 2],
-                AWPClean.job_role_01_vacancies: [1, 2],
+                AWPClean.total_starters: [999],
+                AWPClean.total_leavers: [999],
+                AWPClean.total_vacancies: [999],
+                AWPClean.job_role_01_starters: [1],
+                AWPClean.job_role_01_leavers: [1],
+                AWPClean.job_role_01_vacancies: [1],
             },
             expected_data={
-                AWPClean.total_starters: [999, 2997],
-                AWPClean.total_leavers: [999, 2997],
-                AWPClean.total_vacancies: [999, 2997],
-                AWPClean.job_role_01_starters: [None, None],
-                AWPClean.job_role_01_leavers: [None, None],
-                AWPClean.job_role_01_vacancies: [None, None],
+                AWPClean.total_starters: [999],
+                AWPClean.total_leavers: [999],
+                AWPClean.total_vacancies: [999],
+                AWPClean.job_role_01_starters: [None],
+                AWPClean.job_role_01_leavers: [None],
+                AWPClean.job_role_01_vacancies: [None],
             },
         ),
         NullSlvJobRolesTestCase(
@@ -2344,7 +2344,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
         NullSlvJobRolesTestCase(
-            id="nulls_measure_when_one_job_role_is_multiple_of_999",
+            id="keeps_job_roles_when_a_job_role_is_a_multiple_of_999_but_not_999",
             input_data={
                 AWPClean.total_starters: [2000],
                 AWPClean.job_role_01_starters: [1998],
@@ -2352,8 +2352,8 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
             expected_data={
                 AWPClean.total_starters: [2000],
-                AWPClean.job_role_01_starters: [None],
-                AWPClean.job_role_02_starters: [None],
+                AWPClean.job_role_01_starters: [1998],
+                AWPClean.job_role_02_starters: [2],
             },
         ),
         NullSlvJobRolesTestCase(
