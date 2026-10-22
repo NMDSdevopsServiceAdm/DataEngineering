@@ -80,24 +80,15 @@ class TestWriteInputCell:
         assert worksheet.cell(3, 3).font.name == "Calibri"
 
 
-def _generic_values() -> dict[str, dict[str, object]]:
-    return {
-        sheet.name: {
-            support.coordinate(row, col): support.generic_value(
-                r, row - min_row, col - min_col
-            )
-            for r in sheet.input_ranges
-            for min_row, min_col in [min(support.cells_in([r.cells]))]
-            for row, col in support.cells_in([r.cells])
-        }
-        for sheet in cell_map.ASSESSMENT_SHEETS
-    }
+@pytest.fixture(scope="module")
+def values() -> dict[str, dict[str, object]]:
+    return support.generic_values(full=True)
 
 
 @pytest.fixture(scope="module")
-def filled_path(tmp_path_factory) -> Path:
+def filled_path(tmp_path_factory, values) -> Path:
     path = tmp_path_factory.mktemp("filled") / "assessment.xlsx"
-    job.fill_assessment_workbook(_generic_values(), cell_map.TEMPLATE_PATH, path)
+    job.fill_assessment_workbook(values, cell_map.TEMPLATE_PATH, path)
     return path
 
 
@@ -110,12 +101,12 @@ def _copy_template_with(tmp_path: Path, sheet: str, cell: str, value: object) ->
 
 
 class TestFillAssessmentWorkbook:
-    def test_values_land_in_the_mapped_cells(self, filled_path):
+    def test_values_land_in_the_mapped_cells(self, filled_path, values):
         saved = openpyxl.load_workbook(filled_path)
 
         wrong = [
             (sheet, cell)
-            for sheet, cells in _generic_values().items()
+            for sheet, cells in values.items()
             for cell, value in cells.items()
             if saved[sheet][cell].value != value
         ]
