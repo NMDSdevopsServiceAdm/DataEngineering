@@ -8,6 +8,10 @@ import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate._05_e
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
+from projects._03_independent_cqc._02_employment_status.fargate.utils.estimate_utils import (
+    ESTIMATED_COUNT_COLUMNS,
+    ESTIMATED_PERCENTAGE_COLUMNS,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
@@ -20,6 +24,11 @@ EMPLOYMENT_STATUS_ESTIMATE_SOURCE = "some/employment_status/source"
 ESTIMATED_DATA_DESTINATION = "some/destination"
 
 IMPORT_DATE = date(2025, 1, 1)
+EMPLOYMENT_STATUS_COLUMNS = [
+    *ESTIMATED_PERCENTAGE_COLUMNS,
+    EmpStatus.estimated_percentage_source,
+    *ESTIMATED_COUNT_COLUMNS,
+]
 
 
 def build_slv_lf(
@@ -53,7 +62,7 @@ def build_employment_lf(
             IndCQC.location_id: [location_id],
             IndCQC.cqc_location_import_date: [IMPORT_DATE],
             EmpStatus.estimated_employees: [employees],
-            EmpStatus.estimated_emp_stat_permanent: [60.0],
+            **{col: [1.0] for col in EMPLOYMENT_STATUS_COLUMNS},
             "unwanted_employment_col": [1],
         }
     )
@@ -98,7 +107,7 @@ class TestMain:
 
         assert "unwanted_slv_col" not in result.columns
         assert "unwanted_employment_col" not in result.columns
-        assert EmpStatus.estimated_emp_stat_permanent in result.columns
+        assert set(EMPLOYMENT_STATUS_COLUMNS) <= set(result.columns)
 
     def test_keeps_unmatched_slv_rows_with_null_counts(self):
         result = run_main(build_slv_lf("1-001"), build_employment_lf("1-002"))

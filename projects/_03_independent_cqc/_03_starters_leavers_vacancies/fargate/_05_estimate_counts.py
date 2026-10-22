@@ -1,7 +1,10 @@
 import polars as pl
-import polars.selectors as cs
 
 from polars_utils import utils
+from projects._03_independent_cqc._02_employment_status.fargate.utils.estimate_utils import (
+    ESTIMATED_COUNT_COLUMNS,
+    ESTIMATED_PERCENTAGE_COLUMNS,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
 )
@@ -46,7 +49,13 @@ def main(
     )
     employment_status_estimate_lf = utils.scan_parquet(
         employment_status_estimate_source
-    ).select(*JOIN_KEYS, cs.starts_with("estimated_emp"))
+    ).select(
+        *JOIN_KEYS,
+        *ESTIMATED_PERCENTAGE_COLUMNS,
+        EmpStatus.estimated_percentage_source,
+        *ESTIMATED_COUNT_COLUMNS,
+        EmpStatus.estimated_employees,
+    )
 
     slv_estimate_lf = slv_estimate_lf.join(
         employment_status_estimate_lf, on=JOIN_KEYS, how="left"
