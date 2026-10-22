@@ -41,6 +41,7 @@ class TestMain:
         add_rolling_average_percentages_mock.assert_called_once_with(
             add_short_term_imputed_percentages_mock.return_value,
             rolling_period=job.ROLLING_AVERAGE_PERIOD,
+            group_columns=job.iUtils.ROLLING_AVERAGE_GROUP_COLUMNS,
         )
 
         add_full_imputed_percentages_mock.assert_called_once_with(

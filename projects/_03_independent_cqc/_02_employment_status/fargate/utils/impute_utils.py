@@ -174,13 +174,20 @@ def add_short_term_imputed_percentages(
     ).drop(FILL_BOUNDARY_COLUMNS)
 
 
+ROLLING_AVERAGE_GROUP_COLUMNS = [
+    IndCQC.primary_service_type,
+    IndCQC.current_region,
+    IndCQC.published_job_role_label,
+]
+
+
 def add_rolling_average_percentages(
     lf: pl.LazyFrame,
     rolling_period: str,
+    group_columns: list[str] = ROLLING_AVERAGE_GROUP_COLUMNS,
 ) -> pl.LazyFrame:
     """
-    Add a rolling average of the imputed-for-trendline percentages per primary service type,
-    region and job role.
+    Add a rolling average of the imputed-for-trendline percentages per group.
 
     Each location counts once, regardless of size. Averages sum to 1 across the 5 statuses
     without normalisation, because a location has every percentage populated or none of them.
@@ -196,15 +203,13 @@ def add_rolling_average_percentages(
     Args:
         lf (pl.LazyFrame): dataset containing the 5 imputed-for-trendline percentage columns
         rolling_period (str): the rolling window length, as a Polars offset string (e.g. "6mo")
+        group_columns (list[str]): columns to average within, by default primary service type,
+            region and job role
 
     Returns:
         pl.LazyFrame: dataset with the 5 "emplstat_<status>_percentage_rolling_avg" columns added
     """
-    rolling_groups = [
-        IndCQC.primary_service_type,
-        IndCQC.current_region,
-        IndCQC.published_job_role_label,
-    ]
+    rolling_groups = group_columns
     order_key = IndCQC.cqc_location_import_date
     date_groups = rolling_groups + [order_key]
     rolling_total_columns = [

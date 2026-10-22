@@ -325,3 +325,107 @@ def fit_bias_slope_per_year(
         .min()
         .alias(ModelEvaluation.minimum_rows_in_period),
     )
+
+
+def score_shares(
+    lf: pl.LazyFrame,
+    predicted_columns: list[str],
+    known_columns: list[str],
+    by_columns: list[str] | None = None,
+) -> pl.LazyFrame:
+    """
+    Score predicted against known shares row by row, every row counting equally.
+
+    Only rows with every known share are scored. The skill scores compare each error with
+    that of a baseline predicting the pooled mean known share on every row, so they stay
+    comparable across groups. A tied prediction counts as its first column for top 1.
+
+    Args:
+        lf (pl.LazyFrame): dataset containing the predicted, known and "by" columns
+        predicted_columns (list[str]): the predicted share columns, matching `known_columns` in order
+        known_columns (list[str]): the known share columns
+        by_columns (list[str] | None): columns to score separately by, such as job role.
+            Defaults to scoring all rows together.
+
+    Returns:
+        pl.LazyFrame: a row (per group), with its "number_of_rows", "mean_absolute_error_pp",
+            "brier_score" (summed squared error), "top_1_accuracy" (known top share is
+            predicted top) and the "mae_skill_score" and "brier_skill_score"
+    """
+    by_columns = by_columns or []
+    has_prediction = pl.all_horizontal(pl.col(predicted_columns).is_not_null())
+
+    def mean_absolute_error(estimates: list[pl.Expr]) -> pl.Expr:
+        return pl.mean_horizontal(
+            (estimate - pl.col(known)).abs()
+            for estimate, known in zip(estimates, known_columns)
+        )
+
+    def summed_squared_error(estimates: list[pl.Expr]) -> pl.Expr:
+        return pl.sum_horizontal(
+            (estimate - pl.col(known)) ** 2
+            for estimate, known in zip(estimates, known_columns)
+        )
+
+    predicted = [pl.col(column) for column in predicted_columns]
+    baseline = [pl.col(column).mean() for column in known_columns]
+
+    known_lf = lf.filter(pl.all_horizontal(pl.col(known_columns).is_not_null()))
+
+    row_scores_lf = known_lf.select(
+        *by_columns,
+        pl.when(has_prediction)
+        .then(mean_absolute_error(predicted))
+        .alias(ModelEvaluation.mean_absolute_error_pp),
+        pl.when(has_prediction)
+        .then(summed_squared_error(predicted))
+        .alias(ModelEvaluation.brier_score),
+        pl.when(has_prediction)
+        .then(
+            pl.concat_list(predicted_columns).list.arg_max()
+            == pl.concat_list(known_columns).list.arg_max()
+        )
+        .cast(pl.Float64)
+        .alias(ModelEvaluation.top_1_accuracy),
+        mean_absolute_error(baseline).alias(
+            ModelEvaluation.baseline_mean_absolute_error
+        ),
+        summed_squared_error(baseline).alias(ModelEvaluation.baseline_brier_score),
+    )
+
+    mae = pl.col(ModelEvaluation.mean_absolute_error_pp).mean()
+    brier = pl.col(ModelEvaluation.brier_score).mean()
+    scores = [
+        pl.len().alias(ModelEvaluation.number_of_rows),
+        (mae * 100).alias(ModelEvaluation.mean_absolute_error_pp),
+        brier,
+        pl.col(ModelEvaluation.top_1_accuracy).mean(),
+        (1 - mae / pl.col(ModelEvaluation.baseline_mean_absolute_error).mean()).alias(
+            ModelEvaluation.mae_skill_score
+        ),
+        (1 - brier / pl.col(ModelEvaluation.baseline_brier_score).mean()).alias(
+            ModelEvaluation.brier_skill_score
+        ),
+    ]
+
+    return (
+        row_scores_lf.group_by(by_columns).agg(scores)
+        if by_columns
+        else row_scores_lf.select(scores)
+    )
+
+
+def calculate_coverage(lf: pl.LazyFrame, predicted_column: str) -> pl.LazyFrame:
+    """
+    Measure the share of rows that have a prediction.
+
+    Args:
+        lf (pl.LazyFrame): dataset containing the predicted column
+        predicted_column (str): the predicted column, such as one share column
+
+    Returns:
+        pl.LazyFrame: a single row with its "coverage" between 0 and 1
+    """
+    return lf.select(
+        pl.col(predicted_column).is_not_null().mean().alias(ModelEvaluation.coverage)
+    )

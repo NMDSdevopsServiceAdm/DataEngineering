@@ -32,6 +32,7 @@ def main(
     lf = iUtils.add_rolling_average_percentages(
         lf,
         rolling_period=ROLLING_AVERAGE_PERIOD,
+        group_columns=iUtils.ROLLING_AVERAGE_GROUP_COLUMNS,
     )
 
     lf = iUtils.add_full_imputed_percentages(lf)

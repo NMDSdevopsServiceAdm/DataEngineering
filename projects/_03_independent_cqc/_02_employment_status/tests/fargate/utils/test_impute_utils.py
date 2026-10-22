@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any
 
 import polars as pl
@@ -6,14 +7,19 @@ import pytest
 
 import projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils as job
 from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_test_data import (
+    CARE_WORKER,
     FIRST_KNOWN_VALUE_COLUMNS,
     FULL_IMPUTED_PERCENTAGE_COLUMNS,
     LAST_KNOWN_VALUE_COLUMNS,
+    LONDON,
+    NON_RES,
+    NORTH_EAST,
     PERCENTAGE_COLUMNS,
     ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
     ROLLING_AVERAGE_PERIOD,
     SHORT_TERM_EXTRAPOLATION_PERIOD,
     SHORT_TERM_INTERPOLATION_CAP_PERIOD,
+    status_split,
     TRENDLINE_PERCENTAGE_COLUMNS,
 )
 from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_test_data import (
@@ -119,6 +125,45 @@ class TestAddRollingAveragePercentages:
         pl_testing.assert_frame_equal(
             returned_lf,
             to_lf(case.expected_data),
+            check_row_order=False,
+            check_column_order=False,
+        )
+
+    def test_add_rolling_average_percentages_uses_given_group_columns_and_period(self):
+        permanent = [0.2, 0.6, 0.8]
+        input_data = {
+            IndCQC.location_id: ["loc1", "loc2", "loc3"],
+            IndCQC.primary_service_type: [NON_RES] * 3,
+            IndCQC.current_region: [LONDON, NORTH_EAST, LONDON],
+            IndCQC.published_job_role_label: [CARE_WORKER] * 3,
+            IndCQC.cqc_location_import_date: [
+                date(2024, 1, 1),
+                date(2024, 1, 1),
+                date(2024, 8, 1),
+            ],
+            **status_split(permanent, TRENDLINE_PERCENTAGE_COLUMNS),
+        }
+        expected_permanent = [0.4, 0.4, 1.6 / 3]
+
+        returned_lf = job.add_rolling_average_percentages(
+            to_lf(input_data),
+            rolling_period="12mo",
+            group_columns=[
+                IndCQC.primary_service_type,
+                IndCQC.published_job_role_label,
+            ],
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            to_lf(
+                {
+                    **input_data,
+                    **status_split(
+                        expected_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS
+                    ),
+                }
+            ),
             check_row_order=False,
             check_column_order=False,
         )
