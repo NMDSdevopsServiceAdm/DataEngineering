@@ -62,6 +62,9 @@ class SheetMap:
         series_name_cells (tuple[str, ...]): fixed label cells charts use as
             series names.
         slot_count (int): date rows each chart series must span.
+        labels (tuple[tuple[str, str], ...]): fixed (cell, text) pairs the
+            template must hold, so a changed layout fails before anything is
+            written.
     """
 
     name: str
@@ -69,6 +72,7 @@ class SheetMap:
     chart_count: int
     series_name_cells: tuple[str, ...] = ()
     slot_count: int = 0
+    labels: tuple[tuple[str, str], ...] = ()
 
 
 TITLE_CELL = "B3"
@@ -83,6 +87,36 @@ MEDIUM_TERM_SLOTS = 25
 # Long term is quarterly from the first import date with data, plus 3 spare
 # years. Writer dates are the import date minus one month.
 LONG_TERM_SLOTS = 34
+
+_SERVICE_TYPE_HEADERS = (
+    "All CQC locations",
+    "CQC care homes",
+    "CQC care home with nursing",
+    "CQC care home without nursing",
+    "CQC non-residential",
+)
+
+
+def _service_type_labels(row: int, first_col: str) -> tuple[tuple[str, str], ...]:
+    """Service type header labels across a row, starting at `first_col`."""
+    return tuple(
+        (f"{chr(ord(first_col) + i)}{row}", text)
+        for i, text in enumerate(_SERVICE_TYPE_HEADERS)
+    )
+
+
+_COMPARISON_LABELS = (
+    ("B23", "CQC care homes"),
+    ("K23", "CQC non-residential"),
+    ("B25", "Number of locations:"),
+    ("K25", "Number of locations:"),
+    ("C27", "Filled posts"),
+    ("L27", "Filled posts"),
+    ("C28", "Skills for Care"),
+    ("D28", "Capacity Tracker"),
+    ("L28", "Skills for Care"),
+    ("M28", "Capacity Tracker"),
+)
 
 FILLED_POSTS = SheetMap(
     name="Filled posts",
@@ -141,6 +175,21 @@ FILLED_POSTS = SheetMap(
     chart_count=3,
     series_name_cells=("B61", "B80"),
     slot_count=MONTHLY_SLOTS,
+    labels=(
+        ("B7", "Filled posts"),
+        ("B20", "Annual filled posts estimates"),
+        ("B40", "Annual CQC locations"),
+        ("B61", "Monthly filled posts estimates"),
+        ("B80", "Monthly CQC locations"),
+        *_service_type_labels(23, "C"),
+        *_service_type_labels(23, "J"),
+        *_service_type_labels(43, "C"),
+        *_service_type_labels(43, "J"),
+        *_service_type_labels(64, "C"),
+        *_service_type_labels(64, "J"),
+        *_service_type_labels(83, "C"),
+        *_service_type_labels(83, "J"),
+    ),
 )
 
 # Annual rows first, then monthly rows; unused slots stay blank at the end.
@@ -165,6 +214,15 @@ COMP_PREV_PUBLICATION = SheetMap(
         ),
     ),
     chart_count=0,
+    labels=(
+        ("B7", "Comparison of previous publications"),
+        ("B20", "Previous publication"),
+        ("B61", "Current publication"),
+        ("B103", "Difference as percentage"),
+        *_service_type_labels(22, "D"),
+        *_service_type_labels(63, "D"),
+        *_service_type_labels(105, "D"),
+    ),
 )
 
 
@@ -196,6 +254,7 @@ def _comparison_sheet(
     ct_employed: str | None,
     extra_inputs: tuple[InputRange, ...] = (),
     has_criteria_note: bool = True,
+    extra_labels: tuple[tuple[str, str], ...] = (),
 ) -> SheetMap:
     """Builds the map for a care homes (B:F) and non-residential (K:O) sheet.
 
@@ -209,6 +268,7 @@ def _comparison_sheet(
         extra_inputs (tuple[InputRange, ...]): sheet-specific input ranges, such
             as the number of locations.
         has_criteria_note (bool): whether the notes carry a dated criteria line.
+        extra_labels (tuple[tuple[str, str], ...]): sheet-specific fixed labels.
 
     Returns:
         SheetMap: the sheet's cell map.
@@ -259,6 +319,7 @@ def _comparison_sheet(
             f"L{header_row}:O{header_row}",
         ),
         slot_count=last_row - first_row + 1,
+        labels=_COMPARISON_LABELS + extra_labels,
     )
 
 
@@ -302,6 +363,7 @@ NO_FILTERS = _comparison_sheet(
     Pub.filled_posts,
     Pub.unfiltered_ct_total_employed_long,
     has_criteria_note=False,
+    extra_labels=(("G27", "Number of locations"), ("P27", "Number of locations")),
     extra_inputs=(
         InputRange(
             f"G29:G{29 + LONG_TERM_SLOTS - 1}",

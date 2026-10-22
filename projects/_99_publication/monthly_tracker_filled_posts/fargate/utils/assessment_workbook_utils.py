@@ -1,9 +1,21 @@
 """Helpers for writing input cells into the assessment template."""
 
 from copy import copy
+from pathlib import Path
 
+import openpyxl
+from openpyxl.utils.cell import coordinate_to_tuple
+from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.dimensions import ColumnDimension
 from openpyxl.worksheet.worksheet import Worksheet
+
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
+    assessment_cell_map as cell_map,
+)
+
+
+class TemplateMismatchError(ValueError):
+    """The template does not match the cell map."""
 
 
 def cell_exists(worksheet: Worksheet, row: int, col: int) -> bool:
@@ -60,3 +72,83 @@ def write_input_cell(worksheet: Worksheet, row: int, col: int, value: object) ->
     if not existed and dimension is not None:
         cell._style = copy(dimension._style)
     cell.value = value
+
+
+def check_template(workbook: openpyxl.Workbook) -> None:
+    """Checks the template holds every mapped sheet and fixed label.
+
+    Args:
+        workbook (openpyxl.Workbook): the loaded template.
+
+    Raises:
+        TemplateMismatchError: listing every missing sheet and label that differs.
+    """
+    problems = []
+    for sheet in cell_map.ASSESSMENT_SHEETS:
+        if sheet.name not in workbook.sheetnames:
+            problems.append(f"missing sheet '{sheet.name}'")
+            continue
+        worksheet = workbook[sheet.name]
+        for cell, expected in sheet.labels:
+            found = worksheet[cell].value
+            if found != expected:
+                problems.append(
+                    f"'{sheet.name}'!{cell} expected {expected!r}, found {found!r}"
+                )
+    if problems:
+        raise TemplateMismatchError(
+            "Template does not match cell map: " + "; ".join(problems)
+        )
+
+
+def _input_cells(sheet: cell_map.SheetMap) -> set[tuple[int, int]]:
+    return {
+        (row, col)
+        for input_range in sheet.input_ranges
+        for row, col in CellRange(input_range.cells).cells
+    }
+
+
+def fill_assessment_workbook(
+    values: dict[str, dict[str, object]], template_path: Path, output_path: Path
+) -> None:
+    """Writes values into the template's input cells and saves a copy.
+
+    Nothing is written unless the template matches the cell map and every value
+    targets a mapped input cell. Charts and every other cell are left as in the
+    template.
+
+    Args:
+        values (dict[str, dict[str, object]]): values to write, keyed by sheet
+            name, then by A1 cell reference, e.g. `{"Filled posts": {"B3": "End
+            of March 2026"}}`. Cells must be in the sheet's mapped input ranges.
+        template_path (Path): template to load.
+        output_path (Path): local path to save to.
+
+    Raises:
+        TemplateMismatchError: if the template does not match the cell map.
+        ValueError: if a value targets a sheet or cell outside the mapped input
+            ranges.
+    """
+    workbook = openpyxl.load_workbook(template_path)
+    check_template(workbook)
+
+    input_cells = {
+        sheet.name: _input_cells(sheet) for sheet in cell_map.ASSESSMENT_SHEETS
+    }
+    unmapped = [
+        f"'{name}'!{cell}"
+        for name, cells in values.items()
+        for cell in cells
+        if coordinate_to_tuple(cell) not in input_cells.get(name, set())
+    ]
+    if unmapped:
+        raise ValueError(
+            f"Values outside the mapped input cells: {', '.join(unmapped)}"
+        )
+
+    for name, cells in values.items():
+        for cell, value in cells.items():
+            row, col = coordinate_to_tuple(cell)
+            write_input_cell(workbook[name], row, col, value)
+    workbook.save(output_path)
