@@ -11,23 +11,11 @@ def main(
 ) -> None:
     """Creates estimated starter, turnover and vacancy rates.
 
-    Each estimated rate is the first populated of the listed columns, or null
-    if none are populated. The coalesce lists a single column for now, as it
-    will grow (imputed, rolling average, modelled).
-
-    Adds, per rate, a Float32 estimated rate and an Enum source column holding
-    the name of the column it came from (null when the rate is null). Input
-    columns are kept.
+    Each estimated rate is the first populated of the listed columns.
 
     Args:
         imputed_data_source (str): Path to the imputed data.
         estimated_data_destination (str): Destination for output.
-
-    Returns:
-        None: Writes the data with these columns added:
-            - estimated_starter_rate, estimated_starter_rate_source
-            - estimated_turnover_rate, estimated_turnover_rate_source
-            - estimated_vacancy_rate, estimated_vacancy_rate_source
     """
     lf = utils.scan_parquet(imputed_data_source)
 
