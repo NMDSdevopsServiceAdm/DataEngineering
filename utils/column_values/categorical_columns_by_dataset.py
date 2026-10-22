@@ -350,6 +350,8 @@ class SLVCleanCategoricalValues:
 
 @dataclass
 class SLVEstimateCategoricalValues:
+    """Source column values for estimated starter, turnover and vacancy rates."""
+
     starter_rate_source_column_values = StarterRateEstimateSource(
         SLVCols.estimated_starter_rate_source
     )

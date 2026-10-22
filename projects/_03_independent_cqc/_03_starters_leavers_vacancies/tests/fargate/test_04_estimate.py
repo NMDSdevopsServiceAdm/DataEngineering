@@ -84,16 +84,17 @@ class TestMain:
 
     @pytest.mark.parametrize("rate, estimated, source, source_dtype", VARIABLES)
     def test_main_estimated_rate_equals_input_rate_when_populated_and_null_otherwise(
+        self, imputed_lf, result_df, rate, estimated, source, source_dtype
+    ):
+        expected = imputed_lf.collect()[rate][0]
+
+        assert result_df[estimated].to_list() == [pytest.approx(expected), None]
+
+    @pytest.mark.parametrize("rate, estimated, source, source_dtype", VARIABLES)
+    def test_main_estimated_rates_are_float32(
         self, result_df, rate, estimated, source, source_dtype
     ):
-        assert result_df[estimated].to_list() == [
-            pytest.approx(result_df[rate][0]),
-            None,
-        ]
-
-    def test_main_estimated_rates_are_float32(self, result_df):
-        for _, estimated, _, _ in VARIABLES:
-            assert result_df[estimated].dtype == pl.Float32
+        assert result_df[estimated].dtype == pl.Float32
 
     @pytest.mark.parametrize("rate, estimated, source, source_dtype", VARIABLES)
     def test_main_source_is_input_column_name_when_populated_and_null_otherwise(
