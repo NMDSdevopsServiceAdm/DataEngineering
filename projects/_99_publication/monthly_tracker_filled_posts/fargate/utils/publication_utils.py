@@ -792,6 +792,74 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     )
 
 
+def add_prev_run_filled_posts_columns(
+    assessment_summary_lf: pl.LazyFrame,
+    prev_assessment_lf: pl.LazyFrame | None,
+) -> pl.LazyFrame:
+    """
+    Adds the previous run's filled posts and the percentage change
+    from it, matched on import date, job role, region and service type.
+
+    The percentage change is a net change fraction, (current - previous) /
+    previous, so 0.25 = +25%. Null (not inf/NaN) when previous is 0.
+
+    Rows with no match are null, as is every row when there is no previous run
+    or it lacks filled_posts. The previous keys are cast to the
+    current dtypes so Enum/Categorical differences don't block the join.
+
+    Args:
+        assessment_summary_lf (pl.LazyFrame): the current run's assessment data.
+        prev_assessment_lf (pl.LazyFrame | None): the previous run's assessment
+            data, or None when there is no earlier run.
+
+    Returns:
+        pl.LazyFrame: assessment_summary_lf with prev_run_filled_posts and
+            filled_posts_perc_change_vs_prev_run added.
+    """
+    current_schema = assessment_summary_lf.collect_schema()
+    has_prev_filled_posts = (
+        prev_assessment_lf is not None
+        and Pub.filled_posts in prev_assessment_lf.collect_schema().names()
+    )
+    if has_prev_filled_posts:
+        join_keys = [
+            IndCQC.cqc_location_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+        ]
+        prev_assessment_lf = prev_assessment_lf.select(
+            [pl.col(key).cast(current_schema[key]) for key in join_keys]
+            + [
+                pl.col(Pub.filled_posts)
+                .cast(current_schema[Pub.filled_posts])
+                .alias(Pub.prev_run_filled_posts)
+            ]
+        )
+        assessment_summary_lf = assessment_summary_lf.join(
+            prev_assessment_lf,
+            on=join_keys,
+            how="left",
+            validate="1:1",
+            nulls_equal=True,
+        )
+    else:
+        assessment_summary_lf = assessment_summary_lf.with_columns(
+            pl.lit(None, dtype=current_schema[Pub.filled_posts]).alias(
+                Pub.prev_run_filled_posts
+            )
+        )
+
+    current_posts = pl.col(Pub.filled_posts).cast(pl.Float32)
+    prev_posts = pl.col(Pub.prev_run_filled_posts).cast(pl.Float32)
+    return assessment_summary_lf.with_columns(
+        pl.when(prev_posts == 0)
+        .then(None)
+        .otherwise((current_posts - prev_posts) / prev_posts)
+        .alias(Pub.filled_posts_perc_change_vs_prev_run)
+    )
+
+
 def import_date_to_period_month(import_date: pl.Expr) -> pl.Expr:
     """
     Maps a CQC import date to the month it reports on: one month earlier
