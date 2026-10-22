@@ -11,8 +11,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import PublishedJobGroupLabels
 
-FINANCIAL_YEAR_START_MONTH = 4
-
 
 def main(
     assessment_source: str,
@@ -20,9 +18,10 @@ def main(
     run_number: int,
 ) -> None:
     """
-    Builds the public data for one selected assessed run: the "All job roles"
-    rows, one per year historically and monthly for the current financial
-    year, with the columns of the T0, T1 and T2 data-download tables.
+    Writes the publication data for one assessed run: "All job roles" rows,
+    one per year historically and monthly for the current financial year,
+    with period, region, main service, rounded filled posts, location count
+    and percentage change columns.
 
     Args:
         assessment_source (str): s3 directory holding the assessed data of every run
@@ -38,18 +37,18 @@ def main(
         == PublishedJobGroupLabels.all_job_roles
     )
 
+    # Historical rows are kept for April only (the financial year start month).
     annual_sampling_expr = publication_utils.reduced_data_filter_expr(
         today=date.today(),
-        fy_start_month=FINANCIAL_YEAR_START_MONTH,
         lookback_fy_years=0,
-        quarter_months=(FINANCIAL_YEAR_START_MONTH,),
+        quarter_months=(4,),
     )
 
-    publication_summary_lf = (
+    publication_output_lf = (
         publication_summary_lf.filter(annual_sampling_expr)
         .select(
             pl.col(IndCQC.cqc_location_import_date).alias(Pub.period),
-            publication_utils.period_label_expr(),
+            Pub.period_label,
             pl.col(IndCQC.current_region).alias(Pub.region),
             pl.col(IndCQC.primary_service_type)
             .cast(pl.Utf8)
@@ -68,7 +67,7 @@ def main(
     )
 
     utils.sink_to_parquet(
-        lazy_df=publication_summary_lf,
+        lazy_df=publication_output_lf,
         output_path=output_destination,
     )
 
@@ -81,7 +80,7 @@ if __name__ == "__main__":
         ),
         (
             "--output_destination",
-            "Destination s3 directory for the publication summary",
+            "Destination s3 directory for the publication data",
         ),
         (
             "--run_number",

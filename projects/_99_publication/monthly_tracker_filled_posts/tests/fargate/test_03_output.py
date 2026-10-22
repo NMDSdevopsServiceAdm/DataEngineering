@@ -17,14 +17,15 @@ from utils.column_values.categorical_column_values import (
 
 PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._03_output"
 
-TEST_SOURCE = "some/prep/directory/"
-TEST_RUN_SOURCE = "some/prep/directory/archive_date=2026-10-01/run_number=2/"
+TEST_SOURCE = "some/assessment/directory/"
+TEST_RUN_SOURCE = "some/assessment/directory/archive_date=2026-10-01/run_number=2/"
 TEST_DESTINATION = "some/other/directory"
 TEST_TODAY = date(2026, 10, 6)
 
 input_schema = pl.Schema(
     [
         (IndCQC.cqc_location_import_date, pl.Date()),
+        (Pub.period_label, pl.String()),
         (IndCQC.main_job_role_clean_labelled, pl.String()),
         (IndCQC.current_region, pl.String()),
         (IndCQC.primary_service_type, pl.String()),
@@ -63,9 +64,11 @@ def _input_row(
     job_role: str = PublishedJobGroupLabels.all_job_roles,
     region: str = "London",
     values: tuple = (100.0, 10, None, None, None, None),
+    period_label: str = "Mar 2026",
 ) -> tuple:
     return (
         import_date,
+        period_label,
         job_role,
         region,
         PrimaryServiceType.care_home_with_nursing,
@@ -115,7 +118,11 @@ class TestMain:
 
     def test_main_selects_and_renames_the_download_table_columns(self, mocks):
         input_rows = [
-            _input_row(date(2026, 5, 1), values=(121.0, 12, 0.1, 0.2, 0.3, 0.4)),
+            _input_row(
+                date(2026, 5, 1),
+                values=(121.0, 12, 0.1, 0.2, 0.3, 0.4),
+                period_label="Apr 2026",
+            ),
         ]
 
         returned_lf = _run_main(mocks, input_rows)
@@ -182,3 +189,34 @@ class TestMain:
             (date(2026, 4, 1), "South West"),
             (date(2026, 5, 1), "London"),
         ]
+
+    def test_main_passes_percentage_change_columns_through_unchanged(self, mocks):
+        input_rows = [
+            _input_row(date(2025, 7, 1), values=(1.0, 1, 0.9, 0.9, 0.9, 0.9)),
+            _input_row(date(2026, 4, 1), values=(2.0, 2, 0.1, 0.2, 0.3, 0.4)),
+            _input_row(date(2026, 5, 1), values=(3.0, 3, None, 0.5, None, 0.6)),
+        ]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.select(
+            Pub.publication_filled_posts_april_perc_change,
+            Pub.publication_filled_posts_cumulative_perc_change_short_term,
+            Pub.publication_locationid_count_april_perc_change,
+            Pub.publication_locationid_count_cumulative_perc_change_short_term,
+        ).collect().rows() == [
+            (
+                pytest.approx(0.1),
+                pytest.approx(0.2),
+                pytest.approx(0.3),
+                pytest.approx(0.4),
+            ),
+            (None, pytest.approx(0.5), None, pytest.approx(0.6)),
+        ]
+
+    def test_main_passes_the_period_label_through(self, mocks):
+        input_rows = [_input_row(date(2026, 4, 1), period_label="Some label")]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.collect()[Pub.period_label].to_list() == ["Some label"]
