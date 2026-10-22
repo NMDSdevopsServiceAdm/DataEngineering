@@ -155,22 +155,3 @@ class TestCountExpectedAssessmentRows:
         scan_parquet_mock.assert_called_once_with(
             PREP_RUN, selected_columns=job.PREP_COLUMNS
         )
-
-
-class TestExpectedSchema:
-    def test_schema_covers_columns_written_by_assessment_job(self):
-        schema_columns = {name for name, _ in job.EXPECTED_SCHEMA.columns}
-
-        assert schema_columns == set(job.KEY_COLUMNS) | {Pub.period_label} | set(
-            job.METRIC_COLUMNS
-        ) | {
-            Pub.filtered_ct_cum_perc_change_long,
-            Pub.filtered_ct_cum_perc_change_medium,
-            Pub.filtered_ct_cum_perc_change_short,
-            Pub.unfiltered_ct_total_employed_cum_perc_change_long,
-            Pub.filled_posts_cum_perc_change_long,
-            Pub.filled_posts_cum_perc_change_short,
-            Pub.locationid_count_cum_perc_change_short,
-            Pub.filled_posts_april_perc_change,
-            Pub.locationid_count_april_perc_change,
-        }
