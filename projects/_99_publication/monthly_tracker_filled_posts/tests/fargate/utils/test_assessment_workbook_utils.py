@@ -167,7 +167,7 @@ class TestFillAssessmentWorkbook:
         assert changed == []
 
     def test_raises_when_a_value_targets_a_cell_outside_the_inputs(self, tmp_path):
-        with pytest.raises(ValueError, match="'Filled posts'!B9"):
+        with pytest.raises(job.UnmappedCellError, match="'Filled posts'!B9"):
             job.fill_assessment_workbook(
                 {"Filled posts": {"B9": "overwritten"}},
                 cell_map.TEMPLATE_PATH,
@@ -175,7 +175,7 @@ class TestFillAssessmentWorkbook:
             )
 
     def test_raises_when_a_value_targets_an_unknown_sheet(self, tmp_path):
-        with pytest.raises(ValueError, match="'Missing'!B3"):
+        with pytest.raises(job.UnmappedCellError, match="'Missing'!B3"):
             job.fill_assessment_workbook(
                 {"Missing": {"B3": "x"}}, cell_map.TEMPLATE_PATH, tmp_path / "out.xlsx"
             )

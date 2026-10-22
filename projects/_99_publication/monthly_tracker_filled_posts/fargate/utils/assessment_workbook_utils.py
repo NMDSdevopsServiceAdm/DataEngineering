@@ -18,6 +18,10 @@ class TemplateMismatchError(ValueError):
     """The template does not match the cell map."""
 
 
+class UnmappedCellError(ValueError):
+    """A value targets a sheet or cell outside the mapped input cells."""
+
+
 def cell_exists(worksheet: Worksheet, row: int, col: int) -> bool:
     """Whether the sheet already holds a cell at this position.
 
@@ -127,9 +131,9 @@ def fill_assessment_workbook(
         output_path (Path): local path to save to.
 
     Raises:
-        ValueError: if a value targets a sheet or cell outside the mapped input
-            ranges, or the template does not match the cell map
-            (`TemplateMismatchError`).
+        UnmappedCellError: if a value targets a sheet or cell outside the mapped
+            input ranges. A template that does not match the cell map raises
+            `TemplateMismatchError` first.
     """
     workbook = openpyxl.load_workbook(template_path)
     check_template(workbook)
@@ -144,7 +148,7 @@ def fill_assessment_workbook(
         if coordinate_to_tuple(cell) not in input_cells.get(name, set())
     ]
     if unmapped:
-        raise ValueError(
+        raise UnmappedCellError(
             f"Values outside the mapped input cells: {', '.join(unmapped)}"
         )
 

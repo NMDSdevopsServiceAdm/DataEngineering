@@ -12,6 +12,9 @@ Open point the map does not settle (needs a pipeline column or ticket):
 """
 
 from dataclasses import dataclass
+
+from openpyxl.utils import column_index_from_string, get_column_letter
+
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.template_paths import (
     TEMPLATES_DIR,
 )
@@ -100,7 +103,7 @@ _SERVICE_TYPE_HEADERS = (
 def _service_type_labels(row: int, first_col: str) -> tuple[tuple[str, str], ...]:
     """Service type header labels across a row, starting at `first_col`."""
     return tuple(
-        (f"{chr(ord(first_col) + i)}{row}", text)
+        (f"{get_column_letter(column_index_from_string(first_col) + i)}{row}", text)
         for i, text in enumerate(_SERVICE_TYPE_HEADERS)
     )
 
