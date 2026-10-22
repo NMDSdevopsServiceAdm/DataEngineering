@@ -19,6 +19,14 @@ JOIN_KEYS = [
     IndCQC.cqc_location_import_date,
 ]
 
+employment_status_estimate_columns = [
+    *JOIN_KEYS,
+    *ESTIMATED_PERCENTAGE_COLUMNS,
+    EmpStatus.estimated_percentage_source,
+    *ESTIMATED_COUNT_COLUMNS,
+    EmpStatus.estimated_employees,
+]
+
 slv_estimate_columns = [
     *JOIN_KEYS,
     SLVCols.estimated_starter_rate,
@@ -27,14 +35,6 @@ slv_estimate_columns = [
     SLVCols.estimated_starter_rate_source,
     SLVCols.estimated_turnover_rate_source,
     SLVCols.estimated_vacancy_rate_source,
-]
-
-employment_status_estimate_columns = [
-    *JOIN_KEYS,
-    *ESTIMATED_PERCENTAGE_COLUMNS,
-    EmpStatus.estimated_percentage_source,
-    *ESTIMATED_COUNT_COLUMNS,
-    EmpStatus.estimated_employees,
 ]
 
 
@@ -56,12 +56,12 @@ def main(
             status estimated data (headcount)
         estimated_data_destination (str): destination for output
     """
-    slv_estimate_lf = utils.scan_parquet(
-        slv_estimate_source, selected_columns=slv_estimate_columns
-    )
     employment_status_estimate_lf = utils.scan_parquet(
         employment_status_estimate_source,
         selected_columns=employment_status_estimate_columns,
+    )
+    slv_estimate_lf = utils.scan_parquet(
+        slv_estimate_source, selected_columns=slv_estimate_columns
     )
 
     slv_estimate_lf = slv_estimate_lf.join(

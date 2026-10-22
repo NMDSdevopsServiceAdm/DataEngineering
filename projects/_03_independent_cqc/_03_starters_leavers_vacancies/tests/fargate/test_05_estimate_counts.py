@@ -68,7 +68,7 @@ def build_employment_lf(
 
 def run_main(slv_lf: pl.LazyFrame, employment_lf: pl.LazyFrame) -> pl.DataFrame:
     with (
-        patch(f"{PATCH_PATH}.utils.scan_parquet", side_effect=[slv_lf, employment_lf]),
+        patch(f"{PATCH_PATH}.utils.scan_parquet", side_effect=[employment_lf, slv_lf]),
         patch(f"{PATCH_PATH}.utils.sink_to_parquet") as sink_mock,
     ):
         job.main(
@@ -86,7 +86,7 @@ class TestMain:
     def test_main_scans_both_sources(
         self, scan_parquet_mock: Mock, sink_to_parquet_mock: Mock
     ):
-        scan_parquet_mock.side_effect = [build_slv_lf(), build_employment_lf()]
+        scan_parquet_mock.side_effect = [build_employment_lf(), build_slv_lf()]
 
         job.main(
             SLV_ESTIMATE_SOURCE,
@@ -95,11 +95,11 @@ class TestMain:
         )
 
         assert scan_parquet_mock.call_args_list == [
-            call(SLV_ESTIMATE_SOURCE, selected_columns=job.slv_estimate_columns),
             call(
                 EMPLOYMENT_STATUS_ESTIMATE_SOURCE,
                 selected_columns=job.employment_status_estimate_columns,
             ),
+            call(SLV_ESTIMATE_SOURCE, selected_columns=job.slv_estimate_columns),
         ]
         sink_to_parquet_mock.assert_called_once()
 
