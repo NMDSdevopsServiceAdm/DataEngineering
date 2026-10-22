@@ -77,8 +77,7 @@ CATEGORICAL_COLUMNS = [
     (IndCQC.current_rural_urban_indicator_2011, CatValues.current_rui_column_values),
 ]
 
-# Columns with too many values for a distinct count to match: not every ICB/LSOA/MSOA
-# has a location, so only the allowed values are checked.
+# Not every ICB/LSOA/MSOA has a location, so only allowed values are checked.
 IN_SET_ONLY_COLUMNS = [
     (IndCQC.current_icb, list(OnspdIcb.labels_dict.values())),
     (IndCQC.current_lsoa21, list(OnspdLsoa21.labels_dict.values())),
@@ -118,13 +117,11 @@ def main(
     """
     Validates the prepared data of one archived run.
 
-    Checks the schema, the key, that joined metadata is populated, and that the
-    row count equals the run's archived estimates after the retention filter.
+    Checks schema, row count against the retained archived estimates, key
+    uniqueness, nulls, value ranges and categories, and the period label.
 
     Args:
-        bucket_name (str): the bucket (name only) in which to source the datasets
-            and output the report to (should correspond to workspace / feature
-            branch name)
+        bucket_name (str): the bucket (name only) holding the datasets and reports
         jr_archive_estimates_source (str): path of the archived job role estimates
         jr_archive_metadata_source (str): path of the archived job role metadata
         prep_source (str): path holding the prepared data of every run

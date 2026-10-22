@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 
 import polars as pl
 
+import projects._99_publication.monthly_tracker_filled_posts.fargate._01_merge_and_prep as prep_job
 import projects._99_publication.monthly_tracker_filled_posts.fargate.validate_01_merge_and_prep as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
@@ -133,10 +134,6 @@ class TestMain:
 
 class TestExpectedSchema:
     def test_schema_covers_columns_selected_by_merge_and_prep(self):
-        from projects._99_publication.monthly_tracker_filled_posts.fargate import (
-            _01_merge_and_prep as prep_job,
-        )
-
         expected_columns = {
             *prep_job.JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
             *prep_job.JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
