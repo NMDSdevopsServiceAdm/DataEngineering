@@ -66,14 +66,14 @@ def build_employment_lf(
     )
 
 
-def run_main(slv_lf: pl.LazyFrame, employment_lf: pl.LazyFrame) -> pl.DataFrame:
+def run_main(employment_lf: pl.LazyFrame, slv_lf: pl.LazyFrame) -> pl.DataFrame:
     with (
         patch(f"{PATCH_PATH}.utils.scan_parquet", side_effect=[employment_lf, slv_lf]),
         patch(f"{PATCH_PATH}.utils.sink_to_parquet") as sink_mock,
     ):
         job.main(
-            SLV_ESTIMATE_SOURCE,
             EMPLOYMENT_STATUS_ESTIMATE_SOURCE,
+            SLV_ESTIMATE_SOURCE,
             ESTIMATED_DATA_DESTINATION,
         )
     assert sink_mock.call_args.kwargs["output_path"] == ESTIMATED_DATA_DESTINATION
@@ -89,8 +89,8 @@ class TestMain:
         scan_parquet_mock.side_effect = [build_employment_lf(), build_slv_lf()]
 
         job.main(
-            SLV_ESTIMATE_SOURCE,
             EMPLOYMENT_STATUS_ESTIMATE_SOURCE,
+            SLV_ESTIMATE_SOURCE,
             ESTIMATED_DATA_DESTINATION,
         )
 
@@ -103,8 +103,8 @@ class TestMain:
         ]
         sink_to_parquet_mock.assert_called_once()
 
-    def test_keeps_unmatched_slv_rows_with_null_counts(self):
-        result = run_main(build_slv_lf("1-001"), build_employment_lf("1-002"))
+    def test_keeps_unmatched_employment_rows_with_null_counts(self):
+        result = run_main(build_employment_lf("1-001"), build_slv_lf("1-002"))
 
         assert result.height == 1
         assert result[SLVCols.estimated_starters][0] is None
@@ -118,14 +118,14 @@ class TestMain:
         ],
     )
     def test_calculates_estimated_counts(self, column: str, expected: float):
-        result = run_main(build_slv_lf(), build_employment_lf(employees=100.0))
+        result = run_main(build_employment_lf(employees=100.0), build_slv_lf())
 
         assert result[column][0] == pytest.approx(expected)
 
     def test_estimated_counts_are_null_when_rate_is_null(self):
         slv_lf = build_slv_lf(starter_rate=None, turnover_rate=None, vacancy_rate=None)
 
-        result = run_main(slv_lf, build_employment_lf())
+        result = run_main(build_employment_lf(), slv_lf)
 
         assert result[SLVCols.estimated_starters][0] is None
         assert result[SLVCols.estimated_leavers][0] is None

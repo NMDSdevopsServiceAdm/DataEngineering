@@ -39,8 +39,8 @@ slv_estimate_columns = [
 
 
 def main(
-    slv_estimate_source: str,
     employment_status_estimate_source: str,
+    slv_estimate_source: str,
     estimated_data_destination: str,
 ) -> None:
     """Creates estimated counts of starters, leavers and vacancies.
@@ -51,26 +51,24 @@ def main(
         vacancies = (employees * vacancy rate) / (1 - vacancy rate)
 
     Args:
-        slv_estimate_source (str): path to the SLV estimated rates
         employment_status_estimate_source (str): path to the employment
             status estimated data (headcount)
+        slv_estimate_source (str): path to the SLV estimated rates
         estimated_data_destination (str): destination for output
     """
-    employment_status_estimate_lf = utils.scan_parquet(
+    employment_status_lf = utils.scan_parquet(
         employment_status_estimate_source,
         selected_columns=employment_status_estimate_columns,
     )
-    slv_estimate_lf = utils.scan_parquet(
+    slv_lf = utils.scan_parquet(
         slv_estimate_source, selected_columns=slv_estimate_columns
     )
 
-    slv_estimate_lf = slv_estimate_lf.join(
-        employment_status_estimate_lf, on=JOIN_KEYS, how="left"
-    )
+    employment_status_lf = employment_status_lf.join(slv_lf, on=JOIN_KEYS, how="left")
 
     employees = pl.col(EmpStatus.estimated_employees)
     vacancy_rate = pl.col(SLVCols.estimated_vacancy_rate)
-    slv_estimate_lf = slv_estimate_lf.with_columns(
+    employment_status_lf = employment_status_lf.with_columns(
         (employees * pl.col(SLVCols.estimated_starter_rate)).alias(
             SLVCols.estimated_starters
         ),
@@ -83,7 +81,7 @@ def main(
     )
 
     utils.sink_to_parquet(
-        lazy_df=slv_estimate_lf,
+        lazy_df=employment_status_lf,
         output_path=estimated_data_destination,
     )
 
@@ -91,12 +89,12 @@ def main(
 if __name__ == "__main__":
     args = utils.get_args(
         (
-            "--slv_estimate_source",
-            "Source s3 directory for estimated SLV rates",
-        ),
-        (
             "--employment_status_estimate_source",
             "Source s3 directory for employment status estimated data",
+        ),
+        (
+            "--slv_estimate_source",
+            "Source s3 directory for estimated SLV rates",
         ),
         (
             "--estimated_data_destination",
@@ -104,7 +102,7 @@ if __name__ == "__main__":
         ),
     )
     main(
-        slv_estimate_source=args.slv_estimate_source,
         employment_status_estimate_source=args.employment_status_estimate_source,
+        slv_estimate_source=args.slv_estimate_source,
         estimated_data_destination=args.estimated_data_destination,
     )
