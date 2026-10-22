@@ -42,7 +42,7 @@ All notable changes to this project will be documented in this file.
 
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
 - Fixed a flaky thread-count test in the run diagnostics tests.
-- Fixed ASC-WDS workplace cleaning to null all starters, leavers or vacancies job roles when any role or total is 999 or negative.
+- Fixed ASC-WDS workplace cleaning to null all starters, leavers or vacancies job roles when the total or any role is negative or a multiple of 999.
 
 
 ## [v2026.09.0] - 13/10/2026

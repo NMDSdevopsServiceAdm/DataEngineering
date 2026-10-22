@@ -220,7 +220,7 @@ def main(
         workplace_lf, still_matching_duplicates_lf
     )
 
-    # Must run before bounding, which nulls the negative job role values this checks.
+    # Negative job role values must be seen before bounding nulls them.
     workplace_lf = wUtils.null_slv_job_roles_when_not_known(workplace_lf)
 
     workplace_lf = workplace_lf.with_columns(

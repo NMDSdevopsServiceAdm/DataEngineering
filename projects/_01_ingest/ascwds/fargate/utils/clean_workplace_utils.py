@@ -382,6 +382,7 @@ def null_slv_job_roles_when_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
     not_known_multiple = 999
 
     def is_not_known(values: pl.Expr) -> pl.Expr:
+        """Flag values that are negative or a positive multiple of 999."""
         return (values < 0) | ((values > 0) & (values % not_known_multiple == 0))
 
     return lf.with_columns(
