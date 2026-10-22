@@ -1,9 +1,10 @@
-import polars as pl
-
 from polars_utils import utils
 from projects._03_independent_cqc._02_employment_status.fargate.utils.estimate_utils import (
     ESTIMATED_COUNT_COLUMNS,
     ESTIMATED_PERCENTAGE_COLUMNS,
+)
+from projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.estimate_counts_utils import (
+    add_estimated_counts,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     EmploymentStatusColumns as EmpStatus,
@@ -45,10 +46,7 @@ def main(
 ) -> None:
     """Creates estimated counts of starters, leavers and vacancies.
 
-    Estimated rates are joined to estimated employees, then:
-        starters = employees * starter rate
-        leavers = employees * turnover rate
-        vacancies = (employees * vacancy rate) / (1 - vacancy rate)
+    Estimated rates are joined to estimated employees to derive the counts.
 
     Args:
         employment_status_estimate_source (str): path to the employment
@@ -64,24 +62,12 @@ def main(
         slv_estimate_source, selected_columns=slv_estimate_columns
     )
 
-    employment_status_lf = employment_status_lf.join(slv_lf, on=JOIN_KEYS, how="left")
+    estimates_lf = employment_status_lf.join(slv_lf, on=JOIN_KEYS, how="left")
 
-    employees = pl.col(EmpStatus.estimated_employees)
-    vacancy_rate = pl.col(SLVCols.estimated_vacancy_rate)
-    employment_status_lf = employment_status_lf.with_columns(
-        (employees * pl.col(SLVCols.estimated_starter_rate)).alias(
-            SLVCols.estimated_starters
-        ),
-        (employees * pl.col(SLVCols.estimated_turnover_rate)).alias(
-            SLVCols.estimated_leavers
-        ),
-        ((employees * vacancy_rate) / (1 - vacancy_rate)).alias(
-            SLVCols.estimated_vacancies
-        ),
-    )
+    estimates_lf = add_estimated_counts(estimates_lf)
 
     utils.sink_to_parquet(
-        lazy_df=employment_status_lf,
+        lazy_df=estimates_lf,
         output_path=estimated_data_destination,
     )
 
