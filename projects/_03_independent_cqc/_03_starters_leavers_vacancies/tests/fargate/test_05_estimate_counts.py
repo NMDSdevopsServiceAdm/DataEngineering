@@ -48,7 +48,6 @@ def build_slv_lf(
             SLVCols.estimated_starter_rate_source: ["source"],
             SLVCols.estimated_turnover_rate_source: ["source"],
             SLVCols.estimated_vacancy_rate_source: ["source"],
-            "unwanted_slv_col": [1],
         }
     )
 
@@ -63,7 +62,6 @@ def build_employment_lf(
             IndCQC.cqc_location_import_date: [IMPORT_DATE],
             EmpStatus.estimated_employees: [employees],
             **{col: [1.0] for col in EMPLOYMENT_STATUS_COLUMNS},
-            "unwanted_employment_col": [1],
         }
     )
 
@@ -97,17 +95,13 @@ class TestMain:
         )
 
         assert scan_parquet_mock.call_args_list == [
-            call(SLV_ESTIMATE_SOURCE),
-            call(EMPLOYMENT_STATUS_ESTIMATE_SOURCE),
+            call(SLV_ESTIMATE_SOURCE, selected_columns=job.slv_estimate_columns),
+            call(
+                EMPLOYMENT_STATUS_ESTIMATE_SOURCE,
+                selected_columns=job.employment_status_estimate_columns,
+            ),
         ]
         sink_to_parquet_mock.assert_called_once()
-
-    def test_keeps_only_selected_columns(self):
-        result = run_main(build_slv_lf(), build_employment_lf())
-
-        assert "unwanted_slv_col" not in result.columns
-        assert "unwanted_employment_col" not in result.columns
-        assert set(EMPLOYMENT_STATUS_COLUMNS) <= set(result.columns)
 
     def test_keeps_unmatched_slv_rows_with_null_counts(self):
         result = run_main(build_slv_lf("1-001"), build_employment_lf("1-002"))
