@@ -473,13 +473,13 @@ class TestCleanUtilsData:
 
 
 @dataclass
-class AddEstimatedCountsTestCase:
+class AddEstimatedSlvCountsTestCase:
     id: str
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
 
 
-def _estimated_counts_case(
+def _estimated_slv_counts_case(
     id: str,
     employees: list,
     starter_rate: list,
@@ -488,14 +488,14 @@ def _estimated_counts_case(
     starters: list,
     leavers: list,
     vacancies: list,
-) -> AddEstimatedCountsTestCase:
+) -> AddEstimatedSlvCountsTestCase:
     input_data = {
         EmpStatus.estimated_employees: employees,
         SLVCols.estimated_starter_rate: starter_rate,
         SLVCols.estimated_turnover_rate: turnover_rate,
         SLVCols.estimated_vacancy_rate: vacancy_rate,
     }
-    return AddEstimatedCountsTestCase(
+    return AddEstimatedSlvCountsTestCase(
         id=id,
         input_data=input_data,
         expected_data={
@@ -508,9 +508,9 @@ def _estimated_counts_case(
 
 
 @dataclass
-class TestEstimateCountsUtilsData:
-    add_estimated_counts_test_cases = [
-        _estimated_counts_case(
+class TestEstimateData:
+    add_estimated_slv_counts_test_cases = [
+        _estimated_slv_counts_case(
             id="calculates_counts_from_employees_and_rates",
             employees=[10.0, 8.0],
             starter_rate=[0.25, 0.5],
@@ -520,7 +520,7 @@ class TestEstimateCountsUtilsData:
             leavers=[5.0, 2.0],
             vacancies=[10.0, 24.0],
         ),
-        _estimated_counts_case(
+        _estimated_slv_counts_case(
             id="returns_zero_counts_when_employees_is_zero",
             employees=[0.0, 0.0],
             starter_rate=[0.25, None],
@@ -530,7 +530,7 @@ class TestEstimateCountsUtilsData:
             leavers=[0.0, 0.0],
             vacancies=[0.0, 0.0],
         ),
-        _estimated_counts_case(
+        _estimated_slv_counts_case(
             id="returns_null_counts_when_employees_is_null",
             employees=[None],
             starter_rate=[0.25],
@@ -540,7 +540,7 @@ class TestEstimateCountsUtilsData:
             leavers=[None],
             vacancies=[None],
         ),
-        _estimated_counts_case(
+        _estimated_slv_counts_case(
             id="returns_null_count_when_its_rate_is_null",
             employees=[10.0],
             starter_rate=[None],
