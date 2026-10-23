@@ -291,6 +291,10 @@ class TestSheetText:
             "B65": "Annual",
             "B66": "Monthly",
             "B67": "Monthly",
+            "B106": "Annual",
+            "B107": "Annual",
+            "B108": "Monthly",
+            "B109": "Monthly",
         }
 
     def test_raises_when_periods_exceed_the_label_slots(self):

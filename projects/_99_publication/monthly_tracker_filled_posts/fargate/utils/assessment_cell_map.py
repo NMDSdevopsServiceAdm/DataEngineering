@@ -250,8 +250,9 @@ FILLED_POSTS = SheetMap(
 )
 
 # Annual rows first, then monthly rows; unused slots stay blank at the end.
-# Ranges of the Annual/Monthly labels: previous publication, current publication.
-COMP_PREV_LABEL_RANGES = ("B23:B59", "B64:B100")
+# Ranges of the Annual/Monthly labels: previous publication, current publication,
+# difference.
+COMP_PREV_LABEL_RANGES = ("B23:B59", "B64:B100", "B106:B142")
 COMP_PREV_PUBLICATION = SheetMap(
     name="Comp prev publication",
     input_ranges=(
@@ -282,7 +283,7 @@ COMP_PREV_PUBLICATION = SheetMap(
             note="current publication figures",
             number_format="count",
         ),
-        InputRange("B106:B142", note="difference labels"),
+        InputRange(COMP_PREV_LABEL_RANGES[2], note="difference labels"),
         InputRange(
             "C106:C142", PERIOD_COL, note="difference dates", number_format="date"
         ),

@@ -153,7 +153,7 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
     term, the March a year before for medium term. "Filled posts" gets a chart
     heading dated from the latest March. "Comp prev publication" gets
     an "Annual" row for each March period, then a "Monthly" row for each other
-    period, in both of its label ranges.
+    period, in each of its label ranges.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
