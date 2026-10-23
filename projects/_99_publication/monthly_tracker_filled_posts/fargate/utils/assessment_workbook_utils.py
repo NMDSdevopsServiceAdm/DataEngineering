@@ -166,19 +166,26 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
             label slots.
     """
     dates = _period_dates(period_labels)
+
+    # March dates the headings and notes refer back to
     marches = [d for d in dates if d.month == MARCH]
     if not marches:
         raise ValueError("period_labels has no March")
     short_term_march = max(marches)
     medium_term_march = short_term_march.replace(year=short_term_march.year - 1)
 
+    # Title on every sheet
     text = {
         sheet.name: {cell_map.TITLE_CELL: title_text(period_labels)}
         for sheet in cell_map.ASSESSMENT_SHEETS
     }
+
+    # Filled posts: chart heading
     text[cell_map.FILLED_POSTS.name][cell_map.FILLED_POSTS_CHART_HEADING_CELL] = (
         CHART_HEADING_TEXT.format(date=short_term_march.strftime(PERIOD_LABEL_FORMAT))
     )
+
+    # Short and medium term comparisons: heading and criteria note
     for sheet, march in (
         (cell_map.COMP_SHORT_TERM, short_term_march),
         (cell_map.COMP_MEDIUM_TERM, medium_term_march),
@@ -189,6 +196,7 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
             date=date
         )
 
+    # Comp prev publication: an Annual or Monthly label for each period row
     unique_dates = set(dates)
     annual_count = sum(d.month == MARCH for d in unique_dates)
     row_labels = [ANNUAL_LABEL] * annual_count + [MONTHLY_LABEL] * (
