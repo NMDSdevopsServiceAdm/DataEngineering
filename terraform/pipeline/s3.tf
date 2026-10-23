@@ -41,7 +41,7 @@ module "promoted_archive_bucket" {
 
   # Promoted runs are never overwritten (each is a unique archive_date/
   # run_number key) - dated partitions are the addressing mechanism here,
-  # not S3 object versions, per ticket 1919's finding.
+  # not S3 object versions.
   enable_versioning = false
 }
 
