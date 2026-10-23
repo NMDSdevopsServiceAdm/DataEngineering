@@ -1,8 +1,8 @@
 import json
-import unittest
-from unittest.mock import Mock, patch
 
 import polars as pl
+import pytest
+from unittest.mock import Mock, patch
 
 import projects._01_ingest.cqc_api.fargate.validate_cqc_locations_4_full_latest_snapshot as job
 from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
@@ -17,16 +17,20 @@ PATCH_PATH = (
 )
 
 
-class ValidateLocationsFlattenTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.validate_df = pl.DataFrame(
-            data=Data.validation_rows, schema=Schemas.validation_schema
-        )
+class TestMain:
+    @pytest.fixture
+    def validate_df(self) -> pl.DataFrame:
+        return pl.DataFrame(data=Data.validation_rows, schema=Schemas.validation_schema)
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_runs(self, mock_read_parquet: Mock, mock_write_reports: Mock):
-        mock_read_parquet.side_effect = [self.validate_df, self.validate_df]
+    def test_validation_runs(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+        validate_df: pl.DataFrame,
+    ):
+        mock_read_parquet.side_effect = [validate_df, validate_df]
 
         job.main("bucket", "my/dataset/", "my/reports/")
 
@@ -39,19 +43,20 @@ class ValidateLocationsFlattenTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_report_includes_expected_validations(
-        self, mock_read_parquet: Mock, mock_write_reports: Mock
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+        validate_df: pl.DataFrame,
     ):
-        mock_read_parquet.return_value = self.validate_df
+        mock_read_parquet.return_value = validate_df
 
         job.main("bucket", "my/dataset/", "my/reports/")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
 
-        # Extract all assertion types present in the report
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
-        # Check that key validations were run
         expected_assertions = {
             "col_vals_not_null",
             "rows_distinct",
@@ -60,12 +65,6 @@ class ValidateLocationsFlattenTests(unittest.TestCase):
         }
 
         for assertion in expected_assertions:
-            self.assertIn(
-                assertion,
-                assertion_types_present,
-                f"{assertion} not found in validation report",
-            )
-
-
-if __name__ == "__main__":
-    unittest.main(warnings="ignore")
+            assert (
+                assertion in assertion_types_present
+            ), f"{assertion} not found in validation report"

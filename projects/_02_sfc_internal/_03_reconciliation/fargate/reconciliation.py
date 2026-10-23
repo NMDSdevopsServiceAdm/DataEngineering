@@ -25,6 +25,7 @@ from utils.column_values.ascwds_labelled_vocab import (
     RegistrationType,
 )
 from utils.column_values.categorical_column_values import (
+    HasSuccessor,
     ParentsOrSinglesAndSubs,
     RegistrationStatus,
     SingleSubDescription,
@@ -78,7 +79,10 @@ def main(
     ) = prepare_latest_cleaned_ascwds_workforce_data(ascwds_workplace_lf)
 
     cqc_location_lf = cqc_location_lf.select(
-        CQCL.location_id, CQCL.registration_status, CQCL.deregistration_date
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.deregistration_date,
+        CQCLClean.has_successor,
     )
 
     merged_ascwds_cqc_lf = cqc_registered_workplace_lf.rename(
@@ -239,9 +243,10 @@ def build_potentials_count_output(
 ) -> pl.LazyFrame:
     """Counts workplaces that could be matched to CQC if they fixed their location ID.
 
-    Counts every workplace with no CQC registration status, or deregistered before
-    the current month, regardless of account type or when the issue arose. Each
-    NMDS ID counts once. Aggregates to one row, so the output is tiny.
+    Counts every workplace with no CQC registration status, or deregistered before the
+    current month with a CQC successor, regardless of account type or when the issue
+    arose. Deregistered workplaces without a successor are excluded. Each NMDS ID
+    counts once. Aggregates to one row, so the output is tiny.
 
     Args:
         merged_ascwds_cqc_lf (pl.LazyFrame): ASC-WDS workplace data joined to CQC
@@ -251,15 +256,22 @@ def build_potentials_count_output(
     Returns:
         pl.LazyFrame: One row with the count in `potentials_count`.
     """
-    is_potential = pl.col(CQCL.registration_status).is_null() | (
-        (pl.col(CQCL.registration_status) == RegistrationStatus.deregistered)
-        & (pl.col(CQCL.deregistration_date) < first_of_most_recent_month)
-    )
+    is_non_linked = pl.col(CQCL.registration_status).is_null()
+    is_deregistered = (
+        pl.col(CQCL.registration_status) == RegistrationStatus.deregistered
+    ) & (pl.col(CQCL.deregistration_date) < first_of_most_recent_month)
+    has_successor = (
+        pl.col(CQCLClean.has_successor) == HasSuccessor.has_successor
+    ).fill_null(False)
+
     return (
         merged_ascwds_cqc_lf.select(
-            AWPClean.nmds_id, CQCL.registration_status, CQCL.deregistration_date
+            AWPClean.nmds_id,
+            CQCL.registration_status,
+            CQCL.deregistration_date,
+            CQCLClean.has_successor,
         )
-        .filter(is_potential)
+        .filter(is_non_linked | (is_deregistered & has_successor))
         .select(
             pl.col(AWPClean.nmds_id)
             .drop_nulls()
