@@ -1,17 +1,5 @@
 from polars_utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    EmploymentStatusColumns as EmpStatus,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-
-employment_status_estimate_columns = [
-    IndCQC.location_id,
-    IndCQC.cqc_location_import_date,
-    IndCQC.establishment_id,
-    IndCQC.ascwds_workplace_import_date,
-    IndCQC.published_job_role_label,
-    EmpStatus.estimated_employees,
-]
 
 
 def main(
@@ -22,16 +10,13 @@ def main(
     """
     Merges the employment status estimates with prepared SLV workplace data.
 
-    The estimates are wide, so only the columns SLV needs are read.
-
     Args:
         employment_status_estimate_source (str): path to the employment status estimates
         prepared_slv_dataset_source (str): path to the prepared ascwds workplace data
         merged_data_destination (str): destination for merged output
     """
     employment_status_estimate_lf = utils.scan_parquet(
-        source=employment_status_estimate_source,
-        selected_columns=employment_status_estimate_columns,
+        source=employment_status_estimate_source
     )
     workplace_lf = utils.scan_parquet(prepared_slv_dataset_source)
 

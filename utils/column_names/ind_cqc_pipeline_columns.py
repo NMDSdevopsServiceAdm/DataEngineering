@@ -579,6 +579,9 @@ class StartersLeaversVacanciesColumns:
     estimated_starter_rate_source: str = estimated_starter_rate + "_source"
     estimated_turnover_rate_source: str = estimated_turnover_rate + "_source"
     estimated_vacancy_rate_source: str = estimated_vacancy_rate + "_source"
+    estimated_starters: str = "estimated_" + starters
+    estimated_leavers: str = "estimated_" + leavers
+    estimated_vacancies: str = "estimated_" + vacancies
     starters_cleaned: str = starters + "_cleaned"
     leavers_cleaned: str = leavers + "_cleaned"
     vacancies_cleaned: str = vacancies + "_cleaned"

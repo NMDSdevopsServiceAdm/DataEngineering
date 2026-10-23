@@ -16,12 +16,14 @@ class TestMain:
     ESTIMATED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.add_estimated_slv_counts")
     @patch(f"{PATCH_PATH}.utils.coalesce_with_source_labels", return_value=(1, 2))
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         coalesce_mock: Mock,
+        add_estimated_slv_counts_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(self.IMPUTED_DATA_SOURCE, self.ESTIMATED_DATA_DESTINATION)
@@ -44,7 +46,10 @@ class TestMain:
                 source_dtype=CatColType.VacancyRateEstimateSourceEnumType,
             ),
         ]
+        add_estimated_slv_counts_mock.assert_called_once_with(
+            scan_parquet_mock.return_value.with_columns.return_value
+        )
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=scan_parquet_mock.return_value.with_columns.return_value,
+            lazy_df=add_estimated_slv_counts_mock.return_value,
             output_path=self.ESTIMATED_DATA_DESTINATION,
         )

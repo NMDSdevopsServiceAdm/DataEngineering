@@ -1,5 +1,8 @@
 from polars_utils import utils
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.estimate_utils import (
+    add_estimated_slv_counts,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
 )
@@ -9,7 +12,7 @@ def main(
     imputed_data_source: str,
     estimated_data_destination: str,
 ) -> None:
-    """Creates estimated starter, turnover and vacancy rates.
+    """Creates estimated starter, turnover and vacancy rates and counts.
 
     Each estimated rate is the first populated of the listed columns.
 
@@ -36,6 +39,8 @@ def main(
             source_dtype=CatColType.VacancyRateEstimateSourceEnumType,
         ),
     )
+
+    lf = add_estimated_slv_counts(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,
