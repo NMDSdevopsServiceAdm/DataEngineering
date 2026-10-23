@@ -1,5 +1,6 @@
 """Helpers for writing input cells into the assessment template."""
 
+import datetime
 from copy import copy
 from pathlib import Path
 
@@ -12,6 +13,9 @@ from openpyxl.worksheet.worksheet import Worksheet
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     assessment_cell_map as cell_map,
 )
+
+
+PERIOD_LABEL_FORMAT = "%b %Y"
 
 
 class TemplateMismatchError(ValueError):
@@ -105,6 +109,27 @@ def check_template(workbook: openpyxl.Workbook) -> None:
         )
 
 
+def title_text(period_labels: list[str]) -> str:
+    """Title for each sheet, naming the latest period.
+
+    Args:
+        period_labels (list[str]): period labels such as "Mar 2026".
+
+    Returns:
+        str: e.g. "End of Mar 2026".
+
+    Raises:
+        ValueError: if there are no period labels.
+    """
+    if not period_labels:
+        raise ValueError("period_labels is empty")
+    latest = max(
+        datetime.datetime.strptime(label, PERIOD_LABEL_FORMAT)
+        for label in period_labels
+    )
+    return f"End of {latest.strftime(PERIOD_LABEL_FORMAT)}"
+
+
 def _input_cells(sheet: cell_map.SheetMap) -> set[tuple[int, int]]:
     return {
         (row, col)
@@ -114,9 +139,15 @@ def _input_cells(sheet: cell_map.SheetMap) -> set[tuple[int, int]]:
 
 
 def fill_assessment_workbook(
-    values: dict[str, dict[str, object]], template_path: Path, output_path: Path
+    period_labels: list[str],
+    values: dict[str, dict[str, object]],
+    template_path: Path,
+    output_path: Path,
 ) -> None:
-    """Writes values into the template's input cells and saves a copy.
+    """Writes values and the title into the template's input cells and saves a copy.
+
+    Every sheet's title cell is set to "End of <latest period label>", replacing
+    any value given for it.
 
     Nothing is written unless the template matches the cell map and every value
     targets a mapped input cell. Other cells are left as in the template, and
@@ -124,17 +155,20 @@ def fill_assessment_workbook(
     so check a saved workbook's charts in Excel.
 
     Args:
+        period_labels (list[str]): the run's period labels, such as "Mar 2026".
         values (dict[str, dict[str, object]]): values to write, keyed by sheet
-            name, then by A1 cell reference, e.g. `{"Filled posts": {"B3": "End
-            of March 2026"}}`. Cells must be in the sheet's mapped input ranges.
+            name, then by A1 cell reference, e.g. `{"Filled posts": {"C24":
+            1000}}`. Cells must be in the sheet's mapped input ranges.
         template_path (Path): template to load.
         output_path (Path): local path to save to.
 
     Raises:
         UnmappedCellError: if a value targets a sheet or cell outside the mapped
             input ranges. A template that does not match the cell map raises
-            `TemplateMismatchError` first.
+            `TemplateMismatchError` first, and empty `period_labels` raise
+            `ValueError`.
     """
+    title = title_text(period_labels)
     workbook = openpyxl.load_workbook(template_path)
     check_template(workbook)
 
@@ -156,4 +190,7 @@ def fill_assessment_workbook(
         for cell, value in cells.items():
             row, col = coordinate_to_tuple(cell)
             write_input_cell(workbook[name], row, col, value)
+    title_row, title_col = coordinate_to_tuple(cell_map.TITLE_CELL)
+    for sheet in cell_map.ASSESSMENT_SHEETS:
+        write_input_cell(workbook[sheet.name], title_row, title_col, title)
     workbook.save(output_path)

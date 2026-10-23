@@ -80,6 +80,9 @@ class TestWriteInputCell:
         assert worksheet.cell(3, 3).font.name == "Calibri"
 
 
+PERIOD_LABELS = ["Mar 2026"]
+
+
 @pytest.fixture(scope="module")
 def values() -> dict[str, dict[str, object]]:
     return support.generic_values(full=True)
@@ -88,7 +91,7 @@ def values() -> dict[str, dict[str, object]]:
 @pytest.fixture(scope="module")
 def filled_path(tmp_path_factory, values) -> Path:
     path = tmp_path_factory.mktemp("filled") / "assessment.xlsx"
-    job.fill_assessment_workbook(values, cell_map.TEMPLATE_PATH, path)
+    job.fill_assessment_workbook(PERIOD_LABELS, values, cell_map.TEMPLATE_PATH, path)
     return path
 
 
@@ -108,10 +111,24 @@ class TestFillAssessmentWorkbook:
             (sheet, cell)
             for sheet, cells in values.items()
             for cell, value in cells.items()
-            if saved[sheet][cell].value != value
+            if cell != cell_map.TITLE_CELL and saved[sheet][cell].value != value
         ]
 
         assert wrong == []
+
+    def test_every_sheet_title_names_the_latest_period(self, tmp_path, values):
+        output = tmp_path / "out.xlsx"
+
+        job.fill_assessment_workbook(
+            ["Sep 2025", "Mar 2026"], values, cell_map.TEMPLATE_PATH, output
+        )
+
+        saved = openpyxl.load_workbook(output)
+        titles = {
+            sheet.name: saved[sheet.name][cell_map.TITLE_CELL].value
+            for sheet in cell_map.ASSESSMENT_SHEETS
+        }
+        assert set(titles.values()) == {"End of Mar 2026"}
 
     def test_cells_outside_the_inputs_are_unchanged(self, filled_path):
         template = openpyxl.load_workbook(cell_map.TEMPLATE_PATH)
@@ -160,6 +177,7 @@ class TestFillAssessmentWorkbook:
     def test_raises_when_a_value_targets_a_cell_outside_the_inputs(self, tmp_path):
         with pytest.raises(job.UnmappedCellError, match="'Filled posts'!B9"):
             job.fill_assessment_workbook(
+                PERIOD_LABELS,
                 {"Filled posts": {"B9": "overwritten"}},
                 cell_map.TEMPLATE_PATH,
                 tmp_path / "out.xlsx",
@@ -168,21 +186,26 @@ class TestFillAssessmentWorkbook:
     def test_raises_when_a_value_targets_an_unknown_sheet(self, tmp_path):
         with pytest.raises(job.UnmappedCellError, match="'Missing'!B3"):
             job.fill_assessment_workbook(
-                {"Missing": {"B3": "x"}}, cell_map.TEMPLATE_PATH, tmp_path / "out.xlsx"
+                PERIOD_LABELS,
+                {"Missing": {"B3": "x"}},
+                cell_map.TEMPLATE_PATH,
+                tmp_path / "out.xlsx",
             )
 
     def test_raises_when_a_label_differs(self, tmp_path):
         template = _copy_template_with(tmp_path, "Filled posts", "C23", "Renamed")
 
         with pytest.raises(job.TemplateMismatchError, match="'Filled posts'!C23"):
-            job.fill_assessment_workbook({}, template, tmp_path / "out.xlsx")
+            job.fill_assessment_workbook(
+                PERIOD_LABELS, {}, template, tmp_path / "out.xlsx"
+            )
 
     def test_saves_nothing_when_error_raised(self, tmp_path):
         template = _copy_template_with(tmp_path, "Filled posts", "C23", "Renamed")
         output = tmp_path / "out.xlsx"
 
         with pytest.raises(job.TemplateMismatchError):
-            job.fill_assessment_workbook({}, template, output)
+            job.fill_assessment_workbook(PERIOD_LABELS, {}, template, output)
 
         assert not output.exists()
 
@@ -193,4 +216,15 @@ class TestFillAssessmentWorkbook:
         workbook.save(template)
 
         with pytest.raises(job.TemplateMismatchError, match="No filters - long term"):
-            job.fill_assessment_workbook({}, template, tmp_path / "out.xlsx")
+            job.fill_assessment_workbook(
+                PERIOD_LABELS, {}, template, tmp_path / "out.xlsx"
+            )
+
+
+class TestTitleText:
+    def test_uses_the_latest_period_by_date_not_by_text(self):
+        assert job.title_text(["Sep 2025", "Mar 2026"]) == "End of Mar 2026"
+
+    def test_raises_when_there_are_no_period_labels(self):
+        with pytest.raises(ValueError, match="period_labels is empty"):
+            job.title_text([])
