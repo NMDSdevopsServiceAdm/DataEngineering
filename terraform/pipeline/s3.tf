@@ -45,6 +45,12 @@ module "promoted_archive_bucket" {
   enable_versioning = false
 }
 
+resource "aws_s3_bucket_policy" "archive_promoted_deny_delete" {
+  count  = local.workspace_prefix == "main" ? 1 : 0
+  bucket = module.promoted_archive_bucket.bucket_name
+  policy = data.aws_iam_policy_document.archive_promoted_deny_delete[0].json
+}
+
 # Per-branch equivalent of prod's hand-managed sfc-data-engineering-raw bucket, so raw
 # ingest steps (and their EventBridge triggers) can be tested on a branch. Never created
 # for main - prod's raw bucket stays hand-managed and untouched.
