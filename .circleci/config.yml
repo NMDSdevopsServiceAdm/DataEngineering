@@ -495,6 +495,10 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_03_full_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_03_full_flattened/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_02_delta_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_02_delta_flattened/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=locations_01_delta_api/version=3.1.7/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=providers_04_full_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=providers_04_full_cleaned/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=providers_03_full_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=providers_03_full_flattened/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=providers_02_delta_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=providers_02_delta_flattened/" --delete
+            aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=providers_01_delta_api/version=3.0.0/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=providers_01_delta_api/version=3.0.0/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_cqc/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=01_cqc/dataset=postcode_corrections/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_ons/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ons/dataset=postcode_directory_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=01_ascwds/dataset=workplace/" "s3://$BRANCH_DATASET_BUCKET/domain=01_ascwds/dataset=workplace/" --delete
