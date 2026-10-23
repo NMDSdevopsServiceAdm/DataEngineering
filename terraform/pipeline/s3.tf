@@ -11,8 +11,8 @@ module "datasets_bucket" {
   empty_bucket_on_destroy = local.is_development_environment
   enable_versioning       = !local.is_development_environment # only version main
 
-  # Runs not promoted to the long-term archive within ~2 months simply expire;
-  # the run log itself is excluded - it's the permanent audit trail.
+  # Bounds the rolling job role archive to ~2 months; the run log itself is
+  # excluded - it's the permanent audit trail.
   expiration_rules = [
     {
       id              = "expire-job-role-archive-estimates"
