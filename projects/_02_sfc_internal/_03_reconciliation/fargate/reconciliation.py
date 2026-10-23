@@ -244,9 +244,9 @@ def build_potentials_count_output(
     """Counts workplaces that could be matched to CQC if they fixed their location ID.
 
     Counts every workplace with no CQC registration status, or deregistered before the
-    current month with a CQC successor, regardless of account type or when the issue
-    arose. Deregistered workplaces without a successor are excluded. Each NMDS ID
-    counts once. Aggregates to one row, so the output is tiny.
+    current month with a CQC successor (deregistrations without one are excluded),
+    regardless of account type or when the issue arose. Each NMDS ID counts once.
+    Aggregates to one row, so the output is tiny.
 
     Args:
         merged_ascwds_cqc_lf (pl.LazyFrame): ASC-WDS workplace data joined to CQC
