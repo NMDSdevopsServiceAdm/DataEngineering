@@ -17,6 +17,8 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
 
 PERIOD_LABEL_FORMAT = "%b %Y"
 MARCH = 3
+ANNUAL_LABEL = "Annual"
+MONTHLY_LABEL = "Monthly"
 HEADING_TEXT = (
     "Comparison of Skills for Care's estimate of filled posts to Capacity Tracker"
     " - Since {date}"
@@ -145,7 +147,9 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
 
     Every sheet gets the title. The short and medium term comparison sheets also
     get a heading and criteria note dated from March: the latest March for short
-    term, the March a year before for medium term.
+    term, the March a year before for medium term. "Comp prev publication" gets
+    an "Annual" row for each March period, then a "Monthly" row for each other
+    period, in both of its label ranges.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
@@ -154,7 +158,8 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
         dict[str, dict[str, str]]: text to write.
 
     Raises:
-        ValueError: if no period label is a March.
+        ValueError: if no period label is a March, or there are more periods than
+            label slots.
     """
     dates = _period_dates(period_labels)
     marches = [d for d in dates if d.month == MARCH]
@@ -176,6 +181,21 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
         text[sheet.name][cell_map.CRITERIA_NOTE_CELL] = CRITERIA_NOTE_TEXT.format(
             date=date
         )
+
+    unique_dates = set(dates)
+    annual_count = sum(d.month == MARCH for d in unique_dates)
+    row_labels = [ANNUAL_LABEL] * annual_count + [MONTHLY_LABEL] * (
+        len(unique_dates) - annual_count
+    )
+    for label_range in cell_map.COMP_PREV_LABEL_RANGES:
+        cells = CellRange(label_range)
+        if len(row_labels) > cells.size["rows"]:
+            raise ValueError(
+                f"{len(row_labels)} periods exceed the {cells.size['rows']} rows in"
+                f" {label_range}"
+            )
+        for i, label in enumerate(row_labels):
+            text[cell_map.COMP_PREV_PUBLICATION.name][f"B{cells.min_row + i}"] = label
     return text
 
 

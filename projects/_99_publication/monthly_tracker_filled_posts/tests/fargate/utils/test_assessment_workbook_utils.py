@@ -266,3 +266,28 @@ class TestSheetText:
     def test_raises_when_no_period_label_is_a_march(self):
         with pytest.raises(ValueError, match="no March"):
             job.sheet_text(["Sep 2025", "Oct 2025"])
+
+    def test_comp_prev_publication_labels_are_annual_rows_then_monthly_rows(self):
+        # Unordered, with Sep 2025 twice: 2 March periods and 2 other periods.
+        period_labels = ["Mar 2025", "Sep 2025", "Mar 2026", "Oct 2025", "Sep 2025"]
+
+        text = job.sheet_text(period_labels)[cell_map.COMP_PREV_PUBLICATION.name]
+
+        labels = {cell: value for cell, value in text.items() if cell != "B3"}
+        assert labels == {
+            "B23": "Annual",
+            "B24": "Annual",
+            "B25": "Monthly",
+            "B26": "Monthly",
+            "B64": "Annual",
+            "B65": "Annual",
+            "B66": "Monthly",
+            "B67": "Monthly",
+        }
+
+    def test_raises_when_periods_exceed_the_label_slots(self):
+        labels = [f"{m} {y}" for y in range(2020, 2024) for m in ("Mar", "Sep", "Oct")]
+        labels += [f"Nov {y}" for y in range(2020, 2046)]
+
+        with pytest.raises(ValueError, match="exceed the 37 rows"):
+            job.sheet_text(labels)
