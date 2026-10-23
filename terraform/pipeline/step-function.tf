@@ -42,7 +42,7 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
     transform_cqc_data_state_machine_arn    = aws_sfn_state_machine.sf_pipelines["Transform-CQC-Data"].arn
     ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
     sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
-    ind_cqc_slv_state_machine_arn           = aws_sfn_state_machine.sf_pipelines["Ind-CQC-SLV"].arn
+    ind_cqc_empstat_slv_state_machine_arn   = aws_sfn_state_machine.sf_pipelines["Ind-CQC-EmpStat-SLV"].arn
   })
 
   depends_on = [
