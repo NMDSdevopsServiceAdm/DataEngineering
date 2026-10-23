@@ -20,7 +20,6 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.templat
 )
 from utils.column_names.publication_columns import PublicationColumns as Pub
 
-
 TEMPLATE_PATH = TEMPLATES_DIR / "assessment_template.xlsx"
 
 # Number format each kind of input cell must show in the template: its own, or
@@ -32,6 +31,8 @@ NUMBER_FORMATS = {
     "count": "#,##0",
     "percent": "0.0%",
 }
+
+PERIOD_COL = Pub.period_label
 
 
 @dataclass(frozen=True)
@@ -124,56 +125,104 @@ _COMPARISON_LABELS = (
 FILLED_POSTS = SheetMap(
     name="Filled posts",
     input_ranges=(
-        InputRange(TITLE_CELL, note="'End of <month year>' title"),
-        InputRange("B24:B36", note="annual filled posts dates", number_format="date"),
+        InputRange(TITLE_CELL, PERIOD_COL, note="'End of <month year>' title"),
         InputRange(
-            "I24:I36", note="annual filled posts % change dates", number_format="date"
+            "B24:B36",
+            PERIOD_COL,
+            note="annual filled posts dates",
+            number_format="date",
+        ),
+        InputRange(
+            "I24:I36",
+            PERIOD_COL,
+            note="annual filled posts % change dates",
+            number_format="date",
         ),
         InputRange(
             "C24:G36",
+            Pub.filled_posts,
             note="annual filled posts by primary service type",
             number_format="count",
         ),
         InputRange(
-            "J25:N36", note="annual filled posts % change", number_format="percent"
+            "J25:N36",
+            Pub.filled_posts_april_perc_change,
+            note="annual filled posts % change",
+            number_format="percent",
         ),
-        InputRange("B44:B56", note="annual CQC locations dates", number_format="date"),
         InputRange(
-            "I44:I56", note="annual CQC locations % change dates", number_format="date"
+            "B44:B56",
+            PERIOD_COL,
+            note="annual CQC locations dates",
+            number_format="date",
+        ),
+        InputRange(
+            "I44:I56",
+            PERIOD_COL,
+            note="annual CQC locations % change dates",
+            number_format="date",
         ),
         InputRange(
             "C44:G56",
+            Pub.locationid_count,
             note="annual CQC locations by primary service type",
             number_format="count",
         ),
         InputRange(
-            "J45:N56", note="annual CQC locations % change", number_format="percent"
+            "J45:N56",
+            Pub.locationid_count_april_perc_change,
+            note="annual CQC locations % change",
+            number_format="percent",
         ),
-        InputRange("B65:B77", note="monthly filled posts dates", number_format="date"),
         InputRange(
-            "I65:I77", note="monthly filled posts % change dates", number_format="date"
+            "B65:B77",
+            PERIOD_COL,
+            note="monthly filled posts dates",
+            number_format="date",
+        ),
+        InputRange(
+            "I65:I77",
+            PERIOD_COL,
+            note="monthly filled posts % change dates",
+            number_format="date",
         ),
         InputRange(
             "C65:G77",
+            Pub.filled_posts,
             note="monthly filled posts by primary service type",
             number_format="count",
         ),
         InputRange(
-            "J65:N77", note="monthly filled posts % change", number_format="percent"
+            "J65:N77",
+            Pub.filled_posts_cum_perc_change_short,
+            note="monthly filled posts % change",
+            number_format="percent",
         ),
-        InputRange("B84:B96", note="monthly CQC locations dates", number_format="date"),
         InputRange(
-            "I84:I96", note="monthly CQC locations % change dates", number_format="date"
+            "B84:B96",
+            PERIOD_COL,
+            note="monthly CQC locations dates",
+            number_format="date",
+        ),
+        InputRange(
+            "I84:I96",
+            PERIOD_COL,
+            note="monthly CQC locations % change dates",
+            number_format="date",
         ),
         InputRange(
             "C84:G96",
+            Pub.locationid_count,
             note="monthly CQC locations by primary service type",
             number_format="count",
         ),
         InputRange(
-            "J84:N96", note="monthly CQC locations % change", number_format="percent"
+            "J84:N96",
+            Pub.locationid_count_cum_perc_change_short,
+            note="monthly CQC locations % change",
+            number_format="percent",
         ),
-        InputRange("B99", note="'...since <month year>' chart heading"),
+        InputRange("B99", PERIOD_COL, note="'...since <month year>' chart heading"),
     ),
     chart_count=3,
     series_name_cells=("B61", "B80"),
@@ -201,21 +250,42 @@ COMP_PREV_LABEL_RANGES = ("B23:B59", "B64:B100")
 COMP_PREV_PUBLICATION = SheetMap(
     name="Comp prev publication",
     input_ranges=(
-        InputRange(TITLE_CELL, note="'End of <month year>' title"),
+        InputRange(TITLE_CELL, PERIOD_COL, note="'End of <month year>' title"),
         InputRange(COMP_PREV_LABEL_RANGES[0], note="previous publication labels"),
-        InputRange("C23:C59", note="previous publication dates", number_format="date"),
         InputRange(
-            "D23:H59", note="previous publication figures", number_format="count"
+            "C23:C59",
+            PERIOD_COL,
+            note="previous publication dates",
+            number_format="date",
+        ),
+        InputRange(
+            "D23:H59",
+            Pub.prev_run_filled_posts,
+            note="previous publication figures",
+            number_format="count",
         ),
         InputRange(COMP_PREV_LABEL_RANGES[1], note="current publication labels"),
-        InputRange("C64:C100", note="current publication dates", number_format="date"),
         InputRange(
-            "D64:H100", note="current publication figures", number_format="count"
+            "C64:C100",
+            PERIOD_COL,
+            note="current publication dates",
+            number_format="date",
+        ),
+        InputRange(
+            "D64:H100",
+            Pub.prev_run_filled_posts,
+            note="current publication figures",
+            number_format="count",
         ),
         InputRange("B106:B142", note="difference labels"),
-        InputRange("C106:C142", note="difference dates", number_format="date"),
         InputRange(
-            "D106:H142", note="difference as percentage", number_format="percent"
+            "C106:C142", PERIOD_COL, note="difference dates", number_format="date"
+        ),
+        InputRange(
+            "D106:H142",
+            Pub.filled_posts_perc_change_vs_prev_run,
+            note="difference as percentage",
+            number_format="percent",
         ),
     ),
     chart_count=0,
