@@ -354,42 +354,49 @@ class BoundingExpressions:
     )
 
 
-def null_slv_job_roles_when_total_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
+def null_slv_job_roles_when_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Null starters, leavers and vacancies job role columns where their total is not known.
+    Null starters, leavers and vacancies job role columns where the total or any role is not known.
 
-    The total columns are workplace summary columns: a not known total is the
-    source of truth and nulls every job role value, even where some are
-    populated, as unpopulated roles auto-populate as 0 which could be a false
-    zero rather than a true one. Each measure is handled independently.
+    A workplace's measure is either wholly in or out, so one not known value
+    nulls every job role of that measure, even where some are populated, as
+    unpopulated roles auto-populate as 0 which could be a false zero. Each
+    measure is handled independently.
 
-    A total is not known when it is negative (-1/-2) or a positive multiple
-    of 999 (a proxy for not known, which sums when repeated e.g. 2997).
-    0 and null totals are left as is.
+    A value is not known when it is negative (-1/-2) or 999 (a proxy for not
+    known). 0 and null values are left as is. Must run before negative job
+    role values are bounded to null.
 
     Args:
         lf (pl.LazyFrame): Workplace LazyFrame with integer total and job role columns.
 
     Returns:
-        pl.LazyFrame: lf with job role columns nulled where their total is not known.
+        pl.LazyFrame: lf with job role columns nulled where the total or any role is not known.
     """
     total_to_job_role_columns = {
         AWPClean.total_starters: cs.starts_with("jr") & cs.ends_with("strt"),
         AWPClean.total_leavers: cs.starts_with("jr") & cs.ends_with("stop"),
         AWPClean.total_vacancies: cs.starts_with("jr") & cs.ends_with("vacy"),
     }
-    not_known_multiple = 999
+    not_known_value = 999
 
-    return lf.with_columns(
-        pl.when(
-            (pl.col(total) < 0)
-            | ((pl.col(total) > 0) & (pl.col(total) % not_known_multiple == 0))
+    null_expressions = []
+    for total, job_role_columns in total_to_job_role_columns.items():
+        total_and_job_roles = (
+            cs.by_name(total, require_all=False) | job_role_columns
+        ).as_expr()
+        null_expressions.append(
+            pl.when(
+                pl.any_horizontal(
+                    (total_and_job_roles < 0) | (total_and_job_roles == not_known_value)
+                )
+            )
+            .then(None)
+            .otherwise(job_role_columns)
+            .name.keep()
         )
-        .then(None)
-        .otherwise(job_role_columns)
-        .name.keep()
-        for total, job_role_columns in total_to_job_role_columns.items()
-    )
+
+    return lf.with_columns(null_expressions)
 
 
 def merge_legacy_job_role_columns(
