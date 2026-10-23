@@ -27,7 +27,7 @@ CHART_HEADING_TEXT = (
     "Comparison of percentage change in filled posts and CQC locations since {date}"
 )
 CRITERIA_NOTE_TEXT = (
-    "Must have a Capacity Tracker figure in all months from end of {date} onwards."
+    "- Must have a Capacity Tracker figure in all months from end of {date} onwards."
 )
 
 

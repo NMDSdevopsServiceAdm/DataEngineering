@@ -242,7 +242,7 @@ class TestSheetText:
             " Tracker - Since Mar 2026"
         )
         assert text[cell_map.CRITERIA_NOTE_CELL] == (
-            "Must have a Capacity Tracker figure in all months from end of Mar 2026"
+            "- Must have a Capacity Tracker figure in all months from end of Mar 2026"
             " onwards."
         )
 
