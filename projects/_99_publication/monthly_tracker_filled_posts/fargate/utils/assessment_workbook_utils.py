@@ -23,6 +23,9 @@ HEADING_TEXT = (
     "Comparison of Skills for Care's estimate of filled posts to Capacity Tracker"
     " - Since {date}"
 )
+CHART_HEADING_TEXT = (
+    "Comparison of percentage change in filled posts and CQC locations since {date}"
+)
 CRITERIA_NOTE_TEXT = (
     "Must have a Capacity Tracker figure in all months from end of {date} onwards."
 )
@@ -147,7 +150,8 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
 
     Every sheet gets the title. The short and medium term comparison sheets also
     get a heading and criteria note dated from March: the latest March for short
-    term, the March a year before for medium term. "Comp prev publication" gets
+    term, the March a year before for medium term. "Filled posts" gets a chart
+    heading dated from the latest March. "Comp prev publication" gets
     an "Annual" row for each March period, then a "Monthly" row for each other
     period, in both of its label ranges.
 
@@ -172,6 +176,9 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
         sheet.name: {cell_map.TITLE_CELL: title_text(period_labels)}
         for sheet in cell_map.ASSESSMENT_SHEETS
     }
+    text[cell_map.FILLED_POSTS.name][cell_map.FILLED_POSTS_CHART_HEADING_CELL] = (
+        CHART_HEADING_TEXT.format(date=short_term_march.strftime(PERIOD_LABEL_FORMAT))
+    )
     for sheet, march in (
         (cell_map.COMP_SHORT_TERM, short_term_march),
         (cell_map.COMP_MEDIUM_TERM, medium_term_march),

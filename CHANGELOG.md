@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 - Extended the run log update script to select a run for publication and start Publication-Output for it, set the `reconciled` and `locally_checked` flags, and list the month's runs.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 - Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
-- Added a writer that fills the assessment workbook template and fails if the template or written cells do not match the cell map.
+- Added a writer that fills the assessment workbook template, including its period titles, headings and annual/monthly labels, and fails if the template or written cells do not match the cell map.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 
 ### Changed

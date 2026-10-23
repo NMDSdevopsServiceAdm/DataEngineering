@@ -83,6 +83,7 @@ TITLE_CELL = "B3"
 HEADING_CELL = "B7"
 # Notes are cells, not text boxes: openpyxl drops drawing shapes on save.
 CRITERIA_NOTE_CELL = "B14"
+FILLED_POSTS_CHART_HEADING_CELL = "B99"
 
 # End-of-March baseline plus the 12 months of the financial year.
 MONTHLY_SLOTS = 13
@@ -222,7 +223,11 @@ FILLED_POSTS = SheetMap(
             note="monthly CQC locations % change",
             number_format="percent",
         ),
-        InputRange("B99", PERIOD_COL, note="'...since <month year>' chart heading"),
+        InputRange(
+            FILLED_POSTS_CHART_HEADING_CELL,
+            PERIOD_COL,
+            note="'...since <month year>' chart heading",
+        ),
     ),
     chart_count=3,
     series_name_cells=("B61", "B80"),

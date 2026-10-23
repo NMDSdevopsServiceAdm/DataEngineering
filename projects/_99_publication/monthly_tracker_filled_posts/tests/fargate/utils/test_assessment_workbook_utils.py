@@ -252,6 +252,14 @@ class TestSheetText:
         assert text[cell_map.HEADING_CELL].endswith("Since Mar 2025")
         assert text[cell_map.CRITERIA_NOTE_CELL].endswith("end of Mar 2025 onwards.")
 
+    def test_filled_posts_chart_heading_uses_the_latest_march(self):
+        text = job.sheet_text(self.PERIOD_LABELS)[cell_map.FILLED_POSTS.name]
+
+        assert text[cell_map.FILLED_POSTS_CHART_HEADING_CELL] == (
+            "Comparison of percentage change in filled posts and CQC locations"
+            " since Mar 2026"
+        )
+
     def test_only_short_and_medium_term_sheets_get_a_heading_and_note(self):
         text = job.sheet_text(self.PERIOD_LABELS)
 
