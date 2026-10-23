@@ -111,7 +111,8 @@ class TestFillAssessmentWorkbook:
             (sheet, cell)
             for sheet, cells in values.items()
             for cell, value in cells.items()
-            if cell != cell_map.TITLE_CELL and saved[sheet][cell].value != value
+            if cell not in job.sheet_text(PERIOD_LABELS)[sheet]
+            and saved[sheet][cell].value != value
         ]
 
         assert wrong == []
@@ -228,3 +229,40 @@ class TestTitleText:
     def test_raises_when_there_are_no_period_labels(self):
         with pytest.raises(ValueError, match="period_labels is empty"):
             job.title_text([])
+
+
+class TestSheetText:
+    PERIOD_LABELS = ["Mar 2025", "Sep 2025", "Mar 2026", "Sep 2026"]
+
+    def test_short_term_heading_and_note_use_the_latest_march(self):
+        text = job.sheet_text(self.PERIOD_LABELS)[cell_map.COMP_SHORT_TERM.name]
+
+        assert text[cell_map.HEADING_CELL] == (
+            "Comparison of Skills for Care's estimate of filled posts to Capacity"
+            " Tracker - Since Mar 2026"
+        )
+        assert text[cell_map.CRITERIA_NOTE_CELL] == (
+            "Must have a Capacity Tracker figure in all months from end of Mar 2026"
+            " onwards."
+        )
+
+    def test_medium_term_heading_and_note_use_the_march_before(self):
+        text = job.sheet_text(self.PERIOD_LABELS)[cell_map.COMP_MEDIUM_TERM.name]
+
+        assert text[cell_map.HEADING_CELL].endswith("Since Mar 2025")
+        assert text[cell_map.CRITERIA_NOTE_CELL].endswith("end of Mar 2025 onwards.")
+
+    def test_only_short_and_medium_term_sheets_get_a_heading_and_note(self):
+        text = job.sheet_text(self.PERIOD_LABELS)
+
+        with_note = {
+            name for name, cells in text.items() if cell_map.CRITERIA_NOTE_CELL in cells
+        }
+        assert with_note == {
+            cell_map.COMP_SHORT_TERM.name,
+            cell_map.COMP_MEDIUM_TERM.name,
+        }
+
+    def test_raises_when_no_period_label_is_a_march(self):
+        with pytest.raises(ValueError, match="no March"):
+            job.sheet_text(["Sep 2025", "Oct 2025"])

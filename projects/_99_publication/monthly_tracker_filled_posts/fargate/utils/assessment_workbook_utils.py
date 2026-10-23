@@ -16,6 +16,14 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
 
 
 PERIOD_LABEL_FORMAT = "%b %Y"
+MARCH = 3
+HEADING_TEXT = (
+    "Comparison of Skills for Care's estimate of filled posts to Capacity Tracker"
+    " - Since {date}"
+)
+CRITERIA_NOTE_TEXT = (
+    "Must have a Capacity Tracker figure in all months from end of {date} onwards."
+)
 
 
 class TemplateMismatchError(ValueError):
@@ -109,6 +117,16 @@ def check_template(workbook: openpyxl.Workbook) -> None:
         )
 
 
+def _period_dates(period_labels: list[str]) -> list[datetime.datetime]:
+    """Parses period labels such as "Mar 2026"; raises if there are none."""
+    if not period_labels:
+        raise ValueError("period_labels is empty")
+    return [
+        datetime.datetime.strptime(label, PERIOD_LABEL_FORMAT)
+        for label in period_labels
+    ]
+
+
 def title_text(period_labels: list[str]) -> str:
     """Title for each sheet, naming the latest period.
 
@@ -117,17 +135,48 @@ def title_text(period_labels: list[str]) -> str:
 
     Returns:
         str: e.g. "End of Mar 2026".
+    """
+    latest = max(_period_dates(period_labels))
+    return f"End of {latest.strftime(PERIOD_LABEL_FORMAT)}"
+
+
+def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
+    """Text the writer sets, by sheet name then A1 cell.
+
+    Every sheet gets the title. The short and medium term comparison sheets also
+    get a heading and criteria note dated from March: the latest March for short
+    term, the March a year before for medium term.
+
+    Args:
+        period_labels (list[str]): period labels such as "Mar 2026".
+
+    Returns:
+        dict[str, dict[str, str]]: text to write.
 
     Raises:
-        ValueError: if there are no period labels.
+        ValueError: if no period label is a March.
     """
-    if not period_labels:
-        raise ValueError("period_labels is empty")
-    latest = max(
-        datetime.datetime.strptime(label, PERIOD_LABEL_FORMAT)
-        for label in period_labels
-    )
-    return f"End of {latest.strftime(PERIOD_LABEL_FORMAT)}"
+    dates = _period_dates(period_labels)
+    marches = [d for d in dates if d.month == MARCH]
+    if not marches:
+        raise ValueError("period_labels has no March")
+    short_term_march = max(marches)
+    medium_term_march = short_term_march.replace(year=short_term_march.year - 1)
+
+    text = {
+        sheet.name: {cell_map.TITLE_CELL: title_text(period_labels)}
+        for sheet in cell_map.ASSESSMENT_SHEETS
+    }
+    for sheet, march in (
+        (cell_map.COMP_SHORT_TERM, short_term_march),
+        (cell_map.COMP_MEDIUM_TERM, medium_term_march),
+    ):
+        date = march.strftime(PERIOD_LABEL_FORMAT)
+        text[sheet.name][cell_map.HEADING_CELL] = HEADING_TEXT.format(date=date)
+        text[sheet.name][cell_map.CRITERIA_NOTE_CELL] = CRITERIA_NOTE_TEXT.format(
+            date=date
+        )
+    return text
 
 
 def _input_cells(sheet: cell_map.SheetMap) -> set[tuple[int, int]]:
@@ -144,10 +193,10 @@ def fill_assessment_workbook(
     template_path: Path,
     output_path: Path,
 ) -> None:
-    """Writes values and the title into the template's input cells and saves a copy.
+    """Writes values and period text into the template's input cells and saves a copy.
 
-    Every sheet's title cell is set to "End of <latest period label>", replacing
-    any value given for it.
+    The text from `sheet_text` (titles, and the short and medium term comparison
+    headings and criteria notes) replaces any value given for those cells.
 
     Nothing is written unless the template matches the cell map and every value
     targets a mapped input cell. Other cells are left as in the template, and
@@ -165,10 +214,10 @@ def fill_assessment_workbook(
     Raises:
         UnmappedCellError: if a value targets a sheet or cell outside the mapped
             input ranges. A template that does not match the cell map raises
-            `TemplateMismatchError` first, and empty `period_labels` raise
-            `ValueError`.
+            `TemplateMismatchError` first, and `period_labels` that are empty
+            or have no March raise `ValueError`.
     """
-    title = title_text(period_labels)
+    text = sheet_text(period_labels)
     workbook = openpyxl.load_workbook(template_path)
     check_template(workbook)
 
@@ -190,7 +239,8 @@ def fill_assessment_workbook(
         for cell, value in cells.items():
             row, col = coordinate_to_tuple(cell)
             write_input_cell(workbook[name], row, col, value)
-    title_row, title_col = coordinate_to_tuple(cell_map.TITLE_CELL)
-    for sheet in cell_map.ASSESSMENT_SHEETS:
-        write_input_cell(workbook[sheet.name], title_row, title_col, title)
+    for name, cells in text.items():
+        for cell, value in cells.items():
+            row, col = coordinate_to_tuple(cell)
+            write_input_cell(workbook[name], row, col, value)
     workbook.save(output_path)
