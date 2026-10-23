@@ -1,8 +1,8 @@
 import json
+from unittest.mock import Mock, patch
 
 import polars as pl
 import pytest
-from unittest.mock import Mock, patch
 
 import projects._01_ingest.cqc_api.fargate.validate_cqc_locations_4_full_latest_snapshot as job
 from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
