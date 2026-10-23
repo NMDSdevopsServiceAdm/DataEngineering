@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 - Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
+- Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
 
 ### Changed
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
