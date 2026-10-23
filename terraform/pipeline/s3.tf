@@ -10,6 +10,21 @@ module "datasets_bucket" {
   bucket_name             = "${local.workspace_prefix}-datasets"
   empty_bucket_on_destroy = local.is_development_environment
   enable_versioning       = !local.is_development_environment # only version main
+
+  # Runs not promoted to the long-term archive within ~2 months simply expire;
+  # the run log itself is excluded - it's the permanent audit trail.
+  expiration_rules = [
+    {
+      id              = "expire-job-role-archive-estimates"
+      prefix          = "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/"
+      expiration_days = 60
+    },
+    {
+      id              = "expire-job-role-archive-metadata"
+      prefix          = "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/"
+      expiration_days = 60
+    },
+  ]
 }
 
 resource "aws_s3_bucket_policy" "cross_account_access_read_only" {
