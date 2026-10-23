@@ -305,29 +305,15 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
 class BoundingExpressions:
     """Create Polars expressions that bound workplace metrics to valid ranges.
 
-    The class defines expressions for constraining filled-posts values and
-    starters/leavers/vacancies (SLV) job-role values to acceptable ranges.
-    SLV columns share a single lower-bound-of-0 rule: the raw ASC-WDS files
-    use -1/-2 as "not known"/"not recorded" sentinels, which must be nulled,
-    but 0 is a legitimate value for any job role (a workplace can genuinely
-    have 0 starters/leavers/vacancies in a given role).
-    These expressions are designed for use in lazy Polars pipelines and keep
-    the transformation logic declarative and readable.
+    Designed for use in lazy Polars pipelines.
 
     Attributes:
         filled_posts_bounding_cols (list[str]): Columns used in filled-posts
             estimates needing bounding.
         filled_posts_lower_bound (int): Minimum accepted value for filled-posts
             columns.
-        slv_bounding_cols (pl.selectors.Selector): Selector for starters,
-            leavers and vacancies job-role columns.
-        slv_lower_bound (int): Minimum accepted value for SLV job-role
-            columns.
-        filled_posts_expr (pl.Expr): Expression that bounds columns needed in
-            filled-posts estimates to the configured valid range and renaming.
-        slv_expr (pl.Expr): Expression that bounds SLV job-role columns to
-            the configured valid range while preserving the original column
-            names.
+        filled_posts_expr (pl.Expr): Expression that bounds filled-posts
+            columns to the valid range, adding a `_bounded` suffix.
     """
 
     filled_posts_bounding_cols: list[str] = [
@@ -336,21 +322,11 @@ class BoundingExpressions:
     ]
     filled_posts_lower_bound: int = 1
 
-    slv_bounding_cols: pl.selectors.Selector = expr.is_slv_job_role_column()
-    slv_lower_bound: int = 0
-
     filled_posts_expr: pl.Expr = (
         pl.when(pl.col(*filled_posts_bounding_cols) >= filled_posts_lower_bound)
         .then(pl.col(*filled_posts_bounding_cols))
         .otherwise(None)
         .name.suffix("_bounded")
-    )
-
-    slv_expr: pl.Expr = (
-        pl.when(slv_bounding_cols.as_expr() >= slv_lower_bound)
-        .then(slv_bounding_cols)
-        .otherwise(None)
-        .name.keep()
     )
 
 
@@ -364,8 +340,7 @@ def null_slv_job_roles_when_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
     measure is handled independently.
 
     A value is not known when it is negative (-1/-2) or 999 (a proxy for not
-    known). 0 and null values are left as is. Must run before negative job
-    role values are bounded to null.
+    known). 0 and null values are left as is.
 
     Args:
         lf (pl.LazyFrame): Workplace LazyFrame with integer total and job role columns.
