@@ -3,6 +3,7 @@ from unittest.mock import ANY, Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 from projects._01_ingest.cqc_api.fargate.utils import cleaning_utils as job
 from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
@@ -18,28 +19,33 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.cleaning_utils"
 
 
-class SaveLatestFullSnapshotTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.lf = pl.LazyFrame(
+class TestSaveLatestFullSnapshot:
+    @pytest.fixture
+    def input_lf(self) -> pl.LazyFrame:
+        return pl.LazyFrame(
             data=Data.save_latest_full_snapshot_rows,
             schema=Schemas.save_latest_full_snapshot_schema,
             orient="row",
         )
-        self.destination_path = "some/path"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.filter_to_maximum_value_in_column")
     def test_imported_functions_are_called(
-        self, filter_to_max_mock: Mock, sink_to_parquet_mock: Mock
+        self,
+        filter_to_max_mock: Mock,
+        sink_to_parquet_mock: Mock,
+        input_lf: pl.LazyFrame,
     ):
-        job.save_latest_full_snapshot(self.lf, self.destination_path)
+        job.save_latest_full_snapshot(input_lf, "some/path")
 
         filter_to_max_mock.assert_called_once()
-        sink_to_parquet_mock.assert_called_once_with(ANY, self.destination_path)
+        sink_to_parquet_mock.assert_called_once_with(ANY, "some/path")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    def test_expected_lazyframe_is_stored(self, sink_to_parquet_mock: Mock):
-        job.save_latest_full_snapshot(self.lf, self.destination_path)
+    def test_computes_has_successor_and_keeps_latest_import_date(
+        self, sink_to_parquet_mock: Mock, input_lf: pl.LazyFrame
+    ):
+        job.save_latest_full_snapshot(input_lf, "some/path")
 
         returned_lf = sink_to_parquet_mock.call_args[0][0]
 
