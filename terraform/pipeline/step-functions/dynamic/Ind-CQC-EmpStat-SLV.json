@@ -36,9 +36,9 @@
                   ]
                 }
               },
-              "Next": "Employment status"
+              "Next": "Employment status and Employees"
             },
-            "Employment status": {
+            "Employment status and Employees": {
               "Type": "Parallel",
               "Branches": [
                 {
@@ -388,9 +388,9 @@
                   }
                 }
               ],
-              "Next": "SLV"
+              "Next": "SLV - Starters, Leavers and Vacancies"
             },
-            "SLV": {
+            "SLV - Starters, Leavers and Vacancies": {
               "Type": "Parallel",
               "Branches": [
                 {
