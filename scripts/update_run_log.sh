@@ -108,7 +108,7 @@ done
 # --- Where ---
 profile=""
 while [[ -z "$profile" ]]; do
-  read -r -p "AWS profile (e.g. prod or non-prod): " profile
+  read -r -p "AWS profile (run-log-updater for main, non-prod for a branch bucket): " profile
 done
 
 bucket=""
