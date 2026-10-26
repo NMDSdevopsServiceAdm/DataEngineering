@@ -45,6 +45,7 @@ All notable changes to this project will be documented in this file.
 
 ### Improved
 - Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
+- Removed redundant starters, leavers and vacancies bounding from the ASC-WDS workplace cleaning job.
 
 
 ### Fixed

@@ -1565,13 +1565,6 @@ class CleanWorkplaceUtilsTestCase:
 
 
 @dataclass
-class JobRoleExpressionBoundsTestCase:
-    id: str
-    input_data: dict[str, Any]
-    expected_data: dict[str, Any]
-
-
-@dataclass
 class NullSlvJobRolesTestCase:
     id: str
     input_data: dict[str, Any]
@@ -2460,24 +2453,6 @@ class TestCleanAscwdsWorkplaceUtilsData:
                 AWPClean.job_role_02_starters: [None],
                 AWPClean.job_role_03_starters: [3],
             },
-        ),
-    ]
-
-    job_role_expression_bounds_test_cases = [
-        JobRoleExpressionBoundsTestCase(
-            id="allows_zero_at_lower_bound_for_slv_column",
-            input_data={AWPClean.job_role_01_starters: 0},
-            expected_data={AWPClean.job_role_01_starters: 0},
-        ),
-        JobRoleExpressionBoundsTestCase(
-            id="nulls_slv_value_below_lower_bound",
-            input_data={AWPClean.job_role_01_starters: -1},
-            expected_data={AWPClean.job_role_01_starters: None},
-        ),
-        JobRoleExpressionBoundsTestCase(
-            id="does_not_bound_non_slv_job_role_columns",
-            input_data={AWPClean.job_role_01_employees: -1},
-            expected_data={AWPClean.job_role_01_employees: -1},
         ),
     ]
 
