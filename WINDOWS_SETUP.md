@@ -348,7 +348,7 @@ Any command that you run via AWS CLI will need the `--profile non-prod` argument
 #### Run-log-updater (main run log)
 Used by `scripts/update_run_log.sh` to update the run log in `sfc-main-datasets`. Your IAM user must be named in the role's trust policy. Like `non-prod`, it assumes a role using the `prod-mfa` credentials, so don't add `mfa_serial`.
 
-1. Add the following to the bottom of your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file:
+1. Add the following to the bottom of your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file. If you already have a `[profile run-log-updater]` section, replace it instead, as duplicate sections break `aws-mfa`:
 ```
 [profile run-log-updater]
 region = eu-west-2
