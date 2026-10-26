@@ -181,3 +181,31 @@ resource "aws_iam_role_policy_attachment" "admin_role_administrator_access_polic
   role       = aws_iam_role.admin_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
+
+# Protects the long-term promoted archive from accidental deletion - a "move"
+# in S3 is a copy then a delete, so this also blocks completing a move out of
+# the bucket for anyone but Admin, not just a direct delete.
+data "aws_iam_policy_document" "archive_promoted_deny_delete" {
+  count = local.workspace_prefix == "main" ? 1 : 0
+
+  statement {
+    sid     = "DenyDeleteExceptAdmin"
+    effect  = "Deny"
+    actions = ["s3:DeleteObject", "s3:DeleteObjectVersion", "s3:DeleteBucket"]
+    resources = [
+      module.promoted_archive_bucket.bucket_arn,
+      "${module.promoted_archive_bucket.bucket_arn}/*",
+    ]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "StringNotEquals"
+      variable = "aws:PrincipalArn"
+      values   = [aws_iam_role.admin_role[0].arn]
+    }
+  }
+}
