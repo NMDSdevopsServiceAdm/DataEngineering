@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 
 ### Changed
+- Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
 - Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
 - Changed Publication-Output to write one download table of rounded filled posts, location counts and percentage changes from the assessed data, instead of three tables.
