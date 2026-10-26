@@ -6,6 +6,7 @@ import polars as pl
 import pytest
 
 import projects._03_independent_cqc._01_filled_posts._07_archive.fargate.validate_archive_job_role_estimates as job
+from schemas.archive_run_log_schema_polars import ARCHIVE_RUN_LOG_FILE_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
 )
@@ -271,7 +272,9 @@ class TestJobRoleRunLogValidation:
             BUCKET_NAME, SOURCE_PATH, COMPARE_PATH, OTHER_OUTPUT_PATH, REPORTS_PATH
         )
 
-        mock_scan_parquet.assert_called_once_with(f"s3://{BUCKET_NAME}/{SOURCE_PATH}")
+        mock_scan_parquet.assert_called_once_with(
+            f"s3://{BUCKET_NAME}/{SOURCE_PATH}", schema=ARCHIVE_RUN_LOG_FILE_SCHEMA
+        )
         mock_scanned_lf.filter.assert_called_once()
 
         mock_write_reports.assert_called_once()
