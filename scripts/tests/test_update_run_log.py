@@ -530,6 +530,25 @@ class TestReadRunLog:
 
         pl_testing.assert_frame_equal(run_log_df, returned_df, check_column_order=False)
 
+    def test_backfills_columns_missing_from_older_run_log_files(self, tmp_path):
+        run_log_df = build_run_log([("2026-09-22", 1, True), ("2026-09-29", 2, True)])
+        write_run_log(tmp_path, run_log_df)
+        older_columns = [RunLog.promoted, RunLog.promoted_at, RunLog.reconciled_at]
+        older_file = next(tmp_path.rglob("run_number=1/*.parquet"))
+        pl.read_parquet(older_file).drop(older_columns).write_parquet(older_file)
+
+        returned_df = job.read_run_log(tmp_path).sort(Keys.run_number)
+
+        assert returned_df[RunLog.promoted].to_list() == [False, False]
+        assert returned_df[RunLog.promoted_at].to_list() == [
+            None,
+            DEFAULT_VALUES[pl.Datetime],
+        ]
+        assert returned_df[RunLog.reconciled_at].to_list() == [
+            None,
+            DEFAULT_VALUES[pl.Datetime],
+        ]
+
     def test_raises_when_run_log_dir_has_no_parquet_files(self, tmp_path):
         with pytest.raises(FileNotFoundError, match="parquet"):
             job.read_run_log(tmp_path)
