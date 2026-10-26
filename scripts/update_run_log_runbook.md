@@ -9,7 +9,7 @@ Run log location: `s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_ar
 |---|---|---|
 | `approved` | We assessed the run and are satisfied it is accurate | [Approving a run](#approving-a-run-approved) |
 | `selected_for_publication` | The one run chosen to publish this month | [Selecting a run for publication](#selecting-a-run-for-publication-selected_for_publication) |
-| `promoted` | The run's estimates, metadata and run-log partitions are copied into the long-term archive bucket | [Promoting a run](#promoting-a-run-promoted) |
+| `promoted` | The run's estimates, metadata and run-log partitions are copied into the long-term archive bucket (set automatically, not chosen at the prompt) | [Promoting a run](#promoting-a-run-promoted) |
 | `reconciled` | The public output's totals match the archived estimates | [Stub](#reconciling-a-run-reconciled) |
 | `locally_checked` | The refreshed Tableau file passed its local check | [Stub](#marking-a-run-locally-checked-locally_checked) |
 
@@ -42,7 +42,7 @@ The script needs Git Bash (bash 4 or later), so run it from there. Steps 1 and 2
 Every flag uses the same script and the same prompts:
 
 1. It asks for the **AWS profile** and the **bucket**. Press Enter at the bucket prompt only for production (`sfc-main-datasets`); otherwise type a branch bucket name, without `s3://` or a trailing `/`.
-2. It copies the run log down and lists the runs archived this month (from the 1st): run number, archive date, the four flags and the tag. Nothing is changed yet.
+2. It copies the run log down and lists the runs archived this month (from the 1st): run number, archive date, the five flags and the tag. Nothing is changed yet.
 3. It asks for the **flag** and the **run number**, then shows the four answers and asks `Are these correct?`.
 4. It builds the update in `run_log_updated/` and prints each changed run **Before** and **After**.
 5. Only after you answer `y` at the upload prompt are the changed runs' folders replaced on S3. Anything other than y/yes/n/no is asked again, and `n` deletes the updated copy and uploads nothing.
@@ -127,8 +127,8 @@ Copy a run's estimates, metadata and run-log partitions into the long-term archi
 (`sfc-<workspace>-archive-promoted`), where they are kept indefinitely — the rolling archive in
 `sfc-<workspace>-datasets` expires runs that were never promoted after about 2 months. This runs
 **automatically** as part of selecting a run for publication (see "Selecting a run for
-publication" above, step 8) — you don't normally choose this flag yourself. The run must already be
-`selected_for_publication` for either path below to work.
+publication" above, step 8). `promoted` is not one of the flags `update_run_log.sh` lets you choose
+directly — recover a failed attempt with the commands below instead, not by re-running the script.
 
 ### Steps (automatic, via selection)
 No separate steps — this runs as part of "Selecting a run for publication" above. It:
@@ -138,18 +138,6 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
    is uploaded.
 3. Copies the run's estimates partition into the long-term bucket, then its metadata partition,
    then its (now `promoted: True`) run-log partition, printing a count of files copied for each.
-
-### Steps (manual, only if the automatic attempt failed *before* the flag was set)
-Choosing this flag yourself only helps if step 1 or 2 above never completed — if the run log does
-not yet show `promoted: True` for this run. Once that flag is set, choosing `promoted` again will
-just say "already promoted"; a failure *after* that point is recovered with the manual `aws s3 cp`
-commands in "If something is wrong" below, not by rerunning the flag update.
-1. From the repo root, in Git Bash, run `bash scripts/update_run_log.sh`.
-2. Enter the AWS profile and the bucket.
-3. Flag: `promoted`. Run number: the run whose automatic promotion never got as far as setting the
-   flag.
-4. Check the four answers and answer `y`, then **Before**/**After** and answer `y` to upload.
-5. The three copies run exactly as in the automatic path above.
 
 ### Expected result
 - One `Copied <n> object(s) for <prefix>/<partition>.` line per dataset (estimates, metadata,
@@ -164,19 +152,40 @@ commands in "If something is wrong" below, not by rerunning the flag update.
 - **`could not mark run <n> as promoted`**: the flag update itself failed, so nothing was copied —
   the run log does **not** yet show `promoted: True`. If the message says the run is "already
   promoted", there's nothing to do (a previous attempt already finished — check the long-term bucket
-  to confirm). If it says the run is "not selected_for_publication", select it first.
+  to confirm). If it says the run is "not selected_for_publication", select it first. Otherwise,
+  recover with step 1 below.
 - **`nothing found at s3://<bucket>/<prefix>/<partition>/`**, **`could not copy <prefix>/<partition>`**,
   or **`copy of <prefix>/<partition> looks incomplete`**: these all happen *after* the flag update
-  already succeeded (the run log genuinely shows `promoted: True`) — running the script again with
-  flag `promoted` won't help, it will immediately say "already promoted" and stop before retrying any
-  copy. Finish the copy by hand instead: the script prints the exact
-  `aws s3 cp ... --recursive --profile <profile>` command for the dataset that failed — run it, then
-  re-check the file count matches between source and destination before moving on to the next
-  dataset if there is one (see the next bullet for how).
+  already succeeded (the run log genuinely shows `promoted: True`). Finish the copy by hand instead:
+  the script prints the exact `aws s3 cp ... --recursive --profile <profile>` command for the
+  dataset that failed — run it, then re-check the file count matches between source and destination
+  (see "Not sure whether a promotion fully finished" below) before moving on to the next dataset if
+  there is one.
 - **Not sure whether a promotion fully finished**: compare file counts yourself —
   `aws s3 ls --recursive s3://<bucket>/<prefix>/<partition>/ --profile <profile> | wc -l` against
   the same command against `s3://<workspace>-archive-promoted/<prefix>/<partition>/` — for each of
   the estimates and metadata prefixes (and the run log, which should always be exactly 1 file).
+
+### Recovering a promotion that failed before the flag was set
+If the run log does **not** yet show `promoted: True` for this run (the write-probe or the flag
+update itself failed), there is no automatic retry — run these by hand, in order, from the repo
+root in Git Bash. Replace `<profile>`, `<bucket>` (the `sfc-<workspace>-datasets` bucket the run was
+selected on), `<n>` and `<partition>` (`archive_date=<date>/run_number=<n>`, from the run's row in
+the listing):
+
+```bash
+aws s3 sync "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/" run_log_original --profile <profile>
+uv run python -m scripts.update_run_log --run_log_dir run_log_original --output_dir run_log_promoted --run_number <n> --flag promoted
+aws s3 sync "run_log_promoted/<partition>/" "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" --delete --profile <profile>
+aws s3 cp "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/<partition>/" "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/<partition>/" --recursive --profile <profile>
+aws s3 cp "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/<partition>/" "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/<partition>/" --recursive --profile <profile>
+aws s3 cp "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" --recursive --profile <profile>
+rm -rf run_log_original run_log_promoted
+```
+
+The first `update_run_log.py` call still enforces the guard (fails if the run isn't
+`selected_for_publication`, or if it's already `promoted`), so this is safe to run without first
+checking the run log by hand.
 
 ## Reconciling a run (`reconciled`)
 **Stub: process not yet written.**
@@ -193,7 +202,7 @@ commands in "If something is wrong" below, not by rerunning the flag update.
 - Steps: to be written. The script can already set the flag by following the prompts in "How the script works" with Flag `locally_checked`.
 
 ## If something is wrong (any flag)
-- **Flag unsupported**: only the four flags in the table at the top are accepted.
+- **Flag unsupported**: only `approved`, `selected_for_publication`, `reconciled` and `locally_checked` are accepted at the prompt — `promoted` is set automatically, not chosen directly (see "Promoting a run").
 - **Run number not found, or the flag is already True**: the script stops with an error and uploads nothing. Fix the input and run it again.
 - **You answer `n` at the upload prompt (or the update fails)**: the change is reverted. `run_log_updated/` is deleted, `run_log_original/` is left as it was, and nothing is uploaded.
 - **Could not authenticate**: repeat the prerequisites (the MFA credentials have expired after 12 hours).
