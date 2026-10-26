@@ -178,6 +178,24 @@ def main(
             group_columns,
             Pub.unfiltered_ct_total_employed_cum_perc_change_long,
         ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_long,
+            long_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_long,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_medium,
+            medium_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_medium,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_short,
+            short_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_short,
+        ),
     )
 
     prev_run_number = run_log_utils.get_previous_published_run_number(

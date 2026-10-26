@@ -34,6 +34,9 @@ PERC_CHANGE_COLUMNS = [
     Pub.filtered_ct_cum_perc_change_short,
     Pub.filled_posts_cum_perc_change_long,
     Pub.unfiltered_ct_total_employed_cum_perc_change_long,
+    Pub.filtered_filled_posts_cum_perc_change_long,
+    Pub.filtered_filled_posts_cum_perc_change_medium,
+    Pub.filtered_filled_posts_cum_perc_change_short,
 ]
 
 
@@ -221,7 +224,7 @@ class TestMain:
             Pub.ct_has_data_long,
         )
 
-    def test_main_adds_ct_perc_change_columns_for_each_term(self, mocks):
+    def test_main_adds_perc_change_columns_for_each_term(self, mocks):
         job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
 
         group_columns = [
@@ -286,6 +289,24 @@ class TestMain:
                     date(2021, 7, 1),
                     group_columns,
                     Pub.unfiltered_ct_total_employed_cum_perc_change_long,
+                ),
+                call(
+                    Pub.filtered_filled_posts_long,
+                    date(2021, 7, 1),
+                    group_columns,
+                    Pub.filtered_filled_posts_cum_perc_change_long,
+                ),
+                call(
+                    Pub.filtered_filled_posts_medium,
+                    date(2025, 4, 1),
+                    group_columns,
+                    Pub.filtered_filled_posts_cum_perc_change_medium,
+                ),
+                call(
+                    Pub.filtered_filled_posts_short,
+                    date(2026, 4, 1),
+                    group_columns,
+                    Pub.filtered_filled_posts_cum_perc_change_short,
                 ),
             ]
         )

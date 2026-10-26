@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added cumulative percentage change columns for the filtered filled posts of each comparison term to the assessment data.
 - Added estimated starter, turnover and vacancy rates with source columns to the Starters, Leavers and Vacancies Pipeline.
 - Added a period label column (e.g. "Mar 2026") to the prepared publication data, used by the download tables.
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
