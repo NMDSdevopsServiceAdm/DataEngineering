@@ -52,8 +52,14 @@ variable "raw_bucket_arn" {
   default     = null
 }
 
+variable "grant_archive_promoted_read" {
+  description = "Whether to grant this task read-only access to the long-term promoted archive bucket. Set separately from the ARN because count can't depend on an ARN that isn't known until apply."
+  type        = bool
+  default     = false
+}
+
 variable "archive_promoted_bucket_arn" {
-  description = "ARN of the long-term promoted archive bucket to grant this task read-only access to. Omit for tasks that don't read promoted archive data."
+  description = "ARN of the long-term promoted archive bucket. Only used when grant_archive_promoted_read is true."
   type        = string
   default     = null
 }
