@@ -29,7 +29,7 @@
                       "Command": [
                         "ingest_dpr_data.py",
                         "--source",
-                        "s3://sfc-2243-dpr-version-raw/domain=DPR/raw_data=2027/survey.csv",
+                        "",
                         "--dataset",
                         "survey",
                         "--destination",
@@ -67,7 +67,7 @@
                       "Command": [
                         "ingest_dpr_data.py",
                         "--source",
-                        "s3://sfc-2243-dpr-version-raw/domain=DPR/raw_data=2027/external.csv",
+                        "",
                         "--dataset",
                         "external",
                         "--destination",
