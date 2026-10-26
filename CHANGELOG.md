@@ -11,14 +11,19 @@ All notable changes to this project will be documented in this file.
 - Added a period label column (e.g. "Mar 2026") to the prepared publication data, used by the download tables.
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
+- Added validation of the monthly tracker assessment data.
 - Added validation of the monthly tracker prepared publication data.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/output_workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 - Extended the run log update script to select a run for publication and start Publication-Output for it, set the `reconciled` and `locally_checked` flags, and list the month's runs.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 - Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
+- Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
+- Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
 
 ### Changed
+- Renamed the SLV step function to Ind-CQC-EmpStat-SLV and reordered it so worker and workplace data are prepared in separate branches, workplace data is validated, and the SLV counts steps are no longer run.
+- Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
 - Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
 - Changed Publication-Output to write one download table of rounded filled posts, location counts and percentage changes from the assessed data, instead of three tables.
@@ -34,6 +39,7 @@ All notable changes to this project will be documented in this file.
 - Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 - Changed the CircleCI archive sample seed to also sync archive run 2 of 2026-10-15 for the job role estimates and metadata.
 - Changed the CircleCI archive sample seed to sync only run 2 of 2026-10-15 of the run log.
+- Changed the reconciliation potentials count to exclude deregistered CQC locations without a successor.
 - Changed the suppressed filled posts label in the public monthly workbook from `< 10` to `[s]`.
 - Tidied monthly tracker publication columns: added a rounded filled posts column, and removed the Tableau label (`_formatted`) columns from the publication output and the formatted percentage columns from the T1/T2 download tables.
 - Removed the `cqc_location_import_date_abbreviated` and `cqc_location_import_date_full` columns from the monthly tracker publication output.
@@ -42,6 +48,7 @@ All notable changes to this project will be documented in this file.
 
 ### Improved
 - Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
+- Removed redundant starters, leavers and vacancies bounding from the ASC-WDS workplace cleaning job.
 
 
 ### Fixed
@@ -49,6 +56,7 @@ All notable changes to this project will be documented in this file.
 
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
 - Fixed a flaky thread-count test in the run diagnostics tests.
+- Fixed ASC-WDS workplace cleaning to null all starters, leavers or vacancies job roles when the total or any role is negative or 999.
 
 
 ## [v2026.09.0] - 13/10/2026

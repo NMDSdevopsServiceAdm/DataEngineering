@@ -116,6 +116,32 @@
                   ]
                 }
               },
+              "ResultPath": null,
+              "Next": "Validate assessment data"
+            },
+            "Validate assessment data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${publication_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${publication_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_99_publication-container",
+                      "Command.$": "States.Array('validate_02_assessment.py', '--bucket_name', '${dataset_bucket_name}', '--prep_source', 'domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge_and_prep/', '--assessment_source', 'domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/', '--reports_path', 'domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment_validation/', '--run_number', States.Format('{}', $.run_number))"
+                    }
+                  ]
+                }
+              },
               "End": true
             }
           }
