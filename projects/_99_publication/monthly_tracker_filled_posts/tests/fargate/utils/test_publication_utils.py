@@ -16,10 +16,6 @@ from utils.column_values.categorical_column_values import (
 )
 
 
-def _with_period_label(lf: pl.LazyFrame) -> pl.LazyFrame:
-    return lf.with_columns(job.period_label_short_expr(), job.period_label_long_expr())
-
-
 class TestReducedDataFilterExpr:
     @pytest.mark.parametrize(
         "case",
@@ -202,8 +198,6 @@ class TestAggregateToPublicationRows:
     expected_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
-            (Pub.period_label_short, pl.String()),
-            (Pub.period_label_long, pl.String()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
@@ -230,9 +224,7 @@ class TestAggregateToPublicationRows:
         ],
     )
     def test_returns_expected_data(self, case):
-        input_lf = _with_period_label(
-            pl.LazyFrame(case.input_data, self.input_schema, orient="row")
-        )
+        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
 
         returned_lf = job.aggregate_to_publication_rows(input_lf)
 
@@ -351,14 +343,12 @@ class TestAggregateToPublicationRows:
         )
 
         returned_lf = job.aggregate_to_publication_rows(
-            _with_period_label(input_lf), include_assessment=False
+            input_lf, include_assessment=False
         )
 
         expected_schema = pl.Schema(
             [
                 (IndCQC.cqc_location_import_date, pl.Date()),
-                (Pub.period_label_short, pl.String()),
-                (Pub.period_label_long, pl.String()),
                 (IndCQC.main_job_role_clean_labelled, pl.String()),
                 (IndCQC.current_region, pl.String()),
                 (IndCQC.primary_service_type, pl.String()),
@@ -370,8 +360,6 @@ class TestAggregateToPublicationRows:
             [
                 (
                     date(2025, 4, 1),
-                    "Mar 2025",
-                    "March 2025",
                     "Registered nurse",
                     "London",
                     "Care home with nursing",
@@ -401,7 +389,7 @@ class TestAggregateToPublicationRows:
         )
 
         returned_df = job.aggregate_to_publication_rows(
-            _with_period_label(input_lf), include_assessment=False
+            input_lf, include_assessment=False
         ).collect()
 
         assert returned_df[Pub.filled_posts].to_list() == [10.0]
@@ -442,8 +430,6 @@ class TestAddRowsForPublicationGroups:
     expected_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
-            (Pub.period_label_short, pl.String()),
-            (Pub.period_label_long, pl.String()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.Categorical()),
@@ -470,9 +456,7 @@ class TestAddRowsForPublicationGroups:
         ],
     )
     def test_adds_rollup_rows_for_job_role_service_type_and_region(self, case):
-        input_lf = _with_period_label(
-            pl.LazyFrame(case.input_data, self.input_schema, orient="row")
-        )
+        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
         publication_summary_lf = job.aggregate_to_publication_rows(input_lf)
 
         returned_lf = job.add_rows_for_publication_groups(
@@ -522,7 +506,6 @@ class TestAddRowsForPublicationGroups:
             self.input_schema,
             orient="row",
         )
-        input_lf = _with_period_label(input_lf)
         publication_summary_lf = job.aggregate_to_publication_rows(
             input_lf, include_assessment=False
         )
@@ -533,8 +516,6 @@ class TestAddRowsForPublicationGroups:
 
         assert returned_lf.collect_schema().names() == [
             IndCQC.cqc_location_import_date,
-            Pub.period_label_short,
-            Pub.period_label_long,
             IndCQC.main_job_role_clean_labelled,
             IndCQC.current_region,
             IndCQC.primary_service_type,

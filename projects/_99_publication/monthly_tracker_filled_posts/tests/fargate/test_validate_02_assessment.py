@@ -146,8 +146,6 @@ class TestCountExpectedAssessmentRows:
                 IndCQC.main_job_role_clean_labelled: ["role_a", "role_b"],
                 IndCQC.estimate_filled_posts_by_job_role: [1.0, 2.0],
                 IndCQC.current_region: ["London"] * 2,
-                Pub.period_label_short: ["Mar 2026"] * 2,
-                Pub.period_label_long: ["March 2026"] * 2,
             }
         )
 

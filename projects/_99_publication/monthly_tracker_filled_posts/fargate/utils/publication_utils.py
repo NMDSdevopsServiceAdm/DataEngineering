@@ -560,8 +560,6 @@ def aggregate_to_publication_rows(
     if group_keys is None:
         group_keys = [
             IndCQC.cqc_location_import_date,
-            Pub.period_label_short,
-            Pub.period_label_long,
             IndCQC.main_job_role_clean_labelled,
             IndCQC.current_region,
             IndCQC.primary_service_type,
@@ -633,8 +631,6 @@ def add_rows_for_publication_groups(
             prepared_lf,
             group_keys=[
                 IndCQC.cqc_location_import_date,
-                Pub.period_label_short,
-                Pub.period_label_long,
                 IndCQC.current_region,
                 IndCQC.primary_service_type,
             ],
@@ -655,8 +651,6 @@ def add_rows_for_publication_groups(
 
     service_type_group_keys = [
         IndCQC.cqc_location_import_date,
-        Pub.period_label_short,
-        Pub.period_label_long,
         IndCQC.main_job_role_clean_labelled,
         IndCQC.current_region,
     ]
@@ -695,8 +689,6 @@ def add_rows_for_publication_groups(
 
     england_group_keys = [
         IndCQC.cqc_location_import_date,
-        Pub.period_label_short,
-        Pub.period_label_long,
         IndCQC.main_job_role_clean_labelled,
         IndCQC.primary_service_type,
     ]

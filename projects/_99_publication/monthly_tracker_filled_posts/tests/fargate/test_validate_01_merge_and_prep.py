@@ -7,7 +7,6 @@ import polars as pl
 import projects._99_publication.monthly_tracker_filled_posts.fargate._01_merge_and_prep as prep_job
 import projects._99_publication.monthly_tracker_filled_posts.fargate.validate_01_merge_and_prep as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.publication_columns import PublicationColumns as Pub
 
 PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate.validate_01_merge_and_prep"
 
@@ -37,8 +36,6 @@ def _prep_df() -> pl.DataFrame:
             IndCQC.current_rural_urban_indicator_2011: ["a"],
             IndCQC.current_lsoa21: ["a"],
             IndCQC.current_msoa21: ["a"],
-            Pub.period_label_short: ["Mar 2026"],
-            Pub.period_label_long: ["March 2026"],
         }
     )
 
@@ -90,7 +87,6 @@ class TestMain:
             "rows_distinct",
             "col_vals_not_null",
             "col_vals_ge",
-            "col_vals_regex",
             "col_vals_expr",
             "col_vals_in_set",
             "specially",
@@ -138,8 +134,6 @@ class TestExpectedSchema:
         expected_columns = {
             *prep_job.JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
             *prep_job.JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
-            Pub.period_label_short,
-            Pub.period_label_long,
         }
 
         schema_columns = {name for name, _ in job.EXPECTED_SCHEMA.columns}

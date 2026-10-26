@@ -142,8 +142,6 @@ PREP_COLUMNS = [
     IndCQC.main_job_role_clean_labelled,
     IndCQC.estimate_filled_posts_by_job_role,
     IndCQC.current_region,
-    Pub.period_label_short,
-    Pub.period_label_long,
 ]
 
 
