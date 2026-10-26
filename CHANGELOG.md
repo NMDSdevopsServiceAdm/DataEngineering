@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Extended the run log update script to automatically copy a selected run's estimates, metadata and run log into the long-term archive bucket, setting a new `promoted` flag.
 
 ### Changed
+- Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
 - Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
 - Changed Publication-Output to write one download table of rounded filled posts, location counts and percentage changes from the assessed data, instead of three tables.
@@ -45,6 +46,7 @@ All notable changes to this project will be documented in this file.
 
 ### Improved
 - Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
+- Removed redundant starters, leavers and vacancies bounding from the ASC-WDS workplace cleaning job.
 
 
 ### Fixed
