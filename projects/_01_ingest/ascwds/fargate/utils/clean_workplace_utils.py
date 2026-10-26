@@ -305,8 +305,6 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
 class BoundingExpressions:
     """Create Polars expressions that bound workplace metrics to valid ranges.
 
-    Designed for use in lazy Polars pipelines.
-
     Attributes:
         filled_posts_bounding_cols (list[str]): Columns used in filled-posts
             estimates needing bounding.
