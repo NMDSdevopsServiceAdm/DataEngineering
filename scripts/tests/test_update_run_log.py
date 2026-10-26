@@ -8,6 +8,7 @@ import polars.testing as pl_testing
 import pytest
 
 import scripts.update_run_log as job
+from schemas.archive_run_log_schema_polars import ARCHIVE_RUN_LOG_FILE_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as Keys,
 )
@@ -18,22 +19,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 RUN_LOG_SCHEMA = {
     Keys.archive_date: pl.String,
     Keys.run_number: pl.Int64,
-    RunLog.archive_date_time: pl.Datetime,
-    RunLog.max_ascwds_workplace_import_date: pl.Date,
-    RunLog.max_cqc_location_import_date: pl.Date,
-    RunLog.max_cqc_pir_import_date: pl.Date,
-    RunLog.max_ct_care_home_import_date: pl.Date,
-    RunLog.max_ct_non_res_import_date: pl.Date,
-    RunLog.max_current_ons_import_date: pl.Date,
-    RunLog.approved: pl.Boolean,
-    RunLog.commit_sha: pl.String,
-    RunLog.tag: pl.String,
-    RunLog.selected_for_publication: pl.Boolean,
-    RunLog.reconciled: pl.Boolean,
-    RunLog.locally_checked: pl.Boolean,
-    RunLog.promoted: pl.Boolean,
-    RunLog.promoted_at: pl.Datetime,
-    RunLog.reconciled_at: pl.Datetime,
+    **ARCHIVE_RUN_LOG_FILE_SCHEMA,
 }
 
 MONTH_START = date(2026, 10, 1)
@@ -530,28 +516,20 @@ class TestReadRunLog:
 
         pl_testing.assert_frame_equal(run_log_df, returned_df, check_column_order=False)
 
-    def test_backfills_columns_missing_from_older_run_log_files(self, tmp_path):
-        run_log_df = build_run_log([("2026-09-22", 1, True), ("2026-09-29", 2, True)])
-        write_run_log(tmp_path, run_log_df)
-        older_columns = [RunLog.promoted, RunLog.promoted_at, RunLog.reconciled_at]
-        older_file = next(tmp_path.rglob("run_number=1/*.parquet"))
-        pl.read_parquet(older_file).drop(older_columns).write_parquet(older_file)
-
-        returned_df = job.read_run_log(tmp_path).sort(Keys.run_number)
-
-        assert returned_df[RunLog.promoted].to_list() == [False, False]
-        assert returned_df[RunLog.promoted_at].to_list() == [
-            None,
-            DEFAULT_VALUES[pl.Datetime],
-        ]
-        assert returned_df[RunLog.reconciled_at].to_list() == [
-            None,
-            DEFAULT_VALUES[pl.Datetime],
-        ]
-
     def test_raises_when_run_log_dir_has_no_parquet_files(self, tmp_path):
         with pytest.raises(FileNotFoundError, match="parquet"):
             job.read_run_log(tmp_path)
+
+    def test_treats_a_run_missing_newer_columns_as_null(self, tmp_path):
+        old_format_df = build_run_log([("2026-09-22", 1, True)]).drop(
+            RunLog.promoted, RunLog.promoted_at
+        )
+        write_run_log(tmp_path, old_format_df)
+
+        returned_df = job.read_run_log(tmp_path)
+
+        assert returned_df[RunLog.promoted].to_list() == [None]
+        assert returned_df[RunLog.promoted_at].to_list() == [None]
 
 
 class TestWriteRunPartition:

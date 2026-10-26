@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 - Added an automated reconciliation check to the end of Publication-Output that waits for a run to be promoted, compares the public output's and the promoted archive's total filled posts within a tolerance, and sets the run log's `reconciled` flag (and `reconciled_at`) on a match.
 
 ### Changed
+- Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
 - Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
 - Changed Publication-Output to write one download table of rounded filled posts, location counts and percentage changes from the assessed data, instead of three tables.
@@ -46,6 +47,7 @@ All notable changes to this project will be documented in this file.
 
 ### Improved
 - Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
+- Removed redundant starters, leavers and vacancies bounding from the ASC-WDS workplace cleaning job.
 
 
 ### Fixed

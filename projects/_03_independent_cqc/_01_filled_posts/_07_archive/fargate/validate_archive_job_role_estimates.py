@@ -6,6 +6,7 @@ from polars_utils import utils
 from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from schemas.archive_run_log_schema_polars import ARCHIVE_RUN_LOG_FILE_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
 )
@@ -311,7 +312,7 @@ def job_role_run_log_validation(
     # as a reported `specially` check instead of crashing the task before a report.
     latest_run_number = aUtils.get_run_number([run_log_uri])
     latest_run_log_df = (
-        utils.scan_parquet(run_log_uri)
+        utils.scan_parquet(run_log_uri, schema=ARCHIVE_RUN_LOG_FILE_SCHEMA)
         .filter(pl.col(ArchiveKeys.run_number) == latest_run_number)
         .collect()
     )

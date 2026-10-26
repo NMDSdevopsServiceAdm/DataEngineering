@@ -15,6 +15,7 @@ from typing import Optional, Sequence
 
 import polars as pl
 
+from schemas.archive_run_log_schema_polars import ARCHIVE_RUN_LOG_FILE_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as Keys,
 )
@@ -29,11 +30,6 @@ SUPPORTED_FLAGS: tuple[str, ...] = (
     RunLog.locally_checked,
     RunLog.promoted,
 )
-OLDER_RUN_LOG_COLUMN_DEFAULTS: dict[str, tuple[pl.DataType, bool | None]] = {
-    RunLog.promoted: (pl.Boolean, False),
-    RunLog.promoted_at: (pl.Datetime, None),
-    RunLog.reconciled_at: (pl.Datetime, None),
-}
 RUN_TABLE_COLUMNS: tuple[str, ...] = (
     Keys.run_number,
     Keys.archive_date,
@@ -179,9 +175,9 @@ def format_run_table(run_log_df: pl.DataFrame, month_start: date) -> str:
 def read_run_log(run_log_dir: Path) -> pl.DataFrame:
     """Reads a local run log, taking the partition keys from the folder names.
 
-    Eager read: the run log has one row per run, so it is small. Files are read one
-    at a time because older runs lack the `promoted`, `promoted_at` and
-    `reconciled_at` columns, which are filled with their defaults.
+    Eager read: the run log has one row per run, so it is small. A run
+    archived before a column was added to ARCHIVE_RUN_LOG_FILE_SCHEMA has no such column in
+    its own file; that column reads as null for that run rather than raising.
 
     Args:
         run_log_dir (Path): Local copy of the run log, laid out as
@@ -193,28 +189,16 @@ def read_run_log(run_log_dir: Path) -> pl.DataFrame:
     Raises:
         FileNotFoundError: If the directory has no parquet files.
     """
-    parquet_files = sorted(run_log_dir.rglob("*.parquet"))
-    if not parquet_files:
+    if not any(run_log_dir.rglob("*.parquet")):
         raise FileNotFoundError(f"No parquet files found in {run_log_dir}.")
 
-    run_log_df = pl.concat(
-        [
-            pl.read_parquet(
-                parquet_file,
-                hive_partitioning=True,
-                hive_schema={Keys.archive_date: pl.String, Keys.run_number: pl.Int64},
-            )
-            for parquet_file in parquet_files
-        ],
-        how="diagonal",
+    return pl.read_parquet(
+        run_log_dir / "**" / "*.parquet",
+        hive_partitioning=True,
+        hive_schema={Keys.archive_date: pl.String, Keys.run_number: pl.Int64},
+        schema=ARCHIVE_RUN_LOG_FILE_SCHEMA,
+        missing_columns="insert",
     )
-    return run_log_df.with_columns(
-        [
-            pl.lit(default, dtype).alias(column)
-            for column, (dtype, default) in OLDER_RUN_LOG_COLUMN_DEFAULTS.items()
-            if column not in run_log_df.columns
-        ]
-    ).with_columns(pl.col(RunLog.promoted).fill_null(False))
 
 
 def write_run_partition(

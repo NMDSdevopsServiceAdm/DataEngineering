@@ -15,7 +15,7 @@ MAIN_BUCKET="sfc-main-datasets"
 ESTIMATES_PREFIX="domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates"
 METADATA_PREFIX="domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata"
 RUN_LOG_PREFIX="domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log"
-SUPPORTED_FLAGS="approved selected_for_publication reconciled locally_checked promoted"
+SUPPORTED_FLAGS="approved selected_for_publication reconciled locally_checked"
 SELECTION_FLAG="selected_for_publication"
 ORIGINAL_DIR="run_log_original"
 UPDATED_DIR="run_log_updated"
@@ -102,13 +102,28 @@ start_publication_output() {
   echo "Started. The line above is the execution ARN."
 }
 
+# Prints how many objects are under an S3 prefix. aws s3 ls exits 1 when nothing
+# matches, which is a count of 0, not an error; any other failure is returned.
+count_objects() {
+  local listing status=0
+  listing="$(aws s3 ls --recursive "$1" --profile "$profile")" || status=$?
+  if [[ $status -ne 0 && $status -ne 1 ]]; then
+    return "$status"
+  fi
+  if [[ -z "$listing" ]]; then
+    echo 0
+  else
+    printf '%s\n' "$listing" | wc -l
+  fi
+}
+
 # Marks the selected run promoted, then copies its estimates, metadata and run-log
 # partitions from $bucket into the long-term archive bucket. Runs automatically
 # after a successful selection; never prompts. Returns 0 on success, 1 on any
-# failure (nothing copied for a dataset whose check failed).
+# failure; a failure before the copy loop copies nothing.
 copy_run_to_long_term_archive() {
   local destination_bucket preflight_key partition archive_date prefix
-  local source_count destination_count
+  local source_count destination_count partitions
 
   # Dataset buckets are sfc-<workspace>-datasets; the long-term bucket is sfc-<workspace>-archive-promoted.
   if [[ ! "$bucket" =~ ^sfc-(.+)-datasets$ ]]; then
@@ -119,13 +134,17 @@ copy_run_to_long_term_archive() {
 
   # A real write probe, not just a read/list check: proves write access before
   # touching any real data, so a permissions problem is caught immediately.
+  # No --body: omitting it creates a zero-byte object, and avoids Git Bash on
+  # Windows failing to resolve /dev/null as a readable file for this argument.
   preflight_key=".promotion-write-check-$$"
   if ! aws s3api put-object --bucket "$destination_bucket" --key "$preflight_key" \
-    --body /dev/null --profile "$profile" > /dev/null 2>&1; then
+    --profile "$profile" > /dev/null 2>&1; then
     echo "Error: cannot write to s3://$destination_bucket/. Check profile '$profile' has permission, and that the bucket exists." >&2
     return 1
   fi
-  aws s3api delete-object --bucket "$destination_bucket" --key "$preflight_key" --profile "$profile" > /dev/null 2>&1
+  if ! aws s3api delete-object --bucket "$destination_bucket" --key "$preflight_key" --profile "$profile" > /dev/null 2>&1; then
+    echo "Warning: could not delete the write-check marker s3://$destination_bucket/$preflight_key (the deny-delete policy may be blocking this profile). Continuing; delete it by hand later." >&2
+  fi
 
   # --- Mark the run promoted (same mechanic as every other flag) ---
   if ! uv run python -m scripts.update_run_log \
@@ -138,15 +157,22 @@ copy_run_to_long_term_archive() {
   fi
 
   # Exactly one partition: promoting has no "clear other runs" side effect.
-  partition=""
+  partitions=()
   for partition_dir in "$PROMOTED_DIR"/archive_date=*/run_number=*/; do
     partition="${partition_dir#"$PROMOTED_DIR"/}"
     partition="${partition%/}"
+    if [[ ! "$partition" =~ ^archive_date=[^/]+/run_number=[1-9][0-9]*$ ]]; then
+      echo "Error: unexpected promoted partition '$partition'. Nothing was uploaded or copied." >&2
+      return 1
+    fi
+    partitions+=("$partition")
   done
-  if [[ ! "$partition" =~ ^archive_date=([^/]+)/run_number=[1-9][0-9]*$ ]]; then
-    echo "Error: unexpected promoted partition '$partition'. Nothing was uploaded or copied." >&2
+  if [[ ${#partitions[@]} -ne 1 ]]; then
+    echo "Error: expected exactly one promoted partition, found ${#partitions[@]} (${partitions[*]:-none}). Nothing was uploaded or copied." >&2
     return 1
   fi
+  partition="${partitions[0]}"
+  [[ "$partition" =~ ^archive_date=([^/]+)/run_number=[1-9][0-9]*$ ]]
   archive_date="${BASH_REMATCH[1]}"
 
   if ! aws s3 sync "$PROMOTED_DIR/$partition/" "s3://$bucket/$RUN_LOG_PREFIX/$partition/" \
@@ -158,7 +184,10 @@ copy_run_to_long_term_archive() {
 
   # --- Copy estimates, metadata, then the now-promoted run log, into the long-term bucket ---
   for prefix in "$ESTIMATES_PREFIX" "$METADATA_PREFIX" "$RUN_LOG_PREFIX"; do
-    source_count="$(aws s3 ls --recursive "s3://$bucket/$prefix/$partition/" --profile "$profile" | wc -l)"
+    if ! source_count="$(count_objects "s3://$bucket/$prefix/$partition/")"; then
+      echo "Error: could not list s3://$bucket/$prefix/$partition/. Nothing copied for this dataset." >&2
+      return 1
+    fi
     if [[ "$source_count" -eq 0 ]]; then
       echo "Error: nothing found at s3://$bucket/$prefix/$partition/. Nothing copied for this dataset." >&2
       return 1
@@ -171,7 +200,11 @@ copy_run_to_long_term_archive() {
       return 1
     fi
 
-    destination_count="$(aws s3 ls --recursive "s3://$destination_bucket/$prefix/$partition/" --profile "$profile" | wc -l)"
+    if ! destination_count="$(count_objects "s3://$destination_bucket/$prefix/$partition/")"; then
+      echo "Error: could not list s3://$destination_bucket/$prefix/$partition/ to verify the copy. Retry by hand:" >&2
+      echo "  aws s3 cp \"s3://$bucket/$prefix/$partition/\" \"s3://$destination_bucket/$prefix/$partition/\" --recursive --profile $profile" >&2
+      return 1
+    fi
     if [[ "$destination_count" -eq 0 || "$destination_count" != "$source_count" ]]; then
       echo "Error: copy of $prefix/$partition looks incomplete ($destination_count of $source_count file(s) at the destination). Retry by hand:" >&2
       echo "  aws s3 cp \"s3://$bucket/$prefix/$partition/\" \"s3://$destination_bucket/$prefix/$partition/\" --recursive --profile $profile" >&2
