@@ -30,7 +30,10 @@ class TestMain:
             merged_data_destination=self.MERGED_DATA_DESTINATION,
         )
 
-        scan_parquet_mock.assert_any_call(source=self.EMPLOYMENT_STATUS_ESTIMATE_SOURCE)
+        scan_parquet_mock.assert_any_call(
+            source=self.EMPLOYMENT_STATUS_ESTIMATE_SOURCE,
+            selected_columns=job.employment_status_estimate_columns,
+        )
         scan_parquet_mock.assert_any_call(self.PREPARED_SLV_DATASET_SOURCE)
 
         employment_status_estimate_lf.join.assert_called_once_with(
