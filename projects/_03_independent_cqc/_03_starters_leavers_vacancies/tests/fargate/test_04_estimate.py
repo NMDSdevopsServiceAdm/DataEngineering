@@ -16,14 +16,12 @@ class TestMain:
     ESTIMATED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.add_estimated_slv_counts")
     @patch(f"{PATCH_PATH}.utils.coalesce_with_source_labels", return_value=(1, 2))
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         coalesce_mock: Mock,
-        add_estimated_slv_counts_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(self.IMPUTED_DATA_SOURCE, self.ESTIMATED_DATA_DESTINATION)
@@ -31,25 +29,22 @@ class TestMain:
         scan_parquet_mock.assert_called_once_with(self.IMPUTED_DATA_SOURCE)
         assert coalesce_mock.call_args_list == [
             call(
-                cols=[SLVCols.starter_rate],
-                name=SLVCols.estimated_starter_rate,
-                source_dtype=CatColType.StarterRateEstimateSourceEnumType,
+                cols=[SLVCols.starters_cleaned],
+                name=SLVCols.estimated_starters,
+                source_dtype=CatColType.StartersEstimateSourceEnumType,
             ),
             call(
-                cols=[SLVCols.turnover_rate],
-                name=SLVCols.estimated_turnover_rate,
-                source_dtype=CatColType.TurnoverRateEstimateSourceEnumType,
+                cols=[SLVCols.leavers_cleaned],
+                name=SLVCols.estimated_leavers,
+                source_dtype=CatColType.LeaversEstimateSourceEnumType,
             ),
             call(
-                cols=[SLVCols.vacancy_rate],
-                name=SLVCols.estimated_vacancy_rate,
-                source_dtype=CatColType.VacancyRateEstimateSourceEnumType,
+                cols=[SLVCols.vacancies_cleaned],
+                name=SLVCols.estimated_vacancies,
+                source_dtype=CatColType.VacanciesEstimateSourceEnumType,
             ),
         ]
-        add_estimated_slv_counts_mock.assert_called_once_with(
-            scan_parquet_mock.return_value.with_columns.return_value
-        )
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=add_estimated_slv_counts_mock.return_value,
+            lazy_df=scan_parquet_mock.return_value.with_columns.return_value,
             output_path=self.ESTIMATED_DATA_DESTINATION,
         )

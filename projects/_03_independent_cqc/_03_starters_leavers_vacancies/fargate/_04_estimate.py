@@ -1,8 +1,5 @@
 from polars_utils import utils
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
-from projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.utils.estimate_utils import (
-    add_estimated_slv_counts,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
 )
@@ -12,9 +9,9 @@ def main(
     imputed_data_source: str,
     estimated_data_destination: str,
 ) -> None:
-    """Creates estimated starter, turnover and vacancy rates and counts.
+    """Creates estimated starters, leavers and vacancies.
 
-    Each estimated rate is the first populated of the listed columns.
+    Each estimate is the first populated of the listed columns.
 
     Args:
         imputed_data_source (str): Path to the imputed data.
@@ -24,23 +21,21 @@ def main(
 
     lf = lf.with_columns(
         *utils.coalesce_with_source_labels(
-            cols=[SLVCols.starter_rate],
-            name=SLVCols.estimated_starter_rate,
-            source_dtype=CatColType.StarterRateEstimateSourceEnumType,
+            cols=[SLVCols.starters_cleaned],
+            name=SLVCols.estimated_starters,
+            source_dtype=CatColType.StartersEstimateSourceEnumType,
         ),
         *utils.coalesce_with_source_labels(
-            cols=[SLVCols.turnover_rate],
-            name=SLVCols.estimated_turnover_rate,
-            source_dtype=CatColType.TurnoverRateEstimateSourceEnumType,
+            cols=[SLVCols.leavers_cleaned],
+            name=SLVCols.estimated_leavers,
+            source_dtype=CatColType.LeaversEstimateSourceEnumType,
         ),
         *utils.coalesce_with_source_labels(
-            cols=[SLVCols.vacancy_rate],
-            name=SLVCols.estimated_vacancy_rate,
-            source_dtype=CatColType.VacancyRateEstimateSourceEnumType,
+            cols=[SLVCols.vacancies_cleaned],
+            name=SLVCols.estimated_vacancies,
+            source_dtype=CatColType.VacanciesEstimateSourceEnumType,
         ),
     )
-
-    lf = add_estimated_slv_counts(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,
