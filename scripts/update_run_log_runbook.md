@@ -185,7 +185,7 @@ Confirm the public output's total filled posts for a run matches its promoted ar
 
 ### Steps (automatic, via Publication-Output)
 No separate steps — this runs as the last stage of `Publication-Output` (started per "Selecting a run for publication" above, or by hand). It:
-1. Waits for the run's partition to appear in the long-term archive bucket ("Check Promoted Archive"), retrying for up to 30 minutes on `sfc-main-datasets` (shorter on a branch bucket) before failing the execution if the run was never promoted.
+1. Waits for the run's partition to appear in the long-term archive bucket ("Check Promoted Archive"), retrying for about 40 minutes on `sfc-main-datasets` (about 6 minutes on a branch bucket) before failing the execution if the run was never promoted.
 2. Recomputes the public output's and the promoted archive's total filled posts independently and compares them within a small relative tolerance ("Compare Totals").
 3. On a match, marks the run `reconciled` in the run log (recording `reconciled_at`). On a mismatch, the execution fails without changing the run log, and the pipeline's usual failure notification fires.
 

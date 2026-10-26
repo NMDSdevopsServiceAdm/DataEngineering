@@ -138,7 +138,10 @@ if __name__ == "__main__":
     run_number = merge_utils.parse_run_number(args.run_number, required=True)
 
     if args.mode == "check":
-        sys.exit(0 if is_run_promoted(args.promoted_archive_source, run_number) else 1)
+        promoted = is_run_promoted(args.promoted_archive_source, run_number)
+        state = "is" if promoted else "is not"
+        print(f"Run {run_number} {state} in {args.promoted_archive_source}")
+        sys.exit(0 if promoted else 1)
     elif args.mode == "compare":
         main(
             assessment_source=args.assessment_source,
