@@ -393,13 +393,21 @@ def _period_months(import_dates: list[datetime.date]) -> list[datetime.date]:
     )
 
 
-def _table_cells(period_df: pl.DataFrame, prefix: str) -> dict[str, object]:
-    """Cells for one "Filled posts" table: dates, service type values, % changes.
+def _table_cells(
+    sheet: cell_map.SheetMap,
+    period_df: pl.DataFrame,
+    date_notes: tuple[str, ...],
+    value_notes: tuple[str, ...],
+) -> dict[str, object]:
+    """Cells for one table: period dates, service type values and % changes.
 
     Args:
+        sheet (cell_map.SheetMap): the sheet the table is on.
         period_df (pl.DataFrame): the table's periods, in workbook order.
-        prefix (str): start of the table's input range notes, e.g. "annual
-            filled posts".
+        date_notes (tuple[str, ...]): notes of the ranges that hold the period
+            months. The first sets how many periods fit.
+        value_notes (tuple[str, ...]): notes of the ranges that hold service type
+            values, read from each range's source column.
 
     Returns:
         dict[str, object]: value by A1 cell.
@@ -407,21 +415,20 @@ def _table_cells(period_df: pl.DataFrame, prefix: str) -> dict[str, object]:
     Raises:
         ValueError: if there are more periods than rows in the table.
     """
-    sheet = cell_map.FILLED_POSTS
-    dates_range = CellRange(_input_range(sheet, f"{prefix} dates").cells)
+    dates_range = CellRange(_input_range(sheet, date_notes[0]).cells)
     import_dates = period_df.get_column(IndCQC.cqc_location_import_date).to_list()
     if len(import_dates) > dates_range.size["rows"]:
         raise ValueError(
             f"{len(import_dates)} periods exceed the {dates_range.size['rows']}"
-            f" rows of '{prefix}'"
+            f" rows of '{date_notes[0]}'"
         )
     period_dates = [[d] for d in _period_months(import_dates)]
 
     cells = {}
-    for note in (f"{prefix} dates", f"{prefix} % change dates"):
+    for note in date_notes:
         input_range = CellRange(_input_range(sheet, note).cells)
         cells |= block_cells(input_range.coord.split(":")[0], period_dates)
-    for note in (f"{prefix} by primary service type", f"{prefix} % change"):
+    for note in value_notes:
         input_range = _input_range(sheet, note)
         cell_range = CellRange(input_range.cells)
         rows = period_df.select(
@@ -461,11 +468,51 @@ def filled_posts_values(assessment_df: pl.DataFrame) -> dict[str, object]:
         ("monthly filled posts", monthly_df),
         ("monthly CQC locations", monthly_df),
     ):
-        cells |= _table_cells(period_df, prefix)
+        cells |= _table_cells(
+            cell_map.FILLED_POSTS,
+            period_df,
+            (f"{prefix} dates", f"{prefix} % change dates"),
+            (f"{prefix} by primary service type", f"{prefix} % change"),
+        )
     return cells
 
 
-SHEET_VALUE_BUILDERS = {cell_map.FILLED_POSTS.name: filled_posts_values}
+def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, object]:
+    """Cell values for the "Comp prev publication" sheet.
+
+    Each of the previous publication, current publication and difference blocks
+    lists the April import date rows (annual) first, then the later rows
+    (monthly), matching the labels written from the period labels.
+
+    Args:
+        assessment_df (pl.DataFrame): output of `prepare_assessment_df`.
+
+    Returns:
+        dict[str, object]: value by A1 cell.
+    """
+    import_date = pl.col(IndCQC.cqc_location_import_date)
+    annual_df = assessment_df.filter(import_date.dt.month() == APRIL)
+    monthly_df = assessment_df.filter(
+        import_date > annual_df[IndCQC.cqc_location_import_date].max()
+    )
+    period_df = pl.concat([annual_df, monthly_df])
+
+    cells = {}
+    for date_note, value_note in (
+        ("previous publication dates", "previous publication figures"),
+        ("current publication dates", "current publication figures"),
+        ("difference dates", "difference as percentage"),
+    ):
+        cells |= _table_cells(
+            cell_map.COMP_PREV_PUBLICATION, period_df, (date_note,), (value_note,)
+        )
+    return cells
+
+
+SHEET_VALUE_BUILDERS = {
+    cell_map.FILLED_POSTS.name: filled_posts_values,
+    cell_map.COMP_PREV_PUBLICATION.name: comp_prev_publication_values,
+}
 
 
 def fill_assessment_workbook_from_lf(

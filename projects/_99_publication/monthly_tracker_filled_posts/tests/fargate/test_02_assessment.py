@@ -411,7 +411,7 @@ class TestMain:
         assert sunk_df[ArchiveKeys.archive_date].to_list() == ["2026-10-01"]
         assert sunk_df[ArchiveKeys.run_number].to_list() == [2]
 
-    def test_main_fills_the_filled_posts_sheet_from_the_written_run(self, mocks):
+    def test_main_fills_the_workbook_sheets_from_the_written_run(self, mocks):
         job.main(
             TEST_SOURCE,
             TEST_DESTINATION,
@@ -422,7 +422,10 @@ class TestMain:
         mocks.scan_parquet.assert_called_with(TEST_WRITTEN_RUN)
         args = mocks.fill_workbook.call_args.args
         assert args[0] is mocks.scan_parquet.return_value
-        assert args[1] == (job.cell_map.FILLED_POSTS,)
+        assert args[1] == (
+            job.cell_map.FILLED_POSTS,
+            job.cell_map.COMP_PREV_PUBLICATION,
+        )
         assert args[2] == job.cell_map.TEMPLATE_PATH
 
     def test_main_uploads_the_workbook_named_by_archive_date_and_run_number(

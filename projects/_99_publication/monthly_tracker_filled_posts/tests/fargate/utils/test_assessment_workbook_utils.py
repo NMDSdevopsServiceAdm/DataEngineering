@@ -335,6 +335,8 @@ def _assessment_lf(
             Pub.locationid_count_april_perc_change: 0.2 * (i + 1),
             Pub.filled_posts_cum_perc_change_short: 0.3 * (i + 1),
             Pub.locationid_count_cum_perc_change_short: 0.4 * (i + 1),
+            Pub.prev_run_filled_posts: 5000 * (i + 1) + 10 * j,
+            Pub.filled_posts_perc_change_vs_prev_run: 0.5 * (i + 1),
         }
         for i, import_date in enumerate(import_dates)
         for j, service_type in enumerate(job.SERVICE_TYPE_ORDER)
@@ -342,7 +344,10 @@ def _assessment_lf(
     return pl.LazyFrame(rows)
 
 
-VALUE_COLUMNS = job._value_columns(cell_map.FILLED_POSTS)
+VALUE_COLUMNS = job._value_columns(cell_map.FILLED_POSTS) + [
+    Pub.prev_run_filled_posts,
+    Pub.filled_posts_perc_change_vs_prev_run,
+]
 APRIL_2024 = datetime.date(2024, 4, 1)
 APRIL_2025 = datetime.date(2025, 4, 1)
 APRIL_2026 = datetime.date(2026, 4, 1)
@@ -446,6 +451,41 @@ class TestFilledPostsValues:
             job.filled_posts_values(df)
 
 
+class TestCompPrevPublicationValues:
+    @pytest.fixture(scope="class")
+    def cells(self) -> dict[str, object]:
+        return job.comp_prev_publication_values(
+            job.prepare_assessment_df(_assessment_lf(IMPORT_DATES), VALUE_COLUMNS)
+        )
+
+    def test_blocks_list_annual_rows_then_monthly_rows_as_period_months(self, cells):
+        expected_dates = [
+            datetime.date(2024, 3, 1),
+            datetime.date(2025, 3, 1),
+            datetime.date(2026, 3, 1),
+            datetime.date(2026, 4, 1),
+        ]
+        for first_row in (23, 64, 106):
+            assert [cells[f"C{first_row + i}"] for i in range(4)] == expected_dates
+            assert f"C{first_row + 4}" not in cells
+
+    def test_previous_publication_holds_the_previous_run_filled_posts(self, cells):
+        assert [cells[f"{col}23"] for col in "DEFGH"] == [5000, 5010, 5020, 5030, 5040]
+
+    def test_current_publication_holds_this_runs_filled_posts(self, cells):
+        assert [cells[f"{col}64"] for col in "DEFGH"] == [1000, 1010, 1020, 1030, 1040]
+
+    def test_difference_holds_the_percentage_change_from_the_previous_run(self, cells):
+        assert [cells[f"{col}106"] for col in "DEFGH"] == [0.5] * 5
+
+    def test_raises_when_periods_exceed_the_block_rows(self):
+        april_dates = [datetime.date(1990 + year, 4, 1) for year in range(38)]
+        df = job.prepare_assessment_df(_assessment_lf(april_dates), VALUE_COLUMNS)
+
+        with pytest.raises(ValueError, match="exceed the 37 rows"):
+            job.comp_prev_publication_values(df)
+
+
 class TestFillAssessmentWorkbookFromLf:
     def test_saves_a_workbook_holding_the_filled_posts_values(self, tmp_path):
         output = tmp_path / "out.xlsx"
@@ -461,10 +501,10 @@ class TestFillAssessmentWorkbookFromLf:
         assert (sheet["C24"].value, sheet["B3"].value) == (1000, "End of Apr 2026")
 
     def test_raises_for_a_sheet_without_a_values_builder(self, tmp_path):
-        with pytest.raises(ValueError, match="Comp prev publication"):
+        with pytest.raises(ValueError, match="No values builder"):
             job.fill_assessment_workbook_from_lf(
                 _assessment_lf(IMPORT_DATES),
-                (cell_map.COMP_PREV_PUBLICATION,),
+                (cell_map.COMP_SHORT_TERM,),
                 cell_map.TEMPLATE_PATH,
                 tmp_path / "out.xlsx",
             )

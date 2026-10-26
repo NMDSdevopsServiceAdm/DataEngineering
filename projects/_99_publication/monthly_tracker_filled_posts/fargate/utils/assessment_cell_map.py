@@ -279,7 +279,7 @@ COMP_PREV_PUBLICATION = SheetMap(
         ),
         InputRange(
             "D64:H100",
-            Pub.prev_run_filled_posts,
+            Pub.filled_posts,
             note="current publication figures",
             number_format="count",
         ),

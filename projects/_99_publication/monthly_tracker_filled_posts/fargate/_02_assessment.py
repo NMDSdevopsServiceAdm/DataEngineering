@@ -225,7 +225,7 @@ def main(
         workbook_path = Path(workbook_folder) / workbook_name
         assessment_workbook_utils.fill_assessment_workbook_from_lf(
             run_assessment_lf,
-            (cell_map.FILLED_POSTS,),
+            (cell_map.FILLED_POSTS, cell_map.COMP_PREV_PUBLICATION),
             cell_map.TEMPLATE_PATH,
             workbook_path,
         )
