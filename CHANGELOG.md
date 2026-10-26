@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 - Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
+- Extended the run log update script to automatically copy a selected run's estimates, metadata and run log into the long-term archive bucket, setting a new `promoted` flag.
 
 ### Changed
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.

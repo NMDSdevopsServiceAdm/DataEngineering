@@ -9,7 +9,7 @@ runs this script as a module from the repo root
 
 import argparse
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional, Sequence
 
@@ -27,6 +27,7 @@ SUPPORTED_FLAGS: tuple[str, ...] = (
     RunLog.selected_for_publication,
     RunLog.reconciled,
     RunLog.locally_checked,
+    RunLog.promoted,
 )
 RUN_TABLE_COLUMNS: tuple[str, ...] = (
     Keys.run_number,
@@ -42,7 +43,8 @@ def set_run_flag(
     """Sets a flag to True for one run.
 
     Selecting a run moves the month's selection: `selected_for_publication` is
-    cleared on the other runs archived since `month_start`.
+    cleared on the other runs archived since `month_start`. Promoting a run also
+    records `promoted_at` as the current time.
 
     Args:
         run_log_df (pl.DataFrame): The run log, including the partition key columns.
@@ -57,7 +59,8 @@ def set_run_flag(
         ValueError: If the flag is not supported, the run number matches no row or
             more than one row, or the flag is already True for the run. Selecting
             also raises if the run is not approved or was archived before
-            `month_start`.
+            `month_start`. Promoting also raises if the run is not
+            selected_for_publication.
     """
     if flag not in SUPPORTED_FLAGS:
         raise ValueError(
@@ -75,6 +78,7 @@ def set_run_flag(
         )
 
     is_selection = flag == RunLog.selected_for_publication
+    is_promotion = flag == RunLog.promoted
     # Before the already-True check, so an earlier month's selection says why it can't be reselected.
     if is_selection:
         if not run_df[RunLog.approved].item():
@@ -83,6 +87,8 @@ def set_run_flag(
             raise ValueError(
                 f"Run number {run_number} was archived before {month_start}."
             )
+    if is_promotion and not run_df[RunLog.selected_for_publication].item():
+        raise ValueError(f"Run number {run_number} is not selected_for_publication.")
 
     if run_df[flag].item() is True:
         raise ValueError(f"Run number {run_number} is already {flag}.")
@@ -93,6 +99,13 @@ def set_run_flag(
             .then(False)
             .otherwise(pl.col(flag))
             .alias(flag)
+        )
+    if is_promotion:
+        run_log_df = run_log_df.with_columns(
+            pl.when(is_run)
+            .then(pl.lit(datetime.now()))
+            .otherwise(pl.col(RunLog.promoted_at))
+            .alias(RunLog.promoted_at)
         )
 
     return run_log_df.with_columns(

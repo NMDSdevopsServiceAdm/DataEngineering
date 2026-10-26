@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
+from unittest.mock import patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -30,9 +31,12 @@ RUN_LOG_SCHEMA = {
     RunLog.selected_for_publication: pl.Boolean,
     RunLog.reconciled: pl.Boolean,
     RunLog.locally_checked: pl.Boolean,
+    RunLog.promoted: pl.Boolean,
+    RunLog.promoted_at: pl.Datetime,
 }
 
 MONTH_START = date(2026, 10, 1)
+PROMOTED_AT = datetime(2026, 10, 15, 9, 30)
 
 DEFAULT_VALUES = {
     pl.Boolean: False,
@@ -44,11 +48,14 @@ DEFAULT_VALUES = {
 
 
 def build_run_log(
-    runs: list[tuple[str, int, bool]], selected_runs: tuple[int, ...] = ()
+    runs: list[tuple[str, int, bool]],
+    selected_runs: tuple[int, ...] = (),
+    promoted_runs: tuple[int, ...] = (),
 ) -> pl.DataFrame:
     """Builds a full-width run log with one row per (archive_date, run_number, approved).
 
-    The runs in `selected_runs` have `selected_for_publication` True.
+    The runs in `selected_runs` have `selected_for_publication` True; the runs in
+    `promoted_runs` have `promoted` True.
     """
     rows = []
     for archive_date, run_number, approved in runs:
@@ -59,6 +66,7 @@ def build_run_log(
         row[Keys.run_number] = run_number
         row[RunLog.approved] = approved
         row[RunLog.selected_for_publication] = run_number in selected_runs
+        row[RunLog.promoted] = run_number in promoted_runs
         row[RunLog.tag] = None
         rows.append(row)
     return pl.DataFrame(rows, schema=RUN_LOG_SCHEMA)
@@ -149,7 +157,10 @@ class TestSetRunFlag:
     @pytest.mark.parametrize("flag", job.SUPPORTED_FLAGS)
     def test_sets_each_supported_flag_true(self, flag):
         is_approved = flag != RunLog.approved
-        run_log_df = build_run_log([("2026-10-06", 1, is_approved)])
+        is_selected = flag == RunLog.promoted
+        run_log_df = build_run_log(
+            [("2026-10-06", 1, is_approved)], selected_runs=(1,) if is_selected else ()
+        )
 
         returned_df = job.set_run_flag(run_log_df, 1, flag, MONTH_START)
 
@@ -292,6 +303,47 @@ class TestSetRunFlagForSelection:
         )
 
 
+class TestSetRunFlagForPromotion:
+    def test_raises_when_run_is_not_selected_for_publication(self):
+        run_log_df = build_run_log([("2026-10-06", 1, True)])
+
+        with pytest.raises(ValueError, match="not selected_for_publication"):
+            job.set_run_flag(run_log_df, 1, RunLog.promoted, MONTH_START)
+
+    def test_raises_when_already_promoted(self):
+        run_log_df = build_run_log(
+            [("2026-10-06", 1, True)], selected_runs=(1,), promoted_runs=(1,)
+        )
+
+        with pytest.raises(ValueError, match="already"):
+            job.set_run_flag(run_log_df, 1, RunLog.promoted, MONTH_START)
+
+    @patch("scripts.update_run_log.datetime")
+    def test_sets_promoted_at_to_now(self, datetime_mock):
+        datetime_mock.now.return_value = PROMOTED_AT
+        run_log_df = build_run_log([("2026-10-06", 1, True)], selected_runs=(1,))
+
+        returned_df = job.set_run_flag(run_log_df, 1, RunLog.promoted, MONTH_START)
+
+        assert returned_df[RunLog.promoted_at].to_list() == [PROMOTED_AT]
+
+    def test_promoting_does_not_clear_other_runs_selected_or_promoted_flags(self):
+        run_log_df = build_run_log(
+            [("2026-10-01", 1, True), ("2026-10-08", 2, True), ("2026-10-15", 3, True)],
+            selected_runs=(1, 2, 3),
+            promoted_runs=(1,),
+        )
+
+        returned_df = job.set_run_flag(run_log_df, 2, RunLog.promoted, MONTH_START)
+
+        other_runs = pl.col(Keys.run_number) != 2
+        tracked_columns = [RunLog.selected_for_publication, RunLog.promoted]
+        pl_testing.assert_frame_equal(
+            run_log_df.filter(other_runs).select(tracked_columns),
+            returned_df.filter(other_runs).select(tracked_columns),
+        )
+
+
 class TestGetChangedRunNumbers:
     def test_returns_only_runs_where_the_flag_changed(self):
         run_log_df = build_run_log(
@@ -358,11 +410,13 @@ class TestFormatRunTable:
             RunLog.selected_for_publication,
             RunLog.reconciled,
             RunLog.locally_checked,
+            RunLog.promoted,
             RunLog.tag,
         ]
         assert returned_lines[1].split() == [
             "1",
             "2026-10-01",
+            "False",
             "False",
             "False",
             "False",
@@ -373,6 +427,7 @@ class TestFormatRunTable:
             "2026-10-08",
             "True",
             "True",
+            "False",
             "False",
             "False",
         ]

@@ -76,6 +76,8 @@ RUN_LOG_SCHEMA = {
     RunLogCols.selected_for_publication: pl.Boolean,
     RunLogCols.reconciled: pl.Boolean,
     RunLogCols.locally_checked: pl.Boolean,
+    RunLogCols.promoted: pl.Boolean,
+    RunLogCols.promoted_at: pl.Datetime,
 }
 
 
@@ -91,7 +93,8 @@ def save_run_log(
     Saves a one-row log of this archive run to S3, partitioned by archive_date and
     run_number.
 
-    The approval and check flags are False; tag is null, for later steps to fill in.
+    The approval, check and promoted flags are False; tag and promoted_at are null,
+    for later steps to fill in.
 
     Args:
         archive_date (str): archive date formatted as yyyy-mm-dd
@@ -114,6 +117,8 @@ def save_run_log(
             RunLogCols.selected_for_publication: [False],
             RunLogCols.reconciled: [False],
             RunLogCols.locally_checked: [False],
+            RunLogCols.promoted: [False],
+            RunLogCols.promoted_at: [None],
         },
         schema=RUN_LOG_SCHEMA,
     ).select(list(RUN_LOG_SCHEMA))
