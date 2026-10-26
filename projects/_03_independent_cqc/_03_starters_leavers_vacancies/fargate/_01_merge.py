@@ -10,17 +10,7 @@ employment_status_estimate_columns = [
     IndCQC.establishment_id,
     IndCQC.ascwds_workplace_import_date,
     IndCQC.published_job_role_label,
-    EmpStatus.estimated_permanent_percentage,
-    EmpStatus.estimated_temporary_percentage,
-    EmpStatus.estimated_bank_or_pool_percentage,
-    EmpStatus.estimated_agency_percentage,
-    EmpStatus.estimated_other_percentage,
     EmpStatus.estimated_percentage_source,
-    EmpStatus.estimated_emp_stat_permanent,
-    EmpStatus.estimated_emp_stat_temporary,
-    EmpStatus.estimated_emp_stat_bank_or_pool,
-    EmpStatus.estimated_emp_stat_agency,
-    EmpStatus.estimated_emp_stat_other,
     EmpStatus.estimated_employees,
 ]
 
