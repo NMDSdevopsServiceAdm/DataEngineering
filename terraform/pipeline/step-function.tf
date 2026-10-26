@@ -89,6 +89,9 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     # archive run log
     commit_sha = var.commit_sha
 
+    # dpr
+    dpr_version = var.dpr_version
+
     # compare paths
     ind_cqc_job_role_estimates = local.ind_cqc_job_role_estimates_dataset_name
     ind_cqc_job_role_metadata  = local.ind_cqc_job_role_metadata_dataset_name

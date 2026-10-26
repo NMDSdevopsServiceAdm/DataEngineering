@@ -19,6 +19,12 @@ variable "commit_sha" {
   default     = "unknown"
 }
 
+variable "dpr_version" {
+  type        = string
+  description = "DPR dataset version (e.g. 2027.01), used as the version= S3 path segment across the DPR ingest/merge/estimate pipeline"
+  default     = "2027.01"
+}
+
 variable "region" {
   default = "eu-west-2"
 }
@@ -33,4 +39,3 @@ variable "secret_name" {
   type    = string
   default = "cqc_api_primary_key"
 }
-

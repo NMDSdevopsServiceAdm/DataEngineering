@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
 
 ### Changed
+- Changed the DPR dataset version to come from a single Terraform variable (`dpr_version`), instead of being hardcoded in 13 places across two Step Function JSON templates.
 - Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
 - Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
