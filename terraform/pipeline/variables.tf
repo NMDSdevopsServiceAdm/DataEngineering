@@ -21,7 +21,7 @@ variable "commit_sha" {
 
 variable "dpr_version" {
   type        = string
-  description = "DPR dataset version (e.g. 2027.01), used as the version= S3 path segment across the DPR ingest/merge/estimate pipeline"
+  description = "DPR dataset version (e.g. 2027.01), used as the version= S3 path segment in the DPR step functions"
   default     = "2027.01"
 }
 
