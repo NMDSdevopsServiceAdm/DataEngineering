@@ -240,7 +240,7 @@ class TestApplyDataCorrections:
 
 
 class TestBoundingExpressions:
-    def test_filled_posts_lower_bound_is_one(self):
+    def test_filled_posts_lower_bound(self):
         assert job.BoundingExpressions().filled_posts_lower_bound == 1
 
     def test_filled_posts_expression_bounds_values_to_valid_range(self):
