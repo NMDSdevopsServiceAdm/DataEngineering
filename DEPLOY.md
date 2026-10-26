@@ -72,3 +72,12 @@ terraform workspace delete <workspace_name>
 - On main, `check-main-tip` runs first in the prod `plan-approve-and-apply` group and fails if the pipeline's commit is no longer the tip of `main`, so an older pipeline that reaches the group after a newer one can't apply its older plan or sync older code. Don't rerun a pipeline that fails it: the newer commit's pipeline carries those changes.
 - Needs **Auto-cancel redundant workflows** OFF in the CircleCI project settings (Project Settings > Advanced), or a running apply is cancelled again.
 - Branch names may only use letters, digits, `.`, `_`, `-` and `/` (the `serial-group` key allows nothing else).
+
+## Merging to main
+Merge by adding the `ready-to-merge` label, not the Merge button. The `merge-when-ready` GitHub Action then merges labelled PRs one at a time, oldest PR number first: it updates the branch from `main`, waits for the PR's checks, then waits for the latest `main` prod deploy to finish (including its manual `plan-approval`) before merging. It removes the label when done.
+
+- A PR whose checks fail, or that `main` keeps moving ahead of, is commented on and loses its label. Fix it and re-add the label.
+- If the latest `main` deploy failed, nothing merges until it is fixed.
+- Add `merge-dry-run` instead to run every check without merging. It removes the label afterwards.
+- Needs the `ready-to-merge` and `merge-dry-run` labels to exist, and the `CIRCLECI_TOKEN` secret. A run is limited to 6 hours: if it times out waiting for an approval, re-add the label.
+- It doesn't check review approval, and the Merge button still works, so the label is a team convention.
