@@ -5,6 +5,8 @@ from copy import copy
 from pathlib import Path
 
 import openpyxl
+import polars as pl
+from openpyxl.utils import get_column_letter
 from openpyxl.utils.cell import coordinate_to_tuple
 from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.dimensions import ColumnDimension
@@ -13,9 +15,27 @@ from openpyxl.worksheet.worksheet import Worksheet
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     assessment_cell_map as cell_map,
 )
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
+    publication_utils,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_values.categorical_column_values import (
+    PublishedJobGroupLabels,
+    PublishedRegion,
+)
 
 
 PERIOD_LABEL_FORMAT = "%b %Y"
+APRIL = 4
+SERVICE_TYPE_SEPARATOR = "|"
+SERVICE_TYPE_ORDER = [
+    "All CQC locations",
+    "All CQC care homes",
+    "Care home with nursing",
+    "Care home without nursing",
+    "non-residential",
+]
 MARCH = 3
 ANNUAL_LABEL = "Annual"
 MONTHLY_LABEL = "Monthly"
@@ -279,3 +299,195 @@ def fill_assessment_workbook(
             row, col = coordinate_to_tuple(cell)
             write_input_cell(workbook[name], row, col, value)
     workbook.save(output_path)
+
+
+def prepare_assessment_df(
+    assessment_lf: pl.LazyFrame, value_columns: list[str]
+) -> pl.DataFrame:
+    """Filters, sorts and widens the assessment data into workbook layout.
+
+    Keeps the "All job roles" rows for England, then pivots service types across
+    columns named `<value column>|<service type>`, one row per import date.
+    Collects once: the result has one row per period, so it is small.
+
+    Args:
+        assessment_lf (pl.LazyFrame): assessment data.
+        value_columns (list[str]): columns to spread across service types.
+
+    Returns:
+        pl.DataFrame: one row per import date, sorted by import date.
+    """
+    return (
+        assessment_lf.filter(
+            pl.col(IndCQC.main_job_role_clean_labelled)
+            == PublishedJobGroupLabels.all_job_roles,
+            pl.col(IndCQC.current_region) == PublishedRegion.england,
+        )
+        .select(
+            IndCQC.cqc_location_import_date,
+            Pub.period_label,
+            pl.col(IndCQC.primary_service_type).cast(pl.String),
+            *value_columns,
+        )
+        .collect()
+        .pivot(
+            on=IndCQC.primary_service_type,
+            index=[IndCQC.cqc_location_import_date, Pub.period_label],
+            values=value_columns,
+            separator=SERVICE_TYPE_SEPARATOR,
+        )
+        .sort(IndCQC.cqc_location_import_date)
+    )
+
+
+def block_cells(top_left: str, rows: list[list[object]]) -> dict[str, object]:
+    """Cells for a block of rows, written down and across from `top_left`.
+
+    Args:
+        top_left (str): A1 reference of the block's first cell.
+        rows (list[list[object]]): values, one list per row.
+
+    Returns:
+        dict[str, object]: value by A1 cell.
+    """
+    first_row, first_col = coordinate_to_tuple(top_left)
+    return {
+        f"{get_column_letter(first_col + col)}{first_row + row}": value
+        for row, row_values in enumerate(rows)
+        for col, value in enumerate(row_values)
+    }
+
+
+def _value_columns(sheet: cell_map.SheetMap) -> list[str]:
+    """The data columns feeding the sheet's cells, other than the period label."""
+    return list(
+        dict.fromkeys(
+            r.source_column
+            for r in sheet.input_ranges
+            if r.source_column not in (None, cell_map.PERIOD_COL)
+        )
+    )
+
+
+def _input_range(sheet: cell_map.SheetMap, note: str) -> cell_map.InputRange:
+    """The sheet's input range with this note."""
+    return next(r for r in sheet.input_ranges if r.note == note)
+
+
+def _period_months(import_dates: list[datetime.date]) -> list[datetime.date]:
+    """The month each import date reports on."""
+    return (
+        pl.DataFrame({"import_date": import_dates})
+        .select(publication_utils.import_date_to_period_month(pl.col("import_date")))
+        .to_series()
+        .to_list()
+    )
+
+
+def _table_cells(period_df: pl.DataFrame, prefix: str) -> dict[str, object]:
+    """Cells for one "Filled posts" table: dates, service type values, % changes.
+
+    Args:
+        period_df (pl.DataFrame): the table's periods, in workbook order.
+        prefix (str): start of the table's input range notes, e.g. "annual
+            filled posts".
+
+    Returns:
+        dict[str, object]: value by A1 cell.
+
+    Raises:
+        ValueError: if there are more periods than rows in the table.
+    """
+    sheet = cell_map.FILLED_POSTS
+    dates_range = CellRange(_input_range(sheet, f"{prefix} dates").cells)
+    import_dates = period_df.get_column(IndCQC.cqc_location_import_date).to_list()
+    if len(import_dates) > dates_range.size["rows"]:
+        raise ValueError(
+            f"{len(import_dates)} periods exceed the {dates_range.size['rows']}"
+            f" rows of '{prefix}'"
+        )
+    period_dates = [[d] for d in _period_months(import_dates)]
+
+    cells = {}
+    for note in (f"{prefix} dates", f"{prefix} % change dates"):
+        input_range = CellRange(_input_range(sheet, note).cells)
+        cells |= block_cells(input_range.coord.split(":")[0], period_dates)
+    for note in (f"{prefix} by primary service type", f"{prefix} % change"):
+        input_range = _input_range(sheet, note)
+        cell_range = CellRange(input_range.cells)
+        rows = period_df.select(
+            [
+                f"{input_range.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
+                for service_type in SERVICE_TYPE_ORDER
+            ]
+        ).rows()
+        # A % change range can start below the first date row.
+        rows = rows[cell_range.min_row - dates_range.min_row :]
+        cells |= block_cells(cell_range.coord.split(":")[0], rows)
+    return cells
+
+
+def filled_posts_values(assessment_df: pl.DataFrame) -> dict[str, object]:
+    """Cell values for the "Filled posts" sheet.
+
+    The annual tables hold the April import date rows (March periods). The
+    monthly tables hold the rows from the latest April import date onwards.
+
+    Args:
+        assessment_df (pl.DataFrame): output of `prepare_assessment_df`.
+
+    Returns:
+        dict[str, object]: value by A1 cell.
+    """
+    import_date = pl.col(IndCQC.cqc_location_import_date)
+    annual_df = assessment_df.filter(import_date.dt.month() == APRIL)
+    monthly_df = assessment_df.filter(
+        import_date >= annual_df[IndCQC.cqc_location_import_date].max()
+    )
+
+    cells = {}
+    for prefix, period_df in (
+        ("annual filled posts", annual_df),
+        ("annual CQC locations", annual_df),
+        ("monthly filled posts", monthly_df),
+        ("monthly CQC locations", monthly_df),
+    ):
+        cells |= _table_cells(period_df, prefix)
+    return cells
+
+
+SHEET_VALUE_BUILDERS = {cell_map.FILLED_POSTS.name: filled_posts_values}
+
+
+def fill_assessment_workbook_from_lf(
+    assessment_lf: pl.LazyFrame,
+    sheets: tuple[cell_map.SheetMap, ...],
+    template_path: Path,
+    output_path: Path,
+) -> None:
+    """Writes the assessment data into the given sheets of the template.
+
+    The workbook is written once, so every sheet's values are built first.
+
+    Args:
+        assessment_lf (pl.LazyFrame): assessment data.
+        sheets (tuple[cell_map.SheetMap, ...]): sheets to fill.
+        template_path (Path): template to load.
+        output_path (Path): local path to save to.
+
+    Raises:
+        ValueError: if a sheet has no values builder yet.
+    """
+    unsupported = [s.name for s in sheets if s.name not in SHEET_VALUE_BUILDERS]
+    if unsupported:
+        raise ValueError(f"No values builder for sheets: {', '.join(unsupported)}")
+
+    value_columns = list(
+        dict.fromkeys(column for sheet in sheets for column in _value_columns(sheet))
+    )
+    assessment_df = prepare_assessment_df(assessment_lf, value_columns)
+    values = {
+        sheet.name: SHEET_VALUE_BUILDERS[sheet.name](assessment_df) for sheet in sheets
+    }
+    period_labels = assessment_df.get_column(Pub.period_label).unique().to_list()
+    fill_assessment_workbook(period_labels, values, template_path, output_path)

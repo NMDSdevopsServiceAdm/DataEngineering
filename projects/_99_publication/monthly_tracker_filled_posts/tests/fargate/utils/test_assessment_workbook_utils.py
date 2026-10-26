@@ -1,7 +1,9 @@
+import datetime
 import zipfile
 from pathlib import Path
 
 import openpyxl
+import polars as pl
 import pytest
 from openpyxl.styles import Font
 
@@ -13,6 +15,12 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
 )
 from projects._99_publication.monthly_tracker_filled_posts.tests.templates import (
     template_support as support,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_values.categorical_column_values import (
+    PublishedJobGroupLabels,
+    PublishedRegion,
 )
 
 
@@ -303,3 +311,140 @@ class TestSheetText:
 
         with pytest.raises(ValueError, match="exceed the 37 rows"):
             job.sheet_text(labels)
+
+
+def _assessment_lf(
+    import_dates: list[datetime.date],
+    job_role: str = PublishedJobGroupLabels.all_job_roles,
+    region: str = PublishedRegion.england,
+) -> pl.LazyFrame:
+    """One row per import date and service type; values rise with the date."""
+    rows = [
+        {
+            IndCQC.cqc_location_import_date: import_date,
+            Pub.period_label: (import_date - datetime.timedelta(days=1)).strftime(
+                "%b %Y"
+            ),
+            IndCQC.main_job_role_clean_labelled: job_role,
+            IndCQC.current_region: region,
+            IndCQC.primary_service_type: service_type,
+            Pub.filled_posts: 1000 * (i + 1) + 10 * j,
+            Pub.locationid_count: 100 * (i + 1) + j,
+            Pub.filled_posts_april_perc_change: 0.1 * (i + 1),
+            Pub.locationid_count_april_perc_change: 0.2 * (i + 1),
+            Pub.filled_posts_cum_perc_change_short: 0.3 * (i + 1),
+            Pub.locationid_count_cum_perc_change_short: 0.4 * (i + 1),
+        }
+        for i, import_date in enumerate(import_dates)
+        for j, service_type in enumerate(job.SERVICE_TYPE_ORDER)
+    ]
+    return pl.LazyFrame(rows)
+
+
+VALUE_COLUMNS = job._value_columns(cell_map.FILLED_POSTS)
+APRIL_2024 = datetime.date(2024, 4, 1)
+APRIL_2025 = datetime.date(2025, 4, 1)
+APRIL_2026 = datetime.date(2026, 4, 1)
+IMPORT_DATES = [APRIL_2024, APRIL_2025, APRIL_2026, datetime.date(2026, 5, 1)]
+
+
+class TestPrepareAssessmentDf:
+    def test_keeps_only_all_job_roles_in_england(self):
+        lf = pl.concat(
+            [
+                _assessment_lf(IMPORT_DATES[:1]),
+                _assessment_lf(IMPORT_DATES[:1], job_role="Care worker"),
+                _assessment_lf(IMPORT_DATES[:1], region="North East"),
+            ]
+        )
+
+        df = job.prepare_assessment_df(lf, VALUE_COLUMNS)
+
+        assert df.height == 1
+
+    def test_sorts_by_import_date(self):
+        lf = _assessment_lf(IMPORT_DATES[:3]).sort(
+            IndCQC.cqc_location_import_date, descending=True
+        )
+
+        df = job.prepare_assessment_df(lf, VALUE_COLUMNS)
+
+        assert df[IndCQC.cqc_location_import_date].to_list() == IMPORT_DATES[:3]
+
+    def test_spreads_each_value_column_across_service_types(self):
+        df = job.prepare_assessment_df(_assessment_lf(IMPORT_DATES[:1]), VALUE_COLUMNS)
+
+        assert df.select(
+            [f"{Pub.filled_posts}|{service}" for service in job.SERVICE_TYPE_ORDER]
+        ).rows() == [(1000, 1010, 1020, 1030, 1040)]
+
+
+class TestBlockCells:
+    def test_writes_rows_down_and_across_from_the_top_left_cell(self):
+        cells = job.block_cells("C24", [[1, 2], [3, 4]])
+
+        assert cells == {"C24": 1, "D24": 2, "C25": 3, "D25": 4}
+
+
+class TestFilledPostsValues:
+    @pytest.fixture(scope="class")
+    def cells(self) -> dict[str, object]:
+        return job.filled_posts_values(
+            job.prepare_assessment_df(_assessment_lf(IMPORT_DATES), VALUE_COLUMNS)
+        )
+
+    def test_annual_table_has_a_row_per_april_import_date_as_period_month(self, cells):
+        assert [cells[f"B{row}"] for row in (24, 25, 26)] == [
+            datetime.date(2024, 3, 1),
+            datetime.date(2025, 3, 1),
+            datetime.date(2026, 3, 1),
+        ]
+        assert "B27" not in cells
+
+    def test_annual_table_spreads_service_types_across_columns(self, cells):
+        assert [cells[f"{col}24"] for col in "CDEFG"] == [1000, 1010, 1020, 1030, 1040]
+
+    def test_annual_percent_change_starts_one_row_below_the_first_date(self, cells):
+        assert "J24" not in cells
+        assert cells["J25"] == pytest.approx(0.2)
+
+    def test_monthly_table_starts_at_the_latest_april(self, cells):
+        assert [cells[f"B{row}"] for row in (65, 66)] == [
+            datetime.date(2026, 3, 1),
+            datetime.date(2026, 4, 1),
+        ]
+        assert "B67" not in cells
+
+    def test_monthly_percent_change_starts_on_the_first_row(self, cells):
+        assert cells["J65"] == pytest.approx(0.9)
+
+    def test_raises_when_periods_exceed_the_table_rows(self):
+        april_dates = [datetime.date(2000 + year, 4, 1) for year in range(14)]
+        df = job.prepare_assessment_df(_assessment_lf(april_dates), VALUE_COLUMNS)
+
+        with pytest.raises(ValueError, match="exceed the 13 rows"):
+            job.filled_posts_values(df)
+
+
+class TestFillAssessmentWorkbookFromLf:
+    def test_saves_a_workbook_holding_the_filled_posts_values(self, tmp_path):
+        output = tmp_path / "out.xlsx"
+
+        job.fill_assessment_workbook_from_lf(
+            _assessment_lf(IMPORT_DATES),
+            (cell_map.FILLED_POSTS,),
+            cell_map.TEMPLATE_PATH,
+            output,
+        )
+
+        sheet = openpyxl.load_workbook(output)[cell_map.FILLED_POSTS.name]
+        assert (sheet["C24"].value, sheet["B3"].value) == (1000, "End of Apr 2026")
+
+    def test_raises_for_a_sheet_without_a_values_builder(self, tmp_path):
+        with pytest.raises(ValueError, match="Comp prev publication"):
+            job.fill_assessment_workbook_from_lf(
+                _assessment_lf(IMPORT_DATES),
+                (cell_map.COMP_PREV_PUBLICATION,),
+                cell_map.TEMPLATE_PATH,
+                tmp_path / "out.xlsx",
+            )
