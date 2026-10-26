@@ -152,8 +152,13 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
 - **`could not mark run <n> as promoted`**: the flag update itself failed, so nothing was copied —
   the run log does **not** yet show `promoted: True`. If the message says the run is "already
   promoted", there's nothing to do (a previous attempt already finished — check the long-term bucket
-  to confirm). If it says the run is "not selected_for_publication", select it first. Otherwise,
-  recover with step 1 below.
+  to confirm). This also happens when you reselect a run that was promoted earlier: the script stops
+  at this point and never offers `Publication-Output`, so start `<workspace>-Publication-Output` by
+  hand with `{"run_number": <n>}`. If it says the run is "not selected_for_publication", select it
+  first. Otherwise, recover with "Recovering a promotion that failed before the flag was set" below.
+- **`could not upload the promoted run log partition`**: the run log on S3 does **not** yet show
+  `promoted: True` and nothing was copied. Restore the run with the restore command the script
+  prints, then recover with "Recovering a promotion that failed before the flag was set" below.
 - **`nothing found at s3://<bucket>/<prefix>/<partition>/`**, **`could not copy <prefix>/<partition>`**,
   or **`copy of <prefix>/<partition> looks incomplete`**: these all happen *after* the flag update
   already succeeded (the run log genuinely shows `promoted: True`). Finish the copy by hand instead:

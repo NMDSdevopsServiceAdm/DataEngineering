@@ -105,7 +105,7 @@ start_publication_output() {
 # Marks the selected run promoted, then copies its estimates, metadata and run-log
 # partitions from $bucket into the long-term archive bucket. Runs automatically
 # after a successful selection; never prompts. Returns 0 on success, 1 on any
-# failure (nothing copied for a dataset whose check failed).
+# failure; a failure before the copy loop copies nothing.
 copy_run_to_long_term_archive() {
   local destination_bucket preflight_key partition archive_date prefix
   local source_count destination_count partitions
