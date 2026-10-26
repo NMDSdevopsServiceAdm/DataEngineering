@@ -4,6 +4,7 @@ import datetime
 from copy import copy
 from pathlib import Path
 
+import boto3
 import openpyxl
 import polars as pl
 from openpyxl.utils import get_column_letter
@@ -24,6 +25,7 @@ from utils.column_values.categorical_column_values import (
     PublishedJobGroupLabels,
     PublishedRegion,
 )
+from utils.file_utils import split_s3_uri
 
 
 PERIOD_LABEL_FORMAT = "%b %Y"
@@ -491,3 +493,15 @@ def fill_assessment_workbook_from_lf(
     }
     period_labels = assessment_df.get_column(Pub.period_label).unique().to_list()
     fill_assessment_workbook(period_labels, values, template_path, output_path)
+
+
+def upload_to_s3(local_path: Path, s3_directory: str) -> None:
+    """Uploads a local file into an S3 directory, keeping its file name.
+
+    Args:
+        local_path (Path): file to upload.
+        s3_directory (str): S3 directory to put the file in.
+    """
+    bucket, prefix = split_s3_uri(s3_directory)
+    key = f"{prefix.rstrip('/')}/{local_path.name}"
+    boto3.client("s3").upload_file(str(local_path), bucket, key)
