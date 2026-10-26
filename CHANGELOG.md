@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 - Added validation of the job role estimates archive run log.
 - Added validation of the monthly tracker assessment data.
 - Added validation of the monthly tracker prepared publication data.
-- Added a full-month period label column (e.g. "March 2026") alongside the short one, which is renamed to period label short.
+- Added a full-month period label (e.g. "March 2026") to the monthly tracker publication data.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/output_workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 - Extended the run log update script to select a run for publication and start Publication-Output for it, set the `reconciled` and `locally_checked` flags, and list the month's runs.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 
 ### Changed
+- Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
 - Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
 - Changed Publication-Output to write one download table of rounded filled posts, location counts and percentage changes from the assessed data, instead of three tables.
