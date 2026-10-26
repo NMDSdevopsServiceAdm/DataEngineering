@@ -160,6 +160,7 @@ class LocationsCleanUtilsSchema:
             (CQCLClean.registration_status, pl.String()),
             (CQCLClean.deregistration_date, pl.Date()),
             (CQCLClean.type, pl.String()),
+            (CQCLClean.relationships_types, pl.List(pl.String())),
         ]
     )
     expected_save_latest_full_snapshot_schema = pl.Schema(
@@ -169,6 +170,7 @@ class LocationsCleanUtilsSchema:
             (CQCLClean.registration_status, pl.String()),
             (CQCLClean.deregistration_date, pl.Date()),
             (CQCLClean.type, pl.String()),
+            (CQCLClean.has_successor, pl.String()),
         ]
     )
 
@@ -462,6 +464,7 @@ class ValidateCqcLocations4FullLatestSnapshotTest:
             (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.registration_status, pl.String()),
             (CQCLClean.deregistration_date, pl.Date()),
+            (CQCLClean.has_successor, pl.String()),
         ]
     )
 

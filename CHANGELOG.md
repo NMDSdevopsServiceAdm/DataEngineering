@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Changed the DPR dataset version to be set once in a Terraform variable instead of hardcoded in the DPR step functions.
+- Renamed the SLV step function to Ind-CQC-EmpStat-SLV and reordered it so worker and workplace data are prepared in separate branches, workplace data is validated, and the SLV counts steps are no longer run.
 - Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
 - Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
@@ -38,6 +39,7 @@ All notable changes to this project will be documented in this file.
 - Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
 - Changed the CircleCI archive sample seed to also sync archive run 2 of 2026-10-15 for the job role estimates and metadata.
 - Changed the CircleCI archive sample seed to sync only run 2 of 2026-10-15 of the run log.
+- Changed the reconciliation potentials count to exclude deregistered CQC locations without a successor.
 - Changed the suppressed filled posts label in the public monthly workbook from `< 10` to `[s]`.
 - Tidied monthly tracker publication columns: added a rounded filled posts column, and removed the Tableau label (`_formatted`) columns from the publication output and the formatted percentage columns from the T1/T2 download tables.
 - Removed the `cqc_location_import_date_abbreviated` and `cqc_location_import_date_full` columns from the monthly tracker publication output.
