@@ -66,12 +66,12 @@ def _input_row(
     job_role: str = PublishedJobGroupLabels.all_job_roles,
     region: str = "London",
     values: tuple = (100.0, 10, None, None, None, None),
-    period_label: str = "Mar 2026",
+    period_label_short: str = "Mar 2026",
     period_label_long: str = "March 2026",
 ) -> tuple:
     return (
         import_date,
-        period_label,
+        period_label_short,
         period_label_long,
         job_role,
         region,
@@ -125,7 +125,7 @@ class TestMain:
             _input_row(
                 date(2026, 5, 1),
                 values=(121.0, 12, 0.1, 0.2, 0.3, 0.4),
-                period_label="Apr 2026",
+                period_label_short="Apr 2026",
                 period_label_long="April 2026",
             ),
         ]
@@ -224,7 +224,7 @@ class TestMain:
         input_rows = [
             _input_row(
                 date(2026, 4, 1),
-                period_label="Some label",
+                period_label_short="Some label",
                 period_label_long="Some long label",
             )
         ]
