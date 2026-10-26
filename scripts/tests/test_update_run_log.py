@@ -475,6 +475,17 @@ class TestReadRunLog:
         with pytest.raises(FileNotFoundError, match="parquet"):
             job.read_run_log(tmp_path)
 
+    def test_treats_a_run_missing_newer_columns_as_null(self, tmp_path):
+        old_format_df = build_run_log([("2026-09-22", 1, True)]).drop(
+            RunLog.promoted, RunLog.promoted_at
+        )
+        write_run_log(tmp_path, old_format_df)
+
+        returned_df = job.read_run_log(tmp_path)
+
+        assert returned_df[RunLog.promoted].to_list() == [None]
+        assert returned_df[RunLog.promoted_at].to_list() == [None]
+
 
 class TestWriteRunPartition:
     def test_writes_only_changed_run_partition_with_same_layout(self, tmp_path):
