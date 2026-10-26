@@ -71,6 +71,14 @@ class RegistrationStatus(ColumnValues):
 
 
 @dataclass
+class HasSuccessor(ColumnValues):
+    """The possible values of the has_successor column in CQC locations data"""
+
+    has_successor: str = "Y"
+    no_successor: str = "N"
+
+
+@dataclass
 class PrimaryServiceType(ColumnValues):
     """The possible values of the primary service type column in CQC locations data"""
 

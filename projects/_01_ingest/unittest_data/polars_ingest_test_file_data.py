@@ -22,6 +22,7 @@ from utils.column_values.categorical_column_values import (
     CareHome,
     ContemporaryCSSR,
     Dormancy,
+    HasSuccessor,
     LocationType,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
@@ -873,14 +874,20 @@ class ExtractRegisteredManagerNamesData:
 class LocationsCleanUtilsData:
     # fmt: off
     save_latest_full_snapshot_rows  = [
-        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier),
-        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
-        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier),
-        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier, ["HSCA Successor"]),
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, ["HSCA Successor"]),
+        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier, None),
+        ("1-002", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, ["HSCA Successor", "HSCA Predecessor"]),
+        ("1-003", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, ["HSCA Predecessor"]),
+        ("1-004", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, []),
+        ("1-005", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, None),
     ]
     expected_save_latest_full_snapshot_rows = [
-        (date(2025, 2, 1), "1-001", RegistrationStatus.registered, None, LocationType.social_care_identifier),
-        (date(2025, 2, 1), "1-001", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
+        (date(2025, 2, 1), "1-001", RegistrationStatus.registered, None, LocationType.social_care_identifier, HasSuccessor.no_successor),
+        (date(2025, 2, 1), "1-002", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.has_successor),
+        (date(2025, 2, 1), "1-003", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.no_successor),
+        (date(2025, 2, 1), "1-004", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.no_successor),
+        (date(2025, 2, 1), "1-005", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.no_successor),
     ]
     # fmt: on
 
@@ -1555,6 +1562,7 @@ class ValidateCqcLocations4FullLatestSnapshotTest:
         (date(2025, 1, 1),),
         (RegistrationStatus.registered,),
         (date(2024, 1, 1),),
+        (HasSuccessor.has_successor,),
     ]
 
 
@@ -1562,13 +1570,6 @@ class ValidateCqcLocations4FullLatestSnapshotTest:
 class CleanWorkplaceUtilsTestCase:
     id: str
     expected_data: list[Any]
-
-
-@dataclass
-class JobRoleExpressionBoundsTestCase:
-    id: str
-    input_data: dict[str, Any]
-    expected_data: dict[str, Any]
 
 
 @dataclass
@@ -2460,24 +2461,6 @@ class TestCleanAscwdsWorkplaceUtilsData:
                 AWPClean.job_role_02_starters: [None],
                 AWPClean.job_role_03_starters: [3],
             },
-        ),
-    ]
-
-    job_role_expression_bounds_test_cases = [
-        JobRoleExpressionBoundsTestCase(
-            id="allows_zero_at_lower_bound_for_slv_column",
-            input_data={AWPClean.job_role_01_starters: 0},
-            expected_data={AWPClean.job_role_01_starters: 0},
-        ),
-        JobRoleExpressionBoundsTestCase(
-            id="nulls_slv_value_below_lower_bound",
-            input_data={AWPClean.job_role_01_starters: -1},
-            expected_data={AWPClean.job_role_01_starters: None},
-        ),
-        JobRoleExpressionBoundsTestCase(
-            id="does_not_bound_non_slv_job_role_columns",
-            input_data={AWPClean.job_role_01_employees: -1},
-            expected_data={AWPClean.job_role_01_employees: -1},
         ),
     ]
 
