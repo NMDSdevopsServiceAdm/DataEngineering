@@ -36,21 +36,21 @@
                   ]
                 }
               },
-              "Next": "Estimate Employment Status"
+              "Next": "Employment status"
             },
-            "Estimate Employment Status": {
+            "Employment status": {
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "Merge and Validate Prepared Worker Data",
+                  "StartAt": "Merge and validate prepared worker data",
                   "States": {
-                    "Merge and Validate Prepared Worker Data": {
+                    "Merge and validate prepared worker data": {
                       "Type": "Parallel",
                       "Branches": [
                         {
-                          "StartAt": "Merge employment status data",
+                          "StartAt": "Merge employment status",
                           "States": {
-                            "Merge employment status data": {
+                            "Merge employment status": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -87,9 +87,9 @@
                           }
                         },
                         {
-                          "StartAt": "Validate Prepared Worker Data",
+                          "StartAt": "Validate prepared worker data",
                           "States": {
-                            "Validate Prepared Worker Data": {
+                            "Validate prepared worker data": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -124,15 +124,15 @@
                           }
                         }
                       ],
-                      "Next": "Clean and Validate Merged Employment Status Data"
+                      "Next": "Clean and validate merged employment status"
                     },
-                    "Clean and Validate Merged Employment Status Data": {
+                    "Clean and validate merged employment status": {
                       "Type": "Parallel",
                       "Branches": [
                         {
-                          "StartAt": "Clean employment status data",
+                          "StartAt": "Clean employment status",
                           "States": {
-                            "Clean employment status data": {
+                            "Clean employment status": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -164,9 +164,9 @@
                           }
                         },
                         {
-                          "StartAt": "Validate Merged Employment Status Data",
+                          "StartAt": "Validate merged employment status",
                           "States": {
-                            "Validate Merged Employment Status Data": {
+                            "Validate merged employment status": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -200,15 +200,15 @@
                           }
                         }
                       ],
-                      "Next": "Impute and Validate Cleaned Employment Status Data"
+                      "Next": "Impute and validate cleaned employment status"
                     },
-                    "Impute and Validate Cleaned Employment Status Data": {
+                    "Impute and validate cleaned employment status": {
                       "Type": "Parallel",
                       "Branches": [
                         {
-                          "StartAt": "Impute employment status data",
+                          "StartAt": "Impute employment status",
                           "States": {
-                            "Impute employment status data": {
+                            "Impute employment status": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -240,9 +240,9 @@
                           }
                         },
                         {
-                          "StartAt": "Validate Cleaned Employment Status Data",
+                          "StartAt": "Validate cleaned employment status",
                           "States": {
-                            "Validate Cleaned Employment Status Data": {
+                            "Validate cleaned employment status": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -276,15 +276,15 @@
                           }
                         }
                       ],
-                      "Next": "Estimate and Validate Imputed Employment Status Data"
+                      "Next": "Estimate and validate imputed employment status"
                     },
-                    "Estimate and Validate Imputed Employment Status Data": {
+                    "Estimate and validate imputed employment status": {
                       "Type": "Parallel",
                       "Branches": [
                         {
-                          "StartAt": "Estimate employment status data",
+                          "StartAt": "Estimate employment status",
                           "States": {
-                            "Estimate employment status data": {
+                            "Estimate employment status": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -311,9 +311,9 @@
                                   ]
                                 }
                               },
-                              "Next": "Validate Employment Status Estimates"
+                              "Next": "Validate employment status estimates"
                             },
-                            "Validate Employment Status Estimates": {
+                            "Validate employment status estimates": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -347,9 +347,9 @@
                           }
                         },
                         {
-                          "StartAt": "Validate Imputed Employment Status Data",
+                          "StartAt": "Validate imputed employment status",
                           "States": {
-                            "Validate Imputed Employment Status Data": {
+                            "Validate imputed employment status": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -388,15 +388,15 @@
                   }
                 }
               ],
-              "Next": "Estimate Starters, Leavers and Vacancies"
+              "Next": "SLV"
             },
-            "Estimate Starters, Leavers and Vacancies": {
+            "SLV": {
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "Merge SLV data",
+                  "StartAt": "Merge SLV",
                   "States": {
-                    "Merge SLV data": {
+                    "Merge SLV": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
@@ -424,15 +424,15 @@
                           ]
                         }
                       },
-                      "Next": "Clean and Validate Merged SLV Data"
+                      "Next": "Clean and validate merged SLV"
                     },
-                    "Clean and Validate Merged SLV Data": {
+                    "Clean and validate merged SLV": {
                       "Type": "Parallel",
                       "Branches": [
                         {
-                          "StartAt": "Clean SLV data",
+                          "StartAt": "Clean SLV",
                           "States": {
-                            "Clean SLV data": {
+                            "Clean SLV": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -464,9 +464,9 @@
                           }
                         },
                         {
-                          "StartAt": "Validate Merged SLV Data",
+                          "StartAt": "Validate merged SLV",
                           "States": {
-                            "Validate Merged SLV Data": {
+                            "Validate merged SLV": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -500,15 +500,15 @@
                           }
                         }
                       ],
-                      "Next": "Impute and Validate Cleaned SLV Data"
+                      "Next": "Impute and validate cleaned SLV"
                     },
-                    "Impute and Validate Cleaned SLV Data": {
+                    "Impute and validate cleaned SLV": {
                       "Type": "Parallel",
                       "Branches": [
                         {
-                          "StartAt": "Impute SLV data",
+                          "StartAt": "Impute SLV",
                           "States": {
-                            "Impute SLV data": {
+                            "Impute SLV": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -540,9 +540,9 @@
                           }
                         },
                         {
-                          "StartAt": "Validate Cleaned SLV Data",
+                          "StartAt": "Validate cleaned SLV",
                           "States": {
-                            "Validate Cleaned SLV Data": {
+                            "Validate cleaned SLV": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -576,15 +576,15 @@
                           }
                         }
                       ],
-                      "Next": "Estimate and Validate Imputed SLV Data"
+                      "Next": "Estimate and validate imputed SLV"
                     },
-                    "Estimate and Validate Imputed SLV Data": {
+                    "Estimate and validate imputed SLV": {
                       "Type": "Parallel",
                       "Branches": [
                         {
-                          "StartAt": "Estimate SLV data",
+                          "StartAt": "Estimate SLV",
                           "States": {
-                            "Estimate SLV data": {
+                            "Estimate SLV": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -611,9 +611,9 @@
                                   ]
                                 }
                               },
-                              "Next": "Validate SLV Estimates"
+                              "Next": "Validate SLV estimates"
                             },
-                            "Validate SLV Estimates": {
+                            "Validate SLV estimates": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -647,9 +647,9 @@
                           }
                         },
                         {
-                          "StartAt": "Validate Imputed SLV Data",
+                          "StartAt": "Validate imputed SLV",
                           "States": {
-                            "Validate Imputed SLV Data": {
+                            "Validate imputed SLV": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -723,9 +723,9 @@
                   ]
                 }
               },
-              "Next": "Validate Prepared Workplace Data"
+              "Next": "Validate prepared workplace data"
             },
-            "Validate Prepared Workplace Data": {
+            "Validate prepared workplace data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
