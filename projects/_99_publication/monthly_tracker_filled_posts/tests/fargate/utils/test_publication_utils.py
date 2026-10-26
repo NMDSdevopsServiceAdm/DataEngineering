@@ -203,7 +203,8 @@ class TestAggregateToPublicationRows:
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
             (Pub.period_label_short, pl.String()),
-            (Pub.period_label_long, pl.String()),            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (Pub.period_label_long, pl.String()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
             (Pub.filled_posts, pl.Float32()),
@@ -357,7 +358,8 @@ class TestAggregateToPublicationRows:
             [
                 (IndCQC.cqc_location_import_date, pl.Date()),
                 (Pub.period_label_short, pl.String()),
-                (Pub.period_label_long, pl.String()),                (IndCQC.main_job_role_clean_labelled, pl.String()),
+                (Pub.period_label_long, pl.String()),
+                (IndCQC.main_job_role_clean_labelled, pl.String()),
                 (IndCQC.current_region, pl.String()),
                 (IndCQC.primary_service_type, pl.String()),
                 (Pub.filled_posts, pl.Float32()),
@@ -441,7 +443,8 @@ class TestAddRowsForPublicationGroups:
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
             (Pub.period_label_short, pl.String()),
-            (Pub.period_label_long, pl.String()),            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (Pub.period_label_long, pl.String()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.Categorical()),
             (Pub.filled_posts, pl.Float32()),
