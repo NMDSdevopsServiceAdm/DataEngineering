@@ -308,8 +308,10 @@ def prepare_assessment_df(
 ) -> pl.DataFrame:
     """Filters, sorts and widens the assessment data into workbook layout.
 
-    Keeps the "All job roles" rows for England, then pivots service types across
-    columns named `<value column>|<service type>`, one row per import date.
+    Keeps the "All job roles" rows for England. Import dates before the latest
+    April keep their April rows only; the latest April onwards keeps every date.
+    Then pivots service types across columns named
+    `<value column>|<service type>`, one row per import date.
     Collects once: the result has one row per period, so it is small.
 
     Args:
@@ -319,11 +321,16 @@ def prepare_assessment_df(
     Returns:
         pl.DataFrame: one row per import date, sorted by import date.
     """
+    import_date = pl.col(IndCQC.cqc_location_import_date)
     return (
         assessment_lf.filter(
             pl.col(IndCQC.main_job_role_clean_labelled)
             == PublishedJobGroupLabels.all_job_roles,
             pl.col(IndCQC.current_region) == PublishedRegion.england,
+        )
+        .filter(
+            (import_date.dt.month() == APRIL)
+            | (import_date >= import_date.filter(import_date.dt.month() == APRIL).max())
         )
         .select(
             IndCQC.cqc_location_import_date,

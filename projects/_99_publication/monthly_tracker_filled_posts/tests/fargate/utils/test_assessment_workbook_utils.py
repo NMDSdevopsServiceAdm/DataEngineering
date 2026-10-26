@@ -363,6 +363,25 @@ class TestPrepareAssessmentDf:
 
         assert df.height == 1
 
+    def test_keeps_only_april_dates_before_the_latest_april(self):
+        import_dates = [
+            datetime.date(2024, 4, 1),
+            datetime.date(2024, 5, 1),
+            datetime.date(2025, 4, 1),
+            datetime.date(2025, 10, 1),
+            datetime.date(2026, 4, 1),
+            datetime.date(2026, 5, 1),
+        ]
+
+        df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
+
+        assert df[IndCQC.cqc_location_import_date].to_list() == [
+            datetime.date(2024, 4, 1),
+            datetime.date(2025, 4, 1),
+            datetime.date(2026, 4, 1),
+            datetime.date(2026, 5, 1),
+        ]
+
     def test_sorts_by_import_date(self):
         lf = _assessment_lf(IMPORT_DATES[:3]).sort(
             IndCQC.cqc_location_import_date, descending=True
