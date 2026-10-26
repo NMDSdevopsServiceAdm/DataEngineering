@@ -15,6 +15,7 @@ from typing import Optional, Sequence
 
 import polars as pl
 
+from utils.column_names.archive_run_log_schema import ARCHIVE_RUN_LOG_FILE_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as Keys,
 )
@@ -35,29 +36,6 @@ RUN_TABLE_COLUMNS: tuple[str, ...] = (
     *SUPPORTED_FLAGS,
     RunLog.tag,
 )
-
-# Mirrors archive_job_role_estimates.py's RUN_LOG_SCHEMA (excluding the
-# partition keys, which come from the folder names, not the file contents) -
-# update both together. A run archived before a column existed has no column
-# for it at all, so read_run_log needs the full schema to fill it with null
-# instead of raising.
-RUN_LOG_SCHEMA: dict[str, pl.DataType] = {
-    RunLog.archive_date_time: pl.Datetime,
-    RunLog.max_ascwds_workplace_import_date: pl.Date,
-    RunLog.max_cqc_location_import_date: pl.Date,
-    RunLog.max_cqc_pir_import_date: pl.Date,
-    RunLog.max_ct_care_home_import_date: pl.Date,
-    RunLog.max_ct_non_res_import_date: pl.Date,
-    RunLog.max_current_ons_import_date: pl.Date,
-    RunLog.approved: pl.Boolean,
-    RunLog.commit_sha: pl.String,
-    RunLog.tag: pl.String,
-    RunLog.selected_for_publication: pl.Boolean,
-    RunLog.reconciled: pl.Boolean,
-    RunLog.locally_checked: pl.Boolean,
-    RunLog.promoted: pl.Boolean,
-    RunLog.promoted_at: pl.Datetime,
-}
 
 
 def set_run_flag(
@@ -186,7 +164,7 @@ def read_run_log(run_log_dir: Path) -> pl.DataFrame:
     """Reads a local run log, taking the partition keys from the folder names.
 
     Eager read: the run log has one row per run, so it is small. A run
-    archived before a column was added to RUN_LOG_SCHEMA has no such column in
+    archived before a column was added to ARCHIVE_RUN_LOG_FILE_SCHEMA has no such column in
     its own file; that column reads as null for that run rather than raising.
 
     Args:
@@ -206,7 +184,7 @@ def read_run_log(run_log_dir: Path) -> pl.DataFrame:
         run_log_dir / "**" / "*.parquet",
         hive_partitioning=True,
         hive_schema={Keys.archive_date: pl.String, Keys.run_number: pl.Int64},
-        schema=RUN_LOG_SCHEMA,
+        schema=ARCHIVE_RUN_LOG_FILE_SCHEMA,
         missing_columns="insert",
     )
 

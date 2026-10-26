@@ -4,6 +4,7 @@ import polars as pl
 
 import projects._03_independent_cqc._01_filled_posts._07_archive.fargate.utils.archive_utils as aUtils
 from polars_utils import utils
+from utils.column_names.archive_run_log_schema import ARCHIVE_RUN_LOG_FILE_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
 )
@@ -68,16 +69,7 @@ MAX_IMPORT_DATE_SOURCE_COLUMNS = {
 RUN_LOG_SCHEMA = {
     ArchiveKeys.archive_date: pl.String,
     ArchiveKeys.run_number: pl.Int64,
-    RunLogCols.archive_date_time: pl.Datetime,
-    **{column: pl.Date for column in MAX_IMPORT_DATE_SOURCE_COLUMNS},
-    RunLogCols.approved: pl.Boolean,
-    RunLogCols.commit_sha: pl.String,
-    RunLogCols.tag: pl.String,
-    RunLogCols.selected_for_publication: pl.Boolean,
-    RunLogCols.reconciled: pl.Boolean,
-    RunLogCols.locally_checked: pl.Boolean,
-    RunLogCols.promoted: pl.Boolean,
-    RunLogCols.promoted_at: pl.Datetime,
+    **ARCHIVE_RUN_LOG_FILE_SCHEMA,
 }
 
 

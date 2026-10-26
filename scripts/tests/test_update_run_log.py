@@ -8,6 +8,7 @@ import polars.testing as pl_testing
 import pytest
 
 import scripts.update_run_log as job
+from utils.column_names.archive_run_log_schema import ARCHIVE_RUN_LOG_FILE_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as Keys,
 )
@@ -18,21 +19,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 RUN_LOG_SCHEMA = {
     Keys.archive_date: pl.String,
     Keys.run_number: pl.Int64,
-    RunLog.archive_date_time: pl.Datetime,
-    RunLog.max_ascwds_workplace_import_date: pl.Date,
-    RunLog.max_cqc_location_import_date: pl.Date,
-    RunLog.max_cqc_pir_import_date: pl.Date,
-    RunLog.max_ct_care_home_import_date: pl.Date,
-    RunLog.max_ct_non_res_import_date: pl.Date,
-    RunLog.max_current_ons_import_date: pl.Date,
-    RunLog.approved: pl.Boolean,
-    RunLog.commit_sha: pl.String,
-    RunLog.tag: pl.String,
-    RunLog.selected_for_publication: pl.Boolean,
-    RunLog.reconciled: pl.Boolean,
-    RunLog.locally_checked: pl.Boolean,
-    RunLog.promoted: pl.Boolean,
-    RunLog.promoted_at: pl.Datetime,
+    **ARCHIVE_RUN_LOG_FILE_SCHEMA,
 }
 
 MONTH_START = date(2026, 10, 1)
