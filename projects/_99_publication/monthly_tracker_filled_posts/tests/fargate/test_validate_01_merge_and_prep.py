@@ -37,7 +37,8 @@ def _prep_df() -> pl.DataFrame:
             IndCQC.current_rural_urban_indicator_2011: ["a"],
             IndCQC.current_lsoa21: ["a"],
             IndCQC.current_msoa21: ["a"],
-            Pub.period_label: ["Mar 2026"],
+            Pub.period_label_short: ["Mar 2026"],
+            Pub.period_label_long: ["March 2026"],
         }
     )
 
@@ -137,7 +138,8 @@ class TestExpectedSchema:
         expected_columns = {
             *prep_job.JOB_ROLE_ESTIMATES_ARCHIVE_COLUMNS,
             *prep_job.JOB_ROLE_METADATA_ARCHIVE_COLUMNS,
-            Pub.period_label,
+            Pub.period_label_short,
+            Pub.period_label_long,
         }
 
         schema_columns = {name for name, _ in job.EXPECTED_SCHEMA.columns}

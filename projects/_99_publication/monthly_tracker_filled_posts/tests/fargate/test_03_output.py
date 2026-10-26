@@ -25,7 +25,8 @@ TEST_TODAY = date(2026, 10, 6)
 input_schema = pl.Schema(
     [
         (IndCQC.cqc_location_import_date, pl.Date()),
-        (Pub.period_label, pl.String()),
+        (Pub.period_label_short, pl.String()),
+        (Pub.period_label_long, pl.String()),
         (IndCQC.main_job_role_clean_labelled, pl.String()),
         (IndCQC.current_region, pl.String()),
         (IndCQC.primary_service_type, pl.String()),
@@ -43,7 +44,8 @@ input_schema = pl.Schema(
 expected_schema = pl.Schema(
     [
         (Pub.period, pl.Date()),
-        (Pub.period_label, pl.String()),
+        (Pub.period_label_short, pl.String()),
+        (Pub.period_label_long, pl.String()),
         (Pub.region, pl.String()),
         (Pub.main_service, pl.String()),
         (Pub.estimated_filled_posts_rounded, pl.Float32()),
@@ -65,10 +67,12 @@ def _input_row(
     region: str = "London",
     values: tuple = (100.0, 10, None, None, None, None),
     period_label: str = "Mar 2026",
+    period_label_long: str = "March 2026",
 ) -> tuple:
     return (
         import_date,
         period_label,
+        period_label_long,
         job_role,
         region,
         PrimaryServiceType.care_home_with_nursing,
@@ -122,6 +126,7 @@ class TestMain:
                 date(2026, 5, 1),
                 values=(121.0, 12, 0.1, 0.2, 0.3, 0.4),
                 period_label="Apr 2026",
+                period_label_long="April 2026",
             ),
         ]
 
@@ -132,6 +137,7 @@ class TestMain:
                 (
                     date(2026, 5, 1),
                     "Apr 2026",
+                    "April 2026",
                     "London",
                     PublishedMainService.care_home_with_nursing,
                     125.0,
@@ -214,9 +220,16 @@ class TestMain:
             (None, pytest.approx(0.5), None, pytest.approx(0.6)),
         ]
 
-    def test_main_passes_the_period_label_through(self, mocks):
-        input_rows = [_input_row(date(2026, 4, 1), period_label="Some label")]
+    def test_main_passes_the_period_labels_through(self, mocks):
+        input_rows = [
+            _input_row(
+                date(2026, 4, 1),
+                period_label="Some label",
+                period_label_long="Some long label",
+            )
+        ]
 
-        returned_lf = _run_main(mocks, input_rows)
+        returned_lf = _run_main(mocks, input_rows).collect()
 
-        assert returned_lf.collect()[Pub.period_label].to_list() == ["Some label"]
+        assert returned_lf[Pub.period_label_short].to_list() == ["Some label"]
+        assert returned_lf[Pub.period_label_long].to_list() == ["Some long label"]

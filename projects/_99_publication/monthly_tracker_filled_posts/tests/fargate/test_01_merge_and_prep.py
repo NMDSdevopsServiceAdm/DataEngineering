@@ -170,12 +170,14 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    @patch(f"{PATCH_PATH}.publication_utils.period_label_expr")
+    @patch(f"{PATCH_PATH}.publication_utils.period_label_long_expr")
+    @patch(f"{PATCH_PATH}.publication_utils.period_label_short_expr")
     @patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources")
-    def test_main_adds_period_label_to_filtered_data(
+    def test_main_adds_period_labels_to_filtered_data(
         self,
         resolve_run_sources_mock: Mock,
-        period_label_expr_mock: Mock,
+        period_label_short_expr_mock: Mock,
+        period_label_long_expr_mock: Mock,
         scan_parquet_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -190,7 +192,8 @@ class TestMain:
 
         filtered_lf = archived_jr_estimate_lf.join.return_value.filter.return_value
         filtered_lf.with_columns.assert_called_once_with(
-            period_label_expr_mock.return_value
+            period_label_short_expr_mock.return_value,
+            period_label_long_expr_mock.return_value,
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")

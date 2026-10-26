@@ -17,7 +17,7 @@ from utils.column_values.categorical_column_values import (
 
 
 def _with_period_label(lf: pl.LazyFrame) -> pl.LazyFrame:
-    return lf.with_columns(job.period_label_expr())
+    return lf.with_columns(job.period_label_short_expr(), job.period_label_long_expr())
 
 
 class TestReducedDataFilterExpr:
@@ -202,8 +202,8 @@ class TestAggregateToPublicationRows:
     expected_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
-            (Pub.period_label, pl.String()),
-            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (Pub.period_label_short, pl.String()),
+            (Pub.period_label_long, pl.String()),            (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
             (Pub.filled_posts, pl.Float32()),
@@ -356,8 +356,8 @@ class TestAggregateToPublicationRows:
         expected_schema = pl.Schema(
             [
                 (IndCQC.cqc_location_import_date, pl.Date()),
-                (Pub.period_label, pl.String()),
-                (IndCQC.main_job_role_clean_labelled, pl.String()),
+                (Pub.period_label_short, pl.String()),
+                (Pub.period_label_long, pl.String()),                (IndCQC.main_job_role_clean_labelled, pl.String()),
                 (IndCQC.current_region, pl.String()),
                 (IndCQC.primary_service_type, pl.String()),
                 (Pub.filled_posts, pl.Float32()),
@@ -369,6 +369,7 @@ class TestAggregateToPublicationRows:
                 (
                     date(2025, 4, 1),
                     "Mar 2025",
+                    "March 2025",
                     "Registered nurse",
                     "London",
                     "Care home with nursing",
@@ -439,8 +440,8 @@ class TestAddRowsForPublicationGroups:
     expected_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
-            (Pub.period_label, pl.String()),
-            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (Pub.period_label_short, pl.String()),
+            (Pub.period_label_long, pl.String()),            (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.Categorical()),
             (Pub.filled_posts, pl.Float32()),
@@ -529,7 +530,8 @@ class TestAddRowsForPublicationGroups:
 
         assert returned_lf.collect_schema().names() == [
             IndCQC.cqc_location_import_date,
-            Pub.period_label,
+            Pub.period_label_short,
+            Pub.period_label_long,
             IndCQC.main_job_role_clean_labelled,
             IndCQC.current_region,
             IndCQC.primary_service_type,
@@ -812,7 +814,7 @@ class TestImportDateToPeriodMonth:
         assert returned.item() == expected
 
 
-class TestPeriodLabelExpr:
+class TestPeriodLabelShortExpr:
     @pytest.mark.parametrize(
         "import_date, expected",
         [
@@ -823,7 +825,29 @@ class TestPeriodLabelExpr:
     def test_returns_month_and_year_before_import_date(self, import_date, expected):
         df = pl.DataFrame({IndCQC.cqc_location_import_date: [import_date]})
 
-        returned = df.select(job.period_label_expr())
+        returned = df.select(job.period_label_short_expr())
 
-        assert returned.columns == [Pub.period_label]
+        assert returned.columns == [Pub.period_label_short]
+        assert returned.item() == expected
+
+
+class TestPeriodLabelLongExpr:
+    @pytest.mark.parametrize(
+        "import_date, expected",
+        [
+            pytest.param(date(2026, 4, 1), "March 2026", id="financial_year_start"),
+            pytest.param(
+                date(2026, 1, 1), "December 2025", id="january_goes_to_prior_year"
+            ),
+            pytest.param(date(2026, 6, 1), "May 2026", id="short_name_equals_long"),
+        ],
+    )
+    def test_returns_full_month_and_year_before_import_date(
+        self, import_date, expected
+    ):
+        df = pl.DataFrame({IndCQC.cqc_location_import_date: [import_date]})
+
+        returned = df.select(job.period_label_long_expr())
+
+        assert returned.columns == [Pub.period_label_long]
         assert returned.item() == expected

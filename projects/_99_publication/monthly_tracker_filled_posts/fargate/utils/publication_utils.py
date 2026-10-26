@@ -560,7 +560,8 @@ def aggregate_to_publication_rows(
     if group_keys is None:
         group_keys = [
             IndCQC.cqc_location_import_date,
-            Pub.period_label,
+            Pub.period_label_short,
+            Pub.period_label_long,
             IndCQC.main_job_role_clean_labelled,
             IndCQC.current_region,
             IndCQC.primary_service_type,
@@ -632,7 +633,8 @@ def add_rows_for_publication_groups(
             prepared_lf,
             group_keys=[
                 IndCQC.cqc_location_import_date,
-                Pub.period_label,
+                Pub.period_label_short,
+                Pub.period_label_long,
                 IndCQC.current_region,
                 IndCQC.primary_service_type,
             ],
@@ -653,7 +655,8 @@ def add_rows_for_publication_groups(
 
     service_type_group_keys = [
         IndCQC.cqc_location_import_date,
-        Pub.period_label,
+        Pub.period_label_short,
+        Pub.period_label_long,
         IndCQC.main_job_role_clean_labelled,
         IndCQC.current_region,
     ]
@@ -692,7 +695,8 @@ def add_rows_for_publication_groups(
 
     england_group_keys = [
         IndCQC.cqc_location_import_date,
-        Pub.period_label,
+        Pub.period_label_short,
+        Pub.period_label_long,
         IndCQC.main_job_role_clean_labelled,
         IndCQC.primary_service_type,
     ]
@@ -874,22 +878,33 @@ def import_date_to_period_month(import_date: pl.Expr) -> pl.Expr:
     return import_date.dt.offset_by("-1mo")
 
 
-def period_label_expr() -> pl.Expr:
+def period_label_short_expr() -> pl.Expr:
     """
-    Builds a polars expression for the display label of the period, one
-    month behind the import date (e.g. 2026-04-01 -> "Mar 2026").
-
-    A row dated at a financial-year-start month (e.g. April) represents the
-    year ending the month before, so the label is offset back by one month
-    while the import date keeps the real underlying date.
+    Builds the short display label of the period, one month behind the import
+    date (e.g. 2026-04-01 -> "Mar 2026").
 
     Returns:
-        pl.Expr: the label, aliased to the period label column.
+        pl.Expr: the label, aliased to the short period label column.
     """
     return (
         import_date_to_period_month(pl.col(IndCQC.cqc_location_import_date))
         .dt.strftime("%b %Y")
-        .alias(Pub.period_label)
+        .alias(Pub.period_label_short)
+    )
+
+
+def period_label_long_expr() -> pl.Expr:
+    """
+    Builds the long display label of the period, one month behind the import
+    date (e.g. 2026-04-01 -> "March 2026").
+
+    Returns:
+        pl.Expr: the label, aliased to the long period label column.
+    """
+    return (
+        import_date_to_period_month(pl.col(IndCQC.cqc_location_import_date))
+        .dt.strftime("%B %Y")
+        .alias(Pub.period_label_long)
     )
 
 

@@ -69,7 +69,8 @@ def main(
     )
 
     jr_estimates_lf = jr_estimates_lf.with_columns(
-        publication_utils.period_label_expr()
+        publication_utils.period_label_short_expr(),
+        publication_utils.period_label_long_expr(),
     )
 
     utils.sink_to_parquet(

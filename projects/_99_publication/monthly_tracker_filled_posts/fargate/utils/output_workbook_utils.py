@@ -117,7 +117,7 @@ def prepare_t0_for_publication(t0_lf: pl.LazyFrame) -> pd.DataFrame:
         pd.DataFrame: the table to publish.
     """
     published_lf = t0_lf.select(
-        pl.col(Pub.period_label).alias(Pub.period),
+        pl.col(Pub.period_label_short).alias(Pub.period),
         Pub.region,
         Pub.main_service,
         pl.col(Pub.estimated_filled_posts_rounded).alias(Pub.estimated_filled_posts),
@@ -146,7 +146,7 @@ def prepare_perc_change_for_publication(perc_change_lf: pl.LazyFrame) -> pd.Data
         pd.DataFrame: the table to publish.
     """
     published_lf = perc_change_lf.select(
-        pl.col(Pub.period_label).alias(Pub.period),
+        pl.col(Pub.period_label_short).alias(Pub.period),
         Pub.region,
         Pub.main_service,
         _percentage_as_rounded_fraction(Pub.annual_percentage_change),

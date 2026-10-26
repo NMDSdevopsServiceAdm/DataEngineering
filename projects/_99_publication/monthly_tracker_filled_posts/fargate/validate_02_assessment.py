@@ -27,12 +27,17 @@ KEY_COLUMNS = [
     IndCQC.primary_service_type,
 ]
 
-PERIOD_LABEL_REGEX = r"^[A-Z][a-z]{2} \d{4}$"
+PERIOD_LABEL_SHORT_REGEX = r"^[A-Z][a-z]{2} \d{4}$"
+PERIOD_LABEL_LONG_REGEX = r"^[A-Z][a-z]{2,8} \d{4}$"
 
 # The period label parsed back to a date equals the month before the import date.
 # Unparseable labels become null and fail, rather than raising before a report.
-PERIOD_LABEL_MATCHES_IMPORT_DATE_EXPR = (
-    pl.col(Pub.period_label).str.to_date("%b %Y", strict=False)
+PERIOD_LABEL_SHORT_MATCHES_IMPORT_DATE_EXPR = (
+    pl.col(Pub.period_label_short).str.to_date("%b %Y", strict=False)
+    == pl.col(IndCQC.cqc_location_import_date).dt.offset_by("-1mo").dt.month_start()
+)
+PERIOD_LABEL_LONG_MATCHES_IMPORT_DATE_EXPR = (
+    pl.col(Pub.period_label_long).str.to_date("%B %Y", strict=False)
     == pl.col(IndCQC.cqc_location_import_date).dt.offset_by("-1mo").dt.month_start()
 )
 
@@ -53,7 +58,12 @@ METRIC_COLUMNS = [
 
 # The percentage change columns are excluded as they are null for periods with no
 # baseline.
-NOT_NULL_COLUMNS = [*KEY_COLUMNS, Pub.period_label, *METRIC_COLUMNS]
+NOT_NULL_COLUMNS = [
+    *KEY_COLUMNS,
+    Pub.period_label_short,
+    Pub.period_label_long,
+    *METRIC_COLUMNS,
+]
 
 # Each filtered column is a sum over a subset of the rows summed by its total column.
 # The tolerance absorbs Float32 summation order differences.
@@ -96,7 +106,8 @@ CATEGORICAL_COLUMNS = [
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCQC.cqc_location_import_date: "Date",
-        Pub.period_label: "String",
+        Pub.period_label_short: "String",
+        Pub.period_label_long: "String",
         IndCQC.main_job_role_clean_labelled: str(CategoricalColumnTypes.JobRoleCatType),
         IndCQC.current_region: "Categorical",
         IndCQC.primary_service_type: "Categorical",
@@ -131,7 +142,8 @@ PREP_COLUMNS = [
     IndCQC.main_job_role_clean_labelled,
     IndCQC.estimate_filled_posts_by_job_role,
     IndCQC.current_region,
-    Pub.period_label,
+    Pub.period_label_short,
+    Pub.period_label_long,
 ]
 
 
@@ -226,13 +238,22 @@ def main(
             brief="Assessment sum and count columns should not be negative",
         )
         .col_vals_regex(
-            Pub.period_label,
-            PERIOD_LABEL_REGEX,
-            brief="period_label should be formatted as 'Mar 2026'",
+            Pub.period_label_short,
+            PERIOD_LABEL_SHORT_REGEX,
+            brief="period_label_short should be formatted as 'Mar 2026'",
         )
         .col_vals_expr(
-            PERIOD_LABEL_MATCHES_IMPORT_DATE_EXPR,
-            brief="period_label should be the month before the import date",
+            PERIOD_LABEL_SHORT_MATCHES_IMPORT_DATE_EXPR,
+            brief="period_label_short should be the month before the import date",
+        )
+        .col_vals_regex(
+            Pub.period_label_long,
+            PERIOD_LABEL_LONG_REGEX,
+            brief="period_label_long should be formatted as 'March 2026'",
+        )
+        .col_vals_expr(
+            PERIOD_LABEL_LONG_MATCHES_IMPORT_DATE_EXPR,
+            brief="period_label_long should be the month before the import date",
         )
     )
 

@@ -31,7 +31,8 @@ NOT_NULL_COLUMNS = [
     IndCQC.primary_service_type,
     IndCQC.main_job_group_labelled,
     IndCQC.estimate_filled_posts_by_job_role,
-    Pub.period_label,
+    Pub.period_label_short,
+    Pub.period_label_long,
     IndCQC.current_cssr,
     IndCQC.current_region,
     IndCQC.current_icb,
@@ -54,12 +55,17 @@ ONE_LOCATION_IMPORT_DATE_PER_ID_EXPR = (
     == 1
 )
 
-PERIOD_LABEL_REGEX = r"^[A-Z][a-z]{2} \d{4}$"
+PERIOD_LABEL_SHORT_REGEX = r"^[A-Z][a-z]{2} \d{4}$"
+PERIOD_LABEL_LONG_REGEX = r"^[A-Z][a-z]{2,8} \d{4}$"
 
 # The period label parsed back to a date equals the month before the import date.
 # Unparseable labels become null and fail, rather than raising before a report.
-PERIOD_LABEL_MATCHES_IMPORT_DATE_EXPR = (
-    pl.col(Pub.period_label).str.to_date("%b %Y", strict=False)
+PERIOD_LABEL_SHORT_MATCHES_IMPORT_DATE_EXPR = (
+    pl.col(Pub.period_label_short).str.to_date("%b %Y", strict=False)
+    == pl.col(IndCQC.cqc_location_import_date).dt.offset_by("-1mo").dt.month_start()
+)
+PERIOD_LABEL_LONG_MATCHES_IMPORT_DATE_EXPR = (
+    pl.col(Pub.period_label_long).str.to_date("%B %Y", strict=False)
     == pl.col(IndCQC.cqc_location_import_date).dt.offset_by("-1mo").dt.month_start()
 )
 
@@ -101,7 +107,8 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCQC.current_msoa21: "Categorical",
         IndCQC.ct_care_home_total_employed_imputed: "Float32",
         IndCQC.ct_non_res_care_workers_employed_imputed: "Float32",
-        Pub.period_label: "String",
+        Pub.period_label_short: "String",
+        Pub.period_label_long: "String",
     }
 )
 
@@ -194,13 +201,22 @@ def main(
             brief=f"cqc_location_import_date should not be before the retention cutoff {cutoff_date}",
         )
         .col_vals_regex(
-            Pub.period_label,
-            PERIOD_LABEL_REGEX,
-            brief="period_label should be formatted as 'Mar 2026'",
+            Pub.period_label_short,
+            PERIOD_LABEL_SHORT_REGEX,
+            brief="period_label_short should be formatted as 'Mar 2026'",
         )
         .col_vals_expr(
-            PERIOD_LABEL_MATCHES_IMPORT_DATE_EXPR,
-            brief="period_label should be the month before the import date",
+            PERIOD_LABEL_SHORT_MATCHES_IMPORT_DATE_EXPR,
+            brief="period_label_short should be the month before the import date",
+        )
+        .col_vals_regex(
+            Pub.period_label_long,
+            PERIOD_LABEL_LONG_REGEX,
+            brief="period_label_long should be formatted as 'March 2026'",
+        )
+        .col_vals_expr(
+            PERIOD_LABEL_LONG_MATCHES_IMPORT_DATE_EXPR,
+            brief="period_label_long should be the month before the import date",
         )
         .col_vals_ge(
             IndCQC.estimate_filled_posts_by_job_role,
