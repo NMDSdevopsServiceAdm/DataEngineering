@@ -51,3 +51,9 @@ variable "raw_bucket_arn" {
   type        = string
   default     = null
 }
+
+variable "archive_promoted_bucket_arn" {
+  description = "ARN of the long-term promoted archive bucket to grant this task read-only access to. Omit for tasks that don't read promoted archive data."
+  type        = string
+  default     = null
+}

@@ -15,6 +15,14 @@ locals {
   # seconds rather than tying up a dev run for over an hour.
   ascwds_polling_max_attempts = terraform.workspace == "main" ? 60 : 5
   ascwds_polling_wait_seconds = terraform.workspace == "main" ? 900 : 10
+
+  # Max polling attempts and per-attempt wait (seconds) for Publication-Output.json's
+  # "Check Promoted Archive" state, before giving up on a run that hasn't been
+  # promoted yet (update_run_log.sh --flag selected_for_publication). Non-main
+  # workspaces poll faster and fewer times so the wait/timeout paths are practical
+  # to exercise manually on a branch.
+  reconciliation_polling_max_attempts = terraform.workspace == "main" ? 10 : 5
+  reconciliation_polling_wait_seconds = terraform.workspace == "main" ? 180 : 10
 }
 
 # Created explicitly as required by dynamic step functions
@@ -85,9 +93,14 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     dataset_bucket_uri            = module.datasets_bucket.bucket_uri
     dataset_bucket_name           = module.datasets_bucket.bucket_name
     pipeline_resources_bucket_uri = module.pipeline_resources.bucket_uri
+    archive_promoted_bucket_uri   = module.promoted_archive_bucket.bucket_uri
 
     # archive run log
     commit_sha = var.commit_sha
+
+    # reconciliation polling
+    reconciliation_polling_max_attempts = local.reconciliation_polling_max_attempts
+    reconciliation_polling_wait_seconds = local.reconciliation_polling_wait_seconds
 
     # compare paths
     ind_cqc_job_role_estimates = local.ind_cqc_job_role_estimates_dataset_name

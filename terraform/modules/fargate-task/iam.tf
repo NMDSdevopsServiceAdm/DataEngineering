@@ -101,6 +101,35 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_read_raw_bucket"
   policy_arn = aws_iam_policy.raw_bucket_read_policy[0].arn
 }
 
+resource "aws_iam_policy" "archive_promoted_bucket_read_policy" {
+  count       = var.archive_promoted_bucket_arn != null ? 1 : 0
+  name_prefix = "${local.workspace_prefix}-archive-promoted-read-"
+  description = "IAM policy for read-only access to the long-term promoted archive bucket."
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "AllowArchivePromotedBucketReadOnly",
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ],
+        Resource = [
+          var.archive_promoted_bucket_arn,
+          "${var.archive_promoted_bucket_arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_read_archive_promoted_bucket" {
+  count      = var.archive_promoted_bucket_arn != null ? 1 : 0
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = aws_iam_policy.archive_promoted_bucket_read_policy[0].arn
+}
+
 data "aws_secretsmanager_secret" "cqc_api_primary_key" {
   name = var.secret_name
 }

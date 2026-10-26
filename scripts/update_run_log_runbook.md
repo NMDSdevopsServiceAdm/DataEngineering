@@ -10,10 +10,10 @@ Run log location: `s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_ar
 | `approved` | We assessed the run and are satisfied it is accurate | [Approving a run](#approving-a-run-approved) |
 | `selected_for_publication` | The one run chosen to publish this month | [Selecting a run for publication](#selecting-a-run-for-publication-selected_for_publication) |
 | `promoted` | The run's estimates, metadata and run-log partitions are copied into the long-term archive bucket | [Promoting a run](#promoting-a-run-promoted) |
-| `reconciled` | The public output's totals match the archived estimates | [Stub](#reconciling-a-run-reconciled) |
+| `reconciled` | The public output's totals match the archived estimates | [Reconciling a run](#reconciling-a-run-reconciled) |
 | `locally_checked` | The refreshed Tableau file passed its local check | [Stub](#marking-a-run-locally-checked-locally_checked) |
 
-The `tag` column is not set by this script. `promoted_at` is set automatically alongside `promoted` (the current time) and is not itself a flag you choose. Assessing a run is the review of its assessment data and has no flag of its own. Approving, selecting and promoting are separate decisions and separate updates (see `projects/ARCHIVING_AND_PUBLICATION.md`).
+The `tag` column is not set by this script. `promoted_at` and `reconciled_at` are set automatically alongside `promoted` and `reconciled` respectively (the current time) and are not themselves flags you choose. Assessing a run is the review of its assessment data and has no flag of its own. Approving, selecting, promoting and reconciling are separate decisions and separate updates (see `projects/ARCHIVING_AND_PUBLICATION.md`).
 
 ## Prerequisites
 Run these once per terminal session, from the DataEngineering repo root, in PowerShell:
@@ -42,7 +42,7 @@ The script needs Git Bash (bash 4 or later), so run it from there. Steps 1 and 2
 Every flag uses the same script and the same prompts:
 
 1. It asks for the **AWS profile** and the **bucket**. Press Enter at the bucket prompt only for production (`sfc-main-datasets`); otherwise type a branch bucket name, without `s3://` or a trailing `/`.
-2. It copies the run log down and lists the runs archived this month (from the 1st): run number, archive date, the four flags and the tag. Nothing is changed yet.
+2. It copies the run log down and lists the runs archived this month (from the 1st): run number, archive date, the five flags and the tag. Nothing is changed yet.
 3. It asks for the **flag** and the **run number**, then shows the four answers and asks `Are these correct?`.
 4. It builds the update in `run_log_updated/` and prints each changed run **Before** and **After**.
 5. Only after you answer `y` at the upload prompt are the changed runs' folders replaced on S3. Anything other than y/yes/n/no is asked again, and `n` deletes the updated copy and uploads nothing.
@@ -179,11 +179,32 @@ commands in "If something is wrong" below, not by rerunning the flag update.
   the estimates and metadata prefixes (and the run log, which should always be exactly 1 file).
 
 ## Reconciling a run (`reconciled`)
-**Stub: process not yet written.**
 
-- Use case: record that the public output's totals for the run match the archived estimates.
-- Who and when: to be decided. Nothing reads this flag yet.
-- Steps: to be written. The script can already set the flag by following the prompts in "How the script works" with Flag `reconciled`.
+### Use case
+Confirm the public output's total filled posts for a run matches its promoted archive's total, within a small tolerance, before the run is considered fit to tag and publish. This runs **automatically** as the last stage of the `Publication-Output` state machine — you don't normally choose this flag yourself. The run must already be `promoted` for either path below to work, since the comparison reads the long-term archive.
+
+### Steps (automatic, via Publication-Output)
+No separate steps — this runs as the last stage of `Publication-Output` (started per "Selecting a run for publication" above, or by hand). It:
+1. Waits for the run's partition to appear in the long-term archive bucket ("Check Promoted Archive"), retrying for up to 30 minutes on `sfc-main-datasets` (shorter on a branch bucket) before failing the execution if the run was never promoted.
+2. Recomputes the public output's and the promoted archive's total filled posts independently and compares them within a small relative tolerance ("Compare Totals").
+3. On a match, marks the run `reconciled` in the run log (recording `reconciled_at`). On a mismatch, the execution fails without changing the run log, and the pipeline's usual failure notification fires.
+
+### Steps (manual, only to force the flag without the comparison)
+Choosing this flag yourself skips the comparison entirely — only do this if the automated check is known to be wrong for a specific run (for example, a data correction already reconciled by hand). The run must already be `promoted`.
+1. From the repo root, in Git Bash, run `bash scripts/update_run_log.sh`.
+2. Enter the AWS profile and the bucket.
+3. Flag: `reconciled`. Run number: the run to mark reconciled.
+4. Check the four answers and answer `y`, then **Before**/**After** and answer `y` to upload.
+
+### Expected result
+- In the Step Functions console, `Publication-Output`'s "Check Promoted Archive" and "Compare Totals" steps both succeed.
+- The run log shows `reconciled: True` for the run, with a `reconciled_at` timestamp.
+
+### If something is wrong
+- **`Publication-Output` fails at "Check Promoted Archive"** (after its retries are exhausted): the run was never promoted, or promotion hasn't finished yet. Select/promote the run first (see "Promoting a run"), then start `Publication-Output` again with the same `run_number`.
+- **`Publication-Output` fails at "Compare Totals"**: the two totals genuinely differ by more than the tolerance. This needs investigating, not rerunning — check the task's CloudWatch logs, which print both totals and the relative difference.
+- **`Run number <n> is not promoted`** (manual path): promote the run first.
+- **`Run number <n> is already reconciled`**: nothing to do.
 
 ## Marking a run locally checked (`locally_checked`)
 **Stub: process not yet written.**
@@ -193,7 +214,7 @@ commands in "If something is wrong" below, not by rerunning the flag update.
 - Steps: to be written. The script can already set the flag by following the prompts in "How the script works" with Flag `locally_checked`.
 
 ## If something is wrong (any flag)
-- **Flag unsupported**: only the four flags in the table at the top are accepted.
+- **Flag unsupported**: only the five flags in the table at the top are accepted.
 - **Run number not found, or the flag is already True**: the script stops with an error and uploads nothing. Fix the input and run it again.
 - **You answer `n` at the upload prompt (or the update fails)**: the change is reverted. `run_log_updated/` is deleted, `run_log_original/` is left as it was, and nothing is uploaded.
 - **Could not authenticate**: repeat the prerequisites (the MFA credentials have expired after 12 hours).

@@ -87,10 +87,11 @@ module "_04_direct_payments" {
 }
 
 module "_99_publication" {
-  source        = "../modules/fargate-task"
-  task_name     = "_99_publication"
-  ecr_repo_name = "fargate/99_publication"
-  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
+  source                      = "../modules/fargate-task"
+  task_name                   = "_99_publication"
+  ecr_repo_name               = "fargate/99_publication"
+  cluster_arn                 = aws_ecs_cluster.polars_cluster.arn
+  archive_promoted_bucket_arn = module.promoted_archive_bucket.bucket_arn
   environment = [
     { "name" : "AWS_REGION", "value" : "eu-west-2" }
   ]

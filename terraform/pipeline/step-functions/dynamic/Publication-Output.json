@@ -65,6 +65,64 @@
                   ]
                 }
               },
+              "Next": "Check Promoted Archive"
+            },
+            "Check Promoted Archive": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Retry": [
+                {
+                  "ErrorEquals": ["States.ALL"],
+                  "IntervalSeconds": ${reconciliation_polling_wait_seconds},
+                  "MaxAttempts": ${reconciliation_polling_max_attempts},
+                  "BackoffRate": 1
+                }
+              ],
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${publication_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${publication_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_99_publication-container",
+                      "Command.$": "States.Array('_04_reconcile_output.py', '--mode', 'check', '--promoted_archive_source', '${archive_promoted_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/', '--run_number', States.Format('{}', $.run_number))"
+                    }
+                  ]
+                }
+              },
+              "Next": "Compare Totals"
+            },
+            "Compare Totals": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${publication_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${publication_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_99_publication-container",
+                      "Command.$": "States.Array('_04_reconcile_output.py', '--mode', 'compare', '--assessment_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/', '--promoted_archive_source', '${archive_promoted_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/', '--run_log_destination', '${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/', '--run_number', States.Format('{}', $.run_number))"
+                    }
+                  ]
+                }
+              },
               "End": true
             }
           }
