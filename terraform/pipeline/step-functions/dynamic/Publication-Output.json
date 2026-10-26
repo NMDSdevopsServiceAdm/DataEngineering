@@ -65,6 +65,7 @@
                   ]
                 }
               },
+              "ResultPath": null,
               "Next": "Check Promoted Archive"
             },
             "Check Promoted Archive": {
@@ -98,6 +99,7 @@
                   ]
                 }
               },
+              "ResultPath": null,
               "Next": "Compare Totals"
             },
             "Compare Totals": {
