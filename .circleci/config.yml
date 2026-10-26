@@ -563,6 +563,32 @@ jobs:
                 aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/archive_date=2026-10-15/run_number=2/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/archive_date=2026-10-15/run_number=2/" --delete
             fi
 
+  # THROWAWAY (ticket 2243) - seeds sample DPR CSVs into this branch's raw
+  # bucket so Ingest-DPR-Data and Direct-Payment-Recipients can be started
+  # manually to check for regressions. Drop this job, its workflow entry, and
+  # the temporary --source values in Ingest-DPR-Data.json before opening the PR.
+  throwaway-seed-dpr-raw-data:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - aws-cli/setup:
+          role_arn: $AWS_ROLE_ARN
+          region: $AWS_REGION
+      - run:
+          name: "THROWAWAY: seed DPR raw CSVs for ticket 2243 regression test"
+          command: |
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
+            BRANCH_RAW_BUCKET=$(cat terraform/pipeline/raw_bucket_name)
+            aws s3 cp projects/_01_ingest/unittest_data/test_ingest_dpr_survey_data.csv \
+              "s3://$BRANCH_RAW_BUCKET/domain=DPR/raw_data=2027/survey.csv"
+            aws s3 cp projects/_01_ingest/unittest_data/test_ingest_dpr_external_data.csv \
+              "s3://$BRANCH_RAW_BUCKET/domain=DPR/raw_data=2027/external.csv"
+
   terraform-destroy:
     working_directory: /tmp/project
     docker:
@@ -853,6 +879,14 @@ workflows:
               ignore:
                 - main
                 - /^gh-readonly-queue\/.*/
+      # THROWAWAY (ticket 2243) - drop this job entry before opening the PR.
+      - throwaway-seed-dpr-raw-data:
+          context: non-prod
+          requires:
+            - terraform-apply
+          filters:
+            branches:
+              only: 2243-dpr-version
       - test:
           requires:
             - terraform-apply
