@@ -158,16 +158,34 @@ def main(
             Pub.locationid_count_cum_perc_change_short,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_long,
+            long_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_long,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.filtered_ct_total_employed_long,
             long_term_from_date,
             group_columns,
             Pub.filtered_ct_cum_perc_change_long,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_medium,
+            medium_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_medium,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.filtered_ct_total_employed_medium,
             medium_term_from_date,
             group_columns,
             Pub.filtered_ct_cum_perc_change_medium,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_short,
+            short_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_short,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.filtered_ct_total_employed_short,
@@ -225,7 +243,12 @@ def main(
         workbook_path = Path(workbook_folder) / workbook_name
         assessment_workbook_utils.fill_assessment_workbook_from_lf(
             run_assessment_lf,
-            (cell_map.FILLED_POSTS, cell_map.COMP_PREV_PUBLICATION),
+            cell_map.ASSESSMENT_SHEETS,
+            assessment_workbook_utils.TermFromDates(
+                short=short_term_from_date,
+                medium=medium_term_from_date,
+                long=long_term_from_date,
+            ),
             cell_map.TEMPLATE_PATH,
             workbook_path,
         )

@@ -17,6 +17,34 @@ def _cells(ranges: list[str]) -> set[tuple[int, int]]:
     }
 
 
+COMPARISON_PERC_CHANGE_SOURCES = [
+    pytest.param(
+        job.COMP_SHORT_TERM,
+        Pub.filtered_filled_posts_cum_perc_change_short,
+        Pub.filtered_ct_cum_perc_change_short,
+        id="short_term",
+    ),
+    pytest.param(
+        job.COMP_MEDIUM_TERM,
+        Pub.filtered_filled_posts_cum_perc_change_medium,
+        Pub.filtered_ct_cum_perc_change_medium,
+        id="medium_term",
+    ),
+    pytest.param(
+        job.COMP_LONG_TERM,
+        Pub.filtered_filled_posts_cum_perc_change_long,
+        Pub.filtered_ct_cum_perc_change_long,
+        id="long_term",
+    ),
+    pytest.param(
+        job.NO_FILTERS,
+        Pub.filled_posts_cum_perc_change_long,
+        Pub.unfiltered_ct_total_employed_cum_perc_change_long,
+        id="no_filters",
+    ),
+]
+
+
 class TestAssessmentSheets:
     @pytest.mark.parametrize("sheet", sheet_params)
     def test_input_ranges_do_not_overlap(self, sheet: job.SheetMap):
@@ -61,3 +89,22 @@ class TestAssessmentSheets:
         sources = {r.note: r.source_column for r in job.NO_FILTERS.input_ranges}
 
         assert sources[note] == source_column
+
+    @pytest.mark.parametrize(
+        "sheet, filled_posts_source, ct_source", COMPARISON_PERC_CHANGE_SOURCES
+    )
+    def test_comparison_sheet_perc_change_sources(
+        self, sheet: job.SheetMap, filled_posts_source: str, ct_source: str
+    ):
+        """Each comparison sheet's % change columns read its own term's columns."""
+        sources = {r.note: r.source_column for r in sheet.input_ranges}
+
+        assert [
+            sources[note]
+            for note in (
+                "care homes SfC % change",
+                "care homes CT % change",
+                "non-res SfC % change",
+                "non-res CT % change",
+            )
+        ] == [filled_posts_source, ct_source, filled_posts_source, ct_source]

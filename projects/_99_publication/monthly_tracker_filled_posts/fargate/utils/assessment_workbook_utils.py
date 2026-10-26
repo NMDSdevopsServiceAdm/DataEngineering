@@ -1,7 +1,9 @@
 """Helpers for writing input cells into the assessment template."""
 
 import datetime
+from collections.abc import Callable
 from copy import copy
+from dataclasses import dataclass
 from pathlib import Path
 
 import boto3
@@ -31,13 +33,21 @@ from utils.file_utils import split_s3_uri
 PERIOD_LABEL_FORMAT = "%b %Y"
 APRIL = 4
 SERVICE_TYPE_SEPARATOR = "|"
+CARE_HOMES_SERVICE_TYPE = "All CQC care homes"
+NON_RESIDENTIAL_SERVICE_TYPE = "non-residential"
 SERVICE_TYPE_ORDER = [
     "All CQC locations",
-    "All CQC care homes",
+    CARE_HOMES_SERVICE_TYPE,
     "Care home with nursing",
     "Care home without nursing",
-    "non-residential",
+    NON_RESIDENTIAL_SERVICE_TYPE,
 ]
+# Comparison sheet blocks: note prefix of the block's input ranges and the
+# service type rows that feed it.
+COMPARISON_BLOCKS = (
+    ("care homes", CARE_HOMES_SERVICE_TYPE),
+    ("non-res", NON_RESIDENTIAL_SERVICE_TYPE),
+)
 MARCH = 3
 ANNUAL_LABEL = "Annual"
 MONTHLY_LABEL = "Monthly"
@@ -398,6 +408,7 @@ def _table_cells(
     period_df: pl.DataFrame,
     date_notes: tuple[str, ...],
     value_notes: tuple[str, ...],
+    service_types: tuple[str, ...] = tuple(SERVICE_TYPE_ORDER),
 ) -> dict[str, object]:
     """Cells for one table: period dates, service type values and % changes.
 
@@ -408,6 +419,8 @@ def _table_cells(
             months. The first sets how many periods fit.
         value_notes (tuple[str, ...]): notes of the ranges that hold service type
             values, read from each range's source column.
+        service_types (tuple[str, ...]): service types the value ranges spread
+            across, in column order.
 
     Returns:
         dict[str, object]: value by A1 cell.
@@ -434,7 +447,7 @@ def _table_cells(
         rows = period_df.select(
             [
                 f"{input_range.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
-                for service_type in SERVICE_TYPE_ORDER
+                for service_type in service_types
             ]
         ).rows()
         # A % change range can start below the first date row.
@@ -509,15 +522,88 @@ def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, objec
     return cells
 
 
-SHEET_VALUE_BUILDERS = {
-    cell_map.FILLED_POSTS.name: filled_posts_values,
-    cell_map.COMP_PREV_PUBLICATION.name: comp_prev_publication_values,
+def comparison_sheet_values(
+    assessment_df: pl.DataFrame, sheet: cell_map.SheetMap, from_date: datetime.date
+) -> dict[str, object]:
+    """Cell values for a comparison sheet, from the term's start date onwards.
+
+    The care homes block reads the "All CQC care homes" rows and the non-residential
+    block reads the "non-residential" rows. A single-cell range takes the latest
+    row's value, since every row in the term shares the same number of locations.
+
+    Args:
+        assessment_df (pl.DataFrame): output of `prepare_assessment_df`.
+        sheet (cell_map.SheetMap): the comparison sheet.
+        from_date (datetime.date): first import date of the term.
+
+    Returns:
+        dict[str, object]: value by A1 cell.
+    """
+    period_df = assessment_df.filter(
+        pl.col(IndCQC.cqc_location_import_date) >= from_date
+    )
+    latest_row = period_df.row(-1, named=True)
+
+    cells = {}
+    for prefix, service_type in COMPARISON_BLOCKS:
+        block_ranges = [r for r in sheet.input_ranges if r.note.startswith(prefix)]
+        tables = [
+            r
+            for r in block_ranges
+            if r.source_column is not None and CellRange(r.cells).size["rows"] > 1
+        ]
+        cells |= _table_cells(
+            sheet,
+            period_df,
+            tuple(r.note for r in tables if r.source_column == cell_map.PERIOD_COL),
+            tuple(r.note for r in tables if r.source_column != cell_map.PERIOD_COL),
+            (service_type,),
+        )
+        for r in block_ranges:
+            if r.source_column is not None and CellRange(r.cells).size["rows"] == 1:
+                column = f"{r.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
+                cells[r.cells] = latest_row[column]
+    return cells
+
+
+@dataclass(frozen=True)
+class TermFromDates:
+    """First import date of each comparison term.
+
+    Attributes:
+        short (datetime.date): short term start.
+        medium (datetime.date): medium term start.
+        long (datetime.date): long term start, shared by the long term and no
+            filters sheets.
+    """
+
+    short: datetime.date
+    medium: datetime.date
+    long: datetime.date
+
+
+SHEET_VALUE_BUILDERS: dict[str, Callable[[pl.DataFrame, TermFromDates], dict]] = {
+    cell_map.FILLED_POSTS.name: lambda df, _: filled_posts_values(df),
+    cell_map.COMP_PREV_PUBLICATION.name: lambda df, _: comp_prev_publication_values(df),
+    cell_map.COMP_SHORT_TERM.name: lambda df, dates: comparison_sheet_values(
+        df, cell_map.COMP_SHORT_TERM, dates.short
+    ),
+    cell_map.COMP_MEDIUM_TERM.name: lambda df, dates: comparison_sheet_values(
+        df, cell_map.COMP_MEDIUM_TERM, dates.medium
+    ),
+    cell_map.COMP_LONG_TERM.name: lambda df, dates: comparison_sheet_values(
+        df, cell_map.COMP_LONG_TERM, dates.long
+    ),
+    cell_map.NO_FILTERS.name: lambda df, dates: comparison_sheet_values(
+        df, cell_map.NO_FILTERS, dates.long
+    ),
 }
 
 
 def fill_assessment_workbook_from_lf(
     assessment_lf: pl.LazyFrame,
     sheets: tuple[cell_map.SheetMap, ...],
+    term_from_dates: TermFromDates,
     template_path: Path,
     output_path: Path,
 ) -> None:
@@ -528,6 +614,7 @@ def fill_assessment_workbook_from_lf(
     Args:
         assessment_lf (pl.LazyFrame): assessment data.
         sheets (tuple[cell_map.SheetMap, ...]): sheets to fill.
+        term_from_dates (TermFromDates): first import date of each comparison term.
         template_path (Path): template to load.
         output_path (Path): local path to save to.
 
@@ -543,7 +630,8 @@ def fill_assessment_workbook_from_lf(
     )
     assessment_df = prepare_assessment_df(assessment_lf, value_columns)
     values = {
-        sheet.name: SHEET_VALUE_BUILDERS[sheet.name](assessment_df) for sheet in sheets
+        sheet.name: SHEET_VALUE_BUILDERS[sheet.name](assessment_df, term_from_dates)
+        for sheet in sheets
     }
     period_labels = assessment_df.get_column(Pub.period_label).unique().to_list()
     fill_assessment_workbook(period_labels, values, template_path, output_path)

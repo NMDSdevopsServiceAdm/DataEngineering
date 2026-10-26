@@ -314,6 +314,35 @@ class TestSheetText:
             job.sheet_text(labels)
 
 
+ALL_VALUE_COLUMNS = list(
+    dict.fromkeys(
+        column
+        for sheet in cell_map.ASSESSMENT_SHEETS
+        for column in job._value_columns(sheet)
+    )
+)
+EXPLICIT_VALUE_COLUMNS = [
+    Pub.filled_posts,
+    Pub.locationid_count,
+    Pub.filled_posts_april_perc_change,
+    Pub.locationid_count_april_perc_change,
+    Pub.filled_posts_cum_perc_change_short,
+    Pub.locationid_count_cum_perc_change_short,
+    Pub.prev_run_filled_posts,
+    Pub.filled_posts_perc_change_vs_prev_run,
+]
+OTHER_VALUE_COLUMNS = [c for c in ALL_VALUE_COLUMNS if c not in EXPLICIT_VALUE_COLUMNS]
+
+
+def _generic_value(column: str, date_index: int, service_index: int) -> int:
+    """A value that differs by column, import date and service type."""
+    return (
+        (ALL_VALUE_COLUMNS.index(column) + 1) * 10_000
+        + 100 * date_index
+        + (service_index)
+    )
+
+
 def _assessment_lf(
     import_dates: list[datetime.date],
     job_role: str = PublishedJobGroupLabels.all_job_roles,
@@ -338,20 +367,21 @@ def _assessment_lf(
             Pub.prev_run_filled_posts: 5000 * (i + 1) + 10 * j,
             Pub.filled_posts_perc_change_vs_prev_run: 0.5 * (i + 1),
         }
+        | {column: _generic_value(column, i, j) for column in OTHER_VALUE_COLUMNS}
         for i, import_date in enumerate(import_dates)
         for j, service_type in enumerate(job.SERVICE_TYPE_ORDER)
     ]
     return pl.LazyFrame(rows)
 
 
-VALUE_COLUMNS = job._value_columns(cell_map.FILLED_POSTS) + [
-    Pub.prev_run_filled_posts,
-    Pub.filled_posts_perc_change_vs_prev_run,
-]
+VALUE_COLUMNS = ALL_VALUE_COLUMNS
 APRIL_2024 = datetime.date(2024, 4, 1)
 APRIL_2025 = datetime.date(2025, 4, 1)
 APRIL_2026 = datetime.date(2026, 4, 1)
 IMPORT_DATES = [APRIL_2024, APRIL_2025, APRIL_2026, datetime.date(2026, 5, 1)]
+TERM_FROM_DATES = job.TermFromDates(
+    short=APRIL_2026, medium=APRIL_2025, long=APRIL_2024
+)
 
 
 class TestPrepareAssessmentDf:
@@ -486,6 +516,84 @@ class TestCompPrevPublicationValues:
             job.comp_prev_publication_values(df)
 
 
+class TestComparisonSheetValues:
+    CARE_HOMES = 1
+    NON_RESIDENTIAL = 4
+
+    @pytest.fixture(scope="class")
+    def df(self) -> pl.DataFrame:
+        return job.prepare_assessment_df(_assessment_lf(IMPORT_DATES), VALUE_COLUMNS)
+
+    def test_rows_start_at_the_term_start_date_as_period_months(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.COMP_SHORT_TERM, APRIL_2026)
+
+        assert [cells[f"{col}{row}"] for col in "BK" for row in (29, 30)] == [
+            datetime.date(2026, 3, 1),
+            datetime.date(2026, 4, 1),
+        ] * 2
+        assert "B31" not in cells
+
+    def test_an_earlier_term_start_includes_more_rows(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.COMP_MEDIUM_TERM, APRIL_2025)
+
+        assert [cells[f"B{row}"] for row in (29, 30, 31)] == [
+            datetime.date(2025, 3, 1),
+            datetime.date(2026, 3, 1),
+            datetime.date(2026, 4, 1),
+        ]
+
+    def test_care_homes_block_reads_the_all_care_homes_rows(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.COMP_SHORT_TERM, APRIL_2026)
+
+        assert [cells[f"{col}29"] for col in "CDEF"] == [
+            _generic_value(column, 2, self.CARE_HOMES)
+            for column in (
+                Pub.filtered_filled_posts_short,
+                Pub.filtered_ct_total_employed_short,
+                Pub.filtered_filled_posts_cum_perc_change_short,
+                Pub.filtered_ct_cum_perc_change_short,
+            )
+        ]
+
+    def test_non_residential_block_reads_the_non_residential_rows(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.COMP_SHORT_TERM, APRIL_2026)
+
+        assert [cells[f"{col}29"] for col in "LMNO"] == [
+            _generic_value(column, 2, self.NON_RESIDENTIAL)
+            for column in (
+                Pub.filtered_filled_posts_short,
+                Pub.filtered_ct_total_employed_short,
+                Pub.filtered_filled_posts_cum_perc_change_short,
+                Pub.filtered_ct_cum_perc_change_short,
+            )
+        ]
+
+    def test_number_of_locations_cells_take_the_latest_row(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.COMP_SHORT_TERM, APRIL_2026)
+
+        assert (cells["D25"], cells["M25"]) == (
+            _generic_value(Pub.filtered_locationid_count_short, 3, self.CARE_HOMES),
+            _generic_value(
+                Pub.filtered_locationid_count_short, 3, self.NON_RESIDENTIAL
+            ),
+        )
+
+    def test_no_filters_sheet_has_number_of_locations_for_each_period(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.NO_FILTERS, APRIL_2026)
+
+        assert (cells["G29"], cells["P29"]) == (301, 304)
+        assert "D25" not in cells
+
+    def test_raises_when_periods_exceed_the_sheet_rows(self):
+        april_dates = [datetime.date(2000 + year, 4, 1) for year in range(26)]
+        df = job.prepare_assessment_df(_assessment_lf(april_dates), VALUE_COLUMNS)
+
+        with pytest.raises(ValueError, match="exceed the 25 rows"):
+            job.comparison_sheet_values(
+                df, cell_map.COMP_MEDIUM_TERM, datetime.date(2000, 4, 1)
+            )
+
+
 class TestFillAssessmentWorkbookFromLf:
     def test_saves_a_workbook_holding_the_filled_posts_values(self, tmp_path):
         output = tmp_path / "out.xlsx"
@@ -493,6 +601,7 @@ class TestFillAssessmentWorkbookFromLf:
         job.fill_assessment_workbook_from_lf(
             _assessment_lf(IMPORT_DATES),
             (cell_map.FILLED_POSTS,),
+            TERM_FROM_DATES,
             cell_map.TEMPLATE_PATH,
             output,
         )
@@ -504,7 +613,8 @@ class TestFillAssessmentWorkbookFromLf:
         with pytest.raises(ValueError, match="No values builder"):
             job.fill_assessment_workbook_from_lf(
                 _assessment_lf(IMPORT_DATES),
-                (cell_map.COMP_SHORT_TERM,),
+                (cell_map.SheetMap("Unknown sheet", (), 0),),
+                TERM_FROM_DATES,
                 cell_map.TEMPLATE_PATH,
                 tmp_path / "out.xlsx",
             )

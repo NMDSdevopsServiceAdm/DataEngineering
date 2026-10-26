@@ -31,8 +31,11 @@ PERC_CHANGE_COLUMNS = [
     Pub.locationid_count_april_perc_change,
     Pub.filled_posts_cum_perc_change_short,
     Pub.locationid_count_cum_perc_change_short,
+    Pub.filtered_filled_posts_cum_perc_change_long,
     Pub.filtered_ct_cum_perc_change_long,
+    Pub.filtered_filled_posts_cum_perc_change_medium,
     Pub.filtered_ct_cum_perc_change_medium,
+    Pub.filtered_filled_posts_cum_perc_change_short,
     Pub.filtered_ct_cum_perc_change_short,
     Pub.filled_posts_cum_perc_change_long,
     Pub.unfiltered_ct_total_employed_cum_perc_change_long,
@@ -257,7 +260,7 @@ class TestMain:
             Pub.ct_has_data_long,
         )
 
-    def test_main_adds_ct_perc_change_columns_for_each_term(self, mocks):
+    def test_main_adds_perc_change_columns_for_each_term(self, mocks):
         job.main(
             TEST_SOURCE,
             TEST_DESTINATION,
@@ -299,16 +302,34 @@ class TestMain:
                     Pub.locationid_count_cum_perc_change_short,
                 ),
                 call(
+                    Pub.filtered_filled_posts_long,
+                    date(2021, 7, 1),
+                    group_columns,
+                    Pub.filtered_filled_posts_cum_perc_change_long,
+                ),
+                call(
                     Pub.filtered_ct_total_employed_long,
                     date(2021, 7, 1),
                     group_columns,
                     Pub.filtered_ct_cum_perc_change_long,
                 ),
                 call(
+                    Pub.filtered_filled_posts_medium,
+                    date(2025, 4, 1),
+                    group_columns,
+                    Pub.filtered_filled_posts_cum_perc_change_medium,
+                ),
+                call(
                     Pub.filtered_ct_total_employed_medium,
                     date(2025, 4, 1),
                     group_columns,
                     Pub.filtered_ct_cum_perc_change_medium,
+                ),
+                call(
+                    Pub.filtered_filled_posts_short,
+                    date(2026, 4, 1),
+                    group_columns,
+                    Pub.filtered_filled_posts_cum_perc_change_short,
                 ),
                 call(
                     Pub.filtered_ct_total_employed_short,
@@ -422,11 +443,11 @@ class TestMain:
         mocks.scan_parquet.assert_called_with(TEST_WRITTEN_RUN)
         args = mocks.fill_workbook.call_args.args
         assert args[0] is mocks.scan_parquet.return_value
-        assert args[1] == (
-            job.cell_map.FILLED_POSTS,
-            job.cell_map.COMP_PREV_PUBLICATION,
+        assert args[1] == job.cell_map.ASSESSMENT_SHEETS
+        assert args[2] == job.assessment_workbook_utils.TermFromDates(
+            short=date(2026, 4, 1), medium=date(2025, 4, 1), long=date(2021, 7, 1)
         )
-        assert args[2] == job.cell_map.TEMPLATE_PATH
+        assert args[3] == job.cell_map.TEMPLATE_PATH
 
     def test_main_uploads_the_workbook_named_by_archive_date_and_run_number(
         self, mocks
@@ -438,7 +459,7 @@ class TestMain:
             TEST_WORKBOOK_DESTINATION,
         )
 
-        saved_path = mocks.fill_workbook.call_args.args[3]
+        saved_path = mocks.fill_workbook.call_args.args[4]
         assert saved_path.name == "monthly_tracking_summary_2026-10-01_2.xlsx"
         mocks.upload_workbook.assert_called_once_with(
             saved_path, TEST_WORKBOOK_DESTINATION

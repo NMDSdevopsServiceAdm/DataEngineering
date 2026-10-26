@@ -29,6 +29,15 @@ class PublicationColumns:
     filtered_ct_cum_perc_change_long: str = "filtered_ct_cum_perc_change_long"
     filtered_ct_cum_perc_change_medium: str = "filtered_ct_cum_perc_change_medium"
     filtered_ct_cum_perc_change_short: str = "filtered_ct_cum_perc_change_short"
+    filtered_filled_posts_cum_perc_change_long: str = (
+        "filtered_filled_posts_cum_perc_change_long"
+    )
+    filtered_filled_posts_cum_perc_change_medium: str = (
+        "filtered_filled_posts_cum_perc_change_medium"
+    )
+    filtered_filled_posts_cum_perc_change_short: str = (
+        "filtered_filled_posts_cum_perc_change_short"
+    )
     unfiltered_ct_total_employed_cum_perc_change_long: str = (
         "unfiltered_ct_total_employed_cum_perc_change_long"
     )

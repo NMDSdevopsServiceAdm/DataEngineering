@@ -5,10 +5,6 @@ number formats the template tests check. The template has no formulas.
 
 The "Number of locations" cells take the latest row per group, since every row
 in a term's period shares the same count.
-
-Open point the map does not settle (needs a pipeline column or ticket):
-- the pipeline columns that fill the % change cells on `Filled posts` and `Comp
-  prev publication`.
 """
 
 from dataclasses import dataclass
@@ -333,6 +329,8 @@ def _comparison_sheet(
     last_row: int,
     filled_posts: str,
     ct_employed: str | None,
+    filled_posts_perc_change: str,
+    ct_perc_change: str,
     extra_inputs: tuple[InputRange, ...] = (),
     has_criteria_note: bool = True,
     extra_labels: tuple[tuple[str, str], ...] = (),
@@ -346,6 +344,10 @@ def _comparison_sheet(
         filled_posts (str): clean dataset column for Skills for Care filled posts.
         ct_employed (str | None): clean dataset column for Capacity Tracker
             employed; None where no column provides it.
+        filled_posts_perc_change (str): clean dataset column for the Skills for Care
+            filled posts % change.
+        ct_perc_change (str): clean dataset column for the Capacity Tracker
+            % change.
         extra_inputs (tuple[InputRange, ...]): sheet-specific input ranges, such
             as the number of locations.
         has_criteria_note (bool): whether the notes carry a dated criteria line.
@@ -360,12 +362,16 @@ def _comparison_sheet(
         InputRange(f"E{first_row - 2}", note="care homes % change heading"),
         InputRange(f"N{first_row - 2}", note="non-res % change heading"),
         InputRange(
-            f"B{first_row}:B{last_row}", note="care homes dates", number_format="date"
+            f"B{first_row}:B{last_row}",
+            PERIOD_COL,
+            "care homes dates",
+            "date",
         ),
         InputRange(
             f"K{first_row}:K{last_row}",
-            note="non-residential dates",
-            number_format="date",
+            PERIOD_COL,
+            "non-residential dates",
+            "date",
         ),
         InputRange(
             f"C{first_row}:C{last_row}", filled_posts, "care homes SfC", "count"
@@ -374,14 +380,28 @@ def _comparison_sheet(
         InputRange(f"L{first_row}:L{last_row}", filled_posts, "non-res SfC", "count"),
         InputRange(f"M{first_row}:M{last_row}", ct_employed, "non-res CT", "count"),
         InputRange(
-            f"E{first_row}:F{last_row}",
-            note="care homes % change, writer-derived",
-            number_format="percent",
+            f"E{first_row}:E{last_row}",
+            filled_posts_perc_change,
+            "care homes SfC % change",
+            "percent",
         ),
         InputRange(
-            f"N{first_row}:O{last_row}",
-            note="non-res % change, writer-derived",
-            number_format="percent",
+            f"F{first_row}:F{last_row}",
+            ct_perc_change,
+            "care homes CT % change",
+            "percent",
+        ),
+        InputRange(
+            f"N{first_row}:N{last_row}",
+            filled_posts_perc_change,
+            "non-res SfC % change",
+            "percent",
+        ),
+        InputRange(
+            f"O{first_row}:O{last_row}",
+            ct_perc_change,
+            "non-res CT % change",
+            "percent",
         ),
     ]
     if has_criteria_note:
@@ -410,6 +430,8 @@ COMP_SHORT_TERM = _comparison_sheet(
     29 + MONTHLY_SLOTS - 1,
     Pub.filtered_filled_posts_short,
     Pub.filtered_ct_total_employed_short,
+    Pub.filtered_filled_posts_cum_perc_change_short,
+    Pub.filtered_ct_cum_perc_change_short,
     extra_inputs=_location_count_inputs(
         "D25", "M25", Pub.filtered_locationid_count_short
     ),
@@ -420,6 +442,8 @@ COMP_MEDIUM_TERM = _comparison_sheet(
     29 + MEDIUM_TERM_SLOTS - 1,
     Pub.filtered_filled_posts_medium,
     Pub.filtered_ct_total_employed_medium,
+    Pub.filtered_filled_posts_cum_perc_change_medium,
+    Pub.filtered_ct_cum_perc_change_medium,
     extra_inputs=_location_count_inputs(
         "D25", "M25", Pub.filtered_locationid_count_medium
     ),
@@ -430,6 +454,8 @@ COMP_LONG_TERM = _comparison_sheet(
     29 + LONG_TERM_SLOTS - 1,
     Pub.filtered_filled_posts_long,
     Pub.filtered_ct_total_employed_long,
+    Pub.filtered_filled_posts_cum_perc_change_long,
+    Pub.filtered_ct_cum_perc_change_long,
     extra_inputs=_location_count_inputs(
         "D25", "M25", Pub.filtered_locationid_count_long
     ),
@@ -443,6 +469,8 @@ NO_FILTERS = _comparison_sheet(
     29 + LONG_TERM_SLOTS - 1,
     Pub.filled_posts,
     Pub.unfiltered_ct_total_employed_long,
+    Pub.filled_posts_cum_perc_change_long,
+    Pub.unfiltered_ct_total_employed_cum_perc_change_long,
     has_criteria_note=False,
     extra_labels=(("G27", "Number of locations"), ("P27", "Number of locations")),
     extra_inputs=(
