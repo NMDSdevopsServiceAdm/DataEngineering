@@ -119,9 +119,11 @@ copy_run_to_long_term_archive() {
 
   # A real write probe, not just a read/list check: proves write access before
   # touching any real data, so a permissions problem is caught immediately.
+  # No --body: omitting it creates a zero-byte object, and avoids Git Bash on
+  # Windows failing to resolve /dev/null as a readable file for this argument.
   preflight_key=".promotion-write-check-$$"
   if ! aws s3api put-object --bucket "$destination_bucket" --key "$preflight_key" \
-    --body /dev/null --profile "$profile" > /dev/null 2>&1; then
+    --profile "$profile" > /dev/null 2>&1; then
     echo "Error: cannot write to s3://$destination_bucket/. Check profile '$profile' has permission, and that the bucket exists." >&2
     return 1
   fi
