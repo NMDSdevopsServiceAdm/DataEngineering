@@ -108,7 +108,7 @@ start_publication_output() {
 # failure (nothing copied for a dataset whose check failed).
 copy_run_to_long_term_archive() {
   local destination_bucket preflight_key partition archive_date prefix
-  local source_count destination_count
+  local source_count destination_count partitions
 
   # Dataset buckets are sfc-<workspace>-datasets; the long-term bucket is sfc-<workspace>-archive-promoted.
   if [[ ! "$bucket" =~ ^sfc-(.+)-datasets$ ]]; then
@@ -127,7 +127,9 @@ copy_run_to_long_term_archive() {
     echo "Error: cannot write to s3://$destination_bucket/. Check profile '$profile' has permission, and that the bucket exists." >&2
     return 1
   fi
-  aws s3api delete-object --bucket "$destination_bucket" --key "$preflight_key" --profile "$profile" > /dev/null 2>&1
+  if ! aws s3api delete-object --bucket "$destination_bucket" --key "$preflight_key" --profile "$profile" > /dev/null 2>&1; then
+    echo "Warning: could not delete the write-check marker s3://$destination_bucket/$preflight_key (the deny-delete policy may be blocking this profile). Continuing; delete it by hand later." >&2
+  fi
 
   # --- Mark the run promoted (same mechanic as every other flag) ---
   if ! uv run python -m scripts.update_run_log \
@@ -140,15 +142,22 @@ copy_run_to_long_term_archive() {
   fi
 
   # Exactly one partition: promoting has no "clear other runs" side effect.
-  partition=""
+  partitions=()
   for partition_dir in "$PROMOTED_DIR"/archive_date=*/run_number=*/; do
     partition="${partition_dir#"$PROMOTED_DIR"/}"
     partition="${partition%/}"
+    if [[ ! "$partition" =~ ^archive_date=[^/]+/run_number=[1-9][0-9]*$ ]]; then
+      echo "Error: unexpected promoted partition '$partition'. Nothing was uploaded or copied." >&2
+      return 1
+    fi
+    partitions+=("$partition")
   done
-  if [[ ! "$partition" =~ ^archive_date=([^/]+)/run_number=[1-9][0-9]*$ ]]; then
-    echo "Error: unexpected promoted partition '$partition'. Nothing was uploaded or copied." >&2
+  if [[ ${#partitions[@]} -ne 1 ]]; then
+    echo "Error: expected exactly one promoted partition, found ${#partitions[@]} (${partitions[*]:-none}). Nothing was uploaded or copied." >&2
     return 1
   fi
+  partition="${partitions[0]}"
+  [[ "$partition" =~ ^archive_date=([^/]+)/run_number=[1-9][0-9]*$ ]]
   archive_date="${BASH_REMATCH[1]}"
 
   if ! aws s3 sync "$PROMOTED_DIR/$partition/" "s3://$bucket/$RUN_LOG_PREFIX/$partition/" \
@@ -160,7 +169,10 @@ copy_run_to_long_term_archive() {
 
   # --- Copy estimates, metadata, then the now-promoted run log, into the long-term bucket ---
   for prefix in "$ESTIMATES_PREFIX" "$METADATA_PREFIX" "$RUN_LOG_PREFIX"; do
-    source_count="$(aws s3 ls --recursive "s3://$bucket/$prefix/$partition/" --profile "$profile" | wc -l)"
+    if ! source_count="$(aws s3 ls --recursive "s3://$bucket/$prefix/$partition/" --profile "$profile" | wc -l)"; then
+      echo "Error: could not list s3://$bucket/$prefix/$partition/. Nothing copied for this dataset." >&2
+      return 1
+    fi
     if [[ "$source_count" -eq 0 ]]; then
       echo "Error: nothing found at s3://$bucket/$prefix/$partition/. Nothing copied for this dataset." >&2
       return 1
@@ -173,7 +185,11 @@ copy_run_to_long_term_archive() {
       return 1
     fi
 
-    destination_count="$(aws s3 ls --recursive "s3://$destination_bucket/$prefix/$partition/" --profile "$profile" | wc -l)"
+    if ! destination_count="$(aws s3 ls --recursive "s3://$destination_bucket/$prefix/$partition/" --profile "$profile" | wc -l)"; then
+      echo "Error: could not list s3://$destination_bucket/$prefix/$partition/ to verify the copy. Retry by hand:" >&2
+      echo "  aws s3 cp \"s3://$bucket/$prefix/$partition/\" \"s3://$destination_bucket/$prefix/$partition/\" --recursive --profile $profile" >&2
+      return 1
+    fi
     if [[ "$destination_count" -eq 0 || "$destination_count" != "$source_count" ]]; then
       echo "Error: copy of $prefix/$partition looks incomplete ($destination_count of $source_count file(s) at the destination). Retry by hand:" >&2
       echo "  aws s3 cp \"s3://$bucket/$prefix/$partition/\" \"s3://$destination_bucket/$prefix/$partition/\" --recursive --profile $profile" >&2
