@@ -4,7 +4,7 @@ import polars as pl
 
 import projects._03_independent_cqc._01_filled_posts._07_archive.fargate.utils.archive_utils as aUtils
 from polars_utils import utils
-from utils.column_names.archive_run_log_schema import ARCHIVE_RUN_LOG_FILE_SCHEMA
+from schemas.archive_run_log_schema_polars import ARCHIVE_RUN_LOG_FILE_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
 )

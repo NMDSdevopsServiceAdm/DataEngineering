@@ -15,7 +15,7 @@ from typing import Optional, Sequence
 
 import polars as pl
 
-from utils.column_names.archive_run_log_schema import ARCHIVE_RUN_LOG_FILE_SCHEMA
+from schemas.archive_run_log_schema_polars import ARCHIVE_RUN_LOG_FILE_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as Keys,
 )
