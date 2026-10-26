@@ -34,6 +34,23 @@ resource "aws_s3_bucket_policy" "cross_account_access_read_only" {
   policy = file("policy-documents/sfc-main-datasets.cross-account-access.json")
 }
 
+module "promoted_archive_bucket" {
+  source                  = "../modules/s3-bucket"
+  bucket_name             = "${local.workspace_prefix}-archive-promoted"
+  empty_bucket_on_destroy = local.is_development_environment
+
+  # Promoted runs are never overwritten (each is a unique archive_date/
+  # run_number key) - dated partitions are the addressing mechanism here,
+  # not S3 object versions.
+  enable_versioning = false
+}
+
+resource "aws_s3_bucket_policy" "archive_promoted_deny_delete" {
+  count  = local.workspace_prefix == "main" ? 1 : 0
+  bucket = module.promoted_archive_bucket.bucket_name
+  policy = data.aws_iam_policy_document.archive_promoted_deny_delete[0].json
+}
+
 # Per-branch equivalent of prod's hand-managed sfc-data-engineering-raw bucket, so raw
 # ingest steps (and their EventBridge triggers) can be tested on a branch. Never created
 # for main - prod's raw bucket stays hand-managed and untouched.

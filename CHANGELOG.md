@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 - Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
+- Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
 
 ### Changed
 - Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
