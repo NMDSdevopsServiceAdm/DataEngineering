@@ -159,13 +159,17 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
 - **`could not upload the promoted run log partition`**: the run log on S3 does **not** yet show
   `promoted: True` and nothing was copied. Restore the run with the restore command the script
   prints, then recover with "Recovering a promotion that failed before the flag was set" below.
-- **`nothing found at s3://<bucket>/<prefix>/<partition>/`**, **`could not copy <prefix>/<partition>`**,
-  or **`copy of <prefix>/<partition> looks incomplete`**: these all happen *after* the flag update
+- **`could not copy <prefix>/<partition>`**, **`copy of <prefix>/<partition> looks incomplete`** or
+  **`could not list s3://<workspace>-archive-promoted/...`**: these all happen *after* the flag update
   already succeeded (the run log genuinely shows `promoted: True`). Finish the copy by hand instead:
   the script prints the exact `aws s3 cp ... --recursive --profile <profile>` command for the
   dataset that failed — run it, then re-check the file count matches between source and destination
-  (see "Not sure whether a promotion fully finished" below) before moving on to the next dataset if
-  there is one.
+  (see "Not sure whether a promotion fully finished" below). Then do the same for the datasets after
+  it: the script stops at the first failure, so the estimates, metadata and run log are copied in that
+  order and every later one still needs copying.
+- **`nothing found at s3://<bucket>/<prefix>/<partition>/`** or **`could not list s3://<bucket>/...`**:
+  also after the flag update. The source partition has no files or could not be read, so check the
+  run's partition in `<bucket>` exists before copying anything.
 - **Not sure whether a promotion fully finished**: compare file counts yourself —
   `aws s3 ls --recursive s3://<bucket>/<prefix>/<partition>/ --profile <profile> | wc -l` against
   the same command against `s3://<workspace>-archive-promoted/<prefix>/<partition>/` — for each of

@@ -102,6 +102,21 @@ start_publication_output() {
   echo "Started. The line above is the execution ARN."
 }
 
+# Prints how many objects are under an S3 prefix. aws s3 ls exits 1 when nothing
+# matches, which is a count of 0, not an error; any other failure is returned.
+count_objects() {
+  local listing status=0
+  listing="$(aws s3 ls --recursive "$1" --profile "$profile")" || status=$?
+  if [[ $status -ne 0 && $status -ne 1 ]]; then
+    return "$status"
+  fi
+  if [[ -z "$listing" ]]; then
+    echo 0
+  else
+    printf '%s\n' "$listing" | wc -l
+  fi
+}
+
 # Marks the selected run promoted, then copies its estimates, metadata and run-log
 # partitions from $bucket into the long-term archive bucket. Runs automatically
 # after a successful selection; never prompts. Returns 0 on success, 1 on any
@@ -169,7 +184,7 @@ copy_run_to_long_term_archive() {
 
   # --- Copy estimates, metadata, then the now-promoted run log, into the long-term bucket ---
   for prefix in "$ESTIMATES_PREFIX" "$METADATA_PREFIX" "$RUN_LOG_PREFIX"; do
-    if ! source_count="$(aws s3 ls --recursive "s3://$bucket/$prefix/$partition/" --profile "$profile" | wc -l)"; then
+    if ! source_count="$(count_objects "s3://$bucket/$prefix/$partition/")"; then
       echo "Error: could not list s3://$bucket/$prefix/$partition/. Nothing copied for this dataset." >&2
       return 1
     fi
@@ -185,7 +200,7 @@ copy_run_to_long_term_archive() {
       return 1
     fi
 
-    if ! destination_count="$(aws s3 ls --recursive "s3://$destination_bucket/$prefix/$partition/" --profile "$profile" | wc -l)"; then
+    if ! destination_count="$(count_objects "s3://$destination_bucket/$prefix/$partition/")"; then
       echo "Error: could not list s3://$destination_bucket/$prefix/$partition/ to verify the copy. Retry by hand:" >&2
       echo "  aws s3 cp \"s3://$bucket/$prefix/$partition/\" \"s3://$destination_bucket/$prefix/$partition/\" --recursive --profile $profile" >&2
       return 1
