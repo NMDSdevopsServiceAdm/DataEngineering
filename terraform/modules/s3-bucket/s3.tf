@@ -39,8 +39,9 @@ resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "s3_bucket_lifecycle" {
-  count  = length(var.expiration_rules) > 0 ? 1 : 0
-  bucket = aws_s3_bucket.s3_bucket.id
+  count      = length(var.expiration_rules) > 0 ? 1 : 0
+  bucket     = aws_s3_bucket.s3_bucket.id
+  depends_on = [aws_s3_bucket_versioning.s3_bucket_versioning]
 
   dynamic "rule" {
     for_each = var.expiration_rules
