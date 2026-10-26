@@ -8,3 +8,13 @@ variable "empty_bucket_on_destroy" {
   type        = bool
   default     = false
 }
+
+variable "expiration_rules" {
+  description = "Optional per-prefix object expiration rules"
+  type = list(object({
+    id              = string
+    prefix          = string
+    expiration_days = number
+  }))
+  default = []
+}
