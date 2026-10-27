@@ -1,12 +1,10 @@
 import sys
-from datetime import date
 
 import polars as pl
 
 from polars_utils import utils
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     merge_utils,
-    publication_utils,
     run_log_utils,
 )
 from utils import file_utils
@@ -19,7 +17,9 @@ from utils.column_values.categorical_column_values import (
     PublishedRegion,
 )
 
-RECONCILIATION_RELATIVE_TOLERANCE = 0.01
+# Measured on run 2 (2026-10): the two totals agree to ~1e-7, the Float32 rounding
+# floor, so this is ~1000x that floor.
+RECONCILIATION_RELATIVE_TOLERANCE = 0.0001
 
 
 class ReconciliationMismatchError(ValueError):
@@ -47,18 +47,17 @@ def is_run_promoted(promoted_archive_source: str, run_number: int) -> bool:
     return run_number in file_utils.list_archive_runs(promoted_archive_source)
 
 
-def _period_total(lf: pl.LazyFrame, value_column: str, today: date) -> float:
+def _total_by_period(lf: pl.LazyFrame, value_column: str) -> pl.DataFrame:
     """
-    Sums one column over the shared reduced period.
+    Sums one column for each import date.
 
     Summed as Float64 so the comparison measures real differences, not Float32
-    accumulation error over a long sum.
+    accumulation error over a long sum. One row per period, so it is small.
     """
     return (
-        lf.filter(publication_utils.reduced_data_filter_expr(today=today))
-        .select(pl.col(value_column).cast(pl.Float64).sum())
+        lf.group_by(IndCQC.cqc_location_import_date)
+        .agg(pl.col(value_column).cast(pl.Float64).sum().alias(value_column))
         .collect()
-        .item()
     )
 
 
@@ -72,15 +71,15 @@ def main(
     Reconciles one run's public output against its promoted archive, marking the
     run reconciled in the run log on a match.
 
-    Both totals are recomputed independently over the same reduced period, so
-    the comparison holds regardless of how each pipeline's own upstream sampling
-    differs. The public total is the assessment store's raw, pre-rounding
-    filled posts (never the public output's banded figure, which stays the only
-    filled-posts column the public dataset carries), taken from the national
-    "All job roles" row only, as the assessment data also holds overlapping
-    regional, service and job role rollups. The archive total sums every
-    job-role row of estimate_filled_posts_by_job_role in the promoted archive,
-    which has no rollup rows.
+    Both totals are recomputed independently, over the periods the assessment
+    data holds: the archive keeps every period back to 2013, so its other
+    periods are ignored. The public total is the assessment store's raw,
+    pre-rounding filled posts (never the public output's banded figure, which
+    stays the only filled-posts column the public dataset carries), taken from
+    the national "All job roles" row only, as the assessment data also holds
+    overlapping regional, service and job role rollups. The archive total sums
+    every job-role row of estimate_filled_posts_by_job_role in the promoted
+    archive, which has no rollup rows.
 
     Args:
         assessment_source (str): S3 directory holding the assessed data of every
@@ -94,24 +93,38 @@ def main(
         ReconciliationMismatchError: if the two totals differ by more than
             RECONCILIATION_RELATIVE_TOLERANCE
     """
-    today = date.today()
     assessment_run_source, archive_run_source = merge_utils.resolve_run_sources(
         [assessment_source, promoted_archive_source], run_number
     )
 
-    national_total_lf = utils.scan_parquet(assessment_run_source).filter(
-        pl.col(IndCQC.main_job_role_clean_labelled)
-        == PublishedJobGroupLabels.all_job_roles,
-        pl.col(IndCQC.current_region) == PublishedRegion.england,
-        pl.col(IndCQC.primary_service_type) == PublishedMainService.all_locations,
+    public_by_period = _total_by_period(
+        utils.scan_parquet(assessment_run_source).filter(
+            pl.col(IndCQC.main_job_role_clean_labelled)
+            == PublishedJobGroupLabels.all_job_roles,
+            pl.col(IndCQC.current_region) == PublishedRegion.england,
+            pl.col(IndCQC.primary_service_type) == PublishedMainService.all_locations,
+        ),
+        Pub.filled_posts,
     )
-    public_total = _period_total(national_total_lf, Pub.filled_posts, today)
-    archive_total = _period_total(
-        utils.scan_parquet(archive_run_source),
+    public_periods = public_by_period[IndCQC.cqc_location_import_date]
+    archive_by_period = _total_by_period(
+        utils.scan_parquet(archive_run_source).filter(
+            pl.col(IndCQC.cqc_location_import_date).is_in(public_periods.implode())
+        ),
         IndCQC.estimate_filled_posts_by_job_role,
-        today,
     )
 
+    missing_periods = set(public_periods) - set(
+        archive_by_period[IndCQC.cqc_location_import_date]
+    )
+    if missing_periods:
+        raise ReconciliationMismatchError(
+            f"Run {run_number}: periods in the public output but not in the "
+            f"promoted archive: {sorted(missing_periods)}"
+        )
+
+    public_total = public_by_period[Pub.filled_posts].sum()
+    archive_total = archive_by_period[IndCQC.estimate_filled_posts_by_job_role].sum()
     relative_difference = abs(public_total - archive_total) / archive_total
     print(
         f"Run {run_number}: public output total {public_total}, promoted archive "

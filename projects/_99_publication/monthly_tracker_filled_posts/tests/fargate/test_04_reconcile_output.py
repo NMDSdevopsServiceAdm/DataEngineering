@@ -26,11 +26,10 @@ ASSESSMENT_RUN_SOURCE = (
     "some/assessment/directory/archive_date=2026-10-01/run_number=2/"
 )
 ARCHIVE_RUN_SOURCE = "some/promoted/directory/archive_date=2026-10-01/run_number=2/"
-TEST_TODAY = date(2026, 10, 6)
 IN_PERIOD = date(2026, 4, 1)
-# today is 2026-10-06; reduced_data_filter_expr's defaults keep 2025-04 onwards in
-# full and only Jan/Apr/Jul/Oct before that, so May 2024 is outside the period.
-OUT_OF_PERIOD = date(2024, 5, 1)
+OTHER_PERIOD = date(2026, 5, 1)
+# a period the archive holds that the public data does not
+ARCHIVE_ONLY_PERIOD = date(2013, 10, 1)
 
 ASSESSMENT_SCHEMA = pl.Schema(
     [
@@ -75,10 +74,8 @@ def mocks():
         patch(f"{PATCH_PATH}.utils.scan_parquet") as scan_parquet,
         patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources") as resolve_run_sources,
         patch(f"{PATCH_PATH}.run_log_utils.mark_run_log_flag") as mark_run_log_flag,
-        patch(f"{PATCH_PATH}.date") as date_mock,
     ):
         resolve_run_sources.return_value = [ASSESSMENT_RUN_SOURCE, ARCHIVE_RUN_SOURCE]
-        date_mock.today.return_value = TEST_TODAY
         yield SimpleNamespace(
             scan_parquet=scan_parquet,
             resolve_run_sources=resolve_run_sources,
@@ -110,7 +107,7 @@ class TestMain:
         _set_sources(
             mocks,
             [_assessment_row(IN_PERIOD, 1000.0)],
-            [_archive_row(IN_PERIOD, 1005.0)],  # 0.5% diff, within 1%
+            [_archive_row(IN_PERIOD, 1000.05)],  # 0.005% diff, within tolerance
         )
 
         _run_main(mocks)  # does not raise
@@ -170,23 +167,32 @@ class TestMain:
 
         _run_main(mocks)  # does not raise
 
-    def test_applies_the_same_period_filter_to_both_sides(self, mocks):
-        # Each side's out-of-period row carries a different huge value: if either
-        # filter failed to exclude it, the totals would diverge beyond tolerance,
-        # where a shared leaked value could cancel out undetected.
+    def test_ignores_archive_periods_the_public_data_does_not_hold(self, mocks):
+        # The archive keeps every period back to 2013; only the public data's own
+        # periods are compared.
         _set_sources(
             mocks,
-            [
-                _assessment_row(IN_PERIOD, 1000.0),
-                _assessment_row(OUT_OF_PERIOD, 222222.0),
-            ],
+            [_assessment_row(IN_PERIOD, 1000.0)],
             [
                 _archive_row(IN_PERIOD, 1000.0),
-                _archive_row(OUT_OF_PERIOD, 444444.0),
+                _archive_row(ARCHIVE_ONLY_PERIOD, 444444.0),
             ],
         )
 
         _run_main(mocks)  # does not raise
+
+    def test_raises_when_the_archive_is_missing_a_public_period(self, mocks):
+        _set_sources(
+            mocks,
+            [
+                _assessment_row(IN_PERIOD, 1000.0),
+                _assessment_row(OTHER_PERIOD, 1000.0),
+            ],
+            [_archive_row(IN_PERIOD, 2000.0)],  # totals match, one period is absent
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError, match="not.*archive"):
+            _run_main(mocks)
 
     def test_marks_the_run_reconciled_on_match(self, mocks):
         _set_sources(
