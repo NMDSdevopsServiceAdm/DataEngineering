@@ -35,12 +35,12 @@ aws-mfa --mfa-profile prod --token xxxxxx
 uv sync
 ```
 
-The script needs Git Bash (bash 4 or later), so run it from there. Steps 1 and 2 can be done in a separate PowerShell window: the credentials are saved in your `.aws` folder and shared. `aws` and `uv` must be on the Git Bash PATH. The `aws-mfa` login with the `prod` profile also covers `non-prod`, which assumes its role through it.
+The script needs Git Bash (bash 4 or later), so run it from there. Steps 1 and 2 can be done in a separate PowerShell window: the credentials are saved in your `.aws` folder and shared. `aws` and `uv` must be on the Git Bash PATH. The AWS profiles the script uses must be set up as described in `WINDOWS_SETUP.md`.
 
 ## How the script works
 Every flag uses the same script and the same prompts:
 
-1. It asks for the **AWS profile** and the **bucket**. Press Enter at the bucket prompt only for production (`sfc-main-datasets`); otherwise type a branch bucket name, without `s3://` or a trailing `/`.
+1. It asks for the **AWS profile** (Enter for the default, `run-log-updater`; use `non-prod` for a branch bucket) and the **bucket**. Press Enter at the bucket prompt only for production (`sfc-main-datasets`); otherwise type a branch bucket name, without `s3://` or a trailing `/`.
 2. It copies the run log down and lists the runs archived this month (from the 1st): run number, archive date, the four flags and the tag. Nothing is changed yet.
 3. It asks for the **flag** and the **run number**, then shows the four answers and asks `Are these correct?`.
 4. It builds the update in `run_log_updated/` and prints each changed run **Before** and **After**.
@@ -114,7 +114,7 @@ Rules:
 - **Run number not found**: nothing is uploaded; pick a run from the list.
 - **The upload fails part way**: the script names the runs it uploaded and the one that failed. A moved selection can be left with no run selected, or two runs selected. Restore every run it names (on a branch bucket, run the restore commands it prints; see "Undoing an update"), then run the script again.
 - **`State machine ... was not found`, `could not list state machines`, or `could not start`**: the selection is already saved. The script prints `Start Publication-Output by hand with {"run_number": <n>}`; start `<workspace>-Publication-Output` with that input. A branch has the step function only once the branch has deployed it, and your profile needs permission to list and start state machines in that workspace.
-- **`Publication-Output` starts but fails with `run_number <n> not found ... Available runs`**: the run was never prepared. The selection stays set. Start `<workspace>-Publication-Assessment` with `{"run_number": <n>}`, wait for it to finish, then start `Publication-Output` again with the same input.
+- **`Publication-Output` starts but fails with `run_number <n> not found ... Available runs`**: the run was never prepared. The selection stays set. Start `<workspace>-Publication-Assessment` with `{"run_number": <n>}` (on main the `run-log-updater` role can't start it; use another profile with access), wait for it to finish, then start `Publication-Output` again with the same input.
 
 ## Reconciling a run (`reconciled`)
 **Stub: process not yet written.**

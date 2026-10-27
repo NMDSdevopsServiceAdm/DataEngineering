@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added cumulative percentage change columns for the filtered filled posts of each comparison term to the assessment data.
 - Added estimated starters, leavers and vacancies counts, with source columns, to the Starters, Leavers and Vacancies Pipeline estimate step in place of estimated rates. The merge step now also carries the employment status estimate source column.
 - Added estimated starter, turnover and vacancy rates with source columns to the Starters, Leavers and Vacancies Pipeline.
 - Added a period label column (e.g. "Mar 2026") to the prepared publication data, used by the download tables.
@@ -24,6 +25,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Renamed employment status and SLV columns to one naming scheme (`ascwds_`/`estimated_` prefix, `emp_stat_`, `pct`, ordered stage suffixes), so output column names change.
+- Changed the run log update script to default to the `run-log-updater` role for the main bucket.
 - Changed the DPR dataset version to be set once in a Terraform variable instead of hardcoded in the DPR step functions.
 - Renamed the SLV step function to Ind-CQC-EmpStat-SLV and reordered it so worker and workplace data are prepared in separate branches, workplace data is validated, and the SLV counts steps are no longer run.
 - Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
