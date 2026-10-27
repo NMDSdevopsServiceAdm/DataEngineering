@@ -166,9 +166,13 @@ def predict_out_of_fold(
         variant (Variant): the split and window to apply
         n_folds (int): the number of folds
 
+    Each fold is collected on its own, keeping only the columns needed for scoring, so the five
+    full rolling average plans never sit in memory together.
+
     Returns:
         pl.LazyFrame: the held-out rows of every fold, with the 5 rolling average columns
     """
+    keep = [LOCATION, DATE, SERVICE, REGION, ROLE, SIZE_BAND, *KNOWN, *ROLLING]
     folds = []
     for fold in range(n_folds):
         held_out = pl.col(Eval.fold) == fold
@@ -176,8 +180,9 @@ def predict_out_of_fold(
             pl.when(held_out).then(None).otherwise(pl.col(col)).alias(col)
             for col in TREND
         )
-        folds.append(add_variant_rolling_average(masked_lf, variant).filter(held_out))
-    return pl.concat(folds)
+        fold_lf = add_variant_rolling_average(masked_lf, variant).filter(held_out)
+        folds.append(fold_lf.select(keep).collect(engine="streaming"))
+    return pl.concat(folds).lazy()
 
 
 def hide_last_months(lf: pl.LazyFrame, months: int = HIDDEN_MONTHS) -> pl.LazyFrame:
@@ -241,6 +246,14 @@ def score_variant(
     Returns:
         pl.DataFrame: "level", "group", "metric" and "value" rows
     """
+    # Collect once: every score below reads this small frame, not the full plan again.
+    columns = [LOCATION, DATE, SERVICE, AGGREGATE_GEOGRAPHY, ROLE, SIZE_BAND]
+    columns += [HIDDEN] if scored_filter is not None else []
+    pred_lf = (
+        pred_lf.select(*dict.fromkeys(columns + predicted_columns + known_columns))
+        .collect(engine="streaming")
+        .lazy()
+    )
     scoring_lf = pred_lf if scored_filter is None else pred_lf.filter(scored_filter)
     results = []
     for level, by in [("pooled", None), ("job_role", ROLE), ("size_band", SIZE_BAND)]:
