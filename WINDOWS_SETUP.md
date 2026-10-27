@@ -353,9 +353,11 @@ Used by `scripts/update_run_log.sh` to update the run log in `sfc-main-datasets`
 [profile run-log-updater]
 region = eu-west-2
 source_profile = prod-mfa
-role_arn = arn:aws:iam::344210435447:role/run-log-updater
+role_arn = arn:aws:iam::<prod account id>:role/run-log-updater
 ```
-2. Once you have run `aws-mfa` (see below), run `aws sts get-caller-identity --profile run-log-updater` and verify the `Arn` is `arn:aws:sts::344210435447:assumed-role/run-log-updater/******`.
+Replace `<prod account id>` with the account ID in the `mfa_serial` ARN of your `[profile prod]` section.
+
+2. Once you have run `aws-mfa` (see below), run `aws sts get-caller-identity --profile run-log-updater` and verify the `Arn` is `arn:aws:sts::<prod account id>:assumed-role/run-log-updater/******`.
 
 
 ### Terraform command line access
