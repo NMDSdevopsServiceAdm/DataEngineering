@@ -14,6 +14,16 @@ SLUG = "gh/owner/name"
 DEPLOY = job.MAIN_DEPLOY_WORKFLOW
 OWN = job.OWN_CHECK_NAME
 PASS = {"name": "test", "bucket": "pass"}
+MERGE_CALL = (
+    "pr",
+    "merge",
+    "7",
+    "--repo",
+    REPO,
+    "--merge",
+    "--match-head-commit",
+    "headsha",
+)
 
 
 @dataclass
@@ -232,7 +242,7 @@ class TestMergePr:
         merge_pr()
 
         calls = gh_calls(stubs)
-        assert ("pr", "merge", "7", "--repo", REPO, "--merge") in calls
+        assert MERGE_CALL in calls
         assert ("pr", "edit", "7", "--repo", REPO, "--remove-label", LABEL) in calls
 
     def test_dry_run_does_not_merge_but_removes_label(self, stubs):
@@ -250,7 +260,7 @@ class TestMergePr:
 
         calls = gh_calls(stubs)
         assert ("api", "-X", "PUT", f"repos/{REPO}/pulls/7/update-branch") in calls
-        assert ("pr", "merge", "7", "--repo", REPO, "--merge") in calls
+        assert MERGE_CALL in calls
 
     def test_updates_branch_again_when_main_moves_during_deploy_wait(self, stubs):
         stubs["_behind_by"].side_effect = [0, 2, 2, 0, 0]
@@ -259,7 +269,7 @@ class TestMergePr:
 
         updates = [c for c in gh_calls(stubs) if c[:3] == ("api", "-X", "PUT")]
         assert len(updates) == 1
-        assert ("pr", "merge", "7", "--repo", REPO, "--merge") in gh_calls(stubs)
+        assert MERGE_CALL in gh_calls(stubs)
 
     def test_raises_not_mergeable_when_main_keeps_moving(self, stubs):
         stubs["_behind_by"].return_value = 2
@@ -323,7 +333,7 @@ class TestMergePr:
 
         merge_pr()
 
-        assert ("pr", "merge", "7", "--repo", REPO, "--merge") in gh_calls(stubs)
+        assert MERGE_CALL in gh_calls(stubs)
 
     def test_does_not_raise_when_label_removal_fails_after_merge(self, stubs):
         def gh(*args, check=True):

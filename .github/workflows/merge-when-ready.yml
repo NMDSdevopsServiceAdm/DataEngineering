@@ -14,10 +14,16 @@ on:
 
 # One run at a time per mode. The running job loops over every labelled PR, so
 # a run queued behind it (GitHub keeps only the newest) just finds nothing to
-# do. Dry runs have their own group so they never replace a pending real run.
+# do. Dry runs and runs for unrelated labels (which the job skips) get their
+# own groups so they never replace a pending real run.
 concurrency:
   group: >-
-    merge-when-ready-${{ (github.event.label.name == 'merge-dry-run'
+    merge-when-ready-${{
+    (github.event_name == 'pull_request'
+    && github.event.label.name != 'ready-to-merge'
+    && github.event.label.name != 'merge-dry-run')
+    && format('ignored-{0}', github.run_id)
+    || (github.event.label.name == 'merge-dry-run'
     || (github.event_name == 'workflow_dispatch' && inputs.dry_run))
     && 'dry-run' || 'live' }}
   cancel-in-progress: false

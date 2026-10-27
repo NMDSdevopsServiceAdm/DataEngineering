@@ -395,7 +395,11 @@ def _merge_pr(
     if dry_run:
         print(f"Dry run: would merge PR {number}.")
     else:
-        _gh("pr", "merge", str(number), "--repo", repo, "--merge")
+        # Fails if the author pushed a new commit while we waited.
+        _gh(
+            "pr", "merge", str(number), "--repo", repo, "--merge",
+            "--match-head-commit", head_sha,
+        )  # fmt: skip
         print(f"Merged PR {number}.")
     _remove_label(repo, label, number)
 
