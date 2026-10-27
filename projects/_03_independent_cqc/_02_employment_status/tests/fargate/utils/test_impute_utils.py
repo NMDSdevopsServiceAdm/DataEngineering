@@ -109,7 +109,7 @@ class TestAddShortTermImputedPercentages:
         )
 
 
-class TestAddRollingAveragePercentages:
+class TestAddRollingAvgPcts:
     @pytest.mark.parametrize(
         "case",
         [
@@ -129,7 +129,7 @@ class TestAddRollingAveragePercentages:
             check_column_order=False,
         )
 
-    def test_add_rolling_average_percentages_uses_given_group_columns_and_period(self):
+    def test_add_rolling_avg_pcts_uses_given_group_columns_and_period(self):
         permanent = [0.2, 0.6, 0.8]
         input_data = {
             IndCQC.location_id: ["loc1", "loc2", "loc3"],
@@ -145,7 +145,7 @@ class TestAddRollingAveragePercentages:
         }
         expected_permanent = [0.4, 0.4, 1.6 / 3]
 
-        returned_lf = job.add_rolling_average_percentages(
+        returned_lf = job.add_rolling_avg_pcts(
             to_lf(input_data),
             rolling_period="12mo",
             group_columns=[

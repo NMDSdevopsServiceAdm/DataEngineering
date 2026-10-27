@@ -181,7 +181,7 @@ ROLLING_AVERAGE_GROUP_COLUMNS = [
 ]
 
 
-def add_rolling_average_percentages(
+def add_rolling_avg_pcts(
     lf: pl.LazyFrame,
     rolling_period: str,
     group_columns: list[str] = ROLLING_AVERAGE_GROUP_COLUMNS,

@@ -27,10 +27,10 @@ SIZE_POSTS = IndCQC.estimate_filled_posts_by_job_role
 # The cleaned employment status data carries region but not CSSR.
 AGGREGATE_GEOGRAPHY = REGION
 
-KNOWN = iUtils.PERCENTAGE_COLUMNS
-TREND = iUtils.TRENDLINE_PERCENTAGE_COLUMNS
-ROLLING = iUtils.ROLLING_AVERAGE_PERCENTAGE_COLUMNS
-FULL_IMPUTED = iUtils.FULL_IMPUTED_PERCENTAGE_COLUMNS
+KNOWN = iUtils.PCT_COLUMNS
+TREND = iUtils.IMPUTED_TRENDLINE_PCT_COLUMNS
+ROLLING = iUtils.ROLLING_AVG_PCT_COLUMNS
+IMPUTED = iUtils.IMPUTED_PCT_COLUMNS
 
 WINDOW_MONTHS = [3, 6, 12, 24]
 CURRENT_SPLIT = "current"
@@ -118,7 +118,7 @@ def add_rolling_average_with_fallback(
         pl.LazyFrame: dataset with the 5 rolling average columns added
     """
     for i, group_columns in enumerate(levels):
-        lf = iUtils.add_rolling_average_percentages(
+        lf = iUtils.add_rolling_avg_pcts(
             lf, rolling_period=period, group_columns=group_columns
         )
         lf = lf.rename({col: f"{col}_level{i}" for col in ROLLING}).with_columns(
@@ -200,13 +200,13 @@ def hide_last_months(lf: pl.LazyFrame, months: int = HIDDEN_MONTHS) -> pl.LazyFr
 
 def run_imputation_with_variant(lf: pl.LazyFrame, variant: Variant) -> pl.LazyFrame:
     """Run the pipeline's imputation steps with the variant's rolling average."""
-    lf = iUtils.add_short_term_imputed_percentages(
+    lf = iUtils.add_imputed_trendline_pcts(
         lf,
         extrapolation_period=SHORT_TERM_EXTRAPOLATION,
         interpolation_cap_period=SHORT_TERM_INTERPOLATION_CAP,
     )
     lf = add_variant_rolling_average(lf, variant)
-    return iUtils.add_full_imputed_percentages(lf)
+    return iUtils.add_imputed_pcts(lf)
 
 
 def _long(df: pl.DataFrame, level: str, group_column: str | None) -> pl.DataFrame:
