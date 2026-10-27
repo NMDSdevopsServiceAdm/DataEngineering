@@ -610,8 +610,10 @@ def main() -> None:
     if not args.dry_run and _main_tip(args.repo) != tip_before:
         try:
             _require_main_deployed(args.repo, args.project_slug)
-        except (MainDeployFailed, OutOfTime, BotMisconfigured) as error:
+        except MainDeployFailed as error:
             sys.exit(f"{error} Fix it before anything else merges.")
+        except (OutOfTime, BotMisconfigured) as error:
+            sys.exit(f"{error} The deploy of the last merge wasn't confirmed: check CircleCI.")  # fmt: skip
 
 
 if __name__ == "__main__":
