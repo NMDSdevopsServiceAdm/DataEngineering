@@ -12,7 +12,6 @@ All notable changes to this project will be documented in this file.
 - Added a period label column (e.g. "Mar 2026") to the prepared publication data, used by the download tables.
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
-- Added a label-driven GitHub Action that merges PRs to main one at a time, waiting for the previous prod deploy, as a merge queue substitute.
 - Added validation of the monthly tracker assessment data.
 - Added validation of the monthly tracker prepared publication data.
 - Added a full-month period label (e.g. "March 2026") to the monthly tracker publication data.
@@ -23,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 - Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
+- Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
 - Changed the DPR dataset version to be set once in a Terraform variable instead of hardcoded in the DPR step functions.
