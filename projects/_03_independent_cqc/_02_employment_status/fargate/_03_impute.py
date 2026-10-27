@@ -23,19 +23,19 @@ def main(
     """
     lf = utils.scan_parquet(cleaned_data_source)
 
-    lf = iUtils.add_short_term_imputed_percentages(
+    lf = iUtils.add_imputed_trendline_pcts(
         lf,
         extrapolation_period=EXTRAPOLATION_PERIOD,
         interpolation_cap_period=INTERPOLATION_CAP_PERIOD,
     )
 
-    lf = iUtils.add_rolling_average_percentages(
+    lf = iUtils.add_rolling_avg_pcts(
         lf,
         rolling_period=ROLLING_AVERAGE_PERIOD,
         group_columns=iUtils.ROLLING_AVERAGE_GROUP_COLUMNS,
     )
 
-    lf = iUtils.add_full_imputed_percentages(lf)
+    lf = iUtils.add_imputed_pcts(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,

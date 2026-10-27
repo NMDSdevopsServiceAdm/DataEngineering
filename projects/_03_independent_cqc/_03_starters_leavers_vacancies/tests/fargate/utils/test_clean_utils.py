@@ -15,16 +15,16 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 INPUT_SCHEMA_OVERRIDES = {
     EmpStatus.estimated_employees: pl.Float64,
-    SLVCols.starters_cleaned: pl.Int16,
-    SLVCols.leavers_cleaned: pl.Int16,
-    SLVCols.vacancies_cleaned: pl.Int16,
+    SLVCols.ascwds_starters_clean: pl.Int16,
+    SLVCols.ascwds_leavers_clean: pl.Int16,
+    SLVCols.ascwds_vacancies_clean: pl.Int16,
 }
 
 EXPECTED_SCHEMA_OVERRIDES = {
     **INPUT_SCHEMA_OVERRIDES,
-    SLVCols.turnover_rate: pl.Float32,
-    SLVCols.starter_rate: pl.Float32,
-    SLVCols.vacancy_rate: pl.Float32,
+    SLVCols.ascwds_turnover_rate: pl.Float32,
+    SLVCols.ascwds_starter_rate: pl.Float32,
+    SLVCols.ascwds_vacancy_rate: pl.Float32,
 }
 
 

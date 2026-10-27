@@ -22,6 +22,7 @@ from utils.column_values.categorical_column_values import (
     CareHome,
     ContemporaryCSSR,
     Dormancy,
+    HasSuccessor,
     LocationType,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
@@ -873,14 +874,20 @@ class ExtractRegisteredManagerNamesData:
 class LocationsCleanUtilsData:
     # fmt: off
     save_latest_full_snapshot_rows  = [
-        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier),
-        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
-        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier),
-        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier, ["HSCA Successor"]),
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, ["HSCA Successor"]),
+        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier, None),
+        ("1-002", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, ["HSCA Successor", "HSCA Predecessor"]),
+        ("1-003", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, ["HSCA Predecessor"]),
+        ("1-004", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, []),
+        ("1-005", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, None),
     ]
     expected_save_latest_full_snapshot_rows = [
-        (date(2025, 2, 1), "1-001", RegistrationStatus.registered, None, LocationType.social_care_identifier),
-        (date(2025, 2, 1), "1-001", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
+        (date(2025, 2, 1), "1-001", RegistrationStatus.registered, None, LocationType.social_care_identifier, HasSuccessor.no_successor),
+        (date(2025, 2, 1), "1-002", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.has_successor),
+        (date(2025, 2, 1), "1-003", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.no_successor),
+        (date(2025, 2, 1), "1-004", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.no_successor),
+        (date(2025, 2, 1), "1-005", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.no_successor),
     ]
     # fmt: on
 
@@ -1555,6 +1562,7 @@ class ValidateCqcLocations4FullLatestSnapshotTest:
         (date(2025, 1, 1),),
         (RegistrationStatus.registered,),
         (date(2024, 1, 1),),
+        (HasSuccessor.has_successor,),
     ]
 
 
@@ -1562,13 +1570,6 @@ class ValidateCqcLocations4FullLatestSnapshotTest:
 class CleanWorkplaceUtilsTestCase:
     id: str
     expected_data: list[Any]
-
-
-@dataclass
-class JobRoleExpressionBoundsTestCase:
-    id: str
-    input_data: dict[str, Any]
-    expected_data: dict[str, Any]
 
 
 @dataclass
@@ -2232,7 +2233,7 @@ class TestCleanAscwdsWorkplaceUtilsData:
         ),
     ]
 
-    null_slv_job_roles_when_total_not_known_test_cases = [
+    null_slv_job_roles_when_not_known_test_cases = [
         NullSlvJobRolesTestCase(
             id="nulls_job_roles_when_total_is_negative",
             input_data={
@@ -2253,22 +2254,22 @@ class TestCleanAscwdsWorkplaceUtilsData:
             },
         ),
         NullSlvJobRolesTestCase(
-            id="nulls_job_roles_when_total_is_multiple_of_999",
+            id="nulls_job_roles_when_total_is_999",
             input_data={
-                AWPClean.total_starters: [999, 2997],
-                AWPClean.total_leavers: [999, 2997],
-                AWPClean.total_vacancies: [999, 2997],
-                AWPClean.job_role_01_starters: [1, 2],
-                AWPClean.job_role_01_leavers: [1, 2],
-                AWPClean.job_role_01_vacancies: [1, 2],
+                AWPClean.total_starters: [999],
+                AWPClean.total_leavers: [999],
+                AWPClean.total_vacancies: [999],
+                AWPClean.job_role_01_starters: [1],
+                AWPClean.job_role_01_leavers: [1],
+                AWPClean.job_role_01_vacancies: [1],
             },
             expected_data={
-                AWPClean.total_starters: [999, 2997],
-                AWPClean.total_leavers: [999, 2997],
-                AWPClean.total_vacancies: [999, 2997],
-                AWPClean.job_role_01_starters: [None, None],
-                AWPClean.job_role_01_leavers: [None, None],
-                AWPClean.job_role_01_vacancies: [None, None],
+                AWPClean.total_starters: [999],
+                AWPClean.total_leavers: [999],
+                AWPClean.total_vacancies: [999],
+                AWPClean.job_role_01_starters: [None],
+                AWPClean.job_role_01_leavers: [None],
+                AWPClean.job_role_01_vacancies: [None],
             },
         ),
         NullSlvJobRolesTestCase(
@@ -2330,23 +2331,136 @@ class TestCleanAscwdsWorkplaceUtilsData:
                 AWPClean.job_role_01_vacancies: [3],
             },
         ),
-    ]
-
-    job_role_expression_bounds_test_cases = [
-        JobRoleExpressionBoundsTestCase(
-            id="allows_zero_at_lower_bound_for_slv_column",
-            input_data={AWPClean.job_role_01_starters: 0},
-            expected_data={AWPClean.job_role_01_starters: 0},
+        NullSlvJobRolesTestCase(
+            id="nulls_measure_when_one_job_role_is_999_and_total_is_known",
+            input_data={
+                AWPClean.total_vacancies: [1004],
+                AWPClean.job_role_01_vacancies: [999],
+                AWPClean.job_role_02_vacancies: [5],
+            },
+            expected_data={
+                AWPClean.total_vacancies: [1004],
+                AWPClean.job_role_01_vacancies: [None],
+                AWPClean.job_role_02_vacancies: [None],
+            },
         ),
-        JobRoleExpressionBoundsTestCase(
-            id="nulls_slv_value_below_lower_bound",
-            input_data={AWPClean.job_role_01_starters: -1},
-            expected_data={AWPClean.job_role_01_starters: None},
+        NullSlvJobRolesTestCase(
+            id="keeps_job_roles_when_a_job_role_is_a_multiple_of_999_but_not_999",
+            input_data={
+                AWPClean.total_starters: [2000],
+                AWPClean.job_role_01_starters: [1998],
+                AWPClean.job_role_02_starters: [2],
+            },
+            expected_data={
+                AWPClean.total_starters: [2000],
+                AWPClean.job_role_01_starters: [1998],
+                AWPClean.job_role_02_starters: [2],
+            },
         ),
-        JobRoleExpressionBoundsTestCase(
-            id="does_not_bound_non_slv_job_role_columns",
-            input_data={AWPClean.job_role_01_employees: -1},
-            expected_data={AWPClean.job_role_01_employees: -1},
+        NullSlvJobRolesTestCase(
+            id="nulls_measure_when_one_job_role_is_negative",
+            input_data={
+                AWPClean.total_leavers: [4],
+                AWPClean.job_role_01_leavers: [-1],
+                AWPClean.job_role_02_leavers: [4],
+            },
+            expected_data={
+                AWPClean.total_leavers: [4],
+                AWPClean.job_role_01_leavers: [None],
+                AWPClean.job_role_02_leavers: [None],
+            },
+        ),
+        NullSlvJobRolesTestCase(
+            id="only_nulls_measure_with_unknown_job_role",
+            input_data={
+                AWPClean.total_starters: [3],
+                AWPClean.total_vacancies: [1004],
+                AWPClean.job_role_01_starters: [1],
+                AWPClean.job_role_02_starters: [2],
+                AWPClean.job_role_01_vacancies: [999],
+                AWPClean.job_role_02_vacancies: [5],
+            },
+            expected_data={
+                AWPClean.total_starters: [3],
+                AWPClean.total_vacancies: [1004],
+                AWPClean.job_role_01_starters: [1],
+                AWPClean.job_role_02_starters: [2],
+                AWPClean.job_role_01_vacancies: [None],
+                AWPClean.job_role_02_vacancies: [None],
+            },
+        ),
+        NullSlvJobRolesTestCase(
+            id="nulls_measure_when_total_is_null_and_one_job_role_is_not_known",
+            input_data={
+                AWPClean.total_vacancies: [None],
+                AWPClean.job_role_01_vacancies: [999],
+                AWPClean.job_role_02_vacancies: [5],
+            },
+            expected_data={
+                AWPClean.total_vacancies: [None],
+                AWPClean.job_role_01_vacancies: [None],
+                AWPClean.job_role_02_vacancies: [None],
+            },
+        ),
+        NullSlvJobRolesTestCase(
+            id="keeps_job_roles_when_total_is_null_and_job_roles_are_known",
+            input_data={
+                AWPClean.total_vacancies: [None],
+                AWPClean.job_role_01_vacancies: [0],
+                AWPClean.job_role_02_vacancies: [5],
+            },
+            expected_data={
+                AWPClean.total_vacancies: [None],
+                AWPClean.job_role_01_vacancies: [0],
+                AWPClean.job_role_02_vacancies: [5],
+            },
+        ),
+        NullSlvJobRolesTestCase(
+            id="nulls_measure_when_total_is_zero_and_one_job_role_is_negative",
+            input_data={
+                AWPClean.total_starters: [0],
+                AWPClean.job_role_01_starters: [-1],
+                AWPClean.job_role_02_starters: [0],
+            },
+            expected_data={
+                AWPClean.total_starters: [0],
+                AWPClean.job_role_01_starters: [None],
+                AWPClean.job_role_02_starters: [None],
+            },
+        ),
+        NullSlvJobRolesTestCase(
+            id="only_nulls_leavers_when_only_a_leavers_job_role_is_not_known",
+            input_data={
+                AWPClean.total_leavers: [1004],
+                AWPClean.total_vacancies: [5],
+                AWPClean.job_role_01_leavers: [999],
+                AWPClean.job_role_02_leavers: [5],
+                AWPClean.job_role_01_vacancies: [2],
+                AWPClean.job_role_02_vacancies: [3],
+            },
+            expected_data={
+                AWPClean.total_leavers: [1004],
+                AWPClean.total_vacancies: [5],
+                AWPClean.job_role_01_leavers: [None],
+                AWPClean.job_role_02_leavers: [None],
+                AWPClean.job_role_01_vacancies: [2],
+                AWPClean.job_role_02_vacancies: [3],
+            },
+        ),
+        NullSlvJobRolesTestCase(
+            id="keeps_job_roles_when_all_job_roles_are_zero_null_or_known",
+            input_data={
+                AWPClean.total_starters: [3],
+                AWPClean.job_role_01_starters: [0],
+                AWPClean.job_role_02_starters: [None],
+                AWPClean.job_role_03_starters: [3],
+            },
+            expected_data={
+                AWPClean.total_starters: [3],
+                AWPClean.job_role_01_starters: [0],
+                AWPClean.job_role_02_starters: [None],
+                AWPClean.job_role_03_starters: [3],
+            },
         ),
     ]
 

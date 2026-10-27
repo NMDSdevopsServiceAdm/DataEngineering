@@ -264,6 +264,7 @@ class ReconciliationSchema:
         CQCLClean.cqc_location_import_date: pl.Date,
         CQCL.registration_status: pl.String,
         CQCL.deregistration_date: pl.Date,
+        CQCLClean.has_successor: pl.String,
     }
 
 

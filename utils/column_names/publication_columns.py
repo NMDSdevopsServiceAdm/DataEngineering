@@ -29,6 +29,15 @@ class PublicationColumns:
     filtered_ct_cum_perc_change_long: str = "filtered_ct_cum_perc_change_long"
     filtered_ct_cum_perc_change_medium: str = "filtered_ct_cum_perc_change_medium"
     filtered_ct_cum_perc_change_short: str = "filtered_ct_cum_perc_change_short"
+    filtered_filled_posts_cum_perc_change_long: str = (
+        "filtered_filled_posts_cum_perc_change_long"
+    )
+    filtered_filled_posts_cum_perc_change_medium: str = (
+        "filtered_filled_posts_cum_perc_change_medium"
+    )
+    filtered_filled_posts_cum_perc_change_short: str = (
+        "filtered_filled_posts_cum_perc_change_short"
+    )
     unfiltered_ct_total_employed_cum_perc_change_long: str = (
         "unfiltered_ct_total_employed_cum_perc_change_long"
     )
@@ -37,6 +46,8 @@ class PublicationColumns:
     locationid_count_cum_perc_change_short: str = (
         "locationid_count_cum_perc_change_short"
     )
+    prev_run_filled_posts: str = "prev_run_filled_posts"
+    filled_posts_perc_change_vs_prev_run: str = "filled_posts_perc_change_vs_prev_run"
     filled_posts_april_perc_change: str = "filled_posts_april_perc_change"
     locationid_count_april_perc_change: str = "locationid_count_april_perc_change"
     main_service: str = "Main service"
@@ -47,5 +58,6 @@ class PublicationColumns:
     annual_percentage_change: str = "Annual percentage change"
     monthly_percentage_change: str = "Monthly percentage change"
     period: str = "Period"
-    period_label: str = "Period label"
+    period_label_short: str = "Period label short"
+    period_label_long: str = "Period label long"
     estimated_filled_posts_rounded: str = "Estimated filled posts (rounded)"

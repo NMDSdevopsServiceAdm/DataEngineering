@@ -86,6 +86,12 @@ Never hardcode column-name strings. Column-name classes belong in `utils/column_
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 ```
 
+Naming scheme for pipeline measures (see `EmploymentStatusColumns`, `StartersLeaversVacanciesColumns`):
+
+- Shape: `[ascwds_|estimated_]<category>_<measure>[_<stage>]`, e.g. `ascwds_emp_stat_permanent_count_clean`, `estimated_emp_stat_permanent_count`. Raw and cleaned ASC-WDS values take `ascwds_`; final estimates take `estimated_` (plus `_source`).
+- Stages, in pipeline order: `_dedup`, `_clean`, `_imputed_trendline`, `_rolling_avg`, `_imputed`, `_modelled`. One spelling each; percentages are `pct`.
+- Order class fields by stage, a blank line between stage groups, building each derived name from the base field it extends.
+
 ## Testing
 
 New tests: pytest, one behaviour per test, named by behaviour/expectation rather than input. Full pattern (class/dataclass/parametrize conventions, mocking rules, test-data storage) lives in the `pytest-pattern` skill (`.claude/skills/pytest-pattern/`).

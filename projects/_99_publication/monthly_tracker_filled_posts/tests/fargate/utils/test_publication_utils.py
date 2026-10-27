@@ -16,10 +16,6 @@ from utils.column_values.categorical_column_values import (
 )
 
 
-def _with_period_label(lf: pl.LazyFrame) -> pl.LazyFrame:
-    return lf.with_columns(job.period_label_expr())
-
-
 class TestReducedDataFilterExpr:
     @pytest.mark.parametrize(
         "case",
@@ -202,7 +198,6 @@ class TestAggregateToPublicationRows:
     expected_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
-            (Pub.period_label, pl.String()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
@@ -229,9 +224,7 @@ class TestAggregateToPublicationRows:
         ],
     )
     def test_returns_expected_data(self, case):
-        input_lf = _with_period_label(
-            pl.LazyFrame(case.input_data, self.input_schema, orient="row")
-        )
+        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
 
         returned_lf = job.aggregate_to_publication_rows(input_lf)
 
@@ -350,13 +343,12 @@ class TestAggregateToPublicationRows:
         )
 
         returned_lf = job.aggregate_to_publication_rows(
-            _with_period_label(input_lf), include_assessment=False
+            input_lf, include_assessment=False
         )
 
         expected_schema = pl.Schema(
             [
                 (IndCQC.cqc_location_import_date, pl.Date()),
-                (Pub.period_label, pl.String()),
                 (IndCQC.main_job_role_clean_labelled, pl.String()),
                 (IndCQC.current_region, pl.String()),
                 (IndCQC.primary_service_type, pl.String()),
@@ -368,7 +360,6 @@ class TestAggregateToPublicationRows:
             [
                 (
                     date(2025, 4, 1),
-                    "Mar 2025",
                     "Registered nurse",
                     "London",
                     "Care home with nursing",
@@ -398,7 +389,7 @@ class TestAggregateToPublicationRows:
         )
 
         returned_df = job.aggregate_to_publication_rows(
-            _with_period_label(input_lf), include_assessment=False
+            input_lf, include_assessment=False
         ).collect()
 
         assert returned_df[Pub.filled_posts].to_list() == [10.0]
@@ -439,7 +430,6 @@ class TestAddRowsForPublicationGroups:
     expected_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
-            (Pub.period_label, pl.String()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.Categorical()),
@@ -466,9 +456,7 @@ class TestAddRowsForPublicationGroups:
         ],
     )
     def test_adds_rollup_rows_for_job_role_service_type_and_region(self, case):
-        input_lf = _with_period_label(
-            pl.LazyFrame(case.input_data, self.input_schema, orient="row")
-        )
+        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
         publication_summary_lf = job.aggregate_to_publication_rows(input_lf)
 
         returned_lf = job.add_rows_for_publication_groups(
@@ -518,7 +506,6 @@ class TestAddRowsForPublicationGroups:
             self.input_schema,
             orient="row",
         )
-        input_lf = _with_period_label(input_lf)
         publication_summary_lf = job.aggregate_to_publication_rows(
             input_lf, include_assessment=False
         )
@@ -529,7 +516,6 @@ class TestAddRowsForPublicationGroups:
 
         assert returned_lf.collect_schema().names() == [
             IndCQC.cqc_location_import_date,
-            Pub.period_label,
             IndCQC.main_job_role_clean_labelled,
             IndCQC.current_region,
             IndCQC.primary_service_type,
@@ -550,6 +536,136 @@ class TestAddRowsForPublicationGroups:
         assert england_total_row.select(Pub.filled_posts, Pub.locationid_count).row(
             0
         ) == (30.0, 1)
+
+
+class TestAddPrevRunFilledPostsColumns:
+    key_schema = pl.Schema(
+        [
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+        ]
+    )
+    current_schema = pl.Schema(
+        list(key_schema.items()) + [(Pub.filled_posts, pl.Float64())]
+    )
+    prev_schema = current_schema
+
+    def _current_lf(self) -> pl.LazyFrame:
+        return pl.LazyFrame(
+            [
+                (date(2026, 4, 1), "A", "North", "care", 110.0),
+                (date(2026, 5, 1), "A", "North", "care", 50.0),
+            ],
+            self.current_schema,
+            orient="row",
+        )
+
+    def _prev_lf(self, prev_posts: float = 100.0) -> pl.LazyFrame:
+        return pl.LazyFrame(
+            [(date(2026, 4, 1), "A", "North", "care", prev_posts)],
+            self.prev_schema,
+            orient="row",
+        )
+
+    def test_adds_prev_run_filled_posts_on_matching_keys_and_null_on_new_keys(self):
+        returned_df = job.add_prev_run_filled_posts_columns(
+            self._current_lf(), self._prev_lf()
+        ).collect()
+
+        assert returned_df[Pub.prev_run_filled_posts].to_list() == [100.0, None]
+
+    def test_adds_perc_change_from_prev_run_as_net_change_fraction(self):
+        returned_df = job.add_prev_run_filled_posts_columns(
+            self._current_lf(), self._prev_lf()
+        ).collect()
+
+        assert returned_df[Pub.filled_posts_perc_change_vs_prev_run].to_list() == [
+            pytest.approx(0.1),
+            None,
+        ]
+        assert (
+            returned_df.schema[Pub.filled_posts_perc_change_vs_prev_run] == pl.Float32()
+        )
+
+    def test_perc_change_is_null_when_prev_run_filled_posts_is_zero(self):
+        returned_df = job.add_prev_run_filled_posts_columns(
+            self._current_lf(), self._prev_lf(prev_posts=0.0)
+        ).collect()
+
+        assert returned_df[Pub.filled_posts_perc_change_vs_prev_run].to_list() == [
+            None,
+            None,
+        ]
+
+    def test_keeps_current_rows_and_columns_unchanged(self):
+        returned_lf = job.add_prev_run_filled_posts_columns(
+            self._current_lf(), self._prev_lf()
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf.select(self.current_schema.names()), self._current_lf()
+        )
+
+    @pytest.mark.parametrize(
+        "current_dtype", [pl.Categorical, pl.Enum(["care", "other"])]
+    )
+    def test_aligns_prev_key_dtypes_to_current(self, current_dtype):
+        current_lf = self._current_lf().with_columns(
+            pl.col(IndCQC.primary_service_type).cast(current_dtype)
+        )
+
+        returned_df = job.add_prev_run_filled_posts_columns(
+            current_lf, self._prev_lf()
+        ).collect()
+
+        assert returned_df[Pub.prev_run_filled_posts].to_list() == [100.0, None]
+
+    def test_matches_rows_where_a_key_is_null(self):
+        current_lf = self._current_lf().with_columns(
+            pl.when(pl.col(IndCQC.cqc_location_import_date) == date(2026, 4, 1))
+            .then(None)
+            .otherwise(pl.col(IndCQC.current_region))
+            .alias(IndCQC.current_region)
+        )
+        prev_lf = pl.LazyFrame(
+            [(date(2026, 4, 1), "A", None, "care", 100.0)],
+            self.prev_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_prev_run_filled_posts_columns(
+            current_lf, prev_lf
+        ).collect()
+
+        assert returned_df[Pub.prev_run_filled_posts].to_list() == [100.0, None]
+
+    def test_adds_null_columns_when_prev_run_lacks_filled_posts(self):
+        prev_lf = pl.LazyFrame(
+            [(date(2026, 4, 1), "A", "North", "care")],
+            self.key_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_prev_run_filled_posts_columns(
+            self._current_lf(), prev_lf
+        ).collect()
+
+        assert returned_df[Pub.prev_run_filled_posts].null_count() == 2
+        assert returned_df[Pub.filled_posts_perc_change_vs_prev_run].null_count() == 2
+
+    def test_adds_null_columns_when_there_is_no_prev_run(self):
+        returned_df = job.add_prev_run_filled_posts_columns(
+            self._current_lf(), None
+        ).collect()
+
+        assert returned_df.schema[Pub.prev_run_filled_posts] == pl.Float64()
+        assert (
+            returned_df.schema[Pub.filled_posts_perc_change_vs_prev_run] == pl.Float32()
+        )
+        assert returned_df[Pub.prev_run_filled_posts].null_count() == 2
+        assert returned_df[Pub.filled_posts_perc_change_vs_prev_run].null_count() == 2
 
 
 class TestCalcPercChangeFromPreviousApril:
@@ -682,7 +798,7 @@ class TestImportDateToPeriodMonth:
         assert returned.item() == expected
 
 
-class TestPeriodLabelExpr:
+class TestPeriodLabelShortExpr:
     @pytest.mark.parametrize(
         "import_date, expected",
         [
@@ -693,7 +809,29 @@ class TestPeriodLabelExpr:
     def test_returns_month_and_year_before_import_date(self, import_date, expected):
         df = pl.DataFrame({IndCQC.cqc_location_import_date: [import_date]})
 
-        returned = df.select(job.period_label_expr())
+        returned = df.select(job.period_label_short_expr())
 
-        assert returned.columns == [Pub.period_label]
+        assert returned.columns == [Pub.period_label_short]
+        assert returned.item() == expected
+
+
+class TestPeriodLabelLongExpr:
+    @pytest.mark.parametrize(
+        "import_date, expected",
+        [
+            pytest.param(date(2026, 4, 1), "March 2026", id="financial_year_start"),
+            pytest.param(
+                date(2026, 1, 1), "December 2025", id="january_goes_to_prior_year"
+            ),
+            pytest.param(date(2026, 6, 1), "May 2026", id="short_name_equals_long"),
+        ],
+    )
+    def test_returns_full_month_and_year_before_import_date(
+        self, import_date, expected
+    ):
+        df = pl.DataFrame({IndCQC.cqc_location_import_date: [import_date]})
+
+        returned = df.select(job.period_label_long_expr())
+
+        assert returned.columns == [Pub.period_label_long]
         assert returned.item() == expected

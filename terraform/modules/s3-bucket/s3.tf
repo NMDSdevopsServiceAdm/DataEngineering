@@ -37,3 +37,32 @@ resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
     object_ownership = "ObjectWriter"
   }
 }
+
+resource "aws_s3_bucket_lifecycle_configuration" "s3_bucket_lifecycle" {
+  count      = length(var.expiration_rules) > 0 ? 1 : 0
+  bucket     = aws_s3_bucket.s3_bucket.id
+  depends_on = [aws_s3_bucket_versioning.s3_bucket_versioning]
+
+  dynamic "rule" {
+    for_each = var.expiration_rules
+    content {
+      id     = rule.value.id
+      status = "Enabled"
+
+      filter {
+        prefix = rule.value.prefix
+      }
+
+      expiration {
+        days = rule.value.expiration_days
+      }
+
+      # Without this, an expired object on a versioned bucket only gets a
+      # delete marker on its current version - the bytes stay as a
+      # noncurrent version indefinitely, so the storage is never reclaimed.
+      noncurrent_version_expiration {
+        noncurrent_days = 1
+      }
+    }
+  }
+}

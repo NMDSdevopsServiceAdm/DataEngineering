@@ -1,18 +1,41 @@
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 
 
 def main(
     imputed_data_source: str,
     estimated_data_destination: str,
 ) -> None:
-    """
-    Creates estimates of starters, leavers and vacancies.
+    """Creates estimated starters, leavers and vacancies.
+
+    Each estimate is the first populated of the listed columns.
 
     Args:
-        imputed_data_source (str): path to the imputed data
-        estimated_data_destination (str): destination for output
+        imputed_data_source (str): Path to the imputed data.
+        estimated_data_destination (str): Destination for output.
     """
     lf = utils.scan_parquet(imputed_data_source)
+
+    lf = lf.with_columns(
+        *utils.coalesce_with_source_labels(
+            cols=[SLVCols.ascwds_starters_clean],
+            name=SLVCols.estimated_starters,
+            source_dtype=CatColType.StartersEstimateSourceEnumType,
+        ),
+        *utils.coalesce_with_source_labels(
+            cols=[SLVCols.ascwds_leavers_clean],
+            name=SLVCols.estimated_leavers,
+            source_dtype=CatColType.LeaversEstimateSourceEnumType,
+        ),
+        *utils.coalesce_with_source_labels(
+            cols=[SLVCols.ascwds_vacancies_clean],
+            name=SLVCols.estimated_vacancies,
+            source_dtype=CatColType.VacanciesEstimateSourceEnumType,
+        ),
+    )
 
     utils.sink_to_parquet(
         lazy_df=lf,

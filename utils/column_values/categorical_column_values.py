@@ -4,6 +4,9 @@ from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 
 
 @dataclass
@@ -65,6 +68,14 @@ class RegistrationStatus(ColumnValues):
 
     registered: str = "Registered"
     deregistered: str = "Deregistered"
+
+
+@dataclass
+class HasSuccessor(ColumnValues):
+    """The possible values of the has_successor column in CQC locations data"""
+
+    has_successor: str = "Y"
+    no_successor: str = "N"
 
 
 @dataclass
@@ -614,6 +625,27 @@ class EmploymentStatusEstimateSource(ColumnValues):
     cleaned: str = "cleaned"
     imputed: str = "imputed"
     rolling_avg: str = "rolling_avg"
+
+
+@dataclass
+class StartersEstimateSource(ColumnValues):
+    """The columns an estimated starters count can come from"""
+
+    ascwds_starters_clean: str = SLVCols.ascwds_starters_clean
+
+
+@dataclass
+class LeaversEstimateSource(ColumnValues):
+    """The columns an estimated leavers count can come from"""
+
+    ascwds_leavers_clean: str = SLVCols.ascwds_leavers_clean
+
+
+@dataclass
+class VacanciesEstimateSource(ColumnValues):
+    """The columns an estimated vacancies count can come from"""
+
+    ascwds_vacancies_clean: str = SLVCols.ascwds_vacancies_clean
 
 
 @dataclass

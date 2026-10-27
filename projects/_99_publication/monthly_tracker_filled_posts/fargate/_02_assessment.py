@@ -6,6 +6,7 @@ from polars_utils import utils
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     merge_utils,
     publication_utils,
+    run_log_utils,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
@@ -19,17 +20,19 @@ RUN_PARTITION_COLUMNS = [ArchiveKeys.archive_date, ArchiveKeys.run_number]
 def main(
     prep_source: str,
     assessment_destination: str,
+    run_log_source: str,
     run_number: int | None = None,
 ) -> None:
     """
-    Builds the assessment data for one prepared run: publication and assessment
-    columns by import date, job role, region and service type, with rollup rows
-    and capacity tracker (CT) percentage changes.
+    Assesses one prepared run: summarises it for publication and adds the change
+    over time and against the previously published run.
 
     Args:
         prep_source (str): s3 directory holding the prepared data of every run
         assessment_destination (str): destination s3 directory for the assessment data,
             partitioned by archive_date and run_number
+        run_log_source (str): s3 directory of the archive run log, used to find the
+            previously published run
         run_number (int | None): the prepared run to use. Defaults to None, the latest run
     """
     run_source = merge_utils.resolve_run_sources([prep_source], run_number)[0]
@@ -144,16 +147,34 @@ def main(
             Pub.locationid_count_cum_perc_change_short,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_long,
+            long_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_long,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.filtered_ct_total_employed_long,
             long_term_from_date,
             group_columns,
             Pub.filtered_ct_cum_perc_change_long,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_medium,
+            medium_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_medium,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.filtered_ct_total_employed_medium,
             medium_term_from_date,
             group_columns,
             Pub.filtered_ct_cum_perc_change_medium,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_short,
+            short_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_short,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.filtered_ct_total_employed_short,
@@ -173,6 +194,27 @@ def main(
             group_columns,
             Pub.unfiltered_ct_total_employed_cum_perc_change_long,
         ),
+    )
+
+    prev_run_number = run_log_utils.get_previous_published_run_number(
+        run_log_source, merge_utils.run_number_from_source(run_source)
+    )
+    if prev_run_number is None:
+        print("No previously published run found; previous run columns are null")
+        prev_assessment_lf = None
+    else:
+        prev_run_source = merge_utils.resolve_run_sources(
+            [assessment_destination], prev_run_number
+        )[0]
+        print(f"Comparing to previously published run: {prev_run_source}")
+        prev_assessment_lf = utils.scan_parquet(prev_run_source)
+    assessment_summary_lf = publication_utils.add_prev_run_filled_posts_columns(
+        assessment_summary_lf, prev_assessment_lf
+    )
+
+    assessment_summary_lf = assessment_summary_lf.with_columns(
+        publication_utils.period_label_short_expr(),
+        publication_utils.period_label_long_expr(),
     )
 
     utils.sink_to_parquet(
@@ -195,6 +237,10 @@ if __name__ == "__main__":
             "Destination s3 directory for the assessment data",
         ),
         (
+            "--run_log_source",
+            "S3 directory of the archive run log",
+        ),
+        (
             "--run_number",
             "Prepared run number to use, or 'latest'",
             False,
@@ -204,5 +250,6 @@ if __name__ == "__main__":
     main(
         prep_source=args.prep_source,
         assessment_destination=args.assessment_destination,
+        run_log_source=args.run_log_source,
         run_number=merge_utils.parse_run_number(args.run_number),
     )

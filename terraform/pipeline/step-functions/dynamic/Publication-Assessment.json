@@ -111,7 +111,33 @@
                   "ContainerOverrides": [
                     {
                       "Name": "_99_publication-container",
-                      "Command.$": "States.Array('_02_assessment.py', '--prep_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge_and_prep/', '--assessment_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/', '--run_number', States.Format('{}', $.run_number))"
+                      "Command.$": "States.Array('_02_assessment.py', '--prep_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge_and_prep/', '--assessment_destination', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/', '--run_log_source', '${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/', '--run_number', States.Format('{}', $.run_number))"
+                    }
+                  ]
+                }
+              },
+              "ResultPath": null,
+              "Next": "Validate assessment data"
+            },
+            "Validate assessment data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${publication_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${publication_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_99_publication-container",
+                      "Command.$": "States.Array('validate_02_assessment.py', '--bucket_name', '${dataset_bucket_name}', '--prep_source', 'domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge_and_prep/', '--assessment_source', 'domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/', '--reports_path', 'domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment_validation/', '--run_number', States.Format('{}', $.run_number))"
                     }
                   ]
                 }
