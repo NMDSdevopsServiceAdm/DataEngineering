@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Changed the run log update script to default to the `run-log-updater` role for the main bucket.
 - Changed the DPR dataset version to be set once in a Terraform variable instead of hardcoded in the DPR step functions.
 - Renamed the SLV step function to Ind-CQC-EmpStat-SLV and reordered it so worker and workplace data are prepared in separate branches, workplace data is validated, and the SLV counts steps are no longer run.
 - Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
