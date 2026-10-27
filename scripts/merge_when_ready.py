@@ -1,3 +1,4 @@
+print("MARKER-2296 script from PR")
 """
 Merge `ready-to-merge` PRs one at a time, in label order, once the deploy of
 main's tip has finished: a PR merged mid-deploy fails at prod terraform.
