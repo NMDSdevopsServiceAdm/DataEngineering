@@ -9,7 +9,11 @@ import projects._99_publication.monthly_tracker_filled_posts.fargate._04_reconci
 from utils.column_names.ind_cqc_pipeline_columns import ArchiveRunLogColumns as RunLog
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_values.categorical_column_values import PublishedJobGroupLabels
+from utils.column_values.categorical_column_values import (
+    PublishedJobGroupLabels,
+    PublishedMainService,
+    PublishedRegion,
+)
 
 PATCH_PATH = (
     "projects._99_publication.monthly_tracker_filled_posts.fargate._04_reconcile_output"
@@ -23,12 +27,17 @@ ASSESSMENT_RUN_SOURCE = (
 )
 ARCHIVE_RUN_SOURCE = "some/promoted/directory/archive_date=2026-10-01/run_number=2/"
 TEST_TODAY = date(2026, 10, 6)
-ALL_JOB_ROLES = PublishedJobGroupLabels.all_job_roles
+IN_PERIOD = date(2026, 4, 1)
+# today is 2026-10-06; reduced_data_filter_expr's defaults keep 2025-04 onwards in
+# full and only Jan/Apr/Jul/Oct before that, so May 2024 is outside the period.
+OUT_OF_PERIOD = date(2024, 5, 1)
 
 ASSESSMENT_SCHEMA = pl.Schema(
     [
         (IndCQC.cqc_location_import_date, pl.Date()),
         (IndCQC.main_job_role_clean_labelled, pl.String()),
+        (IndCQC.current_region, pl.String()),
+        (IndCQC.primary_service_type, pl.String()),
         (Pub.filled_posts, pl.Float32()),
     ]
 )
@@ -39,6 +48,24 @@ ARCHIVE_SCHEMA = pl.Schema(
         (IndCQC.estimate_filled_posts_by_job_role, pl.Float32()),
     ]
 )
+
+
+def _assessment_row(
+    import_date: date,
+    filled_posts: float,
+    job_role: str = PublishedJobGroupLabels.all_job_roles,
+    region: str = PublishedRegion.england,
+    service: str = PublishedMainService.all_locations,
+) -> tuple:
+    """A row of the assessment data; defaults to the national total row."""
+    return (import_date, job_role, region, service, filled_posts)
+
+
+def _archive_row(
+    import_date: date, estimate: float, job_role: str = "Registered nurse"
+) -> tuple:
+    """A row of the archive, which holds one row per location and job role."""
+    return (import_date, job_role, estimate)
 
 
 @pytest.fixture
@@ -82,8 +109,8 @@ class TestMain:
     def test_passes_when_totals_are_within_tolerance(self, mocks):
         _set_sources(
             mocks,
-            [(date(2026, 4, 1), ALL_JOB_ROLES, 1000.0)],
-            [(date(2026, 4, 1), ALL_JOB_ROLES, 1005.0)],  # 0.5% diff, within 1%
+            [_assessment_row(IN_PERIOD, 1000.0)],
+            [_archive_row(IN_PERIOD, 1005.0)],  # 0.5% diff, within 1%
         )
 
         _run_main(mocks)  # does not raise
@@ -91,8 +118,8 @@ class TestMain:
     def test_raises_when_totals_exceed_tolerance(self, mocks):
         _set_sources(
             mocks,
-            [(date(2026, 4, 1), ALL_JOB_ROLES, 1000.0)],
-            [(date(2026, 4, 1), ALL_JOB_ROLES, 2000.0)],
+            [_assessment_row(IN_PERIOD, 1000.0)],
+            [_archive_row(IN_PERIOD, 2000.0)],
         )
 
         with pytest.raises(job.ReconciliationMismatchError, match="differ"):
@@ -101,8 +128,8 @@ class TestMain:
     def test_resolves_both_sources_for_the_requested_run_number(self, mocks):
         _set_sources(
             mocks,
-            [(date(2026, 4, 1), ALL_JOB_ROLES, 1000.0)],
-            [(date(2026, 4, 1), ALL_JOB_ROLES, 1000.0)],
+            [_assessment_row(IN_PERIOD, 1000.0)],
+            [_archive_row(IN_PERIOD, 1000.0)],
         )
 
         _run_main(mocks, run_number=3)
@@ -111,26 +138,51 @@ class TestMain:
             [ASSESSMENT_SOURCE, PROMOTED_ARCHIVE_SOURCE], 3
         )
 
-    def test_applies_the_same_all_job_roles_and_period_filter_to_both_sides(
-        self, mocks
-    ):
-        # Each side's excluded rows (a non-"All job roles" row, and a pre-lookback
-        # row outside the sampled quarter months -- today is 2026-10-06;
-        # reduced_data_filter_expr's defaults keep 2025-04 onwards in full and only
-        # Jan/Apr/Jul/Oct before that) carry a *different* huge value on each side:
-        # if either filter failed to exclude them, the totals would diverge beyond
-        # tolerance, where a shared leaked value could cancel out undetected.
+    def test_sums_every_job_role_row_on_the_archive_side(self, mocks):
+        # The archive has no "All job roles" row: a filter on that label would
+        # match nothing and total 0.
+        _set_sources(
+            mocks,
+            [_assessment_row(IN_PERIOD, 1000.0)],
+            [
+                _archive_row(IN_PERIOD, 400.0, job_role="Registered nurse"),
+                _archive_row(IN_PERIOD, 600.0, job_role="Care worker"),
+            ],
+        )
+
+        _run_main(mocks)  # does not raise
+
+    def test_uses_only_the_national_all_job_roles_row_on_the_public_side(self, mocks):
+        # The assessment data holds overlapping rollups (regions, service groups,
+        # job roles), so summing them would count each location several times.
         _set_sources(
             mocks,
             [
-                (date(2026, 4, 1), ALL_JOB_ROLES, 1000.0),
-                (date(2026, 4, 1), "Registered nurse", 111111.0),
-                (date(2024, 5, 1), ALL_JOB_ROLES, 222222.0),
+                _assessment_row(IN_PERIOD, 1000.0),
+                _assessment_row(IN_PERIOD, 111111.0, region="London"),
+                _assessment_row(
+                    IN_PERIOD, 222222.0, service=PublishedMainService.all_care_homes
+                ),
+                _assessment_row(IN_PERIOD, 333333.0, job_role="Registered nurse"),
+            ],
+            [_archive_row(IN_PERIOD, 1000.0)],
+        )
+
+        _run_main(mocks)  # does not raise
+
+    def test_applies_the_same_period_filter_to_both_sides(self, mocks):
+        # Each side's out-of-period row carries a different huge value: if either
+        # filter failed to exclude it, the totals would diverge beyond tolerance,
+        # where a shared leaked value could cancel out undetected.
+        _set_sources(
+            mocks,
+            [
+                _assessment_row(IN_PERIOD, 1000.0),
+                _assessment_row(OUT_OF_PERIOD, 222222.0),
             ],
             [
-                (date(2026, 4, 1), ALL_JOB_ROLES, 1000.0),
-                (date(2026, 4, 1), "Registered nurse", 333333.0),
-                (date(2024, 5, 1), ALL_JOB_ROLES, 444444.0),
+                _archive_row(IN_PERIOD, 1000.0),
+                _archive_row(OUT_OF_PERIOD, 444444.0),
             ],
         )
 
@@ -139,8 +191,8 @@ class TestMain:
     def test_marks_the_run_reconciled_on_match(self, mocks):
         _set_sources(
             mocks,
-            [(date(2026, 4, 1), ALL_JOB_ROLES, 1000.0)],
-            [(date(2026, 4, 1), ALL_JOB_ROLES, 1000.0)],
+            [_assessment_row(IN_PERIOD, 1000.0)],
+            [_archive_row(IN_PERIOD, 1000.0)],
         )
 
         _run_main(mocks, run_number=2)
@@ -152,8 +204,8 @@ class TestMain:
     def test_does_not_mark_the_run_reconciled_on_mismatch(self, mocks):
         _set_sources(
             mocks,
-            [(date(2026, 4, 1), ALL_JOB_ROLES, 1000.0)],
-            [(date(2026, 4, 1), ALL_JOB_ROLES, 2000.0)],
+            [_assessment_row(IN_PERIOD, 1000.0)],
+            [_archive_row(IN_PERIOD, 2000.0)],
         )
 
         with pytest.raises(job.ReconciliationMismatchError):

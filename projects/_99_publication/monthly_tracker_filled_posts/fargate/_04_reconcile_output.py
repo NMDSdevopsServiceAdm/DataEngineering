@@ -13,7 +13,11 @@ from utils import file_utils
 from utils.column_names.ind_cqc_pipeline_columns import ArchiveRunLogColumns as RunLog
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_values.categorical_column_values import PublishedJobGroupLabels
+from utils.column_values.categorical_column_values import (
+    PublishedJobGroupLabels,
+    PublishedMainService,
+    PublishedRegion,
+)
 
 RECONCILIATION_RELATIVE_TOLERANCE = 0.01
 
@@ -43,15 +47,16 @@ def is_run_promoted(promoted_archive_source: str, run_number: int) -> bool:
     return run_number in file_utils.list_archive_runs(promoted_archive_source)
 
 
-def _all_job_roles_total(lf: pl.LazyFrame, value_column: str, today: date) -> float:
-    """Sums one column's "All job roles" rows over the shared reduced period."""
+def _period_total(lf: pl.LazyFrame, value_column: str, today: date) -> float:
+    """
+    Sums one column over the shared reduced period.
+
+    Summed as Float64 so the comparison measures real differences, not Float32
+    accumulation error over a long sum.
+    """
     return (
-        lf.filter(
-            pl.col(IndCQC.main_job_role_clean_labelled)
-            == PublishedJobGroupLabels.all_job_roles
-        )
-        .filter(publication_utils.reduced_data_filter_expr(today=today))
-        .select(pl.col(value_column).sum())
+        lf.filter(publication_utils.reduced_data_filter_expr(today=today))
+        .select(pl.col(value_column).cast(pl.Float64).sum())
         .collect()
         .item()
     )
@@ -67,12 +72,15 @@ def main(
     Reconciles one run's public output against its promoted archive, marking the
     run reconciled in the run log on a match.
 
-    Both totals are recomputed independently -- the assessment store's raw,
-    pre-rounding filled posts (never the public output's banded figure, which
-    stays the only filled-posts column the public dataset carries) and the
-    promoted archive's estimate_filled_posts_by_job_role -- filtered identically
-    ("All job roles" rows, the same reduced period) so the comparison holds
-    regardless of how each pipeline's own upstream sampling differs.
+    Both totals are recomputed independently over the same reduced period, so
+    the comparison holds regardless of how each pipeline's own upstream sampling
+    differs. The public total is the assessment store's raw, pre-rounding
+    filled posts (never the public output's banded figure, which stays the only
+    filled-posts column the public dataset carries), taken from the national
+    "All job roles" row only, as the assessment data also holds overlapping
+    regional, service and job role rollups. The archive total sums every
+    job-role row of estimate_filled_posts_by_job_role in the promoted archive,
+    which has no rollup rows.
 
     Args:
         assessment_source (str): S3 directory holding the assessed data of every
@@ -91,16 +99,24 @@ def main(
         [assessment_source, promoted_archive_source], run_number
     )
 
-    public_total = _all_job_roles_total(
-        utils.scan_parquet(assessment_run_source), Pub.filled_posts, today
+    national_total_lf = utils.scan_parquet(assessment_run_source).filter(
+        pl.col(IndCQC.main_job_role_clean_labelled)
+        == PublishedJobGroupLabels.all_job_roles,
+        pl.col(IndCQC.current_region) == PublishedRegion.england,
+        pl.col(IndCQC.primary_service_type) == PublishedMainService.all_locations,
     )
-    archive_total = _all_job_roles_total(
+    public_total = _period_total(national_total_lf, Pub.filled_posts, today)
+    archive_total = _period_total(
         utils.scan_parquet(archive_run_source),
         IndCQC.estimate_filled_posts_by_job_role,
         today,
     )
 
     relative_difference = abs(public_total - archive_total) / archive_total
+    print(
+        f"Run {run_number}: public output total {public_total}, promoted archive "
+        f"total {archive_total}, relative difference {relative_difference:.4%}"
+    )
     if relative_difference > RECONCILIATION_RELATIVE_TOLERANCE:
         raise ReconciliationMismatchError(
             f"Run {run_number}: public output total {public_total} and promoted "
