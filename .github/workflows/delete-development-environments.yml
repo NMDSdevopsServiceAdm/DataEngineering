@@ -6,7 +6,7 @@ jobs:
   trigger-circleci-delete:
     # Only branches have a dev environment to destroy: skip tag deletes and
     # merge queue branches.
-    if: ${{ github.event.ref_type == 'branch' && !startsWith(github.event.ref, 'gh-readonly-queue/') }}
+    if: ${{ github.event.ref_type == 'branch' }}
     runs-on: ubuntu-latest
     steps:
       - name: print branch name
