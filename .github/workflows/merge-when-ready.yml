@@ -41,6 +41,7 @@ jobs:
           python-version: "3.11"
       - name: Merge labelled PRs in turn
         env:
+          PYTHONUNBUFFERED: "1"  # live log lines while waiting
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CIRCLECI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
           REPO: ${{ github.repository }}

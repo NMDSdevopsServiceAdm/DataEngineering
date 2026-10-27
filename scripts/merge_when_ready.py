@@ -188,6 +188,7 @@ def merge_next(repo: str, label: str, project_slug: str, dry_run: bool) -> bool:
             ).stdout
         )["headRefOid"]
         if _behind_by(repo, head_sha) > 0:
+            print(f"PR {number} is behind main; updating its branch.")
             _gh("api", "-X", "PUT", f"repos/{repo}/pulls/{number}/update-branch")
             time.sleep(POLL_SECONDS)  # let CircleCI pick up the new head
             continue
