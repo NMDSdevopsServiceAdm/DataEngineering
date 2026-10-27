@@ -335,13 +335,27 @@ class TestMain:
             ArchiveKeys.archive_date,
             ArchiveKeys.run_number,
         ]
-        expected_lf = mocks.aggregate.return_value.with_columns(
-            [pl.lit(None, dtype=pl.Float32).alias(c) for c in PERC_CHANGE_COLUMNS]
-        ).with_columns(
-            pl.lit("2026-10-01").alias(ArchiveKeys.archive_date),
-            pl.lit(2).alias(ArchiveKeys.run_number),
+        expected_lf = (
+            mocks.aggregate.return_value.with_columns(
+                [pl.lit(None, dtype=pl.Float32).alias(c) for c in PERC_CHANGE_COLUMNS]
+            )
+            .with_columns(
+                pl.lit("Mar 2026").alias(Pub.period_label_short),
+                pl.lit("March 2026").alias(Pub.period_label_long),
+            )
+            .with_columns(
+                pl.lit("2026-10-01").alias(ArchiveKeys.archive_date),
+                pl.lit(2).alias(ArchiveKeys.run_number),
+            )
         )
         assert_frame_equal(sink_kwargs["lazy_df"], expected_lf)
+
+    def test_main_adds_short_and_long_period_labels_from_the_import_date(self, mocks):
+        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+
+        sunk_df = mocks.sink_to_parquet.call_args.kwargs["lazy_df"].collect()
+        assert sunk_df[Pub.period_label_short].to_list() == ["Mar 2026"]
+        assert sunk_df[Pub.period_label_long].to_list() == ["March 2026"]
 
     def test_main_adds_prev_run_filled_posts_columns_from_the_previous_published_run(
         self, mocks

@@ -29,19 +29,19 @@ class TestMain:
         scan_parquet_mock.assert_called_once_with(self.IMPUTED_DATA_SOURCE)
         assert coalesce_mock.call_args_list == [
             call(
-                cols=[SLVCols.starter_rate],
-                name=SLVCols.estimated_starter_rate,
-                source_dtype=CatColType.StarterRateEstimateSourceEnumType,
+                cols=[SLVCols.starters_cleaned],
+                name=SLVCols.estimated_starters,
+                source_dtype=CatColType.StartersEstimateSourceEnumType,
             ),
             call(
-                cols=[SLVCols.turnover_rate],
-                name=SLVCols.estimated_turnover_rate,
-                source_dtype=CatColType.TurnoverRateEstimateSourceEnumType,
+                cols=[SLVCols.leavers_cleaned],
+                name=SLVCols.estimated_leavers,
+                source_dtype=CatColType.LeaversEstimateSourceEnumType,
             ),
             call(
-                cols=[SLVCols.vacancy_rate],
-                name=SLVCols.estimated_vacancy_rate,
-                source_dtype=CatColType.VacancyRateEstimateSourceEnumType,
+                cols=[SLVCols.vacancies_cleaned],
+                name=SLVCols.estimated_vacancies,
+                source_dtype=CatColType.VacanciesEstimateSourceEnumType,
             ),
         ]
         sink_to_parquet_mock.assert_called_once_with(

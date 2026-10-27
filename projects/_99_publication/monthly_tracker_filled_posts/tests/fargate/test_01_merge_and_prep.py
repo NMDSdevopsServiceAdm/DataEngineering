@@ -63,7 +63,7 @@ class TestMain:
         joined_metadata_lf.filter.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=joined_metadata_lf.filter.return_value.with_columns.return_value,
+            lazy_df=joined_metadata_lf.filter.return_value,
             output_path=TEST_RUN_DESTINATION,
         )
 
@@ -165,32 +165,7 @@ class TestMain:
         )
         assert (
             sink_to_parquet_mock.call_args.kwargs["lazy_df"]
-            is joined_metadata_lf.filter.return_value.with_columns.return_value
-        )
-
-    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    @patch(f"{PATCH_PATH}.publication_utils.period_label_expr")
-    @patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources")
-    def test_main_adds_period_label_to_filtered_data(
-        self,
-        resolve_run_sources_mock: Mock,
-        period_label_expr_mock: Mock,
-        scan_parquet_mock: Mock,
-        sink_to_parquet_mock: Mock,
-    ):
-        resolve_run_sources_mock.return_value = [
-            TEST_ESTIMATES_SOURCE,
-            TEST_METADATA_SOURCE,
-        ]
-        archived_jr_estimate_lf = Mock(name="archived_jr_estimate_lf")
-        scan_parquet_mock.side_effect = [archived_jr_estimate_lf, Mock()]
-
-        job.main(TEST_ESTIMATES_ROOT, TEST_METADATA_ROOT, TEST_DESTINATION)
-
-        filtered_lf = archived_jr_estimate_lf.join.return_value.filter.return_value
-        filtered_lf.with_columns.assert_called_once_with(
-            period_label_expr_mock.return_value
+            is joined_metadata_lf.filter.return_value
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
