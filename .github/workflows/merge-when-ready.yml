@@ -2,8 +2,11 @@ name: merge-when-ready
 
 # Merges PRs labelled `ready-to-merge` one at a time (see scripts/merge_when_ready.py).
 # `merge-dry-run` runs every check without merging, and removes the label after.
+# `pull_request_target` runs this workflow file and checks out the script from
+# main, never the PR's copy, so a PR can't change what runs with the write
+# token and CIRCLECI_TOKEN. Don't check out or run the PR's code in this file.
 on:
-  pull_request:
+  pull_request_target:
     types: [labeled]
   workflow_dispatch:
     inputs:
