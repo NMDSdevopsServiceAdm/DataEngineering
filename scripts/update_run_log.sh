@@ -143,7 +143,7 @@ copy_run_to_long_term_archive() {
     return 1
   fi
   if ! aws s3api delete-object --bucket "$destination_bucket" --key "$preflight_key" --profile "$profile" > /dev/null 2>&1; then
-    echo "Warning: could not delete the write-check marker s3://$destination_bucket/$preflight_key (the deny-delete policy may be blocking this profile). Continuing; delete it by hand later." >&2
+    echo "Warning: could not delete the write-check test object s3://$destination_bucket/$preflight_key. Continuing; assume the Admin role and delete it by hand later." >&2
   fi
 
   # --- Mark the run promoted (same mechanic as every other flag) ---
