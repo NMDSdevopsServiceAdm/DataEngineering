@@ -25,22 +25,23 @@ class ReconciliationMismatchError(ValueError):
     """The public output and archived estimate totals disagree beyond tolerance."""
 
 
-def is_run_promoted(promoted_archive_source: str, run_number: int) -> bool:
+def is_run_promoted(promoted_run_log_source: str, run_number: int) -> bool:
     """
-    Checks whether a run's job-role estimates are in the long-term archive yet.
+    Checks whether a run's promotion to the long-term archive has finished.
 
-    Lists partitions without reading data, so it is cheap to poll.
+    Promotion copies the run log last, so its partition marks a complete copy
+    (the estimates partition appears as soon as its first file is copied). Lists
+    partitions without reading data, so it is cheap to poll.
 
     Args:
-        promoted_archive_source (str): S3 directory of the long-term promoted
-            job-role estimates archive, partitioned by archive_date and
-            run_number
+        promoted_run_log_source (str): S3 directory of the long-term archive's
+            run log, partitioned by archive_date and run_number
         run_number (int): the run to check
 
     Returns:
-        bool: True if the run's partition is present in the long-term archive
+        bool: True if the run's run log partition is in the long-term archive
     """
-    return run_number in file_utils.list_archive_runs(promoted_archive_source)
+    return run_number in file_utils.list_archive_runs(promoted_run_log_source)
 
 
 def _total_by_period(lf: pl.LazyFrame, value_column: str) -> pl.DataFrame:
@@ -96,6 +97,10 @@ def main(
         ),
         Pub.filled_posts,
     )
+    if public_by_period.is_empty():
+        raise ReconciliationMismatchError(
+            f"Run {run_number}: no national 'All job roles' rows in the assessment data"
+        )
     public_periods = public_by_period[IndCQC.cqc_location_import_date]
     archive_by_period = _total_by_period(
         utils.scan_parquet(archive_run_source).filter(
@@ -120,7 +125,7 @@ def main(
         f"Run {run_number}: public output total {public_total}, promoted archive "
         f"total {archive_total}, relative difference {relative_difference:.4%}"
     )
-    if relative_difference > RECONCILIATION_RELATIVE_TOLERANCE:
+    if not relative_difference <= RECONCILIATION_RELATIVE_TOLERANCE:  # NaN fails
         raise ReconciliationMismatchError(
             f"Run {run_number}: public output total {public_total} and promoted "
             f"archive total {archive_total} differ by {relative_difference:.2%}, "
@@ -138,8 +143,16 @@ if __name__ == "__main__":
         ),
         ("--run_number", "The run to check or reconcile"),
         (
+            "--promoted_run_log_source",
+            "S3 directory of the long-term archive's run log (check mode)",
+            False,
+            None,
+        ),
+        (
             "--promoted_archive_source",
-            "S3 directory of the long-term promoted job-role estimates archive",
+            "S3 directory of the long-term promoted job-role estimates archive (compare mode)",
+            False,
+            None,
         ),
         (
             "--assessment_source",
@@ -157,9 +170,9 @@ if __name__ == "__main__":
     run_number = merge_utils.parse_run_number(args.run_number, required=True)
 
     if args.mode == "check":
-        promoted = is_run_promoted(args.promoted_archive_source, run_number)
+        promoted = is_run_promoted(args.promoted_run_log_source, run_number)
         state = "is" if promoted else "is not"
-        print(f"Run {run_number} {state} in {args.promoted_archive_source}")
+        print(f"Run {run_number} {state} in {args.promoted_run_log_source}")
         sys.exit(0 if promoted else 1)
     elif args.mode == "compare":
         main(

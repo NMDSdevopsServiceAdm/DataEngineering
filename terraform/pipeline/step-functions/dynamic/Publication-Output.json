@@ -94,7 +94,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "_99_publication-container",
-                      "Command.$": "States.Array('_04_reconcile_output.py', '--mode', 'check', '--promoted_archive_source', '${archive_promoted_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/', '--run_number', States.Format('{}', $.run_number))"
+                      "Command.$": "States.Array('_04_reconcile_output.py', '--mode', 'check', '--promoted_run_log_source', '${archive_promoted_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/', '--run_number', States.Format('{}', $.run_number))"
                     }
                   ]
                 }

@@ -69,7 +69,7 @@ def _archive_row(
 
 @pytest.fixture
 def mocks():
-    """Replaces the job's inputs and outputs with mocks and fixes today's date."""
+    """Replaces the job's inputs and outputs with mocks."""
     with (
         patch(f"{PATCH_PATH}.utils.scan_parquet") as scan_parquet,
         patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources") as resolve_run_sources,
@@ -192,6 +192,26 @@ class TestMain:
         )
 
         with pytest.raises(job.ReconciliationMismatchError, match="not.*archive"):
+            _run_main(mocks)
+
+    def test_raises_when_a_total_is_nan(self, mocks):
+        _set_sources(
+            mocks,
+            [_assessment_row(IN_PERIOD, float("nan"))],
+            [_archive_row(IN_PERIOD, 1000.0)],
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
+            _run_main(mocks)
+
+    def test_raises_when_the_assessment_has_no_national_row(self, mocks):
+        _set_sources(
+            mocks,
+            [_assessment_row(IN_PERIOD, 1000.0, region="London")],
+            [_archive_row(IN_PERIOD, 1000.0)],
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError, match="national"):
             _run_main(mocks)
 
     def test_marks_the_run_reconciled_on_match(self, mocks):

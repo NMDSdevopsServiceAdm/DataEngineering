@@ -2,6 +2,7 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
+import boto3
 import polars as pl
 
 from polars_utils import utils
@@ -14,14 +15,22 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveRunLogColumns as RunLog,
 )
 
+# The file name utils.sink_to_parquet writes, and update_run_log.py leaves behind.
+RUN_LOG_FILE_NAME = "file.parquet"
+
 
 def mark_run_log_flag(run_log_source: str, run_number: int, flag: str) -> None:
     """
     Sets a flag (and its timestamp) for one run in the S3 run log.
 
     Downloads the run's partition, updates it with scripts.update_run_log, and
-    re-uploads it, clearing the old partition first so no stale file is left
-    beside the new one. A rejected update's ValueError propagates unchanged.
+    overwrites its file.parquet in one upload. Does nothing if the flag is
+    already set. A rejected update's ValueError propagates unchanged.
+
+    Raises:
+        ValueError: if the partition holds anything other than file.parquet,
+            which the update script always leaves. Nothing is written, as the
+            task role can't delete a stale file.
 
     Args:
         run_log_source (str): S3 directory of the archive run log, partitioned by
@@ -47,15 +56,28 @@ def mark_run_log_flag(run_log_source: str, run_number: int, flag: str) -> None:
         )
         partition_dir.mkdir(parents=True)
         utils.scan_parquet(partition_uri).collect().write_parquet(
-            partition_dir / "file.parquet"
+            partition_dir / RUN_LOG_FILE_NAME
         )
 
         run_log_df = read_run_log(download_dir)
+        if run_log_df[flag].item() is True:
+            return
         month_start = date.fromisoformat(archive_date).replace(day=1)
         updated_df = set_run_flag(run_log_df, run_number, flag, month_start)
         write_run_partition(updated_df, run_number, output_dir)
 
-        file_utils.empty_s3_folder(bucket, partition_prefix)
+        existing_keys = [
+            obj["Key"]
+            for obj in boto3.client("s3")
+            .list_objects_v2(Bucket=bucket, Prefix=partition_prefix)
+            .get("Contents", [])
+        ]
+        if existing_keys != [f"{partition_prefix}{RUN_LOG_FILE_NAME}"]:
+            raise ValueError(
+                f"Expected only {RUN_LOG_FILE_NAME} in s3://{bucket}/{partition_prefix}, "
+                f"found {existing_keys}"
+            )
+
         updated_file = next(output_dir.rglob("*.parquet"))
         utils.sink_to_parquet(pl.scan_parquet(updated_file), partition_uri)
 
