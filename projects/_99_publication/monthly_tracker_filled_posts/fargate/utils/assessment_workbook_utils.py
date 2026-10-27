@@ -64,6 +64,22 @@ CRITERIA_NOTE_TEXT = (
 )
 
 
+@dataclass(frozen=True)
+class TermFromDates:
+    """First import date of each comparison term.
+
+    Attributes:
+        short (datetime.date): short term start.
+        medium (datetime.date): medium term start.
+        long (datetime.date): long term start, shared by the long term and no
+            filters sheets.
+    """
+
+    short: datetime.date
+    medium: datetime.date
+    long: datetime.date
+
+
 class TemplateMismatchError(ValueError):
     """The template does not match the cell map."""
 
@@ -178,18 +194,21 @@ def title_text(period_labels: list[str]) -> str:
     return f"End of {latest.strftime(PERIOD_LABEL_LONG_FORMAT)}"
 
 
-def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
+def sheet_text(
+    period_labels: list[str], term_from_dates: TermFromDates
+) -> dict[str, dict[str, str]]:
     """Text the writer sets, by sheet name then A1 cell.
 
     Every sheet gets the title. The short and medium term comparison sheets also
-    get a heading and criteria note dated from March: the latest March for short
-    term, the March a year before for medium term. "Filled posts" gets a chart
+    get a heading and criteria note dated from the month before their term's start
+    date. "Filled posts" gets a chart
     heading dated from the latest March. "Comp prev publication" gets
     an "Annual" row for each March period, then a "Monthly" row for each period
     after the latest March, in each of its label ranges.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
+        term_from_dates (TermFromDates): first import date of each comparison term.
 
     Returns:
         dict[str, dict[str, str]]: text to write.
@@ -205,7 +224,9 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
     if not marches:
         raise ValueError("period_labels has no March")
     short_term_march = max(marches)
-    medium_term_march = short_term_march.replace(year=short_term_march.year - 1)
+    short_term_period, medium_term_period = _period_months(
+        [term_from_dates.short, term_from_dates.medium]
+    )
 
     # Title on every sheet
     text = {
@@ -221,11 +242,11 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
     )
 
     # Short and medium term comparisons: heading and criteria note
-    for sheet, march in (
-        (cell_map.COMP_SHORT_TERM, short_term_march),
-        (cell_map.COMP_MEDIUM_TERM, medium_term_march),
+    for sheet, period in (
+        (cell_map.COMP_SHORT_TERM, short_term_period),
+        (cell_map.COMP_MEDIUM_TERM, medium_term_period),
     ):
-        date = march.strftime(PERIOD_LABEL_LONG_FORMAT)
+        date = period.strftime(PERIOD_LABEL_LONG_FORMAT)
         text[sheet.name][cell_map.HEADING_CELL] = HEADING_TEXT.format(date=date)
         text[sheet.name][cell_map.CRITERIA_NOTE_CELL] = CRITERIA_NOTE_TEXT.format(
             date=date
@@ -258,6 +279,7 @@ def _input_cells(sheet: cell_map.SheetMap) -> set[tuple[int, int]]:
 
 def fill_assessment_workbook(
     period_labels: list[str],
+    term_from_dates: TermFromDates,
     values: dict[str, dict[str, object]],
     template_path: Path,
     output_path: Path,
@@ -274,6 +296,7 @@ def fill_assessment_workbook(
 
     Args:
         period_labels (list[str]): the run's period labels, such as "Mar 2026".
+        term_from_dates (TermFromDates): first import date of each comparison term.
         values (dict[str, dict[str, object]]): values to write, keyed by sheet
             name, then by A1 cell reference, e.g. `{"Filled posts": {"C24":
             1000}}`. Cells must be in the sheet's mapped input ranges.
@@ -286,7 +309,7 @@ def fill_assessment_workbook(
             `TemplateMismatchError` first, and `period_labels` that are empty
             or have no March raise `ValueError`.
     """
-    text = sheet_text(period_labels)
+    text = sheet_text(period_labels, term_from_dates)
     workbook = openpyxl.load_workbook(template_path)
     check_template(workbook)
 
@@ -563,22 +586,6 @@ def comparison_sheet_values(
     return cells
 
 
-@dataclass(frozen=True)
-class TermFromDates:
-    """First import date of each comparison term.
-
-    Attributes:
-        short (datetime.date): short term start.
-        medium (datetime.date): medium term start.
-        long (datetime.date): long term start, shared by the long term and no
-            filters sheets.
-    """
-
-    short: datetime.date
-    medium: datetime.date
-    long: datetime.date
-
-
 SHEET_VALUE_BUILDERS: dict[str, Callable[[pl.DataFrame, TermFromDates], dict]] = {
     cell_map.FILLED_POSTS.name: lambda df, _: filled_posts_values(df),
     cell_map.COMP_PREV_PUBLICATION.name: lambda df, _: comp_prev_publication_values(df),
@@ -631,7 +638,9 @@ def fill_assessment_workbook_from_lf(
         for sheet in sheets
     }
     period_labels = assessment_df.get_column(Pub.period_label_short).unique().to_list()
-    fill_assessment_workbook(period_labels, values, template_path, output_path)
+    fill_assessment_workbook(
+        period_labels, term_from_dates, values, template_path, output_path
+    )
 
 
 def upload_to_s3(local_path: Path, s3_directory: str) -> None:
