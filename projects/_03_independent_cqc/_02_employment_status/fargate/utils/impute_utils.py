@@ -14,7 +14,7 @@ LOCATION_JOB_ROLE_GROUPS: list[str] = [
     IndCQC.published_job_role_label,
 ]
 
-PERCENTAGE_COLUMNS: list[str] = [
+PCT_COLUMNS: list[str] = [
     EmpStatus.permanent_pct,
     EmpStatus.temporary_pct,
     EmpStatus.bank_or_pool_pct,
@@ -22,7 +22,7 @@ PERCENTAGE_COLUMNS: list[str] = [
     EmpStatus.other_pct,
 ]
 
-TRENDLINE_PERCENTAGE_COLUMNS: list[str] = [
+IMPUTED_TRENDLINE_PCT_COLUMNS: list[str] = [
     EmpStatus.permanent_pct_imputed_trendline,
     EmpStatus.temporary_pct_imputed_trendline,
     EmpStatus.bank_or_pool_pct_imputed_trendline,
@@ -30,7 +30,7 @@ TRENDLINE_PERCENTAGE_COLUMNS: list[str] = [
     EmpStatus.other_pct_imputed_trendline,
 ]
 
-ROLLING_AVERAGE_PERCENTAGE_COLUMNS: list[str] = [
+ROLLING_AVG_PCT_COLUMNS: list[str] = [
     EmpStatus.permanent_pct_rolling_avg,
     EmpStatus.temporary_pct_rolling_avg,
     EmpStatus.bank_or_pool_pct_rolling_avg,
@@ -38,7 +38,7 @@ ROLLING_AVERAGE_PERCENTAGE_COLUMNS: list[str] = [
     EmpStatus.other_pct_rolling_avg,
 ]
 
-FULL_IMPUTED_PERCENTAGE_COLUMNS: list[str] = [
+IMPUTED_PCT_COLUMNS: list[str] = [
     EmpStatus.permanent_pct_imputed,
     EmpStatus.temporary_pct_imputed,
     EmpStatus.bank_or_pool_pct_imputed,
@@ -51,8 +51,8 @@ FILL_BOUNDARY_COLUMNS: list[str] = [
     TempCols.last_known_date,
     TempCols.previous_known_date,
     TempCols.next_known_date,
-    *[TempCols.first_known_value_prefix + col for col in PERCENTAGE_COLUMNS],
-    *[TempCols.last_known_value_prefix + col for col in PERCENTAGE_COLUMNS],
+    *[TempCols.first_known_value_prefix + col for col in PCT_COLUMNS],
+    *[TempCols.last_known_value_prefix + col for col in PCT_COLUMNS],
 ]
 
 
@@ -102,7 +102,7 @@ def add_fill_boundaries(lf: pl.LazyFrame) -> pl.LazyFrame:
             .max()
             .over(LOCATION_JOB_ROLE_GROUPS)
             .alias(TempCols.first_known_value_prefix + col)
-            for col in PERCENTAGE_COLUMNS
+            for col in PCT_COLUMNS
         ],
         *[
             pl.when(is_last_known)
@@ -110,12 +110,12 @@ def add_fill_boundaries(lf: pl.LazyFrame) -> pl.LazyFrame:
             .max()
             .over(LOCATION_JOB_ROLE_GROUPS)
             .alias(TempCols.last_known_value_prefix + col)
-            for col in PERCENTAGE_COLUMNS
+            for col in PCT_COLUMNS
         ],
     )
 
 
-def add_short_term_imputed_percentages(
+def add_imputed_trendline_pcts(
     lf: pl.LazyFrame,
     extrapolation_period: str,
     interpolation_cap_period: str,
@@ -136,7 +136,7 @@ def add_short_term_imputed_percentages(
             offset string (e.g. "5y")
 
     Returns:
-        pl.LazyFrame: dataset with the 5 imputed-for-trendline percentage columns added
+        pl.LazyFrame: dataset with the 5 imputed trendline percentage columns added
     """
     order_key = IndCQC.cqc_location_import_date
 
@@ -170,16 +170,16 @@ def add_short_term_imputed_percentages(
         )
         .cast(pl.Float32)
         .alias(trendline_col)
-        for col, trendline_col in zip(PERCENTAGE_COLUMNS, TRENDLINE_PERCENTAGE_COLUMNS)
+        for col, trendline_col in zip(PCT_COLUMNS, IMPUTED_TRENDLINE_PCT_COLUMNS)
     ).drop(FILL_BOUNDARY_COLUMNS)
 
 
-def add_rolling_average_percentages(
+def add_rolling_avg_pcts(
     lf: pl.LazyFrame,
     rolling_period: str,
 ) -> pl.LazyFrame:
     """
-    Add a rolling average of the imputed-for-trendline percentages per primary service type,
+    Add a rolling average of the imputed trendline percentages per primary service type,
     region and job role.
 
     Each location counts once, regardless of size. Averages sum to 1 across the 5 statuses
@@ -194,7 +194,7 @@ def add_rolling_average_percentages(
         4. Join the averages back on and drop the temporary columns.
 
     Args:
-        lf (pl.LazyFrame): dataset containing the 5 imputed-for-trendline percentage columns
+        lf (pl.LazyFrame): dataset containing the 5 imputed trendline percentage columns
         rolling_period (str): the rolling window length, as a Polars offset string (e.g. "6mo")
 
     Returns:
@@ -208,7 +208,7 @@ def add_rolling_average_percentages(
     order_key = IndCQC.cqc_location_import_date
     date_groups = rolling_groups + [order_key]
     rolling_total_columns = [
-        TempCols.rolling_total_prefix + col for col in TRENDLINE_PERCENTAGE_COLUMNS
+        TempCols.rolling_total_prefix + col for col in IMPUTED_TRENDLINE_PCT_COLUMNS
     ]
 
     # Totals are Float64: a Float32 sliding-window sum leaves a residual as values leave the
@@ -218,7 +218,7 @@ def add_rolling_average_percentages(
         *[
             pl.col(col).cast(pl.Float64).sum().alias(total_col)
             for col, total_col in zip(
-                TRENDLINE_PERCENTAGE_COLUMNS, rolling_total_columns
+                IMPUTED_TRENDLINE_PCT_COLUMNS, rolling_total_columns
             )
         ],
         pl.col(EmpStatus.permanent_pct_imputed_trendline)
@@ -244,10 +244,10 @@ def add_rolling_average_percentages(
         # a mean of shares is within 0 to 1, so clipping only removes rounding error
         .clip(0, 1).cast(pl.Float32).alias(rolling_col)
         for total_col, rolling_col in zip(
-            rolling_total_columns, ROLLING_AVERAGE_PERCENTAGE_COLUMNS
+            rolling_total_columns, ROLLING_AVG_PCT_COLUMNS
         )
     ).with_columns(
-        pl.col(ROLLING_AVERAGE_PERCENTAGE_COLUMNS)
+        pl.col(ROLLING_AVG_PCT_COLUMNS)
         .forward_fill()
         .backward_fill()
         .over(rolling_groups, order_by=order_key)
@@ -260,7 +260,7 @@ def add_rolling_average_percentages(
     )
 
 
-def add_full_imputed_percentages(lf: pl.LazyFrame) -> pl.LazyFrame:
+def add_imputed_pcts(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Add the 5 employment status percentages with every gap filled, for each location and job
     role.
@@ -281,9 +281,9 @@ def add_full_imputed_percentages(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: dataset with the 5 "ascwds_emp_stat_<status>_pct_imputed" columns added
     """
     for col, rolling_col, full_col in zip(
-        PERCENTAGE_COLUMNS,
-        ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
-        FULL_IMPUTED_PERCENTAGE_COLUMNS,
+        PCT_COLUMNS,
+        ROLLING_AVG_PCT_COLUMNS,
+        IMPUTED_PCT_COLUMNS,
     ):
         lf = model_imputation(
             lf,
@@ -295,9 +295,7 @@ def add_full_imputed_percentages(lf: pl.LazyFrame) -> pl.LazyFrame:
             group_columns=LOCATION_JOB_ROLE_GROUPS,
         )
 
-    floored_total = pl.sum_horizontal(
-        pl.col(FULL_IMPUTED_PERCENTAGE_COLUMNS).clip(lower_bound=0)
-    )
+    floored_total = pl.sum_horizontal(pl.col(IMPUTED_PCT_COLUMNS).clip(lower_bound=0))
 
     return lf.with_columns(
         pl.when(pl.col(col).is_null())
@@ -305,5 +303,5 @@ def add_full_imputed_percentages(lf: pl.LazyFrame) -> pl.LazyFrame:
         .otherwise(pl.col(full_col))
         .cast(pl.Float32)
         .alias(full_col)
-        for col, full_col in zip(PERCENTAGE_COLUMNS, FULL_IMPUTED_PERCENTAGE_COLUMNS)
+        for col, full_col in zip(PCT_COLUMNS, IMPUTED_PCT_COLUMNS)
     )

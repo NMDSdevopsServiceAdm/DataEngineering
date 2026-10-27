@@ -87,7 +87,7 @@ def create_clean_count_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
+def create_employment_status_pct_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Adds a percentage-share column per employment status from the _clean counts.
 

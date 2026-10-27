@@ -5,12 +5,12 @@ from typing import Any, Optional
 import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_worker_utils as prepare_worker_job
 from projects._03_independent_cqc._02_employment_status.fargate.utils.estimate_utils import (
     ESTIMATED_COUNT_COLUMNS,
-    ESTIMATED_PERCENTAGE_COLUMNS,
+    ESTIMATED_PCT_COLUMNS,
 )
 from projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils import (
-    FULL_IMPUTED_PERCENTAGE_COLUMNS,
-    PERCENTAGE_COLUMNS,
-    ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
+    IMPUTED_PCT_COLUMNS,
+    PCT_COLUMNS,
+    ROLLING_AVG_PCT_COLUMNS,
 )
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -589,12 +589,9 @@ def _estimate_row(
     """One row; each list holds the 5 statuses as perm, temp, bank, agency, other."""
     return {
         METRIC: [metric],
-        **{col: [val] for col, val in zip(PERCENTAGE_COLUMNS, cleaned)},
-        **{col: [val] for col, val in zip(FULL_IMPUTED_PERCENTAGE_COLUMNS, imputed)},
-        **{
-            col: [val]
-            for col, val in zip(ROLLING_AVERAGE_PERCENTAGE_COLUMNS, rolling_avg)
-        },
+        **{col: [val] for col, val in zip(PCT_COLUMNS, cleaned)},
+        **{col: [val] for col, val in zip(IMPUTED_PCT_COLUMNS, imputed)},
+        **{col: [val] for col, val in zip(ROLLING_AVG_PCT_COLUMNS, rolling_avg)},
     }
 
 
@@ -607,7 +604,7 @@ def _estimate_expected(
 ) -> dict[str, list]:
     return {
         **row,
-        **{col: [val] for col, val in zip(ESTIMATED_PERCENTAGE_COLUMNS, estimated)},
+        **{col: [val] for col, val in zip(ESTIMATED_PCT_COLUMNS, estimated)},
         EmpStatus.estimated_pct_source: [source],
         **{col: [val] for col, val in zip(ESTIMATED_COUNT_COLUMNS, counts)},
         EmpStatus.estimated_employees: [employees],
@@ -692,28 +689,28 @@ class TestPrepareMainData:
     }
 
 
-PERCENTAGE_COLUMNS = [
+PCT_COLUMNS = [
     EmpStatus.permanent_pct,
     EmpStatus.temporary_pct,
     EmpStatus.bank_or_pool_pct,
     EmpStatus.agency_pct,
     EmpStatus.other_pct,
 ]
-TRENDLINE_PERCENTAGE_COLUMNS = [
+IMPUTED_TRENDLINE_PCT_COLUMNS = [
     EmpStatus.permanent_pct_imputed_trendline,
     EmpStatus.temporary_pct_imputed_trendline,
     EmpStatus.bank_or_pool_pct_imputed_trendline,
     EmpStatus.agency_pct_imputed_trendline,
     EmpStatus.other_pct_imputed_trendline,
 ]
-ROLLING_AVERAGE_PERCENTAGE_COLUMNS = [
+ROLLING_AVG_PCT_COLUMNS = [
     EmpStatus.permanent_pct_rolling_avg,
     EmpStatus.temporary_pct_rolling_avg,
     EmpStatus.bank_or_pool_pct_rolling_avg,
     EmpStatus.agency_pct_rolling_avg,
     EmpStatus.other_pct_rolling_avg,
 ]
-FULL_IMPUTED_PERCENTAGE_COLUMNS = [
+IMPUTED_PCT_COLUMNS = [
     EmpStatus.permanent_pct_imputed,
     EmpStatus.temporary_pct_imputed,
     EmpStatus.bank_or_pool_pct_imputed,
@@ -721,10 +718,10 @@ FULL_IMPUTED_PERCENTAGE_COLUMNS = [
     EmpStatus.other_pct_imputed,
 ]
 FIRST_KNOWN_VALUE_COLUMNS = [
-    ImputeTempCols.first_known_value_prefix + col for col in PERCENTAGE_COLUMNS
+    ImputeTempCols.first_known_value_prefix + col for col in PCT_COLUMNS
 ]
 LAST_KNOWN_VALUE_COLUMNS = [
-    ImputeTempCols.last_known_value_prefix + col for col in PERCENTAGE_COLUMNS
+    ImputeTempCols.last_known_value_prefix + col for col in PCT_COLUMNS
 ]
 
 
@@ -785,13 +782,13 @@ def short_term_imputation_case(
         IndCQC.published_job_role_label: [CARE_WORKER] * len(dates),
         IndCQC.cqc_location_import_date: dates,
     }
-    input_data = {**keys, **status_split(permanent, PERCENTAGE_COLUMNS)}
+    input_data = {**keys, **status_split(permanent, PCT_COLUMNS)}
     return ImputeUtilsTestCase(
         id=id,
         input_data=input_data,
         expected_data={
             **input_data,
-            **status_split(expected_permanent, TRENDLINE_PERCENTAGE_COLUMNS),
+            **status_split(expected_permanent, IMPUTED_TRENDLINE_PCT_COLUMNS),
         },
     )
 
@@ -819,7 +816,7 @@ def rolling_average_case(
         IndCQC.current_region: regions,
         IndCQC.published_job_role_label: roles,
         IndCQC.cqc_location_import_date: dates,
-        **status_split(permanent, TRENDLINE_PERCENTAGE_COLUMNS),
+        **status_split(permanent, IMPUTED_TRENDLINE_PCT_COLUMNS),
         **(extra_columns or {}),
     }
     return ImputeUtilsTestCase(
@@ -827,7 +824,7 @@ def rolling_average_case(
         input_data=input_data,
         expected_data={
             **input_data,
-            **status_split(expected_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+            **status_split(expected_permanent, ROLLING_AVG_PCT_COLUMNS),
         },
     )
 
@@ -841,21 +838,21 @@ def full_imputation_case(
 ) -> ImputeUtilsTestCase:
     """
     Build a single location and job role case from the known permanent share, its rolling
-    average and the expected full imputed share, splitting each with `status_split`.
+    average and the expected imputed share, splitting each with `status_split`.
     """
     input_data = {
         IndCQC.location_id: ["loc1"] * len(dates),
         IndCQC.published_job_role_label: [CARE_WORKER] * len(dates),
         IndCQC.cqc_location_import_date: dates,
-        **status_split(permanent, PERCENTAGE_COLUMNS),
-        **status_split(rolling_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+        **status_split(permanent, PCT_COLUMNS),
+        **status_split(rolling_permanent, ROLLING_AVG_PCT_COLUMNS),
     }
     return ImputeUtilsTestCase(
         id=id,
         input_data=input_data,
         expected_data={
             **input_data,
-            **status_split(expected_permanent, FULL_IMPUTED_PERCENTAGE_COLUMNS),
+            **status_split(expected_permanent, IMPUTED_PCT_COLUMNS),
         },
     )
 
@@ -876,15 +873,15 @@ def full_imputation_five_status_case(
         IndCQC.location_id: ["loc1"] * len(dates),
         IndCQC.published_job_role_label: [CARE_WORKER] * len(dates),
         IndCQC.cqc_location_import_date: dates,
-        **dict(zip(PERCENTAGE_COLUMNS, known)),
-        **dict(zip(ROLLING_AVERAGE_PERCENTAGE_COLUMNS, rolling)),
+        **dict(zip(PCT_COLUMNS, known)),
+        **dict(zip(ROLLING_AVG_PCT_COLUMNS, rolling)),
     }
     return ImputeUtilsTestCase(
         id=id,
         input_data=input_data,
         expected_data={
             **input_data,
-            **dict(zip(FULL_IMPUTED_PERCENTAGE_COLUMNS, expected)),
+            **dict(zip(IMPUTED_PCT_COLUMNS, expected)),
         },
     )
 
@@ -903,15 +900,15 @@ def full_imputation_rows_case(
         IndCQC.location_id: locations,
         IndCQC.published_job_role_label: roles,
         IndCQC.cqc_location_import_date: dates,
-        **status_split(permanent, PERCENTAGE_COLUMNS),
-        **status_split(rolling_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+        **status_split(permanent, PCT_COLUMNS),
+        **status_split(rolling_permanent, ROLLING_AVG_PCT_COLUMNS),
     }
     return ImputeUtilsTestCase(
         id=id,
         input_data=input_data,
         expected_data={
             **input_data,
-            **status_split(expected_permanent, FULL_IMPUTED_PERCENTAGE_COLUMNS),
+            **status_split(expected_permanent, IMPUTED_PCT_COLUMNS),
         },
     )
 
@@ -933,7 +930,7 @@ class TestImputeUtilsData:
                 IndCQC.location_id: ["loc1"] * 5,
                 IndCQC.published_job_role_label: [CARE_WORKER] * 5,
                 IndCQC.cqc_location_import_date: FIVE_MONTHS,
-                **status_split([None, 0.2, None, 0.6, None], PERCENTAGE_COLUMNS),
+                **status_split([None, 0.2, None, 0.6, None], PCT_COLUMNS),
             },
             expected_data={
                 IndCQC.location_id: ["loc1"] * 5,
@@ -951,7 +948,7 @@ class TestImputeUtilsData:
                 IndCQC.location_id: ["loc1"] * 5,
                 IndCQC.published_job_role_label: [CARE_WORKER] * 5,
                 IndCQC.cqc_location_import_date: FIVE_MONTHS,
-                **status_split([None, 0.2, None, 0.6, None], PERCENTAGE_COLUMNS),
+                **status_split([None, 0.2, None, 0.6, None], PCT_COLUMNS),
             },
             expected_data={
                 IndCQC.location_id: ["loc1"] * 5,
@@ -980,7 +977,7 @@ class TestImputeUtilsData:
                 IndCQC.published_job_role_label: [CARE_WORKER] * 2
                 + [REGISTERED_NURSE] * 2,
                 IndCQC.cqc_location_import_date: FIVE_MONTHS[:2] * 2,
-                **status_split([0.2, None, None, 0.6], PERCENTAGE_COLUMNS),
+                **status_split([0.2, None, None, 0.6], PCT_COLUMNS),
             },
             expected_data={
                 IndCQC.location_id: ["loc1"] * 4,
@@ -1001,7 +998,7 @@ class TestImputeUtilsData:
                 IndCQC.location_id: ["loc1"] * 2,
                 IndCQC.published_job_role_label: [CARE_WORKER] * 2,
                 IndCQC.cqc_location_import_date: FIVE_MONTHS[:2],
-                **status_split([None, None], PERCENTAGE_COLUMNS),
+                **status_split([None, None], PCT_COLUMNS),
             },
             expected_data={
                 IndCQC.location_id: ["loc1"] * 2,
@@ -1017,7 +1014,7 @@ class TestImputeUtilsData:
         ),
     ]
 
-    add_short_term_imputed_percentages_test_cases = [
+    add_imputed_trendline_pcts_test_cases = [
         short_term_imputation_case(
             id="does_not_change_known_values",
             dates=FIVE_MONTHS,
@@ -1120,7 +1117,7 @@ class TestImputeUtilsData:
         ),
     ]
 
-    add_rolling_average_percentages_test_cases = [
+    add_rolling_avg_pcts_test_cases = [
         rolling_average_case(
             id="averages_across_locations_with_same_service_region_and_job_role",
             rows=[
@@ -1220,7 +1217,7 @@ class TestImputeUtilsData:
         ),
     ]
 
-    add_full_imputed_percentages_test_cases = [
+    add_imputed_pcts_test_cases = [
         full_imputation_case(
             id="does_not_change_known_values",
             dates=FIVE_MONTHS,

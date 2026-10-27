@@ -23,7 +23,7 @@ def main(
     lf = cUtils.create_clean_count_columns(lf)
     lf = cUtils.null_counts_for_low_org_ratio(lf)
     lf = cUtils.null_counts_for_low_location_ratio(lf)
-    lf = cUtils.create_employment_status_percentage_columns(lf)
+    lf = cUtils.create_employment_status_pct_columns(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,

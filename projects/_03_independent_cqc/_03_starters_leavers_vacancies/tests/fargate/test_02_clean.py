@@ -103,7 +103,7 @@ class TestMain:
         ):
             assert dedup not in result_df.columns
 
-    def test_main_creates_rate_columns_from_cleaned_columns(self, result_df):
+    def test_main_creates_rate_columns_from_clean_columns(self, result_df):
         assert result_df[SLVCols.ascwds_turnover_rate].to_list() == [
             pytest.approx(0.4),
             None,

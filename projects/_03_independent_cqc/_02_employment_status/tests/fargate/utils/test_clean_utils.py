@@ -20,7 +20,7 @@ PATCH_PATH = (
     "projects._03_independent_cqc._02_employment_status.fargate.utils.clean_utils"
 )
 
-PERCENTAGE_COLUMNS = [
+PCT_COLUMNS = [
     EmpStatus.permanent_pct,
     EmpStatus.temporary_pct,
     EmpStatus.bank_or_pool_pct,
@@ -33,9 +33,7 @@ def _schema_overrides(data: dict) -> dict:
     overrides = {
         column: pl.Int64 for column in job.CLEAN_COUNT_COLUMNS if column in data
     }
-    overrides.update(
-        {column: pl.Float32 for column in PERCENTAGE_COLUMNS if column in data}
-    )
+    overrides.update({column: pl.Float32 for column in PCT_COLUMNS if column in data})
     return overrides
 
 
@@ -125,7 +123,7 @@ class TestCreateEmploymentStatusPercentageColumns:
     ):
         input_lf = Mock()
 
-        returned_lf = job.create_employment_status_percentage_columns(input_lf)
+        returned_lf = job.create_employment_status_pct_columns(input_lf)
 
         percentage_share_horizontal_mock.assert_called_once_with(
             input_lf,

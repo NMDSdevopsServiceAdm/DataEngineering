@@ -23,13 +23,13 @@ class TestAddEstimatedEmploymentStatusColumns:
             for case in Data.add_estimated_employment_status_columns_test_cases
         ],
     )
-    def test_adds_estimated_percentages_counts_and_employees_as_expected(self, case):
+    def test_adds_estimated_pcts_counts_and_employees_as_expected(self, case):
         input_schema = {
             col: pl.Float32 if col != METRIC else pl.Float64 for col in case.input_data
         }
         expected_schema = {
             **input_schema,
-            **{col: pl.Float32 for col in job.ESTIMATED_PERCENTAGE_COLUMNS},
+            **{col: pl.Float32 for col in job.ESTIMATED_PCT_COLUMNS},
             **{col: pl.Float64 for col in job.ESTIMATED_COUNT_COLUMNS},
             EmpStatus.estimated_pct_source: CatColType.EmploymentStatusEstimateSourceEnumType,
             EmpStatus.estimated_employees: pl.Float64,
