@@ -7,14 +7,14 @@ import pytest
 import projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils as job
 from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_test_data import (
     FIRST_KNOWN_VALUE_COLUMNS,
-    FULL_IMPUTED_PERCENTAGE_COLUMNS,
+    IMPUTED_PCT_COLUMNS,
     LAST_KNOWN_VALUE_COLUMNS,
-    PERCENTAGE_COLUMNS,
-    ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
+    PCT_COLUMNS,
+    ROLLING_AVG_PCT_COLUMNS,
     ROLLING_AVERAGE_PERIOD,
     SHORT_TERM_EXTRAPOLATION_PERIOD,
     SHORT_TERM_INTERPOLATION_CAP_PERIOD,
-    TRENDLINE_PERCENTAGE_COLUMNS,
+    IMPUTED_TRENDLINE_PCT_COLUMNS,
 )
 from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_test_data import (
     TestImputeUtilsData as Data,
@@ -32,10 +32,10 @@ DATE_COLUMNS = [
     ImputeTempCols.next_known_date,
 ]
 FLOAT32_COLUMNS = (
-    PERCENTAGE_COLUMNS
-    + TRENDLINE_PERCENTAGE_COLUMNS
-    + FULL_IMPUTED_PERCENTAGE_COLUMNS
-    + ROLLING_AVERAGE_PERCENTAGE_COLUMNS
+    PCT_COLUMNS
+    + IMPUTED_TRENDLINE_PCT_COLUMNS
+    + IMPUTED_PCT_COLUMNS
+    + ROLLING_AVG_PCT_COLUMNS
     + FIRST_KNOWN_VALUE_COLUMNS
     + LAST_KNOWN_VALUE_COLUMNS
 )
@@ -85,11 +85,11 @@ class TestAddShortTermImputedPercentages:
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.add_short_term_imputed_percentages_test_cases
+            for case in Data.add_imputed_trendline_pcts_test_cases
         ],
     )
     def test_adds_short_term_imputed_percentages(self, case):
-        returned_lf = job.add_short_term_imputed_percentages(
+        returned_lf = job.add_imputed_trendline_pcts(
             to_lf(case.input_data),
             extrapolation_period=SHORT_TERM_EXTRAPOLATION_PERIOD,
             interpolation_cap_period=SHORT_TERM_INTERPOLATION_CAP_PERIOD,
@@ -108,11 +108,11 @@ class TestAddRollingAveragePercentages:
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.add_rolling_average_percentages_test_cases
+            for case in Data.add_rolling_avg_pcts_test_cases
         ],
     )
     def test_adds_rolling_average_percentages(self, case):
-        returned_lf = job.add_rolling_average_percentages(
+        returned_lf = job.add_rolling_avg_pcts(
             to_lf(case.input_data), rolling_period=ROLLING_AVERAGE_PERIOD
         )
 
@@ -127,13 +127,10 @@ class TestAddRollingAveragePercentages:
 class TestAddFullImputedPercentages:
     @pytest.mark.parametrize(
         "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.add_full_imputed_percentages_test_cases
-        ],
+        [pytest.param(case, id=case.id) for case in Data.add_imputed_pcts_test_cases],
     )
     def test_adds_full_imputed_percentages(self, case):
-        returned_lf = job.add_full_imputed_percentages(to_lf(case.input_data))
+        returned_lf = job.add_imputed_pcts(to_lf(case.input_data))
 
         pl_testing.assert_frame_equal(
             returned_lf,

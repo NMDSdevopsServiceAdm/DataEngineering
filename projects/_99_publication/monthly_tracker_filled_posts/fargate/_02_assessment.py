@@ -24,10 +24,8 @@ def main(
     run_number: int | None = None,
 ) -> None:
     """
-    Builds the assessment data for one prepared run: publication and assessment
-    columns by import date, job role, region and service type, with rollup rows,
-    capacity tracker (CT) percentage changes, and the previously published run's
-    filled posts with the percentage change from them.
+    Assesses one prepared run: summarises it for publication and adds the change
+    over time and against the previously published run.
 
     Args:
         prep_source (str): s3 directory holding the prepared data of every run
@@ -149,16 +147,34 @@ def main(
             Pub.locationid_count_cum_perc_change_short,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_long,
+            long_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_long,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.filtered_ct_total_employed_long,
             long_term_from_date,
             group_columns,
             Pub.filtered_ct_cum_perc_change_long,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_medium,
+            medium_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_medium,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.filtered_ct_total_employed_medium,
             medium_term_from_date,
             group_columns,
             Pub.filtered_ct_cum_perc_change_medium,
+        ),
+        publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
+            Pub.filtered_filled_posts_short,
+            short_term_from_date,
+            group_columns,
+            Pub.filtered_filled_posts_cum_perc_change_short,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.filtered_ct_total_employed_short,
@@ -194,6 +210,11 @@ def main(
         prev_assessment_lf = utils.scan_parquet(prev_run_source)
     assessment_summary_lf = publication_utils.add_prev_run_filled_posts_columns(
         assessment_summary_lf, prev_assessment_lf
+    )
+
+    assessment_summary_lf = assessment_summary_lf.with_columns(
+        publication_utils.period_label_short_expr(),
+        publication_utils.period_label_long_expr(),
     )
 
     utils.sink_to_parquet(
