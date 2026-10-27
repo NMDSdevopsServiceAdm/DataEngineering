@@ -11,6 +11,7 @@
 set -euo pipefail
 
 MAIN_BUCKET="sfc-main-datasets"
+DEFAULT_PROFILE="run-log-updater"
 RUN_LOG_PREFIX="domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log"
 SUPPORTED_FLAGS="approved selected_for_publication reconciled locally_checked"
 SELECTION_FLAG="selected_for_publication"
@@ -106,10 +107,8 @@ for command_name in aws uv; do
 done
 
 # --- Where ---
-profile=""
-while [[ -z "$profile" ]]; do
-  read -r -p "AWS profile (e.g. prod or non-prod): " profile
-done
+read -r -p "AWS profile (non-prod for a branch bucket) [$DEFAULT_PROFILE]: " profile
+profile="${profile:-$DEFAULT_PROFILE}"
 
 bucket=""
 until [[ "$bucket" =~ ^[a-z0-9.-]+$ ]]; do
