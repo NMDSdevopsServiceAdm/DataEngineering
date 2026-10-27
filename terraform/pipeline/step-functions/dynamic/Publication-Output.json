@@ -114,20 +114,8 @@
               "Comment": "Exit code 75 is NOT_PROMOTED_EXIT_CODE in _04_reconcile_output.py; any other failure is a fault, not a wait",
               "Choices": [
                 {
-                  "Or": [
-                    {
-                      "Variable": "$.check.Cause",
-                      "StringMatches": "*\"ExitCode\":75,*"
-                    },
-                    {
-                      "Variable": "$.check.Cause",
-                      "StringMatches": "*\"ExitCode\":75}*"
-                    },
-                    {
-                      "Variable": "$.check.Cause",
-                      "StringMatches": "*Exit code: 75.*"
-                    }
-                  ],
+                  "Variable": "$.check.Cause",
+                  "StringMatches": "*\"ExitCode\":75,*",
                   "Next": "Count Promotion Attempt"
                 }
               ],
