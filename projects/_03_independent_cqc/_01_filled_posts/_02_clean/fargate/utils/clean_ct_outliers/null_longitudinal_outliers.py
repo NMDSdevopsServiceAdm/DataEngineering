@@ -59,7 +59,6 @@ def null_longitudinal_outliers(
     lf = update_filtering_rule(
         lf=lf,
         filter_rule_col_name=filter_rule_column_name,
-        raw_col_name=column_to_clean,
         clean_col_name=column_to_clean,
         populated_rule=CTFilteringRule.populated,
         new_rule_name=CTFilteringRule.longitudinal_outliers,

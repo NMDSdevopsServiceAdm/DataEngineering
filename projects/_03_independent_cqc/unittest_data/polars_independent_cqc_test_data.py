@@ -620,6 +620,113 @@ class TestCleaningUtilsData:
                 "second_value_dedup": [2, 2, None, None],
             },
         ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="independent_blank_role_does_not_keep_unchanged_roles_in_the_workplace",
+            input_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, None, 1, None],
+                "second_value": [2, None, 2, None],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            independent=True,
+            expected_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, None, 1, None],
+                "second_value": [2, None, 2, None],
+                # role b stays blank, which isn't a change, so role a's repeat is nulled.
+                "first_value_dedup": [1, None, None, None],
+                "second_value_dedup": [2, None, None, None],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="independent_null_to_value_in_one_role_keeps_that_value_for_the_workplace",
+            input_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, None, 1, 3],
+                "second_value": [2, None, 2, None],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            independent=True,
+            expected_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, None, 1, 3],
+                "second_value": [2, None, 2, None],
+                # role b's first_value going from blank to 3 is a change, kept for
+                # both roles; second_value has no change so role a's repeat is nulled.
+                "first_value_dedup": [1, None, 1, 3],
+                "second_value_dedup": [2, None, None, None],
+            },
+        ),
+        RemoveRepeatedValuesOverTimeAsGroupTestCase(
+            id="independent_value_to_null_in_one_role_keeps_the_workplace",
+            input_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 3, 1, None],
+                "second_value": [2, 4, 2, 4],
+            },
+            columns_to_clean=["first_value", "second_value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            workplace_columns=["location_id", "date"],
+            independent=True,
+            expected_data={
+                "location_id": ["loc_1"] * 4,
+                "job_role": ["a", "b", "a", "b"],
+                "date": [
+                    date(2024, 1, 1),
+                    date(2024, 1, 1),
+                    date(2024, 2, 1),
+                    date(2024, 2, 1),
+                ],
+                "first_value": [1, 3, 1, None],
+                "second_value": [2, 4, 2, 4],
+                # role b's first_value going from 3 to blank is a change, so role a's
+                # repeat is kept; second_value has no change so both repeats are nulled.
+                "first_value_dedup": [1, 3, 1, None],
+                "second_value_dedup": [2, 4, None, None],
+            },
+        ),
     ]
 
     percentage_share_horizontal_test_cases = [

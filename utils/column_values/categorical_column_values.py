@@ -4,6 +4,9 @@ from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 
 
 @dataclass
@@ -65,6 +68,14 @@ class RegistrationStatus(ColumnValues):
 
     registered: str = "Registered"
     deregistered: str = "Deregistered"
+
+
+@dataclass
+class HasSuccessor(ColumnValues):
+    """The possible values of the has_successor column in CQC locations data"""
+
+    has_successor: str = "Y"
+    no_successor: str = "N"
 
 
 @dataclass
@@ -526,8 +537,26 @@ class CTFilteringRule(ColumnValues):
 
 
 @dataclass
-class SLVFilteringRule(ColumnValues):
-    """The possible reasons for filtering SLV (starters/leavers/vacancies) data"""
+class StartersFilteringRule(ColumnValues):
+    """The possible reasons for filtering starters data"""
+
+    populated: str = "populated"
+    missing_data: str = "missing_data"
+    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
+
+
+@dataclass
+class LeaversFilteringRule(ColumnValues):
+    """The possible reasons for filtering leavers data"""
+
+    populated: str = "populated"
+    missing_data: str = "missing_data"
+    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
+
+
+@dataclass
+class VacanciesFilteringRule(ColumnValues):
+    """The possible reasons for filtering vacancies data"""
 
     populated: str = "populated"
     missing_data: str = "missing_data"
@@ -596,6 +625,27 @@ class EmploymentStatusEstimateSource(ColumnValues):
     cleaned: str = "cleaned"
     imputed: str = "imputed"
     rolling_avg: str = "rolling_avg"
+
+
+@dataclass
+class StartersEstimateSource(ColumnValues):
+    """The columns an estimated starters count can come from"""
+
+    starters_cleaned: str = SLVCols.starters_cleaned
+
+
+@dataclass
+class LeaversEstimateSource(ColumnValues):
+    """The columns an estimated leavers count can come from"""
+
+    leavers_cleaned: str = SLVCols.leavers_cleaned
+
+
+@dataclass
+class VacanciesEstimateSource(ColumnValues):
+    """The columns an estimated vacancies count can come from"""
+
+    vacancies_cleaned: str = SLVCols.vacancies_cleaned
 
 
 @dataclass

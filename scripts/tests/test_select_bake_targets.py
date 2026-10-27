@@ -305,7 +305,7 @@ class TestLoadBakeTargets:
         "changed_path",
         [
             pytest.param(
-                "projects/_99_publication/monthly_tracker_filled_posts/templates/diagnostics_template.xlsx",
+                "projects/_99_publication/monthly_tracker_filled_posts/templates/assessment_template.xlsx",
                 id="template_file",
             ),
             pytest.param(

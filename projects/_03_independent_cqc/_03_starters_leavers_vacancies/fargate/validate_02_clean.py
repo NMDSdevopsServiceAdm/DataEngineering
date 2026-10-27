@@ -1,6 +1,7 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
@@ -12,9 +13,35 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import (
     StartersLeaversVacanciesColumns as SLVCols,
 )
+from utils.column_values.categorical_column_values import (
+    LeaversFilteringRule,
+    StartersFilteringRule,
+    VacanciesFilteringRule,
+)
 from utils.column_values.categorical_columns_by_dataset import (
     SLVCleanCategoricalValues as CatValues,
 )
+
+SLV_METRICS = [
+    (
+        SLVCols.starters,
+        SLVCols.starters_cleaned,
+        SLVCols.starters_filtering_rule,
+        StartersFilteringRule,
+    ),
+    (
+        SLVCols.leavers,
+        SLVCols.leavers_cleaned,
+        SLVCols.leavers_filtering_rule,
+        LeaversFilteringRule,
+    ),
+    (
+        SLVCols.vacancies,
+        SLVCols.vacancies_cleaned,
+        SLVCols.vacancies_filtering_rule,
+        VacanciesFilteringRule,
+    ),
+]
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
@@ -80,24 +107,6 @@ def main(
             brief="vacancies_cleaned is greater than or equal to 0",
         )
         .col_vals_ge(
-            SLVCols.starters_cleaned_dedup,
-            0,
-            na_pass=True,
-            brief="starters_cleaned_dedup is greater than or equal to 0",
-        )
-        .col_vals_ge(
-            SLVCols.leavers_cleaned_dedup,
-            0,
-            na_pass=True,
-            brief="leavers_cleaned_dedup is greater than or equal to 0",
-        )
-        .col_vals_ge(
-            SLVCols.vacancies_cleaned_dedup,
-            0,
-            na_pass=True,
-            brief="vacancies_cleaned_dedup is greater than or equal to 0",
-        )
-        .col_vals_ge(
             SLVCols.turnover_rate,
             0,
             na_pass=True,
@@ -131,8 +140,20 @@ def main(
             CatValues.vacancies_filtering_rule_column_values.categorical_values,
             brief="vacancies_filtering_rule is a known reason",
         )
-        .interrogate()
     )
+
+    for raw, cleaned, rule, rule_class in SLV_METRICS:
+        validation = validation.col_vals_expr(
+            expr=pl.col(cleaned)
+            .is_not_null()
+            .eq(pl.col(rule).eq_missing(pl.lit(rule_class.populated))),
+            brief=f"{cleaned} is populated exactly when {rule} is populated",
+        ).col_vals_expr(
+            expr=pl.col(cleaned).is_null() | pl.col(cleaned).eq_missing(pl.col(raw)),
+            brief=f"{cleaned} equals {raw} where populated",
+        )
+
+    validation = validation.interrogate()
     vl.write_reports(validation, bucket_name, reports_path)
 
 

@@ -1,27 +1,33 @@
-from utils.file_utils import list_archive_runs
+import polars as pl
+
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
+)
+from utils.file_utils import RUN_PARTITION_PATTERN, list_archive_runs
 
 LATEST_RUN = "latest"
 
 
-def parse_run_number(value: str | None) -> int | None:
+def parse_run_number(value: str | None, required: bool = False) -> int | None:
     """
     Converts the run_number command line value into a run number.
 
     Args:
         value (str | None): a run number, "latest", or None when not given
+        required (bool): whether a whole number must be given, rejecting "latest"
+            and None. Defaults to False
 
     Returns:
         int | None: the run number, or None for the latest run
 
     Raises:
-        ValueError: if the value is neither "latest" nor a whole number
+        ValueError: if the value is not a whole number, or "latest" when not required
     """
-    if value is None or value == LATEST_RUN:
+    if not required and (value is None or value == LATEST_RUN):
         return None
-    if not value.isdecimal():
-        raise ValueError(
-            f"run_number must be a whole number or 'latest', got '{value}'"
-        )
+    if value is None or not value.isdecimal():
+        accepted = "a whole number" if required else "a whole number or 'latest'"
+        raise ValueError(f"run_number must be {accepted}, got '{value}'")
     return int(value)
 
 
@@ -83,3 +89,82 @@ def resolve_run_sources(s3_roots: list[str], run_number: int | None) -> list[str
         f"{root.rstrip('/')}/archive_date={runs[selected_run]}/run_number={selected_run}/"
         for root, runs in runs_by_root.items()
     ]
+
+
+def run_partition_path(s3_root: str, run_source: str) -> str:
+    """
+    Builds a run's directory under an S3 root from the run's source directory.
+
+    Args:
+        s3_root (str): S3 directory holding runs partitioned by archive_date and
+            run_number
+        run_source (str): S3 directory of a run, from resolve_run_sources
+
+    Returns:
+        str: the run's directory under s3_root
+
+    Raises:
+        ValueError: if run_source has no archive_date and run_number partitions
+    """
+    partition = RUN_PARTITION_PATTERN.search(run_source)
+    if partition is None:
+        raise ValueError(f"No run partition found in {run_source}")
+
+    return f"{s3_root.rstrip('/')}/{partition.group(0)}"
+
+
+def run_number_from_source(run_source: str) -> int:
+    """
+    Gets the run number from a run's source directory.
+
+    Args:
+        run_source (str): S3 directory of a run, from resolve_run_sources
+
+    Returns:
+        int: the run number
+
+    Raises:
+        ValueError: if run_source has no archive_date and run_number partitions
+    """
+    partition = RUN_PARTITION_PATTERN.search(run_source)
+    if partition is None:
+        raise ValueError(f"No run partition found in {run_source}")
+
+    return int(partition.group(2))
+
+
+def archive_date_from_source(run_source: str) -> str:
+    """
+    Gets the archive date from a run's source directory.
+
+    Args:
+        run_source (str): S3 directory of a run, from resolve_run_sources
+
+    Returns:
+        str: the archive date, as YYYY-MM-DD
+
+    Raises:
+        ValueError: if run_source has no archive_date and run_number partitions
+    """
+    partition = RUN_PARTITION_PATTERN.search(run_source)
+    if partition is None:
+        raise ValueError(f"No run partition found in {run_source}")
+
+    return partition.group(1)
+
+
+def add_run_partition_columns(lf: pl.LazyFrame, run_source: str) -> pl.LazyFrame:
+    """
+    Adds the archive_date and run_number columns of a run, to partition its outputs on.
+
+    Args:
+        lf (pl.LazyFrame): Data built from the run.
+        run_source (str): S3 directory of the run, from resolve_run_sources
+
+    Returns:
+        pl.LazyFrame: lf with archive_date and run_number columns.
+    """
+    return lf.with_columns(
+        pl.lit(archive_date_from_source(run_source)).alias(ArchiveKeys.archive_date),
+        pl.lit(run_number_from_source(run_source)).alias(ArchiveKeys.run_number),
+    )

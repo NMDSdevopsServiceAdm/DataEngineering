@@ -44,7 +44,12 @@ Description block — markdown, sections in this order:
 
 ````
 ```
-**Summary:** One or two sentences: the problem and what this card settles.
+**TODO:** <What to build or change, 2 to 3 sentences, naming the real columns/datasets/outputs.>
+
+Where: <path or location, only if the plan or user gave one; otherwise delete this line>
+
+
+**The problem to solve:** One or two sentences: the problem and what this card settles.
 
 **Scope:**
 - A concrete piece of work, one line each.
@@ -56,6 +61,13 @@ Description block — markdown, sections in this order:
 ```
 ````
 
+- **TODO** tells the developer who picks the card up exactly what is wanted: one concrete, actionable
+  statement of 2 to 3 sentences. Name the real columns/datasets/outputs; plain words, no card labels or
+  jargon. It restates what Scope implies and adds no new work. Example: "Add unfiltered sum of CT posts
+  columns (`col_name` to be summed) to `dataset_name_assessments`."
+- **Where** is an optional line under TODO, in its own paragraph, for where the change applies. Include
+  it only when the plan or user says; omit it otherwise — never guess, as the developer may scope it
+  differently.
 - **Depends on** names each card by label and title. "Nothing" if it can start immediately. One
   dependency stays on the line; two or more become a `-` bullet list under the label, one card per bullet.
   For "all earlier cards", write that instead of listing every one. A conditional dependency gets its
@@ -95,8 +107,11 @@ Same two code blocks and section order as step 3, with these differences:
   states for this one item (never other items). Everything left open (limits, thresholds, behaviour on
   failure, where it lives) goes in as a "Confirm during scoping: ..." bullet — only the few that would change the work (about four at most). Don't add tests, logging,
   acceptance criteria or other work the idea didn't mention.
-- **Summary** restates the idea and why it matters; it doesn't assert how things currently behave unless
-  the user said so.
+- **TODO** comes first and holds only what the idea (or the plan, for this item) states; anything open
+  stays in Scope as "Confirm during scoping". Omit **Where** unless stated; otherwise the location is a
+  "Confirm during scoping" bullet.
+- **The problem to solve** restates the idea and why it matters; it doesn't assert how things currently
+  behave unless the user said so.
 - **Depends on** is "Nothing" unless the user — or the plan, for this item — named a dependency. Never
   invent one. A lone card has no labels, so name any dependency by its title.
 - Skip **Notes** unless the user or the plan gave a caveat for this item.

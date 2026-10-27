@@ -240,10 +240,8 @@ class TestApplyDataCorrections:
 
 
 class TestBoundingExpressions:
-    def test_expression_bounds(self):
-        exprs = job.BoundingExpressions()
-        assert exprs.filled_posts_lower_bound == 1
-        assert exprs.slv_lower_bound == 0
+    def test_filled_posts_lower_bound(self):
+        assert job.BoundingExpressions().filled_posts_lower_bound == 1
 
     def test_filled_posts_expression_bounds_values_to_valid_range(self):
         exprs = job.BoundingExpressions()
@@ -266,20 +264,23 @@ class TestBoundingExpressions:
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
+
+class TestNullSlvJobRolesWhenNotKnown:
     @pytest.mark.parametrize(
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.job_role_expression_bounds_test_cases
+            for case in Data.null_slv_job_roles_when_not_known_test_cases
         ],
     )
-    def test_slv_expression_bounds_values_to_valid_range(self, case):
-        exprs = job.BoundingExpressions()
-        schema = {col: pl.Int64 for col in case.input_data}
-        test_lf = pl.LazyFrame(case.input_data, schema=schema)
-        expected_lf = pl.LazyFrame(case.expected_data, schema=schema)
+    def test_function_returns_expected_values(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_data,
+            schema=pl.Schema({col: pl.Int32 for col in case.input_data}),
+        )
+        expected_lf = pl.LazyFrame(case.expected_data, schema=input_lf.collect_schema())
 
-        returned_lf = test_lf.with_columns(exprs.slv_expr)
+        returned_lf = job.null_slv_job_roles_when_not_known(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 

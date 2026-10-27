@@ -19,7 +19,13 @@ from utils.column_values.ascwds_labelled_vocab import (
 
 bounds = wUtils.BoundingExpressions()
 
-INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
+INT_COLUMNS: list[str] = [
+    AWPClean.total_staff,
+    AWPClean.worker_records,
+    AWPClean.total_starters,
+    AWPClean.total_leavers,
+    AWPClean.total_vacancies,
+]
 
 WORKPLACE_SCHEMA = {
     AWPClean.organisation_id: pl.String,
@@ -214,10 +220,9 @@ def main(
         workplace_lf, still_matching_duplicates_lf
     )
 
-    workplace_lf = workplace_lf.with_columns(
-        bounds.filled_posts_expr,
-        bounds.slv_expr,
-    )
+    workplace_lf = wUtils.null_slv_job_roles_when_not_known(workplace_lf)
+
+    workplace_lf = workplace_lf.with_columns(bounds.filled_posts_expr)
 
     workplace_lf = wUtils.merge_legacy_job_role_columns(
         workplace_lf, legacy_job_roles_dict

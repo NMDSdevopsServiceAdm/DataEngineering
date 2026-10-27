@@ -56,6 +56,8 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     ImputedProportionEmployingStaffSource,
     JobGroupLabels,
+    LeaversEstimateSource,
+    LeaversFilteringRule,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
     Region,
@@ -63,9 +65,12 @@ from utils.column_values.categorical_column_values import (
     RelatedLocation,
     Sector,
     Services,
-    SLVFilteringRule,
     Specialisms,
     SpecialistGeneralistOther,
+    StartersEstimateSource,
+    StartersFilteringRule,
+    VacanciesEstimateSource,
+    VacanciesFilteringRule,
 )
 
 
@@ -332,14 +337,29 @@ class SLVPrepareCategoricalValues:
 
 @dataclass
 class SLVCleanCategoricalValues:
-    starters_filtering_rule_column_values = SLVFilteringRule(
+    starters_filtering_rule_column_values = StartersFilteringRule(
         SLVCols.starters_filtering_rule
     )
-    leavers_filtering_rule_column_values = SLVFilteringRule(
+    leavers_filtering_rule_column_values = LeaversFilteringRule(
         SLVCols.leavers_filtering_rule
     )
-    vacancies_filtering_rule_column_values = SLVFilteringRule(
+    vacancies_filtering_rule_column_values = VacanciesFilteringRule(
         SLVCols.vacancies_filtering_rule
+    )
+
+
+@dataclass
+class SLVEstimateCategoricalValues:
+    """Source column values for estimated starters, leavers and vacancies."""
+
+    starters_source_column_values = StartersEstimateSource(
+        SLVCols.estimated_starters_source
+    )
+    leavers_source_column_values = LeaversEstimateSource(
+        SLVCols.estimated_leavers_source
+    )
+    vacancies_source_column_values = VacanciesEstimateSource(
+        SLVCols.estimated_vacancies_source
     )
 
 

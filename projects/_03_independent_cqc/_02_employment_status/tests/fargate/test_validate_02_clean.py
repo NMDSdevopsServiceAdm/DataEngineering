@@ -19,11 +19,6 @@ class TestMain:
     def setup_method(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
-            EmpStatus.permanent_count_dedup: pl.Int64,
-            EmpStatus.temporary_count_dedup: pl.Int64,
-            EmpStatus.bank_or_pool_count_dedup: pl.Int64,
-            EmpStatus.agency_count_dedup: pl.Int64,
-            EmpStatus.other_count_dedup: pl.Int64,
             EmpStatus.permanent_percentage: pl.Float32,
             EmpStatus.temporary_percentage: pl.Float32,
             EmpStatus.bank_or_pool_percentage: pl.Float32,
@@ -39,11 +34,6 @@ class TestMain:
         source_rows = [
             (
                 "1-001",
-                2,
-                1,
-                0,
-                1,
-                0,
                 0.5,
                 0.25,
                 0.0,
