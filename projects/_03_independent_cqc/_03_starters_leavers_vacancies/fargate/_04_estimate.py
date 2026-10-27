@@ -9,9 +9,9 @@ def main(
     imputed_data_source: str,
     estimated_data_destination: str,
 ) -> None:
-    """Creates estimated starter, turnover and vacancy rates.
+    """Creates estimated starters, leavers and vacancies.
 
-    Each estimated rate is the first populated of the listed columns.
+    Each estimate is the first populated of the listed columns.
 
     Args:
         imputed_data_source (str): Path to the imputed data.
@@ -21,19 +21,19 @@ def main(
 
     lf = lf.with_columns(
         *utils.coalesce_with_source_labels(
-            cols=[SLVCols.starter_rate],
-            name=SLVCols.estimated_starter_rate,
-            source_dtype=CatColType.StarterRateEstimateSourceEnumType,
+            cols=[SLVCols.ascwds_starters_clean],
+            name=SLVCols.estimated_starters,
+            source_dtype=CatColType.StartersEstimateSourceEnumType,
         ),
         *utils.coalesce_with_source_labels(
-            cols=[SLVCols.turnover_rate],
-            name=SLVCols.estimated_turnover_rate,
-            source_dtype=CatColType.TurnoverRateEstimateSourceEnumType,
+            cols=[SLVCols.ascwds_leavers_clean],
+            name=SLVCols.estimated_leavers,
+            source_dtype=CatColType.LeaversEstimateSourceEnumType,
         ),
         *utils.coalesce_with_source_labels(
-            cols=[SLVCols.vacancy_rate],
-            name=SLVCols.estimated_vacancy_rate,
-            source_dtype=CatColType.VacancyRateEstimateSourceEnumType,
+            cols=[SLVCols.ascwds_vacancies_clean],
+            name=SLVCols.estimated_vacancies,
+            source_dtype=CatColType.VacanciesEstimateSourceEnumType,
         ),
     )
 

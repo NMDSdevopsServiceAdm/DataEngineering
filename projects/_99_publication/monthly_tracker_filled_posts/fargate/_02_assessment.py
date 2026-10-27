@@ -222,6 +222,11 @@ def main(
         assessment_summary_lf, prev_assessment_lf
     )
 
+    assessment_summary_lf = assessment_summary_lf.with_columns(
+        publication_utils.period_label_short_expr(),
+        publication_utils.period_label_long_expr(),
+    )
+
     utils.sink_to_parquet(
         lazy_df=merge_utils.add_run_partition_columns(
             assessment_summary_lf, run_source

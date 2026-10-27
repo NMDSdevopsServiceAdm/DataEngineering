@@ -31,7 +31,13 @@ SHORT_TERM_FROM_DATE = date(2026, 4, 1)
 # Earliest import date that is later than the earliest Capacity Tracker data.
 LATER_FIRST_IMPORT_DATE = date(2027, 4, 1)
 TEST_PREVIOUS_RUN_SOURCE = "some/other/directory/archive_date=2026-09-01/run_number=1/"
-TEST_WRITTEN_RUN = "some/other/directory/archive_date=2026-10-01/run_number=2/"
+
+# Term start dates for a run on 2026-09-01 whose earliest import date is 2021-04-01.
+LONG_TERM_FROM_DATE = date(2021, 7, 1)
+MEDIUM_TERM_FROM_DATE = date(2025, 4, 1)
+SHORT_TERM_FROM_DATE = date(2026, 4, 1)
+# Earliest import date that is later than the earliest Capacity Tracker data.
+LATER_FIRST_IMPORT_DATE = date(2027, 4, 1)
 
 PERC_CHANGE_COLUMNS = [
     Pub.filled_posts_april_perc_change,
@@ -381,13 +387,27 @@ class TestMain:
             ArchiveKeys.archive_date,
             ArchiveKeys.run_number,
         ]
-        expected_lf = mocks.aggregate.return_value.with_columns(
-            [pl.lit(None, dtype=pl.Float32).alias(c) for c in PERC_CHANGE_COLUMNS]
-        ).with_columns(
-            pl.lit("2026-10-01").alias(ArchiveKeys.archive_date),
-            pl.lit(2).alias(ArchiveKeys.run_number),
+        expected_lf = (
+            mocks.aggregate.return_value.with_columns(
+                [pl.lit(None, dtype=pl.Float32).alias(c) for c in PERC_CHANGE_COLUMNS]
+            )
+            .with_columns(
+                pl.lit("Mar 2026").alias(Pub.period_label_short),
+                pl.lit("March 2026").alias(Pub.period_label_long),
+            )
+            .with_columns(
+                pl.lit("2026-10-01").alias(ArchiveKeys.archive_date),
+                pl.lit(2).alias(ArchiveKeys.run_number),
+            )
         )
         assert_frame_equal(sink_kwargs["lazy_df"], expected_lf)
+
+    def test_main_adds_short_and_long_period_labels_from_the_import_date(self, mocks):
+        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+
+        sunk_df = mocks.sink_to_parquet.call_args.kwargs["lazy_df"].collect()
+        assert sunk_df[Pub.period_label_short].to_list() == ["Mar 2026"]
+        assert sunk_df[Pub.period_label_long].to_list() == ["March 2026"]
 
     def test_main_adds_prev_run_filled_posts_columns_from_the_previous_published_run(
         self, mocks

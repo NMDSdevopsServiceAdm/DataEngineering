@@ -35,7 +35,7 @@ class TestFormatPublicationDate:
 PUBLICATION_SCHEMA = pl.Schema(
     [
         (Pub.period, pl.Date),
-        (Pub.period_label, pl.String),
+        (Pub.period_label_short, pl.String),
         (Pub.region, pl.String),
         (Pub.main_service, pl.String),
         (Pub.estimated_filled_posts_rounded, pl.Float64),
@@ -107,7 +107,7 @@ class TestPreparePercChangeForPublication:
         input_lf = pl.LazyFrame(
             {
                 Pub.period: [date(2026, 4, 1)],
-                Pub.period_label: ["Mar 2026"],
+                Pub.period_label_short: ["Mar 2026"],
                 Pub.region: ["London"],
                 Pub.main_service: ["All CQC locations"],
                 self.april_column: pl.Series([0.1], dtype=pl.Float32),

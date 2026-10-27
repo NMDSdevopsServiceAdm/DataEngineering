@@ -518,7 +518,6 @@ aggregate_to_publication_rows_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 *_NURSE_LONDON_CARE_HOME,
                 30.0,
                 2,
@@ -560,7 +559,6 @@ aggregate_to_publication_rows_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 *_NURSE_LONDON_CARE_HOME,
                 10.0,
                 1,
@@ -597,7 +595,6 @@ aggregate_to_publication_rows_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 *_NURSE_LONDON_CARE_HOME,
                 10.0,
                 1,
@@ -640,7 +637,6 @@ aggregate_to_publication_rows_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 *_NURSE_LONDON_CARE_HOME,
                 25.0,
                 1,
@@ -714,7 +710,6 @@ aggregate_to_publication_rows_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 *_NURSE_LONDON_CARE_HOME,
                 10.0,
                 1,
@@ -731,7 +726,6 @@ aggregate_to_publication_rows_test_cases = [
             ),
             (
                 date(2026, 4, 1),
-                "Mar 2026",
                 *_NURSE_LONDON_CARE_HOME,
                 10.0,
                 1,
@@ -748,7 +742,6 @@ aggregate_to_publication_rows_test_cases = [
             ),
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 "Care worker",
                 "London",
                 "Care home service",
@@ -767,7 +760,6 @@ aggregate_to_publication_rows_test_cases = [
             ),
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 "Registered nurse",
                 "South West",
                 "Care home service",
@@ -786,7 +778,6 @@ aggregate_to_publication_rows_test_cases = [
             ),
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 "Registered nurse",
                 "London",
                 "Non-residential service",
@@ -838,7 +829,6 @@ aggregate_to_publication_rows_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 *_NURSE_LONDON_CARE_HOME,
                 45.0,
                 2,
@@ -880,7 +870,6 @@ aggregate_to_publication_rows_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 *_NURSE_LONDON_CARE_HOME,
                 25.0,
                 1,
@@ -969,7 +958,6 @@ add_rows_for_publication_groups_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 PublishedJobGroupLabels.all_job_roles,
                 "London",
                 _CARE_HOME_WITH_NURSING,
@@ -1009,7 +997,6 @@ add_rows_for_publication_groups_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 "Registered nurse",
                 "London",
                 PublishedMainService.all_locations,
@@ -1017,7 +1004,6 @@ add_rows_for_publication_groups_test_cases = [
             ),
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 "Registered nurse",
                 "London",
                 PublishedMainService.all_care_homes,
@@ -1058,7 +1044,6 @@ add_rows_for_publication_groups_test_cases = [
         expected_data=[
             (
                 date(2025, 4, 1),
-                "Mar 2025",
                 "Registered nurse",
                 PublishedRegion.england,
                 _CARE_HOME_WITH_NURSING,

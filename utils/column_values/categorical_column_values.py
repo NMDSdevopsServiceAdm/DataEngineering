@@ -628,24 +628,24 @@ class EmploymentStatusEstimateSource(ColumnValues):
 
 
 @dataclass
-class StarterRateEstimateSource(ColumnValues):
-    """The columns an estimated starter rate can come from"""
+class StartersEstimateSource(ColumnValues):
+    """The columns an estimated starters count can come from"""
 
-    starter_rate: str = SLVCols.starter_rate
-
-
-@dataclass
-class TurnoverRateEstimateSource(ColumnValues):
-    """The columns an estimated turnover rate can come from"""
-
-    turnover_rate: str = SLVCols.turnover_rate
+    ascwds_starters_clean: str = SLVCols.ascwds_starters_clean
 
 
 @dataclass
-class VacancyRateEstimateSource(ColumnValues):
-    """The columns an estimated vacancy rate can come from"""
+class LeaversEstimateSource(ColumnValues):
+    """The columns an estimated leavers count can come from"""
 
-    vacancy_rate: str = SLVCols.vacancy_rate
+    ascwds_leavers_clean: str = SLVCols.ascwds_leavers_clean
+
+
+@dataclass
+class VacanciesEstimateSource(ColumnValues):
+    """The columns an estimated vacancies count can come from"""
+
+    ascwds_vacancies_clean: str = SLVCols.ascwds_vacancies_clean
 
 
 @dataclass

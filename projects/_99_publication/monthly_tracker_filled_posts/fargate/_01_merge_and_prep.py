@@ -68,10 +68,6 @@ def main(
         publication_utils.reduced_data_filter_expr(cutoff_date=cutoff_date)
     )
 
-    jr_estimates_lf = jr_estimates_lf.with_columns(
-        publication_utils.period_label_expr()
-    )
-
     utils.sink_to_parquet(
         lazy_df=jr_estimates_lf,
         output_path=merge_utils.run_partition_path(
