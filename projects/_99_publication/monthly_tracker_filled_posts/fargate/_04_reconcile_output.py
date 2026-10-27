@@ -17,8 +17,7 @@ from utils.column_values.categorical_column_values import (
     PublishedRegion,
 )
 
-# Measured on run 2 (2026-10): the two totals agree to ~1e-7, the Float32 rounding
-# floor, so this is ~1000x that floor.
+# The totals agree to ~1e-7 (Float32 rounding), so this leaves ~1000x headroom.
 RECONCILIATION_RELATIVE_TOLERANCE = 0.0001
 
 
@@ -28,12 +27,9 @@ class ReconciliationMismatchError(ValueError):
 
 def is_run_promoted(promoted_archive_source: str, run_number: int) -> bool:
     """
-    Checks whether a run's job-role estimates have landed in the long-term
-    archive yet.
+    Checks whether a run's job-role estimates are in the long-term archive yet.
 
-    Cheap readiness check: lists the archive's run partitions rather than
-    reading any data, so the pipeline can poll it while waiting for
-    `update_run_log.sh`'s promotion step to complete.
+    Lists partitions without reading data, so it is cheap to poll.
 
     Args:
         promoted_archive_source (str): S3 directory of the long-term promoted
@@ -49,10 +45,8 @@ def is_run_promoted(promoted_archive_source: str, run_number: int) -> bool:
 
 def _total_by_period(lf: pl.LazyFrame, value_column: str) -> pl.DataFrame:
     """
-    Sums one column for each import date.
-
-    Summed as Float64 so the comparison measures real differences, not Float32
-    accumulation error over a long sum. One row per period, so it is small.
+    Sums one column for each import date, as Float64 so the comparison isn't
+    skewed by Float32 accumulation error.
     """
     return (
         lf.group_by(IndCQC.cqc_location_import_date)
@@ -68,18 +62,14 @@ def main(
     run_number: int,
 ) -> None:
     """
-    Reconciles one run's public output against its promoted archive, marking the
-    run reconciled in the run log on a match.
+    Compares a run's public and promoted archive filled posts totals, marking
+    the run reconciled in the run log on a match.
 
-    Both totals are recomputed independently, over the periods the assessment
-    data holds: the archive keeps every period back to 2013, so its other
-    periods are ignored. The public total is the assessment store's raw,
-    pre-rounding filled posts (never the public output's banded figure, which
-    stays the only filled-posts column the public dataset carries), taken from
-    the national "All job roles" row only, as the assessment data also holds
-    overlapping regional, service and job role rollups. The archive total sums
-    every job-role row of estimate_filled_posts_by_job_role in the promoted
-    archive, which has no rollup rows.
+    Totals cover the periods in the assessment data; other archive periods are
+    ignored. The public total is the assessment's pre-rounding national "All
+    job roles" row (the public output only holds banded figures, and the
+    assessment's other rows are overlapping rollups). The archive total sums
+    every job-role row, as the archive has no rollups.
 
     Args:
         assessment_source (str): S3 directory holding the assessed data of every

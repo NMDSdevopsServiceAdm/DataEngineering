@@ -16,11 +16,8 @@ locals {
   ascwds_polling_max_attempts = terraform.workspace == "main" ? 60 : 5
   ascwds_polling_wait_seconds = terraform.workspace == "main" ? 900 : 10
 
-  # Max polling attempts and per-attempt wait (seconds) for Publication-Output.json's
-  # "Check Promoted Archive" state, before giving up on a run that hasn't been
-  # promoted yet (update_run_log.sh --flag selected_for_publication). Non-main
-  # workspaces poll faster and fewer times so the wait/timeout paths are practical
-  # to exercise manually on a branch.
+  # Retries and seconds between them for Publication-Output.json's "Check Promoted
+  # Archive" state. Non-main workspaces poll faster so the timeout is quick to test.
   reconciliation_polling_max_attempts = terraform.workspace == "main" ? 10 : 5
   reconciliation_polling_wait_seconds = terraform.workspace == "main" ? 180 : 10
 }

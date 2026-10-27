@@ -17,17 +17,11 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 def mark_run_log_flag(run_log_source: str, run_number: int, flag: str) -> None:
     """
-    Sets a flag (and any companion timestamp) for one run directly in the S3 run
-    log, reusing update_run_log.py's own local-file flag logic rather than
-    reimplementing it.
+    Sets a flag (and its timestamp) for one run in the S3 run log.
 
-    Downloads only the target run's partition, delegates validation and the
-    flag/timestamp update to scripts.update_run_log, then re-uploads --
-    clearing the destination partition first so no stale file is left alongside
-    the new one.
-
-    Propagates update_run_log.set_run_flag's ValueError unchanged if it rejects
-    the update (e.g. the run isn't eligible yet, or the flag is already set).
+    Downloads the run's partition, updates it with scripts.update_run_log, and
+    re-uploads it, clearing the old partition first so no stale file is left
+    beside the new one. A rejected update's ValueError propagates unchanged.
 
     Args:
         run_log_source (str): S3 directory of the archive run log, partitioned by
