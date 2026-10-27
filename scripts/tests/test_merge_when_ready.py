@@ -1,7 +1,8 @@
 import subprocess
+import urllib.error
 from dataclasses import dataclass
 from typing import Any
-from unittest.mock import DEFAULT, patch
+from unittest.mock import DEFAULT, Mock, patch
 
 import pytest
 
@@ -326,6 +327,7 @@ def stubs():
             _statuses_for_commit=DEFAULT,
             _main_tip=DEFAULT,
             _require_approval=DEFAULT,
+            _require_queued=DEFAULT,
         ) as mocks,
         patch(f"{PATCH_PATH}.time.sleep"),
     ):
@@ -462,6 +464,80 @@ class TestMergePr:
 
         assert not any(c[:2] == ("pr", "merge") for c in gh_calls(stubs))
 
+    def test_raises_withdrawn_without_merging_when_label_removed_at_the_start(
+        self, stubs
+    ):
+        stubs["_require_queued"].side_effect = job.Withdrawn()
+
+        with pytest.raises(job.Withdrawn):
+            merge_pr()
+
+        stubs["_pr_checks"].assert_not_called()
+
+    def test_raises_withdrawn_without_merging_when_label_removed_during_the_waits(
+        self, stubs
+    ):
+        stubs["_require_queued"].side_effect = [None, job.Withdrawn()]
+
+        with pytest.raises(job.Withdrawn):
+            merge_pr()
+
+        assert not any(c[:2] == ("pr", "merge") for c in gh_calls(stubs))
+
+    def test_raises_not_mergeable_with_conflict_message_when_branch_update_conflicts(
+        self, stubs
+    ):
+        stubs["_behind_by"].return_value = 3
+
+        def gh(*args, check=True):
+            if args[:3] == ("api", "-X", "PUT"):
+                raise subprocess.CalledProcessError(
+                    1,
+                    "gh",
+                    stderr="gh: merge conflict between base and head (HTTP 422)",
+                )
+
+        stubs["_gh"].side_effect = gh
+
+        with pytest.raises(job.NotMergeable, match="Merge conflict with main"):
+            merge_pr()
+
+    def test_passes_on_other_branch_update_errors(self, stubs):
+        stubs["_behind_by"].return_value = 3
+
+        def gh(*args, check=True):
+            if args[:3] == ("api", "-X", "PUT"):
+                raise subprocess.CalledProcessError(1, "gh", stderr="HTTP 500")
+
+        stubs["_gh"].side_effect = gh
+
+        with pytest.raises(subprocess.CalledProcessError):
+            merge_pr()
+
+    def test_does_not_update_branch_when_main_deploy_has_already_failed(self, stubs):
+        stubs["_behind_by"].return_value = 3
+
+        def statuses(slug, branch, sha, workflow_name=None):
+            return ["failed"] if branch == "main" else ["success"]
+
+        stubs["_statuses_for_commit"].side_effect = statuses
+
+        with pytest.raises(job.MainDeployFailed):
+            merge_pr()
+
+        assert not any(c[:3] == ("api", "-X", "PUT") for c in gh_calls(stubs))
+
+    def test_polls_whether_pr_is_still_queued_while_waiting(self, stubs):
+        stubs["_pr_checks"].side_effect = [
+            [{"name": "test", "bucket": "pending"}],
+            [PASS],
+        ]
+
+        merge_pr()
+
+        # Round start, once per wait poll, and before the merge.
+        assert stubs["_require_queued"].call_count >= 3
+
     def test_does_not_raise_when_label_removal_fails_after_merge(self, stubs):
         def gh(*args, check=True):
             if args[:2] == ("pr", "edit"):
@@ -470,6 +546,120 @@ class TestMergePr:
         stubs["_gh"].side_effect = gh
 
         merge_pr()
+
+
+def completed(returncode: int, stdout: str = "", stderr: str = ""):
+    return subprocess.CompletedProcess(["gh"], returncode, stdout, stderr)
+
+
+@patch(f"{PATCH_PATH}.time.sleep")
+@patch(f"{PATCH_PATH}._gh")
+class TestPrChecks:
+    def test_returns_checks_even_when_gh_exits_non_zero(self, gh_mock, sleep_mock):
+        gh_mock.return_value = completed(1, '[{"name": "test", "bucket": "fail"}]')
+
+        assert job._pr_checks(REPO, 7) == [{"name": "test", "bucket": "fail"}]
+
+    def test_returns_no_checks_while_pending_with_no_output(self, gh_mock, sleep_mock):
+        gh_mock.return_value = completed(job.PENDING_EXIT_CODE)
+
+        assert job._pr_checks(REPO, 7) == []
+
+    def test_returns_no_checks_when_none_reported_yet(self, gh_mock, sleep_mock):
+        gh_mock.return_value = completed(
+            1, stderr="no checks reported on the 'x' branch"
+        )
+
+        assert job._pr_checks(REPO, 7) == []
+
+    def test_raises_and_retries_when_gh_fails_for_another_reason(
+        self, gh_mock, sleep_mock
+    ):
+        gh_mock.return_value = completed(1, stderr="HTTP 401: Bad credentials")
+
+        with pytest.raises(subprocess.CalledProcessError):
+            job._pr_checks(REPO, 7)
+
+        assert gh_mock.call_count == job.READ_ATTEMPTS
+
+
+def http_error(code: int) -> urllib.error.HTTPError:
+    return urllib.error.HTTPError("https://circleci.com", code, "err", {}, None)
+
+
+@patch.dict("os.environ", {"CIRCLECI_TOKEN": "token"})
+@patch(f"{PATCH_PATH}.time.sleep")
+@patch(f"{PATCH_PATH}.urllib.request.urlopen")
+class TestCircleciGet:
+    @pytest.mark.parametrize("code", [401, 403, 404])
+    def test_raises_bot_misconfigured_without_retrying_on_auth_errors(
+        self, urlopen_mock, sleep_mock, code
+    ):
+        urlopen_mock.side_effect = http_error(code)
+
+        with pytest.raises(job.BotMisconfigured, match=str(code)):
+            job._circleci_get("/x")
+
+        assert urlopen_mock.call_count == 1
+
+    def test_retries_then_raises_on_server_errors(self, urlopen_mock, sleep_mock):
+        urlopen_mock.side_effect = http_error(500)
+
+        with pytest.raises(urllib.error.HTTPError):
+            job._circleci_get("/x")
+
+        assert urlopen_mock.call_count == job.READ_ATTEMPTS
+
+
+@patch(f"{PATCH_PATH}._gh_json")
+class TestRequireQueued:
+    def test_passes_when_open_and_labelled(self, gh_json_mock):
+        gh_json_mock.return_value = {"state": "OPEN", "labels": [{"name": LABEL}]}
+
+        job._require_queued(REPO, LABEL, 7)
+
+    def test_raises_withdrawn_when_label_removed(self, gh_json_mock):
+        gh_json_mock.return_value = {"state": "OPEN", "labels": [{"name": "other"}]}
+
+        with pytest.raises(job.Withdrawn):
+            job._require_queued(REPO, LABEL, 7)
+
+    def test_raises_withdrawn_when_pr_closed(self, gh_json_mock):
+        gh_json_mock.return_value = {"state": "CLOSED", "labels": [{"name": LABEL}]}
+
+        with pytest.raises(job.Withdrawn):
+            job._require_queued(REPO, LABEL, 7)
+
+
+@patch(f"{PATCH_PATH}.time.sleep")
+class TestWaitWhilePending:
+    def test_calls_on_poll_before_each_wait(self, sleep_mock):
+        states = iter([job.State.PENDING, job.State.PENDING, job.State.CLEAR])
+        on_poll = Mock()
+
+        result = job._wait_while_pending("x", lambda: next(states), None, on_poll)
+
+        assert result is job.State.CLEAR
+        assert on_poll.call_count == 2
+
+    def test_returns_none_when_timeout_passes(self, sleep_mock):
+        result = job._wait_while_pending("x", lambda: job.State.PENDING, 120)
+
+        assert result is None
+
+    def test_raises_out_of_time_when_close_to_the_job_limit(self, sleep_mock):
+        with patch(f"{PATCH_PATH}._run_deadline", 0.0):
+            with pytest.raises(job.OutOfTime):
+                job._wait_while_pending("x", lambda: job.State.PENDING, None)
+
+    def test_keeps_waiting_when_no_deadline_is_set(self, sleep_mock):
+        states = iter([job.State.PENDING, job.State.CLEAR])
+
+        with patch(f"{PATCH_PATH}._run_deadline", None):
+            assert (
+                job._wait_while_pending("x", lambda: next(states), None)
+                is job.State.CLEAR
+            )
 
 
 @patch(f"{PATCH_PATH}._reject")
@@ -528,6 +718,37 @@ class TestMergeNext:
 
         assert job.merge_next(REPO, LABEL, SLUG, False) == 4
         assert "merge conflict" in reject_mock.call_args.args[3]
+
+    def test_skips_withdrawn_pr_silently(
+        self, labelled_prs_mock, merge_pr_mock, reject_mock
+    ):
+        labelled_prs_mock.return_value = [{"number": 4, "labelled_at": ""}]
+        merge_pr_mock.side_effect = job.Withdrawn()
+
+        assert job.merge_next(REPO, LABEL, SLUG, False) == 4
+        reject_mock.assert_not_called()
+
+    def test_leaves_labels_and_exits_when_circleci_rejects_the_token(
+        self, labelled_prs_mock, merge_pr_mock, reject_mock
+    ):
+        labelled_prs_mock.return_value = [{"number": 4, "labelled_at": ""}]
+        merge_pr_mock.side_effect = job.BotMisconfigured("CircleCI returned HTTP 401.")
+
+        with pytest.raises(SystemExit):
+            job.merge_next(REPO, LABEL, SLUG, False)
+
+        reject_mock.assert_not_called()
+
+    def test_comments_and_exits_when_close_to_the_job_limit(
+        self, labelled_prs_mock, merge_pr_mock, reject_mock
+    ):
+        labelled_prs_mock.return_value = [{"number": 4, "labelled_at": ""}]
+        merge_pr_mock.side_effect = job.OutOfTime("Stopped waiting before the limit.")
+
+        with pytest.raises(SystemExit):
+            job.merge_next(REPO, LABEL, SLUG, False)
+
+        assert "Stopped waiting" in reject_mock.call_args.args[3]
 
     def test_comments_and_exits_when_main_deploy_failed(
         self, labelled_prs_mock, merge_pr_mock, reject_mock

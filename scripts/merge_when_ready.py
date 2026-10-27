@@ -35,6 +35,12 @@ MAX_ROUNDS = 5
 READ_ATTEMPTS = 3
 RETRY_SECONDS = 15
 MAX_DETAIL_CHARS = 300
+# `gh pr checks` exit code while checks are pending.
+PENDING_EXIT_CODE = 8
+# CircleCI responses meaning the token or project slug is wrong.
+CIRCLECI_AUTH_CODES = {401, 403, 404}
+# Stop waiting 15 minutes before GitHub's 6-hour job limit kills the run.
+STOP_AFTER_SECONDS = 20700
 ERRORS = (
     subprocess.CalledProcessError,
     urllib.error.URLError,
@@ -55,6 +61,26 @@ class NotMergeable(Exception):
 
 class MainDeployFailed(Exception):
     """Main's deploy failed or is missing, so no PR can merge until it is fixed."""
+
+
+class Withdrawn(Exception):
+    """The PR's label was removed or the PR closed, on purpose."""
+
+
+class BotMisconfigured(Exception):
+    """The bot can't work (e.g. bad CircleCI token), so the run stops."""
+
+
+class OutOfTime(Exception):
+    """The run is close to GitHub's job time limit."""
+
+
+_run_deadline: Optional[float] = None
+
+
+def _check_deadline() -> None:
+    if _run_deadline is not None and time.monotonic() > _run_deadline:
+        raise OutOfTime("Stopped waiting before the 6-hour job limit.")
 
 
 def workflows_state(statuses: Optional[list[str]]) -> State:
@@ -177,8 +203,15 @@ def _circleci_get(path: str) -> dict:
             f"{CIRCLECI_API}{path}",
             headers={"Circle-Token": os.environ["CIRCLECI_TOKEN"]},
         )
-        with urllib.request.urlopen(request, timeout=30) as response:
-            return json.load(response)
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                return json.load(response)
+        except urllib.error.HTTPError as error:
+            if error.code in CIRCLECI_AUTH_CODES:
+                raise BotMisconfigured(
+                    f"CircleCI returned HTTP {error.code}: check CIRCLECI_TOKEN and the project slug."
+                ) from error
+            raise
 
     return _retry(fetch)
 
@@ -234,6 +267,21 @@ def _require_approval(repo: str, number: int) -> None:
         raise NotMergeable("It needs an approving review. Re-add the label once approved.")  # fmt: skip
 
 
+def _require_queued(repo: str, label: str, number: int) -> None:
+    pr = _gh_json("pr", "view", str(number), "--repo", repo, "--json", "labels,state")
+    if pr["state"] != "OPEN" or label not in [item["name"] for item in pr["labels"]]:
+        raise Withdrawn
+
+
+def _update_branch(repo: str, number: int) -> None:
+    try:
+        _gh("api", "-X", "PUT", f"repos/{repo}/pulls/{number}/update-branch")
+    except subprocess.CalledProcessError as error:
+        if "conflict" in (error.stderr or "").lower():
+            raise NotMergeable("Merge conflict with main. Resolve it and re-add the label.") from error  # fmt: skip
+        raise
+
+
 def _main_tip(repo: str) -> str:
     path = f"repos/{repo}/commits/main"
     return _retry(lambda: _gh("api", path, "--jq", ".sha")).stdout.strip()
@@ -246,12 +294,19 @@ def _behind_by(repo: str, head_sha: str) -> int:
 
 def _pr_checks(repo: str, number: int) -> list[dict]:
     def fetch() -> list[dict]:
-        # gh exits non-zero while checks are pending or none exist: read stdout only.
-        out = _gh(
+        result = _gh(
             "pr", "checks", str(number), "--repo", repo, "--json", "name,bucket",
             check=False,
-        ).stdout  # fmt: skip
-        return json.loads(out) if out.strip() else []
+        )  # fmt: skip
+        # gh exits non-zero while checks are pending or failed, but still
+        # prints them. With no output, only "pending" and "none yet" are fine.
+        if result.stdout.strip():
+            return json.loads(result.stdout)
+        if result.returncode in (0, PENDING_EXIT_CODE) or "no checks" in result.stderr:
+            return []
+        raise subprocess.CalledProcessError(
+            result.returncode, result.args, result.stdout, result.stderr
+        )
 
     return _retry(fetch)
 
@@ -292,13 +347,22 @@ def announce_queued(repo: str, label: str, number: int) -> None:
 
 
 def _wait_while_pending(
-    description: str, get_state: Callable[[], State], timeout: Optional[int]
+    description: str,
+    get_state: Callable[[], State],
+    timeout: Optional[int],
+    on_poll: Optional[Callable[[], None]] = None,
 ) -> Optional[State]:
-    """Poll until not PENDING; None if `timeout` passes first."""
+    """Poll until not PENDING; None if `timeout` passes first.
+
+    Calls `on_poll` before each wait, and stops the run close to the job limit.
+    """
     waited = 0
     while (state := get_state()) is State.PENDING:
         if timeout is not None and waited >= timeout:
             return None
+        _check_deadline()
+        if on_poll:
+            on_poll()
         print(f"Waiting: {description}.")
         time.sleep(POLL_SECONDS)
         waited += POLL_SECONDS
@@ -309,6 +373,7 @@ def _wait_for_workflows(
     description: str,
     fetch: Callable[[], Optional[list[str]]],
     finish_timeout: Optional[int],
+    on_poll: Optional[Callable[[], None]] = None,
 ) -> Optional[State]:
     """Wait for CircleCI workflows to appear, then finish.
 
@@ -317,6 +382,7 @@ def _wait_for_workflows(
         fetch (Callable[[], Optional[list[str]]]): Current statuses, or None.
         finish_timeout (Optional[int]): Seconds allowed to finish; None waits
             indefinitely (manual approvals).
+        on_poll (Optional[Callable[[], None]]): Called before each wait.
 
     Returns:
         Optional[State]: CLEAR or FAILED, or None if none appeared in time.
@@ -328,21 +394,52 @@ def _wait_for_workflows(
         f"{description} (waiting to start)",
         lambda: State.PENDING if fetch() is None else State.CLEAR,
         APPEARANCE_TIMEOUT_SECONDS,
+        on_poll,
     )
     if appeared is None:
         return None
     state = _wait_while_pending(
-        description, lambda: workflows_state(fetch()), finish_timeout
+        description, lambda: workflows_state(fetch()), finish_timeout, on_poll
     )
     if state is None:
         raise TimeoutError(f"{description} did not finish in time.")
     return state
 
 
+def _require_main_deployed(
+    repo: str, project_slug: str, on_poll: Optional[Callable[[], None]] = None
+) -> None:
+    """Wait for the deploy of main's tip to finish.
+
+    Args:
+        repo (str): `owner/name`.
+        project_slug (str): CircleCI project slug, e.g. `gh/owner/name`.
+        on_poll (Optional[Callable[[], None]]): Called before each wait.
+
+    Raises:
+        MainDeployFailed: If main's tip has no deploy or its deploy failed.
+    """
+    # The tip, not the latest deploy found: right after a merge its pipeline
+    # may not exist yet.
+    tip = _main_tip(repo)
+    deploy = _wait_for_workflows(
+        f"Main deploy of {tip[:8]}",
+        lambda: _statuses_for_commit(project_slug, "main", tip, MAIN_DEPLOY_WORKFLOW),
+        None,
+        on_poll,
+    )
+    if deploy is None:
+        raise MainDeployFailed(f"No main deploy found for {tip[:8]}.")
+    if deploy is State.FAILED:
+        raise MainDeployFailed(f"The main deploy of {tip[:8]} failed.")
+
+
 def _merge_pr(
     repo: str, label: str, number: int, project_slug: str, dry_run: bool
 ) -> None:
     """Update a PR from main, wait for its checks and main's deploy, then merge it.
+
+    Stops with `Withdrawn` if the label is removed or the PR closed meanwhile.
 
     Args:
         repo (str): `owner/name`.
@@ -352,15 +449,27 @@ def _merge_pr(
         dry_run (bool): Run every check but don't merge.
 
     Raises:
-        NotMergeable: If the PR isn't approved, its checks fail or main keeps moving.
+        NotMergeable: If the PR isn't approved, has a conflict, its checks fail
+            or main keeps moving.
         MainDeployFailed: If main's tip has no deploy or its deploy failed.
     """
+
+    def still_queued() -> None:
+        _require_queued(repo, label, number)
+
+    # Skip updating and testing a PR when main's deploy has already failed.
+    tip = _main_tip(repo)
+    tip_statuses = _statuses_for_commit(project_slug, "main", tip, MAIN_DEPLOY_WORKFLOW)
+    if workflows_state(tip_statuses) is State.FAILED:
+        raise MainDeployFailed(f"The main deploy of {tip[:8]} failed.")
+
     for _ in range(MAX_ROUNDS):
+        still_queued()
         _require_approval(repo, number)
         head_sha, head_branch = _pr_head(repo, number)
         if _behind_by(repo, head_sha) > 0:
             print(f"PR {number} is behind main; updating its branch.")
-            _gh("api", "-X", "PUT", f"repos/{repo}/pulls/{number}/update-branch")
+            _update_branch(repo, number)
             time.sleep(POLL_SECONDS)  # let CircleCI see the new head
             continue
 
@@ -368,6 +477,7 @@ def _merge_pr(
             f"PR {number} checks",
             lambda: checks_state(_pr_checks(repo, number)),
             PR_WORKFLOWS_TIMEOUT_SECONDS,
+            still_queued,
         )
         if checks is None:
             raise NotMergeable("Its checks didn't finish in time.")
@@ -379,33 +489,23 @@ def _merge_pr(
             f"CircleCI workflows for PR {number}",
             lambda: _statuses_for_commit(project_slug, head_branch, head_sha),
             PR_WORKFLOWS_TIMEOUT_SECONDS,
+            still_queued,
         )
         if circleci is None:
             raise NotMergeable("CircleCI never started checks on its latest commit.")
         if circleci is State.FAILED:
             raise NotMergeable("CircleCI workflows failed. Fix them and re-add the label.")  # fmt: skip
 
-        # Main's tip, not the latest deploy found: right after a merge its
-        # pipeline may not exist yet.
-        tip = _main_tip(repo)
-        deploy = _wait_for_workflows(
-            f"Main deploy of {tip[:8]}",
-            lambda: _statuses_for_commit(
-                project_slug, "main", tip, MAIN_DEPLOY_WORKFLOW
-            ),
-            None,
-        )
-        if deploy is None:
-            raise MainDeployFailed(f"No main deploy found for {tip[:8]}.")
-        if deploy is State.FAILED:
-            raise MainDeployFailed(f"The main deploy of {tip[:8]} failed.")
+        _require_main_deployed(repo, project_slug, still_queued)
 
         if _behind_by(repo, head_sha) == 0:  # main may have moved meanwhile
             break
     else:
         raise NotMergeable("Main kept moving past this PR. Re-add the label to retry.")
 
-    _require_approval(repo, number)  # may have been withdrawn while waiting
+    # Either may have been withdrawn while waiting.
+    still_queued()
+    _require_approval(repo, number)
     if dry_run:
         print(f"Dry run: would merge PR {number}.")
     else:
@@ -427,8 +527,10 @@ def merge_next(
 ) -> Optional[int]:
     """Merge the earliest labelled PR, or reject it with a comment and drop its label.
 
-    Rejecting stops one stuck PR blocking the rest. If main's deploy failed, the
-    run exits instead, as nothing can merge until it is fixed.
+    Rejecting stops one stuck PR blocking the rest. The run exits instead if
+    main's deploy failed (nothing can merge until it is fixed), CircleCI
+    rejects the token, or the job time limit is near. A PR taken off the queue
+    on purpose is skipped silently.
 
     Args:
         repo (str): `owner/name`.
@@ -453,6 +555,17 @@ def merge_next(
         reason = f"Not merged: {error} Re-add the label once it is fixed."
         _reject(repo, label, number, reason)
         sys.exit(f"{error} Fix it before anything else merges.")
+    except Withdrawn:
+        print(f"PR {number} was taken off the queue; skipping it.")
+    except OutOfTime as error:
+        reason = f"Not merged: {error} Re-add the label to continue."
+        _reject(repo, label, number, reason)
+        sys.exit(str(error))
+    except BotMisconfigured as error:
+        # Labels stay as they are: the PRs are fine, the bot isn't.
+        sys.exit(
+            f"{error} Queued PRs keep their labels; fix it and re-run the workflow."
+        )
     except ERRORS as error:
         reason = f"Not merged: the merge bot hit an error ({_describe(error)}). Re-add the label to retry."  # fmt: skip
         _reject(repo, label, number, reason)
@@ -480,7 +593,11 @@ def main() -> None:
     if not os.environ.get("CIRCLECI_TOKEN"):
         sys.exit("CIRCLECI_TOKEN is not set.")
 
+    global _run_deadline
+    _run_deadline = time.monotonic() + STOP_AFTER_SECONDS
+
     # Each merge starts a main deploy, which the next PR waits for.
+    tip_before = _main_tip(args.repo)
     handled: set[int] = set()
     while (
         number := merge_next(
@@ -488,6 +605,13 @@ def main() -> None:
         )
     ) is not None:
         handled.add(number)
+
+    # Main moved: watch its deploy so a failure turns this run red.
+    if not args.dry_run and _main_tip(args.repo) != tip_before:
+        try:
+            _require_main_deployed(args.repo, args.project_slug)
+        except (MainDeployFailed, OutOfTime, BotMisconfigured) as error:
+            sys.exit(f"{error} Fix it before anything else merges.")
 
 
 if __name__ == "__main__":

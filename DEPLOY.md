@@ -76,10 +76,15 @@ terraform workspace delete <workspace_name>
 ## Merging to main
 Merge by adding the `ready-to-merge` label, not the Merge button. The `merge-when-ready` GitHub Action then merges labelled PRs one at a time, in the order they were labelled. For each PR it checks the PR is approved, updates the branch from `main`, waits for the PR's checks and CircleCI workflows, then waits for the deploy of `main`'s latest commit to finish (including its manual `plan-approval`) before merging. It removes the label when done.
 
+- Before labelling, resolve any merge conflicts: GitHub doesn't run workflows for a PR with a conflict, so the label would do nothing.
+- When a PR is labelled, the bot comments its place in the queue ("Queued: position 2 of 3"). To see the queue, filter PRs by the `ready-to-merge` label. Run status and logs are under the repo's Actions tab > `merge-when-ready` > the run's "Merge labelled PRs in turn" step.
+- To take a PR out of the queue, remove its label (or close it). This works at any point, including while it waits.
 - A PR needs at least one approving review and no outstanding request for changes, checked at the start and again just before merging. Otherwise it gets a comment and loses its label: re-add it once approved.
 - A PR that can't be merged (failed checks, merge conflict, `main` moving ahead too fast, or a bot error) gets a comment with the reason and loses its label. The next labelled PR carries on. Fix it and re-add the label.
-- If `main`'s latest deploy failed or never started, the PR gets a comment and loses its label, and the run fails so nothing merges until it is fixed. The fix itself has to go in with the Merge button.
-- When a PR is labelled, the bot comments its place in the queue ("Queued: position 2 of 3"). To see the queue, filter PRs by the `ready-to-merge` label. Run status and logs are under the repo's Actions tab > `merge-when-ready` > the run's "Merge labelled PRs in turn" step.
+- If `main`'s latest deploy failed or never started, the PR in progress gets a comment and loses its label, and the run fails so nothing merges until it is fixed. The fix itself has to go in with the Merge button. The other labelled PRs keep their labels but nothing restarts them: once `main` is fixed, run the workflow manually (Actions > `merge-when-ready` > Run workflow, with "dry run" unticked).
+- After the last merge the run waits for that deploy too, so a failed deploy turns the run red.
+- If CircleCI rejects the token or project slug (HTTP 401/403/404), the run fails and no labels are changed. Fix `CIRCLECI_TOKEN`, then run the workflow manually as above.
+- A run stops itself after 5h45m (GitHub's job limit is 6h), comments on the PR it was waiting on and removes its label: re-add it to continue.
 - Add `merge-dry-run` instead to run every check without merging. It removes the label afterwards.
-- Needs the `ready-to-merge` and `merge-dry-run` labels to exist, and the `CIRCLECI_TOKEN` secret. A run is limited to 6 hours: if it times out waiting for an approval, re-add the label.
+- Needs the `ready-to-merge` and `merge-dry-run` labels to exist, and the `CIRCLECI_TOKEN` secret.
 - The Merge button still works, so the label is a team convention.
