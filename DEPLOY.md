@@ -87,4 +87,4 @@ Merge by adding the `ready-to-merge` label, not the Merge button. The `merge-whe
 - A run stops itself after 5h45m (GitHub's job limit is 6h), comments on the PR it was waiting on and removes its label: re-add it to continue.
 - Add `merge-dry-run` instead to run every check without merging. It removes the label afterwards.
 - Needs the `ready-to-merge` and `merge-dry-run` labels to exist, and the `CIRCLECI_TOKEN` secret.
-- The Merge button still works, so the label is a team convention.
+- The Merge button still works (topic side), so the label is a team convention.
