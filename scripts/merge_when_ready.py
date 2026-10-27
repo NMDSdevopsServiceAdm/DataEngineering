@@ -28,6 +28,8 @@ MAIN_DEPLOY_WORKFLOW = "test-plan-approve-and-deploy-to-main"
 PIPELINES_TO_SCAN = 20
 FAILED_STATUSES = {"failed", "failing", "error", "canceled", "unauthorized"}
 FAILED_BUCKETS = {"fail", "cancel"}
+# Review states that change a reviewer's verdict; comments don't.
+VERDICT_REVIEW_STATES = {"APPROVED", "CHANGES_REQUESTED", "DISMISSED"}
 # This script's own workflow job, ignored so it doesn't wait on itself.
 OWN_CHECK_NAME = "merge-when-ready"
 POLL_SECONDS = 60
@@ -163,6 +165,25 @@ def next_in_queue(prs: list[dict], handled: Collection[int] = ()) -> Optional[di
     )
 
 
+def is_approved(reviews: list[dict]) -> bool:
+    """Return whether the PR has an approval and no outstanding change request.
+
+    Args:
+        reviews (list[dict]): Reviews from `gh pr view --json reviews`, each with
+            `author`, `state` and `submittedAt`.
+
+    Returns:
+        bool: True if, taking each reviewer's latest approval, change request or
+            dismissal, at least one approves and none requests changes.
+    """
+    latest: dict[str, str] = {}
+    for review in sorted(reviews, key=lambda r: r["submittedAt"]):
+        if review["state"] in VERDICT_REVIEW_STATES:
+            latest[review["author"]["login"]] = review["state"]
+    verdicts = set(latest.values())
+    return "APPROVED" in verdicts and "CHANGES_REQUESTED" not in verdicts
+
+
 def _describe(error: Exception) -> str:
     detail = getattr(error, "stderr", None) or str(error)
     return detail.strip()[:MAX_DETAIL_CHARS]
@@ -236,6 +257,12 @@ def _pr_head(repo: str, number: int) -> tuple[str, str]:
         "pr", "view", str(number), "--repo", repo, "--json", "headRefOid,headRefName"
     )
     return pr["headRefOid"], pr["headRefName"]
+
+
+def _require_approval(repo: str, number: int) -> None:
+    reviews = _gh_json("pr", "view", str(number), "--repo", repo, "--json", "reviews")
+    if not is_approved(reviews["reviews"]):
+        raise NotMergeable("It needs an approving review. Re-add the label once approved.")  # fmt: skip
 
 
 def _main_tip(repo: str) -> str:
@@ -340,10 +367,12 @@ def _merge_pr(
         dry_run (bool): Run every check but do not merge.
 
     Raises:
-        NotMergeable: If the PR's checks fail or main keeps moving past it.
+        NotMergeable: If the PR isn't approved, its checks fail or main keeps
+            moving past it.
         MainDeployFailed: If main's tip has no deploy or its deploy failed.
     """
     for _ in range(MAX_ROUNDS):
+        _require_approval(repo, number)
         head_sha, head_branch = _pr_head(repo, number)
         if _behind_by(repo, head_sha) > 0:
             print(f"PR {number} is behind main; updating its branch.")
@@ -392,6 +421,7 @@ def _merge_pr(
     else:
         raise NotMergeable("Main kept moving past this PR. Re-add the label to retry.")
 
+    _require_approval(repo, number)  # a review can be withdrawn during the waits
     if dry_run:
         print(f"Dry run: would merge PR {number}.")
     else:

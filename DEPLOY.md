@@ -74,10 +74,11 @@ terraform workspace delete <workspace_name>
 - Branch names may only use letters, digits, `.`, `_`, `-` and `/` (the `serial-group` key allows nothing else).
 
 ## Merging to main
-Merge by adding the `ready-to-merge` label, not the Merge button. The `merge-when-ready` GitHub Action then merges labelled PRs one at a time, in the order they were labelled. For each PR it updates the branch from `main`, waits for the PR's checks and CircleCI workflows, then waits for the deploy of `main`'s latest commit to finish (including its manual `plan-approval`) before merging. It removes the label when done.
+Merge by adding the `ready-to-merge` label, not the Merge button. The `merge-when-ready` GitHub Action then merges labelled PRs one at a time, in the order they were labelled. For each PR it checks the PR is approved, updates the branch from `main`, waits for the PR's checks and CircleCI workflows, then waits for the deploy of `main`'s latest commit to finish (including its manual `plan-approval`) before merging. It removes the label when done.
 
+- A PR needs at least one approving review and no outstanding request for changes, checked at the start and again just before merging. Otherwise it gets a comment and loses its label: re-add it once approved.
 - A PR that can't be merged (failed checks, merge conflict, `main` moving ahead too fast, or a bot error) gets a comment with the reason and loses its label. The next labelled PR carries on. Fix it and re-add the label.
 - If `main`'s latest deploy failed or never started, the PR gets a comment and loses its label, and the run fails so nothing merges until it is fixed. The fix itself has to go in with the Merge button.
 - Add `merge-dry-run` instead to run every check without merging. It removes the label afterwards.
 - Needs the `ready-to-merge` and `merge-dry-run` labels to exist, and the `CIRCLECI_TOKEN` secret. A run is limited to 6 hours: if it times out waiting for an approval, re-add the label.
-- It doesn't check review approval, and the Merge button still works, so the label is a team convention.
+- The Merge button still works, so the label is a team convention.

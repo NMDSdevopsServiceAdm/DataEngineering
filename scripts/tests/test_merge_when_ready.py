@@ -206,6 +206,56 @@ class TestNextInQueue:
         assert job.next_in_queue([{"number": 1, "labelled_at": ""}], {1}) is None
 
 
+def review(login: str, state: str, submitted_at: str) -> dict:
+    return {"author": {"login": login}, "state": state, "submittedAt": submitted_at}
+
+
+@dataclass
+class ApprovalTestCase:
+    id: str
+    reviews: list[dict]
+    expected: bool
+
+    def as_pytest_param(self):
+        return pytest.param(self.reviews, self.expected, id=self.id)
+
+
+approval_cases = [
+    ApprovalTestCase("approved_with_one_approval", [review("a", "APPROVED", "1")], True),
+    ApprovalTestCase("not_approved_with_no_reviews", [], False),
+    ApprovalTestCase("not_approved_with_only_comments", [review("a", "COMMENTED", "1")], False),
+    ApprovalTestCase("approval_survives_a_later_comment", [review("a", "APPROVED", "1"), review("a", "COMMENTED", "2")], True),
+    ApprovalTestCase("not_approved_when_changes_requested_after_approval", [review("a", "APPROVED", "1"), review("a", "CHANGES_REQUESTED", "2")], False),
+    ApprovalTestCase("approved_when_reviewer_re_approves_after_changes", [review("a", "CHANGES_REQUESTED", "1"), review("a", "APPROVED", "2")], True),
+    ApprovalTestCase("not_approved_when_approval_dismissed", [review("a", "APPROVED", "1"), review("a", "DISMISSED", "2")], False),
+    ApprovalTestCase("not_approved_when_another_reviewer_requests_changes", [review("a", "APPROVED", "1"), review("b", "CHANGES_REQUESTED", "2")], False),
+    ApprovalTestCase("uses_submission_time_not_list_order", [review("a", "APPROVED", "2"), review("a", "CHANGES_REQUESTED", "1")], True),
+]  # fmt: skip
+
+
+class TestIsApproved:
+    @pytest.mark.parametrize(
+        "reviews, expected", [c.as_pytest_param() for c in approval_cases]
+    )
+    def test_returns_expected_result(self, reviews, expected):
+        assert job.is_approved(reviews) is expected
+
+
+class TestRequireApproval:
+    @patch(f"{PATCH_PATH}._gh_json")
+    def test_passes_when_approved(self, gh_json_mock):
+        gh_json_mock.return_value = {"reviews": [review("a", "APPROVED", "1")]}
+
+        job._require_approval(REPO, 7)
+
+    @patch(f"{PATCH_PATH}._gh_json")
+    def test_raises_not_mergeable_when_not_approved(self, gh_json_mock):
+        gh_json_mock.return_value = {"reviews": []}
+
+        with pytest.raises(job.NotMergeable, match="approving review"):
+            job._require_approval(REPO, 7)
+
+
 @pytest.fixture
 def stubs():
     """Patch every outside call so `_merge_pr` runs with an all-clear world."""
@@ -218,6 +268,7 @@ def stubs():
             _pr_checks=DEFAULT,
             _statuses_for_commit=DEFAULT,
             _main_tip=DEFAULT,
+            _require_approval=DEFAULT,
         ) as mocks,
         patch(f"{PATCH_PATH}.time.sleep"),
     ):
@@ -334,6 +385,25 @@ class TestMergePr:
         merge_pr()
 
         assert MERGE_CALL in gh_calls(stubs)
+
+    def test_raises_not_mergeable_without_waiting_when_not_approved(self, stubs):
+        stubs["_require_approval"].side_effect = job.NotMergeable("needs review")
+
+        with pytest.raises(job.NotMergeable, match="needs review"):
+            merge_pr()
+
+        stubs["_pr_checks"].assert_not_called()
+
+    def test_does_not_merge_when_approval_is_withdrawn_during_the_waits(self, stubs):
+        stubs["_require_approval"].side_effect = [
+            None,
+            job.NotMergeable("needs review"),
+        ]
+
+        with pytest.raises(job.NotMergeable, match="needs review"):
+            merge_pr()
+
+        assert not any(c[:2] == ("pr", "merge") for c in gh_calls(stubs))
 
     def test_does_not_raise_when_label_removal_fails_after_merge(self, stubs):
         def gh(*args, check=True):
