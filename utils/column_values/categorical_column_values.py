@@ -71,6 +71,14 @@ class RegistrationStatus(ColumnValues):
 
 
 @dataclass
+class HasSuccessor(ColumnValues):
+    """The possible values of the has_successor column in CQC locations data"""
+
+    has_successor: str = "Y"
+    no_successor: str = "N"
+
+
+@dataclass
 class PrimaryServiceType(ColumnValues):
     """The possible values of the primary service type column in CQC locations data"""
 
@@ -620,24 +628,24 @@ class EmploymentStatusEstimateSource(ColumnValues):
 
 
 @dataclass
-class StarterRateEstimateSource(ColumnValues):
-    """The columns an estimated starter rate can come from"""
+class StartersEstimateSource(ColumnValues):
+    """The columns an estimated starters count can come from"""
 
-    starter_rate: str = SLVCols.starter_rate
-
-
-@dataclass
-class TurnoverRateEstimateSource(ColumnValues):
-    """The columns an estimated turnover rate can come from"""
-
-    turnover_rate: str = SLVCols.turnover_rate
+    starters_cleaned: str = SLVCols.starters_cleaned
 
 
 @dataclass
-class VacancyRateEstimateSource(ColumnValues):
-    """The columns an estimated vacancy rate can come from"""
+class LeaversEstimateSource(ColumnValues):
+    """The columns an estimated leavers count can come from"""
 
-    vacancy_rate: str = SLVCols.vacancy_rate
+    leavers_cleaned: str = SLVCols.leavers_cleaned
+
+
+@dataclass
+class VacanciesEstimateSource(ColumnValues):
+    """The columns an estimated vacancies count can come from"""
+
+    vacancies_cleaned: str = SLVCols.vacancies_cleaned
 
 
 @dataclass

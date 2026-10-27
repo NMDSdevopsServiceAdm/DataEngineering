@@ -22,6 +22,7 @@ from utils.column_values.categorical_column_values import (
     CareHome,
     ContemporaryCSSR,
     Dormancy,
+    HasSuccessor,
     LocationType,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
@@ -873,14 +874,20 @@ class ExtractRegisteredManagerNamesData:
 class LocationsCleanUtilsData:
     # fmt: off
     save_latest_full_snapshot_rows  = [
-        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier),
-        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
-        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier),
-        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier, ["HSCA Successor"]),
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, ["HSCA Successor"]),
+        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier, None),
+        ("1-002", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, ["HSCA Successor", "HSCA Predecessor"]),
+        ("1-003", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, ["HSCA Predecessor"]),
+        ("1-004", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, []),
+        ("1-005", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, None),
     ]
     expected_save_latest_full_snapshot_rows = [
-        (date(2025, 2, 1), "1-001", RegistrationStatus.registered, None, LocationType.social_care_identifier),
-        (date(2025, 2, 1), "1-001", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
+        (date(2025, 2, 1), "1-001", RegistrationStatus.registered, None, LocationType.social_care_identifier, HasSuccessor.no_successor),
+        (date(2025, 2, 1), "1-002", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.has_successor),
+        (date(2025, 2, 1), "1-003", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.no_successor),
+        (date(2025, 2, 1), "1-004", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.no_successor),
+        (date(2025, 2, 1), "1-005", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier, HasSuccessor.no_successor),
     ]
     # fmt: on
 
@@ -1555,6 +1562,7 @@ class ValidateCqcLocations4FullLatestSnapshotTest:
         (date(2025, 1, 1),),
         (RegistrationStatus.registered,),
         (date(2024, 1, 1),),
+        (HasSuccessor.has_successor,),
     ]
 
 

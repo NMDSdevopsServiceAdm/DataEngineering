@@ -26,6 +26,7 @@ from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
 )
 from utils.column_values.categorical_column_values import (
+    HasSuccessor,
     ParentsOrSinglesAndSubs,
     RegistrationStatus,
     SingleSubDescription,
@@ -437,40 +438,62 @@ class PotentialsCountTestCase:
     id: str
     registration_status: str | None
     deregistration_date: date | None
+    has_successor: str | None
     expected_counted: bool
 
     def as_pytest_param(self):
         return pytest.param(
             self.registration_status,
             self.deregistration_date,
+            self.has_successor,
             self.expected_counted,
             id=self.id,
         )
 
 
 potentials_count_cases = [
-    PotentialsCountTestCase("null_registration_status_is_counted", None, None, True),
+    PotentialsCountTestCase(
+        "null_registration_status_is_counted", None, None, None, True
+    ),
     PotentialsCountTestCase(
         "deregistered_last_month_is_counted",
         RegistrationStatus.deregistered,
         date(2024, 3, 31),
+        HasSuccessor.has_successor,
         True,
     ),
     PotentialsCountTestCase(
         "deregistered_long_ago_is_counted",
         RegistrationStatus.deregistered,
         date(2020, 1, 1),
+        HasSuccessor.has_successor,
         True,
+    ),
+    PotentialsCountTestCase(
+        "deregistered_last_month_without_successor_is_not_counted",
+        RegistrationStatus.deregistered,
+        date(2024, 3, 31),
+        HasSuccessor.no_successor,
+        False,
+    ),
+    PotentialsCountTestCase(
+        "deregistered_with_null_successor_flag_is_not_counted",
+        RegistrationStatus.deregistered,
+        date(2024, 3, 31),
+        None,
+        False,
     ),
     PotentialsCountTestCase(
         "deregistered_in_current_month_is_not_counted",
         RegistrationStatus.deregistered,
         date(2024, 4, 1),
+        HasSuccessor.has_successor,
         False,
     ),
     PotentialsCountTestCase(
         "registered_is_not_counted",
         RegistrationStatus.registered,
+        None,
         None,
         False,
     ),
@@ -479,22 +502,24 @@ potentials_count_cases = [
 
 class TestBuildPotentialsCountOutput:
     @pytest.mark.parametrize(
-        "registration_status, deregistration_date, expected_counted",
+        "registration_status, deregistration_date, has_successor, expected_counted",
         [c.as_pytest_param() for c in potentials_count_cases],
     )
-    def test_counts_workplace_when_unmatched_or_deregistered_before_current_month(
-        self, registration_status, deregistration_date, expected_counted
+    def test_counts_workplace_when_unmatched_or_deregistered_with_successor_before_current_month(
+        self, registration_status, deregistration_date, has_successor, expected_counted
     ):
         input_lf = pl.LazyFrame(
             {
                 AWPClean.nmds_id: ["1"],
                 CQCL.registration_status: [registration_status],
                 CQCL.deregistration_date: [deregistration_date],
+                CQCLClean.has_successor: [has_successor],
             },
             schema={
                 AWPClean.nmds_id: pl.String,
                 CQCL.registration_status: pl.String,
                 CQCL.deregistration_date: pl.Date,
+                CQCLClean.has_successor: pl.String,
             },
         )
 
@@ -511,12 +536,14 @@ class TestBuildPotentialsCountOutput:
                 AWPClean.organisation_id: ["org", "org", "org2", "org2"],
                 CQCL.registration_status: [None] * 4,
                 CQCL.deregistration_date: [None] * 4,
+                CQCLClean.has_successor: [None] * 4,
             },
             schema={
                 AWPClean.nmds_id: pl.String,
                 AWPClean.organisation_id: pl.String,
                 CQCL.registration_status: pl.String,
                 CQCL.deregistration_date: pl.Date,
+                CQCLClean.has_successor: pl.String,
             },
         )
 
@@ -532,11 +559,13 @@ class TestBuildPotentialsCountOutput:
                 AWPClean.nmds_id: ["1", None],
                 CQCL.registration_status: [None, None],
                 CQCL.deregistration_date: [None, None],
+                CQCLClean.has_successor: [None, None],
             },
             schema={
                 AWPClean.nmds_id: pl.String,
                 CQCL.registration_status: pl.String,
                 CQCL.deregistration_date: pl.Date,
+                CQCLClean.has_successor: pl.String,
             },
         )
 
@@ -552,6 +581,7 @@ class TestBuildPotentialsCountOutput:
                 AWPClean.nmds_id: pl.String,
                 CQCL.registration_status: pl.String,
                 CQCL.deregistration_date: pl.Date,
+                CQCLClean.has_successor: pl.String,
             }
         )
 
