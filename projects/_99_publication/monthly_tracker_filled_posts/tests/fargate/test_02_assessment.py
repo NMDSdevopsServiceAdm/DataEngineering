@@ -23,6 +23,13 @@ TEST_RUN_SOURCE = "some/prep/directory/archive_date=2026-10-01/run_number=2/"
 TEST_DESTINATION = "some/other/directory"
 TEST_RUN_LOG_SOURCE = "some/run/log/directory"
 TEST_WORKBOOK_DESTINATION = "some/workbook/directory"
+
+# Term start dates for a run on 2026-09-01 whose earliest import date is 2021-04-01.
+LONG_TERM_FROM_DATE = date(2021, 7, 1)
+MEDIUM_TERM_FROM_DATE = date(2025, 4, 1)
+SHORT_TERM_FROM_DATE = date(2026, 4, 1)
+# Earliest import date that is later than the earliest Capacity Tracker data.
+LATER_FIRST_IMPORT_DATE = date(2027, 4, 1)
 TEST_PREVIOUS_RUN_SOURCE = "some/other/directory/archive_date=2026-09-01/run_number=1/"
 TEST_WRITTEN_RUN = "some/other/directory/archive_date=2026-10-01/run_number=2/"
 
@@ -178,9 +185,9 @@ class TestMain:
 
         mocks.has_consistent_service.assert_has_calls(
             [
-                call(date(2021, 7, 1), Pub.consistent_service_long),
-                call(date(2025, 4, 1), Pub.consistent_service_medium),
-                call(date(2026, 4, 1), Pub.consistent_service_short),
+                call(LONG_TERM_FROM_DATE, Pub.consistent_service_long),
+                call(MEDIUM_TERM_FROM_DATE, Pub.consistent_service_medium),
+                call(SHORT_TERM_FROM_DATE, Pub.consistent_service_short),
             ]
         )
         prepared_lf = mocks.aggregate.call_args.args[0]
@@ -201,17 +208,17 @@ class TestMain:
             [
                 call(
                     Pub.ct_total_employed_imputed,
-                    date(2021, 7, 1),
+                    LONG_TERM_FROM_DATE,
                     Pub.ct_has_data_long,
                 ),
                 call(
                     Pub.ct_total_employed_imputed,
-                    date(2025, 4, 1),
+                    MEDIUM_TERM_FROM_DATE,
                     Pub.ct_has_data_medium,
                 ),
                 call(
                     Pub.ct_total_employed_imputed,
-                    date(2026, 4, 1),
+                    SHORT_TERM_FROM_DATE,
                     Pub.ct_has_data_short,
                 ),
             ]
@@ -222,15 +229,15 @@ class TestMain:
         ]
         assert mocks.add_dispersion_filter.call_count == 3
         assert [c.args[1:] for c in mocks.add_dispersion_filter.call_args_list] == [
-            (ct_employed_columns, date(2021, 7, 1), Pub.ct_dispersion_filter_long),
+            (ct_employed_columns, LONG_TERM_FROM_DATE, Pub.ct_dispersion_filter_long),
             (
                 ct_employed_columns,
-                date(2025, 4, 1),
+                MEDIUM_TERM_FROM_DATE,
                 Pub.ct_dispersion_filter_medium,
             ),
             (
                 ct_employed_columns,
-                date(2026, 4, 1),
+                SHORT_TERM_FROM_DATE,
                 Pub.ct_dispersion_filter_short,
             ),
         ]
@@ -241,7 +248,10 @@ class TestMain:
         mocks.scan_parquet.return_value = pl.LazyFrame(
             {
                 IndCQC.location_id: ["1-001", "1-001"],
-                IndCQC.cqc_location_import_date: [date(2027, 4, 1), date(2027, 5, 1)],
+                IndCQC.cqc_location_import_date: [
+                    LATER_FIRST_IMPORT_DATE,
+                    date(2027, 5, 1),
+                ],
                 IndCQC.ct_care_home_total_employed_imputed: [5.0, None],
                 IndCQC.ct_non_res_care_workers_employed_imputed: [None, 6.0],
             }
@@ -256,7 +266,7 @@ class TestMain:
 
         mocks.has_continuous_data.assert_any_call(
             Pub.ct_total_employed_imputed,
-            date(2027, 4, 1),
+            LATER_FIRST_IMPORT_DATE,
             Pub.ct_has_data_long,
         )
 
@@ -291,61 +301,61 @@ class TestMain:
             [
                 call(
                     Pub.filled_posts,
-                    date(2026, 4, 1),
+                    SHORT_TERM_FROM_DATE,
                     group_columns,
                     Pub.filled_posts_cum_perc_change_short,
                 ),
                 call(
                     Pub.locationid_count,
-                    date(2026, 4, 1),
+                    SHORT_TERM_FROM_DATE,
                     group_columns,
                     Pub.locationid_count_cum_perc_change_short,
                 ),
                 call(
                     Pub.filtered_filled_posts_long,
-                    date(2021, 7, 1),
+                    LONG_TERM_FROM_DATE,
                     group_columns,
                     Pub.filtered_filled_posts_cum_perc_change_long,
                 ),
                 call(
                     Pub.filtered_ct_total_employed_long,
-                    date(2021, 7, 1),
+                    LONG_TERM_FROM_DATE,
                     group_columns,
                     Pub.filtered_ct_cum_perc_change_long,
                 ),
                 call(
                     Pub.filtered_filled_posts_medium,
-                    date(2025, 4, 1),
+                    MEDIUM_TERM_FROM_DATE,
                     group_columns,
                     Pub.filtered_filled_posts_cum_perc_change_medium,
                 ),
                 call(
                     Pub.filtered_ct_total_employed_medium,
-                    date(2025, 4, 1),
+                    MEDIUM_TERM_FROM_DATE,
                     group_columns,
                     Pub.filtered_ct_cum_perc_change_medium,
                 ),
                 call(
                     Pub.filtered_filled_posts_short,
-                    date(2026, 4, 1),
+                    SHORT_TERM_FROM_DATE,
                     group_columns,
                     Pub.filtered_filled_posts_cum_perc_change_short,
                 ),
                 call(
                     Pub.filtered_ct_total_employed_short,
-                    date(2026, 4, 1),
+                    SHORT_TERM_FROM_DATE,
                     group_columns,
                     Pub.filtered_ct_cum_perc_change_short,
                 ),
                 call(
                     Pub.filled_posts,
-                    date(2021, 7, 1),
+                    LONG_TERM_FROM_DATE,
                     group_columns,
                     Pub.filled_posts_cum_perc_change_long,
                 ),
                 call(
                     Pub.unfiltered_ct_total_employed_long,
-                    date(2021, 7, 1),
+                    LONG_TERM_FROM_DATE,
                     group_columns,
                     Pub.unfiltered_ct_total_employed_cum_perc_change_long,
                 ),
@@ -445,7 +455,9 @@ class TestMain:
         assert args[0] is mocks.scan_parquet.return_value
         assert args[1] == job.cell_map.ASSESSMENT_SHEETS
         assert args[2] == job.assessment_workbook_utils.TermFromDates(
-            short=date(2026, 4, 1), medium=date(2025, 4, 1), long=date(2021, 7, 1)
+            short=SHORT_TERM_FROM_DATE,
+            medium=MEDIUM_TERM_FROM_DATE,
+            long=LONG_TERM_FROM_DATE,
         )
         assert args[3] == job.cell_map.TEMPLATE_PATH
 
