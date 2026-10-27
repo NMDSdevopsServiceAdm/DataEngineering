@@ -1,6 +1,7 @@
 import datetime
 import zipfile
 from pathlib import Path
+from unittest.mock import patch
 
 import openpyxl
 import polars as pl
@@ -773,3 +774,13 @@ class TestFillAssessmentWorkbookFromLf:
                 cell_map.TEMPLATE_PATH,
                 tmp_path / "out.xlsx",
             )
+
+
+class TestUploadToS3:
+    @patch(f"{job.__name__}.boto3.client")
+    def test_uploads_the_file_into_the_s3_directory_keeping_its_name(self, client_mock):
+        job.upload_to_s3(Path("/tmp/summary.xlsx"), "s3://bucket/some/prefix/")
+
+        client_mock.return_value.upload_file.assert_called_once_with(
+            str(Path("/tmp/summary.xlsx")), "bucket", "some/prefix/summary.xlsx"
+        )
