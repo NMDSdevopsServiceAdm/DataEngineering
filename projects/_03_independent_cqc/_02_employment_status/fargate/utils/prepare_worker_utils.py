@@ -80,7 +80,7 @@ def aggregate_employment_status_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Returns:
         pl.LazyFrame: one row per group in GROUP_COLUMNS, with a new
-            ascwds_emp_stat_count column counting workers in that group.
+            ascwds_emp_stat_total_count column counting workers in that group.
     """
     return worker_lf.group_by(GROUP_COLUMNS).agg(pl.len().alias(EmpStatus.total_count))
 
@@ -94,7 +94,7 @@ def reshape_employment_status_data(
     Args:
         employment_status_summary_lf (pl.LazyFrame): output of
             aggregate_employment_status_data, one row per group in
-            GROUP_COLUMNS with an ascwds_emp_stat_count column.
+            GROUP_COLUMNS with an ascwds_emp_stat_total_count column.
 
     Returns:
         pl.LazyFrame: one row per group in RESHAPED_GROUP_COLUMNS, with an

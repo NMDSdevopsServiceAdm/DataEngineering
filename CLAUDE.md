@@ -88,9 +88,9 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 Naming scheme for pipeline measures (see `EmploymentStatusColumns`, `StartersLeaversVacanciesColumns`):
 
-- Shape: `[ascwds_|estimated_]<category>_<measure>[_<stage>]`, e.g. `ascwds_emp_stat_permanent_pct_clean`, `estimated_emp_stat_permanent_count`. Raw and cleaned ASC-WDS values take `ascwds_`; final estimates take `estimated_` (plus `_source`).
+- Shape: `[ascwds_|estimated_]<category>_<measure>[_<stage>]`, e.g. `ascwds_emp_stat_permanent_count_clean`, `estimated_emp_stat_permanent_count`. Raw and cleaned ASC-WDS values take `ascwds_`; final estimates take `estimated_` (plus `_source`).
 - Stages, in pipeline order: `_dedup`, `_clean`, `_imputed_trendline`, `_rolling_avg`, `_imputed`, `_modelled`. One spelling each; percentages are `pct`.
-- Order class fields by stage, a blank line between stage groups, building each derived name from the previous stage's field.
+- Order class fields by stage, a blank line between stage groups, building each derived name from the base field it extends.
 
 ## Testing
 
