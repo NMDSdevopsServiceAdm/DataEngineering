@@ -10,7 +10,6 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
     publication_utils,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
@@ -31,7 +30,6 @@ NOT_NULL_COLUMNS = [
     IndCQC.primary_service_type,
     IndCQC.main_job_group_labelled,
     IndCQC.estimate_filled_posts_by_job_role,
-    Pub.period_label,
     IndCQC.current_cssr,
     IndCQC.current_region,
     IndCQC.current_icb,
@@ -52,15 +50,6 @@ ONE_LOCATION_IMPORT_DATE_PER_ID_EXPR = (
     .n_unique()
     .over(IndCQC.id_per_locationid_import_date)
     == 1
-)
-
-PERIOD_LABEL_REGEX = r"^[A-Z][a-z]{2} \d{4}$"
-
-# The period label parsed back to a date equals the month before the import date.
-# Unparseable labels become null and fail, rather than raising before a report.
-PERIOD_LABEL_MATCHES_IMPORT_DATE_EXPR = (
-    pl.col(Pub.period_label).str.to_date("%b %Y", strict=False)
-    == pl.col(IndCQC.cqc_location_import_date).dt.offset_by("-1mo").dt.month_start()
 )
 
 # Categorical columns and their allowed values; location_id is excluded as it has
@@ -101,7 +90,6 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCQC.current_msoa21: "Categorical",
         IndCQC.ct_care_home_total_employed_imputed: "Float32",
         IndCQC.ct_non_res_care_workers_employed_imputed: "Float32",
-        Pub.period_label: "String",
     }
 )
 
@@ -192,15 +180,6 @@ def main(
             IndCQC.cqc_location_import_date,
             cutoff_date,
             brief=f"cqc_location_import_date should not be before the retention cutoff {cutoff_date}",
-        )
-        .col_vals_regex(
-            Pub.period_label,
-            PERIOD_LABEL_REGEX,
-            brief="period_label should be formatted as 'Mar 2026'",
-        )
-        .col_vals_expr(
-            PERIOD_LABEL_MATCHES_IMPORT_DATE_EXPR,
-            brief="period_label should be the month before the import date",
         )
         .col_vals_ge(
             IndCQC.estimate_filled_posts_by_job_role,

@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Added validation of the job role estimates archive run log.
 - Added validation of the monthly tracker assessment data.
 - Added validation of the monthly tracker prepared publication data.
+- Added a full-month period label (e.g. "March 2026") to the monthly tracker publication data.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/output_workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 - Extended the run log update script to select a run for publication and start Publication-Output for it, set the `reconciled` and `locally_checked` flags, and list the month's runs.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
@@ -23,6 +24,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Renamed employment status and SLV columns to one naming scheme (`ascwds_`/`estimated_` prefix, `emp_stat_`, `pct`, ordered stage suffixes), so output column names change.
+- Changed the DPR dataset version to be set once in a Terraform variable instead of hardcoded in the DPR step functions.
 - Renamed the SLV step function to Ind-CQC-EmpStat-SLV and reordered it so worker and workplace data are prepared in separate branches, workplace data is validated, and the SLV counts steps are no longer run.
 - Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
