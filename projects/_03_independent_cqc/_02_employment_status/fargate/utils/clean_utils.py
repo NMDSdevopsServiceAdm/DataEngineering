@@ -62,7 +62,7 @@ def deduplicate_employment_status_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def create_clean_count_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Renames the _dedup counts to _clean and starts employment_status_filtering_rule.
+    Renames the _dedup counts to _clean and starts ascwds_emp_stat_filtering_rule.
 
     The rule is 'populated' where the counts are present and 'missing_data'
     where they're null, meaning the workplace hasn't submitted new data (ASC-WDS
@@ -74,7 +74,7 @@ def create_clean_count_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Returns:
         pl.LazyFrame: lf with the 5 counts renamed "<count>_clean" and
-            employment_status_filtering_rule added.
+            ascwds_emp_stat_filtering_rule added.
     """
     lf = lf.rename(DEDUP_TO_CLEAN_COUNT_COLUMNS)
     return filtering_utils.add_filtering_rule_column(
@@ -87,7 +87,7 @@ def create_clean_count_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
+def create_employment_status_pct_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Adds a percentage-share column per employment status from the _clean counts.
 
@@ -98,7 +98,7 @@ def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFram
         lf (pl.LazyFrame): dataset with the 5 "<count>_clean" columns.
 
     Returns:
-        pl.LazyFrame: dataset with 5 "emplstat_<status>_percentage" columns added.
+        pl.LazyFrame: dataset with 5 "ascwds_emp_stat_<status>_pct" columns added.
     """
     return cleaningUtils.percentage_share_horizontal(
         lf,
@@ -110,11 +110,11 @@ def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFram
             EmpStatus.other_count_clean,
         ],
         output_columns=[
-            EmpStatus.permanent_percentage,
-            EmpStatus.temporary_percentage,
-            EmpStatus.bank_or_pool_percentage,
-            EmpStatus.agency_percentage,
-            EmpStatus.other_percentage,
+            EmpStatus.permanent_pct,
+            EmpStatus.temporary_pct,
+            EmpStatus.bank_or_pool_pct,
+            EmpStatus.agency_pct,
+            EmpStatus.other_pct,
         ],
     )
 
@@ -122,7 +122,7 @@ def create_employment_status_percentage_columns(lf: pl.LazyFrame) -> pl.LazyFram
 def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Nulls an org's _clean counts where permanent+temporary is 5% or less of its
-    staff, and updates employment_status_filtering_rule where still 'populated'.
+    staff, and updates ascwds_emp_stat_filtering_rule where still 'populated'.
 
     The ratio uses raw counts, not _clean: dedup nulls every row of a workplace
     whose counts are unchanged, so a small stable location would drop out of the
@@ -132,7 +132,7 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         lf (pl.LazyFrame): dataset with the raw and _clean counts and
-            employment_status_filtering_rule.
+            ascwds_emp_stat_filtering_rule.
 
     Returns:
         pl.LazyFrame: lf with the _clean counts nulled and the rule updated for
@@ -162,7 +162,7 @@ def null_counts_for_low_org_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
 def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Nulls a location's _clean counts where permanent+temporary is 1% or less of
-    its staff, and updates employment_status_filtering_rule where still
+    its staff, and updates ascwds_emp_stat_filtering_rule where still
     'populated', so an org-level reason stands if both rules fail.
 
     The ratio uses the _clean counts, so rows already nulled by the org rule
@@ -170,7 +170,7 @@ def null_counts_for_low_location_ratio(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         lf (pl.LazyFrame): dataset with the _clean counts and
-            employment_status_filtering_rule.
+            ascwds_emp_stat_filtering_rule.
 
     Returns:
         pl.LazyFrame: lf with the _clean counts nulled and the rule updated for

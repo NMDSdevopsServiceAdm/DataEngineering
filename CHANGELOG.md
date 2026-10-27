@@ -22,9 +22,11 @@ All notable changes to this project will be documented in this file.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 - Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
+- Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
 - Removed the unused GitHub merge queue CircleCI workflow and `gh-readonly-queue` branch exclusions.
+- Renamed employment status and SLV columns to one naming scheme (`ascwds_`/`estimated_` prefix, `emp_stat_`, `pct`, ordered stage suffixes), so output column names change.
 - Changed the run log update script to default to the `run-log-updater` role for the main bucket.
 - Changed the DPR dataset version to be set once in a Terraform variable instead of hardcoded in the DPR step functions.
 - Renamed the SLV step function to Ind-CQC-EmpStat-SLV and reordered it so worker and workplace data are prepared in separate branches, workplace data is validated, and the SLV counts steps are no longer run.

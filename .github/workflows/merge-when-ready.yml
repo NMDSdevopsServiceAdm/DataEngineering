@@ -1,0 +1,82 @@
+name: merge-when-ready
+
+# Merges PRs labelled `ready-to-merge` one at a time (see scripts/merge_when_ready.py).
+# `merge-dry-run` runs every check without merging, and removes the label after.
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Run every check but don't merge
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+
+jobs:
+  # Comments the PR's place in the queue straight away, not when its turn comes.
+  announce:
+    # Must be listed in OWN_CHECK_NAMES in scripts/merge_when_ready.py.
+    name: announce-queue-position
+    if: ${{ github.event.label.name == 'ready-to-merge' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Comment queue position
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >-
+          python scripts/merge_when_ready.py --repo "$REPO"
+          --project-slug "gh/$REPO" --announce "$PR_NUMBER"
+
+  merge:
+    # Must be listed in OWN_CHECK_NAMES in scripts/merge_when_ready.py.
+    name: merge-when-ready
+    if: >-
+      ${{ github.event_name == 'workflow_dispatch'
+      || github.event.label.name == 'ready-to-merge'
+      || github.event.label.name == 'merge-dry-run' }}
+    # One run at a time per mode. The running job loops over every labelled PR,
+    # so a run queued behind it (GitHub keeps only the newest) just finds
+    # nothing to do. Dry runs get their own group so they never replace a
+    # pending real run.
+    concurrency:
+      group: >-
+        merge-when-ready-${{
+        (github.event.label.name == 'merge-dry-run'
+        || (github.event_name == 'workflow_dispatch' && inputs.dry_run))
+        && 'dry-run' || 'live' }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    # GitHub's job limit is 6 hours. If it times out, re-add the label.
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Merge labelled PRs in turn
+        env:
+          PYTHONUNBUFFERED: "1"  # live log lines while waiting
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CIRCLECI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
+          REPO: ${{ github.repository }}
+          LABEL: ${{ github.event.label.name || 'ready-to-merge' }}
+          DISPATCH_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          args=(--repo "$REPO" --project-slug "gh/$REPO" --label "$LABEL")
+          if [ "$LABEL" = "merge-dry-run" ] || [ "$DISPATCH_DRY_RUN" = "true" ]; then
+            args+=(--dry-run)
+          fi
+          python scripts/merge_when_ready.py "${args[@]}"

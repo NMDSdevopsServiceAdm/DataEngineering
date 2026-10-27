@@ -29,17 +29,17 @@ class TestMain:
         scan_parquet_mock.assert_called_once_with(self.IMPUTED_DATA_SOURCE)
         assert coalesce_mock.call_args_list == [
             call(
-                cols=[SLVCols.starters_cleaned],
+                cols=[SLVCols.ascwds_starters_clean],
                 name=SLVCols.estimated_starters,
                 source_dtype=CatColType.StartersEstimateSourceEnumType,
             ),
             call(
-                cols=[SLVCols.leavers_cleaned],
+                cols=[SLVCols.ascwds_leavers_clean],
                 name=SLVCols.estimated_leavers,
                 source_dtype=CatColType.LeaversEstimateSourceEnumType,
             ),
             call(
-                cols=[SLVCols.vacancies_cleaned],
+                cols=[SLVCols.ascwds_vacancies_clean],
                 name=SLVCols.estimated_vacancies,
                 source_dtype=CatColType.VacanciesEstimateSourceEnumType,
             ),

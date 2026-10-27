@@ -19,11 +19,11 @@ class TestMain:
         source_schema = {
             IndCqcColumns.location_id: pl.String,
             job.METRIC: pl.Float64,
-            EmpStatus.estimated_emp_stat_permanent: pl.Float64,
-            EmpStatus.estimated_emp_stat_temporary: pl.Float64,
-            EmpStatus.estimated_emp_stat_bank_or_pool: pl.Float64,
-            EmpStatus.estimated_emp_stat_agency: pl.Float64,
-            EmpStatus.estimated_emp_stat_other: pl.Float64,
+            EmpStatus.estimated_permanent_count: pl.Float64,
+            EmpStatus.estimated_temporary_count: pl.Float64,
+            EmpStatus.estimated_bank_or_pool_count: pl.Float64,
+            EmpStatus.estimated_agency_count: pl.Float64,
+            EmpStatus.estimated_other_count: pl.Float64,
             EmpStatus.estimated_employees: pl.Float64,
         }
         source_rows = [
