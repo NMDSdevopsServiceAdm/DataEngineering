@@ -285,30 +285,34 @@ class TestSheetText:
             job.sheet_text(["Sep 2025", "Oct 2025"])
 
     def test_comp_prev_publication_labels_are_annual_rows_then_monthly_rows(self):
-        # Unordered, with Sep 2025 twice: 2 March periods and 2 other periods.
-        period_labels = ["Mar 2025", "Sep 2025", "Mar 2026", "Oct 2025", "Sep 2025"]
+        # Sep 2025 is between the Marches, so it is not a row; May 2026 is repeated.
+        period_labels = [
+            "Mar 2025",
+            "Sep 2025",
+            "Mar 2026",
+            "Apr 2026",
+            "May 2026",
+            "Jun 2026",
+            "May 2026",
+        ]
 
         text = job.sheet_text(period_labels)[cell_map.COMP_PREV_PUBLICATION.name]
 
         labels = {cell: value for cell, value in text.items() if cell != "B3"}
+        expected_rows = ["Annual", "Annual", "Monthly", "Monthly", "Monthly"]
         assert labels == {
-            "B23": "Annual",
-            "B24": "Annual",
-            "B25": "Monthly",
-            "B26": "Monthly",
-            "B64": "Annual",
-            "B65": "Annual",
-            "B66": "Monthly",
-            "B67": "Monthly",
-            "B106": "Annual",
-            "B107": "Annual",
-            "B108": "Monthly",
-            "B109": "Monthly",
+            f"B{first_row + i}": label
+            for first_row in (23, 64, 106)
+            for i, label in enumerate(expected_rows)
         }
 
     def test_raises_when_periods_exceed_the_label_slots(self):
-        labels = [f"{m} {y}" for y in range(2020, 2024) for m in ("Mar", "Sep", "Oct")]
-        labels += [f"Nov {y}" for y in range(2020, 2046)]
+        # 21 March periods and 17 months after the latest March.
+        labels = [f"Mar {year}" for year in range(2000, 2021)]
+        labels += [f"{month} 2020" for month in ("Apr", "May", "Jun", "Jul", "Aug")]
+        labels += [f"{month} 2020" for month in ("Sep", "Oct", "Nov", "Dec")]
+        labels += [f"{month} 2021" for month in ("Jan", "Feb", "Apr", "May")]
+        labels += [f"{month} 2021" for month in ("Jun", "Jul", "Aug", "Sep")]
 
         with pytest.raises(ValueError, match="exceed the 37 rows"):
             job.sheet_text(labels)
@@ -398,7 +402,7 @@ class TestPrepareAssessmentDf:
 
         assert df.height == 1
 
-    def test_keeps_only_april_dates_before_the_latest_april(self):
+    def test_keeps_every_import_date(self):
         import_dates = [
             datetime.date(2024, 4, 1),
             datetime.date(2024, 5, 1),
@@ -410,12 +414,7 @@ class TestPrepareAssessmentDf:
 
         df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
 
-        assert df[IndCQC.cqc_location_import_date].to_list() == [
-            datetime.date(2024, 4, 1),
-            datetime.date(2025, 4, 1),
-            datetime.date(2026, 4, 1),
-            datetime.date(2026, 5, 1),
-        ]
+        assert df[IndCQC.cqc_location_import_date].to_list() == import_dates
 
     def test_sorts_by_import_date(self):
         lf = _assessment_lf(IMPORT_DATES[:3]).sort(
@@ -583,6 +582,46 @@ class TestComparisonSheetValues:
 
         assert (cells["G29"], cells["P29"]) == (301, 304)
         assert "D25" not in cells
+
+    def test_both_long_term_sheets_keep_every_month_from_the_term_start(self):
+        import_dates = [
+            datetime.date(2024, 4, 1),
+            datetime.date(2024, 5, 1),
+            datetime.date(2025, 4, 1),
+            datetime.date(2026, 4, 1),
+        ]
+        df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
+
+        for sheet in (cell_map.COMP_LONG_TERM, cell_map.NO_FILTERS):
+            cells = job.SHEET_VALUE_BUILDERS[sheet.name](df, TERM_FROM_DATES)
+
+            assert [cells[f"B{row}"] for row in (29, 30, 31, 32)] == [
+                datetime.date(2024, 3, 1),
+                datetime.date(2024, 4, 1),
+                datetime.date(2025, 3, 1),
+                datetime.date(2026, 3, 1),
+            ]
+            assert "B33" not in cells
+
+    def test_medium_term_keeps_every_month_from_its_start(self):
+        import_dates = [
+            datetime.date(2024, 4, 1),
+            datetime.date(2025, 4, 1),
+            datetime.date(2025, 10, 1),
+            datetime.date(2026, 4, 1),
+            datetime.date(2026, 5, 1),
+        ]
+        df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
+
+        cells = job.comparison_sheet_values(df, cell_map.COMP_MEDIUM_TERM, APRIL_2025)
+
+        assert [cells[f"B{row}"] for row in (29, 30, 31, 32)] == [
+            datetime.date(2025, 3, 1),
+            datetime.date(2025, 9, 1),
+            datetime.date(2026, 3, 1),
+            datetime.date(2026, 4, 1),
+        ]
+        assert "B33" not in cells
 
     def test_raises_when_periods_exceed_the_sheet_rows(self):
         april_dates = [datetime.date(2000 + year, 4, 1) for year in range(26)]

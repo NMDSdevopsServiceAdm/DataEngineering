@@ -185,8 +185,8 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
     get a heading and criteria note dated from March: the latest March for short
     term, the March a year before for medium term. "Filled posts" gets a chart
     heading dated from the latest March. "Comp prev publication" gets
-    an "Annual" row for each March period, then a "Monthly" row for each other
-    period, in each of its label ranges.
+    an "Annual" row for each March period, then a "Monthly" row for each period
+    after the latest March, in each of its label ranges.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
@@ -234,9 +234,8 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
     # Comp prev publication: an Annual or Monthly label for each period row
     unique_dates = set(dates)
     annual_count = sum(d.month == MARCH for d in unique_dates)
-    row_labels = [ANNUAL_LABEL] * annual_count + [MONTHLY_LABEL] * (
-        len(unique_dates) - annual_count
-    )
+    monthly_count = sum(d > short_term_march for d in unique_dates)
+    row_labels = [ANNUAL_LABEL] * annual_count + [MONTHLY_LABEL] * monthly_count
     for label_range in cell_map.COMP_PREV_LABEL_RANGES:
         cells = CellRange(label_range)
         if len(row_labels) > cells.size["rows"]:
@@ -321,10 +320,8 @@ def prepare_assessment_df(
 ) -> pl.DataFrame:
     """Filters, sorts and widens the assessment data into workbook layout.
 
-    Keeps the "All job roles" rows for England. Import dates before the latest
-    April keep their April rows only; the latest April onwards keeps every date.
-    Then pivots service types across columns named
-    `<value column>|<service type>`, one row per import date.
+    Keeps the "All job roles" rows for England, then pivots service types across
+    columns named `<value column>|<service type>`, one row per import date.
     Collects once: the result has one row per period, so it is small.
 
     Args:
@@ -334,16 +331,11 @@ def prepare_assessment_df(
     Returns:
         pl.DataFrame: one row per import date, sorted by import date.
     """
-    import_date = pl.col(IndCQC.cqc_location_import_date)
     return (
         assessment_lf.filter(
             pl.col(IndCQC.main_job_role_clean_labelled)
             == PublishedJobGroupLabels.all_job_roles,
             pl.col(IndCQC.current_region) == PublishedRegion.england,
-        )
-        .filter(
-            (import_date.dt.month() == APRIL)
-            | (import_date >= import_date.filter(import_date.dt.month() == APRIL).max())
         )
         .select(
             IndCQC.cqc_location_import_date,
@@ -526,7 +518,9 @@ def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, objec
 
 
 def comparison_sheet_values(
-    assessment_df: pl.DataFrame, sheet: cell_map.SheetMap, from_date: datetime.date
+    assessment_df: pl.DataFrame,
+    sheet: cell_map.SheetMap,
+    from_date: datetime.date,
 ) -> dict[str, object]:
     """Cell values for a comparison sheet, from the term's start date onwards.
 
