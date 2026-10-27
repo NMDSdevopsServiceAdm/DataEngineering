@@ -1,11 +1,8 @@
 """
-Merge `ready-to-merge` PRs one at a time, in the order they were labelled.
+Merge `ready-to-merge` PRs one at a time, in label order, once the deploy of
+main's tip has finished: a PR merged mid-deploy fails at prod terraform.
 
-GitHub merges the code before CircleCI deploys it, so a PR merged while the
-previous deploy is still running fails at prod terraform. Each PR is updated
-from main, checked, and merged only once the deploy of main's tip has finished.
-
-Needs `gh` authenticated (GH_TOKEN) and CIRCLECI_TOKEN in the environment.
+Needs GH_TOKEN (for `gh`) and CIRCLECI_TOKEN.
 """
 
 import argparse
@@ -24,18 +21,15 @@ T = TypeVar("T")
 
 CIRCLECI_API = "https://circleci.com/api/v2"
 MAIN_DEPLOY_WORKFLOW = "test-plan-approve-and-deploy-to-main"
-# Newest pipelines to scan for a commit's workflows.
 PIPELINES_TO_SCAN = 20
 FAILED_STATUSES = {"failed", "failing", "error", "canceled", "unauthorized"}
 FAILED_BUCKETS = {"fail", "cancel"}
-# Review states that change a reviewer's verdict; comments don't.
 VERDICT_REVIEW_STATES = {"APPROVED", "CHANGES_REQUESTED", "DISMISSED"}
-# This script's own workflow job, ignored so it doesn't wait on itself.
+# This script's own workflow job: ignored so it doesn't wait on itself.
 OWN_CHECK_NAME = "merge-when-ready"
 POLL_SECONDS = 60
-# CircleCI should start a pipeline within minutes of a push or merge.
+# Time for CircleCI to start a pipeline after a push or merge.
 APPEARANCE_TIMEOUT_SECONDS = 600
-# A PR's own CircleCI workflows should finish well inside this.
 PR_WORKFLOWS_TIMEOUT_SECONDS = 7200
 MAX_ROUNDS = 5
 READ_ATTEMPTS = 3
@@ -64,17 +58,7 @@ class MainDeployFailed(Exception):
 
 
 def workflows_state(statuses: Optional[list[str]]) -> State:
-    """Classify CircleCI workflows from their statuses.
-
-    Args:
-        statuses (Optional[list[str]]): Workflow statuses, or None if no
-            workflow was found. Unknown statuses count as pending.
-
-    Returns:
-        State: FAILED if any workflow failed or was cancelled, CLEAR if all
-            succeeded, otherwise PENDING (running, awaiting approval or not
-            yet started).
-    """
+    """FAILED if any failed, CLEAR if all succeeded, else PENDING (incl. none found)."""
     if not statuses:
         return State.PENDING
     if any(status in FAILED_STATUSES for status in statuses):
@@ -85,16 +69,7 @@ def workflows_state(statuses: Optional[list[str]]) -> State:
 
 
 def checks_state(checks: list[dict]) -> State:
-    """Classify a PR's checks, ignoring this script's own workflow job.
-
-    Args:
-        checks (list[dict]): PR checks from `gh pr checks --json name,bucket`.
-
-    Returns:
-        State: FAILED if any check failed or was cancelled, PENDING if any is
-            running or none have been reported yet (e.g. just after a branch
-            update), otherwise CLEAR.
-    """
+    """FAILED if any check failed, PENDING if any is running or none reported, else CLEAR."""
     buckets = [c["bucket"] for c in checks if c["name"] != OWN_CHECK_NAME]
     if any(bucket in FAILED_BUCKETS for bucket in buckets):
         return State.FAILED
@@ -109,18 +84,16 @@ def commit_workflow_statuses(
     get_workflows: Callable[[str], list[dict]],
     workflow_name: Optional[str] = None,
 ) -> Optional[list[str]]:
-    """Return the workflow statuses of the newest pipeline run for a commit.
+    """Return workflow statuses from the newest pipeline run for a commit.
 
     Args:
         pipelines (list[dict]): CircleCI pipelines, newest first.
-        sha (str): Commit the pipeline must have run for.
-        get_workflows (Callable[[str], list[dict]]): Lists a pipeline's
-            workflows (dicts with `name` and `status`) from its id.
+        sha (str): Commit the pipeline ran for.
+        get_workflows (Callable[[str], list[dict]]): Pipeline id to its workflows.
         workflow_name (Optional[str]): Only count workflows with this name.
 
     Returns:
-        Optional[list[str]]: Statuses from the first pipeline for `sha` that has
-            a matching workflow, or None if there is none yet.
+        Optional[list[str]]: Statuses, or None if no matching workflow exists yet.
     """
     for pipeline in pipelines:
         if pipeline.get("vcs", {}).get("revision") != sha:
@@ -136,7 +109,7 @@ def commit_workflow_statuses(
 
 
 def labelled_at(events: list[dict], label: str) -> str:
-    """Return when `label` was last added, or an empty string if unknown."""
+    """Return when `label` was last added, or "" if unknown."""
     return max(
         (
             e["created_at"]
@@ -148,16 +121,7 @@ def labelled_at(events: list[dict], label: str) -> str:
 
 
 def next_in_queue(prs: list[dict], handled: Collection[int] = ()) -> Optional[dict]:
-    """Return the PR labelled earliest, skipping `handled`, or None if none left.
-
-    Args:
-        prs (list[dict]): PRs with `number` and `labelled_at`.
-        handled (Collection[int]): PR numbers already dealt with in this run.
-
-    Returns:
-        Optional[dict]: Earliest labelled PR (lowest number on a tie). PRs with
-            an unknown label time go last.
-    """
+    """Return the earliest labelled PR not in `handled` (unknown times last), or None."""
     return min(
         (pr for pr in prs if pr["number"] not in handled),
         key=lambda pr: (pr["labelled_at"] or "~", pr["number"]),
@@ -166,16 +130,8 @@ def next_in_queue(prs: list[dict], handled: Collection[int] = ()) -> Optional[di
 
 
 def is_approved(reviews: list[dict]) -> bool:
-    """Return whether the PR has an approval and no outstanding change request.
-
-    Args:
-        reviews (list[dict]): Reviews from `gh pr view --json reviews`, each with
-            `author`, `state` and `submittedAt`.
-
-    Returns:
-        bool: True if, taking each reviewer's latest approval, change request or
-            dismissal, at least one approves and none requests changes.
-    """
+    """Return whether, by each reviewer's latest verdict, one approves and none requests changes."""
+    # Comments don't change a verdict.
     latest: dict[str, str] = {}
     for review in sorted(reviews, key=lambda r: r["submittedAt"]):
         if review["state"] in VERDICT_REVIEW_STATES:
@@ -190,7 +146,7 @@ def _describe(error: Exception) -> str:
 
 
 def _retry(call: Callable[[], T]) -> T:
-    """Retry a read-only call so a brief outage doesn't reject a PR."""
+    """Retry a read-only call, so a brief outage doesn't reject a PR."""
     for attempt in range(1, READ_ATTEMPTS + 1):
         try:
             return call()
@@ -307,7 +263,7 @@ def _reject(repo: str, label: str, number: int, reason: str) -> None:
 def _wait_while_pending(
     description: str, get_state: Callable[[], State], timeout: Optional[int]
 ) -> Optional[State]:
-    """Poll until `get_state` is no longer PENDING; None if `timeout` passes first."""
+    """Poll until not PENDING; None if `timeout` passes first."""
     waited = 0
     while (state := get_state()) is State.PENDING:
         if timeout is not None and waited >= timeout:
@@ -323,18 +279,16 @@ def _wait_for_workflows(
     fetch: Callable[[], Optional[list[str]]],
     finish_timeout: Optional[int],
 ) -> Optional[State]:
-    """Wait for CircleCI workflows to appear, then to finish.
+    """Wait for CircleCI workflows to appear, then finish.
 
     Args:
         description (str): What is waited for, for the log.
-        fetch (Callable[[], Optional[list[str]]]): Current workflow statuses,
-            or None if none exist yet.
-        finish_timeout (Optional[int]): Seconds to wait for them to finish,
-            or None to wait as long as it takes (e.g. a manual approval).
+        fetch (Callable[[], Optional[list[str]]]): Current statuses, or None.
+        finish_timeout (Optional[int]): Seconds allowed to finish; None waits
+            indefinitely (manual approvals).
 
     Returns:
-        Optional[State]: CLEAR or FAILED, or None if no workflow appeared
-            within the appearance timeout.
+        Optional[State]: CLEAR or FAILED, or None if none appeared in time.
 
     Raises:
         TimeoutError: If the workflows appeared but didn't finish in time.
@@ -357,18 +311,17 @@ def _wait_for_workflows(
 def _merge_pr(
     repo: str, label: str, number: int, project_slug: str, dry_run: bool
 ) -> None:
-    """Bring one PR up to date, wait for its checks and main's deploy, merge it.
+    """Update a PR from main, wait for its checks and main's deploy, then merge it.
 
     Args:
-        repo (str): `owner/name` of the GitHub repository.
-        label (str): Label marking PRs ready to merge, removed once done.
+        repo (str): `owner/name`.
+        label (str): Ready-to-merge label, removed once done.
         number (int): PR number.
         project_slug (str): CircleCI project slug, e.g. `gh/owner/name`.
-        dry_run (bool): Run every check but do not merge.
+        dry_run (bool): Run every check but don't merge.
 
     Raises:
-        NotMergeable: If the PR isn't approved, its checks fail or main keeps
-            moving past it.
+        NotMergeable: If the PR isn't approved, its checks fail or main keeps moving.
         MainDeployFailed: If main's tip has no deploy or its deploy failed.
     """
     for _ in range(MAX_ROUNDS):
@@ -377,7 +330,7 @@ def _merge_pr(
         if _behind_by(repo, head_sha) > 0:
             print(f"PR {number} is behind main; updating its branch.")
             _gh("api", "-X", "PUT", f"repos/{repo}/pulls/{number}/update-branch")
-            time.sleep(POLL_SECONDS)  # let CircleCI pick up the new head
+            time.sleep(POLL_SECONDS)  # let CircleCI see the new head
             continue
 
         checks = _wait_while_pending(
@@ -390,7 +343,7 @@ def _merge_pr(
         if checks is State.FAILED:
             raise NotMergeable("Checks failed. Fix them and re-add the label.")
 
-        # The PR's checks can report before CircleCI has finished every workflow.
+        # Checks can report before every CircleCI workflow has finished.
         circleci = _wait_for_workflows(
             f"CircleCI workflows for PR {number}",
             lambda: _statuses_for_commit(project_slug, head_branch, head_sha),
@@ -401,8 +354,8 @@ def _merge_pr(
         if circleci is State.FAILED:
             raise NotMergeable("CircleCI workflows failed. Fix them and re-add the label.")  # fmt: skip
 
-        # The deploy of main's tip, not just the latest one found: right after a
-        # merge CircleCI may not have created that pipeline yet.
+        # Main's tip, not the latest deploy found: right after a merge its
+        # pipeline may not exist yet.
         tip = _main_tip(repo)
         deploy = _wait_for_workflows(
             f"Main deploy of {tip[:8]}",
@@ -416,16 +369,16 @@ def _merge_pr(
         if deploy is State.FAILED:
             raise MainDeployFailed(f"The main deploy of {tip[:8]} failed.")
 
-        if _behind_by(repo, head_sha) == 0:  # main can move during the wait
+        if _behind_by(repo, head_sha) == 0:  # main may have moved meanwhile
             break
     else:
         raise NotMergeable("Main kept moving past this PR. Re-add the label to retry.")
 
-    _require_approval(repo, number)  # a review can be withdrawn during the waits
+    _require_approval(repo, number)  # may have been withdrawn while waiting
     if dry_run:
         print(f"Dry run: would merge PR {number}.")
     else:
-        # Fails if the author pushed a new commit while we waited.
+        # Fails if the head changed while waiting.
         _gh(
             "pr", "merge", str(number), "--repo", repo, "--merge",
             "--match-head-commit", head_sha,
@@ -441,23 +394,20 @@ def merge_next(
     dry_run: bool,
     handled: Collection[int] = (),
 ) -> Optional[int]:
-    """Merge the earliest labelled PR once it is current, green and main is deployed.
+    """Merge the earliest labelled PR, or reject it with a comment and drop its label.
 
-    A PR that can't be merged gets a comment saying why and loses its label, so
-    one stuck PR never blocks the ones behind it. If main's deploy failed, the
-    PR is commented on and the run exits, since nothing can merge until it is
-    fixed.
+    Rejecting stops one stuck PR blocking the rest. If main's deploy failed, the
+    run exits instead, as nothing can merge until it is fixed.
 
     Args:
-        repo (str): `owner/name` of the GitHub repository.
-        label (str): Label marking PRs ready to merge.
+        repo (str): `owner/name`.
+        label (str): Ready-to-merge label.
         project_slug (str): CircleCI project slug, e.g. `gh/owner/name`.
-        dry_run (bool): Run every check but do not merge.
-        handled (Collection[int]): PR numbers already dealt with in this run.
+        dry_run (bool): Run every check but don't merge.
+        handled (Collection[int]): PRs already dealt with in this run.
 
     Returns:
-        Optional[int]: Number of the PR handled (merged, dry-run passed or
-            removed from the queue), or None if none are left.
+        Optional[int]: The PR handled, or None if none are left.
     """
     pr = next_in_queue(_labelled_prs(repo, label), handled)
     if pr is None:
@@ -489,7 +439,7 @@ def main() -> None:
     if not os.environ.get("CIRCLECI_TOKEN"):
         sys.exit("CIRCLECI_TOKEN is not set.")
 
-    # Merging a PR starts a new main deploy, so the next one waits for it.
+    # Each merge starts a main deploy, which the next PR waits for.
     handled: set[int] = set()
     while (
         number := merge_next(
