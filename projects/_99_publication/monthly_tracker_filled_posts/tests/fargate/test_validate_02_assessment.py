@@ -23,7 +23,8 @@ def _assessment_df(rows: int = 1) -> pl.DataFrame:
     return pl.DataFrame(
         {
             IndCQC.cqc_location_import_date: [date(2026, 4, 1)] * rows,
-            Pub.period_label: ["Mar 2026"] * rows,
+            Pub.period_label_short: ["Mar 2026"] * rows,
+            Pub.period_label_long: ["March 2026"] * rows,
             IndCQC.main_job_role_clean_labelled: ["a"] * rows,
             IndCQC.current_region: ["a"] * rows,
             IndCQC.primary_service_type: ["a"] * rows,
@@ -145,7 +146,6 @@ class TestCountExpectedAssessmentRows:
                 IndCQC.main_job_role_clean_labelled: ["role_a", "role_b"],
                 IndCQC.estimate_filled_posts_by_job_role: [1.0, 2.0],
                 IndCQC.current_region: ["London"] * 2,
-                Pub.period_label: ["Mar 2026"] * 2,
             }
         )
 

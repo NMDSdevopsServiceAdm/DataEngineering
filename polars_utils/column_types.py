@@ -168,12 +168,12 @@ class CategoricalColumnTypes:
     SpecialismMentalHealthCatType = pl.Categorical(
         pl.Categories("specialism_mental_health", namespace="filled_posts")
     )
-    StarterRateEstimateSourceEnumType = pl.Enum(
-        SLVEstimateCatVals.starter_rate_source_column_values.categorical_values
+    StartersEstimateSourceEnumType = pl.Enum(
+        SLVEstimateCatVals.starters_source_column_values.categorical_values
     )
-    TurnoverRateEstimateSourceEnumType = pl.Enum(
-        SLVEstimateCatVals.turnover_rate_source_column_values.categorical_values
+    LeaversEstimateSourceEnumType = pl.Enum(
+        SLVEstimateCatVals.leavers_source_column_values.categorical_values
     )
-    VacancyRateEstimateSourceEnumType = pl.Enum(
-        SLVEstimateCatVals.vacancy_rate_source_column_values.categorical_values
+    VacanciesEstimateSourceEnumType = pl.Enum(
+        SLVEstimateCatVals.vacancies_source_column_values.categorical_values
     )

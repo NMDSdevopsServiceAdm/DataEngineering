@@ -345,6 +345,21 @@ role_arn = arn:aws:iam::856699698263:role/CrossAccountAccessRole
 Any command that you run via AWS CLI will need the `--profile non-prod` argument in order to run against this environment, and needs `aws-mfa` to have been run within the last 12 hours.
 
 
+#### Run-log-updater (main run log)
+Used by `scripts/update_run_log.sh` to update the run log in `sfc-main-datasets`. Your IAM user must be named in the role's trust policy. Like `non-prod`, it assumes a role using the `prod-mfa` credentials, so don't add `mfa_serial`.
+
+1. Add the following to the bottom of your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file. If you already have a `[profile run-log-updater]` section, replace it instead, as duplicate sections break `aws-mfa`:
+```
+[profile run-log-updater]
+region = eu-west-2
+source_profile = prod-mfa
+role_arn = arn:aws:iam::<prod account id>:role/run-log-updater
+```
+Replace `<prod account id>` with the account ID in the `mfa_serial` ARN of your `[profile prod]` section.
+
+2. Once you have run `aws-mfa` (see below), run `aws sts get-caller-identity --profile run-log-updater` and verify the `Arn` is `arn:aws:sts::<prod account id>:assumed-role/run-log-updater/******`.
+
+
 ### Terraform command line access
 1. Set an environment variable for HOME (`aws-mfa` reads it to find your `.aws` folder, and Windows may not set it). This only applies to the current terminal, so repeat it in each new one:
 ```

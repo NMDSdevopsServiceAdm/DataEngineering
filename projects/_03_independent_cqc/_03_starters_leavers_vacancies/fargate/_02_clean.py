@@ -32,7 +32,11 @@ def main(
     # nulled when no job role at that workplace/date changed it.
     lf = cleaningUtils.remove_repeated_values_over_time_as_group(
         lf,
-        columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
+        columns_to_clean=[
+            SLVCols.ascwds_starters,
+            SLVCols.ascwds_leavers,
+            SLVCols.ascwds_vacancies,
+        ],
         partition_by_columns=[IndCQC.location_id, IndCQC.published_job_role_label],
         date_column=IndCQC.cqc_location_import_date,
         workplace_columns=[IndCQC.location_id, IndCQC.cqc_location_import_date],
@@ -41,31 +45,31 @@ def main(
 
     lf = lf.rename(
         {
-            SLVCols.starters_dedup: SLVCols.starters_cleaned,
-            SLVCols.leavers_dedup: SLVCols.leavers_cleaned,
-            SLVCols.vacancies_dedup: SLVCols.vacancies_cleaned,
+            SLVCols.ascwds_starters_dedup: SLVCols.ascwds_starters_clean,
+            SLVCols.ascwds_leavers_dedup: SLVCols.ascwds_leavers_clean,
+            SLVCols.ascwds_vacancies_dedup: SLVCols.ascwds_vacancies_clean,
         }
     )
     lf = add_filtering_rule_column(
         lf,
-        SLVCols.starters_filtering_rule,
-        SLVCols.starters_cleaned,
+        SLVCols.ascwds_starters_filtering_rule,
+        SLVCols.ascwds_starters_clean,
         StartersFilteringRule.populated,
         StartersFilteringRule.missing_data,
         pl.Categorical,
     )
     lf = add_filtering_rule_column(
         lf,
-        SLVCols.leavers_filtering_rule,
-        SLVCols.leavers_cleaned,
+        SLVCols.ascwds_leavers_filtering_rule,
+        SLVCols.ascwds_leavers_clean,
         LeaversFilteringRule.populated,
         LeaversFilteringRule.missing_data,
         pl.Categorical,
     )
     lf = add_filtering_rule_column(
         lf,
-        SLVCols.vacancies_filtering_rule,
-        SLVCols.vacancies_cleaned,
+        SLVCols.ascwds_vacancies_filtering_rule,
+        SLVCols.ascwds_vacancies_clean,
         VacanciesFilteringRule.populated,
         VacanciesFilteringRule.missing_data,
         pl.Categorical,

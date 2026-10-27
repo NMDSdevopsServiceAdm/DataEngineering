@@ -12,6 +12,7 @@
 set -euo pipefail
 
 MAIN_BUCKET="sfc-main-datasets"
+DEFAULT_PROFILE="run-log-updater"
 ESTIMATES_PREFIX="domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates"
 METADATA_PREFIX="domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata"
 RUN_LOG_PREFIX="domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log"
@@ -143,7 +144,7 @@ copy_run_to_long_term_archive() {
     return 1
   fi
   if ! aws s3api delete-object --bucket "$destination_bucket" --key "$preflight_key" --profile "$profile" > /dev/null 2>&1; then
-    echo "Warning: could not delete the write-check marker s3://$destination_bucket/$preflight_key (the deny-delete policy may be blocking this profile). Continuing; delete it by hand later." >&2
+    echo "Warning: could not delete the write-check test object s3://$destination_bucket/$preflight_key. Continuing; assume the Admin role and delete it by hand later." >&2
   fi
 
   # --- Mark the run promoted (same mechanic as every other flag) ---
@@ -224,10 +225,8 @@ for command_name in aws uv; do
 done
 
 # --- Where ---
-profile=""
-while [[ -z "$profile" ]]; do
-  read -r -p "AWS profile (e.g. prod or non-prod): " profile
-done
+read -r -p "AWS profile (non-prod for a branch bucket) [$DEFAULT_PROFILE]: " profile
+profile="${profile:-$DEFAULT_PROFILE}"
 
 bucket=""
 until [[ "$bucket" =~ ^[a-z0-9.-]+$ ]]; do

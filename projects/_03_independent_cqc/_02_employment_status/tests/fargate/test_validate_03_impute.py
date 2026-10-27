@@ -18,10 +18,10 @@ class TestMain:
             IndCqcColumns.location_id: pl.String,
             IndCqcColumns.published_job_role_label: pl.String,
             IndCqcColumns.cqc_location_import_date: pl.Date,
-            **{col: pl.Float32 for col in job.PERCENTAGE_COLUMNS},
-            **{col: pl.Float32 for col in job.TRENDLINE_PERCENTAGE_COLUMNS},
-            **{col: pl.Float32 for col in job.ROLLING_AVERAGE_PERCENTAGE_COLUMNS},
-            **{col: pl.Float32 for col in job.FULL_IMPUTED_PERCENTAGE_COLUMNS},
+            **{col: pl.Float32 for col in job.PCT_COLUMNS},
+            **{col: pl.Float32 for col in job.IMPUTED_TRENDLINE_PCT_COLUMNS},
+            **{col: pl.Float32 for col in job.ROLLING_AVG_PCT_COLUMNS},
+            **{col: pl.Float32 for col in job.IMPUTED_PCT_COLUMNS},
         }
         source_rows = [
             ("1-001", "Care worker", date(2024, 1, 1), *[0.2] * 5 * 4),

@@ -27,18 +27,18 @@ class TestMain:
         source_schema = {
             IndCqcColumns.location_id: pl.String,
             EmpStatus.estimated_employees: pl.Float64,
-            SLVCols.starters: pl.Int64,
-            SLVCols.leavers: pl.Int64,
-            SLVCols.vacancies: pl.Int64,
-            SLVCols.starters_cleaned: pl.Int64,
-            SLVCols.leavers_cleaned: pl.Int64,
-            SLVCols.vacancies_cleaned: pl.Int64,
-            SLVCols.turnover_rate: pl.Float32,
-            SLVCols.starter_rate: pl.Float32,
-            SLVCols.vacancy_rate: pl.Float32,
-            SLVCols.starters_filtering_rule: pl.Categorical,
-            SLVCols.leavers_filtering_rule: pl.Categorical,
-            SLVCols.vacancies_filtering_rule: pl.Categorical,
+            SLVCols.ascwds_starters: pl.Int64,
+            SLVCols.ascwds_leavers: pl.Int64,
+            SLVCols.ascwds_vacancies: pl.Int64,
+            SLVCols.ascwds_starters_clean: pl.Int64,
+            SLVCols.ascwds_leavers_clean: pl.Int64,
+            SLVCols.ascwds_vacancies_clean: pl.Int64,
+            SLVCols.ascwds_turnover_rate: pl.Float32,
+            SLVCols.ascwds_starter_rate: pl.Float32,
+            SLVCols.ascwds_vacancy_rate: pl.Float32,
+            SLVCols.ascwds_starters_filtering_rule: pl.Categorical,
+            SLVCols.ascwds_leavers_filtering_rule: pl.Categorical,
+            SLVCols.ascwds_vacancies_filtering_rule: pl.Categorical,
         }
         source_rows = [
             (
@@ -123,8 +123,8 @@ class TestMain:
         bad_df = self.source_df.with_columns(
             pl.lit(StartersFilteringRule.missing_data)
             .cast(pl.Categorical)
-            .alias(SLVCols.starters_filtering_rule),
-            pl.lit(99).alias(SLVCols.leavers_cleaned),
+            .alias(SLVCols.ascwds_starters_filtering_rule),
+            pl.lit(99).alias(SLVCols.ascwds_leavers_clean),
         )
         mock_read_parquet.side_effect = [bad_df, self.compare_df]
 
@@ -133,6 +133,6 @@ class TestMain:
         report_json = json.loads(mock_write_reports.call_args[0][0].get_json_report())
         failed_briefs = {item["brief"] for item in report_json if item["n_failed"] > 0}
         assert failed_briefs == {
-            "starters_cleaned is populated exactly when starters_filtering_rule is populated",
-            "leavers_cleaned equals leavers where populated",
+            "ascwds_starters_clean is populated exactly when ascwds_starters_filtering_rule is populated",
+            "ascwds_leavers_clean equals ascwds_leavers where populated",
         }
