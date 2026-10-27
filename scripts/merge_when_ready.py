@@ -25,8 +25,8 @@ PIPELINES_TO_SCAN = 20
 FAILED_STATUSES = {"failed", "failing", "error", "canceled", "unauthorized"}
 FAILED_BUCKETS = {"fail", "cancel"}
 VERDICT_REVIEW_STATES = {"APPROVED", "CHANGES_REQUESTED", "DISMISSED"}
-# This script's own workflow job: ignored so it doesn't wait on itself.
-OWN_CHECK_NAME = "merge-when-ready"
+# This workflow's own jobs: ignored so the script doesn't wait on itself.
+OWN_CHECK_NAMES = {"merge-when-ready", "announce-queue-position"}
 POLL_SECONDS = 60
 # Time for CircleCI to start a pipeline after a push or merge.
 APPEARANCE_TIMEOUT_SECONDS = 600
@@ -69,8 +69,11 @@ def workflows_state(statuses: Optional[list[str]]) -> State:
 
 
 def checks_state(checks: list[dict]) -> State:
-    """FAILED if any check failed, PENDING if any is running or none reported, else CLEAR."""
-    buckets = [c["bucket"] for c in checks if c["name"] != OWN_CHECK_NAME]
+    """FAILED if any check failed, PENDING if any is running or none reported, else CLEAR.
+
+    This workflow's own jobs are ignored.
+    """
+    buckets = [c["bucket"] for c in checks if c["name"] not in OWN_CHECK_NAMES]
     if any(bucket in FAILED_BUCKETS for bucket in buckets):
         return State.FAILED
     if not buckets or "pending" in buckets:
@@ -120,13 +123,23 @@ def labelled_at(events: list[dict], label: str) -> str:
     )
 
 
+def _queue_key(pr: dict) -> tuple[str, int]:
+    return (pr["labelled_at"] or "~", pr["number"])
+
+
 def next_in_queue(prs: list[dict], handled: Collection[int] = ()) -> Optional[dict]:
     """Return the earliest labelled PR not in `handled` (unknown times last), or None."""
     return min(
         (pr for pr in prs if pr["number"] not in handled),
-        key=lambda pr: (pr["labelled_at"] or "~", pr["number"]),
+        key=_queue_key,
         default=None,
     )
+
+
+def queue_position(prs: list[dict], number: int) -> Optional[int]:
+    """Return a PR's 1-based place in label order, or None if it isn't queued."""
+    ordered = [pr["number"] for pr in sorted(prs, key=_queue_key)]
+    return ordered.index(number) + 1 if number in ordered else None
 
 
 def is_approved(reviews: list[dict]) -> bool:
@@ -258,6 +271,24 @@ def _reject(repo: str, label: str, number: int, reason: str) -> None:
     except subprocess.CalledProcessError as error:
         print(f"Could not comment on PR {number}: {_describe(error)}")
     print(f"PR {number} left the queue: {reason}")
+
+
+def announce_queued(repo: str, label: str, number: int) -> None:
+    """Comment on a PR with its place in the queue, and a warning if unapproved."""
+    prs = _labelled_prs(repo, label)
+    position = queue_position(prs, number)
+    if position is None:  # label already removed
+        return
+    message = (
+        f"Queued: position {position} of {len(prs)}. "
+        "PRs merge in the order they were labelled."
+    )
+    try:
+        _require_approval(repo, number)
+    except NotMergeable as error:
+        message += f" Note: {error}"
+    _gh("pr", "comment", str(number), "--repo", repo, "--body", message)
+    print(message)
 
 
 def _wait_while_pending(
@@ -434,7 +465,17 @@ def main() -> None:
     parser.add_argument("--label", default="ready-to-merge")
     parser.add_argument("--project-slug", required=True)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--announce",
+        type=int,
+        metavar="PR",
+        help="Comment PR's queue position, then exit.",
+    )
     args = parser.parse_args()
+
+    if args.announce:
+        announce_queued(args.repo, args.label, args.announce)
+        return
 
     if not os.environ.get("CIRCLECI_TOKEN"):
         sys.exit("CIRCLECI_TOKEN is not set.")

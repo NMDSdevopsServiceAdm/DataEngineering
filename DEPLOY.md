@@ -79,6 +79,7 @@ Merge by adding the `ready-to-merge` label, not the Merge button. The `merge-whe
 - A PR needs at least one approving review and no outstanding request for changes, checked at the start and again just before merging. Otherwise it gets a comment and loses its label: re-add it once approved.
 - A PR that can't be merged (failed checks, merge conflict, `main` moving ahead too fast, or a bot error) gets a comment with the reason and loses its label. The next labelled PR carries on. Fix it and re-add the label.
 - If `main`'s latest deploy failed or never started, the PR gets a comment and loses its label, and the run fails so nothing merges until it is fixed. The fix itself has to go in with the Merge button.
+- When a PR is labelled, the bot comments its place in the queue ("Queued: position 2 of 3"). To see the queue, filter PRs by the `ready-to-merge` label. Run status and logs are under the repo's Actions tab > `merge-when-ready` > the run's "Merge labelled PRs in turn" step.
 - Add `merge-dry-run` instead to run every check without merging. It removes the label afterwards.
 - Needs the `ready-to-merge` and `merge-dry-run` labels to exist, and the `CIRCLECI_TOKEN` secret. A run is limited to 6 hours: if it times out waiting for an approval, re-add the label.
 - The Merge button still works, so the label is a team convention.

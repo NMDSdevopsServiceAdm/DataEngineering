@@ -12,7 +12,8 @@ REPO = "owner/name"
 LABEL = "ready-to-merge"
 SLUG = "gh/owner/name"
 DEPLOY = job.MAIN_DEPLOY_WORKFLOW
-OWN = job.OWN_CHECK_NAME
+OWN = "merge-when-ready"
+ANNOUNCE = "announce-queue-position"
 PASS = {"name": "test", "bucket": "pass"}
 MERGE_CALL = (
     "pr",
@@ -55,6 +56,7 @@ checks_cases = [
     StateTestCase("failed_when_any_failed", [{"name": "test", "bucket": "fail"}, {"name": "lint", "bucket": "pending"}], job.State.FAILED),
     StateTestCase("failed_when_cancelled", [{"name": "test", "bucket": "cancel"}], job.State.FAILED),
     StateTestCase("ignores_own_pending_check", [PASS, {"name": OWN, "bucket": "pending"}], job.State.CLEAR),
+    StateTestCase("ignores_failed_announce_check", [PASS, {"name": ANNOUNCE, "bucket": "fail"}], job.State.CLEAR),
     StateTestCase("pending_when_only_own_check", [{"name": OWN, "bucket": "pending"}], job.State.PENDING),
 ]  # fmt: skip
 
@@ -204,6 +206,61 @@ class TestNextInQueue:
 
     def test_returns_none_when_no_prs_left(self):
         assert job.next_in_queue([{"number": 1, "labelled_at": ""}], {1}) is None
+
+
+class TestQueuePosition:
+    PRS = [
+        {"number": 1650, "labelled_at": "2026-10-05"},
+        {"number": 1700, "labelled_at": "2026-10-01"},
+        {"number": 1800, "labelled_at": ""},
+    ]
+
+    def test_returns_place_in_label_order(self):
+        assert job.queue_position(self.PRS, 1700) == 1
+        assert job.queue_position(self.PRS, 1650) == 2
+
+    def test_puts_unknown_label_time_last(self):
+        assert job.queue_position(self.PRS, 1800) == 3
+
+    def test_returns_none_when_pr_is_not_queued(self):
+        assert job.queue_position(self.PRS, 9999) is None
+
+
+@patch(f"{PATCH_PATH}._gh")
+@patch(f"{PATCH_PATH}._require_approval")
+@patch(f"{PATCH_PATH}._labelled_prs")
+class TestAnnounceQueued:
+    def test_comments_position_and_queue_size(
+        self, labelled_prs_mock, require_approval_mock, gh_mock
+    ):
+        labelled_prs_mock.return_value = TestQueuePosition.PRS
+
+        job.announce_queued(REPO, LABEL, 1650)
+
+        body = gh_mock.call_args.args[-1]
+        assert "position 2 of 3" in body
+        assert "approving review" not in body
+
+    def test_adds_warning_when_pr_is_not_approved(
+        self, labelled_prs_mock, require_approval_mock, gh_mock
+    ):
+        labelled_prs_mock.return_value = TestQueuePosition.PRS
+        require_approval_mock.side_effect = job.NotMergeable(
+            "It needs an approving review."
+        )
+
+        job.announce_queued(REPO, LABEL, 1650)
+
+        assert "needs an approving review" in gh_mock.call_args.args[-1]
+
+    def test_does_not_comment_when_label_already_removed(
+        self, labelled_prs_mock, require_approval_mock, gh_mock
+    ):
+        labelled_prs_mock.return_value = TestQueuePosition.PRS
+
+        job.announce_queued(REPO, LABEL, 9999)
+
+        gh_mock.assert_not_called()
 
 
 def review(login: str, state: str, submitted_at: str) -> dict:
