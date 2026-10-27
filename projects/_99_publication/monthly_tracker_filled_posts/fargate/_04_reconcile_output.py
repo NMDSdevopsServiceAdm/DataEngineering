@@ -19,6 +19,11 @@ from utils.column_values.categorical_column_values import (
 
 # The totals agree to ~1e-7 (Float32 rounding), so this leaves ~1000x headroom.
 RECONCILIATION_RELATIVE_TOLERANCE = 0.0001
+# Distinct from a crash (1) so Publication-Output retries only this (EX_TEMPFAIL).
+# Keep in step with the 75 in Publication-Output.json.
+NOT_PROMOTED_EXIT_CODE = 75
+MAX_PERIODS_REPORTED = 5
+RELATIVE_DIFFERENCE = "relative_difference"
 
 
 class ReconciliationMismatchError(ValueError):
@@ -44,6 +49,24 @@ def is_run_promoted(promoted_run_log_source: str, run_number: int) -> bool:
     return run_number in file_utils.list_archive_runs(promoted_run_log_source)
 
 
+def check_main(promoted_run_log_source: str, run_number: int) -> int:
+    """
+    Reports whether a run's promotion has finished, as the task's exit code.
+
+    Args:
+        promoted_run_log_source (str): S3 directory of the long-term archive's
+            run log, partitioned by archive_date and run_number
+        run_number (int): the run to check
+
+    Returns:
+        int: 0 if promoted, else NOT_PROMOTED_EXIT_CODE
+    """
+    promoted = is_run_promoted(promoted_run_log_source, run_number)
+    state = "is" if promoted else "is not"
+    print(f"Run {run_number} {state} in {promoted_run_log_source}")
+    return 0 if promoted else NOT_PROMOTED_EXIT_CODE
+
+
 def _total_by_period(lf: pl.LazyFrame, value_column: str) -> pl.DataFrame:
     """
     Sums one column for each import date, as Float64 so the comparison isn't
@@ -63,13 +86,13 @@ def main(
     run_number: int,
 ) -> None:
     """
-    Compares a run's public and promoted archive filled posts totals, marking
-    the run reconciled in the run log on a match.
+    Compares a run's public and promoted archive filled posts for each period,
+    marking the run reconciled in the run log if all match.
 
-    Totals cover the periods in the assessment data; other archive periods are
-    ignored. The public total is the assessment's pre-rounding national "All
+    Periods are those in the assessment data; other archive periods are
+    ignored. The public figure is the assessment's pre-rounding national "All
     job roles" row (the public output only holds banded figures, and the
-    assessment's other rows are overlapping rollups). The archive total sums
+    assessment's other rows are overlapping rollups). The archive figure sums
     every job-role row, as the archive has no rollups.
 
     Args:
@@ -81,8 +104,9 @@ def main(
         run_number (int): the run to reconcile
 
     Raises:
-        ReconciliationMismatchError: if the two totals differ by more than
-            RECONCILIATION_RELATIVE_TOLERANCE
+        ReconciliationMismatchError: if any period differs by more than
+            RECONCILIATION_RELATIVE_TOLERANCE, a public period is missing from
+            the archive, or the assessment has no national rows
     """
     assessment_run_source, archive_run_source = merge_utils.resolve_run_sources(
         [assessment_source, promoted_archive_source], run_number
@@ -118,18 +142,35 @@ def main(
             f"promoted archive: {sorted(missing_periods)}"
         )
 
-    public_total = public_by_period[Pub.filled_posts].sum()
-    archive_total = archive_by_period[IndCQC.estimate_filled_posts_by_job_role].sum()
-    relative_difference = abs(public_total - archive_total) / archive_total
-    print(
-        f"Run {run_number}: public output total {public_total}, promoted archive "
-        f"total {archive_total}, relative difference {relative_difference:.4%}"
+    archive_column = IndCQC.estimate_filled_posts_by_job_role
+    comparison_df = public_by_period.join(
+        archive_by_period, on=IndCQC.cqc_location_import_date
+    ).with_columns(
+        (
+            (pl.col(Pub.filled_posts) - pl.col(archive_column)).abs()
+            / pl.col(archive_column)
+        ).alias(RELATIVE_DIFFERENCE)
     )
-    if not relative_difference <= RECONCILIATION_RELATIVE_TOLERANCE:  # NaN fails
+    print(
+        f"Run {run_number}: public output total {comparison_df[Pub.filled_posts].sum()}, "
+        f"promoted archive total {comparison_df[archive_column].sum()}, largest "
+        f"period difference {comparison_df[RELATIVE_DIFFERENCE].max():.4%}"
+    )
+
+    # Compared as "not within" so a NaN difference fails.
+    differing_df = comparison_df.filter(
+        ~(pl.col(RELATIVE_DIFFERENCE) <= RECONCILIATION_RELATIVE_TOLERANCE)
+    ).sort(IndCQC.cqc_location_import_date)
+    if not differing_df.is_empty():
+        details = "; ".join(
+            f"{row[IndCQC.cqc_location_import_date]}: public {row[Pub.filled_posts]}, "
+            f"archive {row[archive_column]}"
+            for row in differing_df.head(MAX_PERIODS_REPORTED).iter_rows(named=True)
+        )
         raise ReconciliationMismatchError(
-            f"Run {run_number}: public output total {public_total} and promoted "
-            f"archive total {archive_total} differ by {relative_difference:.2%}, "
-            f"more than the {RECONCILIATION_RELATIVE_TOLERANCE:.2%} tolerance."
+            f"Run {run_number}: {differing_df.height} of {comparison_df.height} "
+            f"periods differ by more than {RECONCILIATION_RELATIVE_TOLERANCE:.2%} "
+            f"between the public output and promoted archive ({details})"
         )
 
     run_log_utils.mark_run_log_flag(run_log_destination, run_number, RunLog.reconciled)
@@ -170,10 +211,7 @@ if __name__ == "__main__":
     run_number = merge_utils.parse_run_number(args.run_number, required=True)
 
     if args.mode == "check":
-        promoted = is_run_promoted(args.promoted_run_log_source, run_number)
-        state = "is" if promoted else "is not"
-        print(f"Run {run_number} {state} in {args.promoted_run_log_source}")
-        sys.exit(0 if promoted else 1)
+        sys.exit(check_main(args.promoted_run_log_source, run_number))
     elif args.mode == "compare":
         main(
             assessment_source=args.assessment_source,

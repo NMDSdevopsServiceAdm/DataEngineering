@@ -66,17 +66,24 @@
                 }
               },
               "ResultPath": null,
+              "Next": "Start Promotion Check"
+            },
+            "Start Promotion Check": {
+              "Type": "Pass",
+              "Parameters": {
+                "run_number.$": "$.run_number",
+                "attempts": 0
+              },
               "Next": "Check Promoted Archive"
             },
             "Check Promoted Archive": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
-              "Retry": [
+              "Catch": [
                 {
-                  "ErrorEquals": ["States.ALL"],
-                  "IntervalSeconds": ${reconciliation_polling_wait_seconds},
-                  "MaxAttempts": ${reconciliation_polling_max_attempts},
-                  "BackoffRate": 1
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "ResultPath": "$.check",
+                  "Next": "Promotion Not Ready?"
                 }
               ],
               "Parameters": {
@@ -101,6 +108,64 @@
               },
               "ResultPath": null,
               "Next": "Compare Totals"
+            },
+            "Promotion Not Ready?": {
+              "Type": "Choice",
+              "Comment": "Exit code 75 is NOT_PROMOTED_EXIT_CODE in _04_reconcile_output.py; any other failure is a fault, not a wait",
+              "Choices": [
+                {
+                  "Or": [
+                    {
+                      "Variable": "$.check.Cause",
+                      "StringMatches": "*\"ExitCode\":75,*"
+                    },
+                    {
+                      "Variable": "$.check.Cause",
+                      "StringMatches": "*\"ExitCode\":75}*"
+                    },
+                    {
+                      "Variable": "$.check.Cause",
+                      "StringMatches": "*Exit code: 75.*"
+                    }
+                  ],
+                  "Next": "Count Promotion Attempt"
+                }
+              ],
+              "Default": "Promotion Check Failed"
+            },
+            "Promotion Check Failed": {
+              "Type": "Fail",
+              "Error": "PromotionCheckFailed",
+              "CausePath": "$.check.Cause"
+            },
+            "Count Promotion Attempt": {
+              "Type": "Pass",
+              "Parameters": {
+                "run_number.$": "$.run_number",
+                "attempts.$": "States.MathAdd($.attempts, 1)"
+              },
+              "Next": "Promotion Attempts Exceeded?"
+            },
+            "Promotion Attempts Exceeded?": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.attempts",
+                  "NumericGreaterThanEquals": ${reconciliation_polling_max_attempts},
+                  "Next": "Promotion Timeout"
+                }
+              ],
+              "Default": "Wait For Promotion"
+            },
+            "Wait For Promotion": {
+              "Type": "Wait",
+              "Seconds": ${reconciliation_polling_wait_seconds},
+              "Next": "Check Promoted Archive"
+            },
+            "Promotion Timeout": {
+              "Type": "Fail",
+              "Error": "PromotionTimeout",
+              "Cause": "The run was not promoted after ${reconciliation_polling_max_attempts} checks. Promote it, then start Publication-Output again."
             },
             "Compare Totals": {
               "Type": "Task",

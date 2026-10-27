@@ -203,8 +203,8 @@ Confirm the public output's total filled posts for a run matches its promoted ar
 
 ### Steps (automatic, via Publication-Output)
 No separate steps — this runs as the last stage of `Publication-Output` (started per "Selecting a run for publication" above, or by hand). It:
-1. Waits for the run's partition to appear in the long-term archive bucket ("Check Promoted Archive"), retrying for about 40 minutes on `sfc-main-datasets` (about 6 minutes on a branch bucket) before failing the execution if the run was never promoted.
-2. Recomputes the public output's and the promoted archive's total filled posts independently and compares them within a small relative tolerance ("Compare Totals").
+1. Waits for the run's run log partition to appear in the long-term archive bucket ("Check Promoted Archive"; promotion copies the run log last, so it marks a finished copy), rechecking for about 40 minutes on `sfc-main-datasets` (about 6 minutes on a branch bucket) before failing with `PromotionTimeout` if the run was never promoted.
+2. Recomputes the public output's and the promoted archive's filled posts independently and compares each period within a small relative tolerance ("Compare Totals").
 3. On a match, marks the run `reconciled` in the run log (recording `reconciled_at`). On a mismatch, the execution fails without changing the run log, and the pipeline's usual failure notification fires.
 
 ### Steps (manual, only to force the flag without the comparison)
@@ -219,8 +219,9 @@ Choosing this flag yourself skips the comparison entirely — only do this if th
 - The run log shows `reconciled: True` for the run, with a `reconciled_at` timestamp.
 
 ### If something is wrong
-- **`Publication-Output` fails at "Check Promoted Archive"** (after its retries are exhausted): the run was never promoted, or promotion hasn't finished yet. Select/promote the run first (see "Promoting a run"), then start `Publication-Output` again with the same `run_number`.
-- **`Publication-Output` fails at "Compare Totals"**: the two totals genuinely differ by more than the tolerance. This needs investigating, not rerunning — check the task's CloudWatch logs, which print both totals and the relative difference.
+- **`Publication-Output` fails with `PromotionTimeout`**: the run was never promoted, or promotion hasn't finished. Select/promote the run first (see "Promoting a run"), then start `Publication-Output` again with the same `run_number`.
+- **`Publication-Output` fails with `PromotionCheckFailed`**: the check task itself failed, not just "not promoted yet" (for example a permissions error). Nothing is retried; see the task's CloudWatch log.
+- **`Publication-Output` fails at "Compare Totals"**: one or more periods differ by more than the tolerance (the error lists them), or a period is missing from the archive. This needs investigating, not rerunning — the task's CloudWatch log prints both totals and the largest period difference.
 - **`Run number <n> is not promoted`** (manual path): promote the run first.
 - **`Run number <n> is already reconciled`**: nothing to do.
 

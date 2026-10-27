@@ -122,6 +122,42 @@ class TestMain:
         with pytest.raises(job.ReconciliationMismatchError, match="differ"):
             _run_main(mocks)
 
+    def test_raises_when_a_period_is_off_though_the_totals_match(self, mocks):
+        # Errors in opposite directions cancel in the overall total.
+        _set_sources(
+            mocks,
+            [
+                _assessment_row(IN_PERIOD, 1000.0),
+                _assessment_row(OTHER_PERIOD, 1000.0),
+            ],
+            [
+                _archive_row(IN_PERIOD, 1010.0),
+                _archive_row(OTHER_PERIOD, 990.0),
+            ],
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
+            _run_main(mocks)
+
+    def test_names_the_periods_that_differ(self, mocks):
+        _set_sources(
+            mocks,
+            [
+                _assessment_row(IN_PERIOD, 1000.0),
+                _assessment_row(OTHER_PERIOD, 1000.0),
+            ],
+            [
+                _archive_row(IN_PERIOD, 1000.0),
+                _archive_row(OTHER_PERIOD, 2000.0),
+            ],
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError) as error:
+            _run_main(mocks)
+
+        assert str(OTHER_PERIOD) in str(error.value)
+        assert str(IN_PERIOD) not in str(error.value)
+
     def test_resolves_both_sources_for_the_requested_run_number(self, mocks):
         _set_sources(
             mocks,
@@ -256,3 +292,23 @@ class TestIsRunPromoted:
         list_archive_runs_mock.return_value = {1: "2026-10-01", 2: "2026-10-08"}
 
         assert job.is_run_promoted(PROMOTED_ARCHIVE_SOURCE, 2) is True
+
+
+class TestCheckMain:
+    @patch(f"{PATCH_PATH}.file_utils.list_archive_runs")
+    def test_returns_zero_when_the_run_is_promoted(self, list_archive_runs_mock: Mock):
+        list_archive_runs_mock.return_value = {2: "2026-10-08"}
+
+        assert job.check_main(PROMOTED_ARCHIVE_SOURCE, 2) == 0
+
+    @patch(f"{PATCH_PATH}.file_utils.list_archive_runs")
+    def test_returns_the_not_promoted_exit_code_when_the_run_is_not_promoted(
+        self, list_archive_runs_mock: Mock
+    ):
+        list_archive_runs_mock.return_value = {1: "2026-10-01"}
+
+        assert job.check_main(PROMOTED_ARCHIVE_SOURCE, 2) == job.NOT_PROMOTED_EXIT_CODE
+
+    def test_not_promoted_exit_code_is_not_the_generic_failure_code(self):
+        # A crash exits 1; the state machine retries only on the code below.
+        assert job.NOT_PROMOTED_EXIT_CODE not in (0, 1)
