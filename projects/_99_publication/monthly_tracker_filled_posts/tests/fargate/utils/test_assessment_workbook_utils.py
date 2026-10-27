@@ -250,6 +250,31 @@ class TestTitleText:
             job.title_text([])
 
 
+class TestCompPrevRows:
+    def test_lists_march_periods_then_periods_after_the_latest_march(self):
+        months = [
+            datetime.date(2026, 5, 1),
+            datetime.date(2025, 9, 1),
+            datetime.date(2025, 3, 1),
+            datetime.date(2026, 3, 1),
+            datetime.date(2026, 4, 1),
+            datetime.date(2026, 5, 1),
+        ]
+
+        rows = job.comp_prev_rows(months)
+
+        assert rows == [
+            (datetime.date(2025, 3, 1), "Annual"),
+            (datetime.date(2026, 3, 1), "Annual"),
+            (datetime.date(2026, 4, 1), "Monthly"),
+            (datetime.date(2026, 5, 1), "Monthly"),
+        ]
+
+    def test_raises_when_no_period_is_a_march(self):
+        with pytest.raises(ValueError, match="no March"):
+            job.comp_prev_rows([datetime.date(2026, 4, 1)])
+
+
 class TestSheetText:
     PERIOD_LABELS = ["Mar 2025", "Sep 2025", "Mar 2026", "Sep 2026"]
 
@@ -668,6 +693,41 @@ class TestComparisonSheetValues:
 
 
 class TestFillAssessmentWorkbookFromLf:
+    def test_comp_prev_labels_match_the_period_dates_beside_them(self, tmp_path):
+        import_dates = [
+            datetime.date(2024, 4, 1),
+            datetime.date(2024, 5, 1),
+            datetime.date(2025, 4, 1),
+            datetime.date(2025, 10, 1),
+            datetime.date(2026, 4, 1),
+            datetime.date(2026, 5, 1),
+            datetime.date(2026, 6, 1),
+        ]
+        output = tmp_path / "out.xlsx"
+
+        job.fill_assessment_workbook_from_lf(
+            _assessment_lf(import_dates),
+            (cell_map.COMP_PREV_PUBLICATION,),
+            TERM_FROM_DATES,
+            cell_map.TEMPLATE_PATH,
+            output,
+        )
+
+        sheet = openpyxl.load_workbook(output)[cell_map.COMP_PREV_PUBLICATION.name]
+        for first_row in (23, 64, 106):
+            rows = [
+                (sheet[f"B{first_row + i}"].value, sheet[f"C{first_row + i}"].value)
+                for i in range(6)
+            ]
+            assert rows == [
+                ("Annual", datetime.datetime(2024, 3, 1)),
+                ("Annual", datetime.datetime(2025, 3, 1)),
+                ("Annual", datetime.datetime(2026, 3, 1)),
+                ("Monthly", datetime.datetime(2026, 4, 1)),
+                ("Monthly", datetime.datetime(2026, 5, 1)),
+                (None, None),
+            ]
+
     def test_saves_a_workbook_holding_the_filled_posts_values(self, tmp_path):
         output = tmp_path / "out.xlsx"
 

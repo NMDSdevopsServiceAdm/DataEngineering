@@ -194,6 +194,33 @@ def title_text(period_labels: list[str]) -> str:
     return f"End of {latest.strftime(PERIOD_LABEL_LONG_FORMAT)}"
 
 
+def comp_prev_rows(
+    period_months: list[datetime.date],
+) -> list[tuple[datetime.date, str]]:
+    """The rows of "Comp prev publication" in order, with their labels.
+
+    An "Annual" row for each March period, then a "Monthly" row for each period
+    after the latest March. The labels and the figures both follow this list.
+
+    Args:
+        period_months (list[datetime.date]): period months, in any order, repeats
+            allowed.
+
+    Returns:
+        list[tuple[datetime.date, str]]: period month and label for each row.
+
+    Raises:
+        ValueError: if no period month is a March.
+    """
+    unique_months = sorted(set(period_months))
+    marches = [m for m in unique_months if m.month == MARCH]
+    if not marches:
+        raise ValueError("period months have no March")
+    return [(m, ANNUAL_LABEL) for m in marches] + [
+        (m, MONTHLY_LABEL) for m in unique_months if m > marches[-1]
+    ]
+
+
 def sheet_text(
     period_labels: list[str], term_from_dates: TermFromDates
 ) -> dict[str, dict[str, str]]:
@@ -253,10 +280,7 @@ def sheet_text(
         )
 
     # Comp prev publication: an Annual or Monthly label for each period row
-    unique_dates = set(dates)
-    annual_count = sum(d.month == MARCH for d in unique_dates)
-    monthly_count = sum(d > short_term_march for d in unique_dates)
-    row_labels = [ANNUAL_LABEL] * annual_count + [MONTHLY_LABEL] * monthly_count
+    row_labels = [label for _, label in comp_prev_rows([d.date() for d in dates])]
     for label_range in cell_map.COMP_PREV_LABEL_RANGES:
         cells = CellRange(label_range)
         if len(row_labels) > cells.size["rows"]:
@@ -512,8 +536,7 @@ def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, objec
     """Cell values for the "Comp prev publication" sheet.
 
     Each of the previous publication, current publication and difference blocks
-    lists the April import date rows (annual) first, then the later rows
-    (monthly), matching the labels written from the period labels.
+    lists its rows in the order of `comp_prev_rows`, which the labels also follow.
 
     Args:
         assessment_df (pl.DataFrame): output of `prepare_assessment_df`.
@@ -521,12 +544,13 @@ def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, objec
     Returns:
         dict[str, object]: value by A1 cell.
     """
-    import_date = pl.col(IndCQC.cqc_location_import_date)
-    annual_df = assessment_df.filter(import_date.dt.month() == APRIL)
-    monthly_df = assessment_df.filter(
-        import_date > annual_df[IndCQC.cqc_location_import_date].max()
+    period_months = _period_months(
+        assessment_df.get_column(IndCQC.cqc_location_import_date).to_list()
     )
-    period_df = pl.concat([annual_df, monthly_df])
+    row_indexes = [
+        period_months.index(month) for month, _ in comp_prev_rows(period_months)
+    ]
+    period_df = assessment_df.select(pl.all().gather(row_indexes))
 
     cells = {}
     for date_note, value_note in (
