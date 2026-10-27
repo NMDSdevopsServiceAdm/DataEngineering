@@ -18,6 +18,8 @@ They live in `notebooks/sagemaker/` — outside `.claude/`, which JupyterLab hid
 - `notebooks/sagemaker/compare_before_after_filter.ipynb` — compare a dataset before and after a filter (matched on keys), split by whether each row is in the filtered values: rows nulled, trendline over time, value distribution (summary stats + histogram), effect on the final estimates column. Edit: `BEFORE_PATH`, `AFTER_PATH`, `KEY_COLUMNS`, `DATE_COLUMN`, `FILTER_COLUMN`, `FILTERED_VALUES`, `VALUE_COLUMN`, `ESTIMATE_COLUMN`.
 - `notebooks/sagemaker/interpolation_durations.ipynb` — score a rolling-average duration on imputed data: jumpiness and accuracy against known values per split and status. Edit: `IMPUTED_DATA_PATH`, `ROLLING_AVERAGE_PERIOD`, `SCORE_FROM_DATE`, the column constants.
 
+- `notebooks/sagemaker/model_metrics_history.ipynb` — metric history for the filled posts models across training runs: run counts, legacy and cross-validated scores in separate sections, change against the previous run and a rolling baseline with breach flags, and charts. Reads each run's files in the pipeline-resources `models/` folder. Edit: `MODELS_PATH`, `MODEL_NAMES`, `STEP_TOLERANCE`, `DRIFT_TOLERANCE`, `BASELINE_RUNS`, the column and metric constants.
+
 To use one: open it from `~/SageMaker/templates/`, **Save As** into your own folder, edit **only the parameters cell**. Never work inside `~/SageMaker/templates/` or the clone — both are overwritten on every run — and don't edit a committed template for a one-off run.
 
 ## Getting the templates onto the instance

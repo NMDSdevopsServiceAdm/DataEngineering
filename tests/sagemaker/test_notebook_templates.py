@@ -12,6 +12,7 @@ EXPECTED_TEMPLATES = [
     "compare_outputs",
     "compare_before_after_filter",
     "interpolation_durations",
+    "model_metrics_history",
     "sagemaker_setup",
 ]
 TEMPLATE_CASES = [
