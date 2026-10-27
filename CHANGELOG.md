@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Added validation of the job role estimates archive run log.
 - Added validation of the monthly tracker assessment data.
 - Added validation of the monthly tracker prepared publication data.
+- Added a full-month period label (e.g. "March 2026") to the monthly tracker publication data.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/output_workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 - Extended the run log update script to select a run for publication and start Publication-Output for it, set the `reconciled` and `locally_checked` flags, and list the month's runs.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
