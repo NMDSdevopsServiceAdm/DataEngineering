@@ -203,9 +203,11 @@ Confirm the public output's total filled posts for a run matches its promoted ar
 
 ### Steps (automatic, via Publication-Output)
 No separate steps — this runs as the last stage of `Publication-Output` (started per "Selecting a run for publication" above, or by hand). It:
-1. Waits for the run's run log partition to appear in the long-term archive bucket ("Check Promoted Archive"; promotion copies the run log last, so it marks a finished copy), rechecking for about 40 minutes on `sfc-main-datasets` (about 6 minutes on a branch bucket) before failing with `PromotionTimeout` if the run was never promoted.
+1. Waits for the run's run log partition to appear in the long-term archive bucket ("Check Promoted Archive"; promotion copies the run log last, so it marks a finished copy), rechecking on a fixed schedule (`reconciliation_polling_*` in `terraform/pipeline/step-function.tf`) before failing with `PromotionTimeout` if the run was never promoted.
 2. Recomputes the public output's and the promoted archive's filled posts independently and compares each period within a small relative tolerance ("Compare Totals").
 3. On a match, marks the run `reconciled` in the run log (recording `reconciled_at`). On a mismatch, the execution fails without changing the run log, and the pipeline's usual failure notification fires.
+
+Don't approve or select runs while `Publication-Output` is finishing: marking the run reconciled rewrites that run's run log row from a copy read moments earlier, which could undo a selection made in between.
 
 ### Steps (manual, only to force the flag without the comparison)
 Choosing this flag yourself skips the comparison entirely — only do this if the automated check is known to be wrong for a specific run (for example, a data correction already reconciled by hand). The run must already be `promoted`.

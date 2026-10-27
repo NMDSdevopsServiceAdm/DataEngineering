@@ -85,6 +85,9 @@ class TestMarkRunLogFlag:
 
         job.mark_run_log_flag(RUN_LOG_SOURCE, 1, RunLog.reconciled)
 
+        mocks.list_objects_v2.assert_called_once_with(
+            Bucket="bucket", Prefix=PARTITION_PREFIX
+        )
         assert uploaded["destination"] == f"s3://bucket/{PARTITION_PREFIX}"
         assert uploaded["frame"][RunLog.reconciled].to_list() == [True]
 

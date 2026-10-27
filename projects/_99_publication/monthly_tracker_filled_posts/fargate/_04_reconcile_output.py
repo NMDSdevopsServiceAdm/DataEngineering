@@ -151,16 +151,17 @@ def main(
             / pl.col(archive_column)
         ).alias(RELATIVE_DIFFERENCE)
     )
-    print(
-        f"Run {run_number}: public output total {comparison_df[Pub.filled_posts].sum()}, "
-        f"promoted archive total {comparison_df[archive_column].sum()}, largest "
-        f"period difference {comparison_df[RELATIVE_DIFFERENCE].max():.4%}"
-    )
-
     # Compared as "not within" so a NaN difference fails.
     differing_df = comparison_df.filter(
         ~(pl.col(RELATIVE_DIFFERENCE) <= RECONCILIATION_RELATIVE_TOLERANCE)
     ).sort(IndCQC.cqc_location_import_date)
+    # max() skips NaN, so the count is what shows a NaN period.
+    print(
+        f"Run {run_number}: public output total {comparison_df[Pub.filled_posts].sum()}, "
+        f"promoted archive total {comparison_df[archive_column].sum()}, largest "
+        f"period difference {comparison_df[RELATIVE_DIFFERENCE].max():.4%}, "
+        f"{differing_df.height} of {comparison_df.height} periods over tolerance"
+    )
     if not differing_df.is_empty():
         details = "; ".join(
             f"{row[IndCQC.cqc_location_import_date]}: public {row[Pub.filled_posts]}, "

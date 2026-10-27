@@ -27,16 +27,16 @@ def mark_run_log_flag(run_log_source: str, run_number: int, flag: str) -> None:
     overwrites its file.parquet in one upload. Does nothing if the flag is
     already set. A rejected update's ValueError propagates unchanged.
 
-    Raises:
-        ValueError: if the partition holds anything other than file.parquet,
-            which the update script always leaves. Nothing is written, as the
-            task role can't delete a stale file.
-
     Args:
         run_log_source (str): S3 directory of the archive run log, partitioned by
             archive_date and run_number
         run_number (int): the run to update
         flag (str): the flag column to set, one of update_run_log.SUPPORTED_FLAGS
+
+    Raises:
+        ValueError: if the partition holds anything other than file.parquet,
+            which the update script always leaves. Nothing is written, as the
+            task role can't delete a stale file.
     """
     archive_date = file_utils.list_archive_runs(run_log_source)[run_number]
     bucket, root_prefix = file_utils.split_s3_uri(run_log_source.rstrip("/") + "/")
