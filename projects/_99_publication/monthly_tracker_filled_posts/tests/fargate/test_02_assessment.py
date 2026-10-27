@@ -23,14 +23,8 @@ TEST_RUN_SOURCE = "some/prep/directory/archive_date=2026-10-01/run_number=2/"
 TEST_DESTINATION = "some/other/directory"
 TEST_RUN_LOG_SOURCE = "some/run/log/directory"
 TEST_WORKBOOK_DESTINATION = "some/workbook/directory"
-
-# Term start dates for a run on 2026-09-01 whose earliest import date is 2021-04-01.
-LONG_TERM_FROM_DATE = date(2021, 7, 1)
-MEDIUM_TERM_FROM_DATE = date(2025, 4, 1)
-SHORT_TERM_FROM_DATE = date(2026, 4, 1)
-# Earliest import date that is later than the earliest Capacity Tracker data.
-LATER_FIRST_IMPORT_DATE = date(2027, 4, 1)
 TEST_PREVIOUS_RUN_SOURCE = "some/other/directory/archive_date=2026-09-01/run_number=1/"
+TEST_WRITTEN_RUN = "some/other/directory/archive_date=2026-10-01/run_number=2/"
 
 # Term start dates for a run on 2026-09-01 whose earliest import date is 2021-04-01.
 LONG_TERM_FROM_DATE = date(2021, 7, 1)
@@ -403,7 +397,12 @@ class TestMain:
         assert_frame_equal(sink_kwargs["lazy_df"], expected_lf)
 
     def test_main_adds_short_and_long_period_labels_from_the_import_date(self, mocks):
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
 
         sunk_df = mocks.sink_to_parquet.call_args.kwargs["lazy_df"].collect()
         assert sunk_df[Pub.period_label_short].to_list() == ["Mar 2026"]

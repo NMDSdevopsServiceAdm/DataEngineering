@@ -352,7 +352,7 @@ def _assessment_lf(
     rows = [
         {
             IndCQC.cqc_location_import_date: import_date,
-            Pub.period_label: (import_date - datetime.timedelta(days=1)).strftime(
+            Pub.period_label_short: (import_date - datetime.timedelta(days=1)).strftime(
                 "%b %Y"
             ),
             IndCQC.main_job_role_clean_labelled: job_role,

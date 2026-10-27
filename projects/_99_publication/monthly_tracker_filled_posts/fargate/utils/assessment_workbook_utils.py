@@ -344,14 +344,14 @@ def prepare_assessment_df(
         )
         .select(
             IndCQC.cqc_location_import_date,
-            Pub.period_label,
+            Pub.period_label_short,
             pl.col(IndCQC.primary_service_type).cast(pl.String),
             *value_columns,
         )
         .collect()
         .pivot(
             on=IndCQC.primary_service_type,
-            index=[IndCQC.cqc_location_import_date, Pub.period_label],
+            index=[IndCQC.cqc_location_import_date, Pub.period_label_short],
             values=value_columns,
             separator=SERVICE_TYPE_SEPARATOR,
         )
@@ -383,7 +383,7 @@ def _value_columns(sheet: cell_map.SheetMap) -> list[str]:
         dict.fromkeys(
             r.source_column
             for r in sheet.input_ranges
-            if r.source_column not in (None, cell_map.PERIOD_COL)
+            if r.source_column not in (None, cell_map.PERIOD_COL, Pub.period_label_long)
         )
     )
 
@@ -633,7 +633,7 @@ def fill_assessment_workbook_from_lf(
         sheet.name: SHEET_VALUE_BUILDERS[sheet.name](assessment_df, term_from_dates)
         for sheet in sheets
     }
-    period_labels = assessment_df.get_column(Pub.period_label).unique().to_list()
+    period_labels = assessment_df.get_column(Pub.period_label_short).unique().to_list()
     fill_assessment_workbook(period_labels, values, template_path, output_path)
 
 
