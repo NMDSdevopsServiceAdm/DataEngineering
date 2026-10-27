@@ -30,7 +30,8 @@ from utils.column_values.categorical_column_values import (
 from utils.file_utils import split_s3_uri
 
 
-PERIOD_LABEL_FORMAT = "%b %Y"
+PERIOD_LABEL_SHORT_FORMAT = "%b %Y"
+PERIOD_LABEL_LONG_FORMAT = "%B %Y"
 APRIL = 4
 SERVICE_TYPE_SEPARATOR = "|"
 CARE_HOMES_SERVICE_TYPE = "All CQC care homes"
@@ -159,7 +160,7 @@ def _period_dates(period_labels: list[str]) -> list[datetime.datetime]:
     if not period_labels:
         raise ValueError("period_labels is empty")
     return [
-        datetime.datetime.strptime(label, PERIOD_LABEL_FORMAT)
+        datetime.datetime.strptime(label, PERIOD_LABEL_SHORT_FORMAT)
         for label in period_labels
     ]
 
@@ -171,10 +172,10 @@ def title_text(period_labels: list[str]) -> str:
         period_labels (list[str]): period labels such as "Mar 2026".
 
     Returns:
-        str: e.g. "End of Mar 2026".
+        str: e.g. "End of March 2026".
     """
     latest = max(_period_dates(period_labels))
-    return f"End of {latest.strftime(PERIOD_LABEL_FORMAT)}"
+    return f"End of {latest.strftime(PERIOD_LABEL_LONG_FORMAT)}"
 
 
 def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
@@ -214,7 +215,9 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
 
     # Filled posts: chart heading
     text[cell_map.FILLED_POSTS.name][cell_map.FILLED_POSTS_CHART_HEADING_CELL] = (
-        CHART_HEADING_TEXT.format(date=short_term_march.strftime(PERIOD_LABEL_FORMAT))
+        CHART_HEADING_TEXT.format(
+            date=short_term_march.strftime(PERIOD_LABEL_LONG_FORMAT)
+        )
     )
 
     # Short and medium term comparisons: heading and criteria note
@@ -222,7 +225,7 @@ def sheet_text(period_labels: list[str]) -> dict[str, dict[str, str]]:
         (cell_map.COMP_SHORT_TERM, short_term_march),
         (cell_map.COMP_MEDIUM_TERM, medium_term_march),
     ):
-        date = march.strftime(PERIOD_LABEL_FORMAT)
+        date = march.strftime(PERIOD_LABEL_LONG_FORMAT)
         text[sheet.name][cell_map.HEADING_CELL] = HEADING_TEXT.format(date=date)
         text[sheet.name][cell_map.CRITERIA_NOTE_CELL] = CRITERIA_NOTE_TEXT.format(
             date=date

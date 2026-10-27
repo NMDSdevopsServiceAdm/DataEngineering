@@ -138,7 +138,7 @@ class TestFillAssessmentWorkbook:
             sheet.name: saved[sheet.name][cell_map.TITLE_CELL].value
             for sheet in cell_map.ASSESSMENT_SHEETS
         }
-        assert set(titles.values()) == {"End of Mar 2026"}
+        assert set(titles.values()) == {"End of March 2026"}
 
     def test_cells_outside_the_inputs_are_unchanged(self, filled_path):
         template = openpyxl.load_workbook(cell_map.TEMPLATE_PATH)
@@ -233,7 +233,7 @@ class TestFillAssessmentWorkbook:
 
 class TestTitleText:
     def test_uses_the_latest_period_by_date_not_by_text(self):
-        assert job.title_text(["Sep 2025", "Mar 2026"]) == "End of Mar 2026"
+        assert job.title_text(["Sep 2025", "Mar 2026"]) == "End of March 2026"
 
     def test_raises_when_there_are_no_period_labels(self):
         with pytest.raises(ValueError, match="period_labels is empty"):
@@ -248,25 +248,25 @@ class TestSheetText:
 
         assert text[cell_map.HEADING_CELL] == (
             "Comparison of Skills for Care's estimate of filled posts to Capacity"
-            " Tracker - Since Mar 2026"
+            " Tracker - Since March 2026"
         )
         assert text[cell_map.CRITERIA_NOTE_CELL] == (
-            "- Must have a Capacity Tracker figure in all months from end of Mar 2026"
-            " onwards."
+            "- Must have a Capacity Tracker figure in all months from end of"
+            " March 2026 onwards."
         )
 
     def test_medium_term_heading_and_note_use_the_march_before(self):
         text = job.sheet_text(self.PERIOD_LABELS)[cell_map.COMP_MEDIUM_TERM.name]
 
-        assert text[cell_map.HEADING_CELL].endswith("Since Mar 2025")
-        assert text[cell_map.CRITERIA_NOTE_CELL].endswith("end of Mar 2025 onwards.")
+        assert text[cell_map.HEADING_CELL].endswith("Since March 2025")
+        assert text[cell_map.CRITERIA_NOTE_CELL].endswith("end of March 2025 onwards.")
 
     def test_filled_posts_chart_heading_uses_the_latest_march(self):
         text = job.sheet_text(self.PERIOD_LABELS)[cell_map.FILLED_POSTS.name]
 
         assert text[cell_map.FILLED_POSTS_CHART_HEADING_CELL] == (
             "Comparison of percentage change in filled posts and CQC locations"
-            " since Mar 2026"
+            " since March 2026"
         )
 
     def test_only_short_and_medium_term_sheets_get_a_heading_and_note(self):
@@ -607,7 +607,7 @@ class TestFillAssessmentWorkbookFromLf:
         )
 
         sheet = openpyxl.load_workbook(output)[cell_map.FILLED_POSTS.name]
-        assert (sheet["C24"].value, sheet["B3"].value) == (1000, "End of Apr 2026")
+        assert (sheet["C24"].value, sheet["B3"].value) == (1000, "End of April 2026")
 
     def test_raises_for_a_sheet_without_a_values_builder(self, tmp_path):
         with pytest.raises(ValueError, match="No values builder"):

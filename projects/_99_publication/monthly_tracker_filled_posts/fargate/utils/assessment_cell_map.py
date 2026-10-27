@@ -364,7 +364,11 @@ def _comparison_sheet(
         InputRange(
             TITLE_CELL, Pub.period_label_long, note="'End of <month year>' title"
         ),
-        InputRange(HEADING_CELL, note="heading incl. 'Since <month year>'"),
+        InputRange(
+            HEADING_CELL,
+            Pub.period_label_long,
+            note="heading incl. 'Since <month year>'",
+        ),
         InputRange(f"E{first_row - 2}", note="care homes % change heading"),
         InputRange(f"N{first_row - 2}", note="non-res % change heading"),
         InputRange(
