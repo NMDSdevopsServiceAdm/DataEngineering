@@ -12,16 +12,21 @@ on:
         type: boolean
         default: true
 
-# One run at a time. The running job loops over every labelled PR, so a run
-# queued behind it (GitHub keeps only the newest) just finds nothing to do.
+# One run at a time per mode. The running job loops over every labelled PR, so
+# a run queued behind it (GitHub keeps only the newest) just finds nothing to
+# do. Dry runs have their own group so they never replace a pending real run.
 concurrency:
-  group: merge-when-ready
+  group: >-
+    merge-when-ready-${{ (github.event.label.name == 'merge-dry-run'
+    || (github.event_name == 'workflow_dispatch' && inputs.dry_run))
+    && 'dry-run' || 'live' }}
   cancel-in-progress: false
 
 permissions:
   contents: write
   pull-requests: write
   checks: read
+  statuses: read
 
 jobs:
   merge:
