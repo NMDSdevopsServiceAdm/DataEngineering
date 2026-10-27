@@ -12,7 +12,7 @@ Run log location: `s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_ar
 | `reconciled` | The public output's totals match the archived estimates | [Stub](#reconciling-a-run-reconciled) |
 | `locally_checked` | The refreshed Tableau file passed its local check | [Stub](#marking-a-run-locally-checked-locally_checked) |
 
-The `tag` column is not set by this script. Assessing a run is the review of its assessment data and has no flag of its own. Approving and selecting are two separate decisions and two separate updates (see `projects/ARCHIVING_AND_PUBLICATION.md`).
+The `tag` column is not set by this script: the CircleCI workflow in [Cutting the release tag](#cutting-the-release-tag-tag) sets it. Assessing a run is the review of its assessment data and has no flag of its own. Approving and selecting are two separate decisions and two separate updates (see `projects/ARCHIVING_AND_PUBLICATION.md`).
 
 ## Prerequisites
 Run these once per terminal session, from the DataEngineering repo root, in PowerShell:
@@ -129,6 +129,37 @@ Rules:
 - Use case: record that the analysts' check of the refreshed Tableau file passed.
 - Who and when: to be decided. Nothing reads this flag yet.
 - Steps: to be written. The script can already set the flag by following the prompts in "How the script works" with Flag `locally_checked`.
+
+## Cutting the release tag (`tag`)
+
+### Use case
+Once the selected run is reconciled, tag the exact code that produced its data as `vYYYY.MM.N` (MM is the month before the run's archive date, N the next free number for that month) and move that commit's CHANGELOG entries under the new version. CircleCI does this, not AWS and not this script, because only CircleCI holds GitHub credentials.
+
+The run must be `selected_for_publication` and `reconciled` and have no `tag`. The tag goes on the run's `commit_sha`, with the message "Codebase used for data as at <Month YYYY>". The workflow then writes the tag to the run log, and opens a PR from `rel-<tag>` that moves into the new version only the `[Unreleased]` entries present at that commit. Entries merged to `main` since stay under `[Unreleased]`.
+
+### Steps
+1. In CircleCI choose the DataEngineering project, **Trigger Pipeline**, branch `main`, and add the parameters `cut_release_tag` (boolean) `true` and `release_run_number` (integer) the selected run's number.
+2. Open the `plan-release-tag` job. It prints the run, its commit, the tag it would cut and the tag message. Check the commit and tag are what you expect.
+3. Approve the `approve-release-tag` job, then watch `cut-release-tag`.
+4. Merge the `rel-<tag>` PR once its checks pass.
+
+### Expected result
+- The tag exists on GitHub, pointing at the run's commit.
+- The run's `tag` in the run log shows it (`update_run_log.sh` lists it).
+- A PR `Release <tag>: CHANGELOG` is open.
+
+### One-off setup
+A CircleCI context named `github-release` with `GITHUB_TOKEN`: a GitHub token for this repository only that can write contents and pull requests. It is used by `cut-release-tag` only.
+
+### If something is wrong
+- **`Run number <n> is not reconciled` / `not selected_for_publication` / `already tagged`**: the plan job stops and nothing changes. Fix the run's state first.
+- **`Commit <sha> is not on main`**: the run was archived from a branch. Nothing is tagged.
+- **`The plan changed since it was approved`**: another tag or run log change landed between plan and approval. Start the workflow again.
+- **The job fails after the tag was pushed**: start the workflow again. It reuses the existing tag, skips any step already done (including an existing `rel-<tag>` branch) and carries on.
+- **A tag was cut for the wrong run**: delete the tag on GitHub, restore the run's run log partition (see "Undoing an update"), and start again.
+
+### Testing safely
+Trigger the pipeline from your branch with `cut_release_tag` `true`, `release_dry_run` `true` and `release_bucket` your branch dataset bucket (`sfc-<branch>-datasets`). That runs the same jobs with the non-prod context and prints every tag push, S3 write and PR instead of making it. The bucket's run log needs a run that is selected and reconciled, set with `update_run_log.sh`. A real run only starts from `main`.
 
 ## If something is wrong (any flag)
 - **Flag unsupported**: only the four flags in the table at the top are accepted.

@@ -20,6 +20,22 @@ parameters:
   terraform_version:
     type: string
     default: 1.13.5
+  # Release tag workflows (see scripts/update_run_log_runbook.md). Started through
+  # the pipeline API or "Trigger Pipeline", never by a push.
+  cut_release_tag:
+    type: boolean
+    default: false
+  release_run_number:
+    type: integer
+    default: 0
+  # Runs the non-prod dry-run workflow instead of the real one.
+  release_dry_run:
+    type: boolean
+    default: false
+  # Dry run only: the dataset bucket holding the run log to test against.
+  release_bucket:
+    type: string
+    default: sfc-main-datasets
 
 orbs:
   aws-cli: circleci/aws-cli@5.4.1
@@ -62,6 +78,21 @@ commands:
             cd terraform/pipeline
             terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
+
+  setup_release_tag:
+    description: "Check out the repo and install what scripts/cut_release_tag.sh needs"
+    steps:
+      - checkout
+      - aws-cli/setup:
+          role_arn: $AWS_ROLE_ARN
+          region: $AWS_REGION
+      - run:
+          name: Install dependencies
+          # Same uv as pyproject's build requirement; --locked so polars matches
+          # the version scripts/cut_release_tag.py is tested with.
+          command: |
+            pip install uv==0.12.0
+            uv sync --locked
 
 
 jobs:
@@ -690,6 +721,64 @@ jobs:
             fi
             echo "$CIRCLE_SHA1 is the tip of main."
 
+  # The release tag jobs call git, which the uv image lacks, so they use cimg.
+  # Pipeline parameters reach scripts/cut_release_tag.sh as environment
+  # variables, never spliced into a command.
+  plan-release-tag:
+    parameters:
+      bucket:
+        type: string
+      dry_run:
+        type: boolean
+    docker:
+      - image: cimg/python:3.11.12
+    resource_class: small
+    environment:
+      RELEASE_RUN_NUMBER: "<< pipeline.parameters.release_run_number >>"
+      RELEASE_BUCKET: "<< parameters.bucket >>"
+      RELEASE_DRY_RUN: "<< parameters.dry_run >>"
+      RELEASE_PLAN_FILE: /tmp/workspace/release/plan.json
+    steps:
+      - setup_release_tag
+      - run:
+          name: Work out the tag to cut
+          command: |
+            # UNSET old keys to force the AWS CLI to use OIDC
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
+            bash scripts/cut_release_tag.sh plan
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - release/plan.json
+
+  cut-release-tag:
+    parameters:
+      bucket:
+        type: string
+      dry_run:
+        type: boolean
+    docker:
+      - image: cimg/python:3.11.12
+    resource_class: small
+    environment:
+      RELEASE_RUN_NUMBER: "<< pipeline.parameters.release_run_number >>"
+      RELEASE_BUCKET: "<< parameters.bucket >>"
+      RELEASE_DRY_RUN: "<< parameters.dry_run >>"
+      RELEASE_PLAN_FILE: /tmp/workspace/release/plan.json
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_release_tag
+      - run:
+          name: Cut the tag, record it and open the CHANGELOG PR
+          # GITHUB_TOKEN comes from the github-release context.
+          command: |
+            # UNSET old keys to force the AWS CLI to use OIDC
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
+            bash scripts/cut_release_tag.sh cut
+
 
 job-groups:
   # Run as one unit via serial-group (see test-plan-approve-and-deploy-to-main).
@@ -715,7 +804,10 @@ job-groups:
 
 workflows:
   test-plan-approve-and-deploy-to-main:
-    unless: << pipeline.parameters.GHA_Action >>
+    unless:
+      or:
+        - << pipeline.parameters.GHA_Action >>
+        - << pipeline.parameters.cut_release_tag >>
     jobs:
       - task-containerisation:
           context: prod
@@ -753,7 +845,10 @@ workflows:
   # are the main-merge-queue ruleset's required checks; delete that ruleset to
   # disable the queue.
   merge-queue-checks:
-    unless: << pipeline.parameters.GHA_Action >>
+    unless:
+      or:
+        - << pipeline.parameters.GHA_Action >>
+        - << pipeline.parameters.cut_release_tag >>
     jobs:
       - lint-python:
           filters:
@@ -776,7 +871,10 @@ workflows:
   # Filtered jobs also ignore gh-readonly-queue/* (merge queue branches, tested
   # by merge-queue-checks) so queued PRs don't deploy a dev environment.
   test-plan-and-deploy-to-dev:
-    unless: << pipeline.parameters.GHA_Action >>
+    unless:
+      or:
+        - << pipeline.parameters.GHA_Action >>
+        - << pipeline.parameters.cut_release_tag >>
     jobs:
       - decide-bake-and-seed:
           context: non-prod
@@ -870,6 +968,56 @@ workflows:
               ignore:
                 - main
                 - /^gh-readonly-queue\/.*/
+
+  # Cuts the release tag for a selected, reconciled run: plan, wait for approval,
+  # then tag, record the tag in the run log and open the CHANGELOG PR
+  # (scripts/cut_release_tag.sh). Started by the pipeline API with
+  # cut_release_tag=true and release_run_number, on main.
+  release-tag:
+    when:
+      and:
+        - << pipeline.parameters.cut_release_tag >>
+        - not: << pipeline.parameters.release_dry_run >>
+    jobs:
+      - plan-release-tag:
+          context: prod
+          bucket: sfc-main-datasets
+          dry_run: false
+      - approve-release-tag:
+          type: approval
+          requires:
+            - plan-release-tag
+      - cut-release-tag:
+          context:
+            - prod
+            - github-release
+          bucket: sfc-main-datasets
+          dry_run: false
+          requires:
+            - approve-release-tag
+
+  # The same jobs against a non-prod dataset bucket, printing the tag, S3 and
+  # GitHub changes instead of making them. For testing from a branch.
+  release-tag-dry-run:
+    when:
+      and:
+        - << pipeline.parameters.cut_release_tag >>
+        - << pipeline.parameters.release_dry_run >>
+    jobs:
+      - plan-release-tag:
+          context: non-prod
+          bucket: << pipeline.parameters.release_bucket >>
+          dry_run: true
+      - approve-release-tag:
+          type: approval
+          requires:
+            - plan-release-tag
+      - cut-release-tag:
+          context: non-prod
+          bucket: << pipeline.parameters.release_bucket >>
+          dry_run: true
+          requires:
+            - approve-release-tag
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>

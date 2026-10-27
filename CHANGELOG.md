@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 - Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
+- Added a CircleCI workflow that, once approved, tags the selected and reconciled run's commit `vYYYY.MM.N`, records the tag in the archive run log, and opens a PR moving that commit's CHANGELOG entries under the new version.
 
 ### Changed
 - Changed the DPR dataset version to be set once in a Terraform variable instead of hardcoded in the DPR step functions.
