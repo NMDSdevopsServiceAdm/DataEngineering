@@ -50,6 +50,8 @@ COMPARISON_BLOCKS = (
     ("non_res", NON_RESIDENTIAL_SERVICE_TYPE),
 )
 MARCH = 3
+# Period months (March, June, September, December) of the long term sheets.
+QUARTERLY_PERIOD_MONTHS = (3, 6, 9, 12)
 ANNUAL_LABEL = "Annual"
 MONTHLY_LABEL = "Monthly"
 HEADING_TEXT = (
@@ -582,6 +584,7 @@ def comparison_sheet_values(
     assessment_df: pl.DataFrame,
     sheet: cell_map.SheetMap,
     from_date: datetime.date,
+    period_months: tuple[int, ...] | None = None,
 ) -> dict[str, object]:
     """Cell values for a comparison sheet, from the term's start date onwards.
 
@@ -593,6 +596,8 @@ def comparison_sheet_values(
         assessment_df (pl.DataFrame): output of `prepare_assessment_df`.
         sheet (cell_map.SheetMap): the comparison sheet.
         from_date (datetime.date): first import date of the term.
+        period_months (tuple[int, ...] | None): month numbers of the periods to keep,
+            or None to keep every month.
 
     Returns:
         dict[str, object]: value by A1 cell.
@@ -600,9 +605,14 @@ def comparison_sheet_values(
     Raises:
         ValueError: if the sheet has no input ranges for a block.
     """
-    period_df = assessment_df.filter(
-        pl.col(IndCQC.cqc_location_import_date) >= from_date
-    )
+    import_date = pl.col(IndCQC.cqc_location_import_date)
+    period_df = assessment_df.filter(import_date >= from_date)
+    if period_months is not None:
+        period_df = period_df.filter(
+            publication_utils.import_date_to_period_month(import_date)
+            .dt.month()
+            .is_in(period_months)
+        )
     latest_row = period_df.row(-1, named=True)
 
     cells = {}
@@ -639,10 +649,10 @@ SHEET_VALUE_BUILDERS: dict[str, Callable[[pl.DataFrame, TermFromDates], dict]] =
         df, cell_map.COMP_MEDIUM_TERM, dates.medium
     ),
     cell_map.COMP_LONG_TERM.name: lambda df, dates: comparison_sheet_values(
-        df, cell_map.COMP_LONG_TERM, dates.long
+        df, cell_map.COMP_LONG_TERM, dates.long, QUARTERLY_PERIOD_MONTHS
     ),
     cell_map.NO_FILTERS.name: lambda df, dates: comparison_sheet_values(
-        df, cell_map.NO_FILTERS, dates.long
+        df, cell_map.NO_FILTERS, dates.long, QUARTERLY_PERIOD_MONTHS
     ),
 }
 

@@ -642,12 +642,18 @@ class TestComparisonSheetValues:
         assert (cells["G29"], cells["P29"]) == (301, 304)
         assert "D25" not in cells
 
-    def test_both_long_term_sheets_keep_every_month_from_the_term_start(self):
+    def test_both_long_term_sheets_keep_only_quarterly_periods_from_the_term_start(
+        self,
+    ):
+        # Period months March, April, June, July, September, October, December.
         import_dates = [
             datetime.date(2024, 4, 1),
             datetime.date(2024, 5, 1),
-            datetime.date(2025, 4, 1),
-            datetime.date(2026, 4, 1),
+            datetime.date(2024, 7, 1),
+            datetime.date(2024, 8, 1),
+            datetime.date(2024, 10, 1),
+            datetime.date(2024, 11, 1),
+            datetime.date(2025, 1, 1),
         ]
         df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
 
@@ -656,11 +662,22 @@ class TestComparisonSheetValues:
 
             assert [cells[f"B{row}"] for row in (29, 30, 31, 32)] == [
                 datetime.date(2024, 3, 1),
-                datetime.date(2024, 4, 1),
-                datetime.date(2025, 3, 1),
-                datetime.date(2026, 3, 1),
+                datetime.date(2024, 6, 1),
+                datetime.date(2024, 9, 1),
+                datetime.date(2024, 12, 1),
             ]
             assert "B33" not in cells
+
+    def test_long_term_periods_before_the_term_start_are_not_kept(self):
+        import_dates = [datetime.date(2024, 1, 1), datetime.date(2024, 4, 1)]
+        df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
+
+        cells = job.SHEET_VALUE_BUILDERS[cell_map.COMP_LONG_TERM.name](
+            df, TERM_FROM_DATES
+        )
+
+        assert cells["B29"] == datetime.date(2024, 3, 1)
+        assert "B30" not in cells
 
     def test_medium_term_keeps_every_month_from_its_start(self):
         import_dates = [
