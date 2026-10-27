@@ -17,6 +17,7 @@ import os
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 from enum import Enum
 from typing import Iterable, Optional
@@ -28,6 +29,7 @@ PIPELINES_TO_SCAN = 10
 FAILED_STATUSES = {"failed", "error", "canceled", "unauthorized"}
 POLL_SECONDS = 60
 MAX_BRANCH_UPDATES = 5
+MAX_DETAIL_CHARS = 300
 # This script's own workflow job, ignored so it doesn't wait on itself.
 OWN_CHECK_NAME = "merge-when-ready"
 FAILED_BUCKETS = {"fail", "cancel"}
@@ -154,17 +156,83 @@ def _behind_by(repo: str, head_sha: str) -> int:
     return int(out.stdout)
 
 
+class NotMergeable(Exception):
+    """A PR can't be merged; the message says why and is posted on the PR."""
+
+
+class MainDeployFailed(Exception):
+    """The latest main deploy failed, so no PR can merge until it is fixed."""
+
+
 def _reject(repo: str, label: str, pr_number: int, reason: str) -> None:
     _gh("pr", "edit", str(pr_number), "--repo", repo, "--remove-label", label)
     _gh("pr", "comment", str(pr_number), "--repo", repo, "--body", reason)
     print(f"PR {pr_number} left the queue: {reason}")
 
 
+def _describe(error: Exception) -> str:
+    detail = getattr(error, "stderr", None) or str(error)
+    return detail.strip()[:MAX_DETAIL_CHARS]
+
+
+def _merge_pr(
+    repo: str, label: str, number: int, project_slug: str, dry_run: bool
+) -> None:
+    """Bring one PR up to date, wait for its checks and the main deploy, merge it.
+
+    Args:
+        repo (str): `owner/name` of the GitHub repository.
+        label (str): Label marking PRs ready to merge, removed once done.
+        number (int): PR number.
+        project_slug (str): CircleCI project slug, e.g. `gh/owner/name`.
+        dry_run (bool): Run every check but do not merge.
+
+    Raises:
+        NotMergeable: If the PR's checks fail or main keeps moving past it.
+        MainDeployFailed: If the latest main deploy failed.
+    """
+    for _ in range(MAX_BRANCH_UPDATES):
+        head_sha = json.loads(
+            _gh(
+                "pr", "view", str(number), "--repo", repo, "--json", "headRefOid"
+            ).stdout
+        )["headRefOid"]
+        if _behind_by(repo, head_sha) > 0:
+            print(f"PR {number} is behind main; updating its branch.")
+            _gh("api", "-X", "PUT", f"repos/{repo}/pulls/{number}/update-branch")
+            time.sleep(POLL_SECONDS)  # let CircleCI pick up the new head
+            continue
+        while (checks := checks_state(_pr_checks(repo, number))) is ChecksState.PENDING:
+            print("PR checks still running; waiting.")
+            time.sleep(POLL_SECONDS)
+        if checks is ChecksState.FAILED:
+            raise NotMergeable("Checks failed. Fix them and re-add the label.")
+        if _behind_by(repo, head_sha) == 0:
+            break
+    else:
+        raise NotMergeable("Main kept moving past this PR. Re-add the label to retry.")
+
+    while (
+        state := main_deploy_state(latest_main_deploy_statuses(project_slug))
+    ) is MainDeployState.PENDING:
+        print("Main deploy still running or awaiting approval; waiting.")
+        time.sleep(POLL_SECONDS)
+    if state is MainDeployState.FAILED:
+        raise MainDeployFailed
+
+    if not dry_run:
+        _gh("pr", "merge", str(number), "--repo", repo, "--merge")
+    _gh("pr", "edit", str(number), "--repo", repo, "--remove-label", label)
+    print(f"{'Dry run: would merge' if dry_run else 'Merged'} PR {number}.")
+
+
 def merge_next(repo: str, label: str, project_slug: str, dry_run: bool) -> bool:
     """Merge the oldest labelled PR once it is current, green and main is idle.
 
-    Exits without merging if the latest main deploy failed, so nothing more
-    merges until it is fixed.
+    A PR that can't be merged gets a comment saying why and loses its label, so
+    one stuck PR never blocks the ones behind it. If the latest main deploy
+    failed, the PR is commented on and the run exits, since nothing can merge
+    until it is fixed.
 
     Args:
         repo (str): `owner/name` of the GitHub repository.
@@ -181,45 +249,17 @@ def merge_next(repo: str, label: str, project_slug: str, dry_run: bool) -> bool:
         return False
     number = pr["number"]
 
-    for _ in range(MAX_BRANCH_UPDATES):
-        head_sha = json.loads(
-            _gh(
-                "pr", "view", str(number), "--repo", repo, "--json", "headRefOid"
-            ).stdout
-        )["headRefOid"]
-        if _behind_by(repo, head_sha) > 0:
-            print(f"PR {number} is behind main; updating its branch.")
-            _gh("api", "-X", "PUT", f"repos/{repo}/pulls/{number}/update-branch")
-            time.sleep(POLL_SECONDS)  # let CircleCI pick up the new head
-            continue
-        while (checks := checks_state(_pr_checks(repo, number))) is ChecksState.PENDING:
-            print("PR checks still running; waiting.")
-            time.sleep(POLL_SECONDS)
-        if checks is ChecksState.FAILED:
-            reason = "Checks failed, so it was removed from the merge queue."
-            _reject(repo, label, number, reason)
-            return True
-        if _behind_by(repo, head_sha) == 0:
-            break
-    else:
-        _reject(repo, label, number, "Main kept moving; re-add the label to retry.")
-        return True
-
-    while (
-        state := main_deploy_state(latest_main_deploy_statuses(project_slug))
-    ) is MainDeployState.PENDING:
-        print("Main deploy still running or awaiting approval; waiting.")  # fmt: skip
-        time.sleep(POLL_SECONDS)
-    if state is MainDeployState.FAILED:
+    try:
+        _merge_pr(repo, label, number, project_slug, dry_run)
+    except NotMergeable as error:
+        _reject(repo, label, number, f"Not merged: {error}")
+    except MainDeployFailed:
+        reason = "Not merged: the latest main deploy failed. Re-add the label once it is fixed."
+        _reject(repo, label, number, reason)
         sys.exit("Latest main deploy failed: fix it before anything else merges.")
-
-    if dry_run:
-        _gh("pr", "edit", str(number), "--repo", repo, "--remove-label", label)
-        print(f"Dry run: PR {number} would be merged now.")
-        return True
-    _gh("pr", "merge", str(number), "--repo", repo, "--merge")
-    _gh("pr", "edit", str(number), "--repo", repo, "--remove-label", label)
-    print(f"Merged PR {number}.")
+    except (subprocess.CalledProcessError, urllib.error.URLError) as error:
+        reason = f"Not merged: the merge bot hit an error ({_describe(error)}). Re-add the label to retry."
+        _reject(repo, label, number, reason)
     return True
 
 

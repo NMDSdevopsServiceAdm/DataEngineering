@@ -76,8 +76,8 @@ terraform workspace delete <workspace_name>
 ## Merging to main
 Merge by adding the `ready-to-merge` label, not the Merge button. The `merge-when-ready` GitHub Action then merges labelled PRs one at a time, oldest PR number first: it updates the branch from `main`, waits for the PR's checks, then waits for the latest `main` prod deploy to finish (including its manual `plan-approval`) before merging. It removes the label when done.
 
-- A PR whose checks fail, or that `main` keeps moving ahead of, is commented on and loses its label. Fix it and re-add the label.
-- If the latest `main` deploy failed, nothing merges until it is fixed.
+- A PR that can't be merged (failed checks, merge conflict, `main` moving ahead too fast, or a bot error) gets a comment with the reason and loses its label. The next labelled PR carries on. Fix it and re-add the label.
+- If the latest `main` deploy failed, the PR gets a comment and loses its label, and the run fails so nothing merges until it is fixed.
 - Add `merge-dry-run` instead to run every check without merging. It removes the label afterwards.
 - Needs the `ready-to-merge` and `merge-dry-run` labels to exist, and the `CIRCLECI_TOKEN` secret. A run is limited to 6 hours: if it times out waiting for an approval, re-add the label.
 - It doesn't check review approval, and the Merge button still works, so the label is a team convention.

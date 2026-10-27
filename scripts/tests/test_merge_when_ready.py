@@ -1,4 +1,6 @@
+import subprocess
 from dataclasses import dataclass
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -110,3 +112,61 @@ class TestOldestLabelledPr:
 
     def test_returns_none_when_no_prs(self):
         assert job.oldest_labelled_pr([]) is None
+
+
+PATCH_PATH = "scripts.merge_when_ready"
+REPO = "owner/name"
+LABEL = "ready-to-merge"
+
+
+@patch(f"{PATCH_PATH}._reject")
+@patch(f"{PATCH_PATH}._merge_pr")
+@patch(f"{PATCH_PATH}._labelled_prs")
+class TestMergeNext:
+    def test_returns_false_when_no_labelled_prs(
+        self, labelled_prs_mock: Mock, merge_pr_mock: Mock, reject_mock: Mock
+    ):
+        labelled_prs_mock.return_value = []
+
+        assert job.merge_next(REPO, LABEL, "gh/owner/name", False) is False
+        merge_pr_mock.assert_not_called()
+
+    def test_merges_oldest_labelled_pr(
+        self, labelled_prs_mock: Mock, merge_pr_mock: Mock, reject_mock: Mock
+    ):
+        labelled_prs_mock.return_value = [{"number": 9}, {"number": 4}]
+
+        assert job.merge_next(REPO, LABEL, "gh/owner/name", False) is True
+        merge_pr_mock.assert_called_once_with(REPO, LABEL, 4, "gh/owner/name", False)
+        reject_mock.assert_not_called()
+
+    def test_rejects_pr_with_reason_and_carries_on_when_not_mergeable(
+        self, labelled_prs_mock: Mock, merge_pr_mock: Mock, reject_mock: Mock
+    ):
+        labelled_prs_mock.return_value = [{"number": 4}]
+        merge_pr_mock.side_effect = job.NotMergeable("Checks failed.")
+
+        assert job.merge_next(REPO, LABEL, "gh/owner/name", False) is True
+        assert "Checks failed." in reject_mock.call_args.args[3]
+
+    def test_rejects_pr_with_error_detail_when_a_command_fails(
+        self, labelled_prs_mock: Mock, merge_pr_mock: Mock, reject_mock: Mock
+    ):
+        labelled_prs_mock.return_value = [{"number": 4}]
+        merge_pr_mock.side_effect = subprocess.CalledProcessError(
+            1, "gh", stderr="merge conflict\n"
+        )
+
+        assert job.merge_next(REPO, LABEL, "gh/owner/name", False) is True
+        assert "merge conflict" in reject_mock.call_args.args[3]
+
+    def test_comments_and_exits_when_main_deploy_failed(
+        self, labelled_prs_mock: Mock, merge_pr_mock: Mock, reject_mock: Mock
+    ):
+        labelled_prs_mock.return_value = [{"number": 4}]
+        merge_pr_mock.side_effect = job.MainDeployFailed()
+
+        with pytest.raises(SystemExit):
+            job.merge_next(REPO, LABEL, "gh/owner/name", False)
+
+        assert "main deploy failed" in reject_mock.call_args.args[3]
