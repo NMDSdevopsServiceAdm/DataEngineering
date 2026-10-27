@@ -33,9 +33,9 @@ class TestMain:
             AWPClean.ascwds_workplace_import_date: pl.Date,
             IndCQC.published_job_role_label: pl.String,
             EmpStatus.employee_count: pl.Int64,
-            SLVCols.starters: pl.Int64,
-            SLVCols.leavers: pl.Int64,
-            SLVCols.vacancies: pl.Int64,
+            SLVCols.ascwds_starters: pl.Int64,
+            SLVCols.ascwds_leavers: pl.Int64,
+            SLVCols.ascwds_vacancies: pl.Int64,
         }
         source_rows = [
             ("1-001", date(2026, 1, 1), label, 1, 1, 1, 1)

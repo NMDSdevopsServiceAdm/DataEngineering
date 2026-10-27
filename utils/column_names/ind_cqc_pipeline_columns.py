@@ -501,93 +501,96 @@ class ModelMetadataKeys:
 
 @dataclass
 class EmploymentStatusColumns:
-    employment_status_count: str = "emplstat_count"
-    permanent_count: str = "emplstat_permanent_count"
-    temporary_count: str = "emplstat_temporary_count"
-    bank_or_pool_count: str = "emplstat_bank_or_pool_count"
-    agency_count: str = "emplstat_agency_count"
-    other_count: str = "emplstat_other_count"
+    total_count: str = "ascwds_emp_stat_total_count"
+    employee_count: str = "ascwds_emp_stat_employee_count"
+    permanent_count: str = "ascwds_emp_stat_permanent_count"
+    temporary_count: str = "ascwds_emp_stat_temporary_count"
+    bank_or_pool_count: str = "ascwds_emp_stat_bank_or_pool_count"
+    agency_count: str = "ascwds_emp_stat_agency_count"
+    other_count: str = "ascwds_emp_stat_other_count"
+
     permanent_count_dedup: str = permanent_count + "_dedup"
     temporary_count_dedup: str = temporary_count + "_dedup"
     bank_or_pool_count_dedup: str = bank_or_pool_count + "_dedup"
     agency_count_dedup: str = agency_count + "_dedup"
     other_count_dedup: str = other_count + "_dedup"
-    permanent_percentage: str = "emplstat_permanent_percentage"
-    temporary_percentage: str = "emplstat_temporary_percentage"
-    bank_or_pool_percentage: str = "emplstat_bank_or_pool_percentage"
-    agency_percentage: str = "emplstat_agency_percentage"
-    other_percentage: str = "emplstat_other_percentage"
-    permanent_percentage_imputed_for_trendline: str = (
-        permanent_percentage + "_imputed_for_trendline"
-    )
-    temporary_percentage_imputed_for_trendline: str = (
-        temporary_percentage + "_imputed_for_trendline"
-    )
-    bank_or_pool_percentage_imputed_for_trendline: str = (
-        bank_or_pool_percentage + "_imputed_for_trendline"
-    )
-    agency_percentage_imputed_for_trendline: str = (
-        agency_percentage + "_imputed_for_trendline"
-    )
-    other_percentage_imputed_for_trendline: str = (
-        other_percentage + "_imputed_for_trendline"
-    )
-    permanent_percentage_rolling_avg: str = permanent_percentage + "_rolling_avg"
-    temporary_percentage_rolling_avg: str = temporary_percentage + "_rolling_avg"
-    bank_or_pool_percentage_rolling_avg: str = bank_or_pool_percentage + "_rolling_avg"
-    agency_percentage_rolling_avg: str = agency_percentage + "_rolling_avg"
-    other_percentage_rolling_avg: str = other_percentage + "_rolling_avg"
-    permanent_percentage_full_imputed: str = permanent_percentage + "_full_imputed"
-    temporary_percentage_full_imputed: str = temporary_percentage + "_full_imputed"
-    bank_or_pool_percentage_full_imputed: str = (
-        bank_or_pool_percentage + "_full_imputed"
-    )
-    agency_percentage_full_imputed: str = agency_percentage + "_full_imputed"
-    other_percentage_full_imputed: str = other_percentage + "_full_imputed"
-    estimated_permanent_percentage: str = "estimated_" + permanent_percentage
-    estimated_temporary_percentage: str = "estimated_" + temporary_percentage
-    estimated_bank_or_pool_percentage: str = "estimated_" + bank_or_pool_percentage
-    estimated_agency_percentage: str = "estimated_" + agency_percentage
-    estimated_other_percentage: str = "estimated_" + other_percentage
-    estimated_percentage_source: str = "estimated_emplstat_percentage_source"
-    employee_count: str = "emplstat_employee_count"
-    estimated_emp_stat_permanent: str = "estimated_emp_stat_permanent"
-    estimated_emp_stat_temporary: str = "estimated_emp_stat_temporary"
-    estimated_emp_stat_bank_or_pool: str = "estimated_emp_stat_bank_or_pool"
-    estimated_emp_stat_agency: str = "estimated_emp_stat_agency"
-    estimated_emp_stat_other: str = "estimated_emp_stat_other"
+
+    permanent_count_clean: str = permanent_count + "_clean"
+    temporary_count_clean: str = temporary_count + "_clean"
+    bank_or_pool_count_clean: str = bank_or_pool_count + "_clean"
+    agency_count_clean: str = agency_count + "_clean"
+    other_count_clean: str = other_count + "_clean"
+
+    filtering_rule: str = "ascwds_emp_stat_filtering_rule"
+
+    permanent_pct: str = "ascwds_emp_stat_permanent_pct"
+    temporary_pct: str = "ascwds_emp_stat_temporary_pct"
+    bank_or_pool_pct: str = "ascwds_emp_stat_bank_or_pool_pct"
+    agency_pct: str = "ascwds_emp_stat_agency_pct"
+    other_pct: str = "ascwds_emp_stat_other_pct"
+
+    permanent_pct_imputed_trendline: str = permanent_pct + "_imputed_trendline"
+    temporary_pct_imputed_trendline: str = temporary_pct + "_imputed_trendline"
+    bank_or_pool_pct_imputed_trendline: str = bank_or_pool_pct + "_imputed_trendline"
+    agency_pct_imputed_trendline: str = agency_pct + "_imputed_trendline"
+    other_pct_imputed_trendline: str = other_pct + "_imputed_trendline"
+
+    permanent_pct_rolling_avg: str = permanent_pct + "_rolling_avg"
+    temporary_pct_rolling_avg: str = temporary_pct + "_rolling_avg"
+    bank_or_pool_pct_rolling_avg: str = bank_or_pool_pct + "_rolling_avg"
+    agency_pct_rolling_avg: str = agency_pct + "_rolling_avg"
+    other_pct_rolling_avg: str = other_pct + "_rolling_avg"
+
+    permanent_pct_imputed: str = permanent_pct + "_imputed"
+    temporary_pct_imputed: str = temporary_pct + "_imputed"
+    bank_or_pool_pct_imputed: str = bank_or_pool_pct + "_imputed"
+    agency_pct_imputed: str = agency_pct + "_imputed"
+    other_pct_imputed: str = other_pct + "_imputed"
+
+    estimated_permanent_pct: str = "estimated_emp_stat_permanent_pct"
+    estimated_temporary_pct: str = "estimated_emp_stat_temporary_pct"
+    estimated_bank_or_pool_pct: str = "estimated_emp_stat_bank_or_pool_pct"
+    estimated_agency_pct: str = "estimated_emp_stat_agency_pct"
+    estimated_other_pct: str = "estimated_emp_stat_other_pct"
+    estimated_pct_source: str = "estimated_emp_stat_pct_source"
+
+    estimated_permanent_count: str = "estimated_emp_stat_permanent_count"
+    estimated_temporary_count: str = "estimated_emp_stat_temporary_count"
+    estimated_bank_or_pool_count: str = "estimated_emp_stat_bank_or_pool_count"
+    estimated_agency_count: str = "estimated_emp_stat_agency_count"
+    estimated_other_count: str = "estimated_emp_stat_other_count"
     estimated_employees: str = "estimated_employees"
-    permanent_count_clean: str = "emplstat_permanent_count_clean"
-    temporary_count_clean: str = "emplstat_temporary_count_clean"
-    bank_or_pool_count_clean: str = "emplstat_bank_or_pool_count_clean"
-    agency_count_clean: str = "emplstat_agency_count_clean"
-    other_count_clean: str = "emplstat_other_count_clean"
-    filtering_rule: str = "employment_status_filtering_rule"
 
 
 @dataclass
 class StartersLeaversVacanciesColumns:
-    starters: str = "starters"
-    leavers: str = "leavers"
-    vacancies: str = "vacancies"
-    turnover_rate: str = "turnover_rate"
-    starter_rate: str = "starter_rate"
-    vacancy_rate: str = "vacancy_rate"
-    estimated_starters: str = "estimated_" + starters
-    estimated_leavers: str = "estimated_" + leavers
-    estimated_vacancies: str = "estimated_" + vacancies
+    ascwds_starters: str = "ascwds_starters"
+    ascwds_leavers: str = "ascwds_leavers"
+    ascwds_vacancies: str = "ascwds_vacancies"
+
+    ascwds_starters_dedup: str = ascwds_starters + "_dedup"
+    ascwds_leavers_dedup: str = ascwds_leavers + "_dedup"
+    ascwds_vacancies_dedup: str = ascwds_vacancies + "_dedup"
+
+    ascwds_starters_clean: str = ascwds_starters + "_clean"
+    ascwds_leavers_clean: str = ascwds_leavers + "_clean"
+    ascwds_vacancies_clean: str = ascwds_vacancies + "_clean"
+
+    ascwds_starters_filtering_rule: str = ascwds_starters + "_filtering_rule"
+    ascwds_leavers_filtering_rule: str = ascwds_leavers + "_filtering_rule"
+    ascwds_vacancies_filtering_rule: str = ascwds_vacancies + "_filtering_rule"
+
+    ascwds_turnover_rate: str = "ascwds_turnover_rate"
+    ascwds_starter_rate: str = "ascwds_starter_rate"
+    ascwds_vacancy_rate: str = "ascwds_vacancy_rate"
+
+    estimated_starters: str = "estimated_starters"
+    estimated_leavers: str = "estimated_leavers"
+    estimated_vacancies: str = "estimated_vacancies"
+
     estimated_starters_source: str = estimated_starters + "_source"
     estimated_leavers_source: str = estimated_leavers + "_source"
     estimated_vacancies_source: str = estimated_vacancies + "_source"
-    starters_cleaned: str = starters + "_cleaned"
-    leavers_cleaned: str = leavers + "_cleaned"
-    vacancies_cleaned: str = vacancies + "_cleaned"
-    starters_filtering_rule: str = starters + "_filtering_rule"
-    leavers_filtering_rule: str = leavers + "_filtering_rule"
-    vacancies_filtering_rule: str = vacancies + "_filtering_rule"
-    starters_dedup: str = starters + "_dedup"
-    leavers_dedup: str = leavers + "_dedup"
-    vacancies_dedup: str = vacancies + "_dedup"
 
 
 @dataclass

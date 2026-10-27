@@ -36,7 +36,7 @@ RAW_RESHAPED_GROUP_COLUMNS = [
 ] + [AWKClean.main_job_role_clean_labelled]
 
 EMPLOYMENT_STATUS_LABEL_TO_COLUMN = {
-    label: f"emplstat_{label}_count"
+    label: getattr(EmpStatus, f"{label}_count")
     for label in CatVals.employment_status_labels_column_values.categorical_values
 }
 
@@ -80,11 +80,9 @@ def aggregate_employment_status_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Returns:
         pl.LazyFrame: one row per group in GROUP_COLUMNS, with a new
-            emplstat_count column counting workers in that group.
+            ascwds_emp_stat_total_count column counting workers in that group.
     """
-    return worker_lf.group_by(GROUP_COLUMNS).agg(
-        pl.len().alias(EmpStatus.employment_status_count)
-    )
+    return worker_lf.group_by(GROUP_COLUMNS).agg(pl.len().alias(EmpStatus.total_count))
 
 
 def reshape_employment_status_data(
@@ -96,11 +94,11 @@ def reshape_employment_status_data(
     Args:
         employment_status_summary_lf (pl.LazyFrame): output of
             aggregate_employment_status_data, one row per group in
-            GROUP_COLUMNS with an emplstat_count column.
+            GROUP_COLUMNS with an ascwds_emp_stat_total_count column.
 
     Returns:
         pl.LazyFrame: one row per group in RESHAPED_GROUP_COLUMNS, with an
-            emplstat_<label>_count column per employment status label in
+            ascwds_emp_stat_<label>_count column per employment status label in
             EMPLOYMENT_STATUS_LABEL_TO_COLUMN. Groups with no workers of a
             given status are 0 in that column. location_id and
             establishment_id are cast to the same Categorical types
@@ -113,7 +111,7 @@ def reshape_employment_status_data(
             on=AWKClean.employment_status_clean_labelled,
             on_columns=list(EMPLOYMENT_STATUS_LABEL_TO_COLUMN.keys()),
             index=RESHAPED_GROUP_COLUMNS,
-            values=EmpStatus.employment_status_count,
+            values=EmpStatus.total_count,
             aggregate_function="sum",
         )
         .rename(EMPLOYMENT_STATUS_LABEL_TO_COLUMN)

@@ -19,11 +19,11 @@ class TestMain:
     def setup_method(self):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
-            EmpStatus.permanent_percentage: pl.Float32,
-            EmpStatus.temporary_percentage: pl.Float32,
-            EmpStatus.bank_or_pool_percentage: pl.Float32,
-            EmpStatus.agency_percentage: pl.Float32,
-            EmpStatus.other_percentage: pl.Float32,
+            EmpStatus.permanent_pct: pl.Float32,
+            EmpStatus.temporary_pct: pl.Float32,
+            EmpStatus.bank_or_pool_pct: pl.Float32,
+            EmpStatus.agency_pct: pl.Float32,
+            EmpStatus.other_pct: pl.Float32,
             EmpStatus.permanent_count_clean: pl.Int64,
             EmpStatus.temporary_count_clean: pl.Int64,
             EmpStatus.bank_or_pool_count_clean: pl.Int64,

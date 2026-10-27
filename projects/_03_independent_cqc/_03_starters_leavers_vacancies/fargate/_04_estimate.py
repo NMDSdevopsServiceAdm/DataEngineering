@@ -21,17 +21,17 @@ def main(
 
     lf = lf.with_columns(
         *utils.coalesce_with_source_labels(
-            cols=[SLVCols.starters_cleaned],
+            cols=[SLVCols.ascwds_starters_clean],
             name=SLVCols.estimated_starters,
             source_dtype=CatColType.StartersEstimateSourceEnumType,
         ),
         *utils.coalesce_with_source_labels(
-            cols=[SLVCols.leavers_cleaned],
+            cols=[SLVCols.ascwds_leavers_clean],
             name=SLVCols.estimated_leavers,
             source_dtype=CatColType.LeaversEstimateSourceEnumType,
         ),
         *utils.coalesce_with_source_labels(
-            cols=[SLVCols.vacancies_cleaned],
+            cols=[SLVCols.ascwds_vacancies_clean],
             name=SLVCols.estimated_vacancies,
             source_dtype=CatColType.VacanciesEstimateSourceEnumType,
         ),
