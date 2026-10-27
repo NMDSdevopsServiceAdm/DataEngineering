@@ -682,6 +682,12 @@ class TestComparisonSheetValues:
         ]
         assert "B33" not in cells
 
+    def test_raises_when_the_sheet_has_no_input_ranges_for_a_block(self, df):
+        sheet = cell_map.SheetMap("Empty sheet", (), 0)
+
+        with pytest.raises(ValueError, match="No 'care_homes' input ranges"):
+            job.comparison_sheet_values(df, sheet, APRIL_2026)
+
     def test_raises_when_periods_exceed_the_sheet_rows(self):
         april_dates = [datetime.date(2000 + year, 4, 1) for year in range(26)]
         df = job.prepare_assessment_df(_assessment_lf(april_dates), VALUE_COLUMNS)

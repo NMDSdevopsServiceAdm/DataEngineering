@@ -43,11 +43,11 @@ SERVICE_TYPE_ORDER = [
     "Care home without nursing",
     NON_RESIDENTIAL_SERVICE_TYPE,
 ]
-# Comparison sheet blocks: note prefix of the block's input ranges and the
+# Comparison sheet blocks: key prefix of the block's input ranges and the
 # service type rows that feed it.
 COMPARISON_BLOCKS = (
-    ("care homes", CARE_HOMES_SERVICE_TYPE),
-    ("non-res", NON_RESIDENTIAL_SERVICE_TYPE),
+    ("care_homes", CARE_HOMES_SERVICE_TYPE),
+    ("non_res", NON_RESIDENTIAL_SERVICE_TYPE),
 )
 MARCH = 3
 ANNUAL_LABEL = "Annual"
@@ -430,9 +430,23 @@ def _value_columns(sheet: cell_map.SheetMap) -> list[str]:
     )
 
 
-def _input_range(sheet: cell_map.SheetMap, note: str) -> cell_map.InputRange:
-    """The sheet's input range with this note."""
-    return next(r for r in sheet.input_ranges if r.note == note)
+def _input_range(sheet: cell_map.SheetMap, key: str) -> cell_map.InputRange:
+    """The sheet's input range with this key.
+
+    Args:
+        sheet (cell_map.SheetMap): sheet to look in.
+        key (str): key of the input range.
+
+    Returns:
+        cell_map.InputRange: the matching range.
+
+    Raises:
+        ValueError: if the sheet has no range with this key.
+    """
+    for input_range in sheet.input_ranges:
+        if input_range.key == key:
+            return input_range
+    raise ValueError(f"No input range with key '{key}' on '{sheet.name}'")
 
 
 def _period_months(import_dates: list[datetime.date]) -> list[datetime.date]:
@@ -448,8 +462,8 @@ def _period_months(import_dates: list[datetime.date]) -> list[datetime.date]:
 def _table_cells(
     sheet: cell_map.SheetMap,
     period_df: pl.DataFrame,
-    date_notes: tuple[str, ...],
-    value_notes: tuple[str, ...],
+    date_keys: tuple[str, ...],
+    value_keys: tuple[str, ...],
     service_types: tuple[str, ...] = tuple(SERVICE_TYPE_ORDER),
 ) -> dict[str, object]:
     """Cells for one table: period dates, service type values and % changes.
@@ -457,9 +471,9 @@ def _table_cells(
     Args:
         sheet (cell_map.SheetMap): the sheet the table is on.
         period_df (pl.DataFrame): the table's periods, in workbook order.
-        date_notes (tuple[str, ...]): notes of the ranges that hold the period
+        date_keys (tuple[str, ...]): keys of the ranges that hold the period
             months. The first sets how many periods fit.
-        value_notes (tuple[str, ...]): notes of the ranges that hold service type
+        value_keys (tuple[str, ...]): keys of the ranges that hold service type
             values, read from each range's source column.
         service_types (tuple[str, ...]): service types the value ranges spread
             across, in column order.
@@ -468,23 +482,24 @@ def _table_cells(
         dict[str, object]: value by A1 cell.
 
     Raises:
-        ValueError: if there are more periods than rows in the table.
+        ValueError: if there are more periods than rows in the table, or a key has
+            no input range.
     """
-    dates_range = CellRange(_input_range(sheet, date_notes[0]).cells)
+    dates_range = CellRange(_input_range(sheet, date_keys[0]).cells)
     import_dates = period_df.get_column(IndCQC.cqc_location_import_date).to_list()
     if len(import_dates) > dates_range.size["rows"]:
         raise ValueError(
             f"{len(import_dates)} periods exceed the {dates_range.size['rows']}"
-            f" rows of '{date_notes[0]}'"
+            f" rows of '{date_keys[0]}'"
         )
     period_dates = [[d] for d in _period_months(import_dates)]
 
     cells = {}
-    for note in date_notes:
-        input_range = CellRange(_input_range(sheet, note).cells)
+    for key in date_keys:
+        input_range = CellRange(_input_range(sheet, key).cells)
         cells |= block_cells(input_range.coord.split(":")[0], period_dates)
-    for note in value_notes:
-        input_range = _input_range(sheet, note)
+    for key in value_keys:
+        input_range = _input_range(sheet, key)
         cell_range = CellRange(input_range.cells)
         rows = period_df.select(
             [
@@ -517,17 +532,17 @@ def filled_posts_values(assessment_df: pl.DataFrame) -> dict[str, object]:
     )
 
     cells = {}
-    for prefix, period_df in (
-        ("annual filled posts", annual_df),
-        ("annual CQC locations", annual_df),
-        ("monthly filled posts", monthly_df),
-        ("monthly CQC locations", monthly_df),
+    for table, period_df in (
+        ("annual_filled_posts", annual_df),
+        ("annual_locations", annual_df),
+        ("monthly_filled_posts", monthly_df),
+        ("monthly_locations", monthly_df),
     ):
         cells |= _table_cells(
             cell_map.FILLED_POSTS,
             period_df,
-            (f"{prefix} dates", f"{prefix} % change dates"),
-            (f"{prefix} by primary service type", f"{prefix} % change"),
+            (f"{table}.dates", f"{table}.change_dates"),
+            (f"{table}.values", f"{table}.change"),
         )
     return cells
 
@@ -553,13 +568,12 @@ def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, objec
     period_df = assessment_df.select(pl.all().gather(row_indexes))
 
     cells = {}
-    for date_note, value_note in (
-        ("previous publication dates", "previous publication figures"),
-        ("current publication dates", "current publication figures"),
-        ("difference dates", "difference as percentage"),
-    ):
+    for block in ("previous", "current", "difference"):
         cells |= _table_cells(
-            cell_map.COMP_PREV_PUBLICATION, period_df, (date_note,), (value_note,)
+            cell_map.COMP_PREV_PUBLICATION,
+            period_df,
+            (f"{block}.dates",),
+            (f"{block}.values",),
         )
     return cells
 
@@ -582,6 +596,9 @@ def comparison_sheet_values(
 
     Returns:
         dict[str, object]: value by A1 cell.
+
+    Raises:
+        ValueError: if the sheet has no input ranges for a block.
     """
     period_df = assessment_df.filter(
         pl.col(IndCQC.cqc_location_import_date) >= from_date
@@ -590,7 +607,9 @@ def comparison_sheet_values(
 
     cells = {}
     for prefix, service_type in COMPARISON_BLOCKS:
-        block_ranges = [r for r in sheet.input_ranges if r.note.startswith(prefix)]
+        block_ranges = [r for r in sheet.input_ranges if r.key.startswith(f"{prefix}.")]
+        if not block_ranges:
+            raise ValueError(f"No '{prefix}' input ranges on '{sheet.name}'")
         tables = [
             r
             for r in block_ranges
@@ -599,8 +618,8 @@ def comparison_sheet_values(
         cells |= _table_cells(
             sheet,
             period_df,
-            tuple(r.note for r in tables if r.source_column == cell_map.PERIOD_COL),
-            tuple(r.note for r in tables if r.source_column != cell_map.PERIOD_COL),
+            tuple(r.key for r in tables if r.source_column == cell_map.PERIOD_COL),
+            tuple(r.key for r in tables if r.source_column != cell_map.PERIOD_COL),
             (service_type,),
         )
         for r in block_ranges:

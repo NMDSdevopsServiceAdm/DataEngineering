@@ -47,6 +47,13 @@ COMPARISON_PERC_CHANGE_SOURCES = [
 
 class TestAssessmentSheets:
     @pytest.mark.parametrize("sheet", sheet_params)
+    def test_input_range_keys_are_unique_on_a_sheet(self, sheet: job.SheetMap):
+        """The writer finds a range by key, so a key names one range."""
+        keys = [r.key for r in sheet.input_ranges if r.key]
+
+        assert len(keys) == len(set(keys))
+
+    @pytest.mark.parametrize("sheet", sheet_params)
     def test_input_ranges_do_not_overlap(self, sheet: job.SheetMap):
         """Each cell has one input range, so the writer fills it from one place."""
         ranges = [r.cells for r in sheet.input_ranges]
@@ -57,28 +64,30 @@ class TestAssessmentSheets:
         "note, source_column",
         [
             pytest.param(
-                "care homes SfC",
+                "care_homes.filled_posts",
                 Pub.filled_posts,
                 id="care_homes_filled_posts",
             ),
-            pytest.param("non-res SfC", Pub.filled_posts, id="non_res_filled_posts"),
             pytest.param(
-                "care homes number of locations by period",
+                "non_res.filled_posts", Pub.filled_posts, id="non_res_filled_posts"
+            ),
+            pytest.param(
+                "care_homes.locations_by_period",
                 Pub.locationid_count,
                 id="care_homes_locations",
             ),
             pytest.param(
-                "non-res number of locations by period",
+                "non_res.locations_by_period",
                 Pub.locationid_count,
                 id="non_res_locations",
             ),
             pytest.param(
-                "care homes CT",
+                "care_homes.ct",
                 Pub.unfiltered_ct_total_employed_long,
                 id="care_homes_capacity_tracker",
             ),
             pytest.param(
-                "non-res CT",
+                "non_res.ct",
                 Pub.unfiltered_ct_total_employed_long,
                 id="non_res_capacity_tracker",
             ),
@@ -86,7 +95,7 @@ class TestAssessmentSheets:
     )
     def test_no_filters_sheet_sources(self, note: str, source_column: str | None):
         """No filters reads the unfiltered filled posts and Capacity Tracker posts columns."""
-        sources = {r.note: r.source_column for r in job.NO_FILTERS.input_ranges}
+        sources = {r.key: r.source_column for r in job.NO_FILTERS.input_ranges}
 
         assert sources[note] == source_column
 
@@ -97,14 +106,14 @@ class TestAssessmentSheets:
         self, sheet: job.SheetMap, filled_posts_source: str, ct_source: str
     ):
         """Each comparison sheet's % change columns read its own term's columns."""
-        sources = {r.note: r.source_column for r in sheet.input_ranges}
+        sources = {r.key: r.source_column for r in sheet.input_ranges}
 
         assert [
             sources[note]
             for note in (
-                "care homes SfC % change",
-                "care homes CT % change",
-                "non-res SfC % change",
-                "non-res CT % change",
+                "care_homes.filled_posts_change",
+                "care_homes.ct_change",
+                "non_res.filled_posts_change",
+                "non_res.ct_change",
             )
         ] == [filled_posts_source, ct_source, filled_posts_source, ct_source]
