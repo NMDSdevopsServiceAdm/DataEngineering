@@ -14,11 +14,11 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import EmploymentStatusEstimateSource
 
 ESTIMATED_PERCENTAGE_COLUMNS: list[str] = [
-    EmpStatus.estimated_permanent_percentage,
-    EmpStatus.estimated_temporary_percentage,
-    EmpStatus.estimated_bank_or_pool_percentage,
-    EmpStatus.estimated_agency_percentage,
-    EmpStatus.estimated_other_percentage,
+    EmpStatus.estimated_permanent_pct,
+    EmpStatus.estimated_temporary_pct,
+    EmpStatus.estimated_bank_or_pool_pct,
+    EmpStatus.estimated_agency_pct,
+    EmpStatus.estimated_other_pct,
 ]
 
 SOURCE_BY_COLUMN: dict[str, str] = {
@@ -35,11 +35,11 @@ SOURCE_BY_COLUMN: dict[str, str] = {
 }
 
 ESTIMATED_COUNT_COLUMNS: list[str] = [
-    EmpStatus.estimated_emp_stat_permanent,
-    EmpStatus.estimated_emp_stat_temporary,
-    EmpStatus.estimated_emp_stat_bank_or_pool,
-    EmpStatus.estimated_emp_stat_agency,
-    EmpStatus.estimated_emp_stat_other,
+    EmpStatus.estimated_permanent_count,
+    EmpStatus.estimated_temporary_count,
+    EmpStatus.estimated_bank_or_pool_count,
+    EmpStatus.estimated_agency_count,
+    EmpStatus.estimated_other_count,
 ]
 
 
@@ -57,8 +57,8 @@ def add_estimated_employment_status_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
             columns and the job role filled-post metric.
 
     Returns:
-        pl.LazyFrame: dataset with 5 "estimated_emplstat_<status>_percentage" columns, a
-            percentage estimate source column, 5 "estimated_emp_stat_<status>" columns and an
+        pl.LazyFrame: dataset with 5 "estimated_emp_stat_<status>_pct" columns, a
+            percentage estimate source column, 5 "estimated_emp_stat_<status>_count" columns and an
             "estimated_employees" column added.
     """
     metric = IndCQC.estimate_filled_posts_by_job_role
@@ -84,7 +84,7 @@ def add_estimated_employment_status_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.coalesce(status_source_columns)
         .replace_strict(SOURCE_BY_COLUMN)
         .cast(CatColType.EmploymentStatusEstimateSourceEnumType)
-        .alias(EmpStatus.estimated_percentage_source)
+        .alias(EmpStatus.estimated_pct_source)
     ).drop(status_source_columns)
 
     lf = lf.with_columns(
@@ -96,7 +96,7 @@ def add_estimated_employment_status_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     return lf.with_columns(
         (
-            pl.col(EmpStatus.estimated_emp_stat_permanent)
-            + pl.col(EmpStatus.estimated_emp_stat_temporary)
+            pl.col(EmpStatus.estimated_permanent_count)
+            + pl.col(EmpStatus.estimated_temporary_count)
         ).alias(EmpStatus.estimated_employees)
     )

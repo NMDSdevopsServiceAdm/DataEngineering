@@ -15,35 +15,35 @@ LOCATION_JOB_ROLE_GROUPS: list[str] = [
 ]
 
 PERCENTAGE_COLUMNS: list[str] = [
-    EmpStatus.permanent_percentage,
-    EmpStatus.temporary_percentage,
-    EmpStatus.bank_or_pool_percentage,
-    EmpStatus.agency_percentage,
-    EmpStatus.other_percentage,
+    EmpStatus.permanent_pct,
+    EmpStatus.temporary_pct,
+    EmpStatus.bank_or_pool_pct,
+    EmpStatus.agency_pct,
+    EmpStatus.other_pct,
 ]
 
 TRENDLINE_PERCENTAGE_COLUMNS: list[str] = [
-    EmpStatus.permanent_percentage_imputed_for_trendline,
-    EmpStatus.temporary_percentage_imputed_for_trendline,
-    EmpStatus.bank_or_pool_percentage_imputed_for_trendline,
-    EmpStatus.agency_percentage_imputed_for_trendline,
-    EmpStatus.other_percentage_imputed_for_trendline,
+    EmpStatus.permanent_pct_imputed_trendline,
+    EmpStatus.temporary_pct_imputed_trendline,
+    EmpStatus.bank_or_pool_pct_imputed_trendline,
+    EmpStatus.agency_pct_imputed_trendline,
+    EmpStatus.other_pct_imputed_trendline,
 ]
 
 ROLLING_AVERAGE_PERCENTAGE_COLUMNS: list[str] = [
-    EmpStatus.permanent_percentage_rolling_avg,
-    EmpStatus.temporary_percentage_rolling_avg,
-    EmpStatus.bank_or_pool_percentage_rolling_avg,
-    EmpStatus.agency_percentage_rolling_avg,
-    EmpStatus.other_percentage_rolling_avg,
+    EmpStatus.permanent_pct_rolling_avg,
+    EmpStatus.temporary_pct_rolling_avg,
+    EmpStatus.bank_or_pool_pct_rolling_avg,
+    EmpStatus.agency_pct_rolling_avg,
+    EmpStatus.other_pct_rolling_avg,
 ]
 
 FULL_IMPUTED_PERCENTAGE_COLUMNS: list[str] = [
-    EmpStatus.permanent_percentage_full_imputed,
-    EmpStatus.temporary_percentage_full_imputed,
-    EmpStatus.bank_or_pool_percentage_full_imputed,
-    EmpStatus.agency_percentage_full_imputed,
-    EmpStatus.other_percentage_full_imputed,
+    EmpStatus.permanent_pct_imputed,
+    EmpStatus.temporary_pct_imputed,
+    EmpStatus.bank_or_pool_pct_imputed,
+    EmpStatus.agency_pct_imputed,
+    EmpStatus.other_pct_imputed,
 ]
 
 FILL_BOUNDARY_COLUMNS: list[str] = [
@@ -76,7 +76,7 @@ def add_fill_boundaries(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     order_key = IndCQC.cqc_location_import_date
 
-    is_known = pl.col(EmpStatus.permanent_percentage).is_not_null()
+    is_known = pl.col(EmpStatus.permanent_pct).is_not_null()
     known_date = pl.when(is_known).then(pl.col(order_key))
 
     lf = lf.with_columns(
@@ -198,7 +198,7 @@ def add_rolling_average_percentages(
         rolling_period (str): the rolling window length, as a Polars offset string (e.g. "6mo")
 
     Returns:
-        pl.LazyFrame: dataset with the 5 "emplstat_<status>_percentage_rolling_avg" columns added
+        pl.LazyFrame: dataset with the 5 "ascwds_emp_stat_<status>_pct_rolling_avg" columns added
     """
     rolling_groups = [
         IndCQC.primary_service_type,
@@ -221,7 +221,7 @@ def add_rolling_average_percentages(
                 TRENDLINE_PERCENTAGE_COLUMNS, rolling_total_columns
             )
         ],
-        pl.col(EmpStatus.permanent_percentage_imputed_for_trendline)
+        pl.col(EmpStatus.permanent_pct_imputed_trendline)
         .is_not_null()
         .sum()
         .alias(TempCols.contributing_locations),
@@ -278,7 +278,7 @@ def add_full_imputed_percentages(lf: pl.LazyFrame) -> pl.LazyFrame:
         lf (pl.LazyFrame): dataset containing the 5 percentage columns and their rolling averages
 
     Returns:
-        pl.LazyFrame: dataset with the 5 "emplstat_<status>_percentage_full_imputed" columns added
+        pl.LazyFrame: dataset with the 5 "ascwds_emp_stat_<status>_pct_imputed" columns added
     """
     for col, rolling_col, full_col in zip(
         PERCENTAGE_COLUMNS,

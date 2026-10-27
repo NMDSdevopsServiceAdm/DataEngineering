@@ -16,35 +16,35 @@ COMPARE_COLS_TO_IMPORT = [
 ]
 
 PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage,
-    EmpStatus.temporary_percentage,
-    EmpStatus.bank_or_pool_percentage,
-    EmpStatus.agency_percentage,
-    EmpStatus.other_percentage,
+    EmpStatus.permanent_pct,
+    EmpStatus.temporary_pct,
+    EmpStatus.bank_or_pool_pct,
+    EmpStatus.agency_pct,
+    EmpStatus.other_pct,
 ]
 
 TRENDLINE_PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage_imputed_for_trendline,
-    EmpStatus.temporary_percentage_imputed_for_trendline,
-    EmpStatus.bank_or_pool_percentage_imputed_for_trendline,
-    EmpStatus.agency_percentage_imputed_for_trendline,
-    EmpStatus.other_percentage_imputed_for_trendline,
+    EmpStatus.permanent_pct_imputed_trendline,
+    EmpStatus.temporary_pct_imputed_trendline,
+    EmpStatus.bank_or_pool_pct_imputed_trendline,
+    EmpStatus.agency_pct_imputed_trendline,
+    EmpStatus.other_pct_imputed_trendline,
 ]
 
 ROLLING_AVERAGE_PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage_rolling_avg,
-    EmpStatus.temporary_percentage_rolling_avg,
-    EmpStatus.bank_or_pool_percentage_rolling_avg,
-    EmpStatus.agency_percentage_rolling_avg,
-    EmpStatus.other_percentage_rolling_avg,
+    EmpStatus.permanent_pct_rolling_avg,
+    EmpStatus.temporary_pct_rolling_avg,
+    EmpStatus.bank_or_pool_pct_rolling_avg,
+    EmpStatus.agency_pct_rolling_avg,
+    EmpStatus.other_pct_rolling_avg,
 ]
 
 FULL_IMPUTED_PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage_full_imputed,
-    EmpStatus.temporary_percentage_full_imputed,
-    EmpStatus.bank_or_pool_percentage_full_imputed,
-    EmpStatus.agency_percentage_full_imputed,
-    EmpStatus.other_percentage_full_imputed,
+    EmpStatus.permanent_pct_imputed,
+    EmpStatus.temporary_pct_imputed,
+    EmpStatus.bank_or_pool_pct_imputed,
+    EmpStatus.agency_pct_imputed,
+    EmpStatus.other_pct_imputed,
 ]
 
 # Only what the checks need: the whole impute output is wide and includes list columns,
@@ -116,7 +116,7 @@ def main(
             brief="rolling average percentage columns are between 0 and 1",
         )
         .col_vals_expr(
-            pl.col(EmpStatus.permanent_percentage_imputed_for_trendline).is_null()
+            pl.col(EmpStatus.permanent_pct_imputed_trendline).is_null()
             | (
                 (pl.sum_horizontal(TRENDLINE_PERCENTAGE_COLUMNS) - 1).abs()
                 <= PERCENTAGE_SUM_TOLERANCE
@@ -141,7 +141,7 @@ def main(
             brief="full imputed percentage columns are between 0 and 1",
         )
         .col_vals_expr(
-            pl.col(EmpStatus.permanent_percentage_full_imputed).is_null()
+            pl.col(EmpStatus.permanent_pct_imputed).is_null()
             | (
                 (pl.sum_horizontal(FULL_IMPUTED_PERCENTAGE_COLUMNS) - 1).abs()
                 <= PERCENTAGE_SUM_TOLERANCE
@@ -149,7 +149,7 @@ def main(
             brief="full imputed percentages sum to 1 where populated",
         )
         .col_vals_expr(
-            pl.col(EmpStatus.permanent_percentage).is_null()
+            pl.col(EmpStatus.permanent_pct).is_null()
             | pl.all_horizontal(
                 pl.col(known_col).eq_missing(pl.col(full_col))
                 for known_col, full_col in zip(
@@ -159,8 +159,8 @@ def main(
             brief="full imputed percentages equal the known percentages where known",
         )
         .col_vals_expr(
-            pl.col(EmpStatus.permanent_percentage_full_imputed).is_not_null()
-            | ~pl.col(EmpStatus.permanent_percentage)
+            pl.col(EmpStatus.permanent_pct_imputed).is_not_null()
+            | ~pl.col(EmpStatus.permanent_pct)
             .is_not_null()
             .any()
             .over(IndCqcColumns.location_id, IndCqcColumns.published_job_role_label),

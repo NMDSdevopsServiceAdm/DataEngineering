@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
 
 ### Changed
+- Renamed the employment status and SLV columns to one scheme: `ascwds_`/`estimated_` prefix, `emp_stat_` category, `pct` for percentages and ordered stage suffixes (`_dedup`, `_clean`, `_imputed_trendline`, `_rolling_avg`, `_imputed`). Output column names change.
 - Renamed the SLV step function to Ind-CQC-EmpStat-SLV and reordered it so worker and workplace data are prepared in separate branches, workplace data is validated, and the SLV counts steps are no longer run.
 - Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.

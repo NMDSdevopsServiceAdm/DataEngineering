@@ -23,12 +23,20 @@ PATCH_PATH = (
 )
 
 METRICS = [
-    (SLVCols.starters, SLVCols.starters_cleaned, SLVCols.starters_filtering_rule),
-    (SLVCols.leavers, SLVCols.leavers_cleaned, SLVCols.leavers_filtering_rule),
     (
-        SLVCols.vacancies,
-        SLVCols.vacancies_cleaned,
-        SLVCols.vacancies_filtering_rule,
+        SLVCols.ascwds_starters,
+        SLVCols.ascwds_starters_clean,
+        SLVCols.ascwds_starters_filtering_rule,
+    ),
+    (
+        SLVCols.ascwds_leavers,
+        SLVCols.ascwds_leavers_clean,
+        SLVCols.ascwds_leavers_filtering_rule,
+    ),
+    (
+        SLVCols.ascwds_vacancies,
+        SLVCols.ascwds_vacancies_clean,
+        SLVCols.ascwds_vacancies_filtering_rule,
     ),
 ]
 
@@ -50,9 +58,9 @@ class TestMain:
                     date(2025, 3, 1),
                 ],
                 EmpStatus.estimated_employees: [10.0, 10.0, 10.0],
-                SLVCols.starters: [3, 3, None],
-                SLVCols.leavers: [4, 4, None],
-                SLVCols.vacancies: [5, 5, None],
+                SLVCols.ascwds_starters: [3, 3, None],
+                SLVCols.ascwds_leavers: [4, 4, None],
+                SLVCols.ascwds_vacancies: [5, 5, None],
             }
         )
         with (
@@ -89,14 +97,14 @@ class TestMain:
 
     def test_main_drops_dedup_columns(self, result_df):
         for dedup in (
-            SLVCols.starters_dedup,
-            SLVCols.leavers_dedup,
-            SLVCols.vacancies_dedup,
+            SLVCols.ascwds_starters_dedup,
+            SLVCols.ascwds_leavers_dedup,
+            SLVCols.ascwds_vacancies_dedup,
         ):
             assert dedup not in result_df.columns
 
     def test_main_creates_rate_columns_from_cleaned_columns(self, result_df):
-        assert result_df[SLVCols.turnover_rate].to_list() == [
+        assert result_df[SLVCols.ascwds_turnover_rate].to_list() == [
             pytest.approx(0.4),
             None,
             None,
@@ -124,23 +132,23 @@ class TestMain:
         scan_parquet_mock.assert_called_once_with(self.MERGED_DATA_SOURCE)
         assert dedup_mock.call_args.args[0] is scan_parquet_mock.return_value
         assert dedup_mock.call_args.kwargs["columns_to_clean"] == [
-            SLVCols.starters,
-            SLVCols.leavers,
-            SLVCols.vacancies,
+            SLVCols.ascwds_starters,
+            SLVCols.ascwds_leavers,
+            SLVCols.ascwds_vacancies,
         ]
         helper_inputs = [c.args[0] for c in add_rule_mock.call_args_list]
         assert helper_inputs == [renamed_lf, starters_lf, leavers_lf]
         dedup_mock.return_value.rename.assert_called_once_with(
             {
-                SLVCols.starters_dedup: SLVCols.starters_cleaned,
-                SLVCols.leavers_dedup: SLVCols.leavers_cleaned,
-                SLVCols.vacancies_dedup: SLVCols.vacancies_cleaned,
+                SLVCols.ascwds_starters_dedup: SLVCols.ascwds_starters_clean,
+                SLVCols.ascwds_leavers_dedup: SLVCols.ascwds_leavers_clean,
+                SLVCols.ascwds_vacancies_dedup: SLVCols.ascwds_vacancies_clean,
             }
         )
         assert [c.args[2] for c in add_rule_mock.call_args_list] == [
-            SLVCols.starters_cleaned,
-            SLVCols.leavers_cleaned,
-            SLVCols.vacancies_cleaned,
+            SLVCols.ascwds_starters_clean,
+            SLVCols.ascwds_leavers_clean,
+            SLVCols.ascwds_vacancies_clean,
         ]
         rate_mock.assert_called_once_with(vacancies_lf)
         sink_mock.assert_called_once_with(

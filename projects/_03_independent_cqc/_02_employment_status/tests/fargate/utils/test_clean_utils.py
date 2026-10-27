@@ -21,11 +21,11 @@ PATCH_PATH = (
 )
 
 PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage,
-    EmpStatus.temporary_percentage,
-    EmpStatus.bank_or_pool_percentage,
-    EmpStatus.agency_percentage,
-    EmpStatus.other_percentage,
+    EmpStatus.permanent_pct,
+    EmpStatus.temporary_pct,
+    EmpStatus.bank_or_pool_pct,
+    EmpStatus.agency_pct,
+    EmpStatus.other_pct,
 ]
 
 
@@ -137,11 +137,11 @@ class TestCreateEmploymentStatusPercentageColumns:
                 EmpStatus.other_count_clean,
             ],
             output_columns=[
-                EmpStatus.permanent_percentage,
-                EmpStatus.temporary_percentage,
-                EmpStatus.bank_or_pool_percentage,
-                EmpStatus.agency_percentage,
-                EmpStatus.other_percentage,
+                EmpStatus.permanent_pct,
+                EmpStatus.temporary_pct,
+                EmpStatus.bank_or_pool_pct,
+                EmpStatus.agency_pct,
+                EmpStatus.other_pct,
             ],
         )
         assert returned_lf == percentage_share_horizontal_mock.return_value

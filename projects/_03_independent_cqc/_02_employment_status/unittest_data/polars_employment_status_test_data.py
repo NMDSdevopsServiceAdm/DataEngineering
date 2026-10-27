@@ -133,7 +133,7 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ],
-                EmpStatus.employment_status_count: [2],
+                EmpStatus.total_count: [2],
             },
         ),
         AggregateEmploymentStatusDataTestCase(
@@ -163,7 +163,7 @@ class TestPrepareWorkerUtilsData:
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.temporary,
                 ],
-                EmpStatus.employment_status_count: [1, 1],
+                EmpStatus.total_count: [1, 1],
             },
         ),
         AggregateEmploymentStatusDataTestCase(
@@ -190,7 +190,7 @@ class TestPrepareWorkerUtilsData:
                     EmploymentStatusLabels.permanent
                 ]
                 * 2,
-                EmpStatus.employment_status_count: [1, 1],
+                EmpStatus.total_count: [1, 1],
             },
         ),
     ]
@@ -206,7 +206,7 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ],
-                EmpStatus.employment_status_count: [3],
+                EmpStatus.total_count: [3],
             },
             expected_data={
                 AWKClean.location_id: ["loc1"],
@@ -231,7 +231,7 @@ class TestPrepareWorkerUtilsData:
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.temporary,
                 ],
-                EmpStatus.employment_status_count: [2, 1],
+                EmpStatus.total_count: [2, 1],
             },
             expected_data={
                 AWKClean.location_id: ["loc2"],
@@ -259,7 +259,7 @@ class TestPrepareWorkerUtilsData:
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.agency,
                 ],
-                EmpStatus.employment_status_count: [1, 4],
+                EmpStatus.total_count: [1, 4],
             },
             expected_data={
                 AWKClean.location_id: ["loc3", "loc3"],
@@ -608,7 +608,7 @@ def _estimate_expected(
     return {
         **row,
         **{col: [val] for col, val in zip(ESTIMATED_PERCENTAGE_COLUMNS, estimated)},
-        EmpStatus.estimated_percentage_source: [source],
+        EmpStatus.estimated_pct_source: [source],
         **{col: [val] for col, val in zip(ESTIMATED_COUNT_COLUMNS, counts)},
         EmpStatus.estimated_employees: [employees],
     }
@@ -693,32 +693,32 @@ class TestPrepareMainData:
 
 
 PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage,
-    EmpStatus.temporary_percentage,
-    EmpStatus.bank_or_pool_percentage,
-    EmpStatus.agency_percentage,
-    EmpStatus.other_percentage,
+    EmpStatus.permanent_pct,
+    EmpStatus.temporary_pct,
+    EmpStatus.bank_or_pool_pct,
+    EmpStatus.agency_pct,
+    EmpStatus.other_pct,
 ]
 TRENDLINE_PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage_imputed_for_trendline,
-    EmpStatus.temporary_percentage_imputed_for_trendline,
-    EmpStatus.bank_or_pool_percentage_imputed_for_trendline,
-    EmpStatus.agency_percentage_imputed_for_trendline,
-    EmpStatus.other_percentage_imputed_for_trendline,
+    EmpStatus.permanent_pct_imputed_trendline,
+    EmpStatus.temporary_pct_imputed_trendline,
+    EmpStatus.bank_or_pool_pct_imputed_trendline,
+    EmpStatus.agency_pct_imputed_trendline,
+    EmpStatus.other_pct_imputed_trendline,
 ]
 ROLLING_AVERAGE_PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage_rolling_avg,
-    EmpStatus.temporary_percentage_rolling_avg,
-    EmpStatus.bank_or_pool_percentage_rolling_avg,
-    EmpStatus.agency_percentage_rolling_avg,
-    EmpStatus.other_percentage_rolling_avg,
+    EmpStatus.permanent_pct_rolling_avg,
+    EmpStatus.temporary_pct_rolling_avg,
+    EmpStatus.bank_or_pool_pct_rolling_avg,
+    EmpStatus.agency_pct_rolling_avg,
+    EmpStatus.other_pct_rolling_avg,
 ]
 FULL_IMPUTED_PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage_full_imputed,
-    EmpStatus.temporary_percentage_full_imputed,
-    EmpStatus.bank_or_pool_percentage_full_imputed,
-    EmpStatus.agency_percentage_full_imputed,
-    EmpStatus.other_percentage_full_imputed,
+    EmpStatus.permanent_pct_imputed,
+    EmpStatus.temporary_pct_imputed,
+    EmpStatus.bank_or_pool_pct_imputed,
+    EmpStatus.agency_pct_imputed,
+    EmpStatus.other_pct_imputed,
 ]
 FIRST_KNOWN_VALUE_COLUMNS = [
     ImputeTempCols.first_known_value_prefix + col for col in PERCENTAGE_COLUMNS
@@ -1082,11 +1082,11 @@ class TestImputeUtilsData:
                     date(2024, 1, 11),
                     date(2024, 1, 31),
                 ],
-                EmpStatus.permanent_percentage: [0.5, None, 0.2],
-                EmpStatus.temporary_percentage: [0.1, None, 0.4],
-                EmpStatus.bank_or_pool_percentage: [0.1, None, 0.1],
-                EmpStatus.agency_percentage: [0.2, None, 0.2],
-                EmpStatus.other_percentage: [0.1, None, 0.1],
+                EmpStatus.permanent_pct: [0.5, None, 0.2],
+                EmpStatus.temporary_pct: [0.1, None, 0.4],
+                EmpStatus.bank_or_pool_pct: [0.1, None, 0.1],
+                EmpStatus.agency_pct: [0.2, None, 0.2],
+                EmpStatus.other_pct: [0.1, None, 0.1],
             },
             expected_data={
                 IndCQC.location_id: ["loc1"] * 3,
@@ -1096,20 +1096,20 @@ class TestImputeUtilsData:
                     date(2024, 1, 11),
                     date(2024, 1, 31),
                 ],
-                EmpStatus.permanent_percentage: [0.5, None, 0.2],
-                EmpStatus.temporary_percentage: [0.1, None, 0.4],
-                EmpStatus.bank_or_pool_percentage: [0.1, None, 0.1],
-                EmpStatus.agency_percentage: [0.2, None, 0.2],
-                EmpStatus.other_percentage: [0.1, None, 0.1],
-                EmpStatus.permanent_percentage_imputed_for_trendline: [0.5, 0.4, 0.2],
-                EmpStatus.temporary_percentage_imputed_for_trendline: [0.1, 0.2, 0.4],
-                EmpStatus.bank_or_pool_percentage_imputed_for_trendline: [
+                EmpStatus.permanent_pct: [0.5, None, 0.2],
+                EmpStatus.temporary_pct: [0.1, None, 0.4],
+                EmpStatus.bank_or_pool_pct: [0.1, None, 0.1],
+                EmpStatus.agency_pct: [0.2, None, 0.2],
+                EmpStatus.other_pct: [0.1, None, 0.1],
+                EmpStatus.permanent_pct_imputed_trendline: [0.5, 0.4, 0.2],
+                EmpStatus.temporary_pct_imputed_trendline: [0.1, 0.2, 0.4],
+                EmpStatus.bank_or_pool_pct_imputed_trendline: [
                     0.1,
                     0.1,
                     0.1,
                 ],
-                EmpStatus.agency_percentage_imputed_for_trendline: [0.2, 0.2, 0.2],
-                EmpStatus.other_percentage_imputed_for_trendline: [0.1, 0.1, 0.1],
+                EmpStatus.agency_pct_imputed_trendline: [0.2, 0.2, 0.2],
+                EmpStatus.other_pct_imputed_trendline: [0.1, 0.1, 0.1],
             },
         ),
         short_term_imputation_case(

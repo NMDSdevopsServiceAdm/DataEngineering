@@ -338,13 +338,13 @@ class SLVPrepareCategoricalValues:
 @dataclass
 class SLVCleanCategoricalValues:
     starters_filtering_rule_column_values = StartersFilteringRule(
-        SLVCols.starters_filtering_rule
+        SLVCols.ascwds_starters_filtering_rule
     )
     leavers_filtering_rule_column_values = LeaversFilteringRule(
-        SLVCols.leavers_filtering_rule
+        SLVCols.ascwds_leavers_filtering_rule
     )
     vacancies_filtering_rule_column_values = VacanciesFilteringRule(
-        SLVCols.vacancies_filtering_rule
+        SLVCols.ascwds_vacancies_filtering_rule
     )
 
 
@@ -366,7 +366,7 @@ class SLVEstimateCategoricalValues:
 @dataclass
 class EmploymentStatusEstimateCategoricalValues:
     estimate_source_column_values = EmploymentStatusEstimateSource(
-        EmpStatus.estimated_percentage_source
+        EmpStatus.estimated_pct_source
     )
 
 

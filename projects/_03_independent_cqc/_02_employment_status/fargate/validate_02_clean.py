@@ -23,11 +23,11 @@ COMPARE_COLS_TO_IMPORT = [
 ]
 
 PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage,
-    EmpStatus.temporary_percentage,
-    EmpStatus.bank_or_pool_percentage,
-    EmpStatus.agency_percentage,
-    EmpStatus.other_percentage,
+    EmpStatus.permanent_pct,
+    EmpStatus.temporary_pct,
+    EmpStatus.bank_or_pool_pct,
+    EmpStatus.agency_pct,
+    EmpStatus.other_pct,
 ]
 
 
@@ -99,7 +99,7 @@ def main(
         .col_vals_in_set(
             EmpStatus.filtering_rule,
             CatValues.filtering_rule_column_values.categorical_values,
-            brief="employment_status_filtering_rule is a known reason",
+            brief="ascwds_emp_stat_filtering_rule is a known reason",
         )
     )
     for column in [*CLEAN_COUNT_COLUMNS, *PERCENTAGE_COLUMNS]:

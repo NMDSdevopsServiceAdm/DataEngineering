@@ -11,7 +11,7 @@ def main(
 
     Nulls counts for stale workplaces and for orgs/locations with too few
     permanent/temporary staff (recording why in
-    employment_status_filtering_rule), then adds percentage shares.
+    ascwds_emp_stat_filtering_rule), then adds percentage shares.
 
     Args:
         merged_data_source (str): path to the merged data
