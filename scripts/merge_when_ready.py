@@ -116,6 +116,9 @@ def commit_workflow_statuses(
 ) -> Optional[list[str]]:
     """Return workflow statuses from the newest pipeline run for a commit.
 
+    A rerun leaves the original workflow listed, so only the newest of each
+    name counts.
+
     Args:
         pipelines (list[dict]): CircleCI pipelines, newest first.
         sha (str): Commit the pipeline ran for.
@@ -128,13 +131,17 @@ def commit_workflow_statuses(
     for pipeline in pipelines:
         if pipeline.get("vcs", {}).get("revision") != sha:
             continue
-        statuses = [
-            w["status"]
-            for w in get_workflows(pipeline["id"])
-            if workflow_name in (None, w["name"])
-        ]
-        if statuses:
-            return statuses
+        newest: dict[str, dict] = {}
+        for workflow in get_workflows(pipeline["id"]):
+            name = workflow["name"]
+            if workflow_name not in (None, name):
+                continue
+            # Strict ">" keeps the first listed (newest first) on a tie.
+            created = workflow.get("created_at", "")
+            if name not in newest or created > newest[name].get("created_at", ""):
+                newest[name] = workflow
+        if newest:
+            return [workflow["status"] for workflow in newest.values()]
     return None
 
 

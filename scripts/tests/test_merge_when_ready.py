@@ -129,6 +129,42 @@ class TestCommitWorkflowStatuses:
 
         assert statuses == ["on_hold"]
 
+    def test_counts_only_the_newest_run_of_a_rerun_workflow(self):
+        workflows = [
+            {"name": DEPLOY, "status": "failed", "created_at": "2026-10-01T10:00"},
+            {"name": DEPLOY, "status": "success", "created_at": "2026-10-01T11:00"},
+        ]
+
+        statuses = job.commit_workflow_statuses(
+            [pipeline("p1", "tip")], "tip", lambda pid: workflows, DEPLOY
+        )
+
+        assert statuses == ["success"]
+
+    def test_counts_the_first_listed_when_rerun_times_are_missing(self):
+        workflows = [
+            {"name": DEPLOY, "status": "success"},
+            {"name": DEPLOY, "status": "failed"},
+        ]
+
+        statuses = job.commit_workflow_statuses(
+            [pipeline("p1", "tip")], "tip", lambda pid: workflows, DEPLOY
+        )
+
+        assert statuses == ["success"]
+
+    def test_still_counts_each_differently_named_workflow(self):
+        workflows = [
+            {"name": "a", "status": "failed", "created_at": "1"},
+            {"name": "b", "status": "success", "created_at": "2"},
+        ]
+
+        statuses = job.commit_workflow_statuses(
+            [pipeline("p1", "sha")], "sha", lambda pid: workflows
+        )
+
+        assert sorted(statuses) == ["failed", "success"]
+
     def test_counts_every_workflow_when_no_name_given(self):
         workflows = [
             {"name": "a", "status": "success"},
