@@ -328,6 +328,7 @@ def stubs():
             _main_tip=DEFAULT,
             _require_approval=DEFAULT,
             _require_queued=DEFAULT,
+            _require_no_conflict=DEFAULT,
         ) as mocks,
         patch(f"{PATCH_PATH}.time.sleep"),
     ):
@@ -502,6 +503,19 @@ class TestMergePr:
         with pytest.raises(job.NotMergeable, match="Merge conflict with main"):
             merge_pr()
 
+    def test_raises_not_mergeable_without_updating_when_pr_already_conflicts(
+        self, stubs
+    ):
+        stubs["_behind_by"].return_value = 3
+        stubs["_require_no_conflict"].side_effect = job.NotMergeable(
+            job.CONFLICT_MESSAGE
+        )
+
+        with pytest.raises(job.NotMergeable, match="Merge conflict with main"):
+            merge_pr()
+
+        assert not any(c[:3] == ("api", "-X", "PUT") for c in gh_calls(stubs))
+
     def test_passes_on_other_branch_update_errors(self, stubs):
         stubs["_behind_by"].return_value = 3
 
@@ -602,6 +616,23 @@ class TestCircleciGet:
 
         assert urlopen_mock.call_count == 1
 
+    @pytest.mark.parametrize("code", [400, 422])
+    def test_does_not_retry_other_client_errors(self, urlopen_mock, sleep_mock, code):
+        urlopen_mock.side_effect = http_error(code)
+
+        with pytest.raises(urllib.error.HTTPError):
+            job._circleci_get("/x")
+
+        assert urlopen_mock.call_count == 1
+
+    def test_retries_when_rate_limited(self, urlopen_mock, sleep_mock):
+        urlopen_mock.side_effect = http_error(429)
+
+        with pytest.raises(urllib.error.HTTPError):
+            job._circleci_get("/x")
+
+        assert urlopen_mock.call_count == job.READ_ATTEMPTS
+
     def test_retries_then_raises_on_server_errors(self, urlopen_mock, sleep_mock):
         urlopen_mock.side_effect = http_error(500)
 
@@ -609,6 +640,21 @@ class TestCircleciGet:
             job._circleci_get("/x")
 
         assert urlopen_mock.call_count == job.READ_ATTEMPTS
+
+
+@patch(f"{PATCH_PATH}._gh_json")
+class TestRequireNoConflict:
+    @pytest.mark.parametrize("mergeable", ["MERGEABLE", "UNKNOWN"])
+    def test_passes_unless_conflicting(self, gh_json_mock, mergeable):
+        gh_json_mock.return_value = {"mergeable": mergeable}
+
+        job._require_no_conflict(REPO, 7)
+
+    def test_raises_not_mergeable_when_conflicting(self, gh_json_mock):
+        gh_json_mock.return_value = {"mergeable": "CONFLICTING"}
+
+        with pytest.raises(job.NotMergeable, match="Merge conflict with main"):
+            job._require_no_conflict(REPO, 7)
 
 
 @patch(f"{PATCH_PATH}._gh_json")

@@ -39,6 +39,7 @@ MAX_DETAIL_CHARS = 300
 PENDING_EXIT_CODE = 8
 # CircleCI responses meaning the token or project slug is wrong.
 CIRCLECI_AUTH_CODES = {401, 403, 404}
+CONFLICT_MESSAGE = "Merge conflict with main. Resolve it and re-add the label."
 # Stop waiting 15 minutes before GitHub's 6-hour job limit kills the run.
 STOP_AFTER_SECONDS = 20700
 ERRORS = (
@@ -184,13 +185,20 @@ def _describe(error: Exception) -> str:
     return detail.strip()[:MAX_DETAIL_CHARS]
 
 
+def _retryable(error: Exception) -> bool:
+    """HTTP client errors other than rate limiting won't succeed on retry."""
+    if isinstance(error, urllib.error.HTTPError):
+        return error.code == 429 or error.code >= 500
+    return True
+
+
 def _retry(call: Callable[[], T]) -> T:
     """Retry a read-only call, so a brief outage doesn't reject a PR."""
     for attempt in range(1, READ_ATTEMPTS + 1):
         try:
             return call()
         except ERRORS as error:
-            if attempt == READ_ATTEMPTS:
+            if attempt == READ_ATTEMPTS or not _retryable(error):
                 raise
             print(f"Retrying after error: {_describe(error)}")
             time.sleep(RETRY_SECONDS * attempt)
@@ -273,12 +281,19 @@ def _require_queued(repo: str, label: str, number: int) -> None:
         raise Withdrawn
 
 
+def _require_no_conflict(repo: str, number: int) -> None:
+    pr = _gh_json("pr", "view", str(number), "--repo", repo, "--json", "mergeable")
+    # UNKNOWN: GitHub is still working it out; update-branch catches a conflict.
+    if pr["mergeable"] == "CONFLICTING":
+        raise NotMergeable(CONFLICT_MESSAGE)
+
+
 def _update_branch(repo: str, number: int) -> None:
     try:
         _gh("api", "-X", "PUT", f"repos/{repo}/pulls/{number}/update-branch")
     except subprocess.CalledProcessError as error:
         if "conflict" in (error.stderr or "").lower():
-            raise NotMergeable("Merge conflict with main. Resolve it and re-add the label.") from error  # fmt: skip
+            raise NotMergeable(CONFLICT_MESSAGE) from error
         raise
 
 
@@ -466,6 +481,7 @@ def _merge_pr(
     for _ in range(MAX_ROUNDS):
         still_queued()
         _require_approval(repo, number)
+        _require_no_conflict(repo, number)
         head_sha, head_branch = _pr_head(repo, number)
         if _behind_by(repo, head_sha) > 0:
             print(f"PR {number} is behind main; updating its branch.")
