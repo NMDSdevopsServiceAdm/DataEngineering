@@ -132,12 +132,9 @@ directly — recover a failed attempt with the commands below instead, not by re
 
 ### Steps (automatic, via selection)
 No separate steps — this runs as part of "Selecting a run for publication" above. It:
-1. Checks the profile can write to `sfc-<workspace>-archive-promoted` (a write-check test object,
-   `.promotion-write-check-<number>`, is written then deleted; if the delete is refused the script
-   warns and carries on).
-2. Marks the run `promoted` in the run log and uploads that change, the same way every other flag
+1. Marks the run `promoted` in the run log and uploads that change, the same way every other flag
    is uploaded.
-3. Copies the run's estimates partition into the long-term bucket, then its metadata partition,
+2. Copies the run's estimates partition into the long-term bucket, then its metadata partition,
    then its (now `promoted: True`) run-log partition, printing a count of files copied for each.
 
 ### Expected result
@@ -148,16 +145,6 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
   timestamp.
 
 ### If something is wrong
-- **`cannot write to s3://<workspace>-archive-promoted/`**: nothing was changed or copied. Check
-  the profile has write permission to that bucket and that the bucket name/workspace is right.
-- **`Warning: could not delete the write-check test object s3://<workspace>-archive-promoted/...`**:
-  the promotion carries on and is not affected. The empty test object stays in the long-term bucket
-  because only the Admin role can delete there. Delete it by hand with an Admin-role profile, using the
-  key from the warning:
-
-  ```bash
-  aws s3 rm "s3://<workspace>-archive-promoted/.promotion-write-check-<number>" --profile <admin-profile>
-  ```
 - **`could not mark run <n> as promoted`**: the flag update itself failed, so nothing was copied —
   the run log does **not** yet show `promoted: True`. If the message says the run is "already
   promoted", there's nothing to do (a previous attempt already finished — check the long-term bucket
@@ -175,7 +162,8 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
   dataset that failed — run it, then re-check the file count matches between source and destination
   (see "Not sure whether a promotion fully finished" below). Then do the same for the datasets after
   it: the script stops at the first failure, so the estimates, metadata and run log are copied in that
-  order and every later one still needs copying.
+  order and every later one still needs copying. An `AccessDenied` here means the profile's role is
+  missing a permission; see "Role permissions for promotion" below.
 - **`nothing found at s3://<bucket>/<prefix>/<partition>/`** or **`could not list s3://<bucket>/...`**:
   also after the flag update. The source partition has no files or could not be read, so check the
   run's partition in `<bucket>` exists before copying anything.
@@ -195,7 +183,7 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
   The numbers in each pair (bucket, then long-term bucket) should be the same, and the run log's should be 1.
 
 ### Recovering a promotion that failed before the flag was set
-If the run log does **not** yet show `promoted: True` for this run (the write-probe or the flag
+If the run log does **not** yet show `promoted: True` for this run (the flag
 update itself failed), there is no automatic retry — run these by hand, in order, from the repo
 root in Git Bash. Replace `<profile>`, `<bucket>` (the `sfc-<workspace>-datasets` bucket the run was
 selected on), `<n>` and `<partition>` (`archive_date=<date>/run_number=<n>`, from the run's row in
@@ -214,6 +202,105 @@ rm -rf run_log_original run_log_promoted
 The first `update_run_log.py` call still enforces the guard (fails if the run isn't
 `selected_for_publication`, or if it's already `promoted`), so this is safe to run without first
 checking the run log by hand.
+
+### Role permissions for promotion
+The `run-log-updater` role lives in the production account and is not defined in this repo. Its
+identity policy must allow everything below (all prefixes are under
+`domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates`, plus `_metadata` and
+`_run_log`). Nothing is granted on the archive bucket beyond `PutObject` and `ListBucket`: its
+bucket policy denies deletes to everyone except the Admin role.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "ListDatasetPrefixes",
+            "Effect": "Allow",
+            "Action": ["s3:ListBucket", "s3:ListBucketVersions"],
+            "Resource": "arn:aws:s3:::sfc-main-datasets",
+            "Condition": {
+                "StringLike": {
+                    "s3:prefix": [
+                        "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates",
+                        "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/*",
+                        "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata",
+                        "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/*",
+                        "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log",
+                        "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/*"
+                    ]
+                }
+            }
+        },
+        {
+            "Sid": "ReadEstimatesAndMetadata",
+            "Effect": "Allow",
+            "Action": ["s3:GetObject", "s3:GetObjectVersion"],
+            "Resource": [
+                "arn:aws:s3:::sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/*",
+                "arn:aws:s3:::sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/*"
+            ]
+        },
+        {
+            "Sid": "ReadWriteDeleteRunLogObjects",
+            "Effect": "Allow",
+            "Action": ["s3:GetObject", "s3:GetObjectVersion", "s3:PutObject", "s3:DeleteObject"],
+            "Resource": "arn:aws:s3:::sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/*"
+        },
+        {
+            "Sid": "ListPromotedArchivePrefixes",
+            "Effect": "Allow",
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::sfc-main-archive-promoted",
+            "Condition": {
+                "StringLike": {
+                    "s3:prefix": [
+                        "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/*",
+                        "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/*",
+                        "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/*"
+                    ]
+                }
+            }
+        },
+        {
+            "Sid": "WritePromotedArchive",
+            "Effect": "Allow",
+            "Action": "s3:PutObject",
+            "Resource": [
+                "arn:aws:s3:::sfc-main-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/*",
+                "arn:aws:s3:::sfc-main-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/*",
+                "arn:aws:s3:::sfc-main-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/*"
+            ]
+        },
+        {
+            "Sid": "WhoAmI",
+            "Effect": "Allow",
+            "Action": "sts:GetCallerIdentity",
+            "Resource": "*"
+        },
+        {
+            "Sid": "FindPublicationStateMachine",
+            "Effect": "Allow",
+            "Action": "states:ListStateMachines",
+            "Resource": "*"
+        },
+        {
+            "Sid": "StartPublicationOutput",
+            "Effect": "Allow",
+            "Action": "states:StartExecution",
+            "Resource": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-Publication-Output"
+        }
+    ]
+}
+```
+
+Before the first promotion on main, with an Admin profile:
+1. Check the objects being copied: if they carry tags, also allow `s3:GetObjectTagging` on the source
+   prefixes and `s3:PutObjectTagging` on the archive prefixes; if either bucket is encrypted with a
+   customer-managed KMS key, also allow that key (`kms:Decrypt` for the source, `kms:GenerateDataKey`
+   for the destination).
+2. Run `aws iam simulate-principal-policy --policy-source-arn arn:aws:iam::344210435447:role/run-log-updater --action-names s3:GetObject --resource-arns "<object arn>" --profile <admin-profile>` (or use the console Policy Simulator) for each action and resource above, and for `s3:DeleteObject` on the archive bucket, which must come back denied.
+3. Promote a run and confirm each `Copied <n> object(s)` line appears with no `AccessDenied`.
 
 ## Reconciling a run (`reconciled`)
 
