@@ -51,6 +51,8 @@ COMPARISON_BLOCKS = (
 )
 MARCH = 3
 # Period months (March, June, September, December) of the long term sheets.
+# The long term start period must be one of these months, or the filter drops the
+# row its % change is measured from.
 QUARTERLY_PERIOD_MONTHS = (3, 6, 9, 12)
 ANNUAL_LABEL = "Annual"
 MONTHLY_LABEL = "Monthly"
