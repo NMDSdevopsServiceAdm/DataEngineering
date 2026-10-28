@@ -327,6 +327,44 @@ def fit_bias_slope_per_year(
     )
 
 
+def calculate_mean_absolute_error(
+    estimates: list[pl.Expr], known_columns: list[str]
+) -> pl.Expr:
+    """
+    Calculate the mean absolute difference between estimates and known columns, per row.
+
+    Args:
+        estimates (list[pl.Expr]): the estimated share expressions, matching `known_columns` in order
+        known_columns (list[str]): the known share columns
+
+    Returns:
+        pl.Expr: the mean absolute difference across the share columns
+    """
+    return pl.mean_horizontal(
+        (estimate - pl.col(known)).abs()
+        for estimate, known in zip(estimates, known_columns)
+    )
+
+
+def calculate_summed_squared_error(
+    estimates: list[pl.Expr], known_columns: list[str]
+) -> pl.Expr:
+    """
+    Calculate the summed squared difference between estimates and known columns, per row.
+
+    Args:
+        estimates (list[pl.Expr]): the estimated share expressions, matching `known_columns` in order
+        known_columns (list[str]): the known share columns
+
+    Returns:
+        pl.Expr: the summed squared difference across the share columns
+    """
+    return pl.sum_horizontal(
+        (estimate - pl.col(known)) ** 2
+        for estimate, known in zip(estimates, known_columns)
+    )
+
+
 def score_shares(
     lf: pl.LazyFrame,
     predicted_columns: list[str],
@@ -355,18 +393,6 @@ def score_shares(
     """
     by_columns = by_columns or []
 
-    def mean_absolute_error(estimates: list[pl.Expr]) -> pl.Expr:
-        return pl.mean_horizontal(
-            (estimate - pl.col(known)).abs()
-            for estimate, known in zip(estimates, known_columns)
-        )
-
-    def summed_squared_error(estimates: list[pl.Expr]) -> pl.Expr:
-        return pl.sum_horizontal(
-            (estimate - pl.col(known)) ** 2
-            for estimate, known in zip(estimates, known_columns)
-        )
-
     predicted = [pl.col(column) for column in predicted_columns]
     baseline = [pl.col(column).mean() for column in known_columns]
 
@@ -376,18 +402,24 @@ def score_shares(
 
     row_scores_lf = scored_lf.select(
         *by_columns,
-        mean_absolute_error(predicted).alias(ModelEvaluation.mean_absolute_error_pp),
-        summed_squared_error(predicted).alias(ModelEvaluation.brier_score),
+        calculate_mean_absolute_error(predicted, known_columns).alias(
+            ModelEvaluation.mean_absolute_error_pp
+        ),
+        calculate_summed_squared_error(predicted, known_columns).alias(
+            ModelEvaluation.brier_score
+        ),
         (
             pl.concat_list(predicted_columns).list.arg_max()
             == pl.concat_list(known_columns).list.arg_max()
         )
         .cast(pl.Float64)
         .alias(ModelEvaluation.top_1_accuracy),
-        mean_absolute_error(baseline).alias(
+        calculate_mean_absolute_error(baseline, known_columns).alias(
             ModelEvaluation.baseline_mean_absolute_error
         ),
-        summed_squared_error(baseline).alias(ModelEvaluation.baseline_brier_score),
+        calculate_summed_squared_error(baseline, known_columns).alias(
+            ModelEvaluation.baseline_brier_score
+        ),
     )
 
     mae = pl.col(ModelEvaluation.mean_absolute_error_pp).mean()

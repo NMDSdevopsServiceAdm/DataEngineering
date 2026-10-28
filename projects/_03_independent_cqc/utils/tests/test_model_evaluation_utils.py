@@ -360,6 +360,32 @@ def run_score_shares(
     ).collect()
 
 
+class TestCalculateMeanAbsoluteError:
+    def test_mean_absolute_error_is_mean_difference_across_share_columns(self):
+        lf = share_lf([(0.5, 0.5), (0.4, 0.6)], [(0.6, 0.4), (0.2, 0.8)])
+        estimates = [pl.col(column) for column in SHARE_PREDICTED]
+
+        returned_df = lf.select(
+            job.calculate_mean_absolute_error(estimates, SHARE_KNOWN).alias("error")
+        ).collect()
+
+        assert returned_df["error"].to_list() == pytest.approx([0.1, 0.2])
+
+
+class TestCalculateSummedSquaredError:
+    def test_summed_squared_error_is_sum_of_squared_differences_across_share_columns(
+        self,
+    ):
+        lf = share_lf([(0.5, 0.5), (0.4, 0.6)], [(0.6, 0.4), (0.2, 0.8)])
+        estimates = [pl.col(column) for column in SHARE_PREDICTED]
+
+        returned_df = lf.select(
+            job.calculate_summed_squared_error(estimates, SHARE_KNOWN).alias("error")
+        ).collect()
+
+        assert returned_df["error"].to_list() == pytest.approx([0.02, 0.08])
+
+
 class TestScoreShares:
     # Errors per row are (0.1, 0.1) and (0.2, 0.2); the pooled mean known share is (0.4, 0.6).
     KNOWN = [(0.6, 0.4), (0.2, 0.8)]
