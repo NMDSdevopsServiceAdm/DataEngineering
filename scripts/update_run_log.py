@@ -44,8 +44,9 @@ def set_run_flag(
     """Sets a flag to True for one run.
 
     Selecting a run moves the month's selection: `selected_for_publication` is
-    cleared on the other runs archived since `month_start`. Promoting a run also
-    records `promoted_at` as the current time.
+    cleared on the other runs archived since `month_start`. Promoting a run
+    records `promoted_at`, and reconciling it records `reconciled_at`, both as the
+    current time.
 
     Args:
         run_log_df (pl.DataFrame): The run log, including the partition key columns.
@@ -61,7 +62,8 @@ def set_run_flag(
             more than one row, or the flag is already True for the run. Selecting
             also raises if the run is not approved or was archived before
             `month_start`. Promoting also raises if the run is not
-            selected_for_publication.
+            selected_for_publication. Reconciling also raises if the run is not
+            promoted.
     """
     if flag not in SUPPORTED_FLAGS:
         raise ValueError(
@@ -80,6 +82,7 @@ def set_run_flag(
 
     is_selection = flag == RunLog.selected_for_publication
     is_promotion = flag == RunLog.promoted
+    is_reconciliation = flag == RunLog.reconciled
     # Before the already-True check, so an earlier month's selection says why it can't be reselected.
     if is_selection:
         if not run_df[RunLog.approved].item():
@@ -90,6 +93,8 @@ def set_run_flag(
             )
     if is_promotion and not run_df[RunLog.selected_for_publication].item():
         raise ValueError(f"Run number {run_number} is not selected_for_publication.")
+    if is_reconciliation and not run_df[RunLog.promoted].item():
+        raise ValueError(f"Run number {run_number} is not promoted.")
 
     if run_df[flag].item() is True:
         raise ValueError(f"Run number {run_number} is already {flag}.")
@@ -107,6 +112,13 @@ def set_run_flag(
             .then(pl.lit(datetime.now()))
             .otherwise(pl.col(RunLog.promoted_at))
             .alias(RunLog.promoted_at)
+        )
+    if is_reconciliation:
+        run_log_df = run_log_df.with_columns(
+            pl.when(is_run)
+            .then(pl.lit(datetime.now()))
+            .otherwise(pl.col(RunLog.reconciled_at))
+            .alias(RunLog.reconciled_at)
         )
 
     return run_log_df.with_columns(
