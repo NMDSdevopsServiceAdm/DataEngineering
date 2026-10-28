@@ -24,21 +24,21 @@ from utils.column_values.categorical_columns_by_dataset import (
 
 SLV_METRICS = [
     (
-        SLVCols.starters,
-        SLVCols.starters_cleaned,
-        SLVCols.starters_filtering_rule,
+        SLVCols.ascwds_starters,
+        SLVCols.ascwds_starters_clean,
+        SLVCols.ascwds_starters_filtering_rule,
         StartersFilteringRule,
     ),
     (
-        SLVCols.leavers,
-        SLVCols.leavers_cleaned,
-        SLVCols.leavers_filtering_rule,
+        SLVCols.ascwds_leavers,
+        SLVCols.ascwds_leavers_clean,
+        SLVCols.ascwds_leavers_filtering_rule,
         LeaversFilteringRule,
     ),
     (
-        SLVCols.vacancies,
-        SLVCols.vacancies_cleaned,
-        SLVCols.vacancies_filtering_rule,
+        SLVCols.ascwds_vacancies,
+        SLVCols.ascwds_vacancies_clean,
+        SLVCols.ascwds_vacancies_filtering_rule,
         VacanciesFilteringRule,
     ),
 ]
@@ -89,56 +89,56 @@ def main(
             brief="estimated_employees is greater than or equal to 0",
         )
         .col_vals_ge(
-            SLVCols.starters_cleaned,
+            SLVCols.ascwds_starters_clean,
             0,
             na_pass=True,
-            brief="starters_cleaned is greater than or equal to 0",
+            brief="ascwds_starters_clean is greater than or equal to 0",
         )
         .col_vals_ge(
-            SLVCols.leavers_cleaned,
+            SLVCols.ascwds_leavers_clean,
             0,
             na_pass=True,
-            brief="leavers_cleaned is greater than or equal to 0",
+            brief="ascwds_leavers_clean is greater than or equal to 0",
         )
         .col_vals_ge(
-            SLVCols.vacancies_cleaned,
+            SLVCols.ascwds_vacancies_clean,
             0,
             na_pass=True,
-            brief="vacancies_cleaned is greater than or equal to 0",
+            brief="ascwds_vacancies_clean is greater than or equal to 0",
         )
         .col_vals_ge(
-            SLVCols.turnover_rate,
+            SLVCols.ascwds_turnover_rate,
             0,
             na_pass=True,
-            brief="turnover_rate is greater than or equal to 0",
+            brief="ascwds_turnover_rate is greater than or equal to 0",
         )
         .col_vals_ge(
-            SLVCols.starter_rate,
+            SLVCols.ascwds_starter_rate,
             0,
             na_pass=True,
-            brief="starter_rate is greater than or equal to 0",
+            brief="ascwds_starter_rate is greater than or equal to 0",
         )
         .col_vals_between(
-            SLVCols.vacancy_rate,
+            SLVCols.ascwds_vacancy_rate,
             0,
             1,
             na_pass=True,
-            brief="vacancy_rate is between 0 and 1",
+            brief="ascwds_vacancy_rate is between 0 and 1",
         )
         .col_vals_in_set(
-            SLVCols.starters_filtering_rule,
+            SLVCols.ascwds_starters_filtering_rule,
             CatValues.starters_filtering_rule_column_values.categorical_values,
-            brief="starters_filtering_rule is a known reason",
+            brief="ascwds_starters_filtering_rule is a known reason",
         )
         .col_vals_in_set(
-            SLVCols.leavers_filtering_rule,
+            SLVCols.ascwds_leavers_filtering_rule,
             CatValues.leavers_filtering_rule_column_values.categorical_values,
-            brief="leavers_filtering_rule is a known reason",
+            brief="ascwds_leavers_filtering_rule is a known reason",
         )
         .col_vals_in_set(
-            SLVCols.vacancies_filtering_rule,
+            SLVCols.ascwds_vacancies_filtering_rule,
             CatValues.vacancies_filtering_rule_column_values.categorical_values,
-            brief="vacancies_filtering_rule is a known reason",
+            brief="ascwds_vacancies_filtering_rule is a known reason",
         )
     )
 

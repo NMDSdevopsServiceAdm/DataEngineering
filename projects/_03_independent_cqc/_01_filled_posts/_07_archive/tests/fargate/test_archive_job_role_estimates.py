@@ -164,6 +164,8 @@ class TestSaveRunLog:
                     False,
                     False,
                     False,
+                    False,
+                    None,
                 )
             ],
             schema={
@@ -182,6 +184,8 @@ class TestSaveRunLog:
                 RunLogCols.selected_for_publication: pl.Boolean,
                 RunLogCols.reconciled: pl.Boolean,
                 RunLogCols.locally_checked: pl.Boolean,
+                RunLogCols.promoted: pl.Boolean,
+                RunLogCols.promoted_at: pl.Datetime,
             },
             orient="row",
         )

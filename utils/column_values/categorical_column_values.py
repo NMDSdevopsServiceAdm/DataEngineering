@@ -631,21 +631,21 @@ class EmploymentStatusEstimateSource(ColumnValues):
 class StartersEstimateSource(ColumnValues):
     """The columns an estimated starters count can come from"""
 
-    starters_cleaned: str = SLVCols.starters_cleaned
+    ascwds_starters_clean: str = SLVCols.ascwds_starters_clean
 
 
 @dataclass
 class LeaversEstimateSource(ColumnValues):
     """The columns an estimated leavers count can come from"""
 
-    leavers_cleaned: str = SLVCols.leavers_cleaned
+    ascwds_leavers_clean: str = SLVCols.ascwds_leavers_clean
 
 
 @dataclass
 class VacanciesEstimateSource(ColumnValues):
     """The columns an estimated vacancies count can come from"""
 
-    vacancies_cleaned: str = SLVCols.vacancies_cleaned
+    ascwds_vacancies_clean: str = SLVCols.ascwds_vacancies_clean
 
 
 @dataclass

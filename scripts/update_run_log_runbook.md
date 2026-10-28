@@ -9,10 +9,11 @@ Run log location: `s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_ar
 |---|---|---|
 | `approved` | We assessed the run and are satisfied it is accurate | [Approving a run](#approving-a-run-approved) |
 | `selected_for_publication` | The one run chosen to publish this month | [Selecting a run for publication](#selecting-a-run-for-publication-selected_for_publication) |
+| `promoted` | The run's estimates, metadata and run-log partitions are copied into the long-term archive bucket (set automatically, not chosen at the prompt) | [Promoting a run](#promoting-a-run-promoted) |
 | `reconciled` | The public output's totals match the archived estimates | [Stub](#reconciling-a-run-reconciled) |
 | `locally_checked` | The refreshed Tableau file passed its local check | [Stub](#marking-a-run-locally-checked-locally_checked) |
 
-The `tag` column is not set by this script: the CircleCI workflow in [Cutting the release tag](#cutting-the-release-tag-tag) sets it. Assessing a run is the review of its assessment data and has no flag of its own. Approving and selecting are two separate decisions and two separate updates (see `projects/ARCHIVING_AND_PUBLICATION.md`).
+The `tag` column is not set by this script: the CircleCI workflow in [Cutting the release tag](#cutting-the-release-tag-tag) sets it. `promoted_at` is set automatically alongside `promoted` (the current time) and is not itself a flag you choose. Assessing a run is the review of its assessment data and has no flag of its own. Approving, selecting and promoting are separate decisions and separate updates (see `projects/ARCHIVING_AND_PUBLICATION.md`).
 
 ## Prerequisites
 Run these once per terminal session, from the DataEngineering repo root, in PowerShell:
@@ -35,13 +36,13 @@ aws-mfa --mfa-profile prod --token xxxxxx
 uv sync
 ```
 
-The script needs Git Bash (bash 4 or later), so run it from there. Steps 1 and 2 can be done in a separate PowerShell window: the credentials are saved in your `.aws` folder and shared. `aws` and `uv` must be on the Git Bash PATH. The `aws-mfa` login with the `prod` profile also covers `non-prod`, which assumes its role through it.
+The script needs Git Bash (bash 4 or later), so run it from there. Steps 1 and 2 can be done in a separate PowerShell window: the credentials are saved in your `.aws` folder and shared. `aws` and `uv` must be on the Git Bash PATH. The AWS profiles the script uses must be set up as described in `WINDOWS_SETUP.md`.
 
 ## How the script works
 Every flag uses the same script and the same prompts:
 
-1. It asks for the **AWS profile** and the **bucket**. Press Enter at the bucket prompt only for production (`sfc-main-datasets`); otherwise type a branch bucket name, without `s3://` or a trailing `/`.
-2. It copies the run log down and lists the runs archived this month (from the 1st): run number, archive date, the four flags and the tag. Nothing is changed yet.
+1. It asks for the **AWS profile** (Enter for the default, `run-log-updater`; use `non-prod` for a branch bucket) and the **bucket**. Press Enter at the bucket prompt only for production (`sfc-main-datasets`); otherwise type a branch bucket name, without `s3://` or a trailing `/`.
+2. It copies the run log down and lists the runs archived this month (from the 1st): run number, archive date, the five flags and the tag. Nothing is changed yet.
 3. It asks for the **flag** and the **run number**, then shows the four answers and asks `Are these correct?`.
 4. It builds the update in `run_log_updated/` and prints each changed run **Before** and **After**.
 5. Only after you answer `y` at the upload prompt are the changed runs' folders replaced on S3. Anything other than y/yes/n/no is asked again, and `n` deletes the updated copy and uploads nothing.
@@ -80,7 +81,7 @@ Do this when you have reviewed the run's assessment data and are satisfied with 
 ### Use case
 Choose the one run to publish this month. This is a separate decision from approving, made after at least one run is approved. It can pick any approved run, not necessarily the latest: if the first run of the month is approved and a later rerun is also approved and preferred, select the later one. If you selected the wrong run, select the right one: the selection moves.
 
-Selecting a run also lets you start the `Publication-Output` step function for it, which builds the public data (the publication summary behind the Tableau output and the T0, T1 and T2 data-download tables).
+Selecting a run also automatically copies it into the long-term archive bucket (see "Promoting a run" below — this step runs on its own, with no extra confirmation), and lets you start the `Publication-Output` step function for it, which builds the public data (the publication summary behind the Tableau output and the T0, T1 and T2 data-download tables).
 
 Rules:
 - The run must be approved. Approve it first (see "Approving a run") if it is not.
@@ -97,13 +98,15 @@ Rules:
    - First selection this month: one block, for your run, where only `selected_for_publication` changes from `False` to `True`.
    - Moving the selection: two blocks, your run (`False` to `True`) and the previously selected run (`True` to `False`).
 7. Answer `y` at the upload prompt. A move shows `Upload 2 changed run(s)`, and both folders are replaced after this one confirmation.
-8. The script offers to start `<workspace>-Publication-Output` (`main-Publication-Output` for `sfc-main-datasets`; `<branch>-Publication-Output` for a branch bucket `sfc-<branch>-datasets`). It shows the state machine name, its ARN and the input `{"run_number": <n>}`. Answer `y` to start it, or `n` to start it yourself later with that input.
+8. The script automatically promotes the run (see "Promoting a run" below) — no prompt, it just runs. If this fails, it stops here; see that section's "If something is wrong".
+9. The script offers to start `<workspace>-Publication-Output` (`main-Publication-Output` for `sfc-main-datasets`; `<branch>-Publication-Output` for a branch bucket `sfc-<branch>-datasets`). It shows the state machine name, its ARN and the input `{"run_number": <n>}`. Answer `y` to start it, or `n` to start it yourself later with that input.
 
 ### Expected result
 - `Done: selected_for_publication is now True for run <n> in s3://<bucket>/.`
 - For a move, a line `The selection moved, so these runs were changed: ...`.
 - On a branch bucket, one restore command per changed run.
-- If you answered `y` at step 8, the execution's ARN and `Started.`. In the Step Functions console the new execution of `<workspace>-Publication-Output` has the input `{"run_number": <n>}`.
+- The promotion step's own output (see "Promoting a run"), ending `Promoted run <n> (archived <date>) to s3://<workspace>-archive-promoted/.`.
+- If you answered `y` at step 9, the execution's ARN and `Started.`. In the Step Functions console the new execution of `<workspace>-Publication-Output` has the input `{"run_number": <n>}`.
 
 `Publication-Output` builds the public data from the run's prepared data, which `Publication-Assessment` stores per run. `Publication-Assessment` starts itself when the estimates pipeline succeeds in `main`; on a branch it must be started by hand with `{"run_number": <n>}`. The script does not check that the run was prepared.
 
@@ -113,8 +116,104 @@ Rules:
 - **`Run number <n> is already selected_for_publication`**: that run is already the selection; nothing to do.
 - **Run number not found**: nothing is uploaded; pick a run from the list.
 - **The upload fails part way**: the script names the runs it uploaded and the one that failed. A moved selection can be left with no run selected, or two runs selected. Restore every run it names (on a branch bucket, run the restore commands it prints; see "Undoing an update"), then run the script again.
+- **`The selection is saved, but promotion did not complete`**: see "Promoting a run"'s "If something is wrong" — the selection itself does not need redoing.
 - **`State machine ... was not found`, `could not list state machines`, or `could not start`**: the selection is already saved. The script prints `Start Publication-Output by hand with {"run_number": <n>}`; start `<workspace>-Publication-Output` with that input. A branch has the step function only once the branch has deployed it, and your profile needs permission to list and start state machines in that workspace.
-- **`Publication-Output` starts but fails with `run_number <n> not found ... Available runs`**: the run was never prepared. The selection stays set. Start `<workspace>-Publication-Assessment` with `{"run_number": <n>}`, wait for it to finish, then start `Publication-Output` again with the same input.
+- **`Publication-Output` starts but fails with `run_number <n> not found ... Available runs`**: the run was never prepared. The selection stays set. Start `<workspace>-Publication-Assessment` with `{"run_number": <n>}` (on main the `run-log-updater` role can't start it; use another profile with access), wait for it to finish, then start `Publication-Output` again with the same input.
+
+## Promoting a run (`promoted`)
+
+### Use case
+Copy a run's estimates, metadata and run-log partitions into the long-term archive bucket
+(`sfc-<workspace>-archive-promoted`), where they are kept indefinitely — the rolling archive in
+`sfc-<workspace>-datasets` expires runs that were never promoted after about 2 months. This runs
+**automatically** as part of selecting a run for publication (see "Selecting a run for
+publication" above, step 8). `promoted` is not one of the flags `update_run_log.sh` lets you choose
+directly — recover a failed attempt with the commands below instead, not by re-running the script.
+
+### Steps (automatic, via selection)
+No separate steps — this runs as part of "Selecting a run for publication" above. It:
+1. Checks the profile can write to `sfc-<workspace>-archive-promoted` (a write-check test object,
+   `.promotion-write-check-<number>`, is written then deleted; if the delete is refused the script
+   warns and carries on).
+2. Marks the run `promoted` in the run log and uploads that change, the same way every other flag
+   is uploaded.
+3. Copies the run's estimates partition into the long-term bucket, then its metadata partition,
+   then its (now `promoted: True`) run-log partition, printing a count of files copied for each.
+
+### Expected result
+- One `Copied <n> object(s) for <prefix>/<partition>.` line per dataset (estimates, metadata,
+  run log).
+- `Promoted run <n> (archived <date>) to s3://<workspace>-archive-promoted/.`
+- The run log in both buckets shows `promoted: True` for the run, with the same `promoted_at`
+  timestamp.
+
+### If something is wrong
+- **`cannot write to s3://<workspace>-archive-promoted/`**: nothing was changed or copied. Check
+  the profile has write permission to that bucket and that the bucket name/workspace is right.
+- **`Warning: could not delete the write-check test object s3://<workspace>-archive-promoted/...`**:
+  the promotion carries on and is not affected. The empty test object stays in the long-term bucket
+  because only the Admin role can delete there. Delete it by hand with an Admin-role profile, using the
+  key from the warning:
+
+  ```bash
+  aws s3 rm "s3://<workspace>-archive-promoted/.promotion-write-check-<number>" --profile <admin-profile>
+  ```
+- **`could not mark run <n> as promoted`**: the flag update itself failed, so nothing was copied —
+  the run log does **not** yet show `promoted: True`. If the message says the run is "already
+  promoted", there's nothing to do (a previous attempt already finished — check the long-term bucket
+  to confirm). This also happens when you reselect a run that was promoted earlier: the script stops
+  at this point and never offers `Publication-Output`, so start `<workspace>-Publication-Output` by
+  hand with `{"run_number": <n>}`. If it says the run is "not selected_for_publication", select it
+  first. Otherwise, recover with "Recovering a promotion that failed before the flag was set" below.
+- **`could not upload the promoted run log partition`**: the run log on S3 does **not** yet show
+  `promoted: True` and nothing was copied. Restore the run with the restore command the script
+  prints, then recover with "Recovering a promotion that failed before the flag was set" below.
+- **`could not copy <prefix>/<partition>`**, **`copy of <prefix>/<partition> looks incomplete`** or
+  **`could not list s3://<workspace>-archive-promoted/...`**: these all happen *after* the flag update
+  already succeeded (the run log genuinely shows `promoted: True`). Finish the copy by hand instead:
+  the script prints the exact `aws s3 cp ... --recursive --profile <profile>` command for the
+  dataset that failed — run it, then re-check the file count matches between source and destination
+  (see "Not sure whether a promotion fully finished" below). Then do the same for the datasets after
+  it: the script stops at the first failure, so the estimates, metadata and run log are copied in that
+  order and every later one still needs copying.
+- **`nothing found at s3://<bucket>/<prefix>/<partition>/`** or **`could not list s3://<bucket>/...`**:
+  also after the flag update. The source partition has no files or could not be read, so check the
+  run's partition in `<bucket>` exists before copying anything.
+- **Not sure whether a promotion fully finished**: for each of the estimates, metadata and run log
+  datasets, count the files in the run's partition in `<bucket>` and then in the long-term bucket. Replace
+  `<profile>`, `<bucket>`, `<workspace>` and `<partition>` (`archive_date=<date>/run_number=<n>`), then run:
+
+  ```bash
+  aws s3 ls --recursive "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/<partition>/" --profile <profile> | wc -l
+  aws s3 ls --recursive "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/<partition>/" --profile <profile> | wc -l
+  aws s3 ls --recursive "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/<partition>/" --profile <profile> | wc -l
+  aws s3 ls --recursive "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/<partition>/" --profile <profile> | wc -l
+  aws s3 ls --recursive "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" --profile <profile> | wc -l
+  aws s3 ls --recursive "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" --profile <profile> | wc -l
+  ```
+
+  The numbers in each pair (bucket, then long-term bucket) should be the same, and the run log's should be 1.
+
+### Recovering a promotion that failed before the flag was set
+If the run log does **not** yet show `promoted: True` for this run (the write-probe or the flag
+update itself failed), there is no automatic retry — run these by hand, in order, from the repo
+root in Git Bash. Replace `<profile>`, `<bucket>` (the `sfc-<workspace>-datasets` bucket the run was
+selected on), `<n>` and `<partition>` (`archive_date=<date>/run_number=<n>`, from the run's row in
+the listing):
+
+```bash
+aws s3 sync "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/" run_log_original --profile <profile>
+uv run python -m scripts.update_run_log --run_log_dir run_log_original --output_dir run_log_promoted --run_number <n> --flag promoted
+aws s3 sync "run_log_promoted/<partition>/" "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" --delete --profile <profile>
+aws s3 cp "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/<partition>/" "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/<partition>/" --recursive --profile <profile>
+aws s3 cp "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/<partition>/" "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/<partition>/" --recursive --profile <profile>
+aws s3 cp "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" --recursive --profile <profile>
+rm -rf run_log_original run_log_promoted
+```
+
+The first `update_run_log.py` call still enforces the guard (fails if the run isn't
+`selected_for_publication`, or if it's already `promoted`), so this is safe to run without first
+checking the run log by hand.
 
 ## Reconciling a run (`reconciled`)
 **Stub: process not yet written.**
@@ -162,7 +261,7 @@ A CircleCI context named `github-release` with `GITHUB_TOKEN`: a GitHub token fo
 Trigger the pipeline from your branch with `cut_release_tag` `true`, `release_dry_run` `true` and `release_bucket` your branch dataset bucket (`sfc-<branch>-datasets`). That runs the same jobs with the non-prod context and prints every tag push, S3 write and PR instead of making it. The bucket's run log needs a run that is selected and reconciled, set with `update_run_log.sh`. A real run only starts from `main`.
 
 ## If something is wrong (any flag)
-- **Flag unsupported**: only the four flags in the table at the top are accepted.
+- **Flag unsupported**: only `approved`, `selected_for_publication`, `reconciled` and `locally_checked` are accepted at the prompt — `promoted` is set automatically, not chosen directly (see "Promoting a run").
 - **Run number not found, or the flag is already True**: the script stops with an error and uploads nothing. Fix the input and run it again.
 - **You answer `n` at the upload prompt (or the update fails)**: the change is reverted. `run_log_updated/` is deleted, `run_log_original/` is left as it was, and nothing is uploaded.
 - **Could not authenticate**: repeat the prerequisites (the MFA credentials have expired after 12 hours).

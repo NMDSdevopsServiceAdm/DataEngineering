@@ -4,6 +4,7 @@ import polars as pl
 
 import projects._03_independent_cqc._01_filled_posts._07_archive.fargate.utils.archive_utils as aUtils
 from polars_utils import utils
+from schemas.archive_run_log_schema_polars import ARCHIVE_RUN_LOG_FILE_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
 )
@@ -68,14 +69,7 @@ MAX_IMPORT_DATE_SOURCE_COLUMNS = {
 RUN_LOG_SCHEMA = {
     ArchiveKeys.archive_date: pl.String,
     ArchiveKeys.run_number: pl.Int64,
-    RunLogCols.archive_date_time: pl.Datetime,
-    **{column: pl.Date for column in MAX_IMPORT_DATE_SOURCE_COLUMNS},
-    RunLogCols.approved: pl.Boolean,
-    RunLogCols.commit_sha: pl.String,
-    RunLogCols.tag: pl.String,
-    RunLogCols.selected_for_publication: pl.Boolean,
-    RunLogCols.reconciled: pl.Boolean,
-    RunLogCols.locally_checked: pl.Boolean,
+    **ARCHIVE_RUN_LOG_FILE_SCHEMA,
 }
 
 
@@ -91,7 +85,8 @@ def save_run_log(
     Saves a one-row log of this archive run to S3, partitioned by archive_date and
     run_number.
 
-    The approval and check flags are False; tag is null, for later steps to fill in.
+    The approval, check and promoted flags are False; tag and promoted_at are null,
+    for later steps to fill in.
 
     Args:
         archive_date (str): archive date formatted as yyyy-mm-dd
@@ -114,6 +109,8 @@ def save_run_log(
             RunLogCols.selected_for_publication: [False],
             RunLogCols.reconciled: [False],
             RunLogCols.locally_checked: [False],
+            RunLogCols.promoted: [False],
+            RunLogCols.promoted_at: [None],
         },
         schema=RUN_LOG_SCHEMA,
     ).select(list(RUN_LOG_SCHEMA))
