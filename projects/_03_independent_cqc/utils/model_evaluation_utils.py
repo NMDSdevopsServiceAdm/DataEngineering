@@ -339,7 +339,7 @@ def score_shares(
     Only rows with every known share are scored. The skill scores compare each error with
     that of a baseline predicting the pooled mean known share on every row, so they stay
     comparable across groups. A tied prediction counts as its first column for top 1.
-    Used by `experiments/categorical_rolling_average/`.
+    Used by the rolling average experiments on SageMaker.
 
     Args:
         lf (pl.LazyFrame): dataset containing the predicted, known and "by" columns
