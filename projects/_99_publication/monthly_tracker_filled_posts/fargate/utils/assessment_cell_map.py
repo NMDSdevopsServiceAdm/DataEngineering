@@ -195,7 +195,6 @@ def _comparison_sheet(
     filled_posts: str,
     ct_employed: str | None,
     extra_inputs: tuple[InputRange, ...] = (),
-    has_heading_input: bool = True,
     has_criteria_note: bool = True,
 ) -> SheetMap:
     """Builds the map for a care homes (B:F) and non-residential (K:O) sheet.
@@ -209,7 +208,6 @@ def _comparison_sheet(
             employed; None where no column provides it.
         extra_inputs (tuple[InputRange, ...]): sheet-specific input ranges, such
             as the number of locations.
-        has_heading_input (bool): whether the B7 heading carries a written date.
         has_criteria_note (bool): whether the notes carry a dated criteria line.
 
     Returns:
@@ -217,6 +215,7 @@ def _comparison_sheet(
     """
     ranges = [
         InputRange(TITLE_CELL, note="'End of <month year>' title"),
+        InputRange(HEADING_CELL, note="heading incl. 'Since <month year>'"),
         InputRange(
             f"B{first_row}:B{last_row}", note="care homes dates", number_format="date"
         ),
@@ -242,10 +241,6 @@ def _comparison_sheet(
             number_format="percent",
         ),
     ]
-    if has_heading_input:
-        ranges.append(
-            InputRange(HEADING_CELL, note="heading incl. 'Since <month year>'")
-        )
     if has_criteria_note:
         ranges.append(
             InputRange(
@@ -291,8 +286,6 @@ COMP_LONG_TERM = _comparison_sheet(
     29 + LONG_TERM_SLOTS - 1,
     Pub.filtered_filled_posts_long,
     Pub.filtered_ct_total_employed_long,
-    has_heading_input=False,
-    has_criteria_note=False,
     extra_inputs=_location_count_inputs(
         "D25", "M25", Pub.filtered_locationid_count_long
     ),
@@ -306,7 +299,6 @@ NO_FILTERS = _comparison_sheet(
     29 + LONG_TERM_SLOTS - 1,
     Pub.filled_posts,
     Pub.unfiltered_ct_total_employed_long,
-    has_heading_input=False,
     has_criteria_note=False,
     extra_inputs=(
         InputRange(

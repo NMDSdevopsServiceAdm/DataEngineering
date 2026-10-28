@@ -54,32 +54,6 @@ class TestTemplateCells:
         """The % change table headings read 'Cumulative % change'."""
         assert workbook[sheet_name][cell].value == "Cumulative % change"
 
-    @pytest.mark.parametrize(
-        "sheet_name", ["Comp SfC and CT - long term", "No filters - long term"]
-    )
-    def test_long_term_heading_is_bold_quarterly_since_july_2021(
-        self, workbook: openpyxl.Workbook, sheet_name: str
-    ):
-        """The long-term comparison heading is fixed, bold text."""
-        cell = workbook[sheet_name]["B7"]
-
-        assert cell.value == (
-            "Comparison of Skills for Care's estimate of filled posts to "
-            "Capacity Tracker - Since July 2021 (quarterly)"
-        )
-        assert cell.font.b
-
-    def test_long_term_note_requires_capacity_tracker_from_july_2021(
-        self, workbook: openpyxl.Workbook
-    ):
-        """The long-term criteria note is fixed text."""
-        note = workbook["Comp SfC and CT - long term"]["B14"].value
-
-        assert note == (
-            "- Must have a Capacity Tracker figure in all months from end of "
-            "July 2021 onwards."
-        )
-
     @pytest.mark.parametrize("sheet", support.sheet_params)
     def test_has_no_typed_values_or_placeholders_outside_inputs(
         self, sheet: cell_map.SheetMap, workbook: openpyxl.Workbook

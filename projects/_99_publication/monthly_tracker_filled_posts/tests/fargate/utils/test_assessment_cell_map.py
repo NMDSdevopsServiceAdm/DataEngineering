@@ -49,25 +49,6 @@ class TestAssessmentSheets:
         assert cell not in _cells_as_coordinates(sheet)
 
     @pytest.mark.parametrize(
-        "sheet, cell",
-        [
-            pytest.param(job.COMP_LONG_TERM, "B7", id="comp_long_heading"),
-            pytest.param(job.COMP_LONG_TERM, "B14", id="comp_long_note"),
-            pytest.param(job.NO_FILTERS, "B7", id="no_filters_heading"),
-        ],
-    )
-    def test_long_term_text_cells_are_not_inputs(self, sheet: job.SheetMap, cell: str):
-        """The long-term sheets' B7 heading and B14 note are fixed template text."""
-        assert cell not in _cells_as_coordinates(sheet)
-
-    @pytest.mark.parametrize(
-        "sheet", [job.COMP_SHORT_TERM, job.COMP_MEDIUM_TERM], ids=lambda s: s.name
-    )
-    def test_short_and_medium_term_keep_dated_text_inputs(self, sheet: job.SheetMap):
-        """The B7 heading and B14 note still carry a written date."""
-        assert {"B7", "B14"} <= _cells_as_coordinates(sheet)
-
-    @pytest.mark.parametrize(
         "note, source_column",
         [
             pytest.param(
