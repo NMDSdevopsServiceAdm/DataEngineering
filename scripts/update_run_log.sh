@@ -5,24 +5,28 @@
 # update_run_log.py, shows the changed rows, and after you confirm replaces only
 # the changed runs' partitions on S3; declining deletes the updated copy and
 # uploads nothing. Selecting a run for publication can change two runs, and
-# offers to start the bucket's Publication-Output state machine for it.
+# automatically copies it into the long-term archive bucket, then offers to start
+# the bucket's Publication-Output state machine for it.
 #
 # Prerequisites: see update_run_log_runbook.md (aws-mfa login, uv sync).
 set -euo pipefail
 
 MAIN_BUCKET="sfc-main-datasets"
 DEFAULT_PROFILE="run-log-updater"
+ESTIMATES_PREFIX="domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates"
+METADATA_PREFIX="domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata"
 RUN_LOG_PREFIX="domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log"
 SUPPORTED_FLAGS="approved selected_for_publication reconciled locally_checked"
 SELECTION_FLAG="selected_for_publication"
 ORIGINAL_DIR="run_log_original"
 UPDATED_DIR="run_log_updated"
+PROMOTED_DIR="run_log_promoted"
 
 # Relative paths below are resolved from the repo root, wherever this is run from.
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-# The updated copy never outlives a run: it is removed on success and on any failure.
-trap 'rm -rf "$UPDATED_DIR"' EXIT
+# Neither copy outlives a run: both are removed on success and on any failure.
+trap 'rm -rf "$UPDATED_DIR" "$PROMOTED_DIR"' EXIT
 
 # Asks until the answer is y/yes or n/no (any case); returns 0 for yes, 1 for no.
 confirm() {
@@ -97,6 +101,120 @@ start_publication_output() {
     return 1
   fi
   echo "Started. The line above is the execution ARN."
+}
+
+# Prints how many objects are under an S3 prefix. aws s3 ls exits 1 when nothing
+# matches, which is a count of 0, not an error; any other failure is returned.
+count_objects() {
+  local listing status=0
+  listing="$(aws s3 ls --recursive "$1" --profile "$profile")" || status=$?
+  if [[ $status -ne 0 && $status -ne 1 ]]; then
+    return "$status"
+  fi
+  if [[ -z "$listing" ]]; then
+    echo 0
+  else
+    printf '%s\n' "$listing" | wc -l
+  fi
+}
+
+# Marks the selected run promoted, then copies its estimates, metadata and run-log
+# partitions from $bucket into the long-term archive bucket. Runs automatically
+# after a successful selection; never prompts. Returns 0 on success, 1 on any
+# failure; a failure before the copy loop copies nothing.
+copy_run_to_long_term_archive() {
+  local destination_bucket preflight_key partition archive_date prefix
+  local source_count destination_count partitions
+
+  # Dataset buckets are sfc-<workspace>-datasets; the long-term bucket is sfc-<workspace>-archive-promoted.
+  if [[ ! "$bucket" =~ ^sfc-(.+)-datasets$ ]]; then
+    echo "Error: cannot work out the long-term archive bucket from bucket '$bucket'." >&2
+    return 1
+  fi
+  destination_bucket="sfc-${BASH_REMATCH[1]}-archive-promoted"
+
+  # A real write probe, not just a read/list check: proves write access before
+  # touching any real data, so a permissions problem is caught immediately.
+  # No --body: omitting it creates a zero-byte object, and avoids Git Bash on
+  # Windows failing to resolve /dev/null as a readable file for this argument.
+  preflight_key=".promotion-write-check-$$"
+  if ! aws s3api put-object --bucket "$destination_bucket" --key "$preflight_key" \
+    --profile "$profile" > /dev/null 2>&1; then
+    echo "Error: cannot write to s3://$destination_bucket/. Check profile '$profile' has permission, and that the bucket exists." >&2
+    return 1
+  fi
+  if ! aws s3api delete-object --bucket "$destination_bucket" --key "$preflight_key" --profile "$profile" > /dev/null 2>&1; then
+    echo "Warning: could not delete the write-check test object s3://$destination_bucket/$preflight_key. Continuing; assume the Admin role and delete it by hand later." >&2
+  fi
+
+  # --- Mark the run promoted (same mechanic as every other flag) ---
+  if ! uv run python -m scripts.update_run_log \
+    --run_log_dir "$UPDATED_DIR" \
+    --output_dir "$PROMOTED_DIR" \
+    --run_number "$run_number" \
+    --flag promoted; then
+    echo "Error: could not mark run $run_number as promoted. Nothing was copied." >&2
+    return 1
+  fi
+
+  # Exactly one partition: promoting has no "clear other runs" side effect.
+  partitions=()
+  for partition_dir in "$PROMOTED_DIR"/archive_date=*/run_number=*/; do
+    partition="${partition_dir#"$PROMOTED_DIR"/}"
+    partition="${partition%/}"
+    if [[ ! "$partition" =~ ^archive_date=[^/]+/run_number=[1-9][0-9]*$ ]]; then
+      echo "Error: unexpected promoted partition '$partition'. Nothing was uploaded or copied." >&2
+      return 1
+    fi
+    partitions+=("$partition")
+  done
+  if [[ ${#partitions[@]} -ne 1 ]]; then
+    echo "Error: expected exactly one promoted partition, found ${#partitions[@]} (${partitions[*]:-none}). Nothing was uploaded or copied." >&2
+    return 1
+  fi
+  partition="${partitions[0]}"
+  [[ "$partition" =~ ^archive_date=([^/]+)/run_number=[1-9][0-9]*$ ]]
+  archive_date="${BASH_REMATCH[1]}"
+
+  if ! aws s3 sync "$PROMOTED_DIR/$partition/" "s3://$bucket/$RUN_LOG_PREFIX/$partition/" \
+    --delete --profile "$profile"; then
+    echo "Error: could not upload the promoted run log partition to s3://$bucket/." >&2
+    print_restore_commands "$partition" >&2
+    return 1
+  fi
+
+  # --- Copy estimates, metadata, then the now-promoted run log, into the long-term bucket ---
+  for prefix in "$ESTIMATES_PREFIX" "$METADATA_PREFIX" "$RUN_LOG_PREFIX"; do
+    if ! source_count="$(count_objects "s3://$bucket/$prefix/$partition/")"; then
+      echo "Error: could not list s3://$bucket/$prefix/$partition/. Nothing copied for this dataset." >&2
+      return 1
+    fi
+    if [[ "$source_count" -eq 0 ]]; then
+      echo "Error: nothing found at s3://$bucket/$prefix/$partition/. Nothing copied for this dataset." >&2
+      return 1
+    fi
+
+    if ! aws s3 cp "s3://$bucket/$prefix/$partition/" "s3://$destination_bucket/$prefix/$partition/" \
+      --recursive --only-show-errors --profile "$profile"; then
+      echo "Error: could not copy $prefix/$partition to s3://$destination_bucket/. Retry by hand:" >&2
+      echo "  aws s3 cp \"s3://$bucket/$prefix/$partition/\" \"s3://$destination_bucket/$prefix/$partition/\" --recursive --profile $profile" >&2
+      return 1
+    fi
+
+    if ! destination_count="$(count_objects "s3://$destination_bucket/$prefix/$partition/")"; then
+      echo "Error: could not list s3://$destination_bucket/$prefix/$partition/ to verify the copy. Retry by hand:" >&2
+      echo "  aws s3 cp \"s3://$bucket/$prefix/$partition/\" \"s3://$destination_bucket/$prefix/$partition/\" --recursive --profile $profile" >&2
+      return 1
+    fi
+    if [[ "$destination_count" -eq 0 || "$destination_count" != "$source_count" ]]; then
+      echo "Error: copy of $prefix/$partition looks incomplete ($destination_count of $source_count file(s) at the destination). Retry by hand:" >&2
+      echo "  aws s3 cp \"s3://$bucket/$prefix/$partition/\" \"s3://$destination_bucket/$prefix/$partition/\" --recursive --profile $profile" >&2
+      return 1
+    fi
+    echo "Copied $destination_count object(s) for $prefix/$partition."
+  done
+
+  echo "Promoted run $run_number (archived $archive_date) to s3://$destination_bucket/."
 }
 
 for command_name in aws uv; do
@@ -221,8 +339,13 @@ fi
 
 print_restore_commands "${partitions[@]}"
 
-# --- Start the public output for a selected run ---
+# --- Promote the selected run, then start the public output for it ---
 if [[ "$flag" == "$SELECTION_FLAG" ]]; then
+  if ! copy_run_to_long_term_archive; then
+    echo "The selection is saved, but promotion did not complete. See update_run_log_runbook.md to finish it by hand." >&2
+    exit 1
+  fi
+
   if ! start_publication_output; then
     echo "The selection is saved. Start Publication-Output by hand with {\"run_number\": $run_number}." >&2
     exit 1

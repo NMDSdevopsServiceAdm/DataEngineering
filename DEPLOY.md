@@ -86,5 +86,6 @@ Merge by adding the `ready-to-merge` label, not the Merge button. The `merge-whe
 - If CircleCI rejects the token or project slug (HTTP 401/403/404), the run fails and no labels are changed. Fix `CIRCLECI_TOKEN`, then run the workflow manually as above.
 - A run stops itself after 5h45m (GitHub's job limit is 6h), comments on the PR it was waiting on and removes its label: re-add it to continue.
 - Add `merge-dry-run` instead to run every check without merging. It removes the label afterwards.
+- The bot runs `main`'s copy of the workflow and script (`pull_request_target`), not the PR's, so changes to `scripts/merge_when_ready.py` or the workflow only take effect once merged, and labelling a PR that edits them tests nothing. To test such changes before merging, run the workflow manually from your branch (Actions > `merge-when-ready` > Run workflow, "Use workflow from" your branch, dry run ticked).
 - Needs the `ready-to-merge` and `merge-dry-run` labels to exist, and the `CIRCLECI_TOKEN` secret.
 - The Merge button still works, so the label is a team convention.

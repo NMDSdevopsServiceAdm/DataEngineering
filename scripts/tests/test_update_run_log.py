@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
+from unittest.mock import patch
 
 import polars as pl
 import polars.testing as pl_testing
 import pytest
 
 import scripts.update_run_log as job
+from schemas.archive_run_log_schema_polars import ARCHIVE_RUN_LOG_FILE_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as Keys,
 )
@@ -17,22 +19,12 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 RUN_LOG_SCHEMA = {
     Keys.archive_date: pl.String,
     Keys.run_number: pl.Int64,
-    RunLog.archive_date_time: pl.Datetime,
-    RunLog.max_ascwds_workplace_import_date: pl.Date,
-    RunLog.max_cqc_location_import_date: pl.Date,
-    RunLog.max_cqc_pir_import_date: pl.Date,
-    RunLog.max_ct_care_home_import_date: pl.Date,
-    RunLog.max_ct_non_res_import_date: pl.Date,
-    RunLog.max_current_ons_import_date: pl.Date,
-    RunLog.approved: pl.Boolean,
-    RunLog.commit_sha: pl.String,
-    RunLog.tag: pl.String,
-    RunLog.selected_for_publication: pl.Boolean,
-    RunLog.reconciled: pl.Boolean,
-    RunLog.locally_checked: pl.Boolean,
+    **ARCHIVE_RUN_LOG_FILE_SCHEMA,
 }
 
 MONTH_START = date(2026, 10, 1)
+PROMOTED_AT = datetime(2026, 10, 15, 9, 30)
+RECONCILED_AT = datetime(2026, 10, 16, 9, 30)
 
 DEFAULT_VALUES = {
     pl.Boolean: False,
@@ -44,11 +36,16 @@ DEFAULT_VALUES = {
 
 
 def build_run_log(
-    runs: list[tuple[str, int, bool]], selected_runs: tuple[int, ...] = ()
+    runs: list[tuple[str, int, bool]],
+    selected_runs: tuple[int, ...] = (),
+    promoted_runs: tuple[int, ...] = (),
+    reconciled_runs: tuple[int, ...] = (),
 ) -> pl.DataFrame:
     """Builds a full-width run log with one row per (archive_date, run_number, approved).
 
-    The runs in `selected_runs` have `selected_for_publication` True.
+    The runs in `selected_runs` have `selected_for_publication` True; the runs in
+    `promoted_runs` have `promoted` True; the runs in `reconciled_runs` have
+    `reconciled` True.
     """
     rows = []
     for archive_date, run_number, approved in runs:
@@ -59,6 +56,8 @@ def build_run_log(
         row[Keys.run_number] = run_number
         row[RunLog.approved] = approved
         row[RunLog.selected_for_publication] = run_number in selected_runs
+        row[RunLog.promoted] = run_number in promoted_runs
+        row[RunLog.reconciled] = run_number in reconciled_runs
         row[RunLog.tag] = None
         rows.append(row)
     return pl.DataFrame(rows, schema=RUN_LOG_SCHEMA)
@@ -149,7 +148,13 @@ class TestSetRunFlag:
     @pytest.mark.parametrize("flag", job.SUPPORTED_FLAGS)
     def test_sets_each_supported_flag_true(self, flag):
         is_approved = flag != RunLog.approved
-        run_log_df = build_run_log([("2026-10-06", 1, is_approved)])
+        is_selected = flag in (RunLog.promoted, RunLog.reconciled)
+        is_promoted = flag == RunLog.reconciled
+        run_log_df = build_run_log(
+            [("2026-10-06", 1, is_approved)],
+            selected_runs=(1,) if is_selected else (),
+            promoted_runs=(1,) if is_promoted else (),
+        )
 
         returned_df = job.set_run_flag(run_log_df, 1, flag, MONTH_START)
 
@@ -292,6 +297,98 @@ class TestSetRunFlagForSelection:
         )
 
 
+class TestSetRunFlagForPromotion:
+    def test_raises_when_run_is_not_selected_for_publication(self):
+        run_log_df = build_run_log([("2026-10-06", 1, True)])
+
+        with pytest.raises(ValueError, match="not selected_for_publication"):
+            job.set_run_flag(run_log_df, 1, RunLog.promoted, MONTH_START)
+
+    def test_raises_when_already_promoted(self):
+        run_log_df = build_run_log(
+            [("2026-10-06", 1, True)], selected_runs=(1,), promoted_runs=(1,)
+        )
+
+        with pytest.raises(ValueError, match="already"):
+            job.set_run_flag(run_log_df, 1, RunLog.promoted, MONTH_START)
+
+    @patch("scripts.update_run_log.datetime")
+    def test_sets_promoted_at_to_now(self, datetime_mock):
+        datetime_mock.now.return_value = PROMOTED_AT
+        run_log_df = build_run_log([("2026-10-06", 1, True)], selected_runs=(1,))
+
+        returned_df = job.set_run_flag(run_log_df, 1, RunLog.promoted, MONTH_START)
+
+        assert returned_df[RunLog.promoted_at].to_list() == [PROMOTED_AT]
+
+    def test_promoting_does_not_clear_other_runs_selected_or_promoted_flags(self):
+        run_log_df = build_run_log(
+            [("2026-10-01", 1, True), ("2026-10-08", 2, True), ("2026-10-15", 3, True)],
+            selected_runs=(1, 2, 3),
+            promoted_runs=(1,),
+        )
+
+        returned_df = job.set_run_flag(run_log_df, 2, RunLog.promoted, MONTH_START)
+
+        other_runs = pl.col(Keys.run_number) != 2
+        tracked_columns = [RunLog.selected_for_publication, RunLog.promoted]
+        pl_testing.assert_frame_equal(
+            run_log_df.filter(other_runs).select(tracked_columns),
+            returned_df.filter(other_runs).select(tracked_columns),
+        )
+
+
+class TestSetRunFlagForReconciliation:
+    def test_raises_when_run_is_not_promoted(self):
+        run_log_df = build_run_log([("2026-10-06", 1, True)], selected_runs=(1,))
+
+        with pytest.raises(ValueError, match="not promoted"):
+            job.set_run_flag(run_log_df, 1, RunLog.reconciled, MONTH_START)
+
+    def test_raises_when_already_reconciled(self):
+        run_log_df = build_run_log(
+            [("2026-10-06", 1, True)],
+            selected_runs=(1,),
+            promoted_runs=(1,),
+            reconciled_runs=(1,),
+        )
+
+        with pytest.raises(ValueError, match="already"):
+            job.set_run_flag(run_log_df, 1, RunLog.reconciled, MONTH_START)
+
+    @patch("scripts.update_run_log.datetime")
+    def test_sets_reconciled_at_to_now(self, datetime_mock):
+        datetime_mock.now.return_value = RECONCILED_AT
+        run_log_df = build_run_log(
+            [("2026-10-06", 1, True)], selected_runs=(1,), promoted_runs=(1,)
+        )
+
+        returned_df = job.set_run_flag(run_log_df, 1, RunLog.reconciled, MONTH_START)
+
+        assert returned_df[RunLog.reconciled_at].to_list() == [RECONCILED_AT]
+
+    def test_reconciling_does_not_clear_other_runs_flags(self):
+        run_log_df = build_run_log(
+            [("2026-10-01", 1, True), ("2026-10-08", 2, True), ("2026-10-15", 3, True)],
+            selected_runs=(1, 2, 3),
+            promoted_runs=(1, 2, 3),
+            reconciled_runs=(1,),
+        )
+
+        returned_df = job.set_run_flag(run_log_df, 2, RunLog.reconciled, MONTH_START)
+
+        other_runs = pl.col(Keys.run_number) != 2
+        tracked_columns = [
+            RunLog.selected_for_publication,
+            RunLog.promoted,
+            RunLog.reconciled,
+        ]
+        pl_testing.assert_frame_equal(
+            run_log_df.filter(other_runs).select(tracked_columns),
+            returned_df.filter(other_runs).select(tracked_columns),
+        )
+
+
 class TestGetChangedRunNumbers:
     def test_returns_only_runs_where_the_flag_changed(self):
         run_log_df = build_run_log(
@@ -358,11 +455,13 @@ class TestFormatRunTable:
             RunLog.selected_for_publication,
             RunLog.reconciled,
             RunLog.locally_checked,
+            RunLog.promoted,
             RunLog.tag,
         ]
         assert returned_lines[1].split() == [
             "1",
             "2026-10-01",
+            "False",
             "False",
             "False",
             "False",
@@ -373,6 +472,7 @@ class TestFormatRunTable:
             "2026-10-08",
             "True",
             "True",
+            "False",
             "False",
             "False",
         ]
@@ -419,6 +519,17 @@ class TestReadRunLog:
     def test_raises_when_run_log_dir_has_no_parquet_files(self, tmp_path):
         with pytest.raises(FileNotFoundError, match="parquet"):
             job.read_run_log(tmp_path)
+
+    def test_treats_a_run_missing_newer_columns_as_null(self, tmp_path):
+        old_format_df = build_run_log([("2026-09-22", 1, True)]).drop(
+            RunLog.promoted, RunLog.promoted_at
+        )
+        write_run_log(tmp_path, old_format_df)
+
+        returned_df = job.read_run_log(tmp_path)
+
+        assert returned_df[RunLog.promoted].to_list() == [None]
+        assert returned_df[RunLog.promoted_at].to_list() == [None]
 
 
 class TestWriteRunPartition:

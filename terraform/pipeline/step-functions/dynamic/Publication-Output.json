@@ -65,6 +65,119 @@
                   ]
                 }
               },
+              "ResultPath": null,
+              "Next": "Start Promotion Check"
+            },
+            "Start Promotion Check": {
+              "Type": "Pass",
+              "Parameters": {
+                "run_number.$": "$.run_number",
+                "attempts": 0
+              },
+              "Next": "Check Promoted Archive"
+            },
+            "Check Promoted Archive": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Catch": [
+                {
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "ResultPath": "$.check",
+                  "Next": "Promotion Not Ready?"
+                }
+              ],
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${publication_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${publication_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_99_publication-container",
+                      "Command.$": "States.Array('_04_reconcile_output.py', '--mode', 'check', '--promoted_run_log_source', '${archive_promoted_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/', '--run_number', States.Format('{}', $.run_number))"
+                    }
+                  ]
+                }
+              },
+              "ResultPath": null,
+              "Next": "Compare Totals"
+            },
+            "Promotion Not Ready?": {
+              "Type": "Choice",
+              "Comment": "Exit code 75 is NOT_PROMOTED_EXIT_CODE in _04_reconcile_output.py; any other failure is a fault, not a wait",
+              "Choices": [
+                {
+                  "Variable": "$.check.Cause",
+                  "StringMatches": "*\"ExitCode\":75*",
+                  "Next": "Count Promotion Attempt"
+                }
+              ],
+              "Default": "Promotion Check Failed"
+            },
+            "Promotion Check Failed": {
+              "Type": "Fail",
+              "Error": "PromotionCheckFailed",
+              "CausePath": "$.check.Cause"
+            },
+            "Count Promotion Attempt": {
+              "Type": "Pass",
+              "Parameters": {
+                "run_number.$": "$.run_number",
+                "attempts.$": "States.MathAdd($.attempts, 1)"
+              },
+              "Next": "Promotion Attempts Exceeded?"
+            },
+            "Promotion Attempts Exceeded?": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.attempts",
+                  "NumericGreaterThanEquals": ${reconciliation_polling_max_attempts},
+                  "Next": "Promotion Timeout"
+                }
+              ],
+              "Default": "Wait For Promotion"
+            },
+            "Wait For Promotion": {
+              "Type": "Wait",
+              "Seconds": ${reconciliation_polling_wait_seconds},
+              "Next": "Check Promoted Archive"
+            },
+            "Promotion Timeout": {
+              "Type": "Fail",
+              "Error": "PromotionTimeout",
+              "Cause": "The run was not promoted after ${reconciliation_polling_max_attempts} checks. Promote it, then start Publication-Output again."
+            },
+            "Compare Totals": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${publication_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${publication_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_99_publication-container",
+                      "Command.$": "States.Array('_04_reconcile_output.py', '--mode', 'compare', '--assessment_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/', '--promoted_archive_source', '${archive_promoted_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/', '--run_log_destination', '${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/', '--run_number', States.Format('{}', $.run_number))"
+                    }
+                  ]
+                }
+              },
               "End": true
             }
           }

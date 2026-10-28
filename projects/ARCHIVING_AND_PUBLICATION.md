@@ -14,7 +14,7 @@ Each run calculates estimates across all time.
 ### Holding
 Each of these runs is archived into a holding bucket.
 Each archive is partitioned on run date and a run number. Run number always increases over time.
-A single archive consists of three datasets; job role estimates, metadata and current geographies.
+A single archive consists of two datasets; job role estimates and metadata.
 We only archive specific columns in each dataset.
 
 ## Publication
@@ -48,5 +48,5 @@ If a second estimates run finishes while `Publication-Assessment` is still runni
 Start `Publication-Assessment` again with that run's `run_number` to build its assessment data.
 
 ### Long term storage
-When the data for publication is signed-off then the archived output used to make it is copied into a long-term storage bucket.
-Archived data in the holding bucket that is more than two months old is removed.
+When a run is selected for publication the archived output used to make it is copied into a long-term storage bucket.
+Archived data in the holding bucket that was never selected is removed after about two months.

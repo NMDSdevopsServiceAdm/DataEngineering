@@ -81,9 +81,11 @@ def update_filtering_rule(
     """
     clean_col_is_null = pl.col(clean_col_name).is_null()
     rule_is_populated = pl.col(filter_rule_col_name) == populated_rule
-    rule_is_winsorised = pl.col(filter_rule_col_name) == winsorized_rule
 
-    rule_needs_update = clean_col_is_null & (rule_is_populated | rule_is_winsorised)
+    rule_needs_update = clean_col_is_null & rule_is_populated
+    if winsorized_rule is not None:
+        rule_is_winsorised = pl.col(filter_rule_col_name) == winsorized_rule
+        rule_needs_update = rule_needs_update | (clean_col_is_null & rule_is_winsorised)
     if uncapped_col_name is not None:
         clean_col_has_changed = pl.col(clean_col_name) != pl.col(uncapped_col_name)
         rule_needs_update = rule_needs_update | (

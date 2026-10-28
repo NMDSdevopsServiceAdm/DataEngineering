@@ -57,7 +57,10 @@ class ArchiveRunLogColumns:
     max_ct_care_home_import_date: str = "max_ct_care_home_import_date"
     max_ct_non_res_import_date: str = "max_ct_non_res_import_date"
     max_current_ons_import_date: str = "max_current_ons_import_date"
+    promoted: str = "promoted"
+    promoted_at: str = "promoted_at"
     reconciled: str = "reconciled"
+    reconciled_at: str = "reconciled_at"
     selected_for_publication: str = "selected_for_publication"
     tag: str = "tag"
 

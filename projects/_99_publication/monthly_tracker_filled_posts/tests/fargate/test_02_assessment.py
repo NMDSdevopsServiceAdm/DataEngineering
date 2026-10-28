@@ -22,7 +22,9 @@ TEST_SOURCE = "some/prep/directory/"
 TEST_RUN_SOURCE = "some/prep/directory/archive_date=2026-10-01/run_number=2/"
 TEST_DESTINATION = "some/other/directory"
 TEST_RUN_LOG_SOURCE = "some/run/log/directory"
+TEST_WORKBOOK_DESTINATION = "some/workbook/directory"
 TEST_PREVIOUS_RUN_SOURCE = "some/other/directory/archive_date=2026-09-01/run_number=1/"
+TEST_WRITTEN_RUN = "some/other/directory/archive_date=2026-10-01/run_number=2/"
 
 # Term start dates for a run on 2026-09-01 whose earliest import date is 2021-04-01.
 LONG_TERM_FROM_DATE = date(2021, 7, 1)
@@ -70,6 +72,14 @@ def mocks():
             scan_parquet=stack.enter_context(patch(f"{PATCH_PATH}.utils.scan_parquet")),
             sink_to_parquet=stack.enter_context(
                 patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+            ),
+            fill_workbook=stack.enter_context(
+                patch(
+                    f"{PATCH_PATH}.assessment_workbook_utils.fill_assessment_workbook_from_lf"
+                )
+            ),
+            upload_workbook=stack.enter_context(
+                patch(f"{PATCH_PATH}.assessment_workbook_utils.upload_to_s3")
             ),
             resolve_run_sources=stack.enter_context(
                 patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources")
@@ -142,20 +152,36 @@ def mocks():
 
 class TestMain:
     def test_main_reads_the_requested_run_from_the_prep_store(self, mocks):
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE, run_number=3)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+            run_number=3,
+        )
 
         mocks.resolve_run_sources.assert_called_once_with([TEST_SOURCE], 3)
-        mocks.scan_parquet.assert_called_once_with(TEST_RUN_SOURCE)
+        mocks.scan_parquet.assert_any_call(TEST_RUN_SOURCE)
 
     def test_main_reads_the_latest_run_when_no_run_number_given(self, mocks):
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
 
         mocks.resolve_run_sources.assert_called_once_with([TEST_SOURCE], None)
 
     def test_main_adds_consistent_service_for_each_term_and_ct_total_employed(
         self, mocks
     ):
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
 
         mocks.has_consistent_service.assert_has_calls(
             [
@@ -171,7 +197,12 @@ class TestMain:
         )
 
     def test_main_adds_ct_has_data_and_dispersion_filters_for_each_term(self, mocks):
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
 
         mocks.has_continuous_data.assert_has_calls(
             [
@@ -226,7 +257,12 @@ class TestMain:
             }
         )
 
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
 
         mocks.has_continuous_data.assert_any_call(
             Pub.ct_total_employed_imputed,
@@ -235,7 +271,12 @@ class TestMain:
         )
 
     def test_main_adds_perc_change_columns_for_each_term(self, mocks):
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
 
         group_columns = [
             IndCQC.main_job_role_clean_labelled,
@@ -324,7 +365,12 @@ class TestMain:
     def test_main_sinks_one_dataset_with_publication_and_assessment_columns(
         self, mocks
     ):
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
 
         mocks.aggregate.assert_called_once()
         assert "include_assessment" not in mocks.aggregate.call_args.kwargs
@@ -351,7 +397,12 @@ class TestMain:
         assert_frame_equal(sink_kwargs["lazy_df"], expected_lf)
 
     def test_main_adds_short_and_long_period_labels_from_the_import_date(self, mocks):
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
 
         sunk_df = mocks.sink_to_parquet.call_args.kwargs["lazy_df"].collect()
         assert sunk_df[Pub.period_label_short].to_list() == ["Mar 2026"]
@@ -369,9 +420,15 @@ class TestMain:
         mocks.scan_parquet.side_effect = lambda path: {
             TEST_RUN_SOURCE: prepared_lf,
             TEST_PREVIOUS_RUN_SOURCE: previous_lf,
+            TEST_WRITTEN_RUN: prepared_lf,
         }[path]
 
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
 
         mocks.get_prev_published_run.assert_called_once_with(TEST_RUN_LOG_SOURCE, 2)
         mocks.resolve_run_sources.assert_any_call([TEST_DESTINATION], 1)
@@ -379,14 +436,62 @@ class TestMain:
         assert mocks.add_previous_columns.call_args.args[1] is previous_lf
 
     def test_main_passes_no_previous_run_when_none_is_published(self, mocks):
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
 
-        mocks.scan_parquet.assert_called_once_with(TEST_RUN_SOURCE)
+        assert mocks.scan_parquet.call_args_list == [
+            call(TEST_RUN_SOURCE),
+            call(TEST_WRITTEN_RUN),
+        ]
         assert mocks.add_previous_columns.call_args.args[1] is None
 
     def test_main_adds_the_runs_archive_date_and_number_as_columns(self, mocks):
-        job.main(TEST_SOURCE, TEST_DESTINATION, TEST_RUN_LOG_SOURCE)
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
 
         sunk_df = mocks.sink_to_parquet.call_args.kwargs["lazy_df"].collect()
         assert sunk_df[ArchiveKeys.archive_date].to_list() == ["2026-10-01"]
         assert sunk_df[ArchiveKeys.run_number].to_list() == [2]
+
+    def test_main_fills_the_workbook_sheets_from_the_written_run(self, mocks):
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
+
+        mocks.scan_parquet.assert_called_with(TEST_WRITTEN_RUN)
+        args = mocks.fill_workbook.call_args.args
+        assert args[0] is mocks.scan_parquet.return_value
+        assert args[1] == job.cell_map.ASSESSMENT_SHEETS
+        assert args[2] == job.assessment_workbook_utils.TermFromDates(
+            short=SHORT_TERM_FROM_DATE,
+            medium=MEDIUM_TERM_FROM_DATE,
+            long=LONG_TERM_FROM_DATE,
+        )
+        assert args[3] == job.cell_map.TEMPLATE_PATH
+
+    def test_main_uploads_the_workbook_named_by_archive_date_and_run_number(
+        self, mocks
+    ):
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
+
+        saved_path = mocks.fill_workbook.call_args.args[4]
+        assert saved_path.name == "monthly_tracking_summary_2026-10-01_2.xlsx"
+        mocks.upload_workbook.assert_called_once_with(
+            saved_path, TEST_WORKBOOK_DESTINATION
+        )

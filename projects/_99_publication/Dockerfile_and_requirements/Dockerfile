@@ -13,6 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt -r requirements-extra.txt
 # Shared libraries
 COPY polars_utils /app/polars_utils
 COPY utils/file_utils.py /app/utils/file_utils.py
+COPY scripts/update_run_log.py /app/scripts/update_run_log.py
+COPY schemas/archive_run_log_schema_polars.py /app/schemas/archive_run_log_schema_polars.py
 COPY utils/column_names /app/utils/column_names/
 COPY utils/column_values /app/utils/column_values/
 COPY utils/value_labels /app/utils/value_labels/
