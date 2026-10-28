@@ -69,6 +69,8 @@ def main(
     # 1 July 2021 is the earliest date this CT data exists, so long_term_from_date
     # stays pinned there rather than rolling forward every year - unless/until the
     # retention cutoff_date itself moves past it, at which point that takes over.
+    # long_term_from_date must report on March, June, September or December, as the
+    # workbook's long term sheets only show those periods.
     earliest_ct_data_date = date(2021, 7, 1)
     long_term_from_date = max(earliest_ct_data_date, cutoff_date)
     medium_term_from_date = date(fy_year - 1, 4, 1)
