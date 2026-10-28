@@ -44,8 +44,8 @@ SERVICE_TYPE_ORDER = [
 # Comparison sheet blocks: key prefix of the block's input ranges and the
 # service type rows that feed it.
 COMPARISON_BLOCKS = (
-    ("care_homes", CARE_HOMES_SERVICE_TYPE),
-    ("non_res", NON_RESIDENTIAL_SERVICE_TYPE),
+    ("care_homes", PublishedMainService.all_care_homes),
+    ("non_res", PrimaryServiceType.non_residential),
 )
 MARCH = 3
 # Period months (March, June, September, December) of the long term sheets.
