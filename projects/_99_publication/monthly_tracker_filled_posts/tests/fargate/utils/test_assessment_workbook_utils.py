@@ -381,13 +381,7 @@ class TestSheetText:
             job.sheet_text(labels, TERM_FROM_DATES)
 
 
-VALUE_COLUMNS = list(
-    dict.fromkeys(
-        column
-        for sheet in cell_map.ASSESSMENT_SHEETS
-        for column in job._value_columns(sheet)
-    )
-)
+VALUE_COLUMNS = job._value_columns(cell_map.ASSESSMENT_SHEETS)
 EXPLICIT_VALUE_COLUMNS = [
     Pub.filled_posts,
     Pub.locationid_count,
