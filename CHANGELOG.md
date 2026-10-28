@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Changed the assessment template to fixed "Cumulative % change" table headings, no longer written per run.
 - Removed the unused GitHub merge queue CircleCI workflow and `gh-readonly-queue` branch exclusions.
 - Renamed employment status and SLV columns to one naming scheme (`ascwds_`/`estimated_` prefix, `emp_stat_`, `pct`, ordered stage suffixes), so output column names change.
 - Changed the run log update script to default to the `run-log-updater` role for the main bucket.
