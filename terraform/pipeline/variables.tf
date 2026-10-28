@@ -34,7 +34,7 @@ variable "circleci_definition_id" {
 variable "release_trigger_branch_test" {
   type        = bool
   description = "Off main, makes Publication-Output start the release-tag dry run, for testing the trigger from one branch. Never set on main."
-  default     = false
+  default     = true
 }
 
 variable "region" {
