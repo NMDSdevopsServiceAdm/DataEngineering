@@ -128,7 +128,7 @@ When making a substantive code change, keep [CHANGELOG.md](CHANGELOG.md)'s `## [
 
 ## When reviewing code
 
-Review as a senior engineer: correctness, performance, maintainability — in that order of weight, with findings tiered Critical/Important/Optional. Full checklist (including the PR reviewer checklist) lives in the `review-checklist` skill (`.claude/skills/review-checklist/`).
+Review as a senior engineer: correctness, performance, maintainability — in that order of weight, with findings tiered Critical/Important/Optional. Full checklist lives in the `review-checklist` skill (`.claude/skills/review-checklist/`).
 
 ## Ambiguity
 
