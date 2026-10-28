@@ -2,9 +2,11 @@ import datetime
 import zipfile
 from pathlib import Path
 
+import boto3
 import openpyxl
 import polars as pl
 import pytest
+from moto import mock_aws
 from openpyxl.styles import Font
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
@@ -769,3 +771,24 @@ class TestFillAssessmentWorkbookFromLf:
                 cell_map.TEMPLATE_PATH,
                 tmp_path / "out.xlsx",
             )
+
+
+class TestUploadToS3:
+    @mock_aws
+    @pytest.mark.parametrize(
+        "directory", ["s3://bucket/some/prefix/", "s3://bucket/some/prefix"]
+    )
+    def test_uploads_file_into_directory_with_its_name(self, tmp_path, directory):
+        s3 = boto3.client("s3", region_name="eu-west-2")
+        s3.create_bucket(
+            Bucket="bucket",
+            CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+        )
+        local_file = tmp_path / "nested" / "summary.xlsx"
+        local_file.parent.mkdir()
+        local_file.write_bytes(b"workbook bytes")
+
+        job.upload_to_s3(local_file, directory)
+
+        body = s3.get_object(Bucket="bucket", Key="some/prefix/summary.xlsx")["Body"]
+        assert body.read() == b"workbook bytes"
