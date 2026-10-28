@@ -636,7 +636,8 @@ def comparison_sheet_values(
             (service_type,),
         )
         for r in block_ranges:
-            if r.source_column is not None and CellRange(r.cells).size["rows"] == 1:
+            is_single_cell = CellRange(r.cells).size == {"rows": 1, "columns": 1}
+            if r.source_column is not None and is_single_cell:
                 column = f"{r.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
                 cells[r.cells] = latest_row[column]
     return cells
