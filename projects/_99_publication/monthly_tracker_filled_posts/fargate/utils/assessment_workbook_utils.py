@@ -295,15 +295,12 @@ def fill_assessment_workbook(
     template_path: Path,
     output_path: Path,
 ) -> None:
-    """Writes values and period text into the template's input cells and saves a copy.
+    """Fills the template with values and period text and saves a copy.
 
-    The text from `sheet_text` (titles, and the short and medium term comparison
-    headings and criteria notes) replaces any value given for those cells.
-
-    Nothing is written unless the template matches the cell map and every value
-    targets a mapped input cell. Other cells are left as in the template, and
-    charts keep their series references; openpyxl can drop other chart styling,
-    so check a saved workbook's charts in Excel.
+    Steps: build the period text with `sheet_text`, load the template and check it
+    against the cell map, check every value targets a mapped input cell, write
+    the values and then the period text (which replaces any value for those
+    cells), and save. Nothing is written if a check fails.
 
     Args:
         period_labels (list[str]): the run's period labels, such as "Mar 2026".
