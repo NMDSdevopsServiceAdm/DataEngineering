@@ -162,7 +162,8 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
   dataset that failed — run it, then re-check the file count matches between source and destination
   (see "Not sure whether a promotion fully finished" below). Then do the same for the datasets after
   it: the script stops at the first failure, so the estimates, metadata and run log are copied in that
-  order and every later one still needs copying.
+  order and every later one still needs copying. If the first copy fails, check the profile can write
+  to the long-term bucket.
 - **`nothing found at s3://<bucket>/<prefix>/<partition>/`** or **`could not list s3://<bucket>/...`**:
   also after the flag update. The source partition has no files or could not be read, so check the
   run's partition in `<bucket>` exists before copying anything.
@@ -182,8 +183,8 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
   The numbers in each pair (bucket, then long-term bucket) should be the same, and the run log's should be 1.
 
 ### Recovering a promotion that failed before the flag was set
-If the run log does **not** yet show `promoted: True` for this run (the flag
-update itself failed), there is no automatic retry — run these by hand, in order, from the repo
+If the run log does **not** yet show `promoted: True` for this run (the flag update or its
+upload failed), there is no automatic retry — run these by hand, in order, from the repo
 root in Git Bash. Replace `<profile>`, `<bucket>` (the `sfc-<workspace>-datasets` bucket the run was
 selected on), `<n>` and `<partition>` (`archive_date=<date>/run_number=<n>`, from the run's row in
 the listing):

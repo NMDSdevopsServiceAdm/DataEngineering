@@ -50,8 +50,9 @@ touch "$output_dir/archive_date=2026-10-01/run_number=3/part.parquet"
 
 @pytest.fixture(autouse=True)
 def require_bash():
-    if shutil.which("bash") is None:
-        pytest.skip("bash not available")
+    bash_path = shutil.which("bash")
+    if bash_path is None or "system32" in bash_path.lower():
+        pytest.skip("bash not available (WSL bash cannot run the stubs)")
 
 
 def run_script(
@@ -70,7 +71,9 @@ def run_script(
     """
     scripts_dir = tmp_path / "scripts"
     scripts_dir.mkdir()
-    shutil.copy(SCRIPT_PATH, scripts_dir / "update_run_log.sh")
+    (scripts_dir / "update_run_log.sh").write_bytes(
+        SCRIPT_PATH.read_bytes().replace(b"\r\n", b"\n")
+    )
 
     stub_dir = tmp_path / "stubs"
     stub_dir.mkdir()
