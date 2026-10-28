@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
 - Added a CircleCI workflow that, once approved, tags the selected and reconciled run's commit `vYYYY.MM.N`, records the tag in the archive run log, and opens a PR moving that commit's CHANGELOG entries under the new version.
 - Extended the run log update script to automatically copy a selected run's estimates, metadata and run log into the long-term archive bucket, setting a new `promoted` flag.
+- Added a Publication-Output step that waits for a run to be promoted, reconciles the public output's total filled posts with the promoted archive's, and sets `reconciled` and `reconciled_at` in the run log.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
@@ -54,6 +55,7 @@ All notable changes to this project will be documented in this file.
 - Removed the `cqc_location_import_date_abbreviated` and `cqc_location_import_date_full` columns from the monthly tracker publication output.
 - Changed ASC-WDS workplace cleaning to null starters, leavers and vacancies job role columns where their total is not known, and to cast the totals to integers.
 - Changed the Trello card drafting skill to start each card with a TODO and to rename "Summary" to "The problem to solve".
+- Changed the merge-when-ready GitHub Action to run from `main` rather than the labelled PR's copy of the script and workflow.
 
 ### Improved
 - Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
