@@ -23,6 +23,7 @@ COPY projects/_03_independent_cqc/_01_filled_posts/_07_archive/fargate/utils /ap
 COPY projects/_03_independent_cqc/_02_employment_status/fargate/utils /app/projects/_03_independent_cqc/_02_employment_status/fargate/utils
 COPY projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/utils /app/projects/_03_independent_cqc/_03_starters_leavers_vacancies/fargate/utils
 COPY polars_utils /app/polars_utils
+COPY schemas/archive_run_log_schema_polars.py /app/schemas/archive_run_log_schema_polars.py
 COPY utils/file_utils.py /app/utils/file_utils.py
 COPY utils/column_names /app/utils/column_names/
 COPY utils/column_values /app/utils/column_values/
