@@ -29,5 +29,6 @@ Size bands (sum of job role estimates per workplace and date): <10, 10-49, 50-14
 - "Contributing workplaces" is counted on the row's own date, not across the window.
 - Test A removes held-out workplaces' trendline shares from the averages, and scores them against their known (not imputed) shares.
 - A tied top share counts as the first status.
+- The data is tens of millions of rows, so rolling averages are built from per-cell totals (service, region, size band, job role, date, fold) and only known rows and a fixed random sample of workplaces (`SAMPLE_PERCENT`, default 10) are held in memory. Jumpiness per workplace and all of test B's imputation use that sample. Test A scores match a row-level run exactly.
 
 Left for a follow-up ticket: workplace age or time-open features, and any real model.

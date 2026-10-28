@@ -4,6 +4,11 @@ Helpers for the 2260 employment status rolling average experiments.
 Imported by experiment.ipynb and compare.ipynb after the repo is cloned onto SageMaker, so it
 may use the repo's modules. It lives outside the pipeline and has no repo tests. Written to be
 reusable for other categorical shares (such as gender): change the column constants and `SPLITS`.
+
+Scale: the data is tens of millions of rows, so nothing here holds row-level plans in memory.
+Rolling averages depend only on the "cell" (service, region, size band, job role, date, fold),
+so they are built from small per-cell totals. Rows are only used for known-value scoring and for
+a fixed random sample of workplaces (jumpiness, and test B's imputation).
 """
 
 import io
@@ -24,13 +29,21 @@ REGION = IndCQC.current_region
 ROLE = IndCQC.published_job_role_label
 SIZE_BAND = Eval.size_band
 SIZE_POSTS = IndCQC.estimate_filled_posts_by_job_role
+FOLD = Eval.fold
+ROWS = Eval.number_of_rows
+CONTRIBUTORS = "contributing_workplaces"
+WINDOW_CONTRIBUTORS = "window_contributing_workplaces"
 # The cleaned employment status data carries region but not CSSR.
 AGGREGATE_GEOGRAPHY = REGION
+
+CELL_KEYS = [SERVICE, REGION, SIZE_BAND, ROLE]
+CELL_DATE_KEYS = [*CELL_KEYS, DATE]
 
 KNOWN = iUtils.PCT_COLUMNS
 TREND = iUtils.IMPUTED_TRENDLINE_PCT_COLUMNS
 ROLLING = iUtils.ROLLING_AVG_PCT_COLUMNS
 IMPUTED = iUtils.IMPUTED_PCT_COLUMNS
+TRUTH = [f"{col}_truth" for col in KNOWN]
 
 WINDOW_MONTHS = [3, 6, 12, 24]
 CURRENT_SPLIT = "current"
@@ -43,6 +56,7 @@ HIDDEN = "hidden"
 HIDDEN_MONTHS = 12
 SHORT_TERM_EXTRAPOLATION = "2y"
 SHORT_TERM_INTERPOLATION_CAP = "5y"
+SAMPLE_SEED = 42
 
 # Finest to coarsest group columns. The finest with enough workplaces on a date is used,
 # else the next coarser, and the last is the pooled average for the job role.
@@ -101,90 +115,6 @@ def add_size_band(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf.with_columns(band.cast(pl.Categorical).alias(SIZE_BAND))
 
 
-def add_rolling_average_with_fallback(
-    lf: pl.LazyFrame, levels: list[list[str]], period: str, min_workplaces: int
-) -> pl.LazyFrame:
-    """
-    Add the 5 rolling average columns using the finest group with at least `min_workplaces`
-    workplaces contributing on the row's date, else the next coarser group, else the last.
-
-    Args:
-        lf (pl.LazyFrame): dataset containing the trendline percentages and every group column
-        levels (list[list[str]]): group columns, finest first
-        period (str): the rolling window, as a Polars offset string
-        min_workplaces (int): workplaces needed on the date to use a level
-
-    Returns:
-        pl.LazyFrame: dataset with the 5 rolling average columns added
-    """
-    for i, group_columns in enumerate(levels):
-        lf = iUtils.add_rolling_avg_pcts(
-            lf, rolling_period=period, group_columns=group_columns
-        )
-        lf = lf.rename({col: f"{col}_level{i}" for col in ROLLING}).with_columns(
-            pl.col(TREND[0])
-            .is_not_null()
-            .sum()
-            .over(group_columns + [DATE])
-            .alias(f"workplaces_level{i}")
-        )
-
-    coarsest = len(levels) - 1
-    lf = lf.with_columns(pl.col(f"{col}_level{coarsest}").alias(col) for col in ROLLING)
-    for i in reversed(range(coarsest)):
-        lf = lf.with_columns(
-            pl.when(pl.col(f"workplaces_level{i}") >= min_workplaces)
-            .then(pl.col(f"{col}_level{i}"))
-            .otherwise(pl.col(col))
-            .alias(col)
-            for col in ROLLING
-        )
-
-    temporary = [f"workplaces_level{i}" for i in range(len(levels))] + [
-        f"{col}_level{i}" for col in ROLLING for i in range(len(levels))
-    ]
-    return lf.drop(temporary)
-
-
-def add_variant_rolling_average(lf: pl.LazyFrame, variant: Variant) -> pl.LazyFrame:
-    return add_rolling_average_with_fallback(
-        lf, SPLITS[variant.split], variant.period, variant.min_workplaces
-    )
-
-
-def predict_out_of_fold(
-    lf: pl.LazyFrame, variant: Variant, n_folds: int
-) -> pl.LazyFrame:
-    """
-    Predict every row from workplaces in the other folds only.
-
-    For each fold the held-out workplaces' trendline percentages are nulled, so they add nothing
-    to any average, then the variant's rolling average is read back onto the held-out rows.
-
-    Args:
-        lf (pl.LazyFrame): dataset with the trendline percentages, group columns and "fold"
-        variant (Variant): the split and window to apply
-        n_folds (int): the number of folds
-
-    Each fold is collected on its own, keeping only the columns needed for scoring, so the five
-    full rolling average plans never sit in memory together.
-
-    Returns:
-        pl.LazyFrame: the held-out rows of every fold, with the 5 rolling average columns
-    """
-    keep = [LOCATION, DATE, SERVICE, REGION, ROLE, SIZE_BAND, *KNOWN, *ROLLING]
-    folds = []
-    for fold in range(n_folds):
-        held_out = pl.col(Eval.fold) == fold
-        masked_lf = lf.with_columns(
-            pl.when(held_out).then(None).otherwise(pl.col(col)).alias(col)
-            for col in TREND
-        )
-        fold_lf = add_variant_rolling_average(masked_lf, variant).filter(held_out)
-        folds.append(fold_lf.select(keep).collect(engine="streaming"))
-    return pl.concat(folds).lazy()
-
-
 def hide_last_months(lf: pl.LazyFrame, months: int = HIDDEN_MONTHS) -> pl.LazyFrame:
     """
     Null each workplace's known percentages in its last `months` months with known values,
@@ -195,7 +125,7 @@ def hide_last_months(lf: pl.LazyFrame, months: int = HIDDEN_MONTHS) -> pl.LazyFr
     )
     hidden = pl.col(DATE) > last_known_date.dt.offset_by(f"-{months}mo")
     return lf.with_columns(
-        *[pl.col(col).alias(f"{col}_truth") for col in KNOWN],
+        *[pl.col(col).alias(truth) for col, truth in zip(KNOWN, TRUTH)],
         hidden.fill_null(False).alias(HIDDEN),
     ).with_columns(
         pl.when(pl.col(HIDDEN)).then(None).otherwise(pl.col(col)).alias(col)
@@ -203,15 +133,204 @@ def hide_last_months(lf: pl.LazyFrame, months: int = HIDDEN_MONTHS) -> pl.LazyFr
     )
 
 
-def run_imputation_with_variant(lf: pl.LazyFrame, variant: Variant) -> pl.LazyFrame:
-    """Run the pipeline's imputation steps with the variant's rolling average."""
-    lf = iUtils.add_imputed_trendline_pcts(
-        lf,
+def prepare_hidden_trendline(
+    prepared_lf: pl.LazyFrame, destination: Path
+) -> pl.LazyFrame:
+    """
+    Hide each workplace's last months, re-run the pipeline's trendline imputation on what is
+    left, and write the narrow result to `destination`.
+
+    Args:
+        prepared_lf (pl.LazyFrame): the prepared data, with known percentages and cell columns
+        destination (Path): the parquet file to write
+
+    Returns:
+        pl.LazyFrame: a scan of the written file
+    """
+    hidden_lf = hide_last_months(
+        prepared_lf.select(LOCATION, *CELL_DATE_KEYS, FOLD, *KNOWN)
+    )
+    hidden_lf = iUtils.add_imputed_trendline_pcts(
+        hidden_lf,
         extrapolation_period=SHORT_TERM_EXTRAPOLATION,
         interpolation_cap_period=SHORT_TERM_INTERPOLATION_CAP,
     )
-    lf = add_variant_rolling_average(lf, variant)
-    return iUtils.add_imputed_pcts(lf)
+    hidden_lf.select(
+        LOCATION, *CELL_DATE_KEYS, FOLD, HIDDEN, *KNOWN, *TRUTH, *TREND
+    ).sink_parquet(destination)
+    return pl.scan_parquet(destination)
+
+
+def build_cells(lf: pl.LazyFrame) -> pl.DataFrame:
+    """
+    Total the trendline percentages per cell (service, region, size band, job role, date, fold).
+
+    Each total is the sum over the cell's rows, with the contributing rows counted from the
+    first percentage and every row counted in "number_of_rows". Totals are Float64 so window
+    sums keep no rounding residual.
+    """
+    return (
+        lf.group_by(*CELL_DATE_KEYS, FOLD)
+        .agg(
+            *[pl.col(col).cast(pl.Float64).sum() for col in TREND],
+            pl.col(TREND[0]).is_not_null().sum().alias(CONTRIBUTORS),
+            pl.len().alias(ROWS),
+        )
+        .collect(engine="streaming")
+    )
+
+
+def known_rows(lf: pl.LazyFrame) -> pl.DataFrame:
+    """Collect the rows with every percentage known, narrowed to the cell keys and shares."""
+    return (
+        lf.filter(pl.all_horizontal(pl.col(KNOWN).is_not_null()))
+        .select(*CELL_DATE_KEYS, FOLD, *KNOWN)
+        .collect(engine="streaming")
+    )
+
+
+def workplace_sample(
+    lf: pl.LazyFrame, percent: int, columns: list[str]
+) -> pl.DataFrame:
+    """Collect every row of a fixed random `percent` of workplaces, keeping `columns`."""
+    in_sample = pl.col(LOCATION).hash(SAMPLE_SEED) % 100 < percent
+    return lf.filter(in_sample).select(columns).collect(engine="streaming")
+
+
+def rolling_averages(
+    cells_lf: pl.LazyFrame,
+    group_columns: list[str],
+    period: str,
+    hold_out_fold: int | None,
+) -> pl.LazyFrame:
+    """
+    Rolling average of the trendline percentages per group and date, from cell totals.
+
+    Matches the pipeline's `add_rolling_avg_pcts`: each workplace counts once, the window
+    sums totals and contributors, and a date with no contributors takes the nearest average.
+    Cells in `hold_out_fold` add nothing to any total but their dates still exist.
+
+    Args:
+        cells_lf (pl.LazyFrame): cell totals from `build_cells`
+        group_columns (list[str]): the columns to average within
+        period (str): the rolling window, as a Polars offset string
+        hold_out_fold (int | None): a fold to leave out, or None to use every cell
+
+    Returns:
+        pl.LazyFrame: a row per group and date, with the 5 rolling averages and the date's
+            contributing workplaces
+    """
+    in_fold = pl.col(FOLD) == hold_out_fold
+
+    def kept(column: str) -> pl.Expr:
+        expr = pl.col(column)
+        return expr if hold_out_fold is None else expr.filter(~in_fold)
+
+    date_totals_lf = cells_lf.group_by(*group_columns, DATE).agg(
+        *[kept(col).sum() for col in TREND], kept(CONTRIBUTORS).sum()
+    )
+    rolled_lf = (
+        date_totals_lf.sort(*group_columns, DATE)
+        .rolling(index_column=DATE, group_by=group_columns, period=period)
+        .agg(
+            *[pl.col(col).sum() for col in TREND],
+            pl.col(CONTRIBUTORS).sum().alias(WINDOW_CONTRIBUTORS),
+        )
+    )
+    averages_lf = rolled_lf.with_columns(
+        pl.when(pl.col(WINDOW_CONTRIBUTORS) > 0)
+        .then(pl.col(total) / pl.col(WINDOW_CONTRIBUTORS))
+        .clip(0, 1)
+        .cast(pl.Float32)
+        .alias(rolling)
+        for total, rolling in zip(TREND, ROLLING)
+    ).with_columns(
+        pl.col(ROLLING)
+        .forward_fill()
+        .backward_fill()
+        .over(group_columns, order_by=DATE)
+    )
+    return averages_lf.select(*group_columns, DATE, *ROLLING).join(
+        date_totals_lf.select(*group_columns, DATE, CONTRIBUTORS),
+        on=[*group_columns, DATE],
+    )
+
+
+def cell_predictions(
+    cells_lf: pl.LazyFrame, variant: Variant, hold_out_fold: int | None
+) -> pl.LazyFrame:
+    """
+    Predict each cell with the variant's rolling average: the finest group with at least
+    `min_workplaces` workplaces contributing on the cell's date, else the next coarser group,
+    else the last.
+
+    Args:
+        cells_lf (pl.LazyFrame): cell totals from `build_cells`
+        variant (Variant): the split and window to apply
+        hold_out_fold (int | None): a fold to leave out of the averages and predict, or None to
+            predict every cell from every cell
+
+    Returns:
+        pl.LazyFrame: a row per cell (per fold when held out) with its "number_of_rows" and the
+            5 rolling average columns
+    """
+    levels = SPLITS[variant.split]
+    if hold_out_fold is None:
+        predictions_lf = cells_lf.group_by(*CELL_DATE_KEYS).agg(pl.col(ROWS).sum())
+    else:
+        predictions_lf = cells_lf.filter(pl.col(FOLD) == hold_out_fold).select(
+            *CELL_DATE_KEYS, FOLD, ROWS
+        )
+
+    for i, group_columns in enumerate(levels):
+        averages_lf = rolling_averages(
+            cells_lf, group_columns, variant.period, hold_out_fold
+        ).rename({col: f"{col}_level{i}" for col in [*ROLLING, CONTRIBUTORS]})
+        predictions_lf = predictions_lf.join(
+            averages_lf, on=[*group_columns, DATE], how="left"
+        )
+
+    coarsest = len(levels) - 1
+    predictions_lf = predictions_lf.with_columns(
+        pl.col(f"{col}_level{coarsest}").alias(col) for col in ROLLING
+    )
+    for i in reversed(range(coarsest)):
+        predictions_lf = predictions_lf.with_columns(
+            pl.when(pl.col(f"{CONTRIBUTORS}_level{i}") >= variant.min_workplaces)
+            .then(pl.col(f"{col}_level{i}"))
+            .otherwise(pl.col(col))
+            .alias(col)
+            for col in ROLLING
+        )
+
+    temporary = [
+        f"{col}_level{i}"
+        for col in [*ROLLING, CONTRIBUTORS]
+        for i in range(len(levels))
+    ]
+    return predictions_lf.drop(temporary)
+
+
+def predict_out_of_fold(
+    cells_df: pl.DataFrame, variant: Variant, n_folds: int
+) -> pl.DataFrame:
+    """
+    Predict every cell from the cells of the other folds only, one fold at a time.
+
+    Args:
+        cells_df (pl.DataFrame): cell totals from `build_cells`
+        variant (Variant): the split and window to apply
+        n_folds (int): the number of folds
+
+    Returns:
+        pl.DataFrame: a row per cell and fold with its 5 rolling average columns
+    """
+    return pl.concat(
+        [
+            cell_predictions(cells_df.lazy(), variant, fold).collect(engine="streaming")
+            for fold in range(n_folds)
+        ]
+    )
 
 
 def _long(df: pl.DataFrame, level: str, group_column: str | None) -> pl.DataFrame:
@@ -226,69 +345,120 @@ def _long(df: pl.DataFrame, level: str, group_column: str | None) -> pl.DataFram
     )
 
 
-def score_variant(
-    pred_lf: pl.LazyFrame,
-    predicted_columns: list[str],
-    known_columns: list[str],
-    scored_filter: pl.Expr | None = None,
+def _share_scores(
+    scored_lf: pl.LazyFrame, predicted_columns: list[str], known_columns: list[str]
+) -> pl.DataFrame:
+    """Share scores pooled, per job role and per size band, in long format."""
+    scored_lf = scored_lf.collect(engine="streaming").lazy()
+    results = []
+    for level, by in [("pooled", None), ("job_role", ROLE), ("size_band", SIZE_BAND)]:
+        scores_lf = evaluation.score_shares(
+            scored_lf, predicted_columns, known_columns, [by] if by else None
+        )
+        results.append(_long(scores_lf.collect(), level, by))
+    return pl.concat(results)
+
+
+def _coverage(cells_df: pl.DataFrame) -> pl.DataFrame:
+    """Share of rows whose cell has a prediction."""
+    weighted = pl.col(ROWS) * pl.col(ROLLING[0]).is_not_null()
+    coverage_df = cells_df.select(
+        (weighted.sum() / pl.col(ROWS).sum()).alias(Eval.coverage)
+    )
+    return _long(coverage_df, "coverage", None)
+
+
+def _jumpiness(
+    level: str,
+    lf: pl.LazyFrame,
+    value_columns: list[str],
+    partition_columns: list[str],
+) -> pl.DataFrame:
+    jump_df = evaluation.mean_period_to_period_change(
+        lf, value_columns, partition_columns, DATE
+    ).collect()
+    return pl.DataFrame(
+        {
+            Eval.level: [level],
+            Eval.group: ["all"],
+            Eval.metric: [Eval.mean_period_to_period_change],
+            Eval.value: [jump_df[Eval.mean_period_to_period_change].mean()],
+        }
+    )
+
+
+def score_out_of_fold(
+    predictions_df: pl.DataFrame, known_df: pl.DataFrame, sample_df: pl.DataFrame
 ) -> pl.DataFrame:
     """
-    Score predictions in long format: share scores pooled, per job role and per size band,
-    coverage, and jumpiness per workplace and for the service by geography by role aggregate.
+    Score out-of-fold predictions in long format: share scores on known rows, coverage, and
+    jumpiness per sampled workplace and for the service by geography by role aggregate.
 
     Args:
-        pred_lf (pl.LazyFrame): predictions with the known columns, group columns and date
-        predicted_columns (list[str]): the 5 predicted share columns
-        known_columns (list[str]): the 5 known share columns, in the same order
-        scored_filter (pl.Expr | None): restricts which rows are scored, such as hidden rows.
-            Coverage and jumpiness always use every row.
+        predictions_df (pl.DataFrame): from `predict_out_of_fold`
+        known_df (pl.DataFrame): from `known_rows`
+        sample_df (pl.DataFrame): the workplace sample, from `workplace_sample`, with its
+            location, cell keys and fold
 
     Returns:
         pl.DataFrame: "level", "group", "metric" and "value" rows
     """
-    # Collect once: every score below reads this small frame, not the full plan again.
-    columns = [LOCATION, DATE, SERVICE, AGGREGATE_GEOGRAPHY, ROLE, SIZE_BAND]
-    columns += [HIDDEN] if scored_filter is not None else []
-    pred_lf = (
-        pred_lf.select(*dict.fromkeys(columns + predicted_columns + known_columns))
-        .collect(engine="streaming")
-        .lazy()
-    )
-    scoring_lf = pred_lf if scored_filter is None else pred_lf.filter(scored_filter)
-    results = []
-    for level, by in [("pooled", None), ("job_role", ROLE), ("size_band", SIZE_BAND)]:
-        scores_lf = evaluation.score_shares(
-            scoring_lf, predicted_columns, known_columns, [by] if by else None
-        )
-        results.append(_long(scores_lf.collect(), level, by))
+    keys = [*CELL_DATE_KEYS, FOLD]
+    predictions_lf = predictions_df.lazy()
+    shares_lf = predictions_lf.select(*keys, *ROLLING)
 
-    coverage_lf = evaluation.calculate_coverage(pred_lf, predicted_columns[0])
-    results.append(_long(coverage_lf.collect(), "coverage", None))
-
-    workplace_jump_df = evaluation.mean_period_to_period_change(
-        pred_lf, predicted_columns, [LOCATION, ROLE], DATE
-    ).collect()
-    aggregate_lf = pred_lf.group_by(SERVICE, AGGREGATE_GEOGRAPHY, ROLE, DATE).agg(
-        pl.col(predicted_columns).mean()
+    scored_lf = known_df.lazy().join(shares_lf, on=keys)
+    workplace_lf = sample_df.lazy().join(shares_lf, on=keys)
+    aggregate_lf = predictions_lf.group_by(
+        SERVICE, AGGREGATE_GEOGRAPHY, ROLE, DATE
+    ).agg((pl.col(ROLLING) * pl.col(ROWS)).sum() / pl.col(ROWS).sum())
+    return pl.concat(
+        [
+            _share_scores(scored_lf, ROLLING, KNOWN),
+            _coverage(predictions_df),
+            _jumpiness("jumpiness_workplace", workplace_lf, ROLLING, [LOCATION, ROLE]),
+            _jumpiness(
+                "jumpiness_aggregate",
+                aggregate_lf,
+                ROLLING,
+                [SERVICE, AGGREGATE_GEOGRAPHY, ROLE],
+            ),
+        ]
     )
-    aggregate_jump_df = evaluation.mean_period_to_period_change(
-        aggregate_lf, predicted_columns, [SERVICE, AGGREGATE_GEOGRAPHY, ROLE], DATE
-    ).collect()
-    for level, jump_df in [
-        ("jumpiness_workplace", workplace_jump_df),
-        ("jumpiness_aggregate", aggregate_jump_df),
-    ]:
-        results.append(
-            pl.DataFrame(
-                {
-                    Eval.level: [level],
-                    Eval.group: ["all"],
-                    Eval.metric: [Eval.mean_period_to_period_change],
-                    Eval.value: [jump_df[Eval.mean_period_to_period_change].mean()],
-                }
-            )
+
+
+def score_hidden(predictions_df: pl.DataFrame, sample_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Run the pipeline's imputation on the sampled workplaces with the variant's rolling
+    averages, then score the imputed shares on the hidden rows.
+
+    Args:
+        predictions_df (pl.DataFrame): `cell_predictions` for every cell, collected
+        sample_df (pl.DataFrame): sampled workplaces' rows from the hidden data, with cell keys,
+            known and truth percentages and the "hidden" flag
+
+    Returns:
+        pl.DataFrame: "level", "group", "metric" and "value" rows
+    """
+    imputed_lf = iUtils.add_imputed_pcts(
+        sample_df.lazy().join(
+            predictions_df.lazy().select(*CELL_DATE_KEYS, *ROLLING),
+            on=CELL_DATE_KEYS,
+            how="left",
         )
-    return pl.concat(results)
+    )
+    imputed_df = imputed_lf.select(
+        LOCATION, *CELL_DATE_KEYS, HIDDEN, *IMPUTED, *TRUTH
+    ).collect(engine="streaming")
+    return pl.concat(
+        [
+            _share_scores(imputed_df.lazy().filter(pl.col(HIDDEN)), IMPUTED, TRUTH),
+            _coverage(predictions_df),
+            _jumpiness(
+                "jumpiness_workplace", imputed_df.lazy(), IMPUTED, [LOCATION, ROLE]
+            ),
+        ]
+    )
 
 
 def write_result(df: pl.DataFrame, name: str, results_dir: str, local: bool) -> None:
