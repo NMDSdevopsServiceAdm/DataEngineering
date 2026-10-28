@@ -5,10 +5,6 @@ number formats the template tests check. The template has no formulas.
 
 The "Number of locations" cells take the latest row per group, since every row
 in a term's period shares the same count.
-
-Open point the map does not settle (needs a pipeline column or ticket):
-- the pipeline columns that fill the % change cells on `Filled posts` and `Comp
-  prev publication`.
 """
 
 from dataclasses import dataclass
@@ -32,6 +28,8 @@ NUMBER_FORMATS = {
     "percent": "0.0%",
 }
 
+PERIOD_COL = Pub.period_label_short
+
 
 @dataclass(frozen=True)
 class InputRange:
@@ -45,12 +43,15 @@ class InputRange:
         note (str): what the range holds.
         number_format (str): key into `NUMBER_FORMATS` for the format every cell
             in the range must have in the template.
+        key (str): identifier the writer uses to find the range, unique on its
+            sheet; empty for ranges the writer does not look up.
     """
 
     cells: str
     source_column: str | None = None
     note: str = ""
     number_format: str = "general"
+    key: str = ""
 
 
 @dataclass(frozen=True)
@@ -126,57 +127,124 @@ _COMPARISON_LABELS = (
 FILLED_POSTS = SheetMap(
     name="Filled posts",
     input_ranges=(
-        InputRange(TITLE_CELL, note="'End of <month year>' title"),
-        InputRange("B24:B36", note="annual filled posts dates", number_format="date"),
         InputRange(
-            "I24:I36", note="annual filled posts % change dates", number_format="date"
+            TITLE_CELL, Pub.period_label_long, note="'End of <month year>' title"
+        ),
+        InputRange(
+            "B24:B36",
+            PERIOD_COL,
+            note="annual filled posts dates",
+            key="annual_filled_posts.dates",
+            number_format="date",
+        ),
+        InputRange(
+            "I24:I36",
+            PERIOD_COL,
+            note="annual filled posts % change dates",
+            key="annual_filled_posts.change_dates",
+            number_format="date",
         ),
         InputRange(
             "C24:G36",
+            Pub.filled_posts,
             note="annual filled posts by primary service type",
+            key="annual_filled_posts.values",
             number_format="count",
         ),
         InputRange(
-            "J25:N36", note="annual filled posts % change", number_format="percent"
+            "J25:N36",
+            Pub.filled_posts_april_perc_change,
+            note="annual filled posts % change",
+            key="annual_filled_posts.change",
+            number_format="percent",
         ),
-        InputRange("B44:B56", note="annual CQC locations dates", number_format="date"),
         InputRange(
-            "I44:I56", note="annual CQC locations % change dates", number_format="date"
+            "B44:B56",
+            PERIOD_COL,
+            note="annual CQC locations dates",
+            key="annual_locations.dates",
+            number_format="date",
+        ),
+        InputRange(
+            "I44:I56",
+            PERIOD_COL,
+            note="annual CQC locations % change dates",
+            key="annual_locations.change_dates",
+            number_format="date",
         ),
         InputRange(
             "C44:G56",
+            Pub.locationid_count,
             note="annual CQC locations by primary service type",
+            key="annual_locations.values",
             number_format="count",
         ),
         InputRange(
-            "J45:N56", note="annual CQC locations % change", number_format="percent"
+            "J45:N56",
+            Pub.locationid_count_april_perc_change,
+            note="annual CQC locations % change",
+            key="annual_locations.change",
+            number_format="percent",
         ),
-        InputRange("B65:B77", note="monthly filled posts dates", number_format="date"),
         InputRange(
-            "I65:I77", note="monthly filled posts % change dates", number_format="date"
+            "B65:B77",
+            PERIOD_COL,
+            note="monthly filled posts dates",
+            key="monthly_filled_posts.dates",
+            number_format="date",
+        ),
+        InputRange(
+            "I65:I77",
+            PERIOD_COL,
+            note="monthly filled posts % change dates",
+            key="monthly_filled_posts.change_dates",
+            number_format="date",
         ),
         InputRange(
             "C65:G77",
+            Pub.filled_posts,
             note="monthly filled posts by primary service type",
+            key="monthly_filled_posts.values",
             number_format="count",
         ),
         InputRange(
-            "J65:N77", note="monthly filled posts % change", number_format="percent"
+            "J65:N77",
+            Pub.filled_posts_cum_perc_change_short,
+            note="monthly filled posts % change",
+            key="monthly_filled_posts.change",
+            number_format="percent",
         ),
-        InputRange("B84:B96", note="monthly CQC locations dates", number_format="date"),
         InputRange(
-            "I84:I96", note="monthly CQC locations % change dates", number_format="date"
+            "B84:B96",
+            PERIOD_COL,
+            note="monthly CQC locations dates",
+            key="monthly_locations.dates",
+            number_format="date",
+        ),
+        InputRange(
+            "I84:I96",
+            PERIOD_COL,
+            note="monthly CQC locations % change dates",
+            key="monthly_locations.change_dates",
+            number_format="date",
         ),
         InputRange(
             "C84:G96",
+            Pub.locationid_count,
             note="monthly CQC locations by primary service type",
+            key="monthly_locations.values",
             number_format="count",
         ),
         InputRange(
-            "J84:N96", note="monthly CQC locations % change", number_format="percent"
+            "J84:N96",
+            Pub.locationid_count_cum_perc_change_short,
+            note="monthly CQC locations % change",
+            key="monthly_locations.change",
+            number_format="percent",
         ),
         InputRange(
             FILLED_POSTS_CHART_HEADING_CELL,
+            PERIOD_COL,
             note="'...since <month year>' chart heading",
         ),
     ),
@@ -209,21 +277,53 @@ COMP_PREV_LABEL_RANGES = ("B23:B59", "B64:B100", "B106:B142")
 COMP_PREV_PUBLICATION = SheetMap(
     name="Comp prev publication",
     input_ranges=(
-        InputRange(TITLE_CELL, note="'End of <month year>' title"),
-        InputRange(COMP_PREV_LABEL_RANGES[0], note="previous publication labels"),
-        InputRange("C23:C59", note="previous publication dates", number_format="date"),
         InputRange(
-            "D23:H59", note="previous publication figures", number_format="count"
+            TITLE_CELL, Pub.period_label_long, note="'End of <month year>' title"
+        ),
+        InputRange(COMP_PREV_LABEL_RANGES[0], note="previous publication labels"),
+        InputRange(
+            "C23:C59",
+            PERIOD_COL,
+            note="previous publication dates",
+            key="previous.dates",
+            number_format="date",
+        ),
+        InputRange(
+            "D23:H59",
+            Pub.prev_run_filled_posts,
+            note="previous publication figures",
+            key="previous.values",
+            number_format="count",
         ),
         InputRange(COMP_PREV_LABEL_RANGES[1], note="current publication labels"),
-        InputRange("C64:C100", note="current publication dates", number_format="date"),
         InputRange(
-            "D64:H100", note="current publication figures", number_format="count"
+            "C64:C100",
+            PERIOD_COL,
+            note="current publication dates",
+            key="current.dates",
+            number_format="date",
+        ),
+        InputRange(
+            "D64:H100",
+            Pub.filled_posts,
+            note="current publication figures",
+            key="current.values",
+            number_format="count",
         ),
         InputRange(COMP_PREV_LABEL_RANGES[2], note="difference labels"),
-        InputRange("C106:C142", note="difference dates", number_format="date"),
         InputRange(
-            "D106:H142", note="difference as percentage", number_format="percent"
+            "C106:C142",
+            PERIOD_COL,
+            note="difference dates",
+            key="difference.dates",
+            number_format="date",
+        ),
+        InputRange(
+            "D106:H142",
+            Pub.filled_posts_perc_change_vs_prev_run,
+            note="difference as percentage",
+            key="difference.values",
+            number_format="percent",
         ),
     ),
     chart_count=0,
@@ -249,12 +349,14 @@ def _location_count_inputs(
             source_column,
             "care homes number of locations",
             "count",
+            key="care_homes.locations",
         ),
         InputRange(
             non_residential_cell,
             source_column,
             "non-res number of locations",
             "count",
+            key="non_res.locations",
         ),
     )
 
@@ -265,6 +367,8 @@ def _comparison_sheet(
     last_row: int,
     filled_posts: str,
     ct_employed: str | None,
+    filled_posts_perc_change: str,
+    ct_perc_change: str,
     extra_inputs: tuple[InputRange, ...] = (),
     has_criteria_note: bool = True,
     extra_labels: tuple[tuple[str, str], ...] = (),
@@ -278,6 +382,10 @@ def _comparison_sheet(
         filled_posts (str): clean dataset column for Skills for Care filled posts.
         ct_employed (str | None): clean dataset column for Capacity Tracker
             employed; None where no column provides it.
+        filled_posts_perc_change (str): clean dataset column for the Skills for Care
+            filled posts % change.
+        ct_perc_change (str): clean dataset column for the Capacity Tracker
+            % change.
         extra_inputs (tuple[InputRange, ...]): sheet-specific input ranges, such
             as the number of locations.
         has_criteria_note (bool): whether the notes carry a dated criteria line.
@@ -287,31 +395,83 @@ def _comparison_sheet(
         SheetMap: the sheet's cell map.
     """
     ranges = [
-        InputRange(TITLE_CELL, note="'End of <month year>' title"),
-        InputRange(HEADING_CELL, note="heading incl. 'Since <month year>'"),
         InputRange(
-            f"B{first_row}:B{last_row}", note="care homes dates", number_format="date"
+            TITLE_CELL, Pub.period_label_long, note="'End of <month year>' title"
+        ),
+        InputRange(
+            HEADING_CELL,
+            Pub.period_label_long,
+            note="heading incl. 'Since <month year>'",
+        ),
+        InputRange(
+            f"B{first_row}:B{last_row}",
+            PERIOD_COL,
+            "care homes dates",
+            "date",
+            key="care_homes.dates",
         ),
         InputRange(
             f"K{first_row}:K{last_row}",
-            note="non-residential dates",
-            number_format="date",
+            PERIOD_COL,
+            "non-residential dates",
+            "date",
+            key="non_res.dates",
         ),
         InputRange(
-            f"C{first_row}:C{last_row}", filled_posts, "care homes SfC", "count"
-        ),
-        InputRange(f"D{first_row}:D{last_row}", ct_employed, "care homes CT", "count"),
-        InputRange(f"L{first_row}:L{last_row}", filled_posts, "non-res SfC", "count"),
-        InputRange(f"M{first_row}:M{last_row}", ct_employed, "non-res CT", "count"),
-        InputRange(
-            f"E{first_row}:F{last_row}",
-            note="care homes % change, writer-derived",
-            number_format="percent",
+            f"C{first_row}:C{last_row}",
+            filled_posts,
+            "care homes SfC",
+            "count",
+            key="care_homes.filled_posts",
         ),
         InputRange(
-            f"N{first_row}:O{last_row}",
-            note="non-res % change, writer-derived",
-            number_format="percent",
+            f"D{first_row}:D{last_row}",
+            ct_employed,
+            "care homes CT",
+            "count",
+            key="care_homes.ct",
+        ),
+        InputRange(
+            f"L{first_row}:L{last_row}",
+            filled_posts,
+            "non-res SfC",
+            "count",
+            key="non_res.filled_posts",
+        ),
+        InputRange(
+            f"M{first_row}:M{last_row}",
+            ct_employed,
+            "non-res CT",
+            "count",
+            key="non_res.ct",
+        ),
+        InputRange(
+            f"E{first_row}:E{last_row}",
+            filled_posts_perc_change,
+            "care homes SfC % change",
+            "percent",
+            key="care_homes.filled_posts_change",
+        ),
+        InputRange(
+            f"F{first_row}:F{last_row}",
+            ct_perc_change,
+            "care homes CT % change",
+            "percent",
+            key="care_homes.ct_change",
+        ),
+        InputRange(
+            f"N{first_row}:N{last_row}",
+            filled_posts_perc_change,
+            "non-res SfC % change",
+            "percent",
+            key="non_res.filled_posts_change",
+        ),
+        InputRange(
+            f"O{first_row}:O{last_row}",
+            ct_perc_change,
+            "non-res CT % change",
+            "percent",
+            key="non_res.ct_change",
         ),
     ]
     if has_criteria_note:
@@ -340,6 +500,8 @@ COMP_SHORT_TERM = _comparison_sheet(
     29 + MONTHLY_SLOTS - 1,
     Pub.filtered_filled_posts_short,
     Pub.filtered_ct_total_employed_short,
+    Pub.filtered_filled_posts_cum_perc_change_short,
+    Pub.filtered_ct_cum_perc_change_short,
     extra_inputs=_location_count_inputs(
         "D25", "M25", Pub.filtered_locationid_count_short
     ),
@@ -350,6 +512,8 @@ COMP_MEDIUM_TERM = _comparison_sheet(
     29 + MEDIUM_TERM_SLOTS - 1,
     Pub.filtered_filled_posts_medium,
     Pub.filtered_ct_total_employed_medium,
+    Pub.filtered_filled_posts_cum_perc_change_medium,
+    Pub.filtered_ct_cum_perc_change_medium,
     extra_inputs=_location_count_inputs(
         "D25", "M25", Pub.filtered_locationid_count_medium
     ),
@@ -360,6 +524,8 @@ COMP_LONG_TERM = _comparison_sheet(
     29 + LONG_TERM_SLOTS - 1,
     Pub.filtered_filled_posts_long,
     Pub.filtered_ct_total_employed_long,
+    Pub.filtered_filled_posts_cum_perc_change_long,
+    Pub.filtered_ct_cum_perc_change_long,
     extra_inputs=_location_count_inputs(
         "D25", "M25", Pub.filtered_locationid_count_long
     ),
@@ -373,6 +539,8 @@ NO_FILTERS = _comparison_sheet(
     29 + LONG_TERM_SLOTS - 1,
     Pub.filled_posts,
     Pub.unfiltered_ct_total_employed_long,
+    Pub.filled_posts_cum_perc_change_long,
+    Pub.unfiltered_ct_total_employed_cum_perc_change_long,
     has_criteria_note=False,
     extra_labels=(("G27", "Number of locations"), ("P27", "Number of locations")),
     extra_inputs=(
@@ -381,12 +549,14 @@ NO_FILTERS = _comparison_sheet(
             Pub.locationid_count,
             "care homes number of locations by period",
             "count",
+            key="care_homes.locations_by_period",
         ),
         InputRange(
             f"P29:P{29 + LONG_TERM_SLOTS - 1}",
             Pub.locationid_count,
             "non-res number of locations by period",
             "count",
+            key="non_res.locations_by_period",
         ),
     ),
 )
