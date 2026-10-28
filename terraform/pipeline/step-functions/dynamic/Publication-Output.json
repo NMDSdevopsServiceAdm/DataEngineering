@@ -115,7 +115,7 @@
               "Choices": [
                 {
                   "Variable": "$.check.Cause",
-                  "StringMatches": "*\"ExitCode\":75,*",
+                  "StringMatches": "*\"ExitCode\":75*",
                   "Next": "Count Promotion Attempt"
                 }
               ],
