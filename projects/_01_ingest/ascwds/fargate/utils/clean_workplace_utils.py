@@ -119,7 +119,7 @@ def recheck_duplicate_establishments(lf: pl.LazyFrame) -> pl.LazyFrame:
             .agg(AWPClean.establishment_id, pl.len().alias(duplicate_count))
             .filter(pl.col(duplicate_count) > 1)
             .select(AWPClean.establishment_id, AWPClean.import_date)
-            .explode(AWPClean.establishment_id)
+            .explode(AWPClean.establishment_id, empty_as_null=True)
         )
 
     return pl.concat(still_matching_lfs)
