@@ -270,7 +270,7 @@ class TestCompPrevRows:
 class TestSheetText:
     PERIOD_LABELS = ["Mar 2025", "Sep 2025", "Mar 2026", "Sep 2026"]
 
-    def test_short_term_heading_and_note_use_the_latest_march(self):
+    def test_short_term_heading_and_note_use_the_march_before_the_term_start(self):
         text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
             cell_map.COMP_SHORT_TERM.name
         ]
@@ -299,6 +299,9 @@ class TestSheetText:
         assert text[cell_map.COMP_MEDIUM_TERM.name][cell_map.HEADING_CELL].endswith(
             "Since March 2026"
         )
+        assert text[cell_map.FILLED_POSTS.name][
+            cell_map.FILLED_POSTS_CHART_HEADING_CELL
+        ].endswith("since March 2027")
 
     def test_medium_term_heading_and_note_use_the_march_before(self):
         text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
@@ -308,7 +311,9 @@ class TestSheetText:
         assert text[cell_map.HEADING_CELL].endswith("Since March 2025")
         assert text[cell_map.CRITERIA_NOTE_CELL].endswith("end of March 2025 onwards.")
 
-    def test_filled_posts_chart_heading_uses_the_latest_march(self):
+    def test_filled_posts_chart_heading_uses_the_march_before_the_short_term_start(
+        self,
+    ):
         text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
             cell_map.FILLED_POSTS.name
         ]
