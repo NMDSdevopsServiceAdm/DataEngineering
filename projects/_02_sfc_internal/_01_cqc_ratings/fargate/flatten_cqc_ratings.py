@@ -89,7 +89,7 @@ def main(
 
     current_ratings_lf = rUtils.prepare_current_ratings(cqc_ratings_lf)
     historic_ratings_lf = rUtils.prepare_historic_ratings(cqc_ratings_lf)
-    # assessment_ratings_lf = prepare_assessment_ratings(cqc_ratings_lf)
+    assessment_ratings_lf = rUtils.prepare_assessment_ratings(cqc_ratings_lf)
 
     # raise_error_when_assessment_df_contains_overall_data(assessment_ratings_lf)
 
