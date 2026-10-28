@@ -675,6 +675,165 @@ class FlattenCQCRatings:
         ),
     ]
 
+    def _asg_kq(name, rating="Good"):
+        return {"name": name, "rating": rating, "status": "Assessed"}
+
+    def _asg_entry(published_datetime, assessment_plan_id, key_question_ratings):
+        return {
+            "assessmentPlanPublishedDateTime": published_datetime,
+            "ratings": {
+                "overall": [],
+                "asgRatings": [
+                    {
+                        "assessmentPlanId": assessment_plan_id,
+                        "title": "Care Home Assessment",
+                        "assessmentDate": "2024-01-02",
+                        "assessmentPlanStatus": "Assessed",
+                        "name": "Care Homes",
+                        "rating": "Good",
+                        "status": "Current",
+                        "keyQuestionRatings": key_question_ratings,
+                    }
+                ],
+            },
+        }
+
+    prepare_assessment_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _asg_entry(
+                    "2024-01-01 00:00:00",
+                    "AP1",
+                    [
+                        _asg_kq("Safe"),
+                        _asg_kq("Well-led"),
+                        _asg_kq("Caring"),
+                        _asg_kq("Responsive"),
+                        _asg_kq("Effective"),
+                    ],
+                )
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            "AP1",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "SAF",
+            "Care Homes",
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    # "Safe" appears twice; the first in raw array order must win
+    prepare_assessment_ratings_tiebreaker_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _asg_entry(
+                    "2024-02-01 00:00:00",
+                    "AP2",
+                    [
+                        _asg_kq("Safe"),
+                        _asg_kq("Safe", "Requires improvement"),
+                        _asg_kq("Well-led"),
+                        _asg_kq("Caring"),
+                        _asg_kq("Responsive"),
+                        _asg_kq("Effective"),
+                    ],
+                )
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_tiebreaker_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-02-01 00:00:00",
+            "AP2",
+            "Care Home Assessment",
+            "2024-01-02",
+            "Assessed",
+            "SAF",
+            "Care Homes",
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    # 1-002 has null (not empty) keyQuestionRatings and must be dropped. 1-001 is
+    # included as a pivot over zero rows would lack the key question columns.
+    prepare_assessment_ratings_null_key_question_ratings_rows = [
+        *prepare_assessment_ratings_rows,
+        (
+            "1-002",
+            "Registered",
+            [
+                {
+                    "assessmentPlanPublishedDateTime": "2024-01-01 00:00:00",
+                    "ratings": {
+                        "overall": [
+                            {
+                                "rating": "Good",
+                                "status": "Assessed",
+                                "keyQuestionRatings": None,
+                            }
+                        ],
+                        "asgRatings": [],
+                    },
+                }
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_null_key_question_ratings_rows = (
+        expected_prepare_assessment_ratings_rows
+    )
+
+    prepare_assessment_ratings_unknown_key_question_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _asg_entry(
+                    "2024-01-01 00:00:00",
+                    "AP1",
+                    [
+                        _asg_kq("Safe"),
+                        _asg_kq("Well-led"),
+                        _asg_kq("Caring"),
+                        _asg_kq("Responsive"),
+                        _asg_kq("Effective"),
+                        _asg_kq("Unknown", "Inadequate"),
+                    ],
+                )
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_unknown_key_question_rows = (
+        expected_prepare_assessment_ratings_rows
+    )
+
     # fmt: off
     main_snapshot_rows = [
         ("1-001", "Registered", "Social Care Org"),

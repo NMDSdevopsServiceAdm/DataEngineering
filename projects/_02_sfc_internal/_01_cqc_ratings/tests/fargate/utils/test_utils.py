@@ -197,3 +197,55 @@ class TestPrepareHistoricRatings:
 
         with pytest.raises(ValueError, match="Duplicate key question names"):
             job.prepare_historic_ratings(input_lf).collect()
+
+
+@dataclass
+class PrepareAssessmentRatingsCase:
+    id: str
+    rows: list
+    expected_rows: list
+
+    def as_pytest_param(self):
+        return pytest.param(self.rows, self.expected_rows, id=self.id)
+
+
+prepare_assessment_ratings_cases = [
+    PrepareAssessmentRatingsCase(
+        id="asg_key_questions_become_columns",
+        rows=Data.prepare_assessment_ratings_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_rows,
+    ),
+    PrepareAssessmentRatingsCase(
+        id="duplicate_key_question_keeps_first_in_raw_order",
+        rows=Data.prepare_assessment_ratings_tiebreaker_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_tiebreaker_rows,
+    ),
+    PrepareAssessmentRatingsCase(
+        id="null_key_question_ratings_are_dropped",
+        rows=Data.prepare_assessment_ratings_null_key_question_ratings_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_null_key_question_ratings_rows,
+    ),
+    PrepareAssessmentRatingsCase(
+        id="unknown_key_question_is_ignored",
+        rows=Data.prepare_assessment_ratings_unknown_key_question_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_unknown_key_question_rows,
+    ),
+]
+
+
+class TestPrepareAssessmentRatings:
+    @pytest.mark.parametrize(
+        "rows,expected_rows",
+        [case.as_pytest_param() for case in prepare_assessment_ratings_cases],
+    )
+    def test_returns_expected_rows(self, rows, expected_rows):
+        input_lf = pl.LazyFrame(
+            rows, schema=Schemas.assessment_ratings_input_schema, orient="row"
+        )
+
+        returned_df = job.prepare_assessment_ratings(input_lf).collect()
+
+        expected_df = pl.LazyFrame(
+            expected_rows, schema=Schemas.assessment_ratings_output_schema, orient="row"
+        ).collect()
+        pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)

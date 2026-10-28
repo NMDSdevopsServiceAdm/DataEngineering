@@ -24,6 +24,35 @@ KEY_QUESTION_ALIASES = {
     CQCL.effective: CQCRatings.effective_rating,
 }
 
+# Raw array position, so the first entry per key question wins deterministically.
+EXPLODE_ORDER = "explode_order_index"
+
+ASSESSMENT_KEY_QUESTIONS = [
+    CQCL.safe,
+    CQCL.effective,
+    CQCL.caring,
+    CQCL.responsive,
+    CQCL.well_led,
+]
+
+ASSESSMENT_GRAIN_COLUMNS = [
+    CQCL.location_id,
+    CQCL.registration_status,
+    CQCL.assessment_plan_published_datetime,
+    CQCL.assessment_plan_id,
+    CQCL.title,
+    CQCL.assessment_date,
+    CQCL.assessment_plan_status,
+    CQCL.dataset,
+    CQCL.name,
+    CQCL.status,
+    CQCL.rating,
+    CQCL.source_path,
+]
+
+OVERALL_SOURCE_PATH = "assessment.ratings.overall"
+ASG_SOURCE_PATH = "assessment.ratings.asg_ratings"
+
 
 def keep_latest_per_key(lf: pl.LazyFrame, key_col: str, order_col: str) -> pl.LazyFrame:
     """
@@ -184,5 +213,120 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
                 CQCRatings.current_or_historic
             ),
             pl.lit(CQCRatingsDatasetValues.pre_saf).alias(CQCL.dataset),
+        )
+    )
+
+
+def extract_assessment_base(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Explodes `assessment` to one row per location per assessment plan.
+
+    Args:
+        cqc_location_lf (pl.LazyFrame): Raw CQC location data.
+
+    Returns:
+        pl.LazyFrame: Assessment plans with the nested ratings struct left unflattened.
+    """
+    return (
+        cqc_location_lf.select(
+            CQCL.location_id,
+            CQCL.registration_status,
+            CQCL.assessment,
+        )
+        .explode(CQCL.assessment, **DROP_EMPTY_AND_NULL)
+        .select(
+            CQCL.location_id,
+            CQCL.registration_status,
+            pl.col(CQCL.assessment).struct.field(
+                CQCL.assessment_plan_published_datetime
+            ),
+            pl.col(CQCL.assessment)
+            .struct.field(CQCL.ratings)
+            .alias(CQCL.assessments_ratings),
+        )
+    )
+
+
+def extract_key_question_ratings(
+    assessment_lf: pl.LazyFrame, ratings_field: str, source_path: str
+) -> pl.LazyFrame:
+    """
+    Flattens one assessment ratings list to one row per key question.
+
+    Serves both the `overall` and `asgRatings` lists. Fields present in only one list
+    (e.g. `assessment_plan_id`) are null-filled when the two are concatenated.
+
+    Args:
+        assessment_lf (pl.LazyFrame): Output of `extract_assessment_base`.
+        ratings_field (str): List within the ratings struct to flatten
+            (`CQCL.overall` or `CQCL.asg_ratings`).
+        source_path (str): Value for the `source_path` column.
+
+    Returns:
+        pl.LazyFrame: One row per assessment plan and key question, with an
+            `EXPLODE_ORDER` column holding raw array order.
+    """
+    return (
+        assessment_lf.select(
+            CQCL.location_id,
+            CQCL.registration_status,
+            CQCL.assessment_plan_published_datetime,
+            pl.col(CQCL.assessments_ratings).struct.field(ratings_field),
+        )
+        .explode(ratings_field, **DROP_EMPTY_AND_NULL)
+        .unnest(ratings_field)
+        .explode(CQCL.key_question_ratings, **DROP_EMPTY_AND_NULL)
+        .with_columns(
+            pl.col(CQCL.key_question_ratings)
+            .struct.field(CQCL.name)
+            .alias(CQCL.key_question_name),
+            pl.col(CQCL.key_question_ratings)
+            .struct.field(CQCL.rating)
+            .alias(CQCL.key_question_rating),
+            pl.lit(CQCRatingsDatasetValues.saf).alias(CQCL.dataset),
+            pl.lit(source_path).alias(CQCL.source_path),
+        )
+        .drop(CQCL.key_question_ratings)
+        .with_row_index(EXPLODE_ORDER)
+    )
+
+
+def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Flattens overall and ASG assessment ratings to one row per assessment plan.
+
+    The feed doesn't guarantee one entry per key question, so the first in raw array
+    order (`EXPLODE_ORDER`) is kept. A conditional `group_by` replaces a pivot to keep
+    the whole function lazy. Only the five key questions are kept.
+
+    Args:
+        cqc_location_lf (pl.LazyFrame): Raw CQC location data.
+
+    Returns:
+        pl.LazyFrame: One row per assessment plan, with a column per key question.
+    """
+    assessment_lf = extract_assessment_base(cqc_location_lf)
+    overall_lf = extract_key_question_ratings(
+        assessment_lf, CQCL.overall, OVERALL_SOURCE_PATH
+    )
+    asg_lf = extract_key_question_ratings(
+        assessment_lf, CQCL.asg_ratings, ASG_SOURCE_PATH
+    )
+
+    is_key_question = {
+        name: pl.col(CQCL.key_question_name) == name
+        for name in ASSESSMENT_KEY_QUESTIONS
+    }
+
+    return (
+        pl.concat([overall_lf, asg_lf], how="diagonal_relaxed")
+        .group_by(ASSESSMENT_GRAIN_COLUMNS)
+        .agg(
+            pl.col(CQCL.key_question_rating)
+            .filter(is_key_question[name])
+            .sort_by(pl.col(EXPLODE_ORDER).filter(is_key_question[name]))
+            .first()
+            .alias(name)
+            for name in ASSESSMENT_KEY_QUESTIONS
         )
     )
