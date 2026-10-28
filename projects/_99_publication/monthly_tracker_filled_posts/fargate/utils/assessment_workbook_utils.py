@@ -136,14 +136,21 @@ def write_input_cell(worksheet: Worksheet, row: int, col: int, value: object) ->
     cell.value = value
 
 
-def check_template(workbook: openpyxl.Workbook) -> None:
-    """Checks the template holds every mapped sheet and fixed label.
+def check_template(
+    workbook: openpyxl.Workbook, values: dict[str, dict[str, object]]
+) -> None:
+    """Checks the template holds every mapped sheet and fixed label, and that
+    every value targets a mapped input cell.
 
     Args:
         workbook (openpyxl.Workbook): the loaded template.
+        values (dict[str, dict[str, object]]): values to write, keyed by sheet
+            name, then by A1 cell reference.
 
     Raises:
         TemplateMismatchError: listing every missing sheet and label that differs.
+        UnmappedCellError: if a value targets a sheet or cell outside the mapped
+            input ranges.
     """
     problems = []
     for sheet in cell_map.ASSESSMENT_SHEETS:
@@ -160,6 +167,20 @@ def check_template(workbook: openpyxl.Workbook) -> None:
     if problems:
         raise TemplateMismatchError(
             "Template does not match cell map: " + "; ".join(problems)
+        )
+
+    input_cells = {
+        sheet.name: _input_cells(sheet) for sheet in cell_map.ASSESSMENT_SHEETS
+    }
+    unmapped = [
+        f"'{name}'!{cell}"
+        for name, cells in values.items()
+        for cell in cells
+        if coordinate_to_tuple(cell) not in input_cells.get(name, set())
+    ]
+    if unmapped:
+        raise UnmappedCellError(
+            f"Values outside the mapped input cells: {', '.join(unmapped)}"
         )
 
 
@@ -297,10 +318,12 @@ def fill_assessment_workbook(
 ) -> None:
     """Fills the template with values and period text and saves a copy.
 
-    Steps: build the period text with `sheet_text`, load the template and check it
-    against the cell map, check every value targets a mapped input cell, write
-    the values and then the period text (which replaces any value for those
-    cells), and save. Nothing is written if a check fails.
+    Steps: build the period text with `sheet_text`, load the template, check it
+    and the values with `check_template`, write the values and then the period
+    text (which replaces any value for those cells), and save. Nothing is written
+    if a check fails: `check_template` raises `TemplateMismatchError` or
+    `UnmappedCellError`, and `sheet_text` raises `ValueError` for empty period
+    labels or none in March.
 
     Args:
         period_labels (list[str]): the run's period labels, such as "Mar 2026".
@@ -310,30 +333,10 @@ def fill_assessment_workbook(
             1000}}`. Cells must be in the sheet's mapped input ranges.
         template_path (Path): template to load.
         output_path (Path): local path to save to.
-
-    Raises:
-        UnmappedCellError: if a value targets a sheet or cell outside the mapped
-            input ranges. A template that does not match the cell map raises
-            `TemplateMismatchError` first, and `period_labels` that are empty
-            or have no March raise `ValueError`.
     """
     text = sheet_text(period_labels, term_from_dates)
     workbook = openpyxl.load_workbook(template_path)
-    check_template(workbook)
-
-    input_cells = {
-        sheet.name: _input_cells(sheet) for sheet in cell_map.ASSESSMENT_SHEETS
-    }
-    unmapped = [
-        f"'{name}'!{cell}"
-        for name, cells in values.items()
-        for cell in cells
-        if coordinate_to_tuple(cell) not in input_cells.get(name, set())
-    ]
-    if unmapped:
-        raise UnmappedCellError(
-            f"Values outside the mapped input cells: {', '.join(unmapped)}"
-        )
+    check_template(workbook, values)
 
     for name, cells in values.items():
         for cell, value in cells.items():
