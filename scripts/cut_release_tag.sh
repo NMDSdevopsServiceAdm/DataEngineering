@@ -157,14 +157,17 @@ fi
 
 git show "$commit_sha:CHANGELOG.md" >"$WORK_DIR/changelog_at_commit.md"
 git show origin/main:CHANGELOG.md >"$WORK_DIR/changelog_at_main.md"
-git checkout -b "$branch" origin/main
+# A separate working tree: checking out main here would replace this script and
+# scripts/cut_release_tag.py with main's versions, which may not match (or exist).
+release_tree="$WORK_DIR/release_tree"
+git worktree add -b "$branch" "$release_tree" origin/main
 $CLI changelog --changelog_at_commit "$WORK_DIR/changelog_at_commit.md" \
   --changelog_at_main "$WORK_DIR/changelog_at_main.md" --tag "$tag" \
-  --release_date "$(date +%Y-%m-%d)" --output CHANGELOG.md
-git add CHANGELOG.md
-git -c user.name="CircleCI release" -c user.email="noreply@circleci.com" \
+  --release_date "$(date +%Y-%m-%d)" --output "$release_tree/CHANGELOG.md"
+git -C "$release_tree" add CHANGELOG.md
+git -C "$release_tree" -c user.name="CircleCI release" -c user.email="noreply@circleci.com" \
   commit -m "Release $tag - move released CHANGELOG entries under the version"
-change github_git push "https://github.com/$REPO.git" "$branch"
+change github_git -C "$release_tree" push "https://github.com/$REPO.git" "$branch"
 
 pull_request="$(uv run python -c '
 import json, sys
