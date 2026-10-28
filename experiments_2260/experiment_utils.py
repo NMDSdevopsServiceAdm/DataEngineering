@@ -220,11 +220,14 @@ def rolling_averages(
         pl.LazyFrame: a row per group and date, with the 5 rolling averages and the date's
             contributing workplaces
     """
-    in_fold = pl.col(FOLD) == hold_out_fold
 
     def kept(column: str) -> pl.Expr:
         expr = pl.col(column)
-        return expr if hold_out_fold is None else expr.filter(~in_fold)
+        return (
+            expr
+            if hold_out_fold is None
+            else expr.filter(pl.col(FOLD) != hold_out_fold)
+        )
 
     date_totals_lf = cells_lf.group_by(*group_columns, DATE).agg(
         *[kept(col).sum() for col in TREND], kept(CONTRIBUTORS).sum()
