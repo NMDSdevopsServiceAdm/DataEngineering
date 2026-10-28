@@ -230,9 +230,8 @@ def sheet_text(
 
     Every sheet gets the title. The short and medium term comparison sheets also
     get a heading and criteria note dated from the month before their term's start
-    date. "Filled posts" gets a chart
-    heading dated from the latest March. "Comp prev publication" gets
-    an "Annual" row for each March period, then a "Monthly" row for each period
+    date, as does the chart heading on "Filled posts" (the short term's).
+    "Comp prev publication" gets an "Annual" row for each March period, then a "Monthly" row for each period
     after the latest March, in each of its label ranges.
 
     Args:
@@ -248,11 +247,7 @@ def sheet_text(
     """
     dates = _period_dates(period_labels)
 
-    # March dates the headings and notes refer back to
-    marches = [d for d in dates if d.month == MARCH]
-    if not marches:
-        raise ValueError("period_labels has no March")
-    short_term_march = max(marches)
+    # Period months the headings and notes refer back to
     short_term_period, medium_term_period = _period_months(
         [term_from_dates.short, term_from_dates.medium]
     )
@@ -266,7 +261,7 @@ def sheet_text(
     # Filled posts: chart heading
     text[cell_map.FILLED_POSTS.name][cell_map.FILLED_POSTS_CHART_HEADING_CELL] = (
         CHART_HEADING_TEXT.format(
-            date=short_term_march.strftime(PERIOD_LABEL_LONG_FORMAT)
+            date=short_term_period.strftime(PERIOD_LABEL_LONG_FORMAT)
         )
     )
 
