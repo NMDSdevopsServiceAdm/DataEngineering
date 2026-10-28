@@ -1,11 +1,12 @@
 import datetime
 import zipfile
 from pathlib import Path
-from unittest.mock import patch
 
+import boto3
 import openpyxl
 import polars as pl
 import pytest
+from moto import mock_aws
 from openpyxl.styles import Font
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
@@ -773,10 +774,21 @@ class TestFillAssessmentWorkbookFromLf:
 
 
 class TestUploadToS3:
-    @patch(f"{job.__name__}.boto3.client")
-    def test_uploads_the_file_into_the_s3_directory_keeping_its_name(self, client_mock):
-        job.upload_to_s3(Path("/tmp/summary.xlsx"), "s3://bucket/some/prefix/")
-
-        client_mock.return_value.upload_file.assert_called_once_with(
-            str(Path("/tmp/summary.xlsx")), "bucket", "some/prefix/summary.xlsx"
+    @mock_aws
+    @pytest.mark.parametrize(
+        "directory", ["s3://bucket/some/prefix/", "s3://bucket/some/prefix"]
+    )
+    def test_uploads_file_into_directory_with_its_name(self, tmp_path, directory):
+        s3 = boto3.client("s3", region_name="eu-west-2")
+        s3.create_bucket(
+            Bucket="bucket",
+            CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
         )
+        local_file = tmp_path / "nested" / "summary.xlsx"
+        local_file.parent.mkdir()
+        local_file.write_bytes(b"workbook bytes")
+
+        job.upload_to_s3(local_file, directory)
+
+        body = s3.get_object(Bucket="bucket", Key="some/prefix/summary.xlsx")["Body"]
+        assert body.read() == b"workbook bytes"
