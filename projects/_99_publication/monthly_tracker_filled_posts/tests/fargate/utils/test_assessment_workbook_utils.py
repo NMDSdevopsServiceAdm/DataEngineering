@@ -381,7 +381,7 @@ class TestSheetText:
             job.sheet_text(labels, TERM_FROM_DATES)
 
 
-ALL_VALUE_COLUMNS = list(
+VALUE_COLUMNS = list(
     dict.fromkeys(
         column
         for sheet in cell_map.ASSESSMENT_SHEETS
@@ -398,15 +398,13 @@ EXPLICIT_VALUE_COLUMNS = [
     Pub.prev_run_filled_posts,
     Pub.filled_posts_perc_change_vs_prev_run,
 ]
-OTHER_VALUE_COLUMNS = [c for c in ALL_VALUE_COLUMNS if c not in EXPLICIT_VALUE_COLUMNS]
+OTHER_VALUE_COLUMNS = [c for c in VALUE_COLUMNS if c not in EXPLICIT_VALUE_COLUMNS]
 
 
 def _generic_value(column: str, date_index: int, service_index: int) -> int:
     """A value that differs by column, import date and service type."""
     return (
-        (ALL_VALUE_COLUMNS.index(column) + 1) * 10_000
-        + 100 * date_index
-        + (service_index)
+        (VALUE_COLUMNS.index(column) + 1) * 10_000 + 100 * date_index + (service_index)
     )
 
 
@@ -441,7 +439,6 @@ def _assessment_lf(
     return pl.LazyFrame(rows)
 
 
-VALUE_COLUMNS = ALL_VALUE_COLUMNS
 APRIL_2024 = datetime.date(2024, 4, 1)
 APRIL_2025 = datetime.date(2025, 4, 1)
 APRIL_2026 = datetime.date(2026, 4, 1)
