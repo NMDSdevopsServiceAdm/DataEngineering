@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils and experiments to score employment status rolling average splits and windows; the rolling average now takes its group columns as an argument. Results and any pipeline change to follow.
+- Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils and SageMaker experiments scoring employment status rolling average splits and windows. No variant beat the current setup, so the pipeline is unchanged.
 - Added cumulative percentage change columns for the filtered filled posts of each comparison term to the assessment data.
 - Added estimated starters, leavers and vacancies counts, with source columns, to the Starters, Leavers and Vacancies Pipeline estimate step in place of estimated rates. The merge step now also carries the employment status estimate source column.
 - Added estimated starter, turnover and vacancy rates with source columns to the Starters, Leavers and Vacancies Pipeline.
