@@ -42,10 +42,16 @@ class TestTemplateCells:
         [
             ("Filled posts", "J63"),
             ("Filled posts", "J82"),
-            ("Comp SfC and CT - short term", "E27"),
-            ("Comp SfC and CT - medium term", "N27"),
-            ("Comp SfC and CT - long term", "E27"),
-            ("No filters - long term", "N27"),
+            *[
+                (sheet, cell)
+                for sheet in (
+                    "Comp SfC and CT - short term",
+                    "Comp SfC and CT - medium term",
+                    "Comp SfC and CT - long term",
+                    "No filters - long term",
+                )
+                for cell in ("E27", "N27")
+            ],
         ],
     )
     def test_cumulative_headings_are_generic(
