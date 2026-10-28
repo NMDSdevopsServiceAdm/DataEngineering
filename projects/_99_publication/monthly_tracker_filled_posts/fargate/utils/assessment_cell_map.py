@@ -118,6 +118,8 @@ _COMPARISON_LABELS = (
     ("L27", "Filled posts"),
     ("C28", "Skills for Care"),
     ("D28", "Capacity Tracker"),
+    ("E27", "Cumulative % change"),
+    ("N27", "Cumulative % change"),
     ("L28", "Skills for Care"),
     ("M28", "Capacity Tracker"),
 )
@@ -255,6 +257,8 @@ FILLED_POSTS = SheetMap(
         ("B40", "Annual CQC locations"),
         ("B61", "Monthly filled posts estimates"),
         ("B80", "Monthly CQC locations"),
+        ("J63", "Cumulative % change"),
+        ("J82", "Cumulative % change"),
         *_service_type_labels(23, "C"),
         *_service_type_labels(23, "J"),
         *_service_type_labels(43, "C"),
@@ -399,8 +403,6 @@ def _comparison_sheet(
             Pub.period_label_long,
             note="heading incl. 'Since <month year>'",
         ),
-        InputRange(f"E{first_row - 2}", note="care homes % change heading"),
-        InputRange(f"N{first_row - 2}", note="non-res % change heading"),
         InputRange(
             f"B{first_row}:B{last_row}",
             PERIOD_COL,
