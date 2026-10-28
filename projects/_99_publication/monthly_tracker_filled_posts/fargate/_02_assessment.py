@@ -1,9 +1,15 @@
+import tempfile
 from datetime import date
+from pathlib import Path
 
 import polars as pl
 
 from polars_utils import utils
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
+    assessment_cell_map as cell_map,
+)
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
+    assessment_workbook_utils,
     merge_utils,
     publication_utils,
     run_log_utils,
@@ -21,11 +27,13 @@ def main(
     prep_source: str,
     assessment_destination: str,
     run_log_source: str,
+    workbook_destination: str,
     run_number: int | None = None,
 ) -> None:
     """
-    Assesses one prepared run: summarises it for publication and adds the change
-    over time and against the previously published run.
+    Assesses one prepared run: summarises it for publication, adds the change over
+    time and against the previously published run, then saves the assessment data
+    and a filled assessment workbook.
 
     Args:
         prep_source (str): s3 directory holding the prepared data of every run
@@ -33,6 +41,8 @@ def main(
             partitioned by archive_date and run_number
         run_log_source (str): s3 directory of the archive run log, used to find the
             previously published run
+        workbook_destination (str): s3 directory for the filled assessment workbook,
+            named by archive_date and run_number
         run_number (int | None): the prepared run to use. Defaults to None, the latest run
     """
     run_source = merge_utils.resolve_run_sources([prep_source], run_number)[0]
@@ -59,6 +69,8 @@ def main(
     # 1 July 2021 is the earliest date this CT data exists, so long_term_from_date
     # stays pinned there rather than rolling forward every year - unless/until the
     # retention cutoff_date itself moves past it, at which point that takes over.
+    # long_term_from_date must report on March, June, September or December, as the
+    # workbook's long term sheets only show those periods.
     earliest_ct_data_date = date(2021, 7, 1)
     long_term_from_date = max(earliest_ct_data_date, cutoff_date)
     medium_term_from_date = date(fy_year - 1, 4, 1)
@@ -225,6 +237,29 @@ def main(
         partition_cols=RUN_PARTITION_COLUMNS,
     )
 
+    # Read back the small written run so the plan above isn't computed twice.
+    run_assessment_lf = utils.scan_parquet(
+        merge_utils.run_partition_path(assessment_destination, run_source)
+    )
+    workbook_name = (
+        f"monthly_tracking_summary_{merge_utils.archive_date_from_source(run_source)}"
+        f"_{merge_utils.run_number_from_source(run_source)}.xlsx"
+    )
+    with tempfile.TemporaryDirectory() as workbook_folder:
+        workbook_path = Path(workbook_folder) / workbook_name
+        assessment_workbook_utils.fill_assessment_workbook_from_lf(
+            run_assessment_lf,
+            cell_map.ASSESSMENT_SHEETS,
+            assessment_workbook_utils.TermFromDates(
+                short=short_term_from_date,
+                medium=medium_term_from_date,
+                long=long_term_from_date,
+            ),
+            cell_map.TEMPLATE_PATH,
+            workbook_path,
+        )
+        assessment_workbook_utils.upload_to_s3(workbook_path, workbook_destination)
+
 
 if __name__ == "__main__":
     args = utils.get_args(
@@ -241,6 +276,10 @@ if __name__ == "__main__":
             "S3 directory of the archive run log",
         ),
         (
+            "--workbook_destination",
+            "Destination s3 directory for the filled assessment workbook",
+        ),
+        (
             "--run_number",
             "Prepared run number to use, or 'latest'",
             False,
@@ -251,5 +290,6 @@ if __name__ == "__main__":
         prep_source=args.prep_source,
         assessment_destination=args.assessment_destination,
         run_log_source=args.run_log_source,
+        workbook_destination=args.workbook_destination,
         run_number=merge_utils.parse_run_number(args.run_number),
     )
