@@ -261,10 +261,12 @@ Once the selected run is reconciled, tag the exact code that produced its data a
 The run must be `selected_for_publication` and `reconciled` and have no `tag`. The tag goes on the run's `commit_sha`, with the message "Codebase used for data as at <Month YYYY>". The workflow then writes the tag to the run log, and opens a PR from `rel-<tag>` that moves into the new version only the `[Unreleased]` entries present at that commit. Entries merged to `main` since stay under `[Unreleased]`.
 
 ### Steps
-1. `Publication-Output` on `main` starts the `release-tag` pipeline for the run as its last step, after it sets `reconciled`. To start it by hand instead, in CircleCI choose the DataEngineering project, **Trigger Pipeline**, branch `main`, and add the parameters `cut_release_tag` (boolean) `true` and `release_run_number` (integer) the selected run's number.
+1. Start the workflow.
+   - **Automatically**: `Publication-Output` on `main` starts the `release-tag` pipeline for the run as its last step, after it sets `reconciled`. Nothing to do.
+   - **By hand** (the fallback, and for any restart): in CircleCI choose the DataEngineering project, **Trigger Pipeline**, branch `main`, and add the parameters `cut_release_tag` (boolean) `true` and `release_run_number` (integer) the selected run's number.
 2. Open the `plan-release-tag` job. It prints the run, its commit, the tag it would cut and the tag message. Check the commit and tag are what you expect.
 3. Approve the `approve-release-tag` job, then watch `cut-release-tag`.
-4. Merge the `rel-<tag>` PR once its checks pass, soon after it opens. It rewrites the `[Unreleased]` section, and GitHub's merge does not use the CHANGELOG union merge, so another PR that edits those lines can conflict. If it does, close the PR and delete the `rel-<tag>` branch, then run step 1 again: the workflow reuses the tag and rebuilds the PR from the current `main`.
+4. Merge the `rel-<tag>` PR once its checks pass, soon after it opens. It rewrites the `[Unreleased]` section, and GitHub's merge does not use the CHANGELOG union merge, so another PR that edits those lines can conflict. If it does, close the PR and delete the `rel-<tag>` branch, then start the workflow by hand (step 1): it reuses the tag and rebuilds the PR from the current `main`.
 
 The PR moves only entries whose text matches exactly at the run's commit. An entry reworded since stays under `[Unreleased]` and ships with the next version. The first PR may also show blank-line changes in `[Unreleased]`.
 
@@ -287,7 +289,7 @@ The automatic start needs a CircleCI token in AWS:
 
 ### If something is wrong
 - **`Publication-Output` ends Failed at `Start Release Tag Pipeline`**: the call to CircleCI failed and the failure notification has the error. HTTP 401 or 403 means the connection's key is wrong, expired or was reset; 400 or 404 means `circleci_definition_id` or the project path is wrong. The run is already reconciled. Fix the cause, then start the workflow by hand (step 1).
-- **The run is reconciled but no pipeline or tag appears**: open the `release-tag` pipeline in CircleCI. CircleCI sends a failure notification when `plan-release-tag` fails and the job says why (see the entries below). An `approve-release-tag` job still waiting needs approving (step 3). A second pipeline for the same run is harmless: once the tag, branch and PR exist it changes nothing.
+- **The run is reconciled but no pipeline or tag appears**: open the `release-tag` pipeline in CircleCI. CircleCI sends a failure notification when `plan-release-tag` fails and the job says why (see the entries below). An `approve-release-tag` job still waiting needs approving (step 3). A second pipeline for the same run is harmless: once the tag, branch and PR exist it changes nothing, so cancel its `approve-release-tag` job. Starting `Publication-Output` again for a run already released starts another pipeline, whose plan fails with `nothing to release` once the CHANGELOG PR is merged.
 - **`Run number <n> is not reconciled` / `not selected_for_publication` / `already tagged`**: the plan job stops and nothing changes. Fix the run's state first.
 - **`Commit <sha> is not on main`**: the run was archived from a branch. Nothing is tagged.
 - **`The plan changed since it was approved`**: another tag or run log change landed between plan and approval. Start the workflow again.
@@ -299,7 +301,7 @@ The automatic start needs a CircleCI token in AWS:
 ### Testing safely
 Trigger the pipeline from your branch with `cut_release_tag` `true`, `release_dry_run` `true` and `release_bucket` your branch dataset bucket (`sfc-<branch>-datasets`). That runs the same jobs with the non-prod context and prints every tag push, S3 write and PR instead of making it. The bucket's run log needs a run that is selected and reconciled, set with `update_run_log.sh`. A real run only starts from `main`.
 
-To test the automatic start from a branch, set `release_trigger_branch_test` to `true` in `terraform/pipeline/variables.tf` on that branch only, never on `main`. After CI applies, replace the key on the branch's connection (`<branch>-release-tag-circleci`, named after the workspace) and start `Publication-Output` with `{"run_number": <n>}` for a run that is selected and promoted. It starts the dry run against the branch bucket; cancel the pipeline at `approve-release-tag`. Set the variable back before merging. Off `main`, `Publication-Output` starts no pipeline unless this variable is set.
+To test the automatic start from a branch, set `release_trigger_branch_test` to `true` in `terraform/pipeline/variables.tf` on that branch only, never on `main`. The branch name must match its workspace name, which is the lowercased branch with other characters replaced by `-` and cut to 30 characters, so use a `<ticket>-<slug>` branch. After CI applies, replace the key on the branch's connection (`<branch>-release-tag-circleci`, named after the workspace) and start `Publication-Output` with `{"run_number": <n>}` for a run that is selected and promoted. It starts the dry run against the branch bucket; cancel the pipeline at `approve-release-tag`. Set the variable back before merging. Off `main`, `Publication-Output` starts no pipeline unless this variable is set.
 
 ## If something is wrong (any flag)
 - **Flag unsupported**: only `approved`, `selected_for_publication`, `reconciled` and `locally_checked` are accepted at the prompt — `promoted` is set automatically, not chosen directly (see "Promoting a run").

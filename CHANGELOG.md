@@ -25,7 +25,7 @@ All notable changes to this project will be documented in this file.
 - Added a CircleCI workflow that, once approved, tags the selected and reconciled run's commit `vYYYY.MM.N`, records the tag in the archive run log, and opens a PR moving that commit's CHANGELOG entries under the version.
 - Extended the run log update script to automatically copy a selected run's estimates, metadata and run log into the long-term archive bucket, setting a new `promoted` flag.
 - Added a Publication-Output step that waits for a run to be promoted, reconciles the public output's total filled posts with the promoted archive's, and sets `reconciled` and `reconciled_at` in the run log.
-- Added a Publication-Output step that starts the release tag CircleCI workflow for a run once it is reconciled, through an EventBridge connection holding the CircleCI token; outside `main` it is skipped unless enabled for a test branch.
+- Added a Publication-Output step that starts the release-tag CircleCI workflow once a run is reconciled; outside `main` it is skipped unless enabled for a test branch.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed

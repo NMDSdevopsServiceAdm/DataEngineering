@@ -192,6 +192,9 @@
                 "InvocationConfig": {
                   "ConnectionArn": "${release_connection_arn}"
                 },
+                "Headers": {
+                  "Content-Type": "application/json"
+                },
                 "RequestBody": {
                   "definition_id": "${circleci_definition_id}",
                   "config": {
