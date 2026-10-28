@@ -98,6 +98,7 @@ RUN_LOG_EXPECTED_SCHEMA = pb.Schema(
         RunLogCols.tag: "String",
         RunLogCols.selected_for_publication: "Boolean",
         RunLogCols.reconciled: "Boolean",
+        RunLogCols.reconciled_at: "Datetime(time_unit='us', time_zone=None)",
         RunLogCols.locally_checked: "Boolean",
         RunLogCols.promoted: "Boolean",
         RunLogCols.promoted_at: "Datetime(time_unit='us', time_zone=None)",
@@ -290,9 +291,10 @@ def job_role_run_log_validation(
 ) -> None:
     """Validates the latest run's row in the archive run log.
 
-    Checks the schema, one row for the run, the unset approval flags, tag and
-    promoted_at, and that the run log and both archive outputs hold the same latest
-    run number. The latest run is a single row, so it is collected.
+    Checks the schema, one row for the run, the unset approval flags, tag,
+    promoted_at and reconciled_at, and that the run log and both archive outputs
+    hold the same latest run number. The latest run is a single row, so it is
+    collected.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the datasets
@@ -338,6 +340,10 @@ def job_role_run_log_validation(
         .col_vals_null(columns=RunLogCols.tag, brief="Run log tag should be null")
         .col_vals_null(
             columns=RunLogCols.promoted_at, brief="Run log promoted_at should be null"
+        )
+        .col_vals_null(
+            columns=RunLogCols.reconciled_at,
+            brief="Run log reconciled_at should be null",
         )
         .col_vals_not_null(
             columns=RunLogCols.commit_sha, brief="Run log commit_sha should be set"

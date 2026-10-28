@@ -10,10 +10,10 @@ Run log location: `s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_ar
 | `approved` | We assessed the run and are satisfied it is accurate | [Approving a run](#approving-a-run-approved) |
 | `selected_for_publication` | The one run chosen to publish this month | [Selecting a run for publication](#selecting-a-run-for-publication-selected_for_publication) |
 | `promoted` | The run's estimates, metadata and run-log partitions are copied into the long-term archive bucket (set automatically, not chosen at the prompt) | [Promoting a run](#promoting-a-run-promoted) |
-| `reconciled` | The public output's totals match the archived estimates | [Stub](#reconciling-a-run-reconciled) |
+| `reconciled` | The public output's totals match the archived estimates (set automatically by Publication-Output; choosing it at the prompt only forces the flag) | [Reconciling a run](#reconciling-a-run-reconciled) |
 | `locally_checked` | The refreshed Tableau file passed its local check | [Stub](#marking-a-run-locally-checked-locally_checked) |
 
-The `tag` column is not set by this script. `promoted_at` is set automatically alongside `promoted` (the current time) and is not itself a flag you choose. Assessing a run is the review of its assessment data and has no flag of its own. Approving, selecting and promoting are separate decisions and separate updates (see `projects/ARCHIVING_AND_PUBLICATION.md`).
+The `tag` column is not set by this script. `promoted_at` and `reconciled_at` are set automatically alongside `promoted` and `reconciled` respectively (the current time) and are not themselves flags you choose. Assessing a run is the review of its assessment data and has no flag of its own. Approving, selecting, promoting and reconciling are separate decisions and separate updates (see `projects/ARCHIVING_AND_PUBLICATION.md`).
 
 ## Prerequisites
 Run these once per terminal session, from the DataEngineering repo root, in PowerShell:
@@ -216,11 +216,35 @@ The first `update_run_log.py` call still enforces the guard (fails if the run is
 checking the run log by hand.
 
 ## Reconciling a run (`reconciled`)
-**Stub: process not yet written.**
 
-- Use case: record that the public output's totals for the run match the archived estimates.
-- Who and when: to be decided. Nothing reads this flag yet.
-- Steps: to be written. The script can already set the flag by following the prompts in "How the script works" with Flag `reconciled`.
+### Use case
+Confirm the public output's total filled posts for a run matches its promoted archive's total, within a small tolerance, before the run is considered fit to tag and publish. This runs **automatically** as the last stage of the `Publication-Output` state machine — you don't normally choose this flag yourself. The run must already be `promoted` for either path below to work, since the comparison reads the long-term archive.
+
+### Steps (automatic, via Publication-Output)
+No separate steps — this runs as the last stage of `Publication-Output` (started per "Selecting a run for publication" above, or by hand). It:
+1. Waits for the run's run log partition to appear in the long-term archive bucket ("Check Promoted Archive"; promotion copies the run log last, so it marks a finished copy), rechecking on a fixed schedule (`reconciliation_polling_*` in `terraform/pipeline/step-function.tf`) before failing with `PromotionTimeout` if the run was never promoted.
+2. Recomputes the public output's and the promoted archive's filled posts independently and compares each period within a small relative tolerance ("Compare Totals").
+3. On a match, marks the run `reconciled` in the run log (recording `reconciled_at`). On a mismatch, the execution fails without changing the run log, and the pipeline's usual failure notification fires.
+
+Don't approve or select runs while `Publication-Output` is finishing: marking the run reconciled rewrites that run's run log row from a copy read moments earlier, which could undo a selection made in between.
+
+### Steps (manual, only to force the flag without the comparison)
+Choosing this flag yourself skips the comparison entirely — only do this if the automated check is known to be wrong for a specific run (for example, a data correction already reconciled by hand). The run must already be `promoted`.
+1. From the repo root, in Git Bash, run `bash scripts/update_run_log.sh`.
+2. Enter the AWS profile and the bucket.
+3. Flag: `reconciled`. Run number: the run to mark reconciled.
+4. Check the four answers and answer `y`, then **Before**/**After** and answer `y` to upload.
+
+### Expected result
+- In the Step Functions console, `Publication-Output`'s "Check Promoted Archive" and "Compare Totals" steps both succeed.
+- The run log shows `reconciled: True` for the run, with a `reconciled_at` timestamp.
+
+### If something is wrong
+- **`Publication-Output` fails with `PromotionTimeout`**: the run was never promoted, or promotion hasn't finished. Select/promote the run first (see "Promoting a run"), then start `Publication-Output` again with the same `run_number`.
+- **`Publication-Output` fails with `PromotionCheckFailed`**: the check task itself failed, not just "not promoted yet" (for example a permissions error). Nothing is retried; see the task's CloudWatch log.
+- **`Publication-Output` fails at "Compare Totals"**: one or more periods differ by more than the tolerance (the error lists them), or a period is missing from the archive. This needs investigating, not rerunning — the task's CloudWatch log prints both totals and the largest period difference.
+- **`Run number <n> is not promoted`** (manual path): promote the run first.
+- **`Run number <n> is already reconciled`**: nothing to do.
 
 ## Marking a run locally checked (`locally_checked`)
 **Stub: process not yet written.**

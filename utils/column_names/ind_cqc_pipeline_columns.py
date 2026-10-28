@@ -60,6 +60,7 @@ class ArchiveRunLogColumns:
     promoted: str = "promoted"
     promoted_at: str = "promoted_at"
     reconciled: str = "reconciled"
+    reconciled_at: str = "reconciled_at"
     selected_for_publication: str = "selected_for_publication"
     tag: str = "tag"
 
