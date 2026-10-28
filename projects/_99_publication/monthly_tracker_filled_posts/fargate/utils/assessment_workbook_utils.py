@@ -24,7 +24,9 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import (
+    PrimaryServiceType,
     PublishedJobGroupLabels,
+    PublishedMainService,
     PublishedRegion,
 )
 from utils.file_utils import split_s3_uri
@@ -34,20 +36,18 @@ PERIOD_LABEL_SHORT_FORMAT = "%b %Y"
 PERIOD_LABEL_LONG_FORMAT = "%B %Y"
 APRIL = 4
 SERVICE_TYPE_SEPARATOR = "|"
-CARE_HOMES_SERVICE_TYPE = "All CQC care homes"
-NON_RESIDENTIAL_SERVICE_TYPE = "non-residential"
 SERVICE_TYPE_ORDER = [
-    "All CQC locations",
-    CARE_HOMES_SERVICE_TYPE,
-    "Care home with nursing",
-    "Care home without nursing",
-    NON_RESIDENTIAL_SERVICE_TYPE,
+    PublishedMainService.all_locations,
+    PublishedMainService.all_care_homes,
+    PrimaryServiceType.care_home_with_nursing,
+    PrimaryServiceType.care_home_only,
+    PrimaryServiceType.non_residential,
 ]
 # Comparison sheet blocks: key prefix of the block's input ranges and the
 # service type rows that feed it.
 COMPARISON_BLOCKS = (
-    ("care_homes", CARE_HOMES_SERVICE_TYPE),
-    ("non_res", NON_RESIDENTIAL_SERVICE_TYPE),
+    ("care_homes", PublishedMainService.all_care_homes),
+    ("non_res", PrimaryServiceType.non_residential),
 )
 MARCH = 3
 # Period months (March, June, September, December) of the long term sheets.
