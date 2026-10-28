@@ -383,6 +383,33 @@ def _share_scores(
     return pl.concat(results)
 
 
+def _aggregate_error(
+    scored_lf: pl.LazyFrame, predicted_columns: list[str], known_columns: list[str]
+) -> pl.DataFrame:
+    """
+    Error of the mean predicted share against the mean known share per service by geography
+    by job role by date cell, as published. Mean absolute error in pp over shares and cells.
+    """
+    has_prediction = pl.all_horizontal(pl.col(predicted_columns).is_not_null())
+    known = pl.all_horizontal(pl.col(known_columns).is_not_null())
+    cells_lf = (
+        scored_lf.filter(known & has_prediction)
+        .group_by(SERVICE, AGGREGATE_GEOGRAPHY, ROLE, DATE)
+        .agg(pl.col(predicted_columns).mean(), pl.col(known_columns).mean())
+    )
+    error_df = cells_lf.select(
+        pl.len().alias(ROWS),
+        (
+            pl.mean_horizontal(
+                (pl.col(predicted) - pl.col(known)).abs()
+                for predicted, known in zip(predicted_columns, known_columns)
+            ).mean()
+            * 100
+        ).alias(Eval.mean_absolute_error_pp),
+    ).collect()
+    return _long(error_df, "aggregate", None)
+
+
 def _coverage(cells_df: pl.DataFrame) -> pl.DataFrame:
     """Share of rows whose cell has a prediction."""
     weighted = pl.col(ROWS) * pl.col(ROLLING[0]).is_not_null()
@@ -439,6 +466,7 @@ def score_out_of_fold(
     return pl.concat(
         [
             _share_scores(scored_lf, ROLLING, KNOWN),
+            _aggregate_error(scored_lf, ROLLING, KNOWN),
             _coverage(predictions_df),
             _jumpiness("jumpiness_workplace", workplace_lf, ROLLING, [LOCATION, ROLE]),
             _jumpiness(
@@ -477,6 +505,7 @@ def score_hidden(predictions_df: pl.DataFrame, sample_df: pl.DataFrame) -> pl.Da
     return pl.concat(
         [
             _share_scores(imputed_df.lazy().filter(pl.col(HIDDEN)), IMPUTED, TRUTH),
+            _aggregate_error(imputed_df.lazy().filter(pl.col(HIDDEN)), IMPUTED, TRUTH),
             _coverage(predictions_df),
             _jumpiness(
                 "jumpiness_workplace", imputed_df.lazy(), IMPUTED, [LOCATION, ROLE]

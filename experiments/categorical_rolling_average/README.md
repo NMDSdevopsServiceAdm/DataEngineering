@@ -22,7 +22,7 @@ Scoring lives in `projects/_03_independent_cqc/utils/model_evaluation_utils.py` 
 - The data is tens of millions of rows, so rolling averages are built from per-cell totals (service, region, size band, job role, date, fold). Only known rows and a fixed random sample of workplaces (`SAMPLE_PERCENT`) are held in memory. Per-workplace jumpiness and all of test B's imputation use the sample. Results match a row-level run exactly.
 - **Test A:** held-out workplaces (5 folds) add nothing to any average, then are scored on their own known shares.
 - **Test B:** each workplace's last 12 months are hidden and the pipeline's imputation re-run. Each variant's averages are applied to the sample, imputed, and scored on the hidden values.
-- Scores: MAE (pp), Brier, top-1 accuracy, skill against a pooled-mean baseline, coverage, and jumpiness (workplace and service × region × role aggregate).
+- Scores: MAE (pp), aggregate MAE (mean vs mean known share per service × region × role × date, pp), Brier, top-1 accuracy, skill against a pooled-mean baseline, coverage, and jumpiness (workplace and service × region × role aggregate).
 - Win rule (`compare.ipynb`): at least 1pp lower MAE and no jumpier, or at least 0.5pp lower and clearly smoother; no worse on test B; coverage 1.0.
 
 ## Reusing for another categorical (such as gender)
