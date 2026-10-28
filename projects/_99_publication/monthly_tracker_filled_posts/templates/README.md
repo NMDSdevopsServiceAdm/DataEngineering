@@ -15,7 +15,7 @@ Binary `.xlsx` templates opened by the publication workbook jobs.
 
 Cell map: `fargate/utils/assessment_cell_map.py`. Tests: `tests/templates/`. The map lists the input cells the writer writes (including dates, labels, headings, % change values and the dated notes line); everything else is template and is never written.
 
-- Sheets are undated (`Comp SfC and CT - short term`, `- medium term`, `- long term`, `No filters - long term`). The writer writes their `B7` heading and date range, and the `% change since ...` headings above the % change columns (`E` and `N`). The long-term sheets start at the first import date with data, and workbook dates are the import date minus one month.
+- Sheets are undated (`Comp SfC and CT - short term`, `- medium term`, `- long term`, `No filters - long term`). The writer writes the `B7` heading and date range on the short and medium term sheets. The long-term sheets' `B7` heading and `B14` note, and every "Cumulative % change" heading, are fixed template text. The long-term sheets start at the first import date with data, and workbook dates are the import date minus one month.
 - The "Number of locations" cells take the latest row per group: every row in a term's period shares the same count.
 - Percentage changes are written by the writer from pipeline columns, not calculated in the workbook: `Filled posts` `J:N` and the `Comp prev publication` difference block `D:H`. Which pipeline columns fill them is still to be confirmed.
 - `No filters - long term` Capacity Tracker posts (`D`, `M`) come from `unfiltered_ct_total_employed_long` and location counts (`G`, `P`) from `locationid_count`, both per import date.

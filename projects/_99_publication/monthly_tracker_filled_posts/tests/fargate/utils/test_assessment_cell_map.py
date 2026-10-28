@@ -17,6 +17,21 @@ def _cells(ranges: list[str]) -> set[tuple[int, int]]:
     }
 
 
+COMPARISON_SHEETS = [
+    job.COMP_SHORT_TERM,
+    job.COMP_MEDIUM_TERM,
+    job.COMP_LONG_TERM,
+    job.NO_FILTERS,
+]
+
+
+def _cells_as_coordinates(sheet: job.SheetMap) -> set[str]:
+    return {
+        CellRange(min_row=row, min_col=col, max_row=row, max_col=col).coord
+        for row, col in _cells([r.cells for r in sheet.input_ranges])
+    }
+
+
 class TestAssessmentSheets:
     @pytest.mark.parametrize("sheet", sheet_params)
     def test_input_ranges_do_not_overlap(self, sheet: job.SheetMap):
@@ -24,6 +39,33 @@ class TestAssessmentSheets:
         ranges = [r.cells for r in sheet.input_ranges]
 
         assert sum(len(_cells([r])) for r in ranges) == len(_cells(ranges))
+
+    @pytest.mark.parametrize("sheet", COMPARISON_SHEETS, ids=lambda s: s.name)
+    @pytest.mark.parametrize("cell", ["E27", "N27"])
+    def test_cumulative_heading_cells_are_not_inputs(
+        self, sheet: job.SheetMap, cell: str
+    ):
+        """The '% change' headings are fixed template text on comparison sheets."""
+        assert cell not in _cells_as_coordinates(sheet)
+
+    @pytest.mark.parametrize(
+        "sheet, cell",
+        [
+            pytest.param(job.COMP_LONG_TERM, "B7", id="comp_long_heading"),
+            pytest.param(job.COMP_LONG_TERM, "B14", id="comp_long_note"),
+            pytest.param(job.NO_FILTERS, "B7", id="no_filters_heading"),
+        ],
+    )
+    def test_long_term_text_cells_are_not_inputs(self, sheet: job.SheetMap, cell: str):
+        """The long-term sheets' B7 heading and B14 note are fixed template text."""
+        assert cell not in _cells_as_coordinates(sheet)
+
+    @pytest.mark.parametrize(
+        "sheet", [job.COMP_SHORT_TERM, job.COMP_MEDIUM_TERM], ids=lambda s: s.name
+    )
+    def test_short_and_medium_term_keep_dated_text_inputs(self, sheet: job.SheetMap):
+        """The B7 heading and B14 note still carry a written date."""
+        assert {"B7", "B14"} <= _cells_as_coordinates(sheet)
 
     @pytest.mark.parametrize(
         "note, source_column",
