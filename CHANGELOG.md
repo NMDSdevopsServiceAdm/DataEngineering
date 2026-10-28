@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a writer that fills the assessment workbook template and fails if the template or written cells do not match the cell map.
 - Added cumulative percentage change columns for the filtered filled posts of each comparison term to the assessment data.
 - Added estimated starters, leavers and vacancies counts, with source columns, to the Starters, Leavers and Vacancies Pipeline estimate step in place of estimated rates. The merge step now also carries the employment status estimate source column.
 - Added estimated starter, turnover and vacancy rates with source columns to the Starters, Leavers and Vacancies Pipeline.
@@ -23,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
 - Extended the run log update script to automatically copy a selected run's estimates, metadata and run log into the long-term archive bucket, setting a new `promoted` flag.
+- Added a Publication-Output step that waits for a run to be promoted, reconciles the public output's total filled posts with the promoted archive's, and sets `reconciled` and `reconciled_at` in the run log.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed

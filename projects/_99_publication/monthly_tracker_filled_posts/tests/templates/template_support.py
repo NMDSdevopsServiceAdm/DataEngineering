@@ -13,6 +13,7 @@ from xml.etree import ElementTree
 import openpyxl
 import pytest
 from openpyxl.utils import get_column_letter
+from openpyxl.utils.cell import coordinate_to_tuple
 from openpyxl.worksheet.cell_range import CellRange
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
@@ -248,27 +249,39 @@ def generic_value(
     }[input_range.number_format]
 
 
-def fill_inputs(
-    workbook: openpyxl.Workbook, full: bool = False
-) -> dict[tuple[str, str], object]:
-    """Writes a generic value into the cell-map inputs; returns them by cell.
+def generic_values(full: bool = False) -> dict[str, dict[str, object]]:
+    """A generic value for each cell-map input, by sheet name then A1 cell.
 
     `full` fills every slot. Otherwise only the first half of each range's rows
     are filled, so the copy also has empty slots.
     """
-    written = {}
+    values = {}
     for sheet in cell_map.ASSESSMENT_SHEETS:
-        worksheet = workbook[sheet.name]
+        values[sheet.name] = {}
         for input_range in sheet.input_ranges:
             cells = CellRange(input_range.cells)
             rows = cells.size["rows"] if full else (cells.size["rows"] + 1) // 2
             for row in range(cells.min_row, cells.min_row + rows):
                 for col in range(cells.min_col, cells.max_col + 1):
-                    value = generic_value(
+                    values[sheet.name][coordinate(row, col)] = generic_value(
                         input_range, row - cells.min_row, col - cells.min_col
                     )
-                    assessment_workbook_utils.write_input_cell(
-                        worksheet, row, col, value
-                    )
-                    written[(sheet.name, coordinate(row, col))] = value
+    return values
+
+
+def fill_inputs(
+    workbook: openpyxl.Workbook, full: bool = False
+) -> dict[tuple[str, str], object]:
+    """Writes generic values into the cell-map inputs; returns them by sheet and cell.
+
+    See `generic_values` for `full`.
+    """
+    written = {}
+    for sheet_name, cells in generic_values(full).items():
+        for cell, value in cells.items():
+            row, col = coordinate_to_tuple(cell)
+            assessment_workbook_utils.write_input_cell(
+                workbook[sheet_name], row, col, value
+            )
+            written[(sheet_name, cell)] = value
     return written

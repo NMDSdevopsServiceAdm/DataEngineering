@@ -18,6 +18,7 @@ ARCHIVE_RUN_LOG_FILE_SCHEMA: dict[str, pl.DataType] = {
     RunLogCols.tag: pl.String,
     RunLogCols.selected_for_publication: pl.Boolean,
     RunLogCols.reconciled: pl.Boolean,
+    RunLogCols.reconciled_at: pl.Datetime,
     RunLogCols.locally_checked: pl.Boolean,
     RunLogCols.promoted: pl.Boolean,
     RunLogCols.promoted_at: pl.Datetime,
