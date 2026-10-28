@@ -203,8 +203,7 @@ def add_rolling_avg_pcts(
     Args:
         lf (pl.LazyFrame): dataset containing the 5 imputed trendline percentage columns
         rolling_period (str): the rolling window length, as a Polars offset string (e.g. "6mo")
-        group_columns (list[str]): columns to average within, by default primary service type,
-            region and job role
+        group_columns (list[str]): columns to average within
 
     Returns:
         pl.LazyFrame: dataset with the 5 "ascwds_emp_stat_<status>_pct_rolling_avg" columns added

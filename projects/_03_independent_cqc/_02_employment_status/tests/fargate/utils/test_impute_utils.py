@@ -7,13 +7,9 @@ import pytest
 
 import projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils as job
 from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_test_data import (
-    CARE_WORKER,
     FIRST_KNOWN_VALUE_COLUMNS,
     IMPUTED_PCT_COLUMNS,
     LAST_KNOWN_VALUE_COLUMNS,
-    LONDON,
-    NON_RES,
-    NORTH_EAST,
     PCT_COLUMNS,
     ROLLING_AVG_PCT_COLUMNS,
     ROLLING_AVERAGE_PERIOD,
@@ -133,9 +129,9 @@ class TestAddRollingAvgPcts:
         permanent = [0.2, 0.6, 0.8]
         input_data = {
             IndCQC.location_id: ["loc1", "loc2", "loc3"],
-            IndCQC.primary_service_type: [NON_RES] * 3,
-            IndCQC.current_region: [LONDON, NORTH_EAST, LONDON],
-            IndCQC.published_job_role_label: [CARE_WORKER] * 3,
+            IndCQC.primary_service_type: ["service_1"] * 3,
+            IndCQC.current_region: ["region_1", "region_2", "region_1"],
+            IndCQC.published_job_role_label: ["role_1"] * 3,
             IndCQC.cqc_location_import_date: [
                 date(2024, 1, 1),
                 date(2024, 1, 1),
