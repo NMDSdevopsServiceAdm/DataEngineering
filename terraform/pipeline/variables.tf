@@ -28,7 +28,7 @@ variable "dpr_version" {
 variable "circleci_definition_id" {
   type        = string
   description = "Definition id of the CircleCI pipeline that Publication-Output starts to cut the release tag (CircleCI: Project Settings, Project Setup)"
-  default     = ""
+  default     = "4b6f117f-7882-5679-8c4b-c73f40bd260a"
 }
 
 variable "release_trigger_branch_test" {
