@@ -264,7 +264,9 @@ The run must be `selected_for_publication` and `reconciled` and have no `tag`. T
 1. In CircleCI choose the DataEngineering project, **Trigger Pipeline**, branch `main`, and add the parameters `cut_release_tag` (boolean) `true` and `release_run_number` (integer) the selected run's number.
 2. Open the `plan-release-tag` job. It prints the run, its commit, the tag it would cut and the tag message. Check the commit and tag are what you expect.
 3. Approve the `approve-release-tag` job, then watch `cut-release-tag`.
-4. Merge the `rel-<tag>` PR once its checks pass.
+4. Merge the `rel-<tag>` PR once its checks pass, soon after it opens. It rewrites the `[Unreleased]` section, and GitHub's merge does not use the CHANGELOG union merge, so another PR that edits those lines can conflict. If it does, close the PR and delete the `rel-<tag>` branch, then run step 1 again: the workflow reuses the tag and rebuilds the PR from the current `main`.
+
+The PR moves only entries whose text matches exactly at the run's commit. An entry reworded since stays under `[Unreleased]` and ships with the next version. The first PR may also show blank-line changes in `[Unreleased]`.
 
 ### Expected result
 - The tag exists on GitHub, pointing at the run's commit.
@@ -274,11 +276,15 @@ The run must be `selected_for_publication` and `reconciled` and have no `tag`. T
 ### One-off setup
 A CircleCI context named `github-release` with `GITHUB_TOKEN`: a GitHub token for this repository only that can write contents and pull requests. It is used by `cut-release-tag` only.
 
+Restrict `github-release` (and the `prod` context) in CircleCI's context security settings so only pipelines on `main` can use them. The workflow and script check the branch, but both come from the branch being run, so only the context restriction stops a pushed branch reaching the token.
+
 ### If something is wrong
 - **`Run number <n> is not reconciled` / `not selected_for_publication` / `already tagged`**: the plan job stops and nothing changes. Fix the run's state first.
 - **`Commit <sha> is not on main`**: the run was archived from a branch. Nothing is tagged.
 - **`The plan changed since it was approved`**: another tag or run log change landed between plan and approval. Start the workflow again.
-- **The job fails after the tag was pushed**: start the workflow again. It reuses the existing tag, skips any step already done (including an existing `rel-<tag>` branch) and carries on.
+- **`nothing to release` / `no Unreleased entries`**: none of the run's commit's `[Unreleased]` entries are still unreleased on `main`, so there is nothing to move. The plan job stops before anything is pushed.
+- **`The run's commit_sha ... is not a full commit SHA`**: the run log's `commit_sha` is empty or shortened. Nothing is tagged.
+- **The job fails after the tag was pushed**: start the workflow again. A run whose tag is already on its own commit is accepted, so it reuses the tag, skips any step already done (the tag push, an existing `rel-<tag>` branch, an existing PR) and carries on.
 - **A tag was cut for the wrong run**: delete the tag on GitHub, restore the run's run log partition (see "Undoing an update"), and start again.
 
 ### Testing safely

@@ -1,8 +1,8 @@
 """
-Works out the release tag and CHANGELOG release for a selected, reconciled run.
+Works out the release tag, the CHANGELOG release and the run log update for a run.
 
-Works on local files only; `cut_release_tag.sh` does the S3, git and GitHub work
-and runs this as a module from the repo root (`python -m scripts.cut_release_tag`).
+Works on local files only; run as a module from the repo root
+(`python -m scripts.cut_release_tag`).
 """
 
 import argparse
@@ -30,19 +30,26 @@ UNRELEASED_HEADING = "## [Unreleased]"
 UNRELEASED_SUBSECTIONS = ("### Added", "### Changed", "### Improved", "### Fixed")
 
 
-def select_run_to_tag(run_log_df: pl.DataFrame, run_number: int) -> pl.DataFrame:
+def select_run_to_tag(
+    run_log_df: pl.DataFrame, run_number: int, tag_commits: dict[str, str]
+) -> pl.DataFrame:
     """Finds the run to tag, checking it is ready to be tagged.
+
+    A run whose tag is already on its own commit is returned too, so a rerun after
+    a partial failure can finish the steps that did not complete.
 
     Args:
         run_log_df (pl.DataFrame): The run log, including the partition key columns.
         run_number (int): The run to tag.
+        tag_commits (dict[str, str]): Every tag in the repo, mapped to its commit SHA.
 
     Returns:
         pl.DataFrame: The run's single row.
 
     Raises:
-        ValueError: If the run number matches no row or more than one row, or the
-            run is not selected for publication, not reconciled, or already tagged.
+        ValueError: If the run number matches no row or more than one row, the run
+            is not selected for publication or not reconciled, or it is tagged with
+            a tag that is not on its commit.
     """
     run_df = run_log_df.filter(pl.col(Keys.run_number) == run_number)
 
@@ -58,7 +65,8 @@ def select_run_to_tag(run_log_df: pl.DataFrame, run_number: int) -> pl.DataFrame
     if not run_df[RunLog.reconciled].item():
         raise ValueError(f"Run number {run_number} is not reconciled.")
     existing_tag = run_df[RunLog.tag].item()
-    if existing_tag is not None:
+    is_tag_on_commit = tag_commits.get(existing_tag) == run_df[RunLog.commit_sha].item()
+    if existing_tag is not None and not is_tag_on_commit:
         raise ValueError(f"Run number {run_number} is already tagged {existing_tag}.")
 
     return run_df
@@ -138,7 +146,7 @@ def _split_unreleased(
     Raises:
         ValueError: If the changelog has no Unreleased section.
     """
-    lines = changelog.split("\n")
+    lines = changelog.replace("\r\n", "\n").split("\n")
     if UNRELEASED_HEADING not in lines:
         raise ValueError(f"The changelog has no '{UNRELEASED_HEADING}' section.")
 
@@ -188,8 +196,9 @@ def release_changelog(
         str: The changelog at main with the commit's entries under the new version.
 
     Raises:
-        ValueError: If either changelog has no Unreleased section, or the commit's
-            changelog has no Unreleased entries.
+        ValueError: If either changelog has no Unreleased section, the commit's
+            changelog has no Unreleased entries, or none of them are Unreleased on
+            main.
     """
     _, commit_subsections, _ = _split_unreleased(changelog_at_commit)
     if not any(commit_subsections.values()):
@@ -207,6 +216,11 @@ def release_changelog(
                 released.setdefault(heading, []).append(entry)
             else:
                 remaining.setdefault(heading, []).append(entry)
+
+    if not released:
+        raise ValueError(
+            "None of the commit's Unreleased entries are Unreleased on main: nothing to release."
+        )
 
     version_heading = f"## [{tag}] - {release_date.strftime('%d/%m/%Y')}"
     return "\n".join(
@@ -314,26 +328,29 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             return 0
 
         run_log_df = read_run_log(args.run_log_dir)
-        run_df = select_run_to_tag(run_log_df, args.run_number)
-        if args.command == "plan":
-            archive_date = run_df[Keys.archive_date].item()
-            commit_sha = run_df[RunLog.commit_sha].item()
-            print(
-                json.dumps(
-                    {
-                        "run_number": args.run_number,
-                        "archive_date": archive_date,
-                        "commit_sha": commit_sha,
-                        "tag": next_tag(
-                            _read_tag_commits(args.tags_file), archive_date, commit_sha
-                        ),
-                        "tag_message": tag_message(archive_date),
-                    }
-                )
-            )
-        else:
+        if args.command == "record-tag":
             updated_df = set_run_tag(run_log_df, args.run_number, args.tag)
             write_run_partition(updated_df, args.run_number, args.output_dir)
+            return 0
+
+        run_df = select_run_to_tag(
+            run_log_df, args.run_number, _read_tag_commits(args.tags_file)
+        )
+        archive_date = run_df[Keys.archive_date].item()
+        commit_sha = run_df[RunLog.commit_sha].item()
+        print(
+            json.dumps(
+                {
+                    "run_number": args.run_number,
+                    "archive_date": archive_date,
+                    "commit_sha": commit_sha,
+                    "tag": next_tag(
+                        _read_tag_commits(args.tags_file), archive_date, commit_sha
+                    ),
+                    "tag_message": tag_message(archive_date),
+                }
+            )
+        )
     except (ValueError, FileNotFoundError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1

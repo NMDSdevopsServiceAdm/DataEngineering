@@ -2,8 +2,9 @@
 # Cuts the release tag for a selected, reconciled run. Needs git, uv, the AWS CLI
 # and, outside a dry run, GITHUB_TOKEN. See update_run_log_runbook.md.
 #
-#   cut_release_tag.sh plan   Works out the run's commit SHA and the tag to cut
-#                             and writes them to $RELEASE_PLAN_FILE. Changes nothing.
+#   cut_release_tag.sh plan   Works out the run's commit SHA and the tag to cut, and
+#                             checks the CHANGELOG release can be built. Writes the
+#                             plan to $RELEASE_PLAN_FILE. Changes nothing.
 #   cut_release_tag.sh cut    Re-works the plan, stops if it differs from the one
 #                             that was approved, then in this order: pushes the
 #                             annotated tag on the run's commit, writes the tag to
@@ -60,15 +61,37 @@ plan_value() {
   uv run python -c 'import json, sys; print(json.load(sys.stdin)[sys.argv[1]])' "$1"
 }
 
-# Git over HTTPS with the token in a header, so it is never in a URL or the remote
-# config. Only called outside a dry run, when the token is required.
+# Git over HTTPS with the token in a header, so it is never in a URL, the remote
+# config or the command line (git reads the header from its environment). Only
+# called outside a dry run, when the token is required.
 github_git() {
   local auth
   auth="$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)"
-  git -c "http.https://github.com/.extraheader=Authorization: Basic $auth" "$@"
+  GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.https://github.com/.extraheader" \
+    GIT_CONFIG_VALUE_0="Authorization: Basic $auth" git "$@"
 }
 
-# Works out the plan from S3 and the repo into $WORK_DIR/plan.json.
+# Calls the GitHub API for this repo and prints the response. The token goes to curl
+# on stdin, so it is not in the process list. On failure the response body, which
+# says why, is printed to stderr.
+# Args: HTTP method, path under /repos/<repo>/, optional JSON body.
+github_api() {
+  local method="$1" path="$2" response
+  local body_args=()
+  [[ -z "${3:-}" ]] || body_args=(-d "$3")
+  response="$(printf 'header = "Authorization: Bearer %s"\n' "$GITHUB_TOKEN" |
+    curl --fail-with-body -sS -K - -X "$method" \
+      -H "Accept: application/vnd.github+json" \
+      ${body_args[@]+"${body_args[@]}"} \
+      "https://api.github.com/repos/$REPO/$path")" || {
+    echo "GitHub API $method $path failed: $response" >&2
+    return 1
+  }
+  printf '%s' "$response"
+}
+
+# Works out the plan from S3 and the repo into $WORK_DIR/plan.json, and the
+# CHANGELOG release into $WORK_DIR/CHANGELOG.new unless its branch already exists.
 make_plan() {
   rm -rf "$WORK_DIR"
   mkdir -p "$WORK_DIR"
@@ -85,20 +108,43 @@ make_plan() {
 
   # `<tag> <commit>` for every tag; an annotated tag's commit is its peeled object.
   git for-each-ref refs/tags \
-    --format='%(refname:short) %(if)%(*objectname)%(then)%(*objectname)%(else)%(objectname)%(end)' \
+    --format='%(refname:lstrip=2) %(if)%(*objectname)%(then)%(*objectname)%(else)%(objectname)%(end)' \
     >"$WORK_DIR/tags"
 
   $CLI plan --run_log_dir "$WORK_DIR/run_log_original" --run_number "$RUN_NUMBER" \
     --tags_file "$WORK_DIR/tags" >"$WORK_DIR/plan.json"
 
   commit_sha="$(plan_value commit_sha <"$WORK_DIR/plan.json")"
+  tag="$(plan_value tag <"$WORK_DIR/plan.json")"
+  # A full SHA: shorter or ref-like values would never match the tag list.
+  [[ "$commit_sha" =~ ^[0-9a-f]{40}$ ]] || fail "The run's commit_sha '$commit_sha' is not a full commit SHA."
   git merge-base --is-ancestor "$commit_sha" origin/main ||
     fail "Commit $commit_sha is not on main."
+
+  # The branch name is at most 16 characters (it becomes a dev environment's name).
+  # ls-remote exits 2 for "no such branch"; any other failure is not an answer.
+  branch="rel-$tag"
+  local status=0
+  git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1 || status=$?
+  case "$status" in
+    0) branch_exists=true ;;
+    2) branch_exists=false ;;
+    *) fail "Could not list the branches of origin." ;;
+  esac
+
+  # Built here so a CHANGELOG that cannot be released fails the plan, before the
+  # tag is pushed.
+  if [[ "$branch_exists" == "false" ]]; then
+    git show "$commit_sha:CHANGELOG.md" >"$WORK_DIR/changelog_at_commit.md"
+    git show origin/main:CHANGELOG.md >"$WORK_DIR/changelog_at_main.md"
+    $CLI changelog --changelog_at_commit "$WORK_DIR/changelog_at_commit.md" \
+      --changelog_at_main "$WORK_DIR/changelog_at_main.md" --tag "$tag" \
+      --release_date "$(date +%Y-%m-%d)" --output "$WORK_DIR/CHANGELOG.new"
+  fi
 }
 
 make_plan
 archive_date="$(plan_value archive_date <"$WORK_DIR/plan.json")"
-tag="$(plan_value tag <"$WORK_DIR/plan.json")"
 tag_message="$(plan_value tag_message <"$WORK_DIR/plan.json")"
 
 echo
@@ -107,6 +153,7 @@ echo "Commit       : $commit_sha"
 echo "Tag          : $tag"
 echo "Tag message  : $tag_message"
 echo "Run log      : s3://$BUCKET/$RUN_LOG_PREFIX/"
+echo "CHANGELOG PR : branch $branch (already exists: $branch_exists)"
 if [[ "$DRY_RUN" == "true" ]]; then
   echo "Dry run      : nothing will be changed"
 fi
@@ -146,28 +193,24 @@ change aws s3 cp "$WORK_DIR/run_log_updated/$partition/" \
 change aws s3 sync "$WORK_DIR/run_log_updated/$partition/" \
   "s3://$BUCKET/$RUN_LOG_PREFIX/$partition/" --delete --only-show-errors
 
-# 3. The CHANGELOG PR. The branch name is at most 16 characters (it becomes a dev
-# environment's name); a branch that already exists means an earlier attempt got this far.
-branch="rel-$tag"
-if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
-  echo "Branch $branch already exists, so the CHANGELOG PR was already opened."
-  exit 0
+# 3. The CHANGELOG branch, built in a separate working tree: checking out main here
+# would replace this script and scripts/cut_release_tag.py with main's versions,
+# which may not match (or exist).
+if [[ "$branch_exists" == "true" ]]; then
+  echo "Branch $branch already exists, so it is not pushed again."
+else
+  release_tree="$WORK_DIR/release_tree"
+  git worktree prune
+  git worktree add -B "$branch" "$release_tree" origin/main
+  cp "$WORK_DIR/CHANGELOG.new" "$release_tree/CHANGELOG.md"
+  git -C "$release_tree" add CHANGELOG.md
+  git -C "$release_tree" -c user.name="CircleCI release" -c user.email="noreply@circleci.com" \
+    commit -m "Release $tag - move released CHANGELOG entries under the version"
+  change github_git -C "$release_tree" push "https://github.com/$REPO.git" "$branch"
 fi
 
-git show "$commit_sha:CHANGELOG.md" >"$WORK_DIR/changelog_at_commit.md"
-git show origin/main:CHANGELOG.md >"$WORK_DIR/changelog_at_main.md"
-# A separate working tree: checking out main here would replace this script and
-# scripts/cut_release_tag.py with main's versions, which may not match (or exist).
-release_tree="$WORK_DIR/release_tree"
-git worktree add -b "$branch" "$release_tree" origin/main
-$CLI changelog --changelog_at_commit "$WORK_DIR/changelog_at_commit.md" \
-  --changelog_at_main "$WORK_DIR/changelog_at_main.md" --tag "$tag" \
-  --release_date "$(date +%Y-%m-%d)" --output "$release_tree/CHANGELOG.md"
-git -C "$release_tree" add CHANGELOG.md
-git -C "$release_tree" -c user.name="CircleCI release" -c user.email="noreply@circleci.com" \
-  commit -m "Release $tag - move released CHANGELOG entries under the version"
-change github_git -C "$release_tree" push "https://github.com/$REPO.git" "$branch"
-
+# 4. The PR. Decided by whether a PR exists, not the branch: an earlier attempt may
+# have pushed the branch and failed to open the PR.
 pull_request="$(uv run python -c '
 import json, sys
 tag, branch, sha = sys.argv[1:]
@@ -179,12 +222,14 @@ print(json.dumps({
 }))
 ' "$tag" "$branch" "$commit_sha")"
 if [[ "$DRY_RUN" == "true" ]]; then
-  echo "DRY RUN: open a PR from $branch to main: $pull_request"
+  echo "DRY RUN: open a PR from $branch to main unless one exists: $pull_request"
 else
-  # The token goes to curl on stdin, so it is not in the process list.
-  curl --fail-with-body -sS -K - -X POST "https://api.github.com/repos/$REPO/pulls" \
-    -H "Accept: application/vnd.github+json" -d "$pull_request" >/dev/null <<EOF
-header = "Authorization: Bearer $GITHUB_TOKEN"
-EOF
-  echo "Opened a PR from $branch to main."
+  existing="$(github_api GET "pulls?head=${REPO%%/*}:$branch&state=all")"
+  existing_count="$(printf '%s' "$existing" | uv run python -c 'import json, sys; print(len(json.load(sys.stdin)))')"
+  if [[ "$existing_count" != "0" ]]; then
+    echo "A PR from $branch already exists."
+  else
+    github_api POST pulls "$pull_request" >/dev/null
+    echo "Opened a PR from $branch to main."
+  fi
 fi

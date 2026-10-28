@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass
 from datetime import date
 from typing import Optional
@@ -85,10 +86,17 @@ class TestSelectRunToTag:
             [(1, False, False, None), (2, True, True, None), (3, False, True, None)]
         )
 
-        returned_df = job.select_run_to_tag(run_log_df, 2)
+        returned_df = job.select_run_to_tag(run_log_df, 2, {})
 
         expected_df = run_log_df.filter(pl.col(Keys.run_number) == 2)
         pl_testing.assert_frame_equal(expected_df, returned_df)
+
+    def test_returns_the_run_when_its_tag_is_already_on_its_commit(self):
+        run_log_df = build_run_log([(1, True, True, "v2026.09.0")])
+
+        returned_df = job.select_run_to_tag(run_log_df, 1, {"v2026.09.0": "sha1"})
+
+        pl_testing.assert_frame_equal(run_log_df, returned_df)
 
     @pytest.mark.parametrize(
         "runs, run_number, message",
@@ -98,7 +106,7 @@ class TestSelectRunToTag:
         run_log_df = build_run_log(runs)
 
         with pytest.raises(ValueError, match=message):
-            job.select_run_to_tag(run_log_df, run_number)
+            job.select_run_to_tag(run_log_df, run_number, {"v2026.09.0": "other_sha"})
 
 
 @dataclass
@@ -296,3 +304,133 @@ class TestSetRunTag:
         pl_testing.assert_frame_equal(
             run_log_df.filter(other_runs), returned_df.filter(other_runs)
         )
+
+
+class TestReleaseChangelogEdgeCases:
+    def test_raises_when_none_of_the_commits_entries_are_unreleased_on_main(self):
+        at_commit = build_changelog("### Added\n- A.\n\n")
+        at_main = build_changelog("### Added\n- B.\n\n")
+
+        with pytest.raises(ValueError, match="nothing to release"):
+            job.release_changelog(at_commit, at_main, TAG, RELEASE_DATE)
+
+    def test_raises_when_the_changelog_has_no_unreleased_section(self):
+        at_commit = build_changelog("### Added\n- A.\n\n")
+
+        with pytest.raises(ValueError, match=r"no '## \[Unreleased\]' section"):
+            job.release_changelog(at_commit, "# Changelog\n", TAG, RELEASE_DATE)
+
+    def test_keeps_a_wrapped_entry_together(self):
+        changelog = build_changelog("### Added\n- A wrapped\n  entry.\n\n")
+
+        returned_changelog = job.release_changelog(
+            changelog, changelog, TAG, RELEASE_DATE
+        )
+
+        assert "### Added\n- A wrapped\n  entry.\n\n" + OLDER_VERSIONS in (
+            returned_changelog
+        )
+
+    def test_returns_the_same_changelog_for_crlf_input(self):
+        changelog = build_changelog("### Added\n- A.\n\n")
+
+        returned_changelog = job.release_changelog(
+            changelog.replace("\n", "\r\n"),
+            changelog.replace("\n", "\r\n"),
+            TAG,
+            RELEASE_DATE,
+        )
+
+        expected_changelog = job.release_changelog(
+            changelog, changelog, TAG, RELEASE_DATE
+        )
+        assert returned_changelog == expected_changelog
+
+
+def write_run_log(run_log_dir, rows):
+    """Writes one parquet file per (run_number, selected, reconciled, tag) row."""
+    for run_number, selected, reconciled, tag in rows:
+        partition_dir = (
+            run_log_dir / "archive_date=2026-10-15" / f"run_number={run_number}"
+        )
+        partition_dir.mkdir(parents=True)
+        pl.DataFrame(
+            {
+                RunLog.commit_sha: [f"sha{run_number}"],
+                RunLog.selected_for_publication: [selected],
+                RunLog.reconciled: [reconciled],
+                RunLog.tag: pl.Series([tag], dtype=pl.String),
+            }
+        ).write_parquet(partition_dir / "file.parquet")
+
+
+class TestMain:
+    def test_plan_prints_the_run_commit_tag_and_message(self, tmp_path, capsys):
+        write_run_log(tmp_path / "log", [(2, True, True, None)])
+        tags_file = tmp_path / "tags"
+        tags_file.write_text("v2026.09.0 abc\n")
+
+        exit_code = job.main(
+            [
+                "plan",
+                "--run_log_dir",
+                str(tmp_path / "log"),
+                "--run_number",
+                "2",
+                "--tags_file",
+                str(tags_file),
+            ]
+        )
+
+        assert exit_code == 0
+        assert json.loads(capsys.readouterr().out) == {
+            "run_number": 2,
+            "archive_date": "2026-10-15",
+            "commit_sha": "sha2",
+            "tag": "v2026.09.1",
+            "tag_message": "Codebase used for data as at September 2026",
+        }
+
+    def test_plan_returns_one_when_the_run_is_not_ready(self, tmp_path, capsys):
+        write_run_log(tmp_path / "log", [(2, True, False, None)])
+        tags_file = tmp_path / "tags"
+        tags_file.write_text("")
+
+        exit_code = job.main(
+            [
+                "plan",
+                "--run_log_dir",
+                str(tmp_path / "log"),
+                "--run_number",
+                "2",
+                "--tags_file",
+                str(tags_file),
+            ]
+        )
+
+        assert exit_code == 1
+        assert "not reconciled" in capsys.readouterr().err
+
+    def test_record_tag_writes_the_tag_to_the_runs_partition(self, tmp_path):
+        write_run_log(tmp_path / "log", [(1, True, True, None), (2, True, True, None)])
+
+        exit_code = job.main(
+            [
+                "record-tag",
+                "--run_log_dir",
+                str(tmp_path / "log"),
+                "--output_dir",
+                str(tmp_path / "out"),
+                "--run_number",
+                "2",
+                "--tag",
+                "v2026.09.1",
+            ]
+        )
+
+        written_df = pl.read_parquet(
+            tmp_path / "out" / "**" / "*.parquet", hive_partitioning=True
+        )
+        assert exit_code == 0
+        assert written_df[Keys.run_number].to_list() == [2]
+        assert written_df[RunLog.tag].to_list() == ["v2026.09.1"]
