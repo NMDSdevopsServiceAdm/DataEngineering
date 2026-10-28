@@ -68,6 +68,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Fixed
+- Fixed run promotion leaving an empty write-check test object in the long-term archive bucket on every run.
 - Fixed SLV deduplication keeping repeated values at workplaces where a job role stays blank.
 
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
