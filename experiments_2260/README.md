@@ -4,11 +4,12 @@ SageMaker only. Nothing here runs in the pipeline.
 
 | File | Use |
 |---|---|
-| `experiment.ipynb` | Scores every split and window (test A), then the best plus current on a temporal hide (test B). Clones branch `2260-empstat-avg`. |
+| `experiment.ipynb` | Scores every split and window (test A), then the best plus current on a temporal hide (test B). Reads the repo clone on the instance. |
 | `compare.ipynb` | Loads the results and applies the win rule against the current setup. |
 | `experiment_utils.py` | Variants, size band, fallback hierarchy, hold-out and scoring helpers. No repo tests. |
 
 ## Run order
+0. Run `notebooks/sagemaker/sagemaker_setup.ipynb` (upload it once; set `BRANCH = "2260-empstat-avg"`). It clones the repo to `~/SageMaker/DataEngineering` or updates it to the latest push. Rerun it whenever the code changes. Save As the two notebooks out of the clone into your own folder, since the clone is reset on every run.
 1. Set `DATA_BUCKET` and `RESULTS_PREFIX` in `experiment.ipynb`, then run top to bottom. One result file per variant is written under `RESULTS_PREFIX/RUN_LABEL/`; rerun to resume.
 2. Run `compare.ipynb` with the same `RESULTS_PREFIX` and `RUN_LABEL`. Paste its win rule table and winners into the PR.
 3. If a variant wins, change `ROLLING_AVERAGE_PERIOD` and/or the group columns in `_03_impute.py` and update the tests. If none wins, no pipeline change.
