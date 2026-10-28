@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 import polars as pl
@@ -28,6 +29,95 @@ def _run_log_lf(published: dict[int, bool]) -> pl.LazyFrame:
             RunLog.selected_for_publication: pl.Boolean,
         },
     )
+
+
+def _run_row(promoted: bool = True, reconciled: bool = False) -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            RunLog.approved: [True],
+            RunLog.selected_for_publication: [True],
+            RunLog.promoted: [promoted],
+            RunLog.reconciled: [reconciled],
+            RunLog.reconciled_at: [None],
+        },
+        schema={
+            RunLog.approved: pl.Boolean,
+            RunLog.selected_for_publication: pl.Boolean,
+            RunLog.promoted: pl.Boolean,
+            RunLog.reconciled: pl.Boolean,
+            RunLog.reconciled_at: pl.Datetime,
+        },
+    )
+
+
+PARTITION_PREFIX = "run_log/archive_date=2026-10-06/run_number=1/"
+
+
+@pytest.fixture
+def mocks():
+    """Mocks the S3 reads and writes around a run log partition holding file.parquet."""
+    with (
+        patch(f"{PATCH_PATH}.file_utils.list_archive_runs") as list_archive_runs,
+        patch(f"{PATCH_PATH}.utils.scan_parquet") as scan_parquet,
+        patch(f"{PATCH_PATH}.utils.sink_to_parquet") as sink_to_parquet,
+        patch(f"{PATCH_PATH}.boto3.client") as boto3_client,
+    ):
+        list_archive_runs.return_value = {1: "2026-10-06"}
+        scan_parquet.return_value = _run_row().lazy()
+        boto3_client.return_value.list_objects_v2.return_value = {
+            "Contents": [{"Key": f"{PARTITION_PREFIX}file.parquet"}]
+        }
+        yield SimpleNamespace(
+            scan_parquet=scan_parquet,
+            sink_to_parquet=sink_to_parquet,
+            list_objects_v2=boto3_client.return_value.list_objects_v2,
+        )
+
+
+class TestMarkRunLogFlag:
+    def test_sets_the_flag_and_overwrites_the_partition(self, mocks):
+        uploaded = {}
+        mocks.sink_to_parquet.side_effect = (
+            lambda lazy_df, destination: uploaded.update(
+                frame=lazy_df.collect(), destination=destination
+            )
+        )
+
+        job.mark_run_log_flag(RUN_LOG_SOURCE, 1, RunLog.reconciled)
+
+        mocks.list_objects_v2.assert_called_once_with(
+            Bucket="bucket", Prefix=PARTITION_PREFIX
+        )
+        assert uploaded["destination"] == f"s3://bucket/{PARTITION_PREFIX}"
+        assert uploaded["frame"][RunLog.reconciled].to_list() == [True]
+
+    def test_refuses_to_write_when_the_partition_holds_other_files(self, mocks):
+        mocks.list_objects_v2.return_value = {
+            "Contents": [
+                {"Key": f"{PARTITION_PREFIX}00000000.parquet"},
+                {"Key": f"{PARTITION_PREFIX}file.parquet"},
+            ]
+        }
+
+        with pytest.raises(ValueError, match="file.parquet"):
+            job.mark_run_log_flag(RUN_LOG_SOURCE, 1, RunLog.reconciled)
+
+        mocks.sink_to_parquet.assert_not_called()
+
+    def test_does_not_upload_when_the_update_is_rejected(self, mocks):
+        mocks.scan_parquet.return_value = _run_row(promoted=False).lazy()
+
+        with pytest.raises(ValueError, match="not promoted"):
+            job.mark_run_log_flag(RUN_LOG_SOURCE, 1, RunLog.reconciled)
+
+        mocks.sink_to_parquet.assert_not_called()
+
+    def test_does_nothing_when_the_flag_is_already_set(self, mocks):
+        mocks.scan_parquet.return_value = _run_row(reconciled=True).lazy()
+
+        job.mark_run_log_flag(RUN_LOG_SOURCE, 1, RunLog.reconciled)
+
+        mocks.sink_to_parquet.assert_not_called()
 
 
 class TestGetPreviousPublishedRunNumber:

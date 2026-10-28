@@ -85,8 +85,8 @@ def save_run_log(
     Saves a one-row log of this archive run to S3, partitioned by archive_date and
     run_number.
 
-    The approval, check and promoted flags are False; tag and promoted_at are null,
-    for later steps to fill in.
+    The approval, check and promoted flags are False; tag, promoted_at and
+    reconciled_at are null, for later steps to fill in.
 
     Args:
         archive_date (str): archive date formatted as yyyy-mm-dd
@@ -108,6 +108,7 @@ def save_run_log(
             RunLogCols.tag: [None],
             RunLogCols.selected_for_publication: [False],
             RunLogCols.reconciled: [False],
+            RunLogCols.reconciled_at: [None],
             RunLogCols.locally_checked: [False],
             RunLogCols.promoted: [False],
             RunLogCols.promoted_at: [None],
