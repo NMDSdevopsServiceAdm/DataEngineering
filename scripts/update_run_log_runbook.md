@@ -284,7 +284,7 @@ The automatic start needs a CircleCI token in AWS:
 - **Token**: a personal CircleCI API token from the account used for automation, named `aws-release-trigger` and separate from the `CIRCLECI_TOKEN` GitHub secret. Project tokens do not work with CircleCI's v2 API. A personal token has the same read and write access as its owner in CircleCI, so it is used only in the connection below.
 - **Connection**: after the first apply on `main`, replace the placeholder key on the EventBridge connection `main-release-tag-circleci` (AWS console: EventBridge, Connections, Edit, API key value). Terraform never sets the real key and an apply does not overwrite it.
 - **`circleci_definition_id`** in `terraform/pipeline/variables.tf` is the release pipeline's definition id (CircleCI: Project Settings, Project Setup).
-- **Rotating**: create a new token, replace the connection's key, then delete the old token. Do this when the token's owner changes or it may have been exposed.
+- **Expiry and rotating**: CircleCI requires an expiry of at most one year, and when it passes every call fails with HTTP 401. CircleCI emails the token's owner 30, 15, 7 and 1 day before, so the account's email must be one the team reads. To rotate (also when the owner changes or the token may have been exposed), create a new token, replace the connection's key, then delete the old token.
 - **Recreating the connection** (for example renaming it) resets its key to the placeholder, so the next call fails with HTTP 401 until the key is set again.
 
 ### If something is wrong
