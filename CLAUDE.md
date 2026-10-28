@@ -4,7 +4,7 @@ Skills for Care Workforce Intelligence Team. Builds reproducible AWS data pipeli
 
 ## Output style
 
-Keep responses concise — context is good, extra words are not. Default to short statements and bullets over prose paragraphs; don't restate information already visible in the diff, plan, or previous message. In interview-style flows (see the `new-ticket` skill), ask one focused question at a time rather than bundling several.
+Keep responses concise — context is good, extra words are not. Default to short statements and bullets over prose paragraphs; don't restate information already visible in the diff, plan, or previous message. In interview-style flows, ask one focused question at a time rather than bundling several.
 
 ## Stack
 
@@ -30,7 +30,7 @@ Keep responses concise — context is good, extra words are not. Default to shor
 - Run `uv sync` once to install dependencies, then prefix commands with `uv run` (e.g. `uv run pytest`) to access this project's installed packages — don't assume they're on the system/global Python.
 - Branch names must be **16 characters or fewer**.
 - CI/CD automatically runs all new code plus the full unit test suite against full data once pushed to a branch. Local/manual validation should run the relevant unit tests and `terraform validate` where applicable — never attempt to deploy or run code against AWS directly; that's the CI/CD pipeline's job.
-- Ticket-driven workflow: branches follow `<trello-number>-<short-description>`, commits follow `<trello-number> - <Description>`. Use the `new-ticket`, `commit-push`, and `open-pr` skills to run the cycle consistently.
+- Ticket-driven workflow: branches follow `<trello-number>-<short-description>`, commits follow `<trello-number> - <Description>`. Use the `commit-push` and `open-pr` skills to run the cycle consistently.
 
 ## Scale is the top constraint
 
@@ -56,6 +56,11 @@ Not being on the streaming list above is not a proxy for "will OOM" — a join t
 - Expression-based and declarative; avoid `.apply()` unless there's no vectorised alternative.
 - Avoid `.pipe()` — we find it harder to visually trace than a plain linear chain, and it makes it harder to drop in an intermediate `.collect().head()` or print for debugging. Prefer explicit intermediate LazyFrame variables instead (see LazyFrame naming below).
 - Keep basic, simple transformations inline. Only extract into a function when it's genuinely complex, encodes non-obvious business logic, or is worth its own unit tests — not by default. This is a deliberate correction from old PySpark habits in this repo, where almost everything was wrapped in a function regardless of complexity, often making the function longer and harder to follow than the plain code inside it.
+
+## Functions & constants
+
+- No nested functions. Make each a module-level function with its own tests, or inline the logic.
+- Single-use constants stay local to the function that uses them. Only promote to module level once a second call site exists.
 
 ## LazyFrame naming
 
