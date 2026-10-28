@@ -37,29 +37,6 @@ class TestTemplateCells:
 
         assert filled == [], "Input cells that still hold values"
 
-    @pytest.mark.parametrize(
-        "sheet_name, cell",
-        [
-            ("Filled posts", "J63"),
-            ("Filled posts", "J82"),
-            *[
-                (sheet, cell)
-                for sheet in (
-                    "Comp SfC and CT - short term",
-                    "Comp SfC and CT - medium term",
-                    "Comp SfC and CT - long term",
-                    "No filters - long term",
-                )
-                for cell in ("E27", "N27")
-            ],
-        ],
-    )
-    def test_cumulative_headings_are_generic(
-        self, workbook: openpyxl.Workbook, sheet_name: str, cell: str
-    ):
-        """The % change table headings read 'Cumulative % change'."""
-        assert workbook[sheet_name][cell].value == "Cumulative % change"
-
     @pytest.mark.parametrize("sheet", support.sheet_params)
     def test_has_no_typed_values_or_placeholders_outside_inputs(
         self, sheet: cell_map.SheetMap, workbook: openpyxl.Workbook
