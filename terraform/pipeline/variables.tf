@@ -25,6 +25,18 @@ variable "dpr_version" {
   default     = "2027.01"
 }
 
+variable "circleci_definition_id" {
+  type        = string
+  description = "Definition id of the CircleCI pipeline that Publication-Output starts to cut the release tag (CircleCI: Project Settings, Project Setup)"
+  default     = ""
+}
+
+variable "release_trigger_branch_test" {
+  type        = bool
+  description = "Off main, makes Publication-Output start the release-tag dry run, for testing the trigger from one branch. Never set on main."
+  default     = false
+}
+
 variable "region" {
   default = "eu-west-2"
 }

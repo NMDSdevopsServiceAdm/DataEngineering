@@ -99,6 +99,13 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     reconciliation_polling_max_attempts = local.reconciliation_polling_max_attempts
     reconciliation_polling_wait_seconds = local.reconciliation_polling_wait_seconds
 
+    # release tag trigger
+    release_trigger_enabled = local.release_trigger_enabled
+    release_connection_arn  = local.release_connection_arn
+    release_dry_run         = local.release_trigger_dry_run
+    release_pipeline_branch = local.release_pipeline_branch
+    circleci_definition_id  = var.circleci_definition_id
+
     # dpr
     dpr_version = var.dpr_version
 
@@ -194,7 +201,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
   policy = jsonencode({
 
     "Version" : "2012-10-17",
-    "Statement" : [
+    "Statement" : concat([
       {
         "Effect" : "Allow",
         "Action" : [
@@ -353,7 +360,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           }
         }
       }
-    ]
+    ], local.release_trigger_iam_statements)
   })
 }
 

@@ -261,7 +261,7 @@ Once the selected run is reconciled, tag the exact code that produced its data a
 The run must be `selected_for_publication` and `reconciled` and have no `tag`. The tag goes on the run's `commit_sha`, with the message "Codebase used for data as at <Month YYYY>". The workflow then writes the tag to the run log, and opens a PR from `rel-<tag>` that moves into the new version only the `[Unreleased]` entries present at that commit. Entries merged to `main` since stay under `[Unreleased]`.
 
 ### Steps
-1. In CircleCI choose the DataEngineering project, **Trigger Pipeline**, branch `main`, and add the parameters `cut_release_tag` (boolean) `true` and `release_run_number` (integer) the selected run's number.
+1. `Publication-Output` on `main` starts the `release-tag` pipeline for the run as its last step, after it sets `reconciled`. To start it by hand instead, in CircleCI choose the DataEngineering project, **Trigger Pipeline**, branch `main`, and add the parameters `cut_release_tag` (boolean) `true` and `release_run_number` (integer) the selected run's number.
 2. Open the `plan-release-tag` job. It prints the run, its commit, the tag it would cut and the tag message. Check the commit and tag are what you expect.
 3. Approve the `approve-release-tag` job, then watch `cut-release-tag`.
 4. Merge the `rel-<tag>` PR once its checks pass, soon after it opens. It rewrites the `[Unreleased]` section, and GitHub's merge does not use the CHANGELOG union merge, so another PR that edits those lines can conflict. If it does, close the PR and delete the `rel-<tag>` branch, then run step 1 again: the workflow reuses the tag and rebuilds the PR from the current `main`.
@@ -278,7 +278,16 @@ A CircleCI context named `github-release` with `GITHUB_TOKEN`: a GitHub token fo
 
 Restrict `github-release` (and the `prod` context) in CircleCI's context security settings so only pipelines on `main` can use them. The workflow and script check the branch, but both come from the branch being run, so only the context restriction stops a pushed branch reaching the token.
 
+The automatic start needs a CircleCI token in AWS:
+- **Token**: a personal CircleCI API token from the account used for automation, named `aws-release-trigger` and separate from the `CIRCLECI_TOKEN` GitHub secret. Project tokens do not work with CircleCI's v2 API. A personal token has the same read and write access as its owner in CircleCI, so it is used only in the connection below.
+- **Connection**: after the first apply on `main`, replace the placeholder key on the EventBridge connection `main-release-tag-circleci` (AWS console: EventBridge, Connections, Edit, API key value). Terraform never sets the real key and an apply does not overwrite it.
+- **`circleci_definition_id`** in `terraform/pipeline/variables.tf` is the release pipeline's definition id (CircleCI: Project Settings, Project Setup).
+- **Rotating**: create a new token, replace the connection's key, then delete the old token. Do this when the token's owner changes or it may have been exposed.
+- **Recreating the connection** (for example renaming it) resets its key to the placeholder, so the next call fails with HTTP 401 until the key is set again.
+
 ### If something is wrong
+- **`Publication-Output` ends Failed at `Start Release Tag Pipeline`**: the call to CircleCI failed and the failure notification has the error. HTTP 401 or 403 means the connection's key is wrong, expired or was reset; 400 or 404 means `circleci_definition_id` or the project path is wrong. The run is already reconciled. Fix the cause, then start the workflow by hand (step 1).
+- **The run is reconciled but no pipeline or tag appears**: open the `release-tag` pipeline in CircleCI. CircleCI sends a failure notification when `plan-release-tag` fails and the job says why (see the entries below). An `approve-release-tag` job still waiting needs approving (step 3). A second pipeline for the same run is harmless: once the tag, branch and PR exist it changes nothing.
 - **`Run number <n> is not reconciled` / `not selected_for_publication` / `already tagged`**: the plan job stops and nothing changes. Fix the run's state first.
 - **`Commit <sha> is not on main`**: the run was archived from a branch. Nothing is tagged.
 - **`The plan changed since it was approved`**: another tag or run log change landed between plan and approval. Start the workflow again.
@@ -289,6 +298,8 @@ Restrict `github-release` (and the `prod` context) in CircleCI's context securit
 
 ### Testing safely
 Trigger the pipeline from your branch with `cut_release_tag` `true`, `release_dry_run` `true` and `release_bucket` your branch dataset bucket (`sfc-<branch>-datasets`). That runs the same jobs with the non-prod context and prints every tag push, S3 write and PR instead of making it. The bucket's run log needs a run that is selected and reconciled, set with `update_run_log.sh`. A real run only starts from `main`.
+
+To test the automatic start from a branch, set `release_trigger_branch_test` to `true` in `terraform/pipeline/variables.tf` on that branch only, never on `main`. After CI applies, replace the key on the branch's connection (`<branch>-release-tag-circleci`, named after the workspace) and start `Publication-Output` with `{"run_number": <n>}` for a run that is selected and promoted. It starts the dry run against the branch bucket; cancel the pipeline at `approve-release-tag`. Set the variable back before merging. Off `main`, `Publication-Output` starts no pipeline unless this variable is set.
 
 ## If something is wrong (any flag)
 - **Flag unsupported**: only `approved`, `selected_for_publication`, `reconciled` and `locally_checked` are accepted at the prompt — `promoted` is set automatically, not chosen directly (see "Promoting a run").

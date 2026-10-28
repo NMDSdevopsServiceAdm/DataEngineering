@@ -178,7 +178,54 @@
                   ]
                 }
               },
+              "ResultPath": null,
+%{ if release_trigger_enabled ~}
+              "Next": "Start Release Tag Pipeline"
+            },
+            "Start Release Tag Pipeline": {
+              "Type": "Task",
+              "Comment": "Starts the CircleCI release-tag pipeline for this run. A failure ends the execution through the Parallel Catch.",
+              "Resource": "arn:aws:states:::http:invoke",
+              "Parameters": {
+                "ApiEndpoint": "https://circleci.com/api/v2/project/gh/NMDSdevopsServiceAdm/DataEngineering/pipeline/run",
+                "Method": "POST",
+                "InvocationConfig": {
+                  "ConnectionArn": "${release_connection_arn}"
+                },
+                "RequestBody": {
+                  "definition_id": "${circleci_definition_id}",
+                  "config": {
+                    "branch": "${release_pipeline_branch}"
+                  },
+                  "checkout": {
+                    "branch": "${release_pipeline_branch}"
+                  },
+                  "parameters": {
+                    "cut_release_tag": true,
+                    "release_run_number.$": "States.StringToJson(States.Format('{}', $.run_number))",
+                    "release_dry_run": ${release_dry_run},
+                    "release_bucket": "${dataset_bucket_name}"
+                  }
+                }
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "States.Http.StatusCode.429",
+                    "States.Http.StatusCode.502",
+                    "States.Http.StatusCode.503",
+                    "States.Http.StatusCode.504"
+                  ],
+                  "IntervalSeconds": 5,
+                  "MaxAttempts": 2,
+                  "BackoffRate": 2,
+                  "JitterStrategy": "FULL"
+                }
+              ],
               "End": true
+%{ else ~}
+              "End": true
+%{ endif ~}
             }
           }
         }
