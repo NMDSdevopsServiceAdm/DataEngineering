@@ -41,7 +41,17 @@ SERVICE_TYPE_ORDER = [
     PrimaryServiceType.care_home_only,
     PrimaryServiceType.non_residential,
 ]
+# Comparison sheet blocks: key prefix of the block's input ranges and the
+# service type rows that feed it.
+COMPARISON_BLOCKS = (
+    ("care_homes", PublishedMainService.all_care_homes),
+    ("non_res", PrimaryServiceType.non_residential),
+)
 MARCH = 3
+# Period months (March, June, September, December) of the long term sheets.
+# The long term start period must be one of these months, or the filter drops the
+# row its % change is measured from.
+QUARTERLY_PERIOD_MONTHS = (3, 6, 9, 12)
 ANNUAL_LABEL = "Annual"
 MONTHLY_LABEL = "Monthly"
 HEADING_TEXT = (
@@ -542,8 +552,112 @@ def filled_posts_values(assessment_df: pl.DataFrame) -> dict[str, object]:
     return cells
 
 
+def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, object]:
+    """Cell values for the "Comp prev publication" sheet.
+
+    Each of the previous publication, current publication and difference blocks
+    lists its rows in the order of `comp_prev_rows`, which the labels also follow.
+
+    Args:
+        assessment_df (pl.DataFrame): output of `prepare_assessment_df`.
+
+    Returns:
+        dict[str, object]: value by A1 cell.
+    """
+    period_months = _period_months(
+        assessment_df.get_column(IndCQC.cqc_location_import_date).to_list()
+    )
+    row_indexes = [
+        period_months.index(month) for month, _ in comp_prev_rows(period_months)
+    ]
+    period_df = assessment_df.select(pl.all().gather(row_indexes))
+
+    cells = {}
+    for block in ("previous", "current", "difference"):
+        cells |= _table_cells(
+            cell_map.COMP_PREV_PUBLICATION,
+            period_df,
+            (f"{block}.dates",),
+            (f"{block}.values",),
+        )
+    return cells
+
+
+def comparison_sheet_values(
+    assessment_df: pl.DataFrame,
+    sheet: cell_map.SheetMap,
+    from_date: datetime.date,
+    period_months: tuple[int, ...] | None = None,
+) -> dict[str, object]:
+    """Cell values for a comparison sheet, from the term's start date onwards.
+
+    The care homes block reads the "All CQC care homes" rows and the non-residential
+    block reads the "non-residential" rows. A single-cell range takes the latest
+    row's value, since every row in the term shares the same number of locations.
+
+    Args:
+        assessment_df (pl.DataFrame): output of `prepare_assessment_df`.
+        sheet (cell_map.SheetMap): the comparison sheet.
+        from_date (datetime.date): first import date of the term.
+        period_months (tuple[int, ...] | None): month numbers of the periods to keep,
+            or None to keep every month.
+
+    Returns:
+        dict[str, object]: value by A1 cell.
+
+    Raises:
+        ValueError: if the sheet has no input ranges for a block.
+    """
+    import_date = pl.col(IndCQC.cqc_location_import_date)
+    period_df = assessment_df.filter(import_date >= from_date)
+    if period_months is not None:
+        period_df = period_df.filter(
+            publication_utils.import_date_to_period_month(import_date)
+            .dt.month()
+            .is_in(period_months)
+        )
+    latest_row = period_df.row(-1, named=True)
+
+    cells = {}
+    for prefix, service_type in COMPARISON_BLOCKS:
+        block_ranges = [r for r in sheet.input_ranges if r.key.startswith(f"{prefix}.")]
+        if not block_ranges:
+            raise ValueError(f"No '{prefix}' input ranges on '{sheet.name}'")
+        tables = [
+            r
+            for r in block_ranges
+            if r.source_column is not None and CellRange(r.cells).size["rows"] > 1
+        ]
+        cells |= _table_cells(
+            sheet,
+            period_df,
+            tuple(r.key for r in tables if r.source_column == cell_map.PERIOD_COL),
+            tuple(r.key for r in tables if r.source_column != cell_map.PERIOD_COL),
+            (service_type,),
+        )
+        for r in block_ranges:
+            is_single_cell = CellRange(r.cells).size == {"rows": 1, "columns": 1}
+            if r.source_column is not None and is_single_cell:
+                column = f"{r.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
+                cells[r.cells] = latest_row[column]
+    return cells
+
+
 SHEET_VALUE_BUILDERS: dict[str, Callable[[pl.DataFrame, TermFromDates], dict]] = {
     cell_map.FILLED_POSTS.name: lambda df, _: filled_posts_values(df),
+    cell_map.COMP_PREV_PUBLICATION.name: lambda df, _: comp_prev_publication_values(df),
+    cell_map.COMP_SHORT_TERM.name: lambda df, dates: comparison_sheet_values(
+        df, cell_map.COMP_SHORT_TERM, dates.short
+    ),
+    cell_map.COMP_MEDIUM_TERM.name: lambda df, dates: comparison_sheet_values(
+        df, cell_map.COMP_MEDIUM_TERM, dates.medium
+    ),
+    cell_map.COMP_LONG_TERM.name: lambda df, dates: comparison_sheet_values(
+        df, cell_map.COMP_LONG_TERM, dates.long, QUARTERLY_PERIOD_MONTHS
+    ),
+    cell_map.NO_FILTERS.name: lambda df, dates: comparison_sheet_values(
+        df, cell_map.NO_FILTERS, dates.long, QUARTERLY_PERIOD_MONTHS
+    ),
 }
 
 

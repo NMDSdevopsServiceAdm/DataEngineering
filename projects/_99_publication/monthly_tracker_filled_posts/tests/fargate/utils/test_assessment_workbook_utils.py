@@ -534,7 +534,217 @@ class TestFilledPostsValues:
             job.filled_posts_values(df)
 
 
+class TestCompPrevPublicationValues:
+    @pytest.fixture(scope="class")
+    def cells(self) -> dict[str, object]:
+        return job.comp_prev_publication_values(
+            job.prepare_assessment_df(_assessment_lf(IMPORT_DATES), VALUE_COLUMNS)
+        )
+
+    def test_blocks_list_annual_rows_then_monthly_rows_as_period_months(self, cells):
+        expected_dates = [
+            datetime.date(2024, 3, 1),
+            datetime.date(2025, 3, 1),
+            datetime.date(2026, 3, 1),
+            datetime.date(2026, 4, 1),
+        ]
+        for first_row in (23, 64, 106):
+            assert [cells[f"C{first_row + i}"] for i in range(4)] == expected_dates
+            assert f"C{first_row + 4}" not in cells
+
+    def test_previous_publication_holds_the_previous_run_filled_posts(self, cells):
+        assert [cells[f"{col}23"] for col in "DEFGH"] == [5000, 5010, 5020, 5030, 5040]
+
+    def test_current_publication_holds_this_runs_filled_posts(self, cells):
+        assert [cells[f"{col}64"] for col in "DEFGH"] == [1000, 1010, 1020, 1030, 1040]
+
+    def test_difference_holds_the_percentage_change_from_the_previous_run(self, cells):
+        assert [cells[f"{col}106"] for col in "DEFGH"] == [0.5] * 5
+
+    def test_raises_when_periods_exceed_the_block_rows(self):
+        april_dates = [datetime.date(1990 + year, 4, 1) for year in range(38)]
+        df = job.prepare_assessment_df(_assessment_lf(april_dates), VALUE_COLUMNS)
+
+        with pytest.raises(ValueError, match="exceed the 37 rows"):
+            job.comp_prev_publication_values(df)
+
+
+class TestComparisonSheetValues:
+    CARE_HOMES = 1
+    NON_RESIDENTIAL = 4
+
+    @pytest.fixture(scope="class")
+    def df(self) -> pl.DataFrame:
+        return job.prepare_assessment_df(_assessment_lf(IMPORT_DATES), VALUE_COLUMNS)
+
+    def test_rows_start_at_the_term_start_date_as_period_months(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.COMP_SHORT_TERM, APRIL_2026)
+
+        assert [cells[f"{col}{row}"] for col in "BK" for row in (29, 30)] == [
+            datetime.date(2026, 3, 1),
+            datetime.date(2026, 4, 1),
+        ] * 2
+        assert "B31" not in cells
+
+    def test_an_earlier_term_start_includes_more_rows(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.COMP_MEDIUM_TERM, APRIL_2025)
+
+        assert [cells[f"B{row}"] for row in (29, 30, 31)] == [
+            datetime.date(2025, 3, 1),
+            datetime.date(2026, 3, 1),
+            datetime.date(2026, 4, 1),
+        ]
+
+    def test_care_homes_block_reads_the_all_care_homes_rows(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.COMP_SHORT_TERM, APRIL_2026)
+
+        assert [cells[f"{col}29"] for col in "CDEF"] == [
+            _generic_value(column, 2, self.CARE_HOMES)
+            for column in (
+                Pub.filtered_filled_posts_short,
+                Pub.filtered_ct_total_employed_short,
+                Pub.filtered_filled_posts_cum_perc_change_short,
+                Pub.filtered_ct_cum_perc_change_short,
+            )
+        ]
+
+    def test_non_residential_block_reads_the_non_residential_rows(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.COMP_SHORT_TERM, APRIL_2026)
+
+        assert [cells[f"{col}29"] for col in "LMNO"] == [
+            _generic_value(column, 2, self.NON_RESIDENTIAL)
+            for column in (
+                Pub.filtered_filled_posts_short,
+                Pub.filtered_ct_total_employed_short,
+                Pub.filtered_filled_posts_cum_perc_change_short,
+                Pub.filtered_ct_cum_perc_change_short,
+            )
+        ]
+
+    def test_number_of_locations_cells_take_the_latest_row(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.COMP_SHORT_TERM, APRIL_2026)
+
+        assert (cells["D25"], cells["M25"]) == (
+            _generic_value(Pub.filtered_locationid_count_short, 3, self.CARE_HOMES),
+            _generic_value(
+                Pub.filtered_locationid_count_short, 3, self.NON_RESIDENTIAL
+            ),
+        )
+
+    def test_no_filters_sheet_has_number_of_locations_for_each_period(self, df):
+        cells = job.comparison_sheet_values(df, cell_map.NO_FILTERS, APRIL_2026)
+
+        assert (cells["G29"], cells["P29"]) == (301, 304)
+        assert "D25" not in cells
+
+    def test_both_long_term_sheets_keep_only_quarterly_periods_from_the_term_start(
+        self,
+    ):
+        # Period months March, April, June, July, September, October, December.
+        import_dates = [
+            datetime.date(2024, 4, 1),
+            datetime.date(2024, 5, 1),
+            datetime.date(2024, 7, 1),
+            datetime.date(2024, 8, 1),
+            datetime.date(2024, 10, 1),
+            datetime.date(2024, 11, 1),
+            datetime.date(2025, 1, 1),
+        ]
+        df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
+
+        for sheet in (cell_map.COMP_LONG_TERM, cell_map.NO_FILTERS):
+            cells = job.SHEET_VALUE_BUILDERS[sheet.name](df, TERM_FROM_DATES)
+
+            assert [cells[f"B{row}"] for row in (29, 30, 31, 32)] == [
+                datetime.date(2024, 3, 1),
+                datetime.date(2024, 6, 1),
+                datetime.date(2024, 9, 1),
+                datetime.date(2024, 12, 1),
+            ]
+            assert "B33" not in cells
+
+    def test_long_term_periods_before_the_term_start_are_not_kept(self):
+        import_dates = [datetime.date(2024, 1, 1), datetime.date(2024, 4, 1)]
+        df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
+
+        cells = job.SHEET_VALUE_BUILDERS[cell_map.COMP_LONG_TERM.name](
+            df, TERM_FROM_DATES
+        )
+
+        assert cells["B29"] == datetime.date(2024, 3, 1)
+        assert "B30" not in cells
+
+    def test_medium_term_keeps_every_month_from_its_start(self):
+        import_dates = [
+            datetime.date(2024, 4, 1),
+            datetime.date(2025, 4, 1),
+            datetime.date(2025, 10, 1),
+            datetime.date(2026, 4, 1),
+            datetime.date(2026, 5, 1),
+        ]
+        df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
+
+        cells = job.comparison_sheet_values(df, cell_map.COMP_MEDIUM_TERM, APRIL_2025)
+
+        assert [cells[f"B{row}"] for row in (29, 30, 31, 32)] == [
+            datetime.date(2025, 3, 1),
+            datetime.date(2025, 9, 1),
+            datetime.date(2026, 3, 1),
+            datetime.date(2026, 4, 1),
+        ]
+        assert "B33" not in cells
+
+    def test_raises_when_the_sheet_has_no_input_ranges_for_a_block(self, df):
+        sheet = cell_map.SheetMap("Empty sheet", (), 0)
+
+        with pytest.raises(ValueError, match="No 'care_homes' input ranges"):
+            job.comparison_sheet_values(df, sheet, APRIL_2026)
+
+    def test_raises_when_periods_exceed_the_sheet_rows(self):
+        april_dates = [datetime.date(2000 + year, 4, 1) for year in range(26)]
+        df = job.prepare_assessment_df(_assessment_lf(april_dates), VALUE_COLUMNS)
+
+        with pytest.raises(ValueError, match="exceed the 25 rows"):
+            job.comparison_sheet_values(
+                df, cell_map.COMP_MEDIUM_TERM, datetime.date(2000, 4, 1)
+            )
+
+
 class TestFillAssessmentWorkbookFromLf:
+    def test_comp_prev_labels_match_the_period_dates_beside_them(self, tmp_path):
+        import_dates = [
+            datetime.date(2024, 4, 1),
+            datetime.date(2024, 5, 1),
+            datetime.date(2025, 4, 1),
+            datetime.date(2025, 10, 1),
+            datetime.date(2026, 4, 1),
+            datetime.date(2026, 5, 1),
+            datetime.date(2026, 6, 1),
+        ]
+        output = tmp_path / "out.xlsx"
+
+        job.fill_assessment_workbook_from_lf(
+            _assessment_lf(import_dates),
+            (cell_map.COMP_PREV_PUBLICATION,),
+            TERM_FROM_DATES,
+            cell_map.TEMPLATE_PATH,
+            output,
+        )
+
+        sheet = openpyxl.load_workbook(output)[cell_map.COMP_PREV_PUBLICATION.name]
+        for first_row in (23, 64, 106):
+            rows = [
+                (sheet[f"B{first_row + i}"].value, sheet[f"C{first_row + i}"].value)
+                for i in range(6)
+            ]
+            assert rows == [
+                ("Annual", datetime.datetime(2024, 3, 1)),
+                ("Annual", datetime.datetime(2025, 3, 1)),
+                ("Annual", datetime.datetime(2026, 3, 1)),
+                ("Monthly", datetime.datetime(2026, 4, 1)),
+                ("Monthly", datetime.datetime(2026, 5, 1)),
+                (None, None),
+            ]
 
     def test_saves_a_workbook_holding_the_filled_posts_values(self, tmp_path):
         output = tmp_path / "out.xlsx"

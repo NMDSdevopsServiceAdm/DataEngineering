@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added the mapping of assessment data to the Comp prev publication and comparison sheets of the assessment workbook.
 - Added the mapping of assessment data to the Filled posts sheet of the assessment workbook.
 - Added a writer that fills the assessment workbook template and fails if the template or written cells do not match the cell map.
 - Added cumulative percentage change columns for the filtered filled posts of each comparison term to the assessment data.
