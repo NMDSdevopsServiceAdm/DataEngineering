@@ -1,7 +1,7 @@
 """Helpers for writing input cells into the assessment template."""
 
 import datetime
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
@@ -413,11 +413,19 @@ def block_cells(top_left: str, rows: list[list[object]]) -> dict[str, object]:
     }
 
 
-def _value_columns(sheet: cell_map.SheetMap) -> list[str]:
-    """The data columns feeding the sheet's cells, other than the period label."""
+def _value_columns(sheets: Iterable[cell_map.SheetMap]) -> list[str]:
+    """Source columns the sheets read, excluding the period label columns.
+
+    Args:
+        sheets (Iterable[cell_map.SheetMap]): sheets to collect source columns from.
+
+    Returns:
+        list[str]: distinct column names in first-seen order.
+    """
     return list(
         dict.fromkeys(
             r.source_column
+            for sheet in sheets
             for r in sheet.input_ranges
             if r.source_column not in (None, cell_map.PERIOD_COL, Pub.period_label_long)
         )
@@ -674,10 +682,7 @@ def fill_assessment_workbook_from_lf(
     if unsupported:
         raise ValueError(f"No values builder for sheets: {', '.join(unsupported)}")
 
-    value_columns = list(
-        dict.fromkeys(column for sheet in sheets for column in _value_columns(sheet))
-    )
-    assessment_df = prepare_assessment_df(assessment_lf, value_columns)
+    assessment_df = prepare_assessment_df(assessment_lf, _value_columns(sheets))
     values = {
         sheet.name: SHEET_VALUE_BUILDERS[sheet.name](assessment_df, term_from_dates)
         for sheet in sheets
