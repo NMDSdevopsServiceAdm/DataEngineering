@@ -19,6 +19,13 @@ def _cells(ranges: list[str]) -> set[tuple[int, int]]:
 
 class TestAssessmentSheets:
     @pytest.mark.parametrize("sheet", sheet_params)
+    def test_input_range_keys_are_unique_on_a_sheet(self, sheet: job.SheetMap):
+        """The writer finds a range by key, so a key names one range."""
+        keys = [r.key for r in sheet.input_ranges if r.key]
+
+        assert len(keys) == len(set(keys))
+
+    @pytest.mark.parametrize("sheet", sheet_params)
     def test_input_ranges_do_not_overlap(self, sheet: job.SheetMap):
         """Each cell has one input range, so the writer fills it from one place."""
         ranges = [r.cells for r in sheet.input_ranges]
