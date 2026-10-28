@@ -1,9 +1,11 @@
 """
-Helpers for the 2260 employment status rolling average experiments.
+Helpers for scoring rolling average variants of a categorical's shares (first used for the
+employment status rolling average, ticket 2260).
 
 Imported by experiment.ipynb and compare.ipynb after the repo is cloned onto SageMaker, so it
-may use the repo's modules. It lives outside the pipeline and has no repo tests. Written to be
-reusable for other categorical shares (such as gender): change the column constants and `SPLITS`.
+may use the repo's modules. It lives outside the pipeline and has no repo tests. For another
+categorical (such as gender), change only the "Settings for this categorical" block below and
+the notebooks' parameters; see README.md.
 
 Scale: the data is tens of millions of rows, so nothing here holds row-level plans in memory.
 Rolling averages depend only on the "cell" (service, region, size band, job role, date, fold),
@@ -17,32 +19,57 @@ from pathlib import Path
 
 import polars as pl
 
-import projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils as iUtils
+import projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils as imputeUtils
 from projects._03_independent_cqc.utils import model_evaluation_utils as evaluation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import ModelEvaluationColumns as Eval
 
+# --- Settings for this categorical (employment status). Change this block for another. ---
 LOCATION = IndCQC.location_id
 DATE = IndCQC.cqc_location_import_date
 SERVICE = IndCQC.primary_service_type
 REGION = IndCQC.current_region
 ROLE = IndCQC.published_job_role_label
-SIZE_BAND = Eval.size_band
 SIZE_POSTS = IndCQC.estimate_filled_posts_by_job_role
+# The cleaned employment status data carries region but not CSSR.
+AGGREGATE_GEOGRAPHY = REGION
+
+# The share columns at each pipeline stage, in the same status order.
+KNOWN = imputeUtils.PCT_COLUMNS
+TREND = imputeUtils.IMPUTED_TRENDLINE_PCT_COLUMNS
+ROLLING = imputeUtils.ROLLING_AVG_PCT_COLUMNS
+IMPUTED = imputeUtils.IMPUTED_PCT_COLUMNS
+
+SHORT_TERM_EXTRAPOLATION = "2y"
+SHORT_TERM_INTERPOLATION_CAP = "5y"
+
+
+def add_trendline(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """The pipeline's step that fills short gaps in the known shares."""
+    return imputeUtils.add_imputed_trendline_pcts(
+        lf,
+        extrapolation_period=SHORT_TERM_EXTRAPOLATION,
+        interpolation_cap_period=SHORT_TERM_INTERPOLATION_CAP,
+    )
+
+
+def add_imputed(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """The pipeline's step that fills every remaining gap along the rolling averages."""
+    return imputeUtils.add_imputed_pcts(lf)
+
+
+# The cell-based rolling average below repeats `add_rolling_avg_pcts` (each workplace counts
+# once, window sums of totals, nearest average where there are no contributors).
+# --- End of settings for this categorical. ---
+
+SIZE_BAND = Eval.size_band
 FOLD = Eval.fold
 ROWS = Eval.number_of_rows
 CONTRIBUTORS = "contributing_workplaces"
 WINDOW_CONTRIBUTORS = "window_contributing_workplaces"
-# The cleaned employment status data carries region but not CSSR.
-AGGREGATE_GEOGRAPHY = REGION
 
 CELL_KEYS = [SERVICE, REGION, SIZE_BAND, ROLE]
 CELL_DATE_KEYS = [*CELL_KEYS, DATE]
-
-KNOWN = iUtils.PCT_COLUMNS
-TREND = iUtils.IMPUTED_TRENDLINE_PCT_COLUMNS
-ROLLING = iUtils.ROLLING_AVG_PCT_COLUMNS
-IMPUTED = iUtils.IMPUTED_PCT_COLUMNS
 TRUTH = [f"{col}_truth" for col in KNOWN]
 
 WINDOW_MONTHS = [3, 6, 12, 24]
@@ -54,8 +81,6 @@ SIZE_BAND_TOP = "150+"
 SIZE_BAND_UNKNOWN = "unknown"
 HIDDEN = "hidden"
 HIDDEN_MONTHS = 12
-SHORT_TERM_EXTRAPOLATION = "2y"
-SHORT_TERM_INTERPOLATION_CAP = "5y"
 SAMPLE_SEED = 42
 
 # Finest to coarsest group columns. The finest with enough workplaces on a date is used,
@@ -150,11 +175,7 @@ def prepare_hidden_trendline(
     hidden_lf = hide_last_months(
         prepared_lf.select(LOCATION, *CELL_DATE_KEYS, FOLD, *KNOWN)
     )
-    hidden_lf = iUtils.add_imputed_trendline_pcts(
-        hidden_lf,
-        extrapolation_period=SHORT_TERM_EXTRAPOLATION,
-        interpolation_cap_period=SHORT_TERM_INTERPOLATION_CAP,
-    )
+    hidden_lf = add_trendline(hidden_lf)
     hidden_lf.select(
         LOCATION, *CELL_DATE_KEYS, FOLD, HIDDEN, *KNOWN, *TRUTH, *TREND
     ).sink_parquet(destination)
@@ -443,7 +464,7 @@ def score_hidden(predictions_df: pl.DataFrame, sample_df: pl.DataFrame) -> pl.Da
     Returns:
         pl.DataFrame: "level", "group", "metric" and "value" rows
     """
-    imputed_lf = iUtils.add_imputed_pcts(
+    imputed_lf = add_imputed(
         sample_df.lazy().join(
             predictions_df.lazy().select(*CELL_DATE_KEYS, *ROLLING),
             on=CELL_DATE_KEYS,
