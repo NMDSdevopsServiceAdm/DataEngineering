@@ -1,7 +1,6 @@
 #!/bin/bash
-# Cuts the release tag for a selected, reconciled run. Run by the CircleCI
-# `cut-release-tag` workflow (see update_run_log_runbook.md); needs git, uv, the
-# AWS CLI and, outside a dry run, GITHUB_TOKEN.
+# Cuts the release tag for a selected, reconciled run. Needs git, uv, the AWS CLI
+# and, outside a dry run, GITHUB_TOKEN. See update_run_log_runbook.md.
 #
 #   cut_release_tag.sh plan   Works out the run's commit SHA and the tag to cut
 #                             and writes them to $RELEASE_PLAN_FILE. Changes nothing.

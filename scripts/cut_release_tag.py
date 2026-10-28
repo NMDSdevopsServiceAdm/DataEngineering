@@ -1,9 +1,8 @@
 """
-Works out the release tag for a selected, reconciled run in the archive run log.
+Works out the release tag and CHANGELOG release for a selected, reconciled run.
 
-Works on local files only: the CircleCI `cut-release-tag` workflow copies the run
-log down from S3, runs this script as a module from the repo root
-(`python -m scripts.cut_release_tag`), and does the git, GitHub and S3 work itself.
+Works on local files only; `cut_release_tag.sh` does the S3, git and GitHub work
+and runs this as a module from the repo root (`python -m scripts.cut_release_tag`).
 """
 
 import argparse
