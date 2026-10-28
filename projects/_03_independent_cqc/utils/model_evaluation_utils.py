@@ -336,9 +336,10 @@ def score_shares(
     """
     Score predicted against known shares row by row, every row counting equally.
 
-    Only rows with every known share are scored. The skill scores compare each error with
-    that of a baseline predicting the pooled mean known share on every row, so they stay
-    comparable across groups. A tied prediction counts as its first column for top 1.
+    Only rows with every known share and every predicted share are scored; use
+    `calculate_coverage` for rows without a prediction. The skill scores compare each
+    error with that of a baseline predicting the pooled mean known share on every row,
+    so they stay comparable across groups. A tied prediction counts as its first column for top 1.
 
     Args:
         lf (pl.LazyFrame): dataset containing the predicted, known and "by" columns
@@ -348,12 +349,11 @@ def score_shares(
             Defaults to scoring all rows together.
 
     Returns:
-        pl.LazyFrame: a row (per group), with its "number_of_rows", "mean_absolute_error_pp",
+        pl.LazyFrame: a row per group with "number_of_rows", "mean_absolute_error_pp",
             "brier_score" (summed squared error), "top_1_accuracy" (known top share is
-            predicted top) and the "mae_skill_score" and "brier_skill_score"
+            predicted top), "mae_skill_score" and "brier_skill_score"
     """
     by_columns = by_columns or []
-    has_prediction = pl.all_horizontal(pl.col(predicted_columns).is_not_null())
 
     def mean_absolute_error(estimates: list[pl.Expr]) -> pl.Expr:
         return pl.mean_horizontal(
@@ -370,18 +370,15 @@ def score_shares(
     predicted = [pl.col(column) for column in predicted_columns]
     baseline = [pl.col(column).mean() for column in known_columns]
 
-    known_lf = lf.filter(pl.all_horizontal(pl.col(known_columns).is_not_null()))
+    scored_lf = lf.filter(
+        pl.all_horizontal(pl.col(known_columns + predicted_columns).is_not_null())
+    )
 
-    row_scores_lf = known_lf.select(
+    row_scores_lf = scored_lf.select(
         *by_columns,
-        pl.when(has_prediction)
-        .then(mean_absolute_error(predicted))
-        .alias(ModelEvaluation.mean_absolute_error_pp),
-        pl.when(has_prediction)
-        .then(summed_squared_error(predicted))
-        .alias(ModelEvaluation.brier_score),
-        pl.when(has_prediction)
-        .then(
+        mean_absolute_error(predicted).alias(ModelEvaluation.mean_absolute_error_pp),
+        summed_squared_error(predicted).alias(ModelEvaluation.brier_score),
+        (
             pl.concat_list(predicted_columns).list.arg_max()
             == pl.concat_list(known_columns).list.arg_max()
         )

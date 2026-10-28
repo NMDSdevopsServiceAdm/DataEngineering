@@ -14,6 +14,12 @@ LOCATION_JOB_ROLE_GROUPS: list[str] = [
     IndCQC.published_job_role_label,
 ]
 
+ROLLING_AVERAGE_GROUP_COLUMNS: list[str] = [
+    IndCQC.primary_service_type,
+    IndCQC.current_region,
+    IndCQC.published_job_role_label,
+]
+
 PCT_COLUMNS: list[str] = [
     EmpStatus.permanent_pct,
     EmpStatus.temporary_pct,
@@ -174,20 +180,13 @@ def add_imputed_trendline_pcts(
     ).drop(FILL_BOUNDARY_COLUMNS)
 
 
-ROLLING_AVERAGE_GROUP_COLUMNS = [
-    IndCQC.primary_service_type,
-    IndCQC.current_region,
-    IndCQC.published_job_role_label,
-]
-
-
 def add_rolling_avg_pcts(
     lf: pl.LazyFrame,
     rolling_period: str,
     group_columns: list[str] = ROLLING_AVERAGE_GROUP_COLUMNS,
 ) -> pl.LazyFrame:
     """
-    Add a rolling average of the imputed-for-trendline percentages per group.
+    Add a rolling average of the imputed trendline percentages per group.
 
     Each location counts once, regardless of size. Averages sum to 1 across the 5 statuses
     without normalisation, because a location has every percentage populated or none of them.
@@ -208,9 +207,8 @@ def add_rolling_avg_pcts(
     Returns:
         pl.LazyFrame: dataset with the 5 "ascwds_emp_stat_<status>_pct_rolling_avg" columns added
     """
-    rolling_groups = group_columns
     order_key = IndCQC.cqc_location_import_date
-    date_groups = rolling_groups + [order_key]
+    date_groups = group_columns + [order_key]
     rolling_total_columns = [
         TempCols.rolling_total_prefix + col for col in IMPUTED_TRENDLINE_PCT_COLUMNS
     ]
@@ -233,8 +231,8 @@ def add_rolling_avg_pcts(
 
     # polars_streaming: .rolling() with groupby requires pre-aggregation workaround; could use .over() for grouped rolling windows when streaming is supported
     rolling_agg_lf = (
-        date_totals_lf.sort(*rolling_groups, order_key)
-        .rolling(index_column=order_key, group_by=rolling_groups, period=rolling_period)
+        date_totals_lf.sort(*group_columns, order_key)
+        .rolling(index_column=order_key, group_by=group_columns, period=rolling_period)
         .agg(
             *[pl.col(total_col).sum() for total_col in rolling_total_columns],
             pl.col(TempCols.contributing_locations).sum(),
@@ -254,7 +252,7 @@ def add_rolling_avg_pcts(
         pl.col(ROLLING_AVG_PCT_COLUMNS)
         .forward_fill()
         .backward_fill()
-        .over(rolling_groups, order_by=order_key)
+        .over(group_columns, order_by=order_key)
     )
 
     return lf.join(
