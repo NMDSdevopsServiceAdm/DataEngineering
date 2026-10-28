@@ -15,13 +15,12 @@ Review as a senior engineer, in this order of weight: **correctness, performance
 
 ## Reviewer checklist
 
-- **Solves the ticket.** The change meets the Trello ticket's requirements, and nothing beyond them.
-- **Outputs are reasonable.** Check the PR's Athena / SageMaker comparison evidence rather than assuming it.
 - **Not over-engineered.** Is there a simpler way to meet the ticket? Flag unrequested options or parameters, abstractions with a single caller, helpers wrapping a simple expression, and generality nothing needs yet.
 - **No scalability, performance or interdependency concerns.**
 - **Tests cover the main behaviour and edge cases.** See `pytest-pattern` for what "appropriate" looks like.
 - **Structure is understandable and consistent** with the surrounding code, and helpers sit at the narrowest scope that covers their use (see CLAUDE.md's Project layout).
 - **No nested functions** (`def` inside a function body). Ask for a module-level function with tests, or inlining.
+- **Single-use constants are local** to the function that uses them, not module level.
 - **Column names are short and follow the scheme** in CLAUDE.md's "Column names" section. Long names keep slipping through and getting renamed in later PRs, so suggest the short form now, e.g. `assessment_filled_posts_cumulative_perc_change_long_term` → `filled_posts_cum_perc_change_long`, `permanent_percentage_imputed_for_trendline` → `permanent_pct_imputed_trendline`. Look for filler words, spelled-out words (`percentage`, `cumulative`) and `pct` spelled inconsistently.
 - **Docstrings on changed functions still match the code** (arguments, returns, behaviour, performance notes), are enough for future maintenance, and cover non-obvious behaviour. Stale ones are Important.
 
