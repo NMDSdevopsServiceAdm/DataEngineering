@@ -26,6 +26,7 @@ All notable changes to this project will be documented in this file.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 - Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
+- Added a CircleCI workflow that, once approved, tags the selected and reconciled run's commit `vYYYY.MM.N`, records the tag in the archive run log, and opens a PR moving that commit's CHANGELOG entries under the version.
 - Extended the run log update script to automatically copy a selected run's estimates, metadata and run log into the long-term archive bucket, setting a new `promoted` flag.
 - Added a Publication-Output step that waits for a run to be promoted, reconciles the public output's total filled posts with the promoted archive's, and sets `reconciled` and `reconciled_at` in the run log.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
