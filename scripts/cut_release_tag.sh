@@ -209,8 +209,9 @@ else
   change github_git -C "$release_tree" push "https://github.com/$REPO.git" "$branch"
 fi
 
-# 4. The PR. Decided by whether a PR exists, not the branch: an earlier attempt may
-# have pushed the branch and failed to open the PR.
+# 4. The PR. Decided by whether an open PR exists, not the branch: an earlier attempt
+# may have pushed the branch and failed to open the PR. Closed PRs are ignored, so a
+# PR closed to rebuild it does not stop a new one.
 pull_request="$(uv run python -c '
 import json, sys
 tag, branch, sha = sys.argv[1:]
@@ -222,12 +223,12 @@ print(json.dumps({
 }))
 ' "$tag" "$branch" "$commit_sha")"
 if [[ "$DRY_RUN" == "true" ]]; then
-  echo "DRY RUN: open a PR from $branch to main unless one exists: $pull_request"
+  echo "DRY RUN: open a PR from $branch to main unless one is open: $pull_request"
 else
-  existing="$(github_api GET "pulls?head=${REPO%%/*}:$branch&state=all")"
+  existing="$(github_api GET "pulls?head=${REPO%%/*}:$branch&state=open")"
   existing_count="$(printf '%s' "$existing" | uv run python -c 'import json, sys; print(len(json.load(sys.stdin)))')"
   if [[ "$existing_count" != "0" ]]; then
-    echo "A PR from $branch already exists."
+    echo "An open PR from $branch already exists."
   else
     github_api POST pulls "$pull_request" >/dev/null
     echo "Opened a PR from $branch to main."

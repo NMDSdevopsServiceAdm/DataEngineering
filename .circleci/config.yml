@@ -931,6 +931,7 @@ workflows:
       and:
         - << pipeline.parameters.cut_release_tag >>
         - not: << pipeline.parameters.release_dry_run >>
+        - equal: [main, << pipeline.git.branch >>]
     jobs:
       - plan-release-tag:
           context: prod

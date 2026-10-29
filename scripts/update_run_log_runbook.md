@@ -260,6 +260,8 @@ Once the selected run is reconciled, tag the exact code that produced its data a
 
 The run must be `selected_for_publication` and `reconciled` and have no `tag`. The tag goes on the run's `commit_sha`, with the message "Codebase used for data as at <Month YYYY>". The workflow then writes the tag to the run log, and opens a PR from `rel-<tag>` that moves into the new version only the `[Unreleased]` entries present at that commit. Entries merged to `main` since stay under `[Unreleased]`.
 
+The tag marks the code that produced the data, so the tagged commit's own CHANGELOG still lists its entries under `[Unreleased]`: the `[vYYYY.MM.N]` heading exists only on `main`, from the PR, after the tag. Read the version's entries from `main`'s CHANGELOG, not from the CHANGELOG at the tag.
+
 ### Steps
 1. In CircleCI choose the DataEngineering project, **Trigger Pipeline**, branch `main`, and add the parameters `cut_release_tag` (boolean) `true` and `release_run_number` (integer) the selected run's number.
 2. Open the `plan-release-tag` job. It prints the run, its commit, the tag it would cut and the tag message. Check the commit and tag are what you expect.
