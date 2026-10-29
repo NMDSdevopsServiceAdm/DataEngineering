@@ -101,7 +101,7 @@ _SERVICE_TYPE_HEADERS = (
     PublishedMainService.all_locations,
     AssessmentMainService.care_homes,
     AssessmentMainService.care_home_with_nursing,
-    AssessmentMainService.care_home_without_nursing,
+    AssessmentMainService.care_only_home,
     PublishedMainService.non_residential,
 )
 

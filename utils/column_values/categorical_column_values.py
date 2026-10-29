@@ -676,9 +676,7 @@ class AssessmentMainService(ColumnValues):
     care_home_with_nursing: str = (
         PublishedMainService.care_home_with_nursing.removeprefix(" - ")
     )
-    care_home_without_nursing: str = PublishedMainService.care_home_only.removeprefix(
-        " - "
-    )
+    care_only_home: str = PublishedMainService.care_home_only.removeprefix(" - ")
 
 
 @dataclass
