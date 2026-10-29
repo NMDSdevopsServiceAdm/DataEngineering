@@ -251,13 +251,12 @@ def sheet_text(
 ) -> dict[str, dict[str, str]]:
     """Text the writer sets, by sheet name then A1 cell.
 
-    Every sheet gets the title. The comparison sheets (short, medium and long
-    term) also get a heading and criteria note dated from the month before their
-    term's start date, as does the chart heading on "Filled posts" (the short
-    term's). "No filters - long term" gets the long term heading only; its note
-    is fixed template text.
-    "Comp prev publication" gets an "Annual" row for each March period, then a "Monthly" row for each period
-    after the latest March, in each of its label ranges.
+    Every sheet gets the title. Each comparison sheet (short, medium, long term)
+    gets a heading and criteria note dated from the month before its term's start,
+    as does the "Filled posts" chart heading (short term). "No filters - long
+    term" gets the long term heading only. "Comp prev publication" gets an
+    "Annual" row for each March period, then a "Monthly" row for each period after
+    the latest March, in each label range.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
