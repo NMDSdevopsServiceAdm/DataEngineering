@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils and configurable group columns to the employment status rolling average.
+- Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils.
 - The assessment job fills the assessment workbook and saves it to S3.
 - Added the mapping of assessment data to the Comp prev publication and comparison sheets of the assessment workbook.
 - Added the mapping of assessment data to the Filled posts sheet of the assessment workbook.

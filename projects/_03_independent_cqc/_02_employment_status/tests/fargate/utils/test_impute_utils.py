@@ -1,4 +1,3 @@
-from datetime import date
 from typing import Any
 
 import polars as pl
@@ -15,7 +14,6 @@ from projects._03_independent_cqc._02_employment_status.unittest_data.polars_emp
     ROLLING_AVERAGE_PERIOD,
     SHORT_TERM_EXTRAPOLATION_PERIOD,
     SHORT_TERM_INTERPOLATION_CAP_PERIOD,
-    status_split,
     IMPUTED_TRENDLINE_PCT_COLUMNS,
 )
 from projects._03_independent_cqc._02_employment_status.unittest_data.polars_employment_status_test_data import (
@@ -105,7 +103,7 @@ class TestAddShortTermImputedPercentages:
         )
 
 
-class TestAddRollingAvgPcts:
+class TestAddRollingAveragePercentages:
     @pytest.mark.parametrize(
         "case",
         [
@@ -121,43 +119,6 @@ class TestAddRollingAvgPcts:
         pl_testing.assert_frame_equal(
             returned_lf,
             to_lf(case.expected_data),
-            check_row_order=False,
-            check_column_order=False,
-        )
-
-    def test_add_rolling_avg_pcts_uses_given_group_columns_and_period(self):
-        permanent = [0.2, 0.6, 0.8]
-        input_data = {
-            IndCQC.location_id: ["loc1", "loc2", "loc3"],
-            IndCQC.primary_service_type: ["service_1"] * 3,
-            IndCQC.current_region: ["region_1", "region_2", "region_1"],
-            IndCQC.published_job_role_label: ["role_1"] * 3,
-            IndCQC.cqc_location_import_date: [
-                date(2024, 1, 1),
-                date(2024, 1, 1),
-                date(2024, 8, 1),
-            ],
-            **status_split(permanent, IMPUTED_TRENDLINE_PCT_COLUMNS),
-        }
-        expected_permanent = [0.4, 0.4, 1.6 / 3]
-
-        returned_lf = job.add_rolling_avg_pcts(
-            to_lf(input_data),
-            rolling_period="12mo",
-            group_columns=[
-                IndCQC.primary_service_type,
-                IndCQC.published_job_role_label,
-            ],
-        )
-
-        pl_testing.assert_frame_equal(
-            returned_lf,
-            to_lf(
-                {
-                    **input_data,
-                    **status_split(expected_permanent, ROLLING_AVG_PCT_COLUMNS),
-                }
-            ),
             check_row_order=False,
             check_column_order=False,
         )

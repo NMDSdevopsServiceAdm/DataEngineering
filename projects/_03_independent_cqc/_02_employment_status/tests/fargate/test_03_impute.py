@@ -41,7 +41,6 @@ class TestMain:
         add_rolling_avg_pcts_mock.assert_called_once_with(
             add_imputed_trendline_pcts_mock.return_value,
             rolling_period=job.ROLLING_AVERAGE_PERIOD,
-            group_columns=job.iUtils.ROLLING_AVERAGE_GROUP_COLUMNS,
         )
 
         add_imputed_pcts_mock.assert_called_once_with(
