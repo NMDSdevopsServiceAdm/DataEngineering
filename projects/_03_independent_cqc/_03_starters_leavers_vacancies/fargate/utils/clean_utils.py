@@ -21,36 +21,35 @@ def create_slv_rate_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     for vacancies with 0 employees (100% vacant), and is null only when both are 0.
 
     Args:
-        lf (pl.LazyFrame): dataset containing estimated employees and cleaned,
-            deduplicated starters, leavers and vacancies
+        lf (pl.LazyFrame): dataset containing estimated employees and cleaned
+            starters, leavers and vacancies
 
     Returns:
         pl.LazyFrame: dataset with turnover_rate, starter_rate and vacancy_rate added
     """
     employees_plus_vacancies = pl.col(EmpStatus.estimated_employees) + pl.col(
-        SLVCols.vacancies_cleaned_dedup
+        SLVCols.ascwds_vacancies_clean
     )
 
     return lf.with_columns(
         pl.when(pl.col(EmpStatus.estimated_employees) == 0)
         .then(None)
         .otherwise(
-            pl.col(SLVCols.leavers_cleaned_dedup)
-            / pl.col(EmpStatus.estimated_employees)
+            pl.col(SLVCols.ascwds_leavers_clean) / pl.col(EmpStatus.estimated_employees)
         )
         .cast(pl.Float32)
-        .alias(SLVCols.turnover_rate),
+        .alias(SLVCols.ascwds_turnover_rate),
         pl.when(pl.col(EmpStatus.estimated_employees) == 0)
         .then(None)
         .otherwise(
-            pl.col(SLVCols.starters_cleaned_dedup)
+            pl.col(SLVCols.ascwds_starters_clean)
             / pl.col(EmpStatus.estimated_employees)
         )
         .cast(pl.Float32)
-        .alias(SLVCols.starter_rate),
+        .alias(SLVCols.ascwds_starter_rate),
         pl.when(employees_plus_vacancies == 0)
         .then(None)
-        .otherwise(pl.col(SLVCols.vacancies_cleaned_dedup) / employees_plus_vacancies)
+        .otherwise(pl.col(SLVCols.ascwds_vacancies_clean) / employees_plus_vacancies)
         .cast(pl.Float32)
-        .alias(SLVCols.vacancy_rate),
+        .alias(SLVCols.ascwds_vacancy_rate),
     )

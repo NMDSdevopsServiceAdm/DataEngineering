@@ -85,9 +85,9 @@ class TestReshapeJobRoleColsToRows:
             pl.col(IndCQC.published_job_role_label).cast(
                 CatColType.PublishedJobRoleLabelCatType
             ),
-            pl.col(SLVCols.starters).cast(pl.Int16),
-            pl.col(SLVCols.leavers).cast(pl.Int16),
-            pl.col(SLVCols.vacancies).cast(pl.Int16),
+            pl.col(SLVCols.ascwds_starters).cast(pl.Int16),
+            pl.col(SLVCols.ascwds_leavers).cast(pl.Int16),
+            pl.col(SLVCols.ascwds_vacancies).cast(pl.Int16),
         )
 
         returned_lf = job.reshape_job_role_cols_to_rows(test_lf)

@@ -6,20 +6,74 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- The assessment job fills the assessment workbook and saves it to S3.
+- Added the mapping of assessment data to the Comp prev publication and comparison sheets of the assessment workbook.
+- Added the mapping of assessment data to the Filled posts sheet of the assessment workbook.
+- Added a writer that fills the assessment workbook template and fails if the template or written cells do not match the cell map.
+- Added cumulative percentage change columns for the filtered filled posts of each comparison term to the assessment data.
+- Added estimated starters, leavers and vacancies counts, with source columns, to the Starters, Leavers and Vacancies Pipeline estimate step in place of estimated rates. The merge step now also carries the employment status estimate source column.
+- Added estimated starter, turnover and vacancy rates with source columns to the Starters, Leavers and Vacancies Pipeline.
+- Added a period label column (e.g. "Mar 2026") to the prepared publication data, used by the download tables.
 - Added a one-row count of all reconciliation potentials (workplaces that could be matched to CQC if they fixed their location ID).
 - Added validation of the job role estimates archive run log.
+- Added validation of the monthly tracker assessment data.
+- Added validation of the monthly tracker prepared publication data.
+- Added a full-month period label (e.g. "March 2026") to the monthly tracker publication data.
+- Added a builder for the public monthly statistics download workbook: pages written from `templates/output_workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
+- Extended the run log update script to select a run for publication and start Publication-Output for it, set the `reconciled` and `locally_checked` flags, and list the month's runs.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
+- Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
+- Added the previously published run's filled posts and the percentage change from them to the assessment data.
+- Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
+- Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
+- Extended the run log update script to automatically copy a selected run's estimates, metadata and run log into the long-term archive bucket, setting a new `promoted` flag.
+- Added a Publication-Output step that waits for a run to be promoted, reconciles the public output's total filled posts with the promoted archive's, and sets `reconciled` and `reconciled_at` in the run log.
+- Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Changed the assessment template to fixed "Cumulative % change" table headings, no longer written per run.
+- Removed the unused GitHub merge queue CircleCI workflow and `gh-readonly-queue` branch exclusions.
+- Renamed employment status and SLV columns to one naming scheme (`ascwds_`/`estimated_` prefix, `emp_stat_`, `pct`, ordered stage suffixes), so output column names change.
+- Changed the run log update script to default to the `run-log-updater` role for the main bucket.
+- Changed the DPR dataset version to be set once in a Terraform variable instead of hardcoded in the DPR step functions.
+- Renamed the SLV step function to Ind-CQC-EmpStat-SLV and reordered it so worker and workplace data are prepared in separate branches, workplace data is validated, and the SLV counts steps are no longer run.
+- Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
+- Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
+- Renamed publication and assessment columns to shorter names without the workbook prefixes or `_term` suffix.
+- Changed Publication-Output to write one download table of rounded filled posts, location counts and percentage changes from the assessed data, instead of three tables.
+- Renamed the employment status deduplicated count columns to `_clean` in the clean step instead of copying them, so no `_dedup` columns are output.
+- Made the raw column optional in `update_filtering_rule` (now `uncapped_col_name`, only needed when winsorizing) and updated all callers.
+- Partitioned the publication assessment data by archive date and run number so each assessed run is kept.
+- Split the starters, leavers and vacancies filtering rule into one class per metric, each with its own allowed values.
+- Changed SLV cleaning to deduplicate raw starters, leavers and vacancies, then create cleaned columns and filtering rules, with matching validation.
+- Replaced the monthly tracker assessment's CT period percentage change columns with cumulative and April-on-April percentage change columns for filled posts and location counts, and added an unfiltered long-term CT total with its cumulative change.
+- Split the monthly tracker publication into `Publication-Assessment`, which starts when filled post estimates succeed, and `Publication-Output`, which builds the public data for a selected `run_number`.
 - Changed the SLV turnover, starter and vacancy rates to use the final employment status estimates (`estimated_employees`) instead of raw counts, reading only the needed columns in the SLV merge and running the employment status steps first in Ind-CQC-SLV.
 - Changed filled posts model training to score each model with 5-fold cross-validation and save a full set of metrics. Models now fitted on all training rows instead of an 80/20 split. Known values are ASC-WDS for care homes and ASC-WDS plus PIR for non-res, so the `metrics` in `metadata.json` aren't comparable with earlier runs.
 - Reduced the monthly data kept in the publication pipeline to the previous financial year onwards.
+- Changed the CircleCI archive sample seed to also sync archive run 2 of 2026-10-15 for the job role estimates and metadata.
+- Changed the CircleCI archive sample seed to sync only run 2 of 2026-10-15 of the run log.
+- Changed the reconciliation potentials count to exclude deregistered CQC locations without a successor.
+- Changed the suppressed filled posts label in the public monthly workbook from `< 10` to `[s]`.
+- Tidied monthly tracker publication columns: added a rounded filled posts column, and removed the Tableau label (`_formatted`) columns from the publication output and the formatted percentage columns from the T1/T2 download tables.
+- Removed the `cqc_location_import_date_abbreviated` and `cqc_location_import_date_full` columns from the monthly tracker publication output.
+- Changed ASC-WDS workplace cleaning to null starters, leavers and vacancies job role columns where their total is not known, and to cast the totals to integers.
+- Changed the Trello card drafting skill to start each card with a TODO and to rename "Summary" to "The problem to solve".
+- Changed the merge-when-ready GitHub Action to run from `main` rather than the labelled PR's copy of the script and workflow.
 
 ### Improved
+- Removed two Polars warnings from the filtering rule update and the ASC-WDS workplace duplicate cleaning.
+- Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
+- Removed redundant starters, leavers and vacancies bounding from the ASC-WDS workplace cleaning job.
 
 
 ### Fixed
+- Fixed run promotion leaving an empty write-check test object in the long-term archive bucket on every run.
+- Fixed SLV deduplication keeping repeated values at workplaces where a job role stays blank.
+
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
+- Fixed a flaky thread-count test in the run diagnostics tests.
+- Fixed ASC-WDS workplace cleaning to null all starters, leavers or vacancies job roles when the total or any role is negative or 999.
 
 
 ## [v2026.09.0] - 13/10/2026
@@ -69,7 +123,7 @@ All notable changes to this project will be documented in this file.
 - Added filled posts model cross-validation helpers: out-of-fold predictions from a model spec and non-res size bands.
 - Added financial year, row-level, per-period bias and bias slope scoring to the project-level model evaluation utilities.
 - Added utilities to score filled posts models on held-out locations and save the metrics beside a model run. Not yet used by any job.
-- Added the diagnostics workbook template for the monthly tracker publication, with a cell map and tests that check it.
+- Added the assessment workbook template for the monthly tracker publication, with a cell map and tests that check it.
 
 ### Changed
 - Replaced the employment status magic-number split with estimated percentages (cleaned, then imputed, then rolling average), their source, and estimated counts and employees. Removed the rates CSV input.

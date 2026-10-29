@@ -5,12 +5,12 @@ from typing import Any, Optional
 import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_worker_utils as prepare_worker_job
 from projects._03_independent_cqc._02_employment_status.fargate.utils.estimate_utils import (
     ESTIMATED_COUNT_COLUMNS,
-    ESTIMATED_PERCENTAGE_COLUMNS,
+    ESTIMATED_PCT_COLUMNS,
 )
 from projects._03_independent_cqc._02_employment_status.fargate.utils.impute_utils import (
-    FULL_IMPUTED_PERCENTAGE_COLUMNS,
-    PERCENTAGE_COLUMNS,
-    ROLLING_AVERAGE_PERCENTAGE_COLUMNS,
+    IMPUTED_PCT_COLUMNS,
+    PCT_COLUMNS,
+    ROLLING_AVG_PCT_COLUMNS,
 )
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -133,7 +133,7 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ],
-                EmpStatus.employment_status_count: [2],
+                EmpStatus.total_count: [2],
             },
         ),
         AggregateEmploymentStatusDataTestCase(
@@ -163,7 +163,7 @@ class TestPrepareWorkerUtilsData:
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.temporary,
                 ],
-                EmpStatus.employment_status_count: [1, 1],
+                EmpStatus.total_count: [1, 1],
             },
         ),
         AggregateEmploymentStatusDataTestCase(
@@ -190,7 +190,7 @@ class TestPrepareWorkerUtilsData:
                     EmploymentStatusLabels.permanent
                 ]
                 * 2,
-                EmpStatus.employment_status_count: [1, 1],
+                EmpStatus.total_count: [1, 1],
             },
         ),
     ]
@@ -206,7 +206,7 @@ class TestPrepareWorkerUtilsData:
                 AWKClean.employment_status_clean_labelled: [
                     EmploymentStatusLabels.permanent
                 ],
-                EmpStatus.employment_status_count: [3],
+                EmpStatus.total_count: [3],
             },
             expected_data={
                 AWKClean.location_id: ["loc1"],
@@ -231,7 +231,7 @@ class TestPrepareWorkerUtilsData:
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.temporary,
                 ],
-                EmpStatus.employment_status_count: [2, 1],
+                EmpStatus.total_count: [2, 1],
             },
             expected_data={
                 AWKClean.location_id: ["loc2"],
@@ -259,7 +259,7 @@ class TestPrepareWorkerUtilsData:
                     EmploymentStatusLabels.permanent,
                     EmploymentStatusLabels.agency,
                 ],
-                EmpStatus.employment_status_count: [1, 4],
+                EmpStatus.total_count: [1, 4],
             },
             expected_data={
                 AWKClean.location_id: ["loc3", "loc3"],
@@ -589,12 +589,9 @@ def _estimate_row(
     """One row; each list holds the 5 statuses as perm, temp, bank, agency, other."""
     return {
         METRIC: [metric],
-        **{col: [val] for col, val in zip(PERCENTAGE_COLUMNS, cleaned)},
-        **{col: [val] for col, val in zip(FULL_IMPUTED_PERCENTAGE_COLUMNS, imputed)},
-        **{
-            col: [val]
-            for col, val in zip(ROLLING_AVERAGE_PERCENTAGE_COLUMNS, rolling_avg)
-        },
+        **{col: [val] for col, val in zip(PCT_COLUMNS, cleaned)},
+        **{col: [val] for col, val in zip(IMPUTED_PCT_COLUMNS, imputed)},
+        **{col: [val] for col, val in zip(ROLLING_AVG_PCT_COLUMNS, rolling_avg)},
     }
 
 
@@ -607,8 +604,8 @@ def _estimate_expected(
 ) -> dict[str, list]:
     return {
         **row,
-        **{col: [val] for col, val in zip(ESTIMATED_PERCENTAGE_COLUMNS, estimated)},
-        EmpStatus.estimated_percentage_source: [source],
+        **{col: [val] for col, val in zip(ESTIMATED_PCT_COLUMNS, estimated)},
+        EmpStatus.estimated_pct_source: [source],
         **{col: [val] for col, val in zip(ESTIMATED_COUNT_COLUMNS, counts)},
         EmpStatus.estimated_employees: [employees],
     }
@@ -692,39 +689,39 @@ class TestPrepareMainData:
     }
 
 
-PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage,
-    EmpStatus.temporary_percentage,
-    EmpStatus.bank_or_pool_percentage,
-    EmpStatus.agency_percentage,
-    EmpStatus.other_percentage,
+PCT_COLUMNS = [
+    EmpStatus.permanent_pct,
+    EmpStatus.temporary_pct,
+    EmpStatus.bank_or_pool_pct,
+    EmpStatus.agency_pct,
+    EmpStatus.other_pct,
 ]
-TRENDLINE_PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage_imputed_for_trendline,
-    EmpStatus.temporary_percentage_imputed_for_trendline,
-    EmpStatus.bank_or_pool_percentage_imputed_for_trendline,
-    EmpStatus.agency_percentage_imputed_for_trendline,
-    EmpStatus.other_percentage_imputed_for_trendline,
+IMPUTED_TRENDLINE_PCT_COLUMNS = [
+    EmpStatus.permanent_pct_imputed_trendline,
+    EmpStatus.temporary_pct_imputed_trendline,
+    EmpStatus.bank_or_pool_pct_imputed_trendline,
+    EmpStatus.agency_pct_imputed_trendline,
+    EmpStatus.other_pct_imputed_trendline,
 ]
-ROLLING_AVERAGE_PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage_rolling_avg,
-    EmpStatus.temporary_percentage_rolling_avg,
-    EmpStatus.bank_or_pool_percentage_rolling_avg,
-    EmpStatus.agency_percentage_rolling_avg,
-    EmpStatus.other_percentage_rolling_avg,
+ROLLING_AVG_PCT_COLUMNS = [
+    EmpStatus.permanent_pct_rolling_avg,
+    EmpStatus.temporary_pct_rolling_avg,
+    EmpStatus.bank_or_pool_pct_rolling_avg,
+    EmpStatus.agency_pct_rolling_avg,
+    EmpStatus.other_pct_rolling_avg,
 ]
-FULL_IMPUTED_PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage_full_imputed,
-    EmpStatus.temporary_percentage_full_imputed,
-    EmpStatus.bank_or_pool_percentage_full_imputed,
-    EmpStatus.agency_percentage_full_imputed,
-    EmpStatus.other_percentage_full_imputed,
+IMPUTED_PCT_COLUMNS = [
+    EmpStatus.permanent_pct_imputed,
+    EmpStatus.temporary_pct_imputed,
+    EmpStatus.bank_or_pool_pct_imputed,
+    EmpStatus.agency_pct_imputed,
+    EmpStatus.other_pct_imputed,
 ]
 FIRST_KNOWN_VALUE_COLUMNS = [
-    ImputeTempCols.first_known_value_prefix + col for col in PERCENTAGE_COLUMNS
+    ImputeTempCols.first_known_value_prefix + col for col in PCT_COLUMNS
 ]
 LAST_KNOWN_VALUE_COLUMNS = [
-    ImputeTempCols.last_known_value_prefix + col for col in PERCENTAGE_COLUMNS
+    ImputeTempCols.last_known_value_prefix + col for col in PCT_COLUMNS
 ]
 
 
@@ -785,13 +782,13 @@ def short_term_imputation_case(
         IndCQC.published_job_role_label: [CARE_WORKER] * len(dates),
         IndCQC.cqc_location_import_date: dates,
     }
-    input_data = {**keys, **status_split(permanent, PERCENTAGE_COLUMNS)}
+    input_data = {**keys, **status_split(permanent, PCT_COLUMNS)}
     return ImputeUtilsTestCase(
         id=id,
         input_data=input_data,
         expected_data={
             **input_data,
-            **status_split(expected_permanent, TRENDLINE_PERCENTAGE_COLUMNS),
+            **status_split(expected_permanent, IMPUTED_TRENDLINE_PCT_COLUMNS),
         },
     )
 
@@ -819,7 +816,7 @@ def rolling_average_case(
         IndCQC.current_region: regions,
         IndCQC.published_job_role_label: roles,
         IndCQC.cqc_location_import_date: dates,
-        **status_split(permanent, TRENDLINE_PERCENTAGE_COLUMNS),
+        **status_split(permanent, IMPUTED_TRENDLINE_PCT_COLUMNS),
         **(extra_columns or {}),
     }
     return ImputeUtilsTestCase(
@@ -827,7 +824,7 @@ def rolling_average_case(
         input_data=input_data,
         expected_data={
             **input_data,
-            **status_split(expected_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+            **status_split(expected_permanent, ROLLING_AVG_PCT_COLUMNS),
         },
     )
 
@@ -841,21 +838,21 @@ def full_imputation_case(
 ) -> ImputeUtilsTestCase:
     """
     Build a single location and job role case from the known permanent share, its rolling
-    average and the expected full imputed share, splitting each with `status_split`.
+    average and the expected imputed share, splitting each with `status_split`.
     """
     input_data = {
         IndCQC.location_id: ["loc1"] * len(dates),
         IndCQC.published_job_role_label: [CARE_WORKER] * len(dates),
         IndCQC.cqc_location_import_date: dates,
-        **status_split(permanent, PERCENTAGE_COLUMNS),
-        **status_split(rolling_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+        **status_split(permanent, PCT_COLUMNS),
+        **status_split(rolling_permanent, ROLLING_AVG_PCT_COLUMNS),
     }
     return ImputeUtilsTestCase(
         id=id,
         input_data=input_data,
         expected_data={
             **input_data,
-            **status_split(expected_permanent, FULL_IMPUTED_PERCENTAGE_COLUMNS),
+            **status_split(expected_permanent, IMPUTED_PCT_COLUMNS),
         },
     )
 
@@ -876,15 +873,15 @@ def full_imputation_five_status_case(
         IndCQC.location_id: ["loc1"] * len(dates),
         IndCQC.published_job_role_label: [CARE_WORKER] * len(dates),
         IndCQC.cqc_location_import_date: dates,
-        **dict(zip(PERCENTAGE_COLUMNS, known)),
-        **dict(zip(ROLLING_AVERAGE_PERCENTAGE_COLUMNS, rolling)),
+        **dict(zip(PCT_COLUMNS, known)),
+        **dict(zip(ROLLING_AVG_PCT_COLUMNS, rolling)),
     }
     return ImputeUtilsTestCase(
         id=id,
         input_data=input_data,
         expected_data={
             **input_data,
-            **dict(zip(FULL_IMPUTED_PERCENTAGE_COLUMNS, expected)),
+            **dict(zip(IMPUTED_PCT_COLUMNS, expected)),
         },
     )
 
@@ -903,15 +900,15 @@ def full_imputation_rows_case(
         IndCQC.location_id: locations,
         IndCQC.published_job_role_label: roles,
         IndCQC.cqc_location_import_date: dates,
-        **status_split(permanent, PERCENTAGE_COLUMNS),
-        **status_split(rolling_permanent, ROLLING_AVERAGE_PERCENTAGE_COLUMNS),
+        **status_split(permanent, PCT_COLUMNS),
+        **status_split(rolling_permanent, ROLLING_AVG_PCT_COLUMNS),
     }
     return ImputeUtilsTestCase(
         id=id,
         input_data=input_data,
         expected_data={
             **input_data,
-            **status_split(expected_permanent, FULL_IMPUTED_PERCENTAGE_COLUMNS),
+            **status_split(expected_permanent, IMPUTED_PCT_COLUMNS),
         },
     )
 
@@ -933,7 +930,7 @@ class TestImputeUtilsData:
                 IndCQC.location_id: ["loc1"] * 5,
                 IndCQC.published_job_role_label: [CARE_WORKER] * 5,
                 IndCQC.cqc_location_import_date: FIVE_MONTHS,
-                **status_split([None, 0.2, None, 0.6, None], PERCENTAGE_COLUMNS),
+                **status_split([None, 0.2, None, 0.6, None], PCT_COLUMNS),
             },
             expected_data={
                 IndCQC.location_id: ["loc1"] * 5,
@@ -951,7 +948,7 @@ class TestImputeUtilsData:
                 IndCQC.location_id: ["loc1"] * 5,
                 IndCQC.published_job_role_label: [CARE_WORKER] * 5,
                 IndCQC.cqc_location_import_date: FIVE_MONTHS,
-                **status_split([None, 0.2, None, 0.6, None], PERCENTAGE_COLUMNS),
+                **status_split([None, 0.2, None, 0.6, None], PCT_COLUMNS),
             },
             expected_data={
                 IndCQC.location_id: ["loc1"] * 5,
@@ -980,7 +977,7 @@ class TestImputeUtilsData:
                 IndCQC.published_job_role_label: [CARE_WORKER] * 2
                 + [REGISTERED_NURSE] * 2,
                 IndCQC.cqc_location_import_date: FIVE_MONTHS[:2] * 2,
-                **status_split([0.2, None, None, 0.6], PERCENTAGE_COLUMNS),
+                **status_split([0.2, None, None, 0.6], PCT_COLUMNS),
             },
             expected_data={
                 IndCQC.location_id: ["loc1"] * 4,
@@ -1001,7 +998,7 @@ class TestImputeUtilsData:
                 IndCQC.location_id: ["loc1"] * 2,
                 IndCQC.published_job_role_label: [CARE_WORKER] * 2,
                 IndCQC.cqc_location_import_date: FIVE_MONTHS[:2],
-                **status_split([None, None], PERCENTAGE_COLUMNS),
+                **status_split([None, None], PCT_COLUMNS),
             },
             expected_data={
                 IndCQC.location_id: ["loc1"] * 2,
@@ -1017,7 +1014,7 @@ class TestImputeUtilsData:
         ),
     ]
 
-    add_short_term_imputed_percentages_test_cases = [
+    add_imputed_trendline_pcts_test_cases = [
         short_term_imputation_case(
             id="does_not_change_known_values",
             dates=FIVE_MONTHS,
@@ -1082,11 +1079,11 @@ class TestImputeUtilsData:
                     date(2024, 1, 11),
                     date(2024, 1, 31),
                 ],
-                EmpStatus.permanent_percentage: [0.5, None, 0.2],
-                EmpStatus.temporary_percentage: [0.1, None, 0.4],
-                EmpStatus.bank_or_pool_percentage: [0.1, None, 0.1],
-                EmpStatus.agency_percentage: [0.2, None, 0.2],
-                EmpStatus.other_percentage: [0.1, None, 0.1],
+                EmpStatus.permanent_pct: [0.5, None, 0.2],
+                EmpStatus.temporary_pct: [0.1, None, 0.4],
+                EmpStatus.bank_or_pool_pct: [0.1, None, 0.1],
+                EmpStatus.agency_pct: [0.2, None, 0.2],
+                EmpStatus.other_pct: [0.1, None, 0.1],
             },
             expected_data={
                 IndCQC.location_id: ["loc1"] * 3,
@@ -1096,20 +1093,20 @@ class TestImputeUtilsData:
                     date(2024, 1, 11),
                     date(2024, 1, 31),
                 ],
-                EmpStatus.permanent_percentage: [0.5, None, 0.2],
-                EmpStatus.temporary_percentage: [0.1, None, 0.4],
-                EmpStatus.bank_or_pool_percentage: [0.1, None, 0.1],
-                EmpStatus.agency_percentage: [0.2, None, 0.2],
-                EmpStatus.other_percentage: [0.1, None, 0.1],
-                EmpStatus.permanent_percentage_imputed_for_trendline: [0.5, 0.4, 0.2],
-                EmpStatus.temporary_percentage_imputed_for_trendline: [0.1, 0.2, 0.4],
-                EmpStatus.bank_or_pool_percentage_imputed_for_trendline: [
+                EmpStatus.permanent_pct: [0.5, None, 0.2],
+                EmpStatus.temporary_pct: [0.1, None, 0.4],
+                EmpStatus.bank_or_pool_pct: [0.1, None, 0.1],
+                EmpStatus.agency_pct: [0.2, None, 0.2],
+                EmpStatus.other_pct: [0.1, None, 0.1],
+                EmpStatus.permanent_pct_imputed_trendline: [0.5, 0.4, 0.2],
+                EmpStatus.temporary_pct_imputed_trendline: [0.1, 0.2, 0.4],
+                EmpStatus.bank_or_pool_pct_imputed_trendline: [
                     0.1,
                     0.1,
                     0.1,
                 ],
-                EmpStatus.agency_percentage_imputed_for_trendline: [0.2, 0.2, 0.2],
-                EmpStatus.other_percentage_imputed_for_trendline: [0.1, 0.1, 0.1],
+                EmpStatus.agency_pct_imputed_trendline: [0.2, 0.2, 0.2],
+                EmpStatus.other_pct_imputed_trendline: [0.1, 0.1, 0.1],
             },
         ),
         short_term_imputation_case(
@@ -1120,7 +1117,7 @@ class TestImputeUtilsData:
         ),
     ]
 
-    add_rolling_average_percentages_test_cases = [
+    add_rolling_avg_pcts_test_cases = [
         rolling_average_case(
             id="averages_across_locations_with_same_service_region_and_job_role",
             rows=[
@@ -1220,7 +1217,7 @@ class TestImputeUtilsData:
         ),
     ]
 
-    add_full_imputed_percentages_test_cases = [
+    add_imputed_pcts_test_cases = [
         full_imputation_case(
             id="does_not_change_known_values",
             dates=FIVE_MONTHS,
@@ -1441,11 +1438,6 @@ class TestCleanUtilsData:
                     "est_small_ok",
                 ],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 5,
-                EmpStatus.permanent_count_dedup: [0, 0, 1, 0, 1],
-                EmpStatus.temporary_count_dedup: [0, 0, 0, 0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0, 0, 0, 0],
-                EmpStatus.agency_count_dedup: [0, 0, 0, 0, 0],
-                EmpStatus.other_count_dedup: [10, 10, 9, 10, 4],
                 EmpStatus.permanent_count_clean: [0, 0, 1, 0, 1],
                 EmpStatus.temporary_count_clean: [0, 0, 0, 0, 0],
                 EmpStatus.bank_or_pool_count_clean: [0, 0, 0, 0, 0],
@@ -1469,11 +1461,6 @@ class TestCleanUtilsData:
                     "est_small_ok",
                 ],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 5,
-                EmpStatus.permanent_count_dedup: [0, 0, 1, 0, 1],
-                EmpStatus.temporary_count_dedup: [0, 0, 0, 0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0, 0, 0, 0],
-                EmpStatus.agency_count_dedup: [0, 0, 0, 0, 0],
-                EmpStatus.other_count_dedup: [10, 10, 9, 10, 4],
                 EmpStatus.permanent_count_clean: [None, None, 1, 0, 1],
                 EmpStatus.temporary_count_clean: [None, None, 0, 0, 0],
                 EmpStatus.bank_or_pool_count_clean: [None, None, 0, 0, 0],
@@ -1489,10 +1476,10 @@ class TestCleanUtilsData:
             },
         ),
         CleanUtilsTestCase(
-            id="uses_dedup_counts_not_raw_counts_for_the_ratio",
+            id="uses_clean_counts_not_raw_counts_for_the_ratio",
             input_data={
-                # loc_a: raw ratio is fine (0.5) but dedup is 0, so it's nulled.
-                # loc_b: raw ratio is 0 but dedup is 0.1, so it's kept.
+                # loc_a: raw ratio is fine (0.5) but clean is 0, so it's nulled.
+                # loc_b: raw ratio is 0 but clean is 0.1, so it's kept.
                 IndCQC.location_id: ["loc_a", "loc_b"],
                 IndCQC.establishment_id: ["est_a", "est_b"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
@@ -1501,11 +1488,6 @@ class TestCleanUtilsData:
                 EmpStatus.bank_or_pool_count: [0, 0],
                 EmpStatus.agency_count: [0, 0],
                 EmpStatus.other_count: [5, 10],
-                EmpStatus.permanent_count_dedup: [0, 1],
-                EmpStatus.temporary_count_dedup: [0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0],
-                EmpStatus.agency_count_dedup: [0, 0],
-                EmpStatus.other_count_dedup: [10, 9],
                 EmpStatus.permanent_count_clean: [0, 1],
                 EmpStatus.temporary_count_clean: [0, 0],
                 EmpStatus.bank_or_pool_count_clean: [0, 0],
@@ -1522,11 +1504,6 @@ class TestCleanUtilsData:
                 EmpStatus.bank_or_pool_count: [0, 0],
                 EmpStatus.agency_count: [0, 0],
                 EmpStatus.other_count: [5, 10],
-                EmpStatus.permanent_count_dedup: [0, 1],
-                EmpStatus.temporary_count_dedup: [0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0],
-                EmpStatus.agency_count_dedup: [0, 0],
-                EmpStatus.other_count_dedup: [10, 9],
                 EmpStatus.permanent_count_clean: [None, 1],
                 EmpStatus.temporary_count_clean: [None, 0],
                 EmpStatus.bank_or_pool_count_clean: [None, 0],
@@ -1544,11 +1521,6 @@ class TestCleanUtilsData:
                 IndCQC.location_id: ["loc_org_nulled"],
                 IndCQC.establishment_id: ["est_org_nulled"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE],
-                EmpStatus.permanent_count_dedup: [0],
-                EmpStatus.temporary_count_dedup: [0],
-                EmpStatus.bank_or_pool_count_dedup: [0],
-                EmpStatus.agency_count_dedup: [0],
-                EmpStatus.other_count_dedup: [20],
                 EmpStatus.permanent_count_clean: [None],
                 EmpStatus.temporary_count_clean: [None],
                 EmpStatus.bank_or_pool_count_clean: [None],
@@ -1562,11 +1534,6 @@ class TestCleanUtilsData:
                 IndCQC.location_id: ["loc_org_nulled"],
                 IndCQC.establishment_id: ["est_org_nulled"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE],
-                EmpStatus.permanent_count_dedup: [0],
-                EmpStatus.temporary_count_dedup: [0],
-                EmpStatus.bank_or_pool_count_dedup: [0],
-                EmpStatus.agency_count_dedup: [0],
-                EmpStatus.other_count_dedup: [20],
                 EmpStatus.permanent_count_clean: [None],
                 EmpStatus.temporary_count_clean: [None],
                 EmpStatus.bank_or_pool_count_clean: [None],
@@ -1588,15 +1555,19 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1", "est1"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
                 EmpStatus.permanent_count: [1, 0],
-                EmpStatus.permanent_count_dedup: [1, 0],
+                EmpStatus.permanent_count_clean: [1, 0],
                 EmpStatus.temporary_count: [0, 0],
-                EmpStatus.temporary_count_dedup: [0, 0],
+                EmpStatus.temporary_count_clean: [0, 0],
                 EmpStatus.bank_or_pool_count: [0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0],
+                EmpStatus.bank_or_pool_count_clean: [0, 0],
                 EmpStatus.agency_count: [0, 0],
-                EmpStatus.agency_count_dedup: [0, 0],
+                EmpStatus.agency_count_clean: [0, 0],
                 EmpStatus.other_count: [9, 10],
-                EmpStatus.other_count_dedup: [9, 10],
+                EmpStatus.other_count_clean: [9, 10],
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.populated,
+                    EmploymentStatusFilteringRule.populated,
+                ],
             },
             expected_data={
                 IndCQC.organisation_id: ["org1", "org1"],
@@ -1604,15 +1575,10 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1", "est1"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
                 EmpStatus.permanent_count: [1, 0],
-                EmpStatus.permanent_count_dedup: [1, 0],
                 EmpStatus.temporary_count: [0, 0],
-                EmpStatus.temporary_count_dedup: [0, 0],
                 EmpStatus.bank_or_pool_count: [0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0],
                 EmpStatus.agency_count: [0, 0],
-                EmpStatus.agency_count_dedup: [0, 0],
                 EmpStatus.other_count: [9, 10],
-                EmpStatus.other_count_dedup: [9, 10],
                 EmpStatus.permanent_count_clean: [None, None],
                 EmpStatus.temporary_count_clean: [None, None],
                 EmpStatus.bank_or_pool_count_clean: [None, None],
@@ -1633,15 +1599,21 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1", "est1", "est2", "est2"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 4,
                 EmpStatus.permanent_count: [0, 0, 0, 0],
-                EmpStatus.permanent_count_dedup: [0, 0, 0, 0],
+                EmpStatus.permanent_count_clean: [0, 0, 0, 0],
                 EmpStatus.temporary_count: [0, 0, 0, 0],
-                EmpStatus.temporary_count_dedup: [0, 0, 0, 0],
+                EmpStatus.temporary_count_clean: [0, 0, 0, 0],
                 EmpStatus.bank_or_pool_count: [0, 0, 0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0, 0, 0],
+                EmpStatus.bank_or_pool_count_clean: [0, 0, 0, 0],
                 EmpStatus.agency_count: [0, 0, 0, 0],
-                EmpStatus.agency_count_dedup: [0, 0, 0, 0],
+                EmpStatus.agency_count_clean: [0, 0, 0, 0],
                 EmpStatus.other_count: [1, 1, 1, 1],
-                EmpStatus.other_count_dedup: [1, 1, 1, 1],
+                EmpStatus.other_count_clean: [1, 1, 1, 1],
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.populated,
+                    EmploymentStatusFilteringRule.populated,
+                    EmploymentStatusFilteringRule.populated,
+                    EmploymentStatusFilteringRule.populated,
+                ],
             },
             expected_data={
                 IndCQC.organisation_id: ["org2"] * 4,
@@ -1649,15 +1621,10 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1", "est1", "est2", "est2"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 4,
                 EmpStatus.permanent_count: [0, 0, 0, 0],
-                EmpStatus.permanent_count_dedup: [0, 0, 0, 0],
                 EmpStatus.temporary_count: [0, 0, 0, 0],
-                EmpStatus.temporary_count_dedup: [0, 0, 0, 0],
                 EmpStatus.bank_or_pool_count: [0, 0, 0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0, 0, 0],
                 EmpStatus.agency_count: [0, 0, 0, 0],
-                EmpStatus.agency_count_dedup: [0, 0, 0, 0],
                 EmpStatus.other_count: [1, 1, 1, 1],
-                EmpStatus.other_count_dedup: [1, 1, 1, 1],
                 EmpStatus.permanent_count_clean: [None] * 4,
                 EmpStatus.temporary_count_clean: [None] * 4,
                 EmpStatus.bank_or_pool_count_clean: [None] * 4,
@@ -1677,15 +1644,16 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE],
                 EmpStatus.permanent_count: [5],
-                EmpStatus.permanent_count_dedup: [5],
+                EmpStatus.permanent_count_clean: [5],
                 EmpStatus.temporary_count: [5],
-                EmpStatus.temporary_count_dedup: [5],
+                EmpStatus.temporary_count_clean: [5],
                 EmpStatus.bank_or_pool_count: [0],
-                EmpStatus.bank_or_pool_count_dedup: [0],
+                EmpStatus.bank_or_pool_count_clean: [0],
                 EmpStatus.agency_count: [0],
-                EmpStatus.agency_count_dedup: [0],
+                EmpStatus.agency_count_clean: [0],
                 EmpStatus.other_count: [0],
-                EmpStatus.other_count_dedup: [0],
+                EmpStatus.other_count_clean: [0],
+                EmpStatus.filtering_rule: [EmploymentStatusFilteringRule.populated],
             },
             expected_data={
                 IndCQC.organisation_id: ["org3"],
@@ -1693,15 +1661,10 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE],
                 EmpStatus.permanent_count: [5],
-                EmpStatus.permanent_count_dedup: [5],
                 EmpStatus.temporary_count: [5],
-                EmpStatus.temporary_count_dedup: [5],
                 EmpStatus.bank_or_pool_count: [0],
-                EmpStatus.bank_or_pool_count_dedup: [0],
                 EmpStatus.agency_count: [0],
-                EmpStatus.agency_count_dedup: [0],
                 EmpStatus.other_count: [0],
-                EmpStatus.other_count_dedup: [0],
                 EmpStatus.permanent_count_clean: [5],
                 EmpStatus.temporary_count_clean: [5],
                 EmpStatus.bank_or_pool_count_clean: [0],
@@ -1721,15 +1684,19 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1", "est2"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
                 EmpStatus.permanent_count: [0, 0],
-                EmpStatus.permanent_count_dedup: [0, 0],
+                EmpStatus.permanent_count_clean: [0, 0],
                 EmpStatus.temporary_count: [0, 0],
-                EmpStatus.temporary_count_dedup: [0, 0],
+                EmpStatus.temporary_count_clean: [0, 0],
                 EmpStatus.bank_or_pool_count: [0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0],
+                EmpStatus.bank_or_pool_count_clean: [0, 0],
                 EmpStatus.agency_count: [0, 0],
-                EmpStatus.agency_count_dedup: [0, 0],
+                EmpStatus.agency_count_clean: [0, 0],
                 EmpStatus.other_count: [20, 20],
-                EmpStatus.other_count_dedup: [20, 20],
+                EmpStatus.other_count_clean: [20, 20],
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.populated,
+                    EmploymentStatusFilteringRule.populated,
+                ],
             },
             expected_data={
                 IndCQC.organisation_id: [None, None],
@@ -1737,15 +1704,10 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1", "est2"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
                 EmpStatus.permanent_count: [0, 0],
-                EmpStatus.permanent_count_dedup: [0, 0],
                 EmpStatus.temporary_count: [0, 0],
-                EmpStatus.temporary_count_dedup: [0, 0],
                 EmpStatus.bank_or_pool_count: [0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0],
                 EmpStatus.agency_count: [0, 0],
-                EmpStatus.agency_count_dedup: [0, 0],
                 EmpStatus.other_count: [20, 20],
-                EmpStatus.other_count_dedup: [20, 20],
                 EmpStatus.permanent_count_clean: [0, 0],
                 EmpStatus.temporary_count_clean: [0, 0],
                 EmpStatus.bank_or_pool_count_clean: [0, 0],
@@ -1767,15 +1729,19 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1", "est1"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
                 EmpStatus.permanent_count: [10, None],
-                EmpStatus.permanent_count_dedup: [10, None],
+                EmpStatus.permanent_count_clean: [10, None],
                 EmpStatus.temporary_count: [0, None],
-                EmpStatus.temporary_count_dedup: [0, None],
+                EmpStatus.temporary_count_clean: [0, None],
                 EmpStatus.bank_or_pool_count: [0, None],
-                EmpStatus.bank_or_pool_count_dedup: [0, None],
+                EmpStatus.bank_or_pool_count_clean: [0, None],
                 EmpStatus.agency_count: [0, None],
-                EmpStatus.agency_count_dedup: [0, None],
+                EmpStatus.agency_count_clean: [0, None],
                 EmpStatus.other_count: [0, None],
-                EmpStatus.other_count_dedup: [0, None],
+                EmpStatus.other_count_clean: [0, None],
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.populated,
+                    EmploymentStatusFilteringRule.missing_data,
+                ],
             },
             expected_data={
                 IndCQC.organisation_id: ["org4", "org4"],
@@ -1783,15 +1749,10 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1", "est1"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
                 EmpStatus.permanent_count: [10, None],
-                EmpStatus.permanent_count_dedup: [10, None],
                 EmpStatus.temporary_count: [0, None],
-                EmpStatus.temporary_count_dedup: [0, None],
                 EmpStatus.bank_or_pool_count: [0, None],
-                EmpStatus.bank_or_pool_count_dedup: [0, None],
                 EmpStatus.agency_count: [0, None],
-                EmpStatus.agency_count_dedup: [0, None],
                 EmpStatus.other_count: [0, None],
-                EmpStatus.other_count_dedup: [0, None],
                 EmpStatus.permanent_count_clean: [10, None],
                 EmpStatus.temporary_count_clean: [0, None],
                 EmpStatus.bank_or_pool_count_clean: [0, None],
@@ -1819,11 +1780,15 @@ class TestCleanUtilsData:
                 EmpStatus.bank_or_pool_count: [0, 0],
                 EmpStatus.agency_count: [0, 0],
                 EmpStatus.other_count: [9, 10],
-                EmpStatus.permanent_count_dedup: [1, None],
-                EmpStatus.temporary_count_dedup: [0, None],
-                EmpStatus.bank_or_pool_count_dedup: [0, None],
-                EmpStatus.agency_count_dedup: [0, None],
-                EmpStatus.other_count_dedup: [9, None],
+                EmpStatus.permanent_count_clean: [1, None],
+                EmpStatus.temporary_count_clean: [0, None],
+                EmpStatus.bank_or_pool_count_clean: [0, None],
+                EmpStatus.agency_count_clean: [0, None],
+                EmpStatus.other_count_clean: [9, None],
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.populated,
+                    EmploymentStatusFilteringRule.missing_data,
+                ],
             },
             expected_data={
                 IndCQC.organisation_id: ["org7", "org7"],
@@ -1835,11 +1800,6 @@ class TestCleanUtilsData:
                 EmpStatus.bank_or_pool_count: [0, 0],
                 EmpStatus.agency_count: [0, 0],
                 EmpStatus.other_count: [9, 10],
-                EmpStatus.permanent_count_dedup: [1, None],
-                EmpStatus.temporary_count_dedup: [0, None],
-                EmpStatus.bank_or_pool_count_dedup: [0, None],
-                EmpStatus.agency_count_dedup: [0, None],
-                EmpStatus.other_count_dedup: [9, None],
                 EmpStatus.permanent_count_clean: [None, None],
                 EmpStatus.temporary_count_clean: [None, None],
                 EmpStatus.bank_or_pool_count_clean: [None, None],
@@ -1862,15 +1822,19 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1", "est2"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
                 EmpStatus.permanent_count: [1, 0],
-                EmpStatus.permanent_count_dedup: [1, 0],
+                EmpStatus.permanent_count_clean: [1, 0],
                 EmpStatus.temporary_count: [0, 0],
-                EmpStatus.temporary_count_dedup: [0, 0],
+                EmpStatus.temporary_count_clean: [0, 0],
                 EmpStatus.bank_or_pool_count: [0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0],
+                EmpStatus.bank_or_pool_count_clean: [0, 0],
                 EmpStatus.agency_count: [0, 0],
-                EmpStatus.agency_count_dedup: [0, 0],
+                EmpStatus.agency_count_clean: [0, 0],
                 EmpStatus.other_count: [9, 10],
-                EmpStatus.other_count_dedup: [9, 10],
+                EmpStatus.other_count_clean: [9, 10],
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.populated,
+                    EmploymentStatusFilteringRule.populated,
+                ],
             },
             expected_data={
                 IndCQC.organisation_id: ["org5", "org5"],
@@ -1878,15 +1842,10 @@ class TestCleanUtilsData:
                 IndCQC.establishment_id: ["est1", "est2"],
                 IndCQC.ascwds_workplace_import_date: [CLEAN_UTILS_IMPORT_DATE] * 2,
                 EmpStatus.permanent_count: [1, 0],
-                EmpStatus.permanent_count_dedup: [1, 0],
                 EmpStatus.temporary_count: [0, 0],
-                EmpStatus.temporary_count_dedup: [0, 0],
                 EmpStatus.bank_or_pool_count: [0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0],
                 EmpStatus.agency_count: [0, 0],
-                EmpStatus.agency_count_dedup: [0, 0],
                 EmpStatus.other_count: [9, 10],
-                EmpStatus.other_count_dedup: [9, 10],
                 EmpStatus.permanent_count_clean: [None, None],
                 EmpStatus.temporary_count_clean: [None, None],
                 EmpStatus.bank_or_pool_count_clean: [None, None],
@@ -1911,15 +1870,19 @@ class TestCleanUtilsData:
                     date(2024, 2, 1),
                 ],
                 EmpStatus.permanent_count: [0, 15],
-                EmpStatus.permanent_count_dedup: [0, 15],
+                EmpStatus.permanent_count_clean: [0, 15],
                 EmpStatus.temporary_count: [0, 0],
-                EmpStatus.temporary_count_dedup: [0, 0],
+                EmpStatus.temporary_count_clean: [0, 0],
                 EmpStatus.bank_or_pool_count: [0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0],
+                EmpStatus.bank_or_pool_count_clean: [0, 0],
                 EmpStatus.agency_count: [0, 0],
-                EmpStatus.agency_count_dedup: [0, 0],
+                EmpStatus.agency_count_clean: [0, 0],
                 EmpStatus.other_count: [20, 5],
-                EmpStatus.other_count_dedup: [20, 5],
+                EmpStatus.other_count_clean: [20, 5],
+                EmpStatus.filtering_rule: [
+                    EmploymentStatusFilteringRule.populated,
+                    EmploymentStatusFilteringRule.populated,
+                ],
             },
             expected_data={
                 IndCQC.organisation_id: ["org6", "org6"],
@@ -1930,15 +1893,10 @@ class TestCleanUtilsData:
                     date(2024, 2, 1),
                 ],
                 EmpStatus.permanent_count: [0, 15],
-                EmpStatus.permanent_count_dedup: [0, 15],
                 EmpStatus.temporary_count: [0, 0],
-                EmpStatus.temporary_count_dedup: [0, 0],
                 EmpStatus.bank_or_pool_count: [0, 0],
-                EmpStatus.bank_or_pool_count_dedup: [0, 0],
                 EmpStatus.agency_count: [0, 0],
-                EmpStatus.agency_count_dedup: [0, 0],
                 EmpStatus.other_count: [20, 5],
-                EmpStatus.other_count_dedup: [20, 5],
                 EmpStatus.permanent_count_clean: [None, 15],
                 EmpStatus.temporary_count_clean: [None, 0],
                 EmpStatus.bank_or_pool_count_clean: [None, 0],

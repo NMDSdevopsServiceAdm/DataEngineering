@@ -119,7 +119,7 @@ def recheck_duplicate_establishments(lf: pl.LazyFrame) -> pl.LazyFrame:
             .agg(AWPClean.establishment_id, pl.len().alias(duplicate_count))
             .filter(pl.col(duplicate_count) > 1)
             .select(AWPClean.establishment_id, AWPClean.import_date)
-            .explode(AWPClean.establishment_id)
+            .explode(AWPClean.establishment_id, empty_as_null=True)
         )
 
     return pl.concat(still_matching_lfs)
@@ -305,29 +305,13 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
 class BoundingExpressions:
     """Create Polars expressions that bound workplace metrics to valid ranges.
 
-    The class defines expressions for constraining filled-posts values and
-    starters/leavers/vacancies (SLV) job-role values to acceptable ranges.
-    SLV columns share a single lower-bound-of-0 rule: the raw ASC-WDS files
-    use -1/-2 as "not known"/"not recorded" sentinels, which must be nulled,
-    but 0 is a legitimate value for any job role (a workplace can genuinely
-    have 0 starters/leavers/vacancies in a given role).
-    These expressions are designed for use in lazy Polars pipelines and keep
-    the transformation logic declarative and readable.
-
     Attributes:
         filled_posts_bounding_cols (list[str]): Columns used in filled-posts
             estimates needing bounding.
         filled_posts_lower_bound (int): Minimum accepted value for filled-posts
             columns.
-        slv_bounding_cols (pl.selectors.Selector): Selector for starters,
-            leavers and vacancies job-role columns.
-        slv_lower_bound (int): Minimum accepted value for SLV job-role
-            columns.
-        filled_posts_expr (pl.Expr): Expression that bounds columns needed in
-            filled-posts estimates to the configured valid range and renaming.
-        slv_expr (pl.Expr): Expression that bounds SLV job-role columns to
-            the configured valid range while preserving the original column
-            names.
+        filled_posts_expr (pl.Expr): Expression that bounds filled-posts
+            columns to the valid range, adding a `_bounded` suffix.
     """
 
     filled_posts_bounding_cols: list[str] = [
@@ -336,9 +320,6 @@ class BoundingExpressions:
     ]
     filled_posts_lower_bound: int = 1
 
-    slv_bounding_cols: pl.selectors.Selector = expr.is_slv_job_role_column()
-    slv_lower_bound: int = 0
-
     filled_posts_expr: pl.Expr = (
         pl.when(pl.col(*filled_posts_bounding_cols) >= filled_posts_lower_bound)
         .then(pl.col(*filled_posts_bounding_cols))
@@ -346,12 +327,49 @@ class BoundingExpressions:
         .name.suffix("_bounded")
     )
 
-    slv_expr: pl.Expr = (
-        pl.when(slv_bounding_cols.as_expr() >= slv_lower_bound)
-        .then(slv_bounding_cols)
-        .otherwise(None)
-        .name.keep()
-    )
+
+def null_slv_job_roles_when_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Null starters, leavers and vacancies job role columns where the total or any role is not known.
+
+    A workplace's measure is either wholly in or out, so one not known value
+    nulls every job role of that measure, even where some are populated, as
+    unpopulated roles auto-populate as 0 which could be a false zero. Each
+    measure is handled independently.
+
+    A value is not known when it is negative (-1/-2) or 999 (a proxy for not
+    known). 0 and null values are left as is.
+
+    Args:
+        lf (pl.LazyFrame): Workplace LazyFrame with integer total and job role columns.
+
+    Returns:
+        pl.LazyFrame: lf with job role columns nulled where the total or any role is not known.
+    """
+    total_to_job_role_columns = {
+        AWPClean.total_starters: cs.starts_with("jr") & cs.ends_with("strt"),
+        AWPClean.total_leavers: cs.starts_with("jr") & cs.ends_with("stop"),
+        AWPClean.total_vacancies: cs.starts_with("jr") & cs.ends_with("vacy"),
+    }
+    not_known_value = 999
+
+    null_expressions = []
+    for total, job_role_columns in total_to_job_role_columns.items():
+        total_and_job_roles = (
+            cs.by_name(total, require_all=False) | job_role_columns
+        ).as_expr()
+        null_expressions.append(
+            pl.when(
+                pl.any_horizontal(
+                    (total_and_job_roles < 0) | (total_and_job_roles == not_known_value)
+                )
+            )
+            .then(None)
+            .otherwise(job_role_columns)
+            .name.keep()
+        )
+
+    return lf.with_columns(null_expressions)
 
 
 def merge_legacy_job_role_columns(

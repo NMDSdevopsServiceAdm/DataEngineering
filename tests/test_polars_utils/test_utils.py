@@ -497,11 +497,48 @@ class TestCoalesceWithSourceLabels:
                 "c": [10, 20, 30, None, None],
                 "values": [1, 2, 30, None, 4],
                 "values_source": ["a", "b", "c", None, "b"],
-            }
+            },
+            schema_overrides={"values": pl.Float32},
         )
         input_lf = expected_lf.drop("values", "values_source")
         returned_lf = input_lf.with_columns(
             utils.coalesce_with_source_labels(["a", "b", "c"], name="values")
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_value_is_float32(self):
+        lf = pl.LazyFrame(
+            {"a": [1.0, None], "b": [None, 2.0]},
+            schema={"a": pl.Float64, "b": pl.Float32},
+        )
+        returned_schema = lf.select(
+            utils.coalesce_with_source_labels(["a", "b"], name="values")
+        ).collect_schema()
+        assert returned_schema["values"] == pl.Float32
+
+    def test_source_is_string_by_default(self):
+        lf = pl.LazyFrame(
+            {"a": [1.0], "b": [None]}, schema={"a": pl.Float64, "b": pl.Float64}
+        )
+        returned_schema = lf.select(
+            utils.coalesce_with_source_labels(["a", "b"], name="values")
+        ).collect_schema()
+        assert returned_schema["values_source"] == pl.String
+
+    def test_source_is_cast_to_enum_when_dtype_given(self):
+        source_dtype = pl.Enum(["a", "b"])
+        lf = pl.LazyFrame(
+            {"a": [1.0, None, None], "b": [None, 2.0, None]},
+            schema={"a": pl.Float64, "b": pl.Float64},
+        )
+        returned_lf = lf.select(
+            utils.coalesce_with_source_labels(
+                ["a", "b"], name="values", source_dtype=source_dtype
+            )[1]
+        )
+        expected_lf = pl.LazyFrame(
+            {"values_source": ["a", "b", None]},
+            schema={"values_source": source_dtype},
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 

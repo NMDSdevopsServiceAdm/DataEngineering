@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from unittest.mock import Mock, patch
 
+import polars as pl
 import pytest
+from polars.testing import assert_frame_equal
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.merge_utils as job
 
@@ -38,6 +40,14 @@ class TestParseRunNumber:
     def test_raises_for_non_numeric_value(self, value: str):
         with pytest.raises(ValueError, match="run_number"):
             job.parse_run_number(value)
+
+    def test_returns_whole_number_when_required(self):
+        assert job.parse_run_number("3", required=True) == 3
+
+    @pytest.mark.parametrize("value", [None, "latest", "abc", "-1", ""])
+    def test_raises_when_required_and_not_a_whole_number(self, value: str | None):
+        with pytest.raises(ValueError, match="run_number must be a whole number"):
+            job.parse_run_number(value, required=True)
 
 
 @dataclass
@@ -180,3 +190,69 @@ class TestResolveRunSources:
         assert returned == [
             "s3://bucket/dataset=a/archive_date=2026-10-01/run_number=2/"
         ]
+
+
+class TestRunPartitionPath:
+    run_source = "s3://bucket/dataset=estimates/archive_date=2026-10-01/run_number=2/"
+
+    def test_joins_root_and_the_runs_partition(self):
+        returned = job.run_partition_path("s3://bucket/dataset=prep", self.run_source)
+
+        assert (
+            returned == "s3://bucket/dataset=prep/archive_date=2026-10-01/run_number=2/"
+        )
+
+    @pytest.mark.parametrize(
+        "root", ["s3://bucket/dataset=prep/", "s3://bucket/dataset=prep"]
+    )
+    def test_ignores_trailing_slash_on_root(self, root: str):
+        returned = job.run_partition_path(root, self.run_source)
+
+        assert (
+            returned == "s3://bucket/dataset=prep/archive_date=2026-10-01/run_number=2/"
+        )
+
+    def test_raises_when_source_has_no_run_partition(self):
+        with pytest.raises(ValueError, match="run partition"):
+            job.run_partition_path("s3://bucket/dataset=prep/", "s3://bucket/other/")
+
+
+class TestRunNumberFromSource:
+    def test_returns_the_run_number_of_the_partition(self):
+        returned = job.run_number_from_source(
+            "s3://bucket/dataset=prep/archive_date=2026-10-01/run_number=12/"
+        )
+
+        assert returned == 12
+
+    def test_raises_when_source_has_no_run_partition(self):
+        with pytest.raises(ValueError, match="run partition"):
+            job.run_number_from_source("s3://bucket/other/")
+
+
+class TestArchiveDateFromSource:
+    def test_returns_the_archive_date_of_the_partition(self):
+        returned = job.archive_date_from_source(
+            "s3://bucket/dataset=prep/archive_date=2026-10-01/run_number=12/"
+        )
+
+        assert returned == "2026-10-01"
+
+    def test_raises_when_source_has_no_run_partition(self):
+        with pytest.raises(ValueError, match="run partition"):
+            job.archive_date_from_source("s3://bucket/other/")
+
+
+class TestAddRunPartitionColumns:
+    def test_adds_archive_date_and_run_number_of_the_run(self):
+        lf = pl.LazyFrame({"a": [1, 2]})
+
+        returned = job.add_run_partition_columns(
+            lf, "s3://bucket/archive_date=2026-10-01/run_number=12/"
+        )
+
+        expected = pl.LazyFrame(
+            {"a": [1, 2], "archive_date": ["2026-10-01"] * 2, "run_number": [12] * 2},
+            schema_overrides={"run_number": pl.Int32},
+        )
+        assert_frame_equal(returned, expected)

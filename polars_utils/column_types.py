@@ -15,6 +15,9 @@ from utils.column_values.categorical_columns_by_dataset import (
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
 )
+from utils.column_values.categorical_columns_by_dataset import (
+    SLVEstimateCategoricalValues as SLVEstimateCatVals,
+)
 
 
 @dataclass
@@ -164,4 +167,13 @@ class CategoricalColumnTypes:
     )
     SpecialismMentalHealthCatType = pl.Categorical(
         pl.Categories("specialism_mental_health", namespace="filled_posts")
+    )
+    StartersEstimateSourceEnumType = pl.Enum(
+        SLVEstimateCatVals.starters_source_column_values.categorical_values
+    )
+    LeaversEstimateSourceEnumType = pl.Enum(
+        SLVEstimateCatVals.leavers_source_column_values.categorical_values
+    )
+    VacanciesEstimateSourceEnumType = pl.Enum(
+        SLVEstimateCatVals.vacancies_source_column_values.categorical_values
     )

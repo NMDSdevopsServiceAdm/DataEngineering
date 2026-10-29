@@ -503,7 +503,6 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_05_estimated/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_05_estimated/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_04_estimate/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_04_estimate/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_06_job_roles_01_merge_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=main_01_filled_posts_06_job_roles_01_merge_metadata/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/" --delete
       - run:
           name: Copy models to non-prod dataset
           command: |
@@ -558,7 +557,10 @@ jobs:
               echo "No archive-related changes detected. Skipping archive sample seed."
             else
               aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2026-09-22/run_number=1/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2026-09-22/run_number=1/" --delete && \
-                aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-09-22/run_number=1/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-09-22/run_number=1/" --delete
+                aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-09-22/run_number=1/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-09-22/run_number=1/" --delete && \
+                aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2026-10-15/run_number=2/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/archive_date=2026-10-15/run_number=2/" --delete && \
+                aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-10-15/run_number=2/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-10-15/run_number=2/" --delete && \
+                aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/archive_date=2026-10-15/run_number=2/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/archive_date=2026-10-15/run_number=2/" --delete
             fi
 
   terraform-destroy:
@@ -747,32 +749,6 @@ workflows:
             branches:
               only: main
 
-  # Merge queue branches get lint and tests only, no deploy. These four jobs
-  # are the main-merge-queue ruleset's required checks; delete that ruleset to
-  # disable the queue.
-  merge-queue-checks:
-    unless: << pipeline.parameters.GHA_Action >>
-    jobs:
-      - lint-python:
-          filters:
-            branches:
-              only: /^gh-readonly-queue\/.*/
-      - lint-terraform:
-          filters:
-            branches:
-              only: /^gh-readonly-queue\/.*/
-      - lint-docstrings:
-          filters:
-            branches:
-              only: /^gh-readonly-queue\/.*/
-      - test:
-          filters:
-            branches:
-              only: /^gh-readonly-queue\/.*/
-
-
-  # Filtered jobs also ignore gh-readonly-queue/* (merge queue branches, tested
-  # by merge-queue-checks) so queued PRs don't deploy a dev environment.
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
@@ -780,9 +756,7 @@ workflows:
           context: non-prod
           filters:
             branches:
-              ignore:
-                - main
-                - /^gh-readonly-queue\/.*/
+              ignore: main
       # One build per branch at a time, so the newest build wins the image tag.
       - task-containerisation:
           context: non-prod
@@ -792,27 +766,19 @@ workflows:
             - decide-bake-and-seed
           filters:
             branches:
-              ignore:
-                - main
-                - /^gh-readonly-queue\/.*/
+              ignore: main
       - lint-python:
           filters:
             branches:
-              ignore:
-                - main
-                - /^gh-readonly-queue\/.*/
+              ignore: main
       - lint-terraform:
           filters:
             branches:
-              ignore:
-                - main
-                - /^gh-readonly-queue\/.*/
+              ignore: main
       - lint-docstrings:
           filters:
             branches:
-              ignore:
-                - main
-                - /^gh-readonly-queue\/.*/
+              ignore: main
       # Shared per-branch key: a newer plan waits for a running apply instead
       # of failing on the state lock. Reusing a key in one workflow is documented
       # as unsupported but tested fine (fallback: job-groups). Keep
@@ -834,9 +800,7 @@ workflows:
                 - not_run
           filters:
             branches:
-              ignore:
-                - main
-                - /^gh-readonly-queue\/.*/
+              ignore: main
       - deploy-dependencies:
           context: non-prod
           requires:
@@ -848,26 +812,20 @@ workflows:
             - decide-bake-and-seed
           filters:
             branches:
-              ignore:
-                - main
-                - /^gh-readonly-queue\/.*/
+              ignore: main
       - test:
           requires:
             - terraform-apply
           filters:
             branches:
-              ignore:
-                - main
-                - /^gh-readonly-queue\/.*/
+              ignore: main
       - test-cqc-integration:
           skip_if_unrelated: true
           requires:
             - decide-bake-and-seed
           filters:
             branches:
-              ignore:
-                - main
-                - /^gh-readonly-queue\/.*/
+              ignore: main
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>

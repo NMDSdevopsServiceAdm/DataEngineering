@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from utils.column_values.categorical_column_values import (
+    HasSuccessor,
     InAscwds,
     ParentsOrSinglesAndSubs,
     RegistrationStatus,
@@ -482,7 +483,13 @@ class ReconciliationData:
     # fmt: on
 
     main_cqc_location_rows = [
-        ("1-001", date(2024, 4, 1), RegistrationStatus.deregistered, date(2024, 3, 15)),
+        (
+            "1-001",
+            date(2024, 4, 1),
+            RegistrationStatus.deregistered,
+            date(2024, 3, 15),
+            HasSuccessor.has_successor,
+        ),
     ]
 
     main_expected_single_and_subs_nmds_ids = ["10"]

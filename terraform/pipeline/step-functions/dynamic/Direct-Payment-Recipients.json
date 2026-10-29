@@ -28,9 +28,9 @@
                       "Name": "_04_direct_payments-container",
                       "Command": [
                         "_01_merge.py",
-                        "--survey_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=00_survey/version=2027.01/",
-                        "--external_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=00_external/version=2027.01/",
-                        "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=01_merge/version=2027.01/"
+                        "--survey_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=00_survey/version=${dpr_version}/",
+                        "--external_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=00_external/version=${dpr_version}/",
+                        "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=01_merge/version=${dpr_version}/"
                       ]
                     }
                   ]
@@ -58,9 +58,9 @@
                       "Name": "_04_direct_payments-container",
                       "Command": [
                         "_02_estimate.py",
-                        "--direct_payments_merged_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=01_merge/version=2027.01/",
-                        "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=02_estimate/version=2027.01/",
-                        "--summary_destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=02_estimate_summary/version=2027.01/"
+                        "--direct_payments_merged_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=01_merge/version=${dpr_version}/",
+                        "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=02_estimate/version=${dpr_version}/",
+                        "--summary_destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=02_estimate_summary/version=${dpr_version}/"
                       ]
                     }
                   ]
@@ -95,9 +95,9 @@
                               "Command": [
                                 "validate_02_estimate.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=04_dpr/dataset=02_estimate/version=2027.01/",
-                                "--reports_path", "domain=04_dpr/dataset=02_estimate_validation/version=2027.01/",
-                                "--compare_path", "domain=04_dpr/dataset=01_merge/version=2027.01/"
+                                "--source_path", "domain=04_dpr/dataset=02_estimate/version=${dpr_version}/",
+                                "--reports_path", "domain=04_dpr/dataset=02_estimate_validation/version=${dpr_version}/",
+                                "--compare_path", "domain=04_dpr/dataset=01_merge/version=${dpr_version}/"
                               ]
                             }
                           ]
@@ -131,8 +131,8 @@
                               "Command": [
                                 "_03_estimates_by_icb_area.py",
                                 "--postcode_directory_source", "${dataset_bucket_uri}/domain=01_ons/dataset=postcode_directory_cleaned/",
-                                "--pa_filled_posts_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=02_estimate/version=2027.01/",
-                                "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=03_estimates_by_icb_area/version=2027.01/"
+                                "--pa_filled_posts_source", "${dataset_bucket_uri}/domain=04_dpr/dataset=02_estimate/version=${dpr_version}/",
+                                "--destination", "${dataset_bucket_uri}/domain=04_dpr/dataset=03_estimates_by_icb_area/version=${dpr_version}/"
                               ]
                             }
                           ]

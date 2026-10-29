@@ -15,6 +15,11 @@ locals {
   # seconds rather than tying up a dev run for over an hour.
   ascwds_polling_max_attempts = terraform.workspace == "main" ? 60 : 5
   ascwds_polling_wait_seconds = terraform.workspace == "main" ? 900 : 10
+
+  # Retries and seconds between them for Publication-Output.json's "Check Promoted
+  # Archive" state. Non-main workspaces poll faster so the timeout is quick to test.
+  reconciliation_polling_max_attempts = terraform.workspace == "main" ? 10 : 5
+  reconciliation_polling_wait_seconds = terraform.workspace == "main" ? 180 : 10
 }
 
 # Created explicitly as required by dynamic step functions
@@ -42,7 +47,7 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
     transform_cqc_data_state_machine_arn    = aws_sfn_state_machine.sf_pipelines["Transform-CQC-Data"].arn
     ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
     sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
-    ind_cqc_slv_state_machine_arn           = aws_sfn_state_machine.sf_pipelines["Ind-CQC-SLV"].arn
+    ind_cqc_empstat_slv_state_machine_arn   = aws_sfn_state_machine.sf_pipelines["Ind-CQC-EmpStat-SLV"].arn
   })
 
   depends_on = [
@@ -85,9 +90,17 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     dataset_bucket_uri            = module.datasets_bucket.bucket_uri
     dataset_bucket_name           = module.datasets_bucket.bucket_name
     pipeline_resources_bucket_uri = module.pipeline_resources.bucket_uri
+    archive_promoted_bucket_uri   = module.promoted_archive_bucket.bucket_uri
 
     # archive run log
     commit_sha = var.commit_sha
+
+    # reconciliation polling
+    reconciliation_polling_max_attempts = local.reconciliation_polling_max_attempts
+    reconciliation_polling_wait_seconds = local.reconciliation_polling_wait_seconds
+
+    # dpr
+    dpr_version = var.dpr_version
 
     # compare paths
     ind_cqc_job_role_estimates = local.ind_cqc_job_role_estimates_dataset_name

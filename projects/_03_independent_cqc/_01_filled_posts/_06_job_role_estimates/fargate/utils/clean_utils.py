@@ -162,7 +162,6 @@ def filter_job_role_group_outliers(
     lf = update_filtering_rule(
         lf,
         filter_rule_col_name=IndCQC.job_role_filtering_rule,
-        raw_col_name=IndCQC.ascwds_job_role_counts,
         clean_col_name=IndCQC.ascwds_job_role_counts,
         populated_rule=JobRoleFilteringRule.populated,
         new_rule_name=new_rule,
@@ -346,7 +345,6 @@ def filter_job_role_group_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = update_filtering_rule(  # 7. Add filtering rule
         lf,
         filter_rule_col_name=IndCQC.job_role_filtering_rule,
-        raw_col_name=IndCQC.ascwds_job_role_counts,
         clean_col_name=IndCQC.ascwds_job_role_counts,
         populated_rule=JobRoleFilteringRule.populated,
         new_rule_name=JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,

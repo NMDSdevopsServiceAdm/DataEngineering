@@ -18,6 +18,7 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     first_known_relationships: str = (
         "first_known_" + NewCqcLocationApiColumns.relationships
     )
+    has_successor: str = "has_successor"
     import_date: str = "import_date"
     imputed_gac_service_types: str = (
         "imputed_" + NewCqcLocationApiColumns.gac_service_types

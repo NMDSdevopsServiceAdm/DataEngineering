@@ -20,12 +20,12 @@ PATCH_PATH = (
     "projects._03_independent_cqc._02_employment_status.fargate.utils.clean_utils"
 )
 
-PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage,
-    EmpStatus.temporary_percentage,
-    EmpStatus.bank_or_pool_percentage,
-    EmpStatus.agency_percentage,
-    EmpStatus.other_percentage,
+PCT_COLUMNS = [
+    EmpStatus.permanent_pct,
+    EmpStatus.temporary_pct,
+    EmpStatus.bank_or_pool_pct,
+    EmpStatus.agency_pct,
+    EmpStatus.other_pct,
 ]
 
 
@@ -33,9 +33,7 @@ def _schema_overrides(data: dict) -> dict:
     overrides = {
         column: pl.Int64 for column in job.CLEAN_COUNT_COLUMNS if column in data
     }
-    overrides.update(
-        {column: pl.Float32 for column in PERCENTAGE_COLUMNS if column in data}
-    )
+    overrides.update({column: pl.Float32 for column in PCT_COLUMNS if column in data})
     return overrides
 
 
@@ -85,7 +83,7 @@ class TestDeduplicateEmploymentStatusCounts:
 
 
 class TestCreateCleanCountColumns:
-    def test_copies_dedup_counts_and_sets_filtering_rule(self):
+    def test_renames_dedup_counts_to_clean_and_sets_filtering_rule(self):
         input_lf = pl.LazyFrame(
             {
                 EmpStatus.permanent_count_dedup: [3, None],
@@ -98,12 +96,7 @@ class TestCreateCleanCountColumns:
                 column: pl.Int64 for column in job.DEDUP_TO_CLEAN_COUNT_COLUMNS
             },
         )
-        expected_lf = input_lf.with_columns(
-            [
-                pl.col(dedup).alias(clean)
-                for dedup, clean in job.DEDUP_TO_CLEAN_COUNT_COLUMNS.items()
-            ]
-        ).with_columns(
+        expected_lf = input_lf.rename(job.DEDUP_TO_CLEAN_COUNT_COLUMNS).with_columns(
             pl.Series(
                 EmpStatus.filtering_rule,
                 [
@@ -130,7 +123,7 @@ class TestCreateEmploymentStatusPercentageColumns:
     ):
         input_lf = Mock()
 
-        returned_lf = job.create_employment_status_percentage_columns(input_lf)
+        returned_lf = job.create_employment_status_pct_columns(input_lf)
 
         percentage_share_horizontal_mock.assert_called_once_with(
             input_lf,
@@ -142,11 +135,11 @@ class TestCreateEmploymentStatusPercentageColumns:
                 EmpStatus.other_count_clean,
             ],
             output_columns=[
-                EmpStatus.permanent_percentage,
-                EmpStatus.temporary_percentage,
-                EmpStatus.bank_or_pool_percentage,
-                EmpStatus.agency_percentage,
-                EmpStatus.other_percentage,
+                EmpStatus.permanent_pct,
+                EmpStatus.temporary_pct,
+                EmpStatus.bank_or_pool_pct,
+                EmpStatus.agency_pct,
+                EmpStatus.other_pct,
             ],
         )
         assert returned_lf == percentage_share_horizontal_mock.return_value
@@ -186,9 +179,7 @@ class TestNullCountsForLowOrgRatio:
         test_lf = build_input_lf(case.input_data)
         expected_lf = build_expected_lf(case.expected_data)
 
-        returned_lf = job.null_counts_for_low_org_ratio(
-            job.create_clean_count_columns(test_lf)
-        )
+        returned_lf = job.null_counts_for_low_org_ratio(test_lf)
 
         pl_testing.assert_frame_equal(
             returned_lf,

@@ -22,20 +22,12 @@ COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
 ]
 
-DEDUPLICATED_COUNT_COLUMNS = [
-    EmpStatus.permanent_count_dedup,
-    EmpStatus.temporary_count_dedup,
-    EmpStatus.bank_or_pool_count_dedup,
-    EmpStatus.agency_count_dedup,
-    EmpStatus.other_count_dedup,
-]
-
-PERCENTAGE_COLUMNS = [
-    EmpStatus.permanent_percentage,
-    EmpStatus.temporary_percentage,
-    EmpStatus.bank_or_pool_percentage,
-    EmpStatus.agency_percentage,
-    EmpStatus.other_percentage,
+PCT_COLUMNS = [
+    EmpStatus.permanent_pct,
+    EmpStatus.temporary_pct,
+    EmpStatus.bank_or_pool_pct,
+    EmpStatus.agency_pct,
+    EmpStatus.other_pct,
 ]
 
 
@@ -85,13 +77,13 @@ def main(
             brief=f"Expects {expected_row_count} rows",
         )
         .col_vals_ge(
-            DEDUPLICATED_COUNT_COLUMNS,
+            CLEAN_COUNT_COLUMNS,
             0,
             na_pass=True,
-            brief="deduplicated employment status counts are greater than or equal to 0",
+            brief="clean employment status counts are greater than or equal to 0",
         )
         .col_vals_between(
-            PERCENTAGE_COLUMNS,
+            PCT_COLUMNS,
             0,
             1,
             na_pass=True,
@@ -107,10 +99,10 @@ def main(
         .col_vals_in_set(
             EmpStatus.filtering_rule,
             CatValues.filtering_rule_column_values.categorical_values,
-            brief="employment_status_filtering_rule is a known reason",
+            brief="ascwds_emp_stat_filtering_rule is a known reason",
         )
     )
-    for column in [*CLEAN_COUNT_COLUMNS, *PERCENTAGE_COLUMNS]:
+    for column in [*CLEAN_COUNT_COLUMNS, *PCT_COLUMNS]:
         validation = validation.col_vals_expr(
             expr=_matches_filtering_rule_expr(column),
             brief=f"{column} must be null when {EmpStatus.filtering_rule} isn't 'populated', and non-null when it is",

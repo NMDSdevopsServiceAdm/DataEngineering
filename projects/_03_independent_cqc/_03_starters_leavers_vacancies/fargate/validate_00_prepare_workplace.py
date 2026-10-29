@@ -93,11 +93,10 @@ def main(
             brief="Primary key (establishment_id, ascwds_workplace_import_date, "
             "published_job_role_label) should be unique",
         )
-        # numeric (raw ASCWDS counts, including the 999 "not known" sentinel
-        # nulled out downstream in _02_clean, so only non-negativity is checked here)
-        .col_vals_ge(SLVCols.starters, 0, na_pass=True)
-        .col_vals_ge(SLVCols.leavers, 0, na_pass=True)
-        .col_vals_ge(SLVCols.vacancies, 0, na_pass=True)
+        # numeric (only non-negativity is checked here)
+        .col_vals_ge(SLVCols.ascwds_starters, 0, na_pass=True)
+        .col_vals_ge(SLVCols.ascwds_leavers, 0, na_pass=True)
+        .col_vals_ge(SLVCols.ascwds_vacancies, 0, na_pass=True)
         # categorical
         .col_vals_in_set(
             IndCQC.published_job_role_label,
