@@ -343,7 +343,8 @@ def raise_error_when_assessment_df_contains_overall_data(
     the service-level `asgRatings` object instead. If `overall` is populated, the
     flattening of assessments needs refactoring.
 
-    Only a single count is collected, so the check adds no meaningful memory.
+    Collects one count: memory stays small, but it is an extra full pass over the
+    assessments.
 
     Args:
         assessment_ratings_lf (pl.LazyFrame): Output of `prepare_assessment_ratings`.
