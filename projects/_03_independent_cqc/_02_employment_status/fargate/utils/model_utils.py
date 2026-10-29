@@ -65,9 +65,9 @@ def build_modelling_dataset(
     """
     Build the dataset for modelling a share breakdown, such as employment status.
 
-    Only the needed columns are selected, as the sources are wide. Neither join duplicates
-    rows: estimates are unique per location and date. Build before filtering rows, so each
-    location's flags use all its data.
+    Only the needed columns are selected, as the sources are wide. The join doesn't duplicate
+    rows, as estimates are unique per location and date. Build before filtering rows, so each
+    location's flags use all its data. Flags use the first known and imputed share columns.
 
     Args:
         shares_lf (pl.LazyFrame): the breakdown's imputed dataset, a row per location, job role

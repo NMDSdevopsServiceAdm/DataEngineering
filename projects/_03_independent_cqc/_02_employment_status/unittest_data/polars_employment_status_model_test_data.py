@@ -21,10 +21,9 @@ from utils.column_values.categorical_column_values import (
     Specialisms,
 )
 
-KNOWN_SHARE = EmpStatus.permanent_percentage
-# Existing columns stand in for the imputed and rolling average shares.
-IMPUTED_SHARE = EmpStatus.temporary_percentage
-ROLLING_AVERAGE_SHARE = IndCQC.posts_rolling_average_model
+KNOWN_SHARE = EmpStatus.permanent_pct
+IMPUTED_SHARE = EmpStatus.permanent_pct_imputed
+ROLLING_AVERAGE_SHARE = EmpStatus.permanent_pct_rolling_avg
 
 CARE_WORKER = PublishedJobRoleLabels.care_worker
 REGISTERED_NURSE = PublishedJobRoleLabels.registered_nurse
