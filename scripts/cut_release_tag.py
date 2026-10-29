@@ -33,7 +33,7 @@ UNRELEASED_SUBSECTIONS = ("### Added", "### Changed", "### Improved", "### Fixed
 def select_run_to_tag(
     run_log_df: pl.DataFrame, run_number: int, tag_commits: dict[str, str]
 ) -> pl.DataFrame:
-    """Finds the selected run to tag, checking it is untagged.
+    """Finds the selected run to tag, checking it has no other tag.
 
     A run whose tag is already on its own commit is returned too, so a rerun after
     a partial failure can finish the steps that did not complete.

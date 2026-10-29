@@ -58,8 +58,10 @@ done
 if [[ "$DRY_RUN" == "false" ]]; then
   [[ "$BUCKET" == "$MAIN_BUCKET" ]] || fail "A real release needs RELEASE_BUCKET=$MAIN_BUCKET (this is '$BUCKET'). Use a dry run to test."
   command -v gh >/dev/null || fail "'gh' not found on PATH."
-  origin_url="$(git remote get-url origin)"
-  [[ "$origin_url" =~ github\.com[:/]$REPO(\.git)?$ ]] || fail "origin is '$origin_url', not $REPO."
+  # Both the fetch and the push URL: a pushurl or pushInsteadOf can send pushes elsewhere.
+  for origin_url in "$(git remote get-url origin)" "$(git remote get-url --push origin)"; do
+    [[ "$origin_url" =~ (^|[/@])github\.com[:/]$REPO(\.git)?$ ]] || fail "origin is '$origin_url', not $REPO."
+  done
 fi
 
 # Runs a command that changes something outside this machine's scratch folder, or
@@ -81,9 +83,9 @@ plan_value() {
 # none is left behind. Only a branch this run created is deleted.
 created_local_branch=false
 cleanup_release_tree() {
-  git worktree remove --force "$WORK_DIR/release_tree" 2>/dev/null || true
-  git worktree prune
   if [[ "$created_local_branch" == "true" ]]; then
+    git worktree remove --force "$WORK_DIR/release_tree" 2>/dev/null || true
+    git worktree prune
     git branch -D "$branch" >/dev/null 2>&1 || true
   fi
 }
@@ -137,11 +139,20 @@ make_plan() {
     *) fail "Could not list the branches of origin." ;;
   esac
 
-  # Built here so a CHANGELOG that cannot be released fails the plan, before the
-  # tag is pushed.
-  if [[ "$branch_exists" == "false" ]]; then
+  # The version heading is on main once the PR is merged: nothing is left to do.
+  git show origin/main:CHANGELOG.md >"$WORK_DIR/changelog_at_main.md"
+  already_released=false
+  if grep -qF "## [$tag]" "$WORK_DIR/changelog_at_main.md"; then
+    already_released=true
+  fi
+
+  # Built here so a CHANGELOG that cannot be released, or a local branch that is in
+  # the way, fails the plan before the tag is pushed.
+  if [[ "$branch_exists" == "false" && "$already_released" == "false" ]]; then
+    if git show-ref --verify --quiet "refs/heads/$branch"; then
+      fail "A local branch $branch already exists. Delete it with git branch -D $branch."
+    fi
     git show "$commit_sha:CHANGELOG.md" >"$WORK_DIR/changelog_at_commit.md"
-    git show origin/main:CHANGELOG.md >"$WORK_DIR/changelog_at_main.md"
     $CLI changelog --changelog_at_commit "$WORK_DIR/changelog_at_commit.md" \
       --changelog_at_main "$WORK_DIR/changelog_at_main.md" --tag "$tag" \
       --release_date "$(date +%Y-%m-%d)" --output "$WORK_DIR/CHANGELOG.new"
@@ -159,20 +170,28 @@ if [[ "$MODE" == "plan" ]]; then
   echo "Tag          : $tag"
   echo "Tag message  : $tag_message"
   echo "Run log      : s3://$BUCKET/$RUN_LOG_PREFIX/"
-  echo "CHANGELOG PR : branch $branch (already exists: $branch_exists)"
+  if [[ "$already_released" == "true" ]]; then
+    echo "CHANGELOG PR : none, $tag is already in main's CHANGELOG"
+  else
+    echo "CHANGELOG PR : branch $branch (already exists: $branch_exists)"
+  fi
   if [[ "$DRY_RUN" == "true" ]]; then
     echo "Dry run      : nothing will be changed"
   fi
   mkdir -p "$(dirname "$PLAN_FILE")"
   cp "$WORK_DIR/plan.json" "$PLAN_FILE"
+  # The plan JSON has no bucket or mode, so a dry-run plan can't approve a real cut.
+  echo "$BUCKET $DRY_RUN" >"$PLAN_FILE.mode"
   exit 0
 fi
 
 # cut: only do what plan showed.
-[[ -f "$PLAN_FILE" ]] || fail "No plan at $PLAN_FILE. Run plan first."
+[[ -f "$PLAN_FILE" && -f "$PLAN_FILE.mode" ]] || fail "No plan at $PLAN_FILE. Run plan first."
 if ! cmp -s "$PLAN_FILE" "$WORK_DIR/plan.json"; then
   fail "The plan changed since it was shown. Run plan again. Shown: $(cat "$PLAN_FILE")"
 fi
+[[ "$(cat "$PLAN_FILE.mode")" == "$BUCKET $DRY_RUN" ]] ||
+  fail "The plan was made for '$(cat "$PLAN_FILE.mode")', not '$BUCKET $DRY_RUN'. Run plan again."
 
 echo "Cutting $tag on $commit_sha"
 
@@ -192,7 +211,9 @@ fi
 
 # 2. The run log. The partition is replaced the way update_run_log.sh replaces it:
 # cp overwrites unconditionally (sync skips a same-sized file that isn't newer),
-# then sync --delete removes the old parquet file.
+# then sync --delete removes the old parquet file. The run log is read again first so
+# a change made since plan (Publication-Output marking the run reconciled) is kept.
+aws s3 sync "s3://$BUCKET/$RUN_LOG_PREFIX/" "$WORK_DIR/run_log_original/" --delete --only-show-errors
 $CLI record-tag --run_log_dir "$WORK_DIR/run_log_original" \
   --output_dir "$WORK_DIR/run_log_updated" --run_number "$RUN_NUMBER" --tag "$tag"
 partition="archive_date=$archive_date/run_number=$RUN_NUMBER"
@@ -203,21 +224,24 @@ change aws s3 sync "$WORK_DIR/run_log_updated/$partition/" \
 
 # 3. The CHANGELOG branch, built in a separate working tree so this checkout is
 # never switched or changed.
-if [[ "$branch_exists" == "true" ]]; then
+if [[ "$already_released" == "true" ]]; then
+  echo "$tag is already in main's CHANGELOG, so no branch or PR is needed."
+  echo "Done."
+  exit 0
+elif [[ "$branch_exists" == "true" ]]; then
   echo "Branch $branch already exists, so it is not pushed again."
 elif [[ "$DRY_RUN" == "true" ]]; then
   echo "DRY RUN: commit $WORK_DIR/CHANGELOG.new as CHANGELOG.md on $branch from origin/main and git push origin $branch"
 else
   release_tree="$WORK_DIR/release_tree"
   git worktree prune
-  if git show-ref --verify --quiet "refs/heads/$branch"; then
-    fail "A local branch $branch already exists. Delete it with git branch -D $branch."
-  fi
   git worktree add --no-track -b "$branch" "$release_tree" origin/main
   created_local_branch=true
   cp "$WORK_DIR/CHANGELOG.new" "$release_tree/CHANGELOG.md"
   git -C "$release_tree" add CHANGELOG.md
-  git -C "$release_tree" commit -m "Release $tag - move released CHANGELOG entries under the version"
+  # --no-verify: a generated file must not fail the repo's pre-commit hooks after the
+  # tag is pushed; the PR's checks cover it.
+  git -C "$release_tree" commit --no-verify -m "Release $tag - move released CHANGELOG entries under the version"
   git -C "$release_tree" push origin "$branch"
 fi
 
