@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- The assessment job fills the assessment workbook and saves it to S3.
+- Added the mapping of assessment data to the Comp prev publication and comparison sheets of the assessment workbook.
+- Added the mapping of assessment data to the Filled posts sheet of the assessment workbook.
+- Added a writer that fills the assessment workbook template and fails if the template or written cells do not match the cell map.
 - Added cumulative percentage change columns for the filtered filled posts of each comparison term to the assessment data.
 - Added estimated starters, leavers and vacancies counts, with source columns, to the Starters, Leavers and Vacancies Pipeline estimate step in place of estimated rates. The merge step now also carries the employment status estimate source column.
 - Added estimated starter, turnover and vacancy rates with source columns to the Starters, Leavers and Vacancies Pipeline.
@@ -28,6 +32,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Changed the assessment template to fixed "Cumulative % change" table headings, no longer written per run.
 - Removed the unused GitHub merge queue CircleCI workflow and `gh-readonly-queue` branch exclusions.
 - Renamed employment status and SLV columns to one naming scheme (`ascwds_`/`estimated_` prefix, `emp_stat_`, `pct`, ordered stage suffixes), so output column names change.
 - Changed the run log update script to default to the `run-log-updater` role for the main bucket.
@@ -58,11 +63,13 @@ All notable changes to this project will be documented in this file.
 - Changed the merge-when-ready GitHub Action to run from `main` rather than the labelled PR's copy of the script and workflow.
 
 ### Improved
+- Removed two Polars warnings from the filtering rule update and the ASC-WDS workplace duplicate cleaning.
 - Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
 - Removed redundant starters, leavers and vacancies bounding from the ASC-WDS workplace cleaning job.
 
 
 ### Fixed
+- Fixed run promotion leaving an empty write-check test object in the long-term archive bucket on every run.
 - Fixed SLV deduplication keeping repeated values at workplaces where a job role stays blank.
 
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
