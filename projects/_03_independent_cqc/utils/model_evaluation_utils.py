@@ -387,9 +387,9 @@ def score_shares(
             Defaults to scoring all rows together.
 
     Returns:
-        pl.LazyFrame: a row per group with "number_of_rows", "mean_absolute_error_pp",
-            "brier_score" (summed squared error), "top_1_accuracy" (known top share is
-            predicted top), "mae_skill_score" and "brier_skill_score"
+        pl.LazyFrame: a row per group with "number_of_rows", "mae_pp" (mean absolute error in
+            percentage points), "brier_score" (summed squared error), "top_1_accuracy" (known
+            top share is predicted top), "mae_skill_score" and "brier_skill_score"
     """
     by_columns = by_columns or []
 
@@ -403,7 +403,7 @@ def score_shares(
     row_scores_lf = scored_lf.select(
         *by_columns,
         calculate_mean_absolute_error(predicted, known_columns).alias(
-            ModelEvaluation.mean_absolute_error_pp
+            ModelEvaluation.mae_pp
         ),
         calculate_summed_squared_error(predicted, known_columns).alias(
             ModelEvaluation.brier_score
@@ -415,21 +415,21 @@ def score_shares(
         .cast(pl.Float64)
         .alias(ModelEvaluation.top_1_accuracy),
         calculate_mean_absolute_error(baseline, known_columns).alias(
-            ModelEvaluation.baseline_mean_absolute_error
+            ModelEvaluation.baseline_mae
         ),
         calculate_summed_squared_error(baseline, known_columns).alias(
             ModelEvaluation.baseline_brier_score
         ),
     )
 
-    mae = pl.col(ModelEvaluation.mean_absolute_error_pp).mean()
+    mae = pl.col(ModelEvaluation.mae_pp).mean()
     brier = pl.col(ModelEvaluation.brier_score).mean()
     scores = [
         pl.len().alias(ModelEvaluation.number_of_rows),
-        (mae * 100).alias(ModelEvaluation.mean_absolute_error_pp),
+        (mae * 100).alias(ModelEvaluation.mae_pp),
         brier,
         pl.col(ModelEvaluation.top_1_accuracy).mean(),
-        (1 - mae / pl.col(ModelEvaluation.baseline_mean_absolute_error).mean()).alias(
+        (1 - mae / pl.col(ModelEvaluation.baseline_mae).mean()).alias(
             ModelEvaluation.mae_skill_score
         ),
         (1 - brier / pl.col(ModelEvaluation.baseline_brier_score).mean()).alias(

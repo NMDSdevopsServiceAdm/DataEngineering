@@ -394,9 +394,7 @@ class TestScoreShares:
     def test_score_shares_mae_is_mean_absolute_difference_across_share_columns(self):
         scores_df = run_score_shares(share_lf(self.PREDICTED, self.KNOWN))
 
-        assert scores_df[ModelEvaluation.mean_absolute_error_pp].to_list() == (
-            pytest.approx([15.0])
-        )
+        assert scores_df[ModelEvaluation.mae_pp].to_list() == (pytest.approx([15.0]))
 
     def test_score_shares_brier_is_summed_squared_error(self):
         scores_df = run_score_shares(share_lf(self.PREDICTED, self.KNOWN))
@@ -468,16 +466,14 @@ class TestScoreShares:
         scores_df = run_score_shares(lf)
 
         assert scores_df[ModelEvaluation.number_of_rows].to_list() == [2]
-        assert scores_df[ModelEvaluation.mean_absolute_error_pp].to_list() == (
-            pytest.approx([15.0])
-        )
+        assert scores_df[ModelEvaluation.mae_pp].to_list() == (pytest.approx([15.0]))
 
     def test_score_shares_scores_each_group_separately(self):
         lf = share_lf(self.PREDICTED, self.KNOWN, group=["x", "y"])
 
         scores_df = run_score_shares(lf, by_columns=["group"]).sort("group")
 
-        assert scores_df[ModelEvaluation.mean_absolute_error_pp].to_list() == (
+        assert scores_df[ModelEvaluation.mae_pp].to_list() == (
             pytest.approx([10.0, 20.0])
         )
 
