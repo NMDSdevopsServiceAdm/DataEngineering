@@ -475,6 +475,9 @@ def _table_cells(
 ) -> dict[str, object]:
     """Cells for one table: period dates, service type values and % changes.
 
+    Percent ranges are rounded to one decimal place of a percentage and all other
+    value ranges to whole numbers.
+
     Args:
         sheet (cell_map.SheetMap): the sheet the table is on.
         period_df (pl.DataFrame): the table's periods, in workbook order.
@@ -508,11 +511,17 @@ def _table_cells(
     for key in value_keys:
         input_range = _input_range(sheet, key)
         cell_range = CellRange(input_range.cells)
+        round_values = (
+            publication_utils.percentage_as_rounded_fraction
+            if input_range.number_format == "percent"
+            else publication_utils.round_to_whole_number
+        )
+        value_columns = [
+            f"{input_range.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
+            for service_type in service_types
+        ]
         rows = period_df.select(
-            [
-                f"{input_range.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
-                for service_type in service_types
-            ]
+            round_values(column).alias(column) for column in value_columns
         ).rows()
         # A % change range can start below the first date row.
         rows = rows[cell_range.min_row - dates_range.min_row :]

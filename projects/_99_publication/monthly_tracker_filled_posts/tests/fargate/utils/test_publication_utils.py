@@ -780,6 +780,43 @@ class TestRoundPercentage:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestPercentageAsRoundedFraction:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.percentage_as_rounded_fraction_test_cases
+        ],
+    )
+    def test_function_rounds_a_fraction_to_one_decimal_place_of_a_percentage(
+        self, case
+    ):
+        schema = pl.Schema([("fraction", pl.Float64()), ("rounded", pl.Float64())])
+        expected_lf = pl.LazyFrame(case.expected_data, schema, orient="row")
+
+        returned_lf = expected_lf.select("fraction").with_columns(
+            job.percentage_as_rounded_fraction("fraction").alias("rounded")
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestRoundToWholeNumber:
+    @pytest.mark.parametrize(
+        "case",
+        [case.as_pytest_param() for case in Data.round_to_whole_number_test_cases],
+    )
+    def test_function_rounds_to_a_whole_number(self, case):
+        schema = pl.Schema([("value", pl.Float64()), ("rounded", pl.Int64())])
+        expected_lf = pl.LazyFrame(case.expected_data, schema, orient="row")
+
+        returned_lf = expected_lf.select("value").with_columns(
+            job.round_to_whole_number("value").alias("rounded")
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestImportDateToPeriodMonth:
     @pytest.mark.parametrize(
         "import_date, expected",
