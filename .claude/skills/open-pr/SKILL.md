@@ -1,6 +1,6 @@
 ---
 name: open-pr
-description: Use when a ticket's work is ready for review — "/open-pr", "open a PR", "raise the PR". Run once, at the end of a ticket. Pairs with `new-ticket` and `commit-push`.
+description: Use when a ticket's work is ready for review — "/open-pr", "open a PR", "raise the PR". Run once, at the end of a ticket. Pairs with `commit-push`.
 ---
 
 # Opening a PR
