@@ -304,7 +304,7 @@ def _parse_arguments(argv: Optional[Sequence[str]]) -> argparse.Namespace:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    """Runs one of the commands the release workflow uses.
+    """Runs one of the commands `cut_release_tag.sh` uses.
 
     Args:
         argv (Optional[Sequence[str]]): Command line arguments; defaults to `sys.argv`.
