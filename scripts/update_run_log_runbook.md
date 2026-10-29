@@ -125,8 +125,7 @@ Rules:
 ### Use case
 Copy a run's estimates and metadata partitions into the long-term archive bucket
 (`sfc-<workspace>-archive-promoted`), where they are kept indefinitely — the rolling archive in
-`sfc-<workspace>-datasets` expires runs that were never promoted after about 2 months. The run log is
-not copied: the one in `sfc-<workspace>-datasets` is the only record of a run's flags. This runs
+`sfc-<workspace>-datasets` expires runs that were never promoted after about 2 months. This runs
 **automatically** as part of selecting a run for publication (see "Selecting a run for
 publication" above, step 8). `promoted` is not one of the flags `update_run_log.sh` lets you choose
 directly — recover a failed attempt with the commands below instead, not by re-running the script.
