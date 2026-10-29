@@ -5,8 +5,9 @@
 # update_run_log.py, shows the changed rows, and after you confirm replaces only
 # the changed runs' partitions on S3; declining deletes the updated copy and
 # uploads nothing. Selecting a run for publication can change two runs, and
-# automatically copies it into the long-term archive bucket, then offers to start
-# the bucket's Publication-Output state machine for it.
+# automatically copies it into the long-term archive bucket, offers to start the
+# bucket's Publication-Output state machine for it, then offers to cut the release
+# tag for it (cut_release_tag.sh; a dry run for any bucket but production).
 #
 # Prerequisites: see update_run_log_runbook.md (aws-mfa login, uv sync).
 set -euo pipefail
@@ -101,6 +102,34 @@ start_publication_output() {
     return 1
   fi
   echo "Started. The line above is the execution ARN."
+}
+
+# Shows the release tag cut_release_tag.sh would cut for the selected run, and after
+# you confirm cuts it. Any bucket but the production one only dry-runs.
+# Returns 0 if it was cut or you declined, 1 if it could not be.
+cut_release_tag() {
+  local dry_run=true question="Dry run the release tag now?"
+  if [[ "$bucket" == "$MAIN_BUCKET" ]]; then
+    dry_run=false
+    question="Cut the release tag now?"
+  fi
+  local release_env=(RELEASE_RUN_NUMBER="$run_number" RELEASE_BUCKET="$bucket"
+    RELEASE_DRY_RUN="$dry_run" AWS_PROFILE="$profile")
+
+  echo
+  if ! env "${release_env[@]}" bash scripts/cut_release_tag.sh plan; then
+    echo "Error: could not work out the release tag with profile '$profile'." >&2
+    return 1
+  fi
+  echo
+  if ! confirm "$question"; then
+    echo "Not cut. Cut it by hand with: ${release_env[*]} bash scripts/cut_release_tag.sh plan, then cut."
+    return 0
+  fi
+  if ! env "${release_env[@]}" bash scripts/cut_release_tag.sh cut; then
+    echo "Error: the release tag was not fully cut. It is safe to run it again." >&2
+    return 1
+  fi
 }
 
 # Prints how many objects are under an S3 prefix. aws s3 ls exits 1 when nothing
@@ -203,7 +232,7 @@ copy_run_to_long_term_archive() {
   echo "Promoted run $run_number (archived $archive_date) to s3://$destination_bucket/."
 }
 
-for command_name in aws uv; do
+for command_name in aws git uv; do
   if ! command -v "$command_name" > /dev/null; then
     echo "Error: '$command_name' not found on PATH." >&2
     exit 1
@@ -332,8 +361,15 @@ if [[ "$flag" == "$SELECTION_FLAG" ]]; then
     exit 1
   fi
 
+  # The tag does not depend on Publication-Output, so both are always attempted.
+  steps_failed=false
   if ! start_publication_output; then
     echo "The selection is saved. Start Publication-Output by hand with {\"run_number\": $run_number}." >&2
-    exit 1
+    steps_failed=true
   fi
+  if ! cut_release_tag; then
+    echo "The selection is saved. Cut the release tag by hand: see \"Cutting the release tag\" in update_run_log_runbook.md." >&2
+    steps_failed=true
+  fi
+  [[ "$steps_failed" == "false" ]] || exit 1
 fi
