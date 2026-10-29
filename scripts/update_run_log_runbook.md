@@ -132,12 +132,9 @@ directly — recover a failed attempt with the commands below instead, not by re
 
 ### Steps (automatic, via selection)
 No separate steps — this runs as part of "Selecting a run for publication" above. It:
-1. Checks the profile can write to `sfc-<workspace>-archive-promoted` (a write-check test object,
-   `.promotion-write-check-<number>`, is written then deleted; if the delete is refused the script
-   warns and carries on).
-2. Marks the run `promoted` in the run log and uploads that change, the same way every other flag
+1. Marks the run `promoted` in the run log and uploads that change, the same way every other flag
    is uploaded.
-3. Copies the run's estimates partition into the long-term bucket, then its metadata partition,
+2. Copies the run's estimates partition into the long-term bucket, then its metadata partition,
    then its (now `promoted: True`) run-log partition, printing a count of files copied for each.
 
 ### Expected result
@@ -148,16 +145,6 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
   timestamp.
 
 ### If something is wrong
-- **`cannot write to s3://<workspace>-archive-promoted/`**: nothing was changed or copied. Check
-  the profile has write permission to that bucket and that the bucket name/workspace is right.
-- **`Warning: could not delete the write-check test object s3://<workspace>-archive-promoted/...`**:
-  the promotion carries on and is not affected. The empty test object stays in the long-term bucket
-  because only the Admin role can delete there. Delete it by hand with an Admin-role profile, using the
-  key from the warning:
-
-  ```bash
-  aws s3 rm "s3://<workspace>-archive-promoted/.promotion-write-check-<number>" --profile <admin-profile>
-  ```
 - **`could not mark run <n> as promoted`**: the flag update itself failed, so nothing was copied —
   the run log does **not** yet show `promoted: True`. If the message says the run is "already
   promoted", there's nothing to do (a previous attempt already finished — check the long-term bucket
@@ -175,7 +162,8 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
   dataset that failed — run it, then re-check the file count matches between source and destination
   (see "Not sure whether a promotion fully finished" below). Then do the same for the datasets after
   it: the script stops at the first failure, so the estimates, metadata and run log are copied in that
-  order and every later one still needs copying.
+  order and every later one still needs copying. If the first copy fails, check the profile can write
+  to the long-term bucket.
 - **`nothing found at s3://<bucket>/<prefix>/<partition>/`** or **`could not list s3://<bucket>/...`**:
   also after the flag update. The source partition has no files or could not be read, so check the
   run's partition in `<bucket>` exists before copying anything.
@@ -195,8 +183,8 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
   The numbers in each pair (bucket, then long-term bucket) should be the same, and the run log's should be 1.
 
 ### Recovering a promotion that failed before the flag was set
-If the run log does **not** yet show `promoted: True` for this run (the write-probe or the flag
-update itself failed), there is no automatic retry — run these by hand, in order, from the repo
+If the run log does **not** yet show `promoted: True` for this run (the flag update or its
+upload failed), there is no automatic retry — run these by hand, in order, from the repo
 root in Git Bash. Replace `<profile>`, `<bucket>` (the `sfc-<workspace>-datasets` bucket the run was
 selected on), `<n>` and `<partition>` (`archive_date=<date>/run_number=<n>`, from the run's row in
 the listing):

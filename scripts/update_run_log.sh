@@ -123,7 +123,7 @@ count_objects() {
 # after a successful selection; never prompts. Returns 0 on success, 1 on any
 # failure; a failure before the copy loop copies nothing.
 copy_run_to_long_term_archive() {
-  local destination_bucket preflight_key partition archive_date prefix
+  local destination_bucket partition archive_date prefix
   local source_count destination_count partitions
 
   # Dataset buckets are sfc-<workspace>-datasets; the long-term bucket is sfc-<workspace>-archive-promoted.
@@ -132,20 +132,6 @@ copy_run_to_long_term_archive() {
     return 1
   fi
   destination_bucket="sfc-${BASH_REMATCH[1]}-archive-promoted"
-
-  # A real write probe, not just a read/list check: proves write access before
-  # touching any real data, so a permissions problem is caught immediately.
-  # No --body: omitting it creates a zero-byte object, and avoids Git Bash on
-  # Windows failing to resolve /dev/null as a readable file for this argument.
-  preflight_key=".promotion-write-check-$$"
-  if ! aws s3api put-object --bucket "$destination_bucket" --key "$preflight_key" \
-    --profile "$profile" > /dev/null 2>&1; then
-    echo "Error: cannot write to s3://$destination_bucket/. Check profile '$profile' has permission, and that the bucket exists." >&2
-    return 1
-  fi
-  if ! aws s3api delete-object --bucket "$destination_bucket" --key "$preflight_key" --profile "$profile" > /dev/null 2>&1; then
-    echo "Warning: could not delete the write-check test object s3://$destination_bucket/$preflight_key. Continuing; assume the Admin role and delete it by hand later." >&2
-  fi
 
   # --- Mark the run promoted (same mechanic as every other flag) ---
   if ! uv run python -m scripts.update_run_log \
@@ -196,7 +182,7 @@ copy_run_to_long_term_archive() {
 
     if ! aws s3 cp "s3://$bucket/$prefix/$partition/" "s3://$destination_bucket/$prefix/$partition/" \
       --recursive --only-show-errors --profile "$profile"; then
-      echo "Error: could not copy $prefix/$partition to s3://$destination_bucket/. Retry by hand:" >&2
+      echo "Error: could not copy $prefix/$partition to s3://$destination_bucket/. Check profile '$profile' can write there. Retry by hand:" >&2
       echo "  aws s3 cp \"s3://$bucket/$prefix/$partition/\" \"s3://$destination_bucket/$prefix/$partition/\" --recursive --profile $profile" >&2
       return 1
     fi
