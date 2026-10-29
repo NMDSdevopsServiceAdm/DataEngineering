@@ -34,9 +34,9 @@ def is_run_promoted(promoted_metadata_source: str, run_number: int) -> bool:
     """
     Checks whether a run's promotion to the long-term archive has finished.
 
-    Promotion copies the metadata last, and it is a single file, so its partition
-    marks a complete copy (the estimates partition appears as soon as its first
-    file is copied). Lists partitions without reading data, so it is cheap to poll.
+    Metadata is copied last and is a single file, so its partition marks a
+    complete copy (estimates appear at their first file). Lists partitions without
+    reading data, so it is cheap to poll.
 
     Args:
         promoted_metadata_source (str): S3 directory of the long-term archive's
