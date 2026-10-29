@@ -254,3 +254,31 @@ class TestPrepareAssessmentRatings:
             expected_rows, schema=Schemas.assessment_ratings_output_schema, orient="row"
         ).collect()
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+
+class TestRaiseErrorWhenAssessmentDfContainsOverallData:
+    @staticmethod
+    def _to_lf(rows):
+        return pl.LazyFrame(
+            rows, schema=Schemas.assessment_ratings_output_schema, orient="row"
+        )
+
+    def test_raises_when_overall_rating_is_populated(self):
+        input_lf = self._to_lf(Data.raise_error_overall_populated_rows)
+
+        with pytest.raises(ValueError, match="contains 1 values"):
+            job.raise_error_when_assessment_df_contains_overall_data(input_lf)
+
+    @pytest.mark.parametrize(
+        "rows",
+        [
+            pytest.param(Data.raise_error_overall_empty_rows, id="null_overall_rating"),
+            pytest.param(Data.raise_error_asg_only_rows, id="rating_only_in_asg"),
+        ],
+    )
+    def test_does_not_raise_when_overall_has_no_rating(self, rows):
+        input_lf = self._to_lf(rows)
+
+        result = job.raise_error_when_assessment_df_contains_overall_data(input_lf)
+
+        assert result is None

@@ -424,6 +424,7 @@ class FlattenCQCRatings:
             (RawKeys.import_date, pl.String),
             (CQCL.current_ratings, current_ratings_struct),
             (CQCL.historic_ratings, historic_ratings_struct),
+            (CQCL.assessment, assessment_struct),
         ]
     )
 

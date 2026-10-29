@@ -330,3 +330,38 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             for name in ASSESSMENT_KEY_QUESTIONS
         )
     )
+
+
+def raise_error_when_assessment_df_contains_overall_data(
+    assessment_ratings_lf: pl.LazyFrame,
+) -> None:
+    """
+    Raises an error if any assessment overall rating is populated.
+
+    CQC publish an `overall` object within `assessment`, but it isn't populated for
+    social care locations (checked 15/09/2025). Social care overall ratings come from
+    the service-level `asgRatings` object instead. If `overall` is populated, the
+    flattening of assessments needs refactoring.
+
+    Only a single count is collected, so the check adds no meaningful memory.
+
+    Args:
+        assessment_ratings_lf (pl.LazyFrame): Output of `prepare_assessment_ratings`.
+
+    Raises:
+        ValueError: If any `overall` row has a rating.
+    """
+    populated_overall_count = (
+        assessment_ratings_lf.filter(
+            (pl.col(CQCL.source_path) == OVERALL_SOURCE_PATH)
+            & pl.col(CQCL.rating).is_not_null()
+        )
+        .select(pl.len())
+        .collect()
+        .item()
+    )
+
+    if populated_overall_count > 0:
+        raise ValueError(
+            f"The overall object within the assessments column contains {populated_overall_count} values for social care locations."
+        )

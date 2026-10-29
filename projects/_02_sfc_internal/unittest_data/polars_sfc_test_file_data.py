@@ -859,6 +859,70 @@ class FlattenCQCRatings:
         ),
     ]
 
+    raise_error_overall_populated_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Current",
+            "Good",
+            "assessment.ratings.overall",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+    raise_error_overall_empty_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Current",
+            None,
+            "assessment.ratings.overall",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+    raise_error_asg_only_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Current",
+            "Good",
+            "assessment.ratings.asg_ratings",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+
     prepare_assessment_ratings_unknown_key_question_rows = [
         (
             "1-001",
@@ -890,9 +954,9 @@ class FlattenCQCRatings:
     ]
 
     main_delta_rows = [
-        ("1-001", "20240101", _current_ratings("1-001", _all_key_questions)[2], [_historic_entry("2023-01-01", _all_key_questions)]),
-        ("1-001", "20230101", _current_ratings("1-001", _short_key_questions)[2], []),  # older import - excluded
-        ("1-002", "20240101", _current_ratings("1-002", _all_key_questions)[2], []),
+        ("1-001", "20240101", _current_ratings("1-001", _all_key_questions)[2], [_historic_entry("2023-01-01", _all_key_questions)], [_asg_entry("2024-01-01 00:00:00", "AP1", [_asg_kq("Safe")])]),
+        ("1-001", "20230101", _current_ratings("1-001", _short_key_questions)[2], [], []),  # older import - excluded
+        ("1-002", "20240101", _current_ratings("1-002", _all_key_questions)[2], [], []),
     ]
 
     main_ascwds_workplace_rows = [
