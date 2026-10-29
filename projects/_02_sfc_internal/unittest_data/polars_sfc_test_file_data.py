@@ -782,8 +782,8 @@ class FlattenCQCRatings:
         ),
     ]
 
-    # 1-002 has null (not empty) keyQuestionRatings and must be dropped. 1-001 is
-    # included as a pivot over zero rows would lack the key question columns.
+    # 1-002 has null (not empty) keyQuestionRatings and must be dropped. 1-001 keeps
+    # the output non-empty.
     prepare_assessment_ratings_null_key_question_ratings_rows = [
         *prepare_assessment_ratings_rows,
         (
@@ -809,6 +809,55 @@ class FlattenCQCRatings:
     expected_prepare_assessment_ratings_null_key_question_ratings_rows = (
         expected_prepare_assessment_ratings_rows
     )
+
+    prepare_assessment_ratings_overall_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                {
+                    "assessmentPlanPublishedDateTime": "2024-01-01 00:00:00",
+                    "ratings": {
+                        "overall": [
+                            {
+                                "rating": "Good",
+                                "status": "Assessed",
+                                "keyQuestionRatings": [
+                                    _asg_kq("Safe"),
+                                    _asg_kq("Well-led"),
+                                    _asg_kq("Caring"),
+                                    _asg_kq("Responsive"),
+                                    _asg_kq("Effective"),
+                                ],
+                            }
+                        ],
+                        "asgRatings": [],
+                    },
+                }
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_overall_rows = [
+        (
+            "1-001",
+            "Registered",
+            "2024-01-01 00:00:00",
+            None,
+            None,
+            None,
+            None,
+            "SAF",
+            None,
+            "Assessed",
+            "Good",
+            "assessment.ratings.overall",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
 
     prepare_assessment_ratings_unknown_key_question_rows = [
         (

@@ -24,7 +24,7 @@ KEY_QUESTION_ALIASES = {
     CQCL.effective: CQCRatings.effective_rating,
 }
 
-# Raw array position, so the first entry per key question wins deterministically.
+# Row position after exploding, so the first entry per key question wins deterministically.
 EXPLODE_ORDER = "explode_order_index"
 
 ASSESSMENT_KEY_QUESTIONS = [
@@ -296,8 +296,8 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     Flattens overall and ASG assessment ratings to one row per assessment plan.
 
     The feed doesn't guarantee one entry per key question, so the first in raw array
-    order (`EXPLODE_ORDER`) is kept. A conditional `group_by` replaces a pivot to keep
-    the whole function lazy. Only the five key questions are kept.
+    order (`EXPLODE_ORDER`) is kept. Ratings are aggregated per key question column,
+    not pivoted, so the plan stays lazy. Only the five key questions are kept.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.

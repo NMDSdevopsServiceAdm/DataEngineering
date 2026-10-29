@@ -226,6 +226,11 @@ prepare_assessment_ratings_cases = [
         expected_rows=Data.expected_prepare_assessment_ratings_null_key_question_ratings_rows,
     ),
     PrepareAssessmentRatingsCase(
+        id="overall_ratings_have_null_asg_only_columns",
+        rows=Data.prepare_assessment_ratings_overall_rows,
+        expected_rows=Data.expected_prepare_assessment_ratings_overall_rows,
+    ),
+    PrepareAssessmentRatingsCase(
         id="unknown_key_question_is_ignored",
         rows=Data.prepare_assessment_ratings_unknown_key_question_rows,
         expected_rows=Data.expected_prepare_assessment_ratings_unknown_key_question_rows,
