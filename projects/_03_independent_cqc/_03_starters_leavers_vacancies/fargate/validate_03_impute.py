@@ -1,15 +1,31 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.ind_cqc_pipeline_columns import (
+    StartersLeaversVacanciesColumns as SLVCols,
+)
 
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
 ]
+
+# Only what the checks need: the whole impute output is wide.
+SOURCE_COLS_TO_IMPORT = [
+    IndCqcColumns.location_id,
+    IndCqcColumns.published_job_role_label,
+    SLVCols.ascwds_turnover_rate,
+    SLVCols.ascwds_turnover_rate_imputed,
+]
+
+KNOWN_RATE_KEPT_BRIEF = "imputed turnover rate equals the known rate where known"
+IMPUTED_NOT_NEGATIVE_BRIEF = "imputed turnover rate is not negative"
+IMPUTED_POPULATED_BRIEF = "imputed turnover rate is populated for every location and job role with a known rate"
 
 
 def main(
@@ -26,7 +42,10 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
-    source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        selected_columns=SOURCE_COLS_TO_IMPORT,
+    )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,
@@ -45,7 +64,30 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        ).interrogate()
+        )
+        # imputed turnover rate
+        .col_vals_ge(
+            SLVCols.ascwds_turnover_rate_imputed,
+            0,
+            na_pass=True,
+            brief=IMPUTED_NOT_NEGATIVE_BRIEF,
+        )
+        .col_vals_expr(
+            pl.col(SLVCols.ascwds_turnover_rate).is_null()
+            | pl.col(SLVCols.ascwds_turnover_rate).eq_missing(
+                pl.col(SLVCols.ascwds_turnover_rate_imputed)
+            ),
+            brief=KNOWN_RATE_KEPT_BRIEF,
+        )
+        .col_vals_expr(
+            pl.col(SLVCols.ascwds_turnover_rate_imputed).is_not_null()
+            | ~pl.col(SLVCols.ascwds_turnover_rate)
+            .is_not_null()
+            .any()
+            .over(IndCqcColumns.location_id, IndCqcColumns.published_job_role_label),
+            brief=IMPUTED_POPULATED_BRIEF,
+        )
+        .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 

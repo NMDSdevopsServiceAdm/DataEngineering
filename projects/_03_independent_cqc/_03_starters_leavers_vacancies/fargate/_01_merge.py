@@ -10,6 +10,10 @@ employment_status_estimate_columns = [
     IndCQC.establishment_id,
     IndCQC.ascwds_workplace_import_date,
     IndCQC.published_job_role_label,
+    IndCQC.primary_service_type,
+    IndCQC.current_region,
+    IndCQC.current_cssr,
+    IndCQC.estimate_filled_posts_by_job_role,
     EmpStatus.estimated_pct_source,
     EmpStatus.estimated_employees,
 ]

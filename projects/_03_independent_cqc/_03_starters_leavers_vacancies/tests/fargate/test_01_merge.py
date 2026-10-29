@@ -8,6 +8,15 @@ PATCH_PATH = (
 )
 
 
+def test_merge_adds_service_region_and_size_band_columns():
+    assert {
+        IndCQC.primary_service_type,
+        IndCQC.current_region,
+        IndCQC.current_cssr,
+        IndCQC.estimate_filled_posts_by_job_role,
+    }.issubset(job.employment_status_estimate_columns)
+
+
 class TestMain:
     EMPLOYMENT_STATUS_ESTIMATE_SOURCE = "some/source"
     PREPARED_SLV_DATASET_SOURCE = "other/source"

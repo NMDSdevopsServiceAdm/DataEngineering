@@ -413,6 +413,38 @@ class EmploymentStatusImputeTempColumns:
 
 
 @dataclass
+class TrendlineFillTempColumns:
+    """
+    The names of the temporary columns used while filling gaps with a trendline.
+
+    The `_prefix` fields are joined to each filled column's name, since first/last known
+    values are needed once per column.
+    """
+
+    first_known_date: str = "trendline_first_known_date"
+    last_known_date: str = "trendline_last_known_date"
+    previous_known_date: str = "trendline_previous_known_date"
+    next_known_date: str = "trendline_next_known_date"
+    first_known_value_prefix: str = "trendline_first_known_value_"
+    last_known_value_prefix: str = "trendline_last_known_value_"
+
+
+@dataclass
+class SlvImputeTempColumns:
+    """
+    The names of the temporary columns used while imputing SLV rates.
+
+    The `_prefix` fields are joined to the group level, since each level adds its own columns.
+    """
+
+    weighted_rate_total: str = "slv_impute_weighted_rate_total"
+    employee_total: str = "slv_impute_employee_total"
+    contributors: str = "slv_impute_contributors"
+    rolling_avg_level_prefix: str = "slv_impute_rolling_avg_level_"
+    contributors_level_prefix: str = "slv_impute_contributors_level_"
+
+
+@dataclass
 class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
@@ -586,6 +618,14 @@ class StartersLeaversVacanciesColumns:
     ascwds_turnover_rate: str = "ascwds_turnover_rate"
     ascwds_starter_rate: str = "ascwds_starter_rate"
     ascwds_vacancy_rate: str = "ascwds_vacancy_rate"
+
+    ascwds_turnover_rate_imputed_trendline: str = (
+        ascwds_turnover_rate + "_imputed_trendline"
+    )
+
+    ascwds_turnover_rate_rolling_avg: str = ascwds_turnover_rate + "_rolling_avg"
+
+    ascwds_turnover_rate_imputed: str = ascwds_turnover_rate + "_imputed"
 
     estimated_starters: str = "estimated_starters"
     estimated_leavers: str = "estimated_leavers"
