@@ -37,6 +37,7 @@ All notable changes to this project will be documented in this file.
 - Renamed employment status and SLV columns to one naming scheme (`ascwds_`/`estimated_` prefix, `emp_stat_`, `pct`, ordered stage suffixes), so output column names change.
 - Changed the run log update script to default to the `run-log-updater` role for the main bucket.
 - Changed the DPR dataset version to be set once in a Terraform variable instead of hardcoded in the DPR step functions.
+- Stopped copying the archive run log into the long-term archive bucket; Publication-Output now waits for the run's metadata there instead.
 - Renamed the SLV step function to Ind-CQC-EmpStat-SLV and reordered it so worker and workplace data are prepared in separate branches, workplace data is validated, and the SLV counts steps are no longer run.
 - Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
