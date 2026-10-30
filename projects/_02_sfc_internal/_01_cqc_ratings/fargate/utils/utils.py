@@ -332,7 +332,7 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def raise_error_when_assessment_df_contains_overall_data(
+def raise_error_when_assessment_lf_contains_overall_data(
     assessment_ratings_lf: pl.LazyFrame,
 ) -> None:
     """

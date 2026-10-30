@@ -11,6 +11,9 @@ from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import (
     FlattenCQCRatings as Schemas,
 )
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 
 
 class TestKeepLatestPerKey:
@@ -256,29 +259,29 @@ class TestPrepareAssessmentRatings:
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
 
 
-class TestRaiseErrorWhenAssessmentDfContainsOverallData:
-    @staticmethod
-    def _to_lf(rows):
-        return pl.LazyFrame(
-            rows, schema=Schemas.assessment_ratings_output_schema, orient="row"
+class TestRaiseErrorWhenAssessmentLfContainsOverallData:
+    def test_raises_when_overall_rating_is_populated(self):
+        input_lf = pl.LazyFrame(
+            {
+                CQCL.source_path: [job.OVERALL_SOURCE_PATH],
+                CQCL.rating: ["Good"],
+            }
         )
 
-    def test_raises_when_overall_rating_is_populated(self):
-        input_lf = self._to_lf(Data.raise_error_overall_populated_rows)
-
         with pytest.raises(ValueError, match="contains 1 values"):
-            job.raise_error_when_assessment_df_contains_overall_data(input_lf)
+            job.raise_error_when_assessment_lf_contains_overall_data(input_lf)
 
     @pytest.mark.parametrize(
-        "rows",
+        "source_path,rating",
         [
-            pytest.param(Data.raise_error_overall_empty_rows, id="null_overall_rating"),
-            pytest.param(Data.raise_error_asg_only_rows, id="rating_only_in_asg"),
+            pytest.param(job.OVERALL_SOURCE_PATH, None, id="null_overall_rating"),
+            pytest.param(job.ASG_SOURCE_PATH, "Good", id="rating_only_in_asg"),
         ],
     )
-    def test_does_not_raise_when_overall_has_no_rating(self, rows):
-        input_lf = self._to_lf(rows)
+    def test_does_not_raise_when_overall_has_no_rating(self, source_path, rating):
+        input_lf = pl.LazyFrame(
+            {CQCL.source_path: [source_path], CQCL.rating: [rating]},
+            schema={CQCL.source_path: pl.String, CQCL.rating: pl.String},
+        )
 
-        result = job.raise_error_when_assessment_df_contains_overall_data(input_lf)
-
-        assert result is None
+        job.raise_error_when_assessment_lf_contains_overall_data(input_lf)
