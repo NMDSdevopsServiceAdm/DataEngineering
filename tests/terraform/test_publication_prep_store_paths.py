@@ -8,7 +8,10 @@ STEP_FUNCTIONS_DIR = (
     Path(__file__).parents[2] / "terraform" / "pipeline" / "step-functions" / "dynamic"
 )
 
+GLUE_TF_PATH = Path(__file__).parents[2] / "terraform" / "pipeline" / "glue.tf"
+
 DATASET_BUCKET_URI_PREFIX = "${dataset_bucket_uri}/"
+PUBLICATION_DOMAIN_PREFIX = "domain=99_publication/"
 
 
 def get_command_paths(step_function_filename: str, flag: str) -> list[str]:
@@ -133,3 +136,34 @@ class TestPublicationAssessmentStorePathConsistency:
             path.endswith("/dataset=monthly_tracker_filled_posts_02_assessment/")
             for path in paths
         ), paths
+
+
+def get_publication_crawler_exclusions() -> list[str]:
+    """
+    Extracts the exclusion patterns of the publication crawler in glue.tf.
+
+    Returns:
+        list[str]: The patterns, relative to the crawler's domain folder.
+    """
+    glue_tf = GLUE_TF_PATH.read_text()
+    module_block = re.search(r'module "publication_crawler" \{(.*?)\n\}', glue_tf, re.S)
+    assert module_block, f"publication_crawler not found in {GLUE_TF_PATH}"
+    exclusions = re.search(r"exclusions\s*=\s*\[(.*?)\]", module_block.group(1), re.S)
+    return re.findall(r'"([^"]+)"', exclusions.group(1)) if exclusions else []
+
+
+class TestPublicationCrawlerExclusions:
+    """
+    Guards against the publication crawler cataloguing the assessment workbooks,
+    which are .xlsx files written under the crawled publication domain.
+    """
+
+    def test_crawler_excludes_the_assessment_workbook_folder(self):
+        [workbook_path] = set(
+            get_command_paths("Publication-Assessment.json", "--workbook_destination")
+        )
+        workbook_folder = workbook_path.removeprefix(PUBLICATION_DOMAIN_PREFIX)
+
+        assert (
+            f"{workbook_folder.rstrip('/')}/**" in get_publication_crawler_exclusions()
+        )

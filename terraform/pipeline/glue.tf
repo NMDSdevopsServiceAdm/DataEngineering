@@ -46,6 +46,7 @@ module "publication_crawler" {
   dataset_for_crawler          = "99_publication"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+  exclusions                   = ["dataset=monthly_tracker_filled_posts_02_assessment_workbook/**"]
 }
 
 module "cqc_crawler" {

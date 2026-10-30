@@ -84,6 +84,7 @@ class SheetMap:
 
 
 TITLE_CELL = "B3"
+TITLE_NOTE = "'End of <month year> (run N)' title"
 HEADING_CELL = "B7"
 # Notes are cells, not text boxes: openpyxl drops drawing shapes on save.
 CRITERIA_NOTE_CELL = "B14"
@@ -132,9 +133,7 @@ _COMPARISON_LABELS = (
 FILLED_POSTS = SheetMap(
     name="Filled posts",
     input_ranges=(
-        InputRange(
-            TITLE_CELL, Pub.period_label_long, note="'End of <month year>' title"
-        ),
+        InputRange(TITLE_CELL, Pub.period_label_long, note=TITLE_NOTE),
         InputRange(
             "B24:B36",
             PERIOD_COL,
@@ -282,9 +281,7 @@ COMP_PREV_LABEL_RANGES = ("B23:B59", "B64:B100", "B106:B142")
 COMP_PREV_PUBLICATION = SheetMap(
     name="Comp prev publication",
     input_ranges=(
-        InputRange(
-            TITLE_CELL, Pub.period_label_long, note="'End of <month year>' title"
-        ),
+        InputRange(TITLE_CELL, Pub.period_label_long, note=TITLE_NOTE),
         InputRange(COMP_PREV_LABEL_RANGES[0], note="previous publication labels"),
         InputRange(
             "C23:C59",
@@ -400,9 +397,7 @@ def _comparison_sheet(
         SheetMap: the sheet's cell map.
     """
     ranges = [
-        InputRange(
-            TITLE_CELL, Pub.period_label_long, note="'End of <month year>' title"
-        ),
+        InputRange(TITLE_CELL, Pub.period_label_long, note=TITLE_NOTE),
         InputRange(
             HEADING_CELL,
             Pub.period_label_long,

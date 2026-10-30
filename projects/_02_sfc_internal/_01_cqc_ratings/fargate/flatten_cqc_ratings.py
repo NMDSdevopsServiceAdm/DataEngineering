@@ -91,7 +91,7 @@ def main(
     historic_ratings_lf = rUtils.prepare_historic_ratings(cqc_ratings_lf)
     assessment_ratings_lf = rUtils.prepare_assessment_ratings(cqc_ratings_lf)
 
-    # raise_error_when_assessment_df_contains_overall_data(assessment_ratings_lf)
+    rUtils.raise_error_when_assessment_lf_contains_overall_data(assessment_ratings_lf)
 
     ratings_lf = pl.concat([current_ratings_lf, historic_ratings_lf], how="diagonal")
     # ratings_lf = merge_cqc_ratings(assessment_ratings_lf, ratings_lf)
