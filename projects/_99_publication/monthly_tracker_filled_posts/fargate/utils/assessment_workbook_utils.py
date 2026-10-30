@@ -251,11 +251,13 @@ def sheet_text(
 ) -> dict[str, dict[str, str]]:
     """Text the writer sets, by sheet name then A1 cell.
 
-    Every sheet gets the title. The short and medium term comparison sheets also
-    get a heading and criteria note dated from the month before their term's start
-    date, as does the chart heading on "Filled posts" (the short term's).
-    "Comp prev publication" gets an "Annual" row for each March period, then a "Monthly" row for each period
-    after the latest March, in each of its label ranges.
+    - Every sheet gets the title.
+    - Short, medium and long term comparison sheets get a heading and criteria
+      note dated from the month before the term's start.
+    - "No filters - long term" gets the long term heading only.
+    - "Filled posts" gets a chart heading dated from the short term start.
+    - "Comp prev publication" gets an "Annual" row for each March period, then a
+      "Monthly" row for each period after the latest March, in each label range.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
@@ -271,8 +273,8 @@ def sheet_text(
     dates = _period_dates(period_labels)
 
     # Period months the headings and notes refer back to
-    short_term_period, medium_term_period = _period_months(
-        [term_from_dates.short, term_from_dates.medium]
+    short_term_period, medium_term_period, long_term_period = _period_months(
+        [term_from_dates.short, term_from_dates.medium, term_from_dates.long]
     )
 
     # Title on every sheet
@@ -288,16 +290,22 @@ def sheet_text(
         )
     )
 
-    # Short and medium term comparisons: heading and criteria note
+    # Comparisons: heading and criteria note
     for sheet, period in (
         (cell_map.COMP_SHORT_TERM, short_term_period),
         (cell_map.COMP_MEDIUM_TERM, medium_term_period),
+        (cell_map.COMP_LONG_TERM, long_term_period),
     ):
         date = period.strftime(PERIOD_LABEL_LONG_FORMAT)
         text[sheet.name][cell_map.HEADING_CELL] = HEADING_TEXT.format(date=date)
         text[sheet.name][cell_map.CRITERIA_NOTE_CELL] = CRITERIA_NOTE_TEXT.format(
             date=date
         )
+
+    # No filters: heading only
+    text[cell_map.NO_FILTERS.name][cell_map.HEADING_CELL] = HEADING_TEXT.format(
+        date=long_term_period.strftime(PERIOD_LABEL_LONG_FORMAT)
+    )
 
     # Comp prev publication: an Annual or Monthly label for each period row
     row_labels = [label for _, label in comp_prev_rows([d.date() for d in dates])]

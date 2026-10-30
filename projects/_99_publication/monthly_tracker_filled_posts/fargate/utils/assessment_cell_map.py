@@ -15,6 +15,11 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.templat
     TEMPLATES_DIR,
 )
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_values.categorical_column_values import (
+    AssessmentHeadings,
+    AssessmentMainService,
+    PublishedMainService,
+)
 
 TEMPLATE_PATH = TEMPLATES_DIR / "assessment_template.xlsx"
 
@@ -93,11 +98,11 @@ MEDIUM_TERM_SLOTS = 25
 LONG_TERM_SLOTS = 34
 
 _SERVICE_TYPE_HEADERS = (
-    "All CQC locations",
-    "CQC care homes",
-    "CQC care home with nursing",
-    "CQC care home without nursing",
-    "CQC non-residential",
+    PublishedMainService.all_locations,
+    AssessmentMainService.care_homes,
+    AssessmentMainService.care_home_with_nursing,
+    AssessmentMainService.care_only_home,
+    PublishedMainService.non_residential,
 )
 
 
@@ -110,18 +115,18 @@ def _service_type_labels(row: int, first_col: str) -> tuple[tuple[str, str], ...
 
 
 _COMPARISON_LABELS = (
-    ("B23", "CQC care homes"),
-    ("K23", "CQC non-residential"),
-    ("B25", "Number of locations:"),
-    ("K25", "Number of locations:"),
-    ("C27", "Filled posts"),
-    ("L27", "Filled posts"),
-    ("C28", "Skills for Care"),
-    ("D28", "Capacity Tracker"),
-    ("E27", "Cumulative % change"),
-    ("N27", "Cumulative % change"),
-    ("L28", "Skills for Care"),
-    ("M28", "Capacity Tracker"),
+    ("B23", AssessmentMainService.care_homes),
+    ("K23", PublishedMainService.non_residential),
+    ("B25", AssessmentHeadings.number_of_locations_label),
+    ("K25", AssessmentHeadings.number_of_locations_label),
+    ("C27", AssessmentHeadings.filled_posts),
+    ("L27", AssessmentHeadings.filled_posts),
+    ("C28", AssessmentHeadings.skills_for_care),
+    ("D28", AssessmentHeadings.capacity_tracker),
+    ("E27", AssessmentHeadings.cumulative_perc_change),
+    ("N27", AssessmentHeadings.cumulative_perc_change),
+    ("L28", AssessmentHeadings.skills_for_care),
+    ("M28", AssessmentHeadings.capacity_tracker),
 )
 
 FILLED_POSTS = SheetMap(
