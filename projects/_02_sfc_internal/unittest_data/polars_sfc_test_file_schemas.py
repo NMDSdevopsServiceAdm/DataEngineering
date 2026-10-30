@@ -445,11 +445,29 @@ class FlattenCQCRatings:
         [
             (CQCRatingsColumns.rating_sequence, pl.Int32),
             (CQCRatingsColumns.reversed_rating_sequence, pl.Int32),
-            *[
-                (name, dtype)
-                for name, dtype in standard_ratings_schema.items()
-                if name != CQCL.location_id
-            ],
+            (CQCL.registration_status, pl.String),
+            (CQCRatingsColumns.date, pl.String),
+            (CQCL.assessment_plan_id, pl.String),
+            (CQCL.title, pl.String),
+            (CQCL.assessment_date, pl.String),
+            (CQCL.assessment_plan_status, pl.String),
+            (CQCL.name, pl.String),
+            (CQCL.source_path, pl.String),
+            (CQCL.dataset, pl.String),
+            (CQCRatingsColumns.latest_rating_flag, pl.Int32),
+            (CQCRatingsColumns.current_or_historic, pl.String),
+            (CQCRatingsColumns.overall_rating, pl.String),
+            (CQCRatingsColumns.safe_rating, pl.String),
+            (CQCRatingsColumns.well_led_rating, pl.String),
+            (CQCRatingsColumns.caring_rating, pl.String),
+            (CQCRatingsColumns.responsive_rating, pl.String),
+            (CQCRatingsColumns.effective_rating, pl.String),
+            (CQCRatingsColumns.safe_rating_value, pl.Int32),
+            (CQCRatingsColumns.well_led_rating_value, pl.Int32),
+            (CQCRatingsColumns.caring_rating_value, pl.Int32),
+            (CQCRatingsColumns.responsive_rating_value, pl.Int32),
+            (CQCRatingsColumns.effective_rating_value, pl.Int32),
+            (CQCRatingsColumns.total_rating_value, pl.Int32),
             (CQCL.location_id, pl.String),
         ]
     )
@@ -458,6 +476,29 @@ class FlattenCQCRatings:
     expected_location_id_hash_schema = pl.Schema(
         [
             *location_id_hash_schema.items(),
+            (CQCRatingsColumns.location_id_hash, pl.String),
+        ]
+    )
+
+    location_id_hash_date_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCRatingsColumns.date, pl.String),
+        ]
+    )
+    expected_location_id_hash_date_schema = pl.Schema(
+        [
+            *location_id_hash_date_schema.items(),
+            (CQCRatingsColumns.location_id_hash, pl.String),
+        ]
+    )
+
+    location_id_hash_categorical_schema = pl.Schema(
+        [(CQCL.location_id, pl.Categorical())]
+    )
+    expected_location_id_hash_categorical_schema = pl.Schema(
+        [
+            *location_id_hash_categorical_schema.items(),
             (CQCRatingsColumns.location_id_hash, pl.String),
         ]
     )

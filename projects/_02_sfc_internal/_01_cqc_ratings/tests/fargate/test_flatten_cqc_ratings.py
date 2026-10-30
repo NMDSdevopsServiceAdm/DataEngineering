@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from unittest.mock import Mock, patch
 
@@ -78,31 +78,51 @@ class TestMain:
 class TestCreateStandardRatingsDataset:
     def test_keeps_only_standard_columns_in_order(self):
         input_lf = pl.LazyFrame(
-            Data.create_standard_ratings_dataset_data,
+            Data.create_standard_ratings_dataset_rows,
             schema=Schemas.create_standard_ratings_dataset_schema,
+            orient="row",
         )
 
         returned_lf = job.create_standard_ratings_dataset(input_lf)
 
         expected_lf = pl.LazyFrame(
-            Data.expected_create_standard_ratings_dataset_data,
+            Data.expected_create_standard_ratings_dataset_rows,
             schema=Schemas.standard_ratings_schema,
+            orient="row",
         )
         pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
     def test_removes_duplicate_rows_left_after_dropping_columns(self):
         input_lf = pl.LazyFrame(
-            Data.create_standard_ratings_dataset_duplicate_data,
+            Data.create_standard_ratings_dataset_duplicate_rows,
             schema=Schemas.create_standard_ratings_dataset_schema,
+            orient="row",
         )
 
         returned_lf = job.create_standard_ratings_dataset(input_lf)
 
         expected_lf = pl.LazyFrame(
-            Data.expected_create_standard_ratings_dataset_duplicate_data,
+            Data.expected_create_standard_ratings_dataset_duplicate_rows,
             schema=Schemas.standard_ratings_schema,
+            orient="row",
         )
         pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
+
+    def test_removes_duplicate_rows_containing_nulls(self):
+        input_lf = pl.LazyFrame(
+            Data.create_standard_ratings_dataset_null_rows,
+            schema=Schemas.create_standard_ratings_dataset_schema,
+            orient="row",
+        )
+
+        returned_lf = job.create_standard_ratings_dataset(input_lf)
+
+        expected_lf = pl.LazyFrame(
+            Data.expected_create_standard_ratings_dataset_null_rows,
+            schema=Schemas.standard_ratings_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
 
 @dataclass
@@ -110,124 +130,70 @@ class AddLocationIdHashTestCase:
     id: str
     rows: list[Any]
     expected_rows: list[Any]
+    schema: pl.Schema = field(default_factory=lambda: Schemas.location_id_hash_schema)
+    expected_schema: pl.Schema = field(
+        default_factory=lambda: Schemas.expected_location_id_hash_schema
+    )
 
     def as_pytest_param(self):
-        return pytest.param(self.rows, self.expected_rows, id=self.id)
+        return pytest.param(
+            self.rows,
+            self.expected_rows,
+            self.schema,
+            self.expected_schema,
+            id=self.id,
+        )
 
 
 add_location_id_hash_cases = [
     AddLocationIdHashTestCase(
-        id="three_digit_location_id",
-        rows=Data.location_id_hash_three_digit_rows,
-        expected_rows=Data.expected_location_id_hash_three_digit_rows,
+        id="hashes_short_location_id",
+        rows=Data.location_id_hash_short_rows,
+        expected_rows=Data.expected_location_id_hash_short_rows,
     ),
     AddLocationIdHashTestCase(
-        id="ten_digit_location_id",
-        rows=Data.location_id_hash_ten_digit_rows,
-        expected_rows=Data.expected_location_id_hash_ten_digit_rows,
+        id="hashes_long_location_id",
+        rows=Data.location_id_hash_long_rows,
+        expected_rows=Data.expected_location_id_hash_long_rows,
     ),
     AddLocationIdHashTestCase(
-        id="eleven_digit_location_id",
-        rows=Data.location_id_hash_eleven_digit_rows,
-        expected_rows=Data.expected_location_id_hash_eleven_digit_rows,
+        id="gives_repeated_location_ids_the_same_hash",
+        rows=Data.location_id_hash_repeated_rows,
+        expected_rows=Data.expected_location_id_hash_repeated_rows,
     ),
     AddLocationIdHashTestCase(
-        id="twelve_digit_location_id",
-        rows=Data.location_id_hash_twelve_digit_rows,
-        expected_rows=Data.expected_location_id_hash_twelve_digit_rows,
+        id="keeps_other_columns_unchanged",
+        rows=Data.location_id_hash_date_rows,
+        expected_rows=Data.expected_location_id_hash_date_rows,
+        schema=Schemas.location_id_hash_date_schema,
+        expected_schema=Schemas.expected_location_id_hash_date_schema,
+    ),
+    AddLocationIdHashTestCase(
+        id="hashes_categorical_location_id",
+        rows=Data.location_id_hash_categorical_rows,
+        expected_rows=Data.expected_location_id_hash_categorical_rows,
+        schema=Schemas.location_id_hash_categorical_schema,
+        expected_schema=Schemas.expected_location_id_hash_categorical_schema,
+    ),
+    AddLocationIdHashTestCase(
+        id="returns_null_hash_when_location_id_is_null",
+        rows=Data.location_id_hash_null_rows,
+        expected_rows=Data.expected_location_id_hash_null_rows,
     ),
 ]
 
 
 class TestAddLocationIdHash:
     @pytest.mark.parametrize(
-        "rows, expected_rows",
+        "rows, expected_rows, schema, expected_schema",
         [case.as_pytest_param() for case in add_location_id_hash_cases],
     )
-    def test_hashes_location_id_to_20_char_sha256_prefix(self, rows, expected_rows):
-        input_lf = pl.LazyFrame(
-            rows, schema=Schemas.location_id_hash_schema, orient="row"
-        )
+    def test_adds_expected_location_id_hash(
+        self, rows, expected_rows, schema, expected_schema
+    ):
+        input_lf = pl.LazyFrame(rows, schema=schema, orient="row")
 
         returned_lf = job.add_location_id_hash(input_lf)
 
-        expected_lf = pl.LazyFrame(
-            expected_rows,
-            schema=Schemas.expected_location_id_hash_schema,
-            orient="row",
-        )
-        pl_testing.assert_frame_equal(expected_lf, returned_lf)
-
-    def test_gives_repeated_location_ids_the_same_hash(self):
-        input_lf = pl.LazyFrame({CQCL.location_id: ["1-123", "1-123"]})
-
-        returned_lf = job.add_location_id_hash(input_lf)
-
-        expected_lf = pl.LazyFrame(
-            {
-                CQCL.location_id: ["1-123", "1-123"],
-                CQCRatings.location_id_hash: ["b022a7e5cc45cf3dc578"] * 2,
-            }
-        )
-        pl_testing.assert_frame_equal(expected_lf, returned_lf)
-
-    def test_keeps_row_count_and_other_columns(self):
-        input_lf = pl.LazyFrame(
-            {
-                CQCL.location_id: ["1-123", "1-123", "1-123456789"],
-                "other": [1, 2, 3],
-            }
-        )
-
-        returned_lf = job.add_location_id_hash(input_lf)
-
-        expected_lf = pl.LazyFrame(
-            {
-                CQCL.location_id: ["1-123", "1-123", "1-123456789"],
-                "other": [1, 2, 3],
-                CQCRatings.location_id_hash: [
-                    "b022a7e5cc45cf3dc578",
-                    "b022a7e5cc45cf3dc578",
-                    "4a5a7fdc6afede351ffd",
-                ],
-            }
-        )
-        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
-
-    def test_hashes_categorical_location_id(self):
-        input_lf = pl.LazyFrame(
-            {CQCL.location_id: ["1-123"]}, schema={CQCL.location_id: pl.Categorical}
-        )
-
-        returned_lf = job.add_location_id_hash(input_lf)
-
-        expected_lf = pl.LazyFrame(
-            {
-                CQCL.location_id: ["1-123"],
-                CQCRatings.location_id_hash: ["b022a7e5cc45cf3dc578"],
-            },
-            schema={
-                CQCL.location_id: pl.Categorical,
-                CQCRatings.location_id_hash: pl.String,
-            },
-        )
-        pl_testing.assert_frame_equal(expected_lf, returned_lf)
-
-    def test_returns_null_hash_when_location_id_is_null(self):
-        input_lf = pl.LazyFrame(
-            {CQCL.location_id: [None, "1-123"]}, schema={CQCL.location_id: pl.String}
-        )
-
-        returned_lf = job.add_location_id_hash(input_lf)
-
-        expected_lf = pl.LazyFrame(
-            {
-                CQCL.location_id: [None, "1-123"],
-                CQCRatings.location_id_hash: [None, "b022a7e5cc45cf3dc578"],
-            },
-            schema={
-                CQCL.location_id: pl.String,
-                CQCRatings.location_id_hash: pl.String,
-            },
-        )
+        expected_lf = pl.LazyFrame(expected_rows, schema=expected_schema, orient="row")
         pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)

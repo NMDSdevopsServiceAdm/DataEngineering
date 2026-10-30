@@ -166,7 +166,7 @@ def add_location_id_hash(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     The hash is the first 20 characters of the SHA-256 hex digest. Polars has no
     SHA-256 expression, so `hashlib` hashes the distinct location IDs only and the
-    result is joined back.
+    result is joined back (the input is referenced twice).
 
     Args:
         ratings_lf (pl.LazyFrame): CQC ratings containing the column location_id.
@@ -186,6 +186,7 @@ def add_location_id_hash(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
                     location_id.encode("utf-8")
                 ).hexdigest()[:20],
                 return_dtype=pl.String,
+                skip_nulls=True,
             )
             .alias(CQCRatings.location_id_hash)
         )

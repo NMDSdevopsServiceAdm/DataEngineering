@@ -881,70 +881,69 @@ class FlattenCQCRatings:
         expected_prepare_assessment_ratings_data
     )
 
-    create_standard_ratings_dataset_data = {
-        CQCRatings.rating_sequence: [1],
-        CQCRatings.reversed_rating_sequence: [1],
-        CQCL.location_id: ["1-001"],
-        CQCL.registration_status: ["Registered"],
-        CQCRatings.date: ["2024-01-01"],
-        CQCL.assessment_plan_id: ["AP1"],
-        CQCL.title: ["Care Home Assessment"],
-        CQCL.assessment_date: ["2024-01-02"],
-        CQCL.assessment_plan_status: ["Assessed"],
-        CQCL.name: ["Care Homes"],
-        CQCL.source_path: ["assessment.ratings.asg_ratings"],
-        CQCL.dataset: ["SAF"],
-        CQCRatings.latest_rating_flag: [1],
-        CQCRatings.current_or_historic: ["Current"],
-        CQCRatings.overall_rating: ["Good"],
-        CQCRatings.safe_rating: ["Good"],
-        CQCRatings.well_led_rating: ["Good"],
-        CQCRatings.caring_rating: ["Good"],
-        CQCRatings.responsive_rating: ["Good"],
-        CQCRatings.effective_rating: ["Good"],
-        CQCRatings.safe_rating_value: [3],
-        CQCRatings.well_led_rating_value: [3],
-        CQCRatings.caring_rating_value: [3],
-        CQCRatings.responsive_rating_value: [3],
-        CQCRatings.effective_rating_value: [3],
-        CQCRatings.total_rating_value: [15],
-    }
-    expected_create_standard_ratings_dataset_data = {
-        key: value
-        for key, value in create_standard_ratings_dataset_data.items()
-        if key not in (CQCRatings.rating_sequence, CQCRatings.reversed_rating_sequence)
-    }
-
-    # Rows 0 and 1 differ only in the dropped sequence columns; row 2 has a different
-    # safe rating.
-    create_standard_ratings_dataset_duplicate_data = {
-        **{
-            key: value * 3
-            for key, value in create_standard_ratings_dataset_data.items()
-        },
-        CQCRatings.rating_sequence: [1, 2, 3],
-        CQCRatings.reversed_rating_sequence: [3, 2, 1],
-        CQCRatings.safe_rating: ["Good", "Good", "Requires improvement"],
-        CQCRatings.safe_rating_value: [3, 3, 2],
-        CQCRatings.total_rating_value: [15, 15, 14],
-    }
-    expected_create_standard_ratings_dataset_duplicate_data = {
-        key: [value[0], value[2]]
-        for key, value in create_standard_ratings_dataset_duplicate_data.items()
-        if key not in (CQCRatings.rating_sequence, CQCRatings.reversed_rating_sequence)
-    }
-
-    location_id_hash_three_digit_rows = [("1-123",)]
-    expected_location_id_hash_three_digit_rows = [("1-123", "b022a7e5cc45cf3dc578")]
-    location_id_hash_ten_digit_rows = [("1-123456789",)]
-    expected_location_id_hash_ten_digit_rows = [("1-123456789", "4a5a7fdc6afede351ffd")]
-    location_id_hash_eleven_digit_rows = [("1-1234567890",)]
-    expected_location_id_hash_eleven_digit_rows = [
-        ("1-1234567890", "133d74f156c4fba255e9")
+    # Input column order: rating_sequence, reversed_rating_sequence, registration_status,
+    # date, assessment_plan_id, title, assessment_date, assessment_plan_status, name,
+    # source_path, dataset, latest_rating_flag, current_or_historic, overall/safe/
+    # well_led/caring/responsive/effective ratings, five rating values, total, location_id.
+    # fmt: off
+    create_standard_ratings_dataset_rows = [
+        (1, 1, "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-001"),
     ]
-    location_id_hash_twelve_digit_rows = [("1-12345678901",)]
-    expected_location_id_hash_twelve_digit_rows = [
-        ("1-12345678901", "cf16d3a6b6648d845fda")
+    expected_create_standard_ratings_dataset_rows = [
+        ("1-001", "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15),
+    ]
+
+    # Rows 1 and 2 differ only in the dropped sequence columns; row 3 has a different safe rating.
+    create_standard_ratings_dataset_duplicate_rows = [
+        (1, 3, "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-001"),
+        (2, 2, "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-001"),
+        (3, 1, "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Requires improvement", "Good", "Good", "Good", "Good", 2, 3, 3, 3, 3, 14, "1-001"),
+    ]
+    expected_create_standard_ratings_dataset_duplicate_rows = [
+        ("1-001", "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15),
+        ("1-001", "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Requires improvement", "Good", "Good", "Good", "Good", 2, 3, 3, 3, 3, 14),
+    ]
+
+    # Both rows have nulls in the assessment columns and differ only in the dropped sequence columns.
+    create_standard_ratings_dataset_null_rows = [
+        (1, 2, "Registered", "2024-01-01", None, None, None, None, None, None, "Pre SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-002"),
+        (2, 1, "Registered", "2024-01-01", None, None, None, None, None, None, "Pre SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-002"),
+    ]
+    expected_create_standard_ratings_dataset_null_rows = [
+        ("1-002", "Registered", "2024-01-01", None, None, None, None, None, None, "Pre SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15),
+    ]
+    # fmt: on
+
+    _short_location_id_hash = "b022a7e5cc45cf3dc578"  # sha256("1-123")[:20]
+
+    location_id_hash_short_rows = [("1-123",)]
+    expected_location_id_hash_short_rows = [("1-123", _short_location_id_hash)]
+
+    location_id_hash_long_rows = [("1-12345678901",)]
+    expected_location_id_hash_long_rows = [("1-12345678901", "cf16d3a6b6648d845fda")]
+
+    location_id_hash_repeated_rows = [("1-123",), ("1-123",)]
+    expected_location_id_hash_repeated_rows = [
+        ("1-123", _short_location_id_hash),
+        ("1-123", _short_location_id_hash),
+    ]
+
+    location_id_hash_null_rows = [(None,), ("1-123",)]
+    expected_location_id_hash_null_rows = [
+        (None, None),
+        ("1-123", _short_location_id_hash),
+    ]
+
+    location_id_hash_categorical_rows = [("1-123",)]
+    expected_location_id_hash_categorical_rows = [("1-123", _short_location_id_hash)]
+
+    location_id_hash_date_rows = [
+        ("1-123", "2024-01-01"),
+        ("1-12345678901", "2024-02-01"),
+    ]
+    expected_location_id_hash_date_rows = [
+        ("1-123", "2024-01-01", _short_location_id_hash),
+        ("1-12345678901", "2024-02-01", "cf16d3a6b6648d845fda"),
     ]
 
     # fmt: off
