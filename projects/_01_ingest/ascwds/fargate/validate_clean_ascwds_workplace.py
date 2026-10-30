@@ -32,7 +32,7 @@ columns = {
     ASCWPClean.parent_permission: str(CategoricalColumnTypes.ParentPermissionCatType),
     ASCWPClean.registration_type: str(CategoricalColumnTypes.RegistrationTypeCatType),
     ASCWPClean.provider_id: "String",
-    ASCWPClean.location_id: "String",
+    ASCWPClean.location_id: str(CategoricalColumnTypes.LocationCatType),
     ASCWPClean.establishment_type: str(CategoricalColumnTypes.EstablishmentTypeCatType),
     ASCWPClean.establishment_name: "String",
     ASCWPClean.address: "String",

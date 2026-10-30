@@ -96,7 +96,7 @@ class TestMain:
         collapse_job_role_estimates_to_published_labels_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        # Dtypes mirror production, to exercise the location_id cast the joins rely on.
+        # Dtypes mirror production: location_id is categorical in every dataset.
         job_role_estimates_lf = pl.LazyFrame(
             {
                 IndCQC.id_per_locationid_import_date: [1],
@@ -121,7 +121,9 @@ class TestMain:
         )
         pir_lf = pl.LazyFrame(
             {
-                CQCPIRClean.location_id: ["1-001"],
+                CQCPIRClean.location_id: pl.Series(
+                    ["1-001"], dtype=CatColType.LocationCatType
+                ),
                 CQCPIRClean.cqc_pir_import_date: [date(2024, 1, 1)],
                 CQCPIRClean.care_home: pl.Series(
                     [CareHome.care_home], dtype=CatColType.CareHomeEnumType
@@ -132,7 +134,9 @@ class TestMain:
         )
         ct_care_home_lf = pl.LazyFrame(
             {
-                CTCHClean.cqc_id: ["1-001"],
+                CTCHClean.cqc_id: pl.Series(
+                    ["1-001"], dtype=CatColType.LocationCatType
+                ),
                 CTCHClean.ct_care_home_import_date: [date(2024, 1, 1)],
                 CTCHClean.care_home: pl.Series(
                     [CareHome.care_home], dtype=CatColType.CareHomeEnumType
@@ -145,7 +149,9 @@ class TestMain:
         )
         ct_non_res_lf = pl.LazyFrame(
             {
-                CTNRClean.cqc_id: ["1-001"],
+                CTNRClean.cqc_id: pl.Series(
+                    ["1-001"], dtype=CatColType.LocationCatType
+                ),
                 CTNRClean.ct_non_res_import_date: [date(2024, 1, 1)],
                 # deliberately not_care_home: a genuine care home location shouldn't
                 # match non-res Capacity Tracker data, since care_home is a join key

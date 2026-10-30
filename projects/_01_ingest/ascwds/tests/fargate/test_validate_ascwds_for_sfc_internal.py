@@ -54,7 +54,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 AWPClean.parent_permission: CategoricalColumnTypes.ParentPermissionCatType,
                 AWPClean.establishment_type: CategoricalColumnTypes.EstablishmentTypeCatType,
                 AWPClean.registration_type: CategoricalColumnTypes.RegistrationTypeCatType,
-                AWPClean.location_id: pl.String,
+                AWPClean.location_id: CategoricalColumnTypes.LocationCatType,
                 AWPClean.main_service_id: CategoricalColumnTypes.MainServiceIdCatType,
                 AWPClean.establishment_name: pl.String,
                 AWPClean.region_id: CategoricalColumnTypes.RegionIdCatType,

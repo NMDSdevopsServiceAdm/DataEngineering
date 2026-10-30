@@ -3,6 +3,7 @@ import sys
 import pointblank as pb
 
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.actions import add_list_column_validation_check_flags
@@ -98,6 +99,17 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
+        )
+        # dataset schema
+        .col_schema_match(
+            schema=pb.Schema(
+                columns={
+                    CQCLClean.location_id: str(CategoricalColumnTypes.LocationCatType)
+                }
+            ),
+            complete=False,
+            in_order=False,
+            brief=f"{CQCLClean.location_id} should be the LocationCatType dtype",
         )
         # complete columns
         .col_vals_not_null(

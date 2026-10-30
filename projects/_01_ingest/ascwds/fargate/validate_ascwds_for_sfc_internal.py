@@ -29,7 +29,7 @@ EXPECTED_SCHEMA = pb.Schema(
             CategoricalColumnTypes.EstablishmentTypeCatType
         ),
         AWPClean.registration_type: str(CategoricalColumnTypes.RegistrationTypeCatType),
-        AWPClean.location_id: "String",
+        AWPClean.location_id: str(CategoricalColumnTypes.LocationCatType),
         AWPClean.main_service_id: str(CategoricalColumnTypes.MainServiceIdCatType),
         AWPClean.establishment_name: "String",
         AWPClean.region_id: str(CategoricalColumnTypes.RegionIdCatType),

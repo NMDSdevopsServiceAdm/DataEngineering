@@ -1,9 +1,6 @@
-import polars as pl
-
 import projects._03_independent_cqc._02_employment_status.fargate.utils.merge_utils as mUtils
 import projects._03_independent_cqc._02_employment_status.fargate.utils.prepare_worker_utils as pWorkerUtils
 from polars_utils import utils
-from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc.utils.join_utils import join_data_into_cqc_lf
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
@@ -131,20 +128,18 @@ def main(
         how="left",
     )
 
-    # PIR/CT's id column is plain String, but job_role_estimates_lf's location_id is
-    # the namespaced LocationCatType - cast here so the join keys match.
     cleaned_cqc_pir_lf = utils.scan_parquet(
         source=cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns
-    ).with_columns(pl.col(CQCPIRClean.location_id).cast(CatColType.LocationCatType))
+    )
 
     cleaned_ct_care_home_lf = utils.scan_parquet(
         source=cleaned_ct_care_home_source,
         selected_columns=cleaned_ct_care_home_columns,
-    ).with_columns(pl.col(CTCHClean.cqc_id).cast(CatColType.LocationCatType))
+    )
 
     cleaned_ct_non_res_lf = utils.scan_parquet(
         source=cleaned_ct_non_res_source, selected_columns=cleaned_ct_non_res_columns
-    ).with_columns(pl.col(CTNRClean.cqc_id).cast(CatColType.LocationCatType))
+    )
 
     job_role_estimates_lf = join_data_into_cqc_lf(
         job_role_estimates_lf,

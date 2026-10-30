@@ -22,16 +22,19 @@ def percentage_share(column: str | pl.Expr) -> pl.Expr:
 
 
 def str_length_cols(columns: list[str]) -> list[pl.Expr]:
-    """Provides the string lengths for each value in a column as a list of column expressions.
+    """Creates a `<column>_length` expression of string lengths for each column.
+
+    Categorical columns are cast to String first, as `.str` can't be used on them.
 
     Args:
-        columns (list[str]): a list of column(s) to calculate string lengths for
+        columns (list[str]): String or Categorical columns to get lengths for.
 
     Returns:
-        list[pl.Expr]: a list of Series of string lengths, to be used in constructing a DataFrame
+        list[pl.Expr]: One length expression per column.
     """
     return [
-        pl.col(column).str.len_chars().alias(f"{column}_length") for column in columns
+        pl.col(column).cast(pl.String).str.len_chars().alias(f"{column}_length")
+        for column in columns
     ]
 
 

@@ -23,7 +23,7 @@ GROUPED_PROVIDER_SCHEMA = pl.Schema(
         (IndCQC.cqc_location_import_date, pl.Date()),
         (IndCQC.provider_id, pl.String()),
         (NGPcol.count_of_cqc_locations_in_provider, pl.UInt32()),
-        (IndCQC.location_id, pl.String()),
+        (IndCQC.location_id, CatColType.LocationCatType),
         (AWPClean.nmds_id, pl.String()),
         (IndCQC.name, pl.String()),
         (IndCQC.care_home, CatColType.CareHomeEnumType),

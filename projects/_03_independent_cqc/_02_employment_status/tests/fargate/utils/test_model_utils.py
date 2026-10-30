@@ -70,14 +70,17 @@ class TestAddImputationRowKind:
 
 class TestBuildModellingDataset:
     def test_builder_does_not_duplicate_rows(self):
-        # Location IDs as in the pipeline: categorical here, strings in estimates.
+        # Location IDs are categorical in both datasets, as in the pipeline.
         shares_lf = to_lf(Data.build_modelling_dataset_shares_data).with_columns(
             AS_LOCATION_TYPE
         )
+        estimates_lf = pl.LazyFrame(
+            Data.build_modelling_dataset_estimates_data
+        ).with_columns(AS_LOCATION_TYPE)
 
         returned_lf = job.build_modelling_dataset(
             shares_lf,
-            pl.LazyFrame(Data.build_modelling_dataset_estimates_data),
+            estimates_lf,
             known_share_columns=[KNOWN_SHARE],
             imputed_share_columns=[IMPUTED_SHARE],
             rolling_average_columns=[ROLLING_AVERAGE_SHARE],

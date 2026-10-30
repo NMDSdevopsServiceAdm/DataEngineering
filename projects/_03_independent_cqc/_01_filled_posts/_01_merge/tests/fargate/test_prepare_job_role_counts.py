@@ -1,15 +1,15 @@
 import unittest
+from dataclasses import dataclass
 from unittest.mock import ANY, Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import projects._03_independent_cqc._01_filled_posts._01_merge.fargate.prepare_job_role_counts as job
-from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_test_file_data import (
-    PrepareJobRoleCountsUtilsData as Data,
-)
-from projects._03_independent_cqc._01_filled_posts.unittest_data.polars_ind_cqc_test_file_schemas import (
-    PrepareJobRoleCountsUtilsSchemas as Schemas,
+from polars_utils.column_types import CategoricalColumnTypes
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
 )
 
 PATCH_PATH = "projects._03_independent_cqc._01_filled_posts._01_merge.fargate.prepare_job_role_counts"
@@ -48,20 +48,49 @@ class MainTests(unittest.TestCase):
         )
 
 
-class IsCQCLocationTests(unittest.TestCase):
-    def test_is_cqc_location_correctly_identifies_only_cqc_locations(
-        self,
+@dataclass
+class IsCqcLocationTestCase:
+    id: str
+    location_ids: list[str | None]
+    expected_location_ids: list[str]
+
+    def as_pytest_param(self):
+        return pytest.param(self.location_ids, self.expected_location_ids, id=self.id)
+
+
+is_cqc_location_cases = [
+    IsCqcLocationTestCase(
+        id="keeps_non_empty_location_id",
+        location_ids=["1-001"],
+        expected_location_ids=["1-001"],
+    ),
+    IsCqcLocationTestCase(
+        id="drops_empty_location_id",
+        location_ids=[""],
+        expected_location_ids=[],
+    ),
+    IsCqcLocationTestCase(
+        id="drops_null_location_id",
+        location_ids=[None],
+        expected_location_ids=[],
+    ),
+]
+
+
+class TestIsCqcLocation:
+    @pytest.mark.parametrize(
+        "location_ids, expected_location_ids",
+        [case.as_pytest_param() for case in is_cqc_location_cases],
+    )
+    def test_filters_to_workers_with_a_categorical_location_id(
+        self, location_ids, expected_location_ids
     ):
-        test_lf = pl.LazyFrame(
-            data=Data.filter_to_cqc_locations_rows,
-            schema=Schemas.filter_to_cqc_locations_schema,
-        )
-        returned_lf = test_lf.filter(job.is_cqc_location)
+        schema = {AWKClean.location_id: CategoricalColumnTypes.LocationCatType}
+        input_lf = pl.LazyFrame({AWKClean.location_id: location_ids}, schema=schema)
+
+        returned_lf = input_lf.filter(job.is_cqc_location)
+
         expected_lf = pl.LazyFrame(
-            data=Data.expected_filter_to_cqc_locations_rows,
-            schema=Schemas.filter_to_cqc_locations_schema,
+            {AWKClean.location_id: expected_location_ids}, schema=schema
         )
-        pl_testing.assert_frame_equal(
-            returned_lf,
-            expected_lf,
-        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

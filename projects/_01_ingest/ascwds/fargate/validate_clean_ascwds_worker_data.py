@@ -14,7 +14,7 @@ from utils.column_values.categorical_columns_by_dataset import (
 )
 
 columns = {
-    ASCWKClean.location_id: "String",
+    ASCWKClean.location_id: str(CategoricalColumnTypes.LocationCatType),
     ASCWKClean.establishment_id: "String",
     ASCWKClean.worker_id: "String",
     ASCWKClean.main_job_role_id: "String",

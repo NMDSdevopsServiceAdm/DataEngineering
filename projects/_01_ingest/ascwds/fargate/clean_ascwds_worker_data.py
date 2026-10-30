@@ -73,6 +73,7 @@ def main(
 
     # Cast to Categorical here so it's saved in the output parquet file.
     worker_lf = worker_lf.with_columns(
+        pl.col(AWKClean.location_id).cast(CategoricalColumnTypes.LocationCatType),
         pl.col(AWKClean.main_job_role_clean).cast(
             CategoricalColumnTypes.MainJobRoleIdCatType
         ),

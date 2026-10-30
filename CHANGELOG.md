@@ -66,6 +66,7 @@ All notable changes to this project will be documented in this file.
 - Changed ASC-WDS workplace cleaning to null starters, leavers and vacancies job role columns where their total is not known, and to cast the totals to integers.
 - Changed the Trello card drafting skill to start each card with a TODO and to rename "Summary" to "The problem to solve".
 - Changed the merge-when-ready GitHub Action to run from `main` rather than the labelled PR's copy of the script and workflow.
+- Cast the CQC location ID to `LocationCatType` in each ingest clean job (CQC locations, PIR, capacity tracker, ASC-WDS workplace and worker) and removed the casts later in the pipeline that only existed because it arrived as a string.
 
 ### Improved
 - Rounded percentage values and removed decimals from count tables before writing them to the assessment workbook.

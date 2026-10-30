@@ -5,6 +5,7 @@ import polars as pl
 
 from polars_utils import cleaning_utils as cUtils
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes
 from projects._02_sfc_internal.utils.utils import add_parents_or_singles_and_subs_column
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -78,8 +79,9 @@ def main(
         ascwds_parent_accounts_lf,
     ) = prepare_latest_cleaned_ascwds_workforce_data(ascwds_workplace_lf)
 
+    # The snapshot's location_id is a String; cast it to match the ASC-WDS join key.
     cqc_location_lf = cqc_location_lf.select(
-        CQCL.location_id,
+        pl.col(CQCL.location_id).cast(CategoricalColumnTypes.LocationCatType),
         CQCL.registration_status,
         CQCL.deregistration_date,
         CQCLClean.has_successor,

@@ -14,7 +14,7 @@ cleaned_ascwds_worker_columns_to_import = [
     AWKClean.location_id,
 ]
 
-is_cqc_location: bool = pl.col(AWKClean.location_id).str.len_chars() > 0
+is_cqc_location: bool = pl.col(AWKClean.location_id) != ""
 
 
 def main(
