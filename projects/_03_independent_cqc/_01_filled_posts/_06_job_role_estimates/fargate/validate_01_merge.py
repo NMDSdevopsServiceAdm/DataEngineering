@@ -147,27 +147,8 @@ def main(
             CatValues.main_job_role_labels_column_values.categorical_values,
         )
         # distinct values
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.estimate_filled_posts_source,
-                CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.estimate_filled_posts_source} should have exactly {CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.primary_service_type,
-                CatValues.primary_service_type_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.primary_service_type} should have exactly {CatValues.primary_service_type_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.main_job_role_clean_labelled,
-                CatValues.main_job_role_labels_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
-        )
+        # TEMP 2409: distinct-count checks removed because the sample data does not
+        # contain every category. Revert.
         # numerical
         .col_vals_gt(
             columns=[

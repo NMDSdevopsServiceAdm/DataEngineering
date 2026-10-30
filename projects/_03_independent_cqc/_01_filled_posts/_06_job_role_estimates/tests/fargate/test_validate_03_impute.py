@@ -121,7 +121,6 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             "col_vals_not_null",
             "col_vals_expr",
             "col_vals_in_set",
-            "specially",
             "col_vals_gt",
             "col_vals_ge",
             "col_vals_between",

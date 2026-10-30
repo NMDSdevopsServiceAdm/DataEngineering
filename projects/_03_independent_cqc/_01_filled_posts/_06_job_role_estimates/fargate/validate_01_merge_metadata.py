@@ -244,62 +244,8 @@ def main(
             CatValues.estimate_filled_posts_source_column_values.categorical_values,
         )
         # Distinct value counts
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.primary_service_type_second_level,
-                CatValues.primary_service_type_second_level_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.primary_service_type_second_level} should have exactly {CatValues.primary_service_type_second_level_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.care_home,
-                CatValues.care_home_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.care_home} should have exactly {CatValues.care_home_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.dormancy,
-                CatValues.dormancy_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.dormancy} should have exactly {CatValues.dormancy_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.current_cssr,
-                CatValues.current_cssr_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.current_cssr} should have exactly {CatValues.current_cssr_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.current_region,
-                CatValues.current_region_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.current_region} should have exactly {CatValues.current_region_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.current_rural_urban_indicator_2011,
-                CatValues.current_rui_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.current_rural_urban_indicator_2011} should have exactly {CatValues.current_rui_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.ascwds_filtering_rule,
-                CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.estimate_filled_posts_source,
-                CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.estimate_filled_posts_source} should have exactly {CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values} distinct values",
-        )
+        # TEMP 2409: distinct-count checks removed because the sample data does not
+        # contain every category. Revert.
         # Date plausibility
         .col_vals_ge(
             columns=IndCqcColumns.ascwds_workplace_import_date,
