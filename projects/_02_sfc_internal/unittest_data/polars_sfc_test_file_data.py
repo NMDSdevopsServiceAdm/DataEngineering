@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from datetime import date
 
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_values.categorical_column_values import (
     HasSuccessor,
     InAscwds,
@@ -674,6 +677,208 @@ class FlattenCQCRatings:
             "Pre SAF",
         ),
     ]
+
+    def _asg_kq(name, rating="Good"):
+        return {"name": name, "rating": rating, "status": "Assessed"}
+
+    def _asg_entry(published_datetime, assessment_plan_id, key_question_ratings):
+        return {
+            "assessmentPlanPublishedDateTime": published_datetime,
+            "ratings": {
+                "overall": [],
+                "asgRatings": [
+                    {
+                        "assessmentPlanId": assessment_plan_id,
+                        "title": "Care Home Assessment",
+                        "assessmentDate": "2024-01-02",
+                        "assessmentPlanStatus": "Assessed",
+                        "name": "Care Homes",
+                        "rating": "Good",
+                        "status": "Current",
+                        "keyQuestionRatings": key_question_ratings,
+                    }
+                ],
+            },
+        }
+
+    prepare_assessment_ratings_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _asg_entry(
+                    "2024-01-01 00:00:00",
+                    "AP1",
+                    [
+                        _asg_kq("Safe"),
+                        _asg_kq("Well-led"),
+                        _asg_kq("Caring"),
+                        _asg_kq("Responsive"),
+                        _asg_kq("Effective"),
+                    ],
+                )
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_data = {
+        CQCL.location_id: ["1-001"],
+        CQCL.registration_status: ["Registered"],
+        CQCL.assessment_plan_published_datetime: ["2024-01-01 00:00:00"],
+        CQCL.assessment_plan_id: ["AP1"],
+        CQCL.title: ["Care Home Assessment"],
+        CQCL.assessment_date: ["2024-01-02"],
+        CQCL.assessment_plan_status: ["Assessed"],
+        CQCL.dataset: ["SAF"],
+        CQCL.name: ["Care Homes"],
+        CQCL.status: ["Current"],
+        CQCL.rating: ["Good"],
+        CQCL.source_path: ["assessment.ratings.asg_ratings"],
+        CQCL.safe: ["Good"],
+        CQCL.effective: ["Good"],
+        CQCL.caring: ["Good"],
+        CQCL.responsive: ["Good"],
+        CQCL.well_led: ["Good"],
+    }
+
+    # "Safe" appears twice; the first in raw array order must win
+    prepare_assessment_ratings_tiebreaker_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _asg_entry(
+                    "2024-02-01 00:00:00",
+                    "AP2",
+                    [
+                        _asg_kq("Safe"),
+                        _asg_kq("Safe", "Requires improvement"),
+                        _asg_kq("Well-led"),
+                        _asg_kq("Caring"),
+                        _asg_kq("Responsive"),
+                        _asg_kq("Effective"),
+                    ],
+                )
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_tiebreaker_data = {
+        CQCL.location_id: ["1-001"],
+        CQCL.registration_status: ["Registered"],
+        CQCL.assessment_plan_published_datetime: ["2024-02-01 00:00:00"],
+        CQCL.assessment_plan_id: ["AP2"],
+        CQCL.title: ["Care Home Assessment"],
+        CQCL.assessment_date: ["2024-01-02"],
+        CQCL.assessment_plan_status: ["Assessed"],
+        CQCL.dataset: ["SAF"],
+        CQCL.name: ["Care Homes"],
+        CQCL.status: ["Current"],
+        CQCL.rating: ["Good"],
+        CQCL.source_path: ["assessment.ratings.asg_ratings"],
+        CQCL.safe: ["Good"],
+        CQCL.effective: ["Good"],
+        CQCL.caring: ["Good"],
+        CQCL.responsive: ["Good"],
+        CQCL.well_led: ["Good"],
+    }
+
+    # 1-002 has null (not empty) keyQuestionRatings and must be dropped. 1-001 keeps
+    # the output non-empty.
+    prepare_assessment_ratings_null_key_question_ratings_rows = [
+        *prepare_assessment_ratings_rows,
+        (
+            "1-002",
+            "Registered",
+            [
+                {
+                    "assessmentPlanPublishedDateTime": "2024-01-01 00:00:00",
+                    "ratings": {
+                        "overall": [
+                            {
+                                "rating": "Good",
+                                "status": "Assessed",
+                                "keyQuestionRatings": None,
+                            }
+                        ],
+                        "asgRatings": [],
+                    },
+                }
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_null_key_question_ratings_data = (
+        expected_prepare_assessment_ratings_data
+    )
+
+    prepare_assessment_ratings_overall_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                {
+                    "assessmentPlanPublishedDateTime": "2024-01-01 00:00:00",
+                    "ratings": {
+                        "overall": [
+                            {
+                                "rating": "Good",
+                                "status": "Assessed",
+                                "keyQuestionRatings": [
+                                    _asg_kq("Safe"),
+                                    _asg_kq("Well-led"),
+                                    _asg_kq("Caring"),
+                                    _asg_kq("Responsive"),
+                                    _asg_kq("Effective"),
+                                ],
+                            }
+                        ],
+                        "asgRatings": [],
+                    },
+                }
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_overall_data = {
+        CQCL.location_id: ["1-001"],
+        CQCL.registration_status: ["Registered"],
+        CQCL.assessment_plan_published_datetime: ["2024-01-01 00:00:00"],
+        CQCL.assessment_plan_id: [None],
+        CQCL.title: [None],
+        CQCL.assessment_date: [None],
+        CQCL.assessment_plan_status: [None],
+        CQCL.dataset: ["SAF"],
+        CQCL.name: [None],
+        CQCL.status: ["Assessed"],
+        CQCL.rating: ["Good"],
+        CQCL.source_path: ["assessment.ratings.overall"],
+        CQCL.safe: ["Good"],
+        CQCL.effective: ["Good"],
+        CQCL.caring: ["Good"],
+        CQCL.responsive: ["Good"],
+        CQCL.well_led: ["Good"],
+    }
+
+    prepare_assessment_ratings_unknown_key_question_rows = [
+        (
+            "1-001",
+            "Registered",
+            [
+                _asg_entry(
+                    "2024-01-01 00:00:00",
+                    "AP1",
+                    [
+                        _asg_kq("Safe"),
+                        _asg_kq("Well-led"),
+                        _asg_kq("Caring"),
+                        _asg_kq("Responsive"),
+                        _asg_kq("Effective"),
+                        _asg_kq("Unknown", "Inadequate"),
+                    ],
+                )
+            ],
+        ),
+    ]
+    expected_prepare_assessment_ratings_unknown_key_question_data = (
+        expected_prepare_assessment_ratings_data
+    )
 
     # fmt: off
     main_snapshot_rows = [
