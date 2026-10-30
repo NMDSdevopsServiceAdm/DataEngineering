@@ -308,6 +308,9 @@ class TestSheetText:
         assert text[cell_map.COMP_MEDIUM_TERM.name][cell_map.HEADING_CELL].endswith(
             "Since March 2026"
         )
+        assert text[cell_map.COMP_LONG_TERM.name][cell_map.HEADING_CELL].endswith(
+            "Since March 2024"
+        )
         assert text[cell_map.FILLED_POSTS.name][
             cell_map.FILLED_POSTS_CHART_HEADING_CELL
         ].endswith("since March 2027")
@@ -332,7 +335,23 @@ class TestSheetText:
             " since March 2026"
         )
 
-    def test_only_short_and_medium_term_sheets_get_a_heading_and_note(self):
+    def test_long_term_heading_and_note_use_the_march_before(self):
+        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
+            cell_map.COMP_LONG_TERM.name
+        ]
+
+        assert text[cell_map.HEADING_CELL].endswith("Since March 2024")
+        assert text[cell_map.CRITERIA_NOTE_CELL].endswith("end of March 2024 onwards.")
+
+    def test_no_filters_sheet_gets_the_long_term_heading_but_no_note(self):
+        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
+            cell_map.NO_FILTERS.name
+        ]
+
+        assert text[cell_map.HEADING_CELL].endswith("Since March 2024")
+        assert cell_map.CRITERIA_NOTE_CELL not in text
+
+    def test_only_comparison_sheets_get_a_note(self):
         text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)
 
         with_note = {
@@ -341,6 +360,7 @@ class TestSheetText:
         assert with_note == {
             cell_map.COMP_SHORT_TERM.name,
             cell_map.COMP_MEDIUM_TERM.name,
+            cell_map.COMP_LONG_TERM.name,
         }
 
     def test_raises_when_no_period_label_is_a_march(self):
@@ -527,6 +547,24 @@ class TestFilledPostsValues:
 
     def test_monthly_percent_change_starts_on_the_first_row(self, cells):
         assert cells["J65"] == pytest.approx(0.9)
+
+    def test_percent_cells_are_rounded_to_one_decimal_place_of_a_percentage(self):
+        lf = _assessment_lf(IMPORT_DATES).with_columns(
+            pl.col(Pub.filled_posts_april_perc_change) + 0.0021
+        )
+        df = job.prepare_assessment_df(lf, VALUE_COLUMNS)
+
+        cells = job.filled_posts_values(df)
+
+        assert cells["J25"] == 0.202
+
+    def test_count_cells_are_rounded_to_whole_numbers(self):
+        lf = _assessment_lf(IMPORT_DATES).with_columns(pl.col(Pub.filled_posts) + 0.6)
+        df = job.prepare_assessment_df(lf, VALUE_COLUMNS)
+
+        cells = job.filled_posts_values(df)
+
+        assert cells["C24"] == 1001
 
     def test_raises_when_periods_exceed_the_table_rows(self):
         april_dates = [datetime.date(2000 + year, 4, 1) for year in range(14)]

@@ -9,7 +9,7 @@ Run log location: `s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_ar
 |---|---|---|
 | `approved` | We assessed the run and are satisfied it is accurate | [Approving a run](#approving-a-run-approved) |
 | `selected_for_publication` | The one run chosen to publish this month | [Selecting a run for publication](#selecting-a-run-for-publication-selected_for_publication) |
-| `promoted` | The run's estimates, metadata and run-log partitions are copied into the long-term archive bucket (set automatically, not chosen at the prompt) | [Promoting a run](#promoting-a-run-promoted) |
+| `promoted` | The run's estimates and metadata partitions are copied into the long-term archive bucket (set automatically, not chosen at the prompt) | [Promoting a run](#promoting-a-run-promoted) |
 | `reconciled` | The public output's totals match the archived estimates (set automatically by Publication-Output; choosing it at the prompt only forces the flag) | [Reconciling a run](#reconciling-a-run-reconciled) |
 | `locally_checked` | The refreshed Tableau file passed its local check | [Stub](#marking-a-run-locally-checked-locally_checked) |
 
@@ -126,7 +126,7 @@ Rules:
 ## Promoting a run (`promoted`)
 
 ### Use case
-Copy a run's estimates, metadata and run-log partitions into the long-term archive bucket
+Copy a run's estimates and metadata partitions into the long-term archive bucket
 (`sfc-<workspace>-archive-promoted`), where they are kept indefinitely — the rolling archive in
 `sfc-<workspace>-datasets` expires runs that were never promoted after about 2 months. This runs
 **automatically** as part of selecting a run for publication (see "Selecting a run for
@@ -138,14 +138,13 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
 1. Marks the run `promoted` in the run log and uploads that change, the same way every other flag
    is uploaded.
 2. Copies the run's estimates partition into the long-term bucket, then its metadata partition,
-   then its (now `promoted: True`) run-log partition, printing a count of files copied for each.
+   printing a count of files copied for each. Metadata goes last: it is one file, and
+   `Publication-Output` treats its partition appearing as the sign the copy has finished.
 
 ### Expected result
-- One `Copied <n> object(s) for <prefix>/<partition>.` line per dataset (estimates, metadata,
-  run log).
+- One `Copied <n> object(s) for <prefix>/<partition>.` line per dataset (estimates, metadata).
 - `Promoted run <n> (archived <date>) to s3://<workspace>-archive-promoted/.`
-- The run log in both buckets shows `promoted: True` for the run, with the same `promoted_at`
-  timestamp.
+- The run log in `sfc-<workspace>-datasets` shows `promoted: True` and a recent `promoted_at` for the run.
 
 ### If something is wrong
 - **`could not mark run <n> as promoted`**: the flag update itself failed, so nothing was copied —
@@ -164,13 +163,13 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
   the script prints the exact `aws s3 cp ... --recursive --profile <profile>` command for the
   dataset that failed — run it, then re-check the file count matches between source and destination
   (see "Not sure whether a promotion fully finished" below). Then do the same for the datasets after
-  it: the script stops at the first failure, so the estimates, metadata and run log are copied in that
-  order and every later one still needs copying. If the first copy fails, check the profile can write
+  it: the script stops at the first failure, so the estimates and metadata are copied in that
+  order and a later one still needs copying. If the first copy fails, check the profile can write
   to the long-term bucket.
 - **`nothing found at s3://<bucket>/<prefix>/<partition>/`** or **`could not list s3://<bucket>/...`**:
   also after the flag update. The source partition has no files or could not be read, so check the
   run's partition in `<bucket>` exists before copying anything.
-- **Not sure whether a promotion fully finished**: for each of the estimates, metadata and run log
+- **Not sure whether a promotion fully finished**: for each of the estimates and metadata
   datasets, count the files in the run's partition in `<bucket>` and then in the long-term bucket. Replace
   `<profile>`, `<bucket>`, `<workspace>` and `<partition>` (`archive_date=<date>/run_number=<n>`), then run:
 
@@ -179,11 +178,9 @@ No separate steps — this runs as part of "Selecting a run for publication" abo
   aws s3 ls --recursive "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/<partition>/" --profile <profile> | wc -l
   aws s3 ls --recursive "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/<partition>/" --profile <profile> | wc -l
   aws s3 ls --recursive "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/<partition>/" --profile <profile> | wc -l
-  aws s3 ls --recursive "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" --profile <profile> | wc -l
-  aws s3 ls --recursive "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" --profile <profile> | wc -l
   ```
 
-  The numbers in each pair (bucket, then long-term bucket) should be the same, and the run log's should be 1.
+  The numbers in each pair (bucket, then long-term bucket) should be the same, and the metadata's should be 1.
 
 ### Recovering a promotion that failed before the flag was set
 If the run log does **not** yet show `promoted: True` for this run (the flag update or its
@@ -198,7 +195,6 @@ uv run python -m scripts.update_run_log --run_log_dir run_log_original --output_
 aws s3 sync "run_log_promoted/<partition>/" "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" --delete --profile <profile>
 aws s3 cp "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/<partition>/" "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/<partition>/" --recursive --profile <profile>
 aws s3 cp "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/<partition>/" "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/<partition>/" --recursive --profile <profile>
-aws s3 cp "s3://<bucket>/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" "s3://<workspace>-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/<partition>/" --recursive --profile <profile>
 rm -rf run_log_original run_log_promoted
 ```
 
@@ -213,7 +209,7 @@ Confirm the public output's total filled posts for a run matches its promoted ar
 
 ### Steps (automatic, via Publication-Output)
 No separate steps — this runs as the last stage of `Publication-Output` (started per "Selecting a run for publication" above, or by hand). It:
-1. Waits for the run's run log partition to appear in the long-term archive bucket ("Check Promoted Archive"; promotion copies the run log last, so it marks a finished copy), rechecking on a fixed schedule (`reconciliation_polling_*` in `terraform/pipeline/step-function.tf`) before failing with `PromotionTimeout` if the run was never promoted.
+1. Waits for the run's metadata partition to appear in the long-term archive bucket ("Check Promoted Archive"; promotion copies the metadata last, and it is one file, so it marks a finished copy), rechecking on a fixed schedule (`reconciliation_polling_*` in `terraform/pipeline/step-function.tf`) before failing with `PromotionTimeout` if the run was never promoted.
 2. Recomputes the public output's and the promoted archive's filled posts independently and compares each period within a small relative tolerance ("Compare Totals").
 3. On a match, marks the run `reconciled` in the run log (recording `reconciled_at`). On a mismatch, the execution fails without changing the run log, and the pipeline's usual failure notification fires.
 

@@ -151,7 +151,7 @@ count_objects() {
   fi
 }
 
-# Marks the selected run promoted, then copies its estimates, metadata and run-log
+# Marks the selected run promoted, then copies its estimates and metadata
 # partitions from $bucket into the long-term archive bucket. Runs automatically
 # after a successful selection; never prompts. Returns 0 on success, 1 on any
 # failure; a failure before the copy loop copies nothing.
@@ -202,8 +202,10 @@ copy_run_to_long_term_archive() {
     return 1
   fi
 
-  # --- Copy estimates, metadata, then the now-promoted run log, into the long-term bucket ---
-  for prefix in "$ESTIMATES_PREFIX" "$METADATA_PREFIX" "$RUN_LOG_PREFIX"; do
+  # --- Copy estimates, then metadata, into the long-term bucket ---
+  # Metadata goes last: it is one file, so its partition appearing is what
+  # Publication-Output waits for as the sign the copy has finished.
+  for prefix in "$ESTIMATES_PREFIX" "$METADATA_PREFIX"; do
     if ! source_count="$(count_objects "s3://$bucket/$prefix/$partition/")"; then
       echo "Error: could not list s3://$bucket/$prefix/$partition/. Nothing copied for this dataset." >&2
       return 1
