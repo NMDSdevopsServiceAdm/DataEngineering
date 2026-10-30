@@ -436,8 +436,9 @@ def add_latest_rating_flag_column(lf: pl.LazyFrame) -> pl.LazyFrame:
     Uses `.over()`, which the streaming engine doesn't cover.
 
     Args:
-        lf (pl.LazyFrame): CQC ratings with `rating_date`, `assessment_date` and
-            `location_id` columns.
+        lf (pl.LazyFrame): CQC ratings with `location_id`, `rating_date` and
+            `assessment_date` columns. Dates are compared as strings, so both must be
+            ISO format.
 
     Returns:
         pl.LazyFrame: The input with a `latest_rating_flag` Int32 column.
@@ -471,7 +472,7 @@ def add_numerical_ratings(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         lf (pl.LazyFrame): CQC ratings with the overall and key question rating
-            columns.
+            columns, all String.
 
     Returns:
         pl.LazyFrame: The input with a value column per rating column and
@@ -505,7 +506,5 @@ def add_numerical_ratings(lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCRatings.caring_rating_value,
             CQCRatings.responsive_rating_value,
             CQCRatings.effective_rating_value,
-        )
-        .cast(pl.Int32)
-        .alias(CQCRatings.total_rating_value)
+        ).alias(CQCRatings.total_rating_value)
     )
