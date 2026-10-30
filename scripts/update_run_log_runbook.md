@@ -81,7 +81,7 @@ Do this when you have reviewed the run's assessment data and are satisfied with 
 ### Use case
 Choose the one run to publish this month. This is a separate decision from approving, made after at least one run is approved. It can pick any approved run, not necessarily the latest: if the first run of the month is approved and a later rerun is also approved and preferred, select the later one. If you selected the wrong run, select the right one: the selection moves.
 
-Selecting a run also automatically copies it into the long-term archive bucket (see "Promoting a run" below — this step runs on its own, with no extra confirmation), lets you start the `Publication-Output` step function for it, which builds the public data (the publication summary behind the Tableau output and the T0, T1 and T2 data-download tables), and lets you cut the release tag for it (see "Cutting the release tag" below). The tag does not wait for `Publication-Output` or its reconciliation: it marks the run you chose to publish.
+Selecting a run also automatically copies it into the long-term archive bucket (see "Promoting a run" below — this step runs on its own, with no extra confirmation), lets you cut the release tag for it (see "Cutting the release tag" below), then lets you start the `Publication-Output` step function for it, which builds the public data (the publication summary behind the Tableau output and the T0, T1 and T2 data-download tables). The tag comes first and does not wait for `Publication-Output` or its reconciliation: it marks the run you chose to publish.
 
 Rules:
 - The run must be approved. Approve it first (see "Approving a run") if it is not.
@@ -99,16 +99,16 @@ Rules:
    - Moving the selection: two blocks, your run (`False` to `True`) and the previously selected run (`True` to `False`).
 7. Answer `y` at the upload prompt. A move shows `Upload 2 changed run(s)`, and both folders are replaced after this one confirmation.
 8. The script automatically promotes the run (see "Promoting a run" below) — no prompt, it just runs. If this fails, it stops here; see that section's "If something is wrong".
-9. The script offers to start `<workspace>-Publication-Output` (`main-Publication-Output` for `sfc-main-datasets`; `<branch>-Publication-Output` for a branch bucket `sfc-<branch>-datasets`). It shows the state machine name, its ARN and the input `{"run_number": <n>}`. Answer `y` to start it, or `n` to start it yourself later with that input. Nothing waits for it to finish.
-10. The script then prints the release tag it would cut (see "Cutting the release tag" below) and asks `Cut the release tag now?` (`Dry run the release tag now?` for a branch bucket). Answer `y` to cut it, or `n` to cut it yourself later.
+9. The script prints the release tag it would cut (see "Cutting the release tag" below) and asks `Cut the release tag now?` (`Dry run the release tag now?` for a branch bucket). Answer `y` to cut it, or `n` to cut it yourself later.
+10. The script offers to start `<workspace>-Publication-Output` (`main-Publication-Output` for `sfc-main-datasets`; `<branch>-Publication-Output` for a branch bucket `sfc-<branch>-datasets`). It shows the state machine name, its ARN and the input `{"run_number": <n>}`. Answer `y` to start it, or `n` to start it yourself later with that input. Nothing waits for it to finish.
 
 ### Expected result
 - `Done: selected_for_publication is now True for run <n> in s3://<bucket>/.`
 - For a move, a line `The selection moved, so these runs were changed: ...`.
 - On a branch bucket, one restore command per changed run.
 - The promotion step's own output (see "Promoting a run"), ending `Promoted run <n> (archived <date>) to s3://<workspace>-archive-promoted/.`.
-- If you answered `y` at step 9, the execution's ARN and `Started.`. In the Step Functions console the new execution of `<workspace>-Publication-Output` has the input `{"run_number": <n>}`.
 - The run, commit, tag and tag message from `cut_release_tag.sh plan`, then, after you answer `y`, the result of the cut (see "Cutting the release tag").
+- If you answered `y` at step 10, the execution's ARN and `Started.`. In the Step Functions console the new execution of `<workspace>-Publication-Output` has the input `{"run_number": <n>}`.
 
 `Publication-Output` builds the public data from the run's prepared data, which `Publication-Assessment` stores per run. `Publication-Assessment` starts itself when the estimates pipeline succeeds in `main`; on a branch it must be started by hand with `{"run_number": <n>}`. The script does not check that the run was prepared.
 
@@ -120,7 +120,7 @@ Rules:
 - **The upload fails part way**: the script names the runs it uploaded and the one that failed. A moved selection can be left with no run selected, or two runs selected. Restore every run it names (on a branch bucket, run the restore commands it prints; see "Undoing an update"), then run the script again.
 - **`The selection is saved, but promotion did not complete`**: see "Promoting a run"'s "If something is wrong" — the selection itself does not need redoing.
 - **`State machine ... was not found`, `could not list state machines`, or `could not start`**: the selection is already saved. The script prints `Start Publication-Output by hand with {"run_number": <n>}`; start `<workspace>-Publication-Output` with that input. A branch has the step function only once the branch has deployed it, and your profile needs permission to list and start state machines in that workspace.
-- **`could not work out the release tag` or `the release tag was not fully cut`**: the selection (and the `Publication-Output` offer) are unaffected. See "Cutting the release tag" to fix the cause and run it by hand.
+- **`could not work out the release tag` or `the release tag was not fully cut`**: the selection is unaffected and the `Publication-Output` offer still follows. See "Cutting the release tag" to fix the cause and run it by hand.
 - **`Publication-Output` starts but fails with `run_number <n> not found ... Available runs`**: the run was never prepared. The selection stays set. Start `<workspace>-Publication-Assessment` with `{"run_number": <n>}` (on main the `run-log-updater` role can't start it; use another profile with access), wait for it to finish, then start `Publication-Output` again with the same input.
 
 ## Promoting a run (`promoted`)
@@ -217,7 +217,7 @@ No separate steps — this runs as the last stage of `Publication-Output` (start
 2. Recomputes the public output's and the promoted archive's filled posts independently and compares each period within a small relative tolerance ("Compare Totals").
 3. On a match, marks the run `reconciled` in the run log (recording `reconciled_at`). On a mismatch, the execution fails without changing the run log, and the pipeline's usual failure notification fires.
 
-Don't approve or select runs while `Publication-Output` is finishing: marking the run reconciled rewrites that run's run log row from a copy read moments earlier, which could undo a selection made in between.
+Don't approve or select runs, or run `cut_release_tag.sh` by hand, while `Publication-Output` is finishing: marking the run reconciled and writing the tag each rewrite that run's run log row from a copy read moments earlier, which could undo the other's change or a selection made in between. The script's own tag step runs before it offers `Publication-Output`, so it is not affected.
 
 ### Steps (manual, only to force the flag without the comparison)
 Choosing this flag yourself skips the comparison entirely — only do this if the automated check is known to be wrong for a specific run (for example, a data correction already reconciled by hand). The run must already be `promoted`.
@@ -247,9 +247,9 @@ Choosing this flag yourself skips the comparison entirely — only do this if th
 ## Cutting the release tag (`tag`)
 
 ### Use case
-Tag the exact code that produced the selected run's data as `vYYYY.MM.N` (MM is the month before the run's archive date, N the next free number for that month) and move that commit's CHANGELOG entries under the new version. `update_run_log.sh` offers this straight after a selection (step 10 of "Selecting a run for publication"); it runs `scripts/cut_release_tag.sh` from your machine, with your own git and GitHub login.
+Tag the exact code that produced the selected run's data as `vYYYY.MM.N` (MM is the month before the run's archive date, N the next free number for that month) and move that commit's CHANGELOG entries under the new version. `update_run_log.sh` offers this straight after a selection and its promotion, before it offers `Publication-Output` (step 9 of "Selecting a run for publication"); it runs `scripts/cut_release_tag.sh` from your machine, with your own git and GitHub login.
 
-The run must be `selected_for_publication` and have no `tag` other than one already on its own commit (a rerun). It does not need to be `reconciled`: the tag marks the run you chose to publish, and a reconciliation failure is fixed separately. The tag goes on the run's `commit_sha`, with the message "Codebase used for data as at <Month YYYY>". The script then writes the tag to the run log, and opens a PR from `rel-<tag>` that moves into the new version only the `[Unreleased]` entries present at that commit. Entries merged to `main` since stay under `[Unreleased]`.
+The run must be `selected_for_publication` and have no `tag` other than one already on its own commit (a rerun). It does not need to be `reconciled`: the tag marks the run you chose to publish, and a reconciliation failure is fixed separately. The tag is permanent: if the run is later replaced or fails reconciliation, the tag stays and the next run for the month gets the next number (`.1` after `.0`). The tag goes on the run's `commit_sha`, with the message "Codebase used for data as at <Month YYYY>". The script then writes the tag to the run log, and opens a PR from `rel-<tag>` that moves into the new version only the `[Unreleased]` entries present at that commit. Entries merged to `main` since stay under `[Unreleased]`.
 
 The tag marks the code that produced the data, so the tagged commit's own CHANGELOG still lists its entries under `[Unreleased]`: the `[vYYYY.MM.N]` heading exists only on `main`, from the PR, after the tag. Read the version's entries from `main`'s CHANGELOG, not from the CHANGELOG at the tag.
 
@@ -259,8 +259,8 @@ The tag marks the code that produced the data, so the tagged commit's own CHANGE
 - A branch bucket (`sfc-<branch>-datasets`) only ever dry-runs: every tag, S3, branch and PR change is printed, not made. A real release needs `sfc-main-datasets`.
 
 ### Steps
-1. Select the run as in "Selecting a run for publication". After the `Publication-Output` offer the script prints the run, its commit, the tag it would cut and the tag message. Check the commit and tag are what you expect.
-2. Answer `y` at `Cut the release tag now?`. It pushes the tag, writes the tag to the run log, pushes `rel-<tag>` and opens the PR. It takes about a minute and does not wait for `Publication-Output`. It rewrites the run's run log row within seconds of the selection, long before `Publication-Output`'s last stage marks the run reconciled (that stage rewrites the same row); if you run it by hand later, not while an execution is finishing.
+1. Select the run as in "Selecting a run for publication". After the promotion output the script prints the run, its commit, the tag it would cut and the tag message. Check the commit and tag are what you expect.
+2. Answer `y` at `Cut the release tag now?`. It pushes the tag, writes the tag to the run log, pushes `rel-<tag>` and opens the PR. It takes about a minute and does not wait for anything. It runs before `Publication-Output` is offered, so its run log write cannot race that execution's `reconciled` write (both rewrite the same row); if you run it by hand later, do it while no execution is finishing.
 3. Merge the `rel-<tag>` PR once its checks pass, soon after it opens. It rewrites the `[Unreleased]` section, and GitHub's merge does not use the CHANGELOG union merge, so another PR that edits those lines can conflict. If it does, close the PR and delete the `rel-<tag>` branch, then run the by-hand commands below again: the script reuses the tag and rebuilds the PR from the current `main`.
 
 The PR moves only entries whose text matches exactly at the run's commit. An entry reworded since stays under `[Unreleased]` and ships with the next version. The first PR may also show blank-line changes in `[Unreleased]`.
@@ -298,7 +298,7 @@ bash scripts/cut_release_tag.sh cut
 Use a branch bucket first: it only prints the changes. A branch bucket is seeded by CI only when a push touches archive or publication code, so otherwise copy the run's partition of each of the estimates, estimates metadata and run log datasets from `sfc-main-datasets` into `sfc-<branch>-datasets` (down with the `run-log-updater` profile, up with `non-prod`; they are different accounts). The run must be approved, archived this month and not selected on the branch bucket; reset a copied run's `selected_for_publication`, `promoted` and `tag` if it is not.
 
 1. By hand, dry run: `RELEASE_RUN_NUMBER=<n> RELEASE_BUCKET=sfc-<branch>-datasets RELEASE_DRY_RUN=true AWS_PROFILE=non-prod`, then `plan` and `cut` as above. `plan` shows a tag, commit and message even though the run is not reconciled; `cut` prints `DRY RUN:` lines for the tag push, the run log `cp` and `sync`, the branch push and the PR; afterwards `git tag -l <tag>` and `git ls-remote origin rel-<tag>` show nothing and the run log still has no tag.
-2. Through `update_run_log.sh` on the branch bucket: select the run, answer `y` to both questions (the second reads `Dry run the release tag now?`). The same `DRY RUN:` lines appear after the promotion and `Publication-Output` output, whether or not `Publication-Output` started. Answering `n` prints the by-hand command; making the plan fail (for example pointing `origin` at a missing repository) prints `The selection is saved` and exits with status 1.
+2. Through `update_run_log.sh` on the branch bucket: select the run, answer `y` to both questions (the first reads `Dry run the release tag now?`). The `DRY RUN:` lines appear straight after the promotion output, and the `Publication-Output` offer follows whether or not the tag step succeeded. Answering `n` prints the by-hand command; making the plan fail (for example pointing `origin` at a missing repository) prints `The selection is saved` and exits with status 1.
 3. The first real run is on `sfc-main-datasets`, watched: confirm the tag and its commit, the PR diff (only `[Unreleased]` entries moved under `## [<tag>] - dd/mm/yyyy`), `tag` in the run log, and the dev deploy CircleCI starts for `rel-<tag>`.
 
 ## If something is wrong (any flag)

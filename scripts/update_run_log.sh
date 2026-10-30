@@ -5,9 +5,11 @@
 # update_run_log.py, shows the changed rows, and after you confirm replaces only
 # the changed runs' partitions on S3; declining deletes the updated copy and
 # uploads nothing. Selecting a run for publication can change two runs, and
-# automatically copies it into the long-term archive bucket, offers to start the
-# bucket's Publication-Output state machine for it, then offers to cut the release
-# tag for it (cut_release_tag.sh; a dry run for any bucket but production).
+# automatically copies it into the long-term archive bucket, offers to cut the
+# release tag for it (cut_release_tag.sh; a dry run for any bucket but production),
+# then offers to start the bucket's Publication-Output state machine for it. The tag
+# comes first so its run log write is done before Publication-Output can rewrite the
+# same row.
 #
 # Prerequisites: see update_run_log_runbook.md (aws-mfa login, uv sync).
 set -euo pipefail
@@ -232,7 +234,7 @@ copy_run_to_long_term_archive() {
   echo "Promoted run $run_number (archived $archive_date) to s3://$destination_bucket/."
 }
 
-for command_name in aws git uv; do
+for command_name in aws uv; do
   if ! command -v "$command_name" > /dev/null; then
     echo "Error: '$command_name' not found on PATH." >&2
     exit 1
@@ -354,21 +356,23 @@ fi
 
 print_restore_commands "${partitions[@]}"
 
-# --- Promote the selected run, then start the public output for it ---
+# --- Promote the selected run, cut its release tag, then start the public output for it ---
 if [[ "$flag" == "$SELECTION_FLAG" ]]; then
   if ! copy_run_to_long_term_archive; then
     echo "The selection is saved, but promotion did not complete. See update_run_log_runbook.md to finish it by hand." >&2
     exit 1
   fi
 
-  # The tag does not depend on Publication-Output, so both are always attempted.
+  # The tag goes first: it rewrites the run's run log row, which Publication-Output
+  # rewrites when it marks the run reconciled. Neither depends on the other, so both
+  # are always attempted.
   steps_failed=false
-  if ! start_publication_output; then
-    echo "The selection is saved. Start Publication-Output by hand with {\"run_number\": $run_number}." >&2
-    steps_failed=true
-  fi
   if ! cut_release_tag; then
     echo "The selection is saved. Cut the release tag by hand: see \"Cutting the release tag\" in update_run_log_runbook.md." >&2
+    steps_failed=true
+  fi
+  if ! start_publication_output; then
+    echo "The selection is saved. Start Publication-Output by hand with {\"run_number\": $run_number}." >&2
     steps_failed=true
   fi
   [[ "$steps_failed" == "false" ]] || exit 1
