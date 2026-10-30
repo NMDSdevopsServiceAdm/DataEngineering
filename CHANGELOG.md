@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - Extended the run log update script to automatically copy a selected run's estimates and metadata into the long-term archive bucket, setting a new `promoted` flag.
 - Extended the run log update script to automatically copy a selected run's estimates, metadata and run log into the long-term archive bucket, setting a new `promoted` flag.
 - Added a Publication-Output step that waits for a run to be promoted, reconciles the public output's total filled posts with the promoted archive's, and sets `reconciled` and `reconciled_at` in the run log.
+- Extended the run log update script to cut the release tag `vYYYY.MM.N` on a selected run's commit, record the tag in the run log and open a PR moving that commit's CHANGELOG entries under the version; a branch bucket only prints what it would do.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
