@@ -252,11 +252,13 @@ def sheet_text(
 ) -> dict[str, dict[str, str]]:
     """Text the writer sets, by sheet name then A1 cell.
 
-    Every sheet gets the title, which names the run. The short and medium term
-    comparison sheets get a heading and criteria note dated from the month before
-    their term's start date, as does the "Filled posts" chart heading (short term).
-    "Comp prev publication" gets an "Annual" label per March period, then a
-    "Monthly" label per later period, in each label range.
+    - Every sheet gets the title, which names the run.
+    - Short, medium and long term comparison sheets get a heading and criteria
+      note dated from the month before the term's start.
+    - "No filters - long term" gets the long term heading only.
+    - "Filled posts" gets a chart heading dated from the short term start.
+    - "Comp prev publication" gets an "Annual" row for each March period, then a
+      "Monthly" row for each period after the latest March, in each label range.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
@@ -273,8 +275,8 @@ def sheet_text(
     dates = _period_dates(period_labels)
 
     # Period months the headings and notes refer back to
-    short_term_period, medium_term_period = _period_months(
-        [term_from_dates.short, term_from_dates.medium]
+    short_term_period, medium_term_period, long_term_period = _period_months(
+        [term_from_dates.short, term_from_dates.medium, term_from_dates.long]
     )
 
     # Title on every sheet
@@ -290,16 +292,22 @@ def sheet_text(
         )
     )
 
-    # Short and medium term comparisons: heading and criteria note
+    # Comparisons: heading and criteria note
     for sheet, period in (
         (cell_map.COMP_SHORT_TERM, short_term_period),
         (cell_map.COMP_MEDIUM_TERM, medium_term_period),
+        (cell_map.COMP_LONG_TERM, long_term_period),
     ):
         date = period.strftime(PERIOD_LABEL_LONG_FORMAT)
         text[sheet.name][cell_map.HEADING_CELL] = HEADING_TEXT.format(date=date)
         text[sheet.name][cell_map.CRITERIA_NOTE_CELL] = CRITERIA_NOTE_TEXT.format(
             date=date
         )
+
+    # No filters: heading only
+    text[cell_map.NO_FILTERS.name][cell_map.HEADING_CELL] = HEADING_TEXT.format(
+        date=long_term_period.strftime(PERIOD_LABEL_LONG_FORMAT)
+    )
 
     # Comp prev publication: an Annual or Monthly label for each period row
     row_labels = [label for _, label in comp_prev_rows([d.date() for d in dates])]
@@ -479,6 +487,9 @@ def _table_cells(
 ) -> dict[str, object]:
     """Cells for one table: period dates, service type values and % changes.
 
+    Percent ranges are rounded to one decimal place of a percentage and all other
+    value ranges to whole numbers.
+
     Args:
         sheet (cell_map.SheetMap): the sheet the table is on.
         period_df (pl.DataFrame): the table's periods, in workbook order.
@@ -512,11 +523,17 @@ def _table_cells(
     for key in value_keys:
         input_range = _input_range(sheet, key)
         cell_range = CellRange(input_range.cells)
+        round_values = (
+            publication_utils.percentage_as_rounded_fraction
+            if input_range.number_format == "percent"
+            else publication_utils.round_to_whole_number
+        )
+        value_columns = [
+            f"{input_range.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
+            for service_type in service_types
+        ]
         rows = period_df.select(
-            [
-                f"{input_range.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
-                for service_type in service_types
-            ]
+            round_values(column).alias(column) for column in value_columns
         ).rows()
         # A % change range can start below the first date row.
         rows = rows[cell_range.min_row - dates_range.min_row :]
