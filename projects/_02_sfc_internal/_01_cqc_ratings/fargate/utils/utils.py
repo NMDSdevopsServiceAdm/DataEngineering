@@ -300,12 +300,11 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     The feed doesn't guarantee one entry per key question, so the first in raw array
     order (`EXPLODE_ORDER`) is kept. Ratings are aggregated per key question column,
-    not pivoted, so the plan stays lazy. Only the five key questions are kept. Columns
-    are named and typed to match the current and historic ratings, so the three can be
-    concatenated.
+    not pivoted, so the plan stays lazy. Only the five key questions are kept. Column
+    names and types match the current and historic ratings.
 
-    Collects one count to check the `overall` ratings are unpopulated, raising a
-    ValueError if not (see `raise_error_when_assessment_lf_contains_overall_data`).
+    Collects one count to check `overall` ratings are unpopulated, raising a
+    ValueError if not.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
