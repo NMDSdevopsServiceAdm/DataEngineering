@@ -49,8 +49,8 @@ def main(
     """Flattens CQC ratings and assessments into standard and benchmark datasets.
 
     Commented-out calls are placeholders for steps not yet implemented. Until then,
-    both destinations receive the cleaned current and historic ratings with numerical
-    rating values.
+    both destinations receive the cleaned current, historic and assessment ratings
+    with numerical rating values.
 
     Args:
         cqc_full_snapshot_source (str): Source s3 directory for the latest full
@@ -92,15 +92,14 @@ def main(
     historic_ratings_lf = rUtils.prepare_historic_ratings(cqc_ratings_lf)
     assessment_ratings_lf = rUtils.prepare_assessment_ratings(cqc_ratings_lf)
 
-    rUtils.raise_error_when_assessment_lf_contains_overall_data(assessment_ratings_lf)
-
-    ratings_lf = pl.concat([current_ratings_lf, historic_ratings_lf], how="diagonal")
-    # ratings_lf = merge_cqc_ratings(assessment_ratings_lf, ratings_lf)
+    ratings_lf = pl.concat(
+        [current_ratings_lf, historic_ratings_lf, assessment_ratings_lf],
+        how="diagonal",
+    )
 
     ratings_lf = rUtils.recode_unknown_codes_to_null(ratings_lf)
     ratings_lf = rUtils.remove_blank_and_duplicate_rows(ratings_lf)
-    # Needs assessment_date from merge_cqc_ratings.
-    # ratings_lf = rUtils.add_latest_rating_flag_column(ratings_lf)
+    ratings_lf = rUtils.add_latest_rating_flag_column(ratings_lf)
     ratings_lf = rUtils.add_numerical_ratings(ratings_lf)
 
     standard_ratings_lf = ratings_lf

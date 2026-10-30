@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -558,7 +559,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2024-01-01",
+            date(2024, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -578,7 +579,7 @@ class FlattenCQCRatings:
         (
             "1-002",
             "Registered",
-            "2024-01-01",
+            date(2024, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -620,7 +621,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2023-01-01",
+            date(2023, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -653,7 +654,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2023-01-01",
+            date(2023, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -666,7 +667,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2023-01-01",
+            date(2023, 1, 1),
             "Good",
             "other_safe_rating",
             "well_led_rating",
@@ -723,21 +724,21 @@ class FlattenCQCRatings:
     expected_prepare_assessment_ratings_data = {
         CQCL.location_id: ["1-001"],
         CQCL.registration_status: ["Registered"],
-        CQCL.assessment_plan_published_datetime: ["2024-01-01 00:00:00"],
+        CQCRatings.date: [date(2024, 1, 1)],
         CQCL.assessment_plan_id: ["AP1"],
         CQCL.title: ["Care Home Assessment"],
         CQCL.assessment_date: ["2024-01-02"],
         CQCL.assessment_plan_status: ["Assessed"],
         CQCL.dataset: ["SAF"],
         CQCL.name: ["Care Homes"],
-        CQCL.status: ["Current"],
-        CQCL.rating: ["Good"],
+        CQCRatings.current_or_historic: ["Current"],
+        CQCRatings.overall_rating: ["Good"],
         CQCL.source_path: ["assessment.ratings.asg_ratings"],
-        CQCL.safe: ["Good"],
-        CQCL.effective: ["Good"],
-        CQCL.caring: ["Good"],
-        CQCL.responsive: ["Good"],
-        CQCL.well_led: ["Good"],
+        CQCRatings.safe_rating: ["Good"],
+        CQCRatings.effective_rating: ["Good"],
+        CQCRatings.caring_rating: ["Good"],
+        CQCRatings.responsive_rating: ["Good"],
+        CQCRatings.well_led_rating: ["Good"],
     }
 
     # "Safe" appears twice; the first in raw array order must win
@@ -764,21 +765,21 @@ class FlattenCQCRatings:
     expected_prepare_assessment_ratings_tiebreaker_data = {
         CQCL.location_id: ["1-001"],
         CQCL.registration_status: ["Registered"],
-        CQCL.assessment_plan_published_datetime: ["2024-02-01 00:00:00"],
+        CQCRatings.date: [date(2024, 2, 1)],
         CQCL.assessment_plan_id: ["AP2"],
         CQCL.title: ["Care Home Assessment"],
         CQCL.assessment_date: ["2024-01-02"],
         CQCL.assessment_plan_status: ["Assessed"],
         CQCL.dataset: ["SAF"],
         CQCL.name: ["Care Homes"],
-        CQCL.status: ["Current"],
-        CQCL.rating: ["Good"],
+        CQCRatings.current_or_historic: ["Current"],
+        CQCRatings.overall_rating: ["Good"],
         CQCL.source_path: ["assessment.ratings.asg_ratings"],
-        CQCL.safe: ["Good"],
-        CQCL.effective: ["Good"],
-        CQCL.caring: ["Good"],
-        CQCL.responsive: ["Good"],
-        CQCL.well_led: ["Good"],
+        CQCRatings.safe_rating: ["Good"],
+        CQCRatings.effective_rating: ["Good"],
+        CQCRatings.caring_rating: ["Good"],
+        CQCRatings.responsive_rating: ["Good"],
+        CQCRatings.well_led_rating: ["Good"],
     }
 
     # 1-002 has null (not empty) keyQuestionRatings and must be dropped. 1-001 keeps
@@ -836,26 +837,6 @@ class FlattenCQCRatings:
             ],
         ),
     ]
-    expected_prepare_assessment_ratings_overall_data = {
-        CQCL.location_id: ["1-001"],
-        CQCL.registration_status: ["Registered"],
-        CQCL.assessment_plan_published_datetime: ["2024-01-01 00:00:00"],
-        CQCL.assessment_plan_id: [None],
-        CQCL.title: [None],
-        CQCL.assessment_date: [None],
-        CQCL.assessment_plan_status: [None],
-        CQCL.dataset: ["SAF"],
-        CQCL.name: [None],
-        CQCL.status: ["Assessed"],
-        CQCL.rating: ["Good"],
-        CQCL.source_path: ["assessment.ratings.overall"],
-        CQCL.safe: ["Good"],
-        CQCL.effective: ["Good"],
-        CQCL.caring: ["Good"],
-        CQCL.responsive: ["Good"],
-        CQCL.well_led: ["Good"],
-    }
-
     prepare_assessment_ratings_unknown_key_question_rows = [
         (
             "1-001",
@@ -898,7 +879,10 @@ class FlattenCQCRatings:
     # fmt: on
 
     def _formatted_ratings_row(
-        location_id, ratings, registration_status="Registered", rating_date="2024-01-01"
+        location_id,
+        ratings,
+        registration_status="Registered",
+        rating_date=date(2024, 1, 1),
     ):
         return (
             location_id,
@@ -951,7 +935,6 @@ class FlattenCQCRatings:
             "1-001",
             ("No published rating",) * 6,
             registration_status="No published rating",
-            rating_date="",
         ),
     ]
     expected_recode_unknown_codes_non_rating_columns_rows = [
@@ -959,7 +942,6 @@ class FlattenCQCRatings:
             "1-001",
             (None,) * 6,
             registration_status="No published rating",
-            rating_date="",
         ),
     ]
 
@@ -991,8 +973,8 @@ class FlattenCQCRatings:
     ]
 
     remove_blank_rows_differing_rows = [
-        _formatted_ratings_row("1-001", _valid_ratings, rating_date="2024-01-01"),
-        _formatted_ratings_row("1-001", _valid_ratings, rating_date="2024-02-01"),
+        _formatted_ratings_row("1-001", _valid_ratings, rating_date=date(2024, 1, 1)),
+        _formatted_ratings_row("1-001", _valid_ratings, rating_date=date(2024, 2, 1)),
     ]
 
     def _numerical_ratings_row(location_id, ratings, values, total):
@@ -1082,45 +1064,45 @@ class FlattenCQCRatings:
 
     # (location_id, rating_date, assessment_date, current_or_historic)
     add_latest_rating_flag_latest_date_rows = [
-        ("1-001", "2024-01-01", None, "Current"),
-        ("1-001", "2024-03-01", None, "Current"),
-        ("1-001", "2024-02-01", None, "Current"),
+        ("1-001", date(2024, 1, 1), None, "Current"),
+        ("1-001", date(2024, 3, 1), None, "Current"),
+        ("1-001", date(2024, 2, 1), None, "Current"),
     ]
     expected_add_latest_rating_flag_latest_date_rows = [
-        ("1-001", "2024-01-01", None, "Current", 0),
-        ("1-001", "2024-03-01", None, "Current", 1),
-        ("1-001", "2024-02-01", None, "Current", 0),
+        ("1-001", date(2024, 1, 1), None, "Current", 0),
+        ("1-001", date(2024, 3, 1), None, "Current", 1),
+        ("1-001", date(2024, 2, 1), None, "Current", 0),
     ]
 
     add_latest_rating_flag_two_locations_rows = [
-        ("1-001", "2024-01-01", None, "Current"),
-        ("1-001", "2024-02-01", None, "Current"),
-        ("1-002", "2023-05-01", None, "Current"),
-        ("1-002", "2022-05-01", None, "Current"),
+        ("1-001", date(2024, 1, 1), None, "Current"),
+        ("1-001", date(2024, 2, 1), None, "Current"),
+        ("1-002", date(2023, 5, 1), None, "Current"),
+        ("1-002", date(2022, 5, 1), None, "Current"),
     ]
     expected_add_latest_rating_flag_two_locations_rows = [
-        ("1-001", "2024-01-01", None, "Current", 0),
-        ("1-001", "2024-02-01", None, "Current", 1),
-        ("1-002", "2023-05-01", None, "Current", 1),
-        ("1-002", "2022-05-01", None, "Current", 0),
+        ("1-001", date(2024, 1, 1), None, "Current", 0),
+        ("1-001", date(2024, 2, 1), None, "Current", 1),
+        ("1-002", date(2023, 5, 1), None, "Current", 1),
+        ("1-002", date(2022, 5, 1), None, "Current", 0),
     ]
 
     add_latest_rating_flag_assessment_date_rows = [
-        ("1-001", "2024-01-01", "2024-01-05", "Current"),
-        ("1-001", "2024-01-01", "2024-02-05", "Current"),
+        ("1-001", date(2024, 1, 1), "2024-01-05", "Current"),
+        ("1-001", date(2024, 1, 1), "2024-02-05", "Current"),
     ]
     expected_add_latest_rating_flag_assessment_date_rows = [
-        ("1-001", "2024-01-01", "2024-01-05", "Current", 0),
-        ("1-001", "2024-01-01", "2024-02-05", "Current", 1),
+        ("1-001", date(2024, 1, 1), "2024-01-05", "Current", 0),
+        ("1-001", date(2024, 1, 1), "2024-02-05", "Current", 1),
     ]
 
     add_latest_rating_flag_null_assessment_date_rows = [
-        ("1-001", "2024-01-01", None, "Current"),
-        ("1-001", "2024-01-01", "2023-01-01", "Current"),
+        ("1-001", date(2024, 1, 1), None, "Current"),
+        ("1-001", date(2024, 1, 1), "2023-01-01", "Current"),
     ]
     expected_add_latest_rating_flag_null_assessment_date_rows = [
-        ("1-001", "2024-01-01", None, "Current", 0),
-        ("1-001", "2024-01-01", "2023-01-01", "Current", 1),
+        ("1-001", date(2024, 1, 1), None, "Current", 0),
+        ("1-001", date(2024, 1, 1), "2023-01-01", "Current", 1),
     ]
 
     add_latest_rating_flag_null_rating_date_rows = [
@@ -1130,15 +1112,15 @@ class FlattenCQCRatings:
             "2025-01-01",
             "Current",
         ),
-        ("1-001", "2020-01-01", None, "Current"),
+        ("1-001", date(2020, 1, 1), None, "Current"),
     ]
     expected_add_latest_rating_flag_null_rating_date_rows = [
         ("1-001", None, "2025-01-01", "Current", 0),
-        ("1-001", "2020-01-01", None, "Current", 1),
+        ("1-001", date(2020, 1, 1), None, "Current", 1),
     ]
 
     add_latest_rating_flag_tied_rows = [
-        ("1-001", "2024-01-01", "2024-01-02", "Current"),
-        ("1-001", "2024-01-01", "2024-01-02", "Historic"),
-        ("1-001", "2024-01-01", "2024-01-02", None),
+        ("1-001", date(2024, 1, 1), "2024-01-02", "Current"),
+        ("1-001", date(2024, 1, 1), "2024-01-02", "Historic"),
+        ("1-001", date(2024, 1, 1), "2024-01-02", None),
     ]

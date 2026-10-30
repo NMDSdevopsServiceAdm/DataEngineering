@@ -38,7 +38,7 @@ ASSESSMENT_SCHEMA = pl.Schema(
         (IndCQC.main_job_role_clean_labelled, pl.String()),
         (IndCQC.current_region, pl.String()),
         (IndCQC.primary_service_type, pl.String()),
-        (Pub.filled_posts, pl.Float32()),
+        (Pub.unfiltered_filled_posts, pl.Float32()),
     ]
 )
 ARCHIVE_SCHEMA = pl.Schema(

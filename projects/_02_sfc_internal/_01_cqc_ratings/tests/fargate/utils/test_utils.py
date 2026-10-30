@@ -230,11 +230,6 @@ prepare_assessment_ratings_cases = [
         expected_data=Data.expected_prepare_assessment_ratings_null_key_question_ratings_data,
     ),
     PrepareAssessmentRatingsCase(
-        id="overall_ratings_have_null_asg_only_columns",
-        rows=Data.prepare_assessment_ratings_overall_rows,
-        expected_data=Data.expected_prepare_assessment_ratings_overall_data,
-    ),
-    PrepareAssessmentRatingsCase(
         id="unknown_key_question_is_ignored",
         rows=Data.prepare_assessment_ratings_unknown_key_question_rows,
         expected_data=Data.expected_prepare_assessment_ratings_unknown_key_question_data,
@@ -259,31 +254,26 @@ class TestPrepareAssessmentRatings:
         ).collect()
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
 
+    def test_raises_when_overall_rating_is_populated(self):
+        input_lf = pl.LazyFrame(
+            Data.prepare_assessment_ratings_overall_rows,
+            schema=Schemas.assessment_ratings_input_schema,
+            orient="row",
+        )
+
+        with pytest.raises(ValueError, match="overall object within the assessments"):
+            job.prepare_assessment_ratings(input_lf)
+
 
 class TestRaiseErrorWhenAssessmentLfContainsOverallData:
     def test_raises_when_overall_rating_is_populated(self):
-        input_lf = pl.LazyFrame(
-            {
-                CQCL.source_path: [job.OVERALL_SOURCE_PATH],
-                CQCL.rating: ["Good"],
-            }
-        )
+        input_lf = pl.LazyFrame({CQCL.rating: ["Good"]})
 
         with pytest.raises(ValueError, match="contains 1 values"):
             job.raise_error_when_assessment_lf_contains_overall_data(input_lf)
 
-    @pytest.mark.parametrize(
-        "source_path,rating",
-        [
-            pytest.param(job.OVERALL_SOURCE_PATH, None, id="null_overall_rating"),
-            pytest.param(job.ASG_SOURCE_PATH, "Good", id="rating_only_in_asg"),
-        ],
-    )
-    def test_does_not_raise_when_overall_has_no_rating(self, source_path, rating):
-        input_lf = pl.LazyFrame(
-            {CQCL.source_path: [source_path], CQCL.rating: [rating]},
-            schema={CQCL.source_path: pl.String, CQCL.rating: pl.String},
-        )
+    def test_does_not_raise_when_overall_has_no_rating(self):
+        input_lf = pl.LazyFrame({CQCL.rating: [None]}, schema={CQCL.rating: pl.String})
 
         job.raise_error_when_assessment_lf_contains_overall_data(input_lf)
 

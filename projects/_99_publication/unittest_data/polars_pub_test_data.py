@@ -1081,10 +1081,10 @@ _CARE_WORKER_SOUTH_WEST_NON_RES = (
 calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
     CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
         id="change_is_measured_against_the_first_period_in_the_window",
-        column_name=Pub.filtered_ct_total_employed_long,
+        column_name=Pub.filtered_long_ct_total_employed,
         from_date=date(2025, 4, 1),
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filtered_ct_cum_perc_change_long,
+        column_alias=Pub.filtered_long_ct_cum_pct_change,
         expected_data=[
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
@@ -1093,10 +1093,10 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
     ),
     CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
         id="baseline_ignores_periods_before_from_date",
-        column_name=Pub.filtered_ct_total_employed_long,
+        column_name=Pub.filtered_long_ct_total_employed,
         from_date=date(2025, 4, 1),
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filtered_ct_cum_perc_change_long,
+        column_alias=Pub.filtered_long_ct_cum_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 50.0, None, None),
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
@@ -1105,10 +1105,10 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
     ),
     CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
         id="null_for_every_period_when_none_are_in_the_window",
-        column_name=Pub.filtered_ct_total_employed_long,
+        column_name=Pub.filtered_long_ct_total_employed,
         from_date=date(2025, 4, 1),
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filtered_ct_cum_perc_change_long,
+        column_alias=Pub.filtered_long_ct_cum_pct_change,
         expected_data=[
             (date(2023, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, None),
@@ -1116,10 +1116,10 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
     ),
     CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
         id="null_when_the_baseline_period_is_zero",
-        column_name=Pub.filtered_ct_total_employed_long,
+        column_name=Pub.filtered_long_ct_total_employed,
         from_date=date(2025, 4, 1),
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filtered_ct_cum_perc_change_long,
+        column_alias=Pub.filtered_long_ct_cum_pct_change,
         expected_data=[
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, None, None),
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 50.0, None, None),
@@ -1128,10 +1128,10 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
     ),
     CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
         id="a_period_dropping_to_zero_is_a_full_decrease_not_a_null",
-        column_name=Pub.filtered_ct_total_employed_long,
+        column_name=Pub.filtered_long_ct_total_employed,
         from_date=date(2025, 4, 1),
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filtered_ct_cum_perc_change_long,
+        column_alias=Pub.filtered_long_ct_cum_pct_change,
         expected_data=[
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, None, -1.0),
@@ -1141,10 +1141,10 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
         # No row at all for 2026-04-01 - the baseline stays anchored to the
         # first in-window period regardless of the gap.
         id="baseline_is_unaffected_by_a_missing_period",
-        column_name=Pub.filtered_ct_total_employed_long,
+        column_name=Pub.filtered_long_ct_total_employed,
         from_date=date(2025, 4, 1),
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filtered_ct_cum_perc_change_long,
+        column_alias=Pub.filtered_long_ct_cum_pct_change,
         expected_data=[
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
             (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
@@ -1155,10 +1155,10 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
         # only passes if the baseline genuinely orders by import date rather
         # than relying on physical row order.
         id="groups_do_not_affect_each_other",
-        column_name=Pub.filtered_ct_total_employed_long,
+        column_name=Pub.filtered_long_ct_total_employed,
         from_date=date(2025, 4, 1),
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filtered_ct_cum_perc_change_long,
+        column_alias=Pub.filtered_long_ct_cum_pct_change,
         expected_data=[
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
             (date(2027, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 25.0, None, -0.5),
@@ -1168,10 +1168,10 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
     ),
     CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
         id="honours_the_column_name_from_date_and_alias_arguments",
-        column_name=Pub.filtered_ct_total_employed_medium,
+        column_name=Pub.filtered_medium_ct_total_employed,
         from_date=date(2026, 4, 1),
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filtered_ct_cum_perc_change_medium,
+        column_alias=Pub.filtered_medium_ct_cum_pct_change,
         expected_data=[
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 40.0, 0.0),
             (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 60.0, 0.5),
@@ -1195,9 +1195,9 @@ class CalcPercChangeFromPreviousAprilTestCase:
 calc_perc_change_from_previous_april_test_cases = [
     CalcPercChangeFromPreviousAprilTestCase(
         id="april_rows_are_compared_with_the_previous_april_across_quarterly_and_monthly_data",
-        column_name=Pub.filled_posts,
+        column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
             (date(2024, 7, 1), *_NURSE_LONDON_CARE_HOME, 150.0, 1, None),
@@ -1208,9 +1208,9 @@ calc_perc_change_from_previous_april_test_cases = [
     ),
     CalcPercChangeFromPreviousAprilTestCase(
         id="first_april_in_the_group_has_no_change_to_report",
-        column_name=Pub.filled_posts,
+        column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2024, 10, 1), *_NURSE_LONDON_CARE_HOME, 50.0, 1, None),
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
@@ -1220,9 +1220,9 @@ calc_perc_change_from_previous_april_test_cases = [
         # No row at all for 2025-04-01 - the comparison silently spans the gap
         # to the last present April rather than returning null.
         id="compares_with_the_last_present_april_when_one_is_missing",
-        column_name=Pub.filled_posts,
+        column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 150.0, 1, 0.5),
@@ -1230,9 +1230,9 @@ calc_perc_change_from_previous_april_test_cases = [
     ),
     CalcPercChangeFromPreviousAprilTestCase(
         id="null_when_the_previous_april_is_zero",
-        column_name=Pub.filled_posts,
+        column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, 1, None),
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 50.0, 1, None),
@@ -1240,9 +1240,9 @@ calc_perc_change_from_previous_april_test_cases = [
     ),
     CalcPercChangeFromPreviousAprilTestCase(
         id="an_april_dropping_to_zero_is_a_full_decrease_not_a_null",
-        column_name=Pub.filled_posts,
+        column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, 1, -1.0),
@@ -1252,9 +1252,9 @@ calc_perc_change_from_previous_april_test_cases = [
         # Rows are deliberately out of date order within each group, so this
         # only passes if the window genuinely orders by import date.
         id="groups_do_not_affect_each_other",
-        column_name=Pub.filled_posts,
+        column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, 1, 1.0),
             (date(2025, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 30.0, 1, 0.5),
@@ -1264,9 +1264,9 @@ calc_perc_change_from_previous_april_test_cases = [
     ),
     CalcPercChangeFromPreviousAprilTestCase(
         id="honours_the_column_name_and_alias_arguments",
-        column_name=Pub.locationid_count,
+        column_name=Pub.unfiltered_locationid_count,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.locationid_count_april_perc_change,
+        column_alias=Pub.unfiltered_locationid_count_april_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 10, None),
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 15, 0.5),
