@@ -69,3 +69,5 @@ class TestMain:
                 CQCRatingsDatasetValues.saf,
             ]
             assert returned_df[CQCRatings.date].dtype == pl.Date
+            assert CQCRatings.latest_rating_flag in returned_df.columns
+            assert CQCRatings.total_rating_value in returned_df.columns
