@@ -751,6 +751,7 @@ def add_numerical_ratings(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/flatten_cqc_ratings.py
 def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
     """
     Selects columns in the CQC ratings and assessments dataframe and removes duplicate rows.
@@ -790,6 +791,7 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
     return standard_ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/flatten_cqc_ratings.py
 def add_location_id_hash(df: DataFrame) -> DataFrame:
     """
     Adds a column with a 20 character hashed version of the location ID.
