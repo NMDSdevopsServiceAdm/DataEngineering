@@ -91,6 +91,7 @@ class TestWriteInputCell:
 
 
 PERIOD_LABELS = ["Mar 2026"]
+RUN_NUMBER = 7
 
 
 @pytest.fixture(scope="module")
@@ -102,7 +103,7 @@ def values() -> dict[str, dict[str, object]]:
 def filled_path(tmp_path_factory, values) -> Path:
     path = tmp_path_factory.mktemp("filled") / "assessment.xlsx"
     job.fill_assessment_workbook(
-        PERIOD_LABELS, TERM_FROM_DATES, values, cell_map.TEMPLATE_PATH, path
+        PERIOD_LABELS, TERM_FROM_DATES, RUN_NUMBER, values, cell_map.TEMPLATE_PATH, path
     )
     return path
 
@@ -123,18 +124,20 @@ class TestFillAssessmentWorkbook:
             (sheet, cell)
             for sheet, cells in values.items()
             for cell, value in cells.items()
-            if cell not in job.sheet_text(PERIOD_LABELS, TERM_FROM_DATES)[sheet]
+            if cell
+            not in job.sheet_text(PERIOD_LABELS, TERM_FROM_DATES, RUN_NUMBER)[sheet]
             and saved[sheet][cell].value != value
         ]
 
         assert wrong == []
 
-    def test_every_sheet_title_names_the_latest_period(self, tmp_path, values):
+    def test_every_sheet_title_names_the_latest_period_and_run(self, tmp_path, values):
         output = tmp_path / "out.xlsx"
 
         job.fill_assessment_workbook(
             ["Sep 2025", "Mar 2026"],
             TERM_FROM_DATES,
+            RUN_NUMBER,
             values,
             cell_map.TEMPLATE_PATH,
             output,
@@ -145,7 +148,7 @@ class TestFillAssessmentWorkbook:
             sheet.name: saved[sheet.name][cell_map.TITLE_CELL].value
             for sheet in cell_map.ASSESSMENT_SHEETS
         }
-        assert set(titles.values()) == {"End of March 2026"}
+        assert set(titles.values()) == {"End of March 2026 (run 7)"}
 
     def test_cells_outside_the_inputs_are_unchanged(self, filled_path):
         template = openpyxl.load_workbook(cell_map.TEMPLATE_PATH)
@@ -196,6 +199,7 @@ class TestFillAssessmentWorkbook:
             job.fill_assessment_workbook(
                 PERIOD_LABELS,
                 TERM_FROM_DATES,
+                RUN_NUMBER,
                 {"Filled posts": {"B9": "overwritten"}},
                 cell_map.TEMPLATE_PATH,
                 tmp_path / "out.xlsx",
@@ -206,6 +210,7 @@ class TestFillAssessmentWorkbook:
             job.fill_assessment_workbook(
                 PERIOD_LABELS,
                 TERM_FROM_DATES,
+                RUN_NUMBER,
                 {"Missing": {"B3": "x"}},
                 cell_map.TEMPLATE_PATH,
                 tmp_path / "out.xlsx",
@@ -216,7 +221,12 @@ class TestFillAssessmentWorkbook:
 
         with pytest.raises(job.TemplateMismatchError, match="'Filled posts'!C23"):
             job.fill_assessment_workbook(
-                PERIOD_LABELS, TERM_FROM_DATES, {}, template, tmp_path / "out.xlsx"
+                PERIOD_LABELS,
+                TERM_FROM_DATES,
+                RUN_NUMBER,
+                {},
+                template,
+                tmp_path / "out.xlsx",
             )
 
     def test_saves_nothing_when_error_raised(self, tmp_path):
@@ -225,7 +235,7 @@ class TestFillAssessmentWorkbook:
 
         with pytest.raises(job.TemplateMismatchError):
             job.fill_assessment_workbook(
-                PERIOD_LABELS, TERM_FROM_DATES, {}, template, output
+                PERIOD_LABELS, TERM_FROM_DATES, RUN_NUMBER, {}, template, output
             )
 
         assert not output.exists()
@@ -238,17 +248,27 @@ class TestFillAssessmentWorkbook:
 
         with pytest.raises(job.TemplateMismatchError, match="No filters - long term"):
             job.fill_assessment_workbook(
-                PERIOD_LABELS, TERM_FROM_DATES, {}, template, tmp_path / "out.xlsx"
+                PERIOD_LABELS,
+                TERM_FROM_DATES,
+                RUN_NUMBER,
+                {},
+                template,
+                tmp_path / "out.xlsx",
             )
 
 
 class TestTitleText:
     def test_uses_the_latest_period_by_date_not_by_text(self):
-        assert job.title_text(["Sep 2025", "Mar 2026"]) == "End of March 2026"
+        title = job.title_text(["Sep 2025", "Mar 2026"], RUN_NUMBER)
+
+        assert title.startswith("End of March 2026")
+
+    def test_appends_the_run_number_to_the_latest_period(self):
+        assert job.title_text(["Mar 2026"], RUN_NUMBER) == "End of March 2026 (run 7)"
 
     def test_raises_when_there_are_no_period_labels(self):
         with pytest.raises(ValueError, match="period_labels is empty"):
-            job.title_text([])
+            job.title_text([], RUN_NUMBER)
 
 
 class TestCompPrevRows:
@@ -279,8 +299,17 @@ class TestCompPrevRows:
 class TestSheetText:
     PERIOD_LABELS = ["Mar 2025", "Sep 2025", "Mar 2026", "Sep 2026"]
 
+    def test_titles_every_sheet_with_the_run_number(self):
+        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES, RUN_NUMBER)
+
+        titles = {name: cells[cell_map.TITLE_CELL] for name, cells in text.items()}
+        assert titles == {
+            sheet.name: "End of September 2026 (run 7)"
+            for sheet in cell_map.ASSESSMENT_SHEETS
+        }
+
     def test_short_term_heading_and_note_use_the_march_before_the_term_start(self):
-        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
+        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES, RUN_NUMBER)[
             cell_map.COMP_SHORT_TERM.name
         ]
 
@@ -300,7 +329,7 @@ class TestSheetText:
             long=APRIL_2024,
         )
 
-        text = job.sheet_text(self.PERIOD_LABELS, term_from_dates)
+        text = job.sheet_text(self.PERIOD_LABELS, term_from_dates, RUN_NUMBER)
 
         assert text[cell_map.COMP_SHORT_TERM.name][cell_map.HEADING_CELL].endswith(
             "Since March 2027"
@@ -316,7 +345,7 @@ class TestSheetText:
         ].endswith("since March 2027")
 
     def test_medium_term_heading_and_note_use_the_march_before(self):
-        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
+        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES, RUN_NUMBER)[
             cell_map.COMP_MEDIUM_TERM.name
         ]
 
@@ -326,7 +355,7 @@ class TestSheetText:
     def test_filled_posts_chart_heading_uses_the_march_before_the_short_term_start(
         self,
     ):
-        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
+        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES, RUN_NUMBER)[
             cell_map.FILLED_POSTS.name
         ]
 
@@ -336,7 +365,7 @@ class TestSheetText:
         )
 
     def test_long_term_heading_and_note_use_the_march_before(self):
-        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
+        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES, RUN_NUMBER)[
             cell_map.COMP_LONG_TERM.name
         ]
 
@@ -344,7 +373,7 @@ class TestSheetText:
         assert text[cell_map.CRITERIA_NOTE_CELL].endswith("end of March 2024 onwards.")
 
     def test_no_filters_sheet_gets_the_long_term_heading_but_no_note(self):
-        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
+        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES, RUN_NUMBER)[
             cell_map.NO_FILTERS.name
         ]
 
@@ -352,7 +381,7 @@ class TestSheetText:
         assert cell_map.CRITERIA_NOTE_CELL not in text
 
     def test_only_comparison_sheets_get_a_note(self):
-        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)
+        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES, RUN_NUMBER)
 
         with_note = {
             name for name, cells in text.items() if cell_map.CRITERIA_NOTE_CELL in cells
@@ -365,7 +394,7 @@ class TestSheetText:
 
     def test_raises_when_no_period_label_is_a_march(self):
         with pytest.raises(ValueError, match="no March"):
-            job.sheet_text(["Sep 2025", "Oct 2025"], TERM_FROM_DATES)
+            job.sheet_text(["Sep 2025", "Oct 2025"], TERM_FROM_DATES, RUN_NUMBER)
 
     def test_comp_prev_publication_labels_are_annual_rows_then_monthly_rows(self):
         # Sep 2025 is between the Marches, so it is not a row; May 2026 is repeated.
@@ -379,7 +408,7 @@ class TestSheetText:
             "May 2026",
         ]
 
-        text = job.sheet_text(period_labels, TERM_FROM_DATES)[
+        text = job.sheet_text(period_labels, TERM_FROM_DATES, RUN_NUMBER)[
             cell_map.COMP_PREV_PUBLICATION.name
         ]
 
@@ -400,7 +429,7 @@ class TestSheetText:
         labels += [f"{month} 2021" for month in ("Jun", "Jul", "Aug", "Sep")]
 
         with pytest.raises(ValueError, match="exceed the 37 rows"):
-            job.sheet_text(labels, TERM_FROM_DATES)
+            job.sheet_text(labels, TERM_FROM_DATES, RUN_NUMBER)
 
 
 VALUE_COLUMNS = job._value_columns(cell_map.ASSESSMENT_SHEETS)
@@ -772,6 +801,7 @@ class TestFillAssessmentWorkbookFromLf:
             _assessment_lf(import_dates),
             (cell_map.COMP_PREV_PUBLICATION,),
             TERM_FROM_DATES,
+            RUN_NUMBER,
             cell_map.TEMPLATE_PATH,
             output,
         )
@@ -798,12 +828,32 @@ class TestFillAssessmentWorkbookFromLf:
             _assessment_lf(IMPORT_DATES),
             (cell_map.FILLED_POSTS,),
             TERM_FROM_DATES,
+            RUN_NUMBER,
             cell_map.TEMPLATE_PATH,
             output,
         )
 
         sheet = openpyxl.load_workbook(output)[cell_map.FILLED_POSTS.name]
-        assert (sheet["C24"].value, sheet["B3"].value) == (1000, "End of April 2026")
+        assert sheet["C24"].value == 1000
+
+    def test_writes_the_run_number_into_every_sheet_title(self, tmp_path):
+        output = tmp_path / "out.xlsx"
+
+        job.fill_assessment_workbook_from_lf(
+            _assessment_lf(IMPORT_DATES),
+            (cell_map.FILLED_POSTS, cell_map.COMP_PREV_PUBLICATION),
+            TERM_FROM_DATES,
+            RUN_NUMBER,
+            cell_map.TEMPLATE_PATH,
+            output,
+        )
+
+        saved = openpyxl.load_workbook(output)
+        titles = {
+            sheet.name: saved[sheet.name][cell_map.TITLE_CELL].value
+            for sheet in (cell_map.FILLED_POSTS, cell_map.COMP_PREV_PUBLICATION)
+        }
+        assert set(titles.values()) == {"End of April 2026 (run 7)"}
 
     def test_raises_for_a_sheet_without_a_values_builder(self, tmp_path):
         with pytest.raises(ValueError, match="No values builder"):
@@ -811,6 +861,7 @@ class TestFillAssessmentWorkbookFromLf:
                 _assessment_lf(IMPORT_DATES),
                 (cell_map.SheetMap("Unknown sheet", (), 0),),
                 TERM_FROM_DATES,
+                RUN_NUMBER,
                 cell_map.TEMPLATE_PATH,
                 tmp_path / "out.xlsx",
             )
