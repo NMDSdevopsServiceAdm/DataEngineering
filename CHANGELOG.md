@@ -35,6 +35,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
 - Converted the CQC ratings assessment flattening to Polars.
 - Converted the CQC ratings overall-data check to Polars.
 - Changed the period label column names to `period_label_short` and `period_label_long`, so output column names change.
