@@ -38,7 +38,7 @@ class PublicationColumns:
     filtered_locationid_count_cum_perc_change_short: str = (
         "filtered_locationid_count_cum_perc_change_short"
     )
-    prev_run_filled_posts: str = "prev_run_filled_posts"
+    unfiltered_prev_run_filled_posts: str = "unfiltered_prev_run_filled_posts"
     unfiltered_filled_posts_perc_change_vs_prev_run: str = (
         "unfiltered_filled_posts_perc_change_vs_prev_run"
     )

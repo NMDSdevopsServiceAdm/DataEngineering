@@ -411,7 +411,7 @@ EXPLICIT_VALUE_COLUMNS = [
     Pub.unfiltered_locationid_count_april_perc_change,
     Pub.unfiltered_short_sfc_cum_pct_change,
     Pub.filtered_locationid_count_cum_perc_change_short,
-    Pub.prev_run_filled_posts,
+    Pub.unfiltered_prev_run_filled_posts,
     Pub.unfiltered_filled_posts_perc_change_vs_prev_run,
 ]
 OTHER_VALUE_COLUMNS = [c for c in VALUE_COLUMNS if c not in EXPLICIT_VALUE_COLUMNS]
@@ -445,7 +445,7 @@ def _assessment_lf(
             Pub.unfiltered_locationid_count_april_perc_change: 0.2 * (i + 1),
             Pub.unfiltered_short_sfc_cum_pct_change: 0.3 * (i + 1),
             Pub.filtered_locationid_count_cum_perc_change_short: 0.4 * (i + 1),
-            Pub.prev_run_filled_posts: 5000 * (i + 1) + 10 * j,
+            Pub.unfiltered_prev_run_filled_posts: 5000 * (i + 1) + 10 * j,
             Pub.unfiltered_filled_posts_perc_change_vs_prev_run: 0.5 * (i + 1),
         }
         | {column: _generic_value(column, i, j) for column in OTHER_VALUE_COLUMNS}

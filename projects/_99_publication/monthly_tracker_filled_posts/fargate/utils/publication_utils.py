@@ -840,7 +840,7 @@ def add_prev_run_filled_posts_columns(
             data, or None when there is no earlier run.
 
     Returns:
-        pl.LazyFrame: assessment_summary_lf with prev_run_filled_posts and
+        pl.LazyFrame: assessment_summary_lf with unfiltered_prev_run_filled_posts and
             unfiltered_filled_posts_perc_change_vs_prev_run added.
     """
     current_schema = assessment_summary_lf.collect_schema()
@@ -860,7 +860,7 @@ def add_prev_run_filled_posts_columns(
             + [
                 pl.col(Pub.unfiltered_filled_posts)
                 .cast(current_schema[Pub.unfiltered_filled_posts])
-                .alias(Pub.prev_run_filled_posts)
+                .alias(Pub.unfiltered_prev_run_filled_posts)
             ]
         )
         assessment_summary_lf = assessment_summary_lf.join(
@@ -873,12 +873,12 @@ def add_prev_run_filled_posts_columns(
     else:
         assessment_summary_lf = assessment_summary_lf.with_columns(
             pl.lit(None, dtype=current_schema[Pub.unfiltered_filled_posts]).alias(
-                Pub.prev_run_filled_posts
+                Pub.unfiltered_prev_run_filled_posts
             )
         )
 
     current_posts = pl.col(Pub.unfiltered_filled_posts).cast(pl.Float32)
-    prev_posts = pl.col(Pub.prev_run_filled_posts).cast(pl.Float32)
+    prev_posts = pl.col(Pub.unfiltered_prev_run_filled_posts).cast(pl.Float32)
     return assessment_summary_lf.with_columns(
         pl.when(prev_posts == 0)
         .then(None)

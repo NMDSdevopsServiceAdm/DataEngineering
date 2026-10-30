@@ -295,7 +295,7 @@ COMP_PREV_PUBLICATION = SheetMap(
         ),
         InputRange(
             "D23:H59",
-            Pub.prev_run_filled_posts,
+            Pub.unfiltered_prev_run_filled_posts,
             note="previous publication figures",
             key="previous.values",
             number_format="count",

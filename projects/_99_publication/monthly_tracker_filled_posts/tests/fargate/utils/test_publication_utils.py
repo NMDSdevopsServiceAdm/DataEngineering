@@ -574,7 +574,10 @@ class TestAddPrevRunFilledPostsColumns:
             self._current_lf(), self._prev_lf()
         ).collect()
 
-        assert returned_df[Pub.prev_run_filled_posts].to_list() == [100.0, None]
+        assert returned_df[Pub.unfiltered_prev_run_filled_posts].to_list() == [
+            100.0,
+            None,
+        ]
 
     def test_adds_perc_change_from_prev_run_as_net_change_fraction(self):
         returned_df = job.add_prev_run_filled_posts_columns(
@@ -625,7 +628,10 @@ class TestAddPrevRunFilledPostsColumns:
             current_lf, self._prev_lf()
         ).collect()
 
-        assert returned_df[Pub.prev_run_filled_posts].to_list() == [100.0, None]
+        assert returned_df[Pub.unfiltered_prev_run_filled_posts].to_list() == [
+            100.0,
+            None,
+        ]
 
     def test_matches_rows_where_a_key_is_null(self):
         current_lf = self._current_lf().with_columns(
@@ -644,7 +650,10 @@ class TestAddPrevRunFilledPostsColumns:
             current_lf, prev_lf
         ).collect()
 
-        assert returned_df[Pub.prev_run_filled_posts].to_list() == [100.0, None]
+        assert returned_df[Pub.unfiltered_prev_run_filled_posts].to_list() == [
+            100.0,
+            None,
+        ]
 
     def test_adds_null_columns_when_prev_run_lacks_filled_posts(self):
         prev_lf = pl.LazyFrame(
@@ -657,7 +666,7 @@ class TestAddPrevRunFilledPostsColumns:
             self._current_lf(), prev_lf
         ).collect()
 
-        assert returned_df[Pub.prev_run_filled_posts].null_count() == 2
+        assert returned_df[Pub.unfiltered_prev_run_filled_posts].null_count() == 2
         assert (
             returned_df[
                 Pub.unfiltered_filled_posts_perc_change_vs_prev_run
@@ -670,12 +679,12 @@ class TestAddPrevRunFilledPostsColumns:
             self._current_lf(), None
         ).collect()
 
-        assert returned_df.schema[Pub.prev_run_filled_posts] == pl.Float64()
+        assert returned_df.schema[Pub.unfiltered_prev_run_filled_posts] == pl.Float64()
         assert (
             returned_df.schema[Pub.unfiltered_filled_posts_perc_change_vs_prev_run]
             == pl.Float32()
         )
-        assert returned_df[Pub.prev_run_filled_posts].null_count() == 2
+        assert returned_df[Pub.unfiltered_prev_run_filled_posts].null_count() == 2
         assert (
             returned_df[
                 Pub.unfiltered_filled_posts_perc_change_vs_prev_run
