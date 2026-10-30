@@ -1432,6 +1432,36 @@ round_percentage_test_cases = [
     ),
 ]
 
+percentage_as_rounded_fraction_test_cases = [
+    RoundPercentageTestCase(
+        id="fraction_is_rounded_to_one_decimal_place_of_a_percentage",
+        expected_data=[(0.0321, 0.032), (0.0329, 0.033)],
+    ),
+    RoundPercentageTestCase(
+        id="a_half_way_tie_rounds_away_from_zero",
+        expected_data=[(0.0005, 0.001), (-0.0015, -0.002)],
+    ),
+    RoundPercentageTestCase(
+        id="null_stays_null",
+        expected_data=[(None, None)],
+    ),
+]
+
+round_to_whole_number_test_cases = [
+    RoundPercentageTestCase(
+        id="value_is_rounded_to_the_nearest_whole_number",
+        expected_data=[(1000.4, 1000), (1000.6, 1001)],
+    ),
+    RoundPercentageTestCase(
+        id="a_half_way_tie_rounds_away_from_zero",
+        expected_data=[(2.5, 3), (-2.5, -3)],
+    ),
+    RoundPercentageTestCase(
+        id="null_stays_null",
+        expected_data=[(None, None)],
+    ),
+]
+
 
 @dataclass
 class GetPublicationDateTestCase:
