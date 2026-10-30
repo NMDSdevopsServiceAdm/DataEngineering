@@ -11,6 +11,9 @@ from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import (
     FlattenCQCRatings as Schemas,
 )
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 
 
 class TestKeepLatestPerKey:
@@ -197,3 +200,88 @@ class TestPrepareHistoricRatings:
 
         with pytest.raises(ValueError, match="Duplicate key question names"):
             job.prepare_historic_ratings(input_lf).collect()
+
+
+@dataclass
+class PrepareAssessmentRatingsCase:
+    id: str
+    rows: list
+    expected_data: dict
+
+    def as_pytest_param(self):
+        return pytest.param(self.rows, self.expected_data, id=self.id)
+
+
+prepare_assessment_ratings_cases = [
+    PrepareAssessmentRatingsCase(
+        id="asg_key_questions_become_columns",
+        rows=Data.prepare_assessment_ratings_rows,
+        expected_data=Data.expected_prepare_assessment_ratings_data,
+    ),
+    PrepareAssessmentRatingsCase(
+        id="duplicate_key_question_keeps_first_in_raw_order",
+        rows=Data.prepare_assessment_ratings_tiebreaker_rows,
+        expected_data=Data.expected_prepare_assessment_ratings_tiebreaker_data,
+    ),
+    PrepareAssessmentRatingsCase(
+        id="null_key_question_ratings_are_dropped",
+        rows=Data.prepare_assessment_ratings_null_key_question_ratings_rows,
+        expected_data=Data.expected_prepare_assessment_ratings_null_key_question_ratings_data,
+    ),
+    PrepareAssessmentRatingsCase(
+        id="overall_ratings_have_null_asg_only_columns",
+        rows=Data.prepare_assessment_ratings_overall_rows,
+        expected_data=Data.expected_prepare_assessment_ratings_overall_data,
+    ),
+    PrepareAssessmentRatingsCase(
+        id="unknown_key_question_is_ignored",
+        rows=Data.prepare_assessment_ratings_unknown_key_question_rows,
+        expected_data=Data.expected_prepare_assessment_ratings_unknown_key_question_data,
+    ),
+]
+
+
+class TestPrepareAssessmentRatings:
+    @pytest.mark.parametrize(
+        "rows,expected_data",
+        [case.as_pytest_param() for case in prepare_assessment_ratings_cases],
+    )
+    def test_returns_expected_rows(self, rows, expected_data):
+        input_lf = pl.LazyFrame(
+            rows, schema=Schemas.assessment_ratings_input_schema, orient="row"
+        )
+
+        returned_df = job.prepare_assessment_ratings(input_lf).collect()
+
+        expected_df = pl.LazyFrame(
+            expected_data, schema=Schemas.assessment_ratings_output_schema
+        ).collect()
+        pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+
+class TestRaiseErrorWhenAssessmentLfContainsOverallData:
+    def test_raises_when_overall_rating_is_populated(self):
+        input_lf = pl.LazyFrame(
+            {
+                CQCL.source_path: [job.OVERALL_SOURCE_PATH],
+                CQCL.rating: ["Good"],
+            }
+        )
+
+        with pytest.raises(ValueError, match="contains 1 values"):
+            job.raise_error_when_assessment_lf_contains_overall_data(input_lf)
+
+    @pytest.mark.parametrize(
+        "source_path,rating",
+        [
+            pytest.param(job.OVERALL_SOURCE_PATH, None, id="null_overall_rating"),
+            pytest.param(job.ASG_SOURCE_PATH, "Good", id="rating_only_in_asg"),
+        ],
+    )
+    def test_does_not_raise_when_overall_has_no_rating(self, source_path, rating):
+        input_lf = pl.LazyFrame(
+            {CQCL.source_path: [source_path], CQCL.rating: [rating]},
+            schema={CQCL.source_path: pl.String, CQCL.rating: pl.String},
+        )
+
+        job.raise_error_when_assessment_lf_contains_overall_data(input_lf)
