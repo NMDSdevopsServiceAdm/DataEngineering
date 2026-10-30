@@ -71,6 +71,7 @@ All notable changes to this project will be documented in this file.
 - Changed ASC-WDS workplace cleaning to null starters, leavers and vacancies job role columns where their total is not known, and to cast the totals to integers.
 - Changed the Trello card drafting skill to start each card with a TODO and to rename "Summary" to "The problem to solve".
 - Changed the merge-when-ready GitHub Action to run from `main` rather than the labelled PR's copy of the script and workflow.
+- Renamed the filled posts, total employed, location count and cumulative percentage change publication columns to the `<filtered/unfiltered>_<short/medium/long>_<ct/sfc>_<measure>` pattern, and prefixed the remaining filled posts and location count columns with `filtered_` or `unfiltered_`.
 
 ### Improved
 - Rounded percentage values and removed decimals from count tables before writing them to the assessment workbook.

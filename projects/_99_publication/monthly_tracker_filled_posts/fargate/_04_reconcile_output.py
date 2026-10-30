@@ -119,7 +119,7 @@ def main(
             pl.col(IndCQC.current_region) == PublishedRegion.england,
             pl.col(IndCQC.primary_service_type) == PublishedMainService.all_locations,
         ),
-        Pub.filled_posts,
+        Pub.unfiltered_filled_posts,
     )
     if public_by_period.is_empty():
         raise ReconciliationMismatchError(
@@ -147,7 +147,7 @@ def main(
         archive_by_period, on=IndCQC.cqc_location_import_date
     ).with_columns(
         (
-            (pl.col(Pub.filled_posts) - pl.col(archive_column)).abs()
+            (pl.col(Pub.unfiltered_filled_posts) - pl.col(archive_column)).abs()
             / pl.col(archive_column)
         ).alias(RELATIVE_DIFFERENCE)
     )
@@ -157,14 +157,14 @@ def main(
     ).sort(IndCQC.cqc_location_import_date)
     # max() skips NaN, so the count is what shows a NaN period.
     print(
-        f"Run {run_number}: public output total {comparison_df[Pub.filled_posts].sum()}, "
+        f"Run {run_number}: public output total {comparison_df[Pub.unfiltered_filled_posts].sum()}, "
         f"promoted archive total {comparison_df[archive_column].sum()}, largest "
         f"period difference {comparison_df[RELATIVE_DIFFERENCE].max():.4%}, "
         f"{differing_df.height} of {comparison_df.height} periods over tolerance"
     )
     if not differing_df.is_empty():
         details = "; ".join(
-            f"{row[IndCQC.cqc_location_import_date]}: public {row[Pub.filled_posts]}, "
+            f"{row[IndCQC.cqc_location_import_date]}: public {row[Pub.unfiltered_filled_posts]}, "
             f"archive {row[archive_column]}"
             for row in differing_df.head(MAX_PERIODS_REPORTED).iter_rows(named=True)
         )

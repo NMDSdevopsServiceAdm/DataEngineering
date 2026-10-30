@@ -201,18 +201,18 @@ class TestAggregateToPublicationRows:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.filled_posts, pl.Float32()),
-            (Pub.locationid_count, pl.UInt32()),
-            (Pub.filtered_filled_posts_long, pl.Float32()),
-            (Pub.filtered_locationid_count_long, pl.UInt32()),
-            (Pub.filtered_ct_total_employed_long, pl.Float32()),
-            (Pub.filtered_filled_posts_medium, pl.Float32()),
-            (Pub.filtered_locationid_count_medium, pl.UInt32()),
-            (Pub.filtered_ct_total_employed_medium, pl.Float32()),
-            (Pub.filtered_filled_posts_short, pl.Float32()),
-            (Pub.filtered_locationid_count_short, pl.UInt32()),
-            (Pub.filtered_ct_total_employed_short, pl.Float32()),
-            (Pub.unfiltered_ct_total_employed_long, pl.Float32()),
+            (Pub.unfiltered_filled_posts, pl.Float32()),
+            (Pub.unfiltered_locationid_count, pl.UInt32()),
+            (Pub.filtered_long_sfc_filled_posts, pl.Float32()),
+            (Pub.filtered_long_locationid_count, pl.UInt32()),
+            (Pub.filtered_long_ct_total_employed, pl.Float32()),
+            (Pub.filtered_medium_sfc_filled_posts, pl.Float32()),
+            (Pub.filtered_medium_locationid_count, pl.UInt32()),
+            (Pub.filtered_medium_ct_total_employed, pl.Float32()),
+            (Pub.filtered_short_sfc_filled_posts, pl.Float32()),
+            (Pub.filtered_short_locationid_count, pl.UInt32()),
+            (Pub.filtered_short_ct_total_employed, pl.Float32()),
+            (Pub.unfiltered_long_ct_total_employed, pl.Float32()),
         ]
     )
 
@@ -275,18 +275,18 @@ class TestAggregateToPublicationRows:
                 (IndCQC.cqc_location_import_date, pl.Date()),
                 (IndCQC.current_region, pl.String()),
                 (IndCQC.primary_service_type, pl.String()),
-                (Pub.filled_posts, pl.Float32()),
-                (Pub.locationid_count, pl.UInt32()),
-                (Pub.filtered_filled_posts_long, pl.Float32()),
-                (Pub.filtered_locationid_count_long, pl.UInt32()),
-                (Pub.filtered_ct_total_employed_long, pl.Float32()),
-                (Pub.filtered_filled_posts_medium, pl.Float32()),
-                (Pub.filtered_locationid_count_medium, pl.UInt32()),
-                (Pub.filtered_ct_total_employed_medium, pl.Float32()),
-                (Pub.filtered_filled_posts_short, pl.Float32()),
-                (Pub.filtered_locationid_count_short, pl.UInt32()),
-                (Pub.filtered_ct_total_employed_short, pl.Float32()),
-                (Pub.unfiltered_ct_total_employed_long, pl.Float32()),
+                (Pub.unfiltered_filled_posts, pl.Float32()),
+                (Pub.unfiltered_locationid_count, pl.UInt32()),
+                (Pub.filtered_long_sfc_filled_posts, pl.Float32()),
+                (Pub.filtered_long_locationid_count, pl.UInt32()),
+                (Pub.filtered_long_ct_total_employed, pl.Float32()),
+                (Pub.filtered_medium_sfc_filled_posts, pl.Float32()),
+                (Pub.filtered_medium_locationid_count, pl.UInt32()),
+                (Pub.filtered_medium_ct_total_employed, pl.Float32()),
+                (Pub.filtered_short_sfc_filled_posts, pl.Float32()),
+                (Pub.filtered_short_locationid_count, pl.UInt32()),
+                (Pub.filtered_short_ct_total_employed, pl.Float32()),
+                (Pub.unfiltered_long_ct_total_employed, pl.Float32()),
             ]
         )
         expected_lf = pl.LazyFrame(
@@ -352,8 +352,8 @@ class TestAggregateToPublicationRows:
                 (IndCQC.main_job_role_clean_labelled, pl.String()),
                 (IndCQC.current_region, pl.String()),
                 (IndCQC.primary_service_type, pl.String()),
-                (Pub.filled_posts, pl.Float32()),
-                (Pub.locationid_count, pl.UInt32()),
+                (Pub.unfiltered_filled_posts, pl.Float32()),
+                (Pub.unfiltered_locationid_count, pl.UInt32()),
             ]
         )
         expected_lf = pl.LazyFrame(
@@ -392,7 +392,7 @@ class TestAggregateToPublicationRows:
             input_lf, include_assessment=False
         ).collect()
 
-        assert returned_df[Pub.filled_posts].to_list() == [10.0]
+        assert returned_df[Pub.unfiltered_filled_posts].to_list() == [10.0]
 
 
 class TestAddRowsForPublicationGroups:
@@ -433,18 +433,18 @@ class TestAddRowsForPublicationGroups:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.Categorical()),
-            (Pub.filled_posts, pl.Float32()),
-            (Pub.locationid_count, pl.UInt32()),
-            (Pub.filtered_filled_posts_long, pl.Float32()),
-            (Pub.filtered_locationid_count_long, pl.UInt32()),
-            (Pub.filtered_ct_total_employed_long, pl.Float32()),
-            (Pub.filtered_filled_posts_medium, pl.Float32()),
-            (Pub.filtered_locationid_count_medium, pl.UInt32()),
-            (Pub.filtered_ct_total_employed_medium, pl.Float32()),
-            (Pub.filtered_filled_posts_short, pl.Float32()),
-            (Pub.filtered_locationid_count_short, pl.UInt32()),
-            (Pub.filtered_ct_total_employed_short, pl.Float32()),
-            (Pub.unfiltered_ct_total_employed_long, pl.Float32()),
+            (Pub.unfiltered_filled_posts, pl.Float32()),
+            (Pub.unfiltered_locationid_count, pl.UInt32()),
+            (Pub.filtered_long_sfc_filled_posts, pl.Float32()),
+            (Pub.filtered_long_locationid_count, pl.UInt32()),
+            (Pub.filtered_long_ct_total_employed, pl.Float32()),
+            (Pub.filtered_medium_sfc_filled_posts, pl.Float32()),
+            (Pub.filtered_medium_locationid_count, pl.UInt32()),
+            (Pub.filtered_medium_ct_total_employed, pl.Float32()),
+            (Pub.filtered_short_sfc_filled_posts, pl.Float32()),
+            (Pub.filtered_short_locationid_count, pl.UInt32()),
+            (Pub.filtered_short_ct_total_employed, pl.Float32()),
+            (Pub.unfiltered_long_ct_total_employed, pl.Float32()),
         ]
     )
 
@@ -519,8 +519,8 @@ class TestAddRowsForPublicationGroups:
             IndCQC.main_job_role_clean_labelled,
             IndCQC.current_region,
             IndCQC.primary_service_type,
-            Pub.filled_posts,
-            Pub.locationid_count,
+            Pub.unfiltered_filled_posts,
+            Pub.unfiltered_locationid_count,
         ]
         england_total_row = returned_lf.filter(
             (pl.col(IndCQC.current_region) == PublishedRegion.england)
@@ -533,9 +533,9 @@ class TestAddRowsForPublicationGroups:
                 == PublishedMainService.all_locations
             )
         ).collect()
-        assert england_total_row.select(Pub.filled_posts, Pub.locationid_count).row(
-            0
-        ) == (30.0, 1)
+        assert england_total_row.select(
+            Pub.unfiltered_filled_posts, Pub.unfiltered_locationid_count
+        ).row(0) == (30.0, 1)
 
 
 class TestAddPrevRunFilledPostsColumns:
@@ -548,7 +548,7 @@ class TestAddPrevRunFilledPostsColumns:
         ]
     )
     current_schema = pl.Schema(
-        list(key_schema.items()) + [(Pub.filled_posts, pl.Float64())]
+        list(key_schema.items()) + [(Pub.unfiltered_filled_posts, pl.Float64())]
     )
     prev_schema = current_schema
 
@@ -574,19 +574,25 @@ class TestAddPrevRunFilledPostsColumns:
             self._current_lf(), self._prev_lf()
         ).collect()
 
-        assert returned_df[Pub.prev_run_filled_posts].to_list() == [100.0, None]
+        assert returned_df[Pub.unfiltered_filled_posts_prev_run].to_list() == [
+            100.0,
+            None,
+        ]
 
     def test_adds_perc_change_from_prev_run_as_net_change_fraction(self):
         returned_df = job.add_prev_run_filled_posts_columns(
             self._current_lf(), self._prev_lf()
         ).collect()
 
-        assert returned_df[Pub.filled_posts_perc_change_vs_prev_run].to_list() == [
+        assert returned_df[
+            Pub.unfiltered_filled_posts_pct_change_vs_prev_run
+        ].to_list() == [
             pytest.approx(0.1),
             None,
         ]
         assert (
-            returned_df.schema[Pub.filled_posts_perc_change_vs_prev_run] == pl.Float64()
+            returned_df.schema[Pub.unfiltered_filled_posts_pct_change_vs_prev_run]
+            == pl.Float64()
         )
 
     def test_perc_change_is_null_when_prev_run_filled_posts_is_zero(self):
@@ -594,7 +600,9 @@ class TestAddPrevRunFilledPostsColumns:
             self._current_lf(), self._prev_lf(prev_posts=0.0)
         ).collect()
 
-        assert returned_df[Pub.filled_posts_perc_change_vs_prev_run].to_list() == [
+        assert returned_df[
+            Pub.unfiltered_filled_posts_pct_change_vs_prev_run
+        ].to_list() == [
             None,
             None,
         ]
@@ -620,7 +628,10 @@ class TestAddPrevRunFilledPostsColumns:
             current_lf, self._prev_lf()
         ).collect()
 
-        assert returned_df[Pub.prev_run_filled_posts].to_list() == [100.0, None]
+        assert returned_df[Pub.unfiltered_filled_posts_prev_run].to_list() == [
+            100.0,
+            None,
+        ]
 
     def test_matches_rows_where_a_key_is_null(self):
         current_lf = self._current_lf().with_columns(
@@ -639,7 +650,10 @@ class TestAddPrevRunFilledPostsColumns:
             current_lf, prev_lf
         ).collect()
 
-        assert returned_df[Pub.prev_run_filled_posts].to_list() == [100.0, None]
+        assert returned_df[Pub.unfiltered_filled_posts_prev_run].to_list() == [
+            100.0,
+            None,
+        ]
 
     def test_adds_null_columns_when_prev_run_lacks_filled_posts(self):
         prev_lf = pl.LazyFrame(
@@ -652,20 +666,27 @@ class TestAddPrevRunFilledPostsColumns:
             self._current_lf(), prev_lf
         ).collect()
 
-        assert returned_df[Pub.prev_run_filled_posts].null_count() == 2
-        assert returned_df[Pub.filled_posts_perc_change_vs_prev_run].null_count() == 2
+        assert returned_df[Pub.unfiltered_filled_posts_prev_run].null_count() == 2
+        assert (
+            returned_df[Pub.unfiltered_filled_posts_pct_change_vs_prev_run].null_count()
+            == 2
+        )
 
     def test_adds_null_columns_when_there_is_no_prev_run(self):
         returned_df = job.add_prev_run_filled_posts_columns(
             self._current_lf(), None
         ).collect()
 
-        assert returned_df.schema[Pub.prev_run_filled_posts] == pl.Float64()
+        assert returned_df.schema[Pub.unfiltered_filled_posts_prev_run] == pl.Float64()
         assert (
-            returned_df.schema[Pub.filled_posts_perc_change_vs_prev_run] == pl.Float64()
+            returned_df.schema[Pub.unfiltered_filled_posts_pct_change_vs_prev_run]
+            == pl.Float64()
         )
-        assert returned_df[Pub.prev_run_filled_posts].null_count() == 2
-        assert returned_df[Pub.filled_posts_perc_change_vs_prev_run].null_count() == 2
+        assert returned_df[Pub.unfiltered_filled_posts_prev_run].null_count() == 2
+        assert (
+            returned_df[Pub.unfiltered_filled_posts_pct_change_vs_prev_run].null_count()
+            == 2
+        )
 
 
 class TestCalcPercChangeFromPreviousApril:
@@ -675,8 +696,8 @@ class TestCalcPercChangeFromPreviousApril:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.filled_posts, pl.Float32()),
-            (Pub.locationid_count, pl.UInt32()),
+            (Pub.unfiltered_filled_posts, pl.Float32()),
+            (Pub.unfiltered_locationid_count, pl.UInt32()),
         ]
     )
 
@@ -713,8 +734,8 @@ class TestCalcPercChangeCumulativeFromGivenPeriodOnwards:
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, pl.String()),
-            (Pub.filtered_ct_total_employed_long, pl.Float32()),
-            (Pub.filtered_ct_total_employed_medium, pl.Float32()),
+            (Pub.filtered_long_ct_total_employed, pl.Float32()),
+            (Pub.filtered_medium_ct_total_employed, pl.Float32()),
         ]
     )
 
