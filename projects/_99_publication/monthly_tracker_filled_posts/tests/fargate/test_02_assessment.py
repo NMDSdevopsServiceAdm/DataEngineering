@@ -1,7 +1,7 @@
 from contextlib import ExitStack
 from datetime import date
 from types import SimpleNamespace
-from unittest.mock import Mock, call, patch
+from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
 import pytest
@@ -478,7 +478,30 @@ class TestMain:
             medium=MEDIUM_TERM_FROM_DATE,
             long=LONG_TERM_FROM_DATE,
         )
-        assert args[3] == job.cell_map.TEMPLATE_PATH
+        assert args[-2] == job.cell_map.TEMPLATE_PATH
+
+    def test_main_fills_the_workbook_with_the_run_number_of_the_assessed_run(
+        self, mocks
+    ):
+        job.main(
+            TEST_SOURCE,
+            TEST_DESTINATION,
+            TEST_RUN_LOG_SOURCE,
+            TEST_WORKBOOK_DESTINATION,
+        )
+
+        mocks.fill_workbook.assert_called_once_with(
+            mocks.scan_parquet.return_value,
+            job.cell_map.ASSESSMENT_SHEETS,
+            job.assessment_workbook_utils.TermFromDates(
+                short=SHORT_TERM_FROM_DATE,
+                medium=MEDIUM_TERM_FROM_DATE,
+                long=LONG_TERM_FROM_DATE,
+            ),
+            2,
+            job.cell_map.TEMPLATE_PATH,
+            ANY,
+        )
 
     def test_main_uploads_the_workbook_named_by_archive_date_and_run_number(
         self, mocks
@@ -490,7 +513,7 @@ class TestMain:
             TEST_WORKBOOK_DESTINATION,
         )
 
-        saved_path = mocks.fill_workbook.call_args.args[4]
+        saved_path = mocks.fill_workbook.call_args.args[-1]
         assert saved_path.name == "monthly_tracking_summary_2026-10-01_2.xlsx"
         mocks.upload_workbook.assert_called_once_with(
             saved_path, TEST_WORKBOOK_DESTINATION
