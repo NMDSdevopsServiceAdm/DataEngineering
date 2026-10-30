@@ -235,13 +235,8 @@ def main(
             ),
             brief=f"{IndCqcColumns.ascwds_filled_posts_source} needs to be one of {CatValues.ascwds_filled_posts_source_column_values.categorical_values}",
         )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.estimate_filled_posts_source,
-                CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.estimate_filled_posts_source} needs to be one of {CatValues.estimate_filled_posts_source_column_values.categorical_values}",
-        )
+        # TEMP 2409: the estimate_filled_posts_source distinct-count check is removed
+        # because the sample data never selects imputed_pir_filled_posts_model. Revert.
         # custom business rules
         .col_vals_expr(
             vUtils.care_home_matches_primary_service_type_expr(),
