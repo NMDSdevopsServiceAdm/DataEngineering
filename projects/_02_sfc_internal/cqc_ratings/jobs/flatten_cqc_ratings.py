@@ -415,6 +415,7 @@ def extract_overall(assessment_df: DataFrame) -> DataFrame:
     return overall_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def raise_error_when_assessment_df_contains_overall_data(df: DataFrame) -> None:
     """
     Raise an error when the assessments dataframe contains any overall ratings data.
