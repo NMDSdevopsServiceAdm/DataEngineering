@@ -325,3 +325,136 @@ def fit_bias_slope_per_year(
         .min()
         .alias(ModelEvaluation.minimum_rows_in_period),
     )
+
+
+def calculate_mean_absolute_error(
+    estimates: list[pl.Expr], known_columns: list[str]
+) -> pl.Expr:
+    """
+    Calculate the mean absolute difference between estimates and known columns, per row.
+
+    Args:
+        estimates (list[pl.Expr]): the estimated share expressions, matching `known_columns` in order
+        known_columns (list[str]): the known share columns
+
+    Returns:
+        pl.Expr: the mean absolute difference across the share columns
+    """
+    return pl.mean_horizontal(
+        (estimate - pl.col(known)).abs()
+        for estimate, known in zip(estimates, known_columns)
+    )
+
+
+def calculate_summed_squared_error(
+    estimates: list[pl.Expr], known_columns: list[str]
+) -> pl.Expr:
+    """
+    Calculate the summed squared difference between estimates and known columns, per row.
+
+    Args:
+        estimates (list[pl.Expr]): the estimated share expressions, matching `known_columns` in order
+        known_columns (list[str]): the known share columns
+
+    Returns:
+        pl.Expr: the summed squared difference across the share columns
+    """
+    return pl.sum_horizontal(
+        (estimate - pl.col(known)) ** 2
+        for estimate, known in zip(estimates, known_columns)
+    )
+
+
+def score_shares(
+    lf: pl.LazyFrame,
+    predicted_columns: list[str],
+    known_columns: list[str],
+    by_columns: list[str] | None = None,
+) -> pl.LazyFrame:
+    """
+    Score predicted against known shares row by row, every row counting equally.
+
+    Only rows with every known share and every predicted share are scored; use
+    `calculate_coverage` for rows without a prediction. The skill scores compare each
+    error with that of a baseline predicting the pooled mean known share on every row,
+    so they stay comparable across groups. A tied prediction counts as its first column for top 1.
+
+    Args:
+        lf (pl.LazyFrame): dataset containing the predicted, known and "by" columns
+        predicted_columns (list[str]): the predicted share columns, matching `known_columns` in order
+        known_columns (list[str]): the known share columns
+        by_columns (list[str] | None): columns to score separately by, such as job role.
+            Defaults to scoring all rows together.
+
+    Returns:
+        pl.LazyFrame: a row per group with "number_of_rows", "mae_pp" (mean absolute error in
+            percentage points), "brier_score" (summed squared error), "top_1_accuracy" (known
+            top share is predicted top), "mae_skill_score" and "brier_skill_score"
+    """
+    by_columns = by_columns or []
+
+    predicted = [pl.col(column) for column in predicted_columns]
+    baseline = [pl.col(column).mean() for column in known_columns]
+
+    scored_lf = lf.filter(
+        pl.all_horizontal(pl.col(known_columns + predicted_columns).is_not_null())
+    )
+
+    row_scores_lf = scored_lf.select(
+        *by_columns,
+        calculate_mean_absolute_error(predicted, known_columns).alias(
+            ModelEvaluation.mae_pp
+        ),
+        calculate_summed_squared_error(predicted, known_columns).alias(
+            ModelEvaluation.brier_score
+        ),
+        (
+            pl.concat_list(predicted_columns).list.arg_max()
+            == pl.concat_list(known_columns).list.arg_max()
+        )
+        .cast(pl.Float64)
+        .alias(ModelEvaluation.top_1_accuracy),
+        calculate_mean_absolute_error(baseline, known_columns).alias(
+            ModelEvaluation.baseline_mae
+        ),
+        calculate_summed_squared_error(baseline, known_columns).alias(
+            ModelEvaluation.baseline_brier_score
+        ),
+    )
+
+    mae = pl.col(ModelEvaluation.mae_pp).mean()
+    brier = pl.col(ModelEvaluation.brier_score).mean()
+    scores = [
+        pl.len().alias(ModelEvaluation.number_of_rows),
+        (mae * 100).alias(ModelEvaluation.mae_pp),
+        brier,
+        pl.col(ModelEvaluation.top_1_accuracy).mean(),
+        (1 - mae / pl.col(ModelEvaluation.baseline_mae).mean()).alias(
+            ModelEvaluation.mae_skill_score
+        ),
+        (1 - brier / pl.col(ModelEvaluation.baseline_brier_score).mean()).alias(
+            ModelEvaluation.brier_skill_score
+        ),
+    ]
+
+    return (
+        row_scores_lf.group_by(by_columns).agg(scores)
+        if by_columns
+        else row_scores_lf.select(scores)
+    )
+
+
+def calculate_coverage(lf: pl.LazyFrame, predicted_column: str) -> pl.LazyFrame:
+    """
+    Measure the share of rows that have a prediction.
+
+    Args:
+        lf (pl.LazyFrame): dataset containing the predicted column
+        predicted_column (str): the predicted column, such as one share column
+
+    Returns:
+        pl.LazyFrame: a single row with its "coverage" between 0 and 1
+    """
+    return lf.select(
+        pl.col(predicted_column).is_not_null().mean().alias(ModelEvaluation.coverage)
+    )

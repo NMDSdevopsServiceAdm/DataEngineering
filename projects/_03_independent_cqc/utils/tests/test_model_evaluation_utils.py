@@ -331,3 +331,157 @@ class TestFitBiasSlopePerYear:
         ][0]
 
         assert returned_slope == pytest.approx(expected_slope)
+
+
+SHARE_PREDICTED = ["predicted_a", "predicted_b"]
+SHARE_KNOWN = ["known_a", "known_b"]
+
+
+def share_lf(
+    predicted: list[tuple[float | None, float | None]],
+    known: list[tuple[float | None, float | None]],
+    **extra_columns,
+) -> pl.LazyFrame:
+    return pl.LazyFrame(
+        {
+            **dict(zip(SHARE_PREDICTED, map(list, zip(*predicted)))),
+            **dict(zip(SHARE_KNOWN, map(list, zip(*known)))),
+            **extra_columns,
+        },
+        schema_overrides={c: pl.Float64 for c in SHARE_PREDICTED + SHARE_KNOWN},
+    )
+
+
+def run_score_shares(
+    lf: pl.LazyFrame, by_columns: list[str] | None = None
+) -> pl.DataFrame:
+    return job.score_shares(
+        lf, SHARE_PREDICTED, SHARE_KNOWN, by_columns=by_columns
+    ).collect()
+
+
+class TestCalculateMeanAbsoluteError:
+    def test_mean_absolute_error_is_mean_difference_across_share_columns(self):
+        lf = share_lf([(0.5, 0.5), (0.4, 0.6)], [(0.6, 0.4), (0.2, 0.8)])
+        estimates = [pl.col(column) for column in SHARE_PREDICTED]
+
+        returned_df = lf.select(
+            job.calculate_mean_absolute_error(estimates, SHARE_KNOWN).alias("error")
+        ).collect()
+
+        assert returned_df["error"].to_list() == pytest.approx([0.1, 0.2])
+
+
+class TestCalculateSummedSquaredError:
+    def test_summed_squared_error_is_sum_of_squared_differences_across_share_columns(
+        self,
+    ):
+        lf = share_lf([(0.5, 0.5), (0.4, 0.6)], [(0.6, 0.4), (0.2, 0.8)])
+        estimates = [pl.col(column) for column in SHARE_PREDICTED]
+
+        returned_df = lf.select(
+            job.calculate_summed_squared_error(estimates, SHARE_KNOWN).alias("error")
+        ).collect()
+
+        assert returned_df["error"].to_list() == pytest.approx([0.02, 0.08])
+
+
+class TestScoreShares:
+    # Errors per row are (0.1, 0.1) and (0.2, 0.2); the pooled mean known share is (0.4, 0.6).
+    KNOWN = [(0.6, 0.4), (0.2, 0.8)]
+    PREDICTED = [(0.5, 0.5), (0.4, 0.6)]
+
+    def test_score_shares_mae_is_mean_absolute_difference_across_share_columns(self):
+        scores_df = run_score_shares(share_lf(self.PREDICTED, self.KNOWN))
+
+        assert scores_df[ModelEvaluation.mae_pp].to_list() == (pytest.approx([15.0]))
+
+    def test_score_shares_brier_is_summed_squared_error(self):
+        scores_df = run_score_shares(share_lf(self.PREDICTED, self.KNOWN))
+
+        # rows score 0.01 + 0.01 and 0.04 + 0.04
+        assert scores_df[ModelEvaluation.brier_score].to_list() == pytest.approx([0.05])
+
+    @pytest.mark.parametrize(
+        "predicted, known, expected",
+        [
+            pytest.param(
+                [(0.7, 0.3), (0.1, 0.9)], [(0.6, 0.4), (0.2, 0.8)], 1.0, id="all_match"
+            ),
+            pytest.param(
+                [(0.7, 0.3), (0.9, 0.1)], [(0.6, 0.4), (0.2, 0.8)], 0.5, id="half_match"
+            ),
+            # a tied prediction counts as its first column, so it matches only when that is the known top
+            pytest.param(
+                [(0.5, 0.5)],
+                [(0.6, 0.4)],
+                1.0,
+                id="tie_matches_when_first_is_known_top",
+            ),
+            pytest.param(
+                [(0.5, 0.5)],
+                [(0.4, 0.6)],
+                0.0,
+                id="tie_misses_when_second_is_known_top",
+            ),
+        ],
+    )
+    def test_score_shares_top1_is_one_when_argmax_matches(
+        self, predicted, known, expected
+    ):
+        scores_df = run_score_shares(share_lf(predicted, known))
+
+        assert scores_df[ModelEvaluation.top_1_accuracy].to_list() == [expected]
+
+    def test_skill_score_is_one_minus_error_over_baseline_error(self):
+        scores_df = run_score_shares(share_lf(self.PREDICTED, self.KNOWN))
+
+        # the pooled mean baseline scores 0.2 absolute error and 0.08 Brier on every row
+        assert scores_df[ModelEvaluation.mae_skill_score].to_list() == pytest.approx(
+            [1 - 0.15 / 0.2]
+        )
+        assert scores_df[ModelEvaluation.brier_skill_score].to_list() == pytest.approx(
+            [1 - 0.05 / 0.08]
+        )
+
+    def test_score_shares_ignores_rows_without_predictions(self):
+        lf = share_lf(
+            self.PREDICTED + [(None, None)],
+            self.KNOWN + [(0.0, 1.0)],
+        )
+
+        scores_df = run_score_shares(lf)
+
+        assert scores_df[ModelEvaluation.number_of_rows].to_list() == [2]
+        assert scores_df[ModelEvaluation.mae_skill_score].to_list() == pytest.approx(
+            [1 - 0.15 / 0.2]
+        )
+
+    def test_score_shares_ignores_rows_without_known_values(self):
+        lf = share_lf(
+            self.PREDICTED + [(0.9, 0.1)],
+            self.KNOWN + [(None, None)],
+        )
+
+        scores_df = run_score_shares(lf)
+
+        assert scores_df[ModelEvaluation.number_of_rows].to_list() == [2]
+        assert scores_df[ModelEvaluation.mae_pp].to_list() == (pytest.approx([15.0]))
+
+    def test_score_shares_scores_each_group_separately(self):
+        lf = share_lf(self.PREDICTED, self.KNOWN, group=["x", "y"])
+
+        scores_df = run_score_shares(lf, by_columns=["group"]).sort("group")
+
+        assert scores_df[ModelEvaluation.mae_pp].to_list() == (
+            pytest.approx([10.0, 20.0])
+        )
+
+
+class TestCalculateCoverage:
+    def test_coverage_is_share_of_rows_with_non_null_prediction(self):
+        lf = pl.LazyFrame({"predicted": [0.1, None, 0.3, None, 0.5, 0.6, None, 0.8]})
+
+        coverage_df = job.calculate_coverage(lf, predicted_column="predicted").collect()
+
+        assert coverage_df[ModelEvaluation.coverage].to_list() == [0.625]
