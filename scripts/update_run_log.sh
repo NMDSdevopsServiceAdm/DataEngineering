@@ -125,7 +125,9 @@ cut_release_tag() {
   fi
   echo
   if ! confirm "$question"; then
-    echo "Not cut. Cut it by hand with: ${release_env[*]} bash scripts/cut_release_tag.sh plan, then cut."
+    echo "Not cut. Cut it by hand, only while no Publication-Output execution is finishing:"
+    echo "  ${release_env[*]} bash scripts/cut_release_tag.sh plan"
+    echo "  ${release_env[*]} bash scripts/cut_release_tag.sh cut"
     return 0
   fi
   if ! env "${release_env[@]}" bash scripts/cut_release_tag.sh cut; then
@@ -368,7 +370,7 @@ if [[ "$flag" == "$SELECTION_FLAG" ]]; then
   # are always attempted.
   steps_failed=false
   if ! cut_release_tag; then
-    echo "The selection is saved. Cut the release tag by hand: see \"Cutting the release tag\" in update_run_log_runbook.md." >&2
+    echo "The selection is saved. Cut the release tag by hand once Publication-Output has finished: see \"Cutting the release tag\" in update_run_log_runbook.md." >&2
     steps_failed=true
   fi
   if ! start_publication_output; then
