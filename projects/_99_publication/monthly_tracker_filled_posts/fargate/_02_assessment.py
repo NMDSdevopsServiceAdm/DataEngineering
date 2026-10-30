@@ -255,6 +255,7 @@ def main(
                 medium=medium_term_from_date,
                 long=long_term_from_date,
             ),
+            merge_utils.run_number_from_source(run_source),
             cell_map.TEMPLATE_PATH,
             workbook_path,
         )

@@ -128,7 +128,9 @@ FILLED_POSTS = SheetMap(
     name="Filled posts",
     input_ranges=(
         InputRange(
-            TITLE_CELL, Pub.period_label_long, note="'End of <month year>' title"
+            TITLE_CELL,
+            Pub.period_label_long,
+            note="'End of <month year> (run N)' title",
         ),
         InputRange(
             "B24:B36",
@@ -278,7 +280,9 @@ COMP_PREV_PUBLICATION = SheetMap(
     name="Comp prev publication",
     input_ranges=(
         InputRange(
-            TITLE_CELL, Pub.period_label_long, note="'End of <month year>' title"
+            TITLE_CELL,
+            Pub.period_label_long,
+            note="'End of <month year> (run N)' title",
         ),
         InputRange(COMP_PREV_LABEL_RANGES[0], note="previous publication labels"),
         InputRange(
@@ -396,7 +400,9 @@ def _comparison_sheet(
     """
     ranges = [
         InputRange(
-            TITLE_CELL, Pub.period_label_long, note="'End of <month year>' title"
+            TITLE_CELL,
+            Pub.period_label_long,
+            note="'End of <month year> (run N)' title",
         ),
         InputRange(
             HEADING_CELL,
