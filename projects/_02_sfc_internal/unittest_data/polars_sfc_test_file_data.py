@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -879,6 +880,71 @@ class FlattenCQCRatings:
     expected_prepare_assessment_ratings_unknown_key_question_data = (
         expected_prepare_assessment_ratings_data
     )
+
+    # Input column order: rating_sequence, reversed_rating_sequence, registration_status,
+    # date, assessment_plan_id, title, assessment_date, assessment_plan_status, name,
+    # source_path, dataset, latest_rating_flag, current_or_historic, overall/safe/
+    # well_led/caring/responsive/effective ratings, five rating values, total, location_id.
+    # fmt: off
+    create_standard_ratings_dataset_rows = [
+        (1, 1, "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-001"),
+    ]
+    expected_create_standard_ratings_dataset_rows = [
+        ("1-001", "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15),
+    ]
+
+    # Rows 1 and 2 differ only in the dropped sequence columns; row 3 has a different safe rating.
+    create_standard_ratings_dataset_duplicate_rows = [
+        (1, 3, "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-001"),
+        (2, 2, "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-001"),
+        (3, 1, "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Requires improvement", "Good", "Good", "Good", "Good", 2, 3, 3, 3, 3, 14, "1-001"),
+    ]
+    expected_create_standard_ratings_dataset_duplicate_rows = [
+        ("1-001", "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15),
+        ("1-001", "Registered", "2024-01-01", "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Requires improvement", "Good", "Good", "Good", "Good", 2, 3, 3, 3, 3, 14),
+    ]
+
+    # Both rows have nulls in the assessment columns and differ only in the dropped sequence columns.
+    create_standard_ratings_dataset_null_rows = [
+        (1, 2, "Registered", "2024-01-01", None, None, None, None, None, None, "Pre SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-002"),
+        (2, 1, "Registered", "2024-01-01", None, None, None, None, None, None, "Pre SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-002"),
+    ]
+    expected_create_standard_ratings_dataset_null_rows = [
+        ("1-002", "Registered", "2024-01-01", None, None, None, None, None, None, "Pre SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15),
+    ]
+    # fmt: on
+
+    _short_location_id_hash = "b022a7e5cc45cf3dc578"  # sha256("1-123")[:20]
+
+    location_id_hash_short_rows = [("1-123",)]
+    expected_location_id_hash_short_rows = [("1-123", _short_location_id_hash)]
+
+    location_id_hash_long_rows = [("1-12345678901",)]
+    expected_location_id_hash_long_rows = [("1-12345678901", "cf16d3a6b6648d845fda")]
+
+    location_id_hash_repeated_rows = [("1-123",), ("1-123",)]
+    expected_location_id_hash_repeated_rows = [
+        ("1-123", _short_location_id_hash),
+        ("1-123", _short_location_id_hash),
+    ]
+
+    location_id_hash_null_rows = [(None,), ("1-123",)]
+    expected_location_id_hash_null_rows = [
+        (None, None),
+        ("1-123", _short_location_id_hash),
+    ]
+
+    location_id_hash_categorical_rows = [("1-123",)]
+    expected_location_id_hash_categorical_rows = [("1-123", _short_location_id_hash)]
+
+    location_id_hash_date_rows = [
+        ("1-123", "2024-01-01"),
+        ("1-12345678901", "2024-02-01"),
+    ]
+    expected_location_id_hash_date_rows = [
+        ("1-123", "2024-01-01", _short_location_id_hash),
+        ("1-12345678901", "2024-02-01", "cf16d3a6b6648d845fda"),
+    ]
 
     # fmt: off
     main_snapshot_rows = [
