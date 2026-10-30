@@ -1,3 +1,4 @@
+# TEMP 2409: no-op edit so CI seeds the capacity tracker raw bucket; revert before merge.
 import polars as pl
 
 from polars_utils import utils
