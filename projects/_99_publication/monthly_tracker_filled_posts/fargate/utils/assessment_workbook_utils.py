@@ -253,11 +253,10 @@ def sheet_text(
     """Text the writer sets, by sheet name then A1 cell.
 
     Every sheet gets the title, which names the run. The short and medium term
-    comparison sheets also get a heading and criteria note dated from the month
-    before their term's start date, as does the chart heading on "Filled posts"
-    (the short term's). "Comp prev publication" gets an "Annual" row for each March
-    period, then a "Monthly" row for each period after the latest March, in each of
-    its label ranges.
+    comparison sheets get a heading and criteria note dated from the month before
+    their term's start date, as does the "Filled posts" chart heading (short term).
+    "Comp prev publication" gets an "Annual" label per March period, then a
+    "Monthly" label per later period, in each label range.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
