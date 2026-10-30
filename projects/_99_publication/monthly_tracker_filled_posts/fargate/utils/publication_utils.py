@@ -25,20 +25,20 @@ DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
 # The summed columns of the publication summary, and the extra ones added for
 # the assessment (see aggregate_to_publication_rows).
 _PUBLICATION_METRIC_COLUMNS: list[str] = [
-    Pub.filled_posts,
-    Pub.locationid_count,
+    Pub.unfiltered_filled_posts,
+    Pub.unfiltered_locationid_count,
 ]
 _ASSESSMENT_METRIC_COLUMNS: list[str] = [
-    Pub.filtered_filled_posts_long,
-    Pub.filtered_locationid_count_long,
-    Pub.filtered_ct_total_employed_long,
-    Pub.filtered_filled_posts_medium,
-    Pub.filtered_locationid_count_medium,
-    Pub.filtered_ct_total_employed_medium,
-    Pub.filtered_filled_posts_short,
-    Pub.filtered_locationid_count_short,
-    Pub.filtered_ct_total_employed_short,
-    Pub.unfiltered_ct_total_employed_long,
+    Pub.filtered_long_sfc_filled_posts,
+    Pub.filtered_long_locationid_count,
+    Pub.filtered_long_ct_total_employed,
+    Pub.filtered_medium_sfc_filled_posts,
+    Pub.filtered_medium_locationid_count,
+    Pub.filtered_medium_ct_total_employed,
+    Pub.filtered_short_sfc_filled_posts,
+    Pub.filtered_short_locationid_count,
+    Pub.filtered_short_ct_total_employed,
+    Pub.unfiltered_long_ct_total_employed,
 ]
 
 # The publication's controlled-rounding bands (see round_to_publication_bands):
@@ -513,43 +513,43 @@ def _assessment_aggregations() -> list[pl.Expr]:
         pl.col(filled_posts_col)
         .filter(long_term_filter)
         .sum()
-        .alias(Pub.filtered_filled_posts_long),
+        .alias(Pub.filtered_long_sfc_filled_posts),
         pl.col(IndCQC.location_id)
         .filter(long_term_filter)
         .n_unique()
-        .alias(Pub.filtered_locationid_count_long),
+        .alias(Pub.filtered_long_locationid_count),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(long_term_filter & first_row_per_location)
         .sum()
-        .alias(Pub.filtered_ct_total_employed_long),
+        .alias(Pub.filtered_long_ct_total_employed),
         pl.col(filled_posts_col)
         .filter(medium_term_filter)
         .sum()
-        .alias(Pub.filtered_filled_posts_medium),
+        .alias(Pub.filtered_medium_sfc_filled_posts),
         pl.col(IndCQC.location_id)
         .filter(medium_term_filter)
         .n_unique()
-        .alias(Pub.filtered_locationid_count_medium),
+        .alias(Pub.filtered_medium_locationid_count),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(medium_term_filter & first_row_per_location)
         .sum()
-        .alias(Pub.filtered_ct_total_employed_medium),
+        .alias(Pub.filtered_medium_ct_total_employed),
         pl.col(filled_posts_col)
         .filter(short_term_filter)
         .sum()
-        .alias(Pub.filtered_filled_posts_short),
+        .alias(Pub.filtered_short_sfc_filled_posts),
         pl.col(IndCQC.location_id)
         .filter(short_term_filter)
         .n_unique()
-        .alias(Pub.filtered_locationid_count_short),
+        .alias(Pub.filtered_short_locationid_count),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(short_term_filter & first_row_per_location)
         .sum()
-        .alias(Pub.filtered_ct_total_employed_short),
+        .alias(Pub.filtered_short_ct_total_employed),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(first_row_per_location)
         .sum()
-        .alias(Pub.unfiltered_ct_total_employed_long),
+        .alias(Pub.unfiltered_long_ct_total_employed),
     ]
 
 
@@ -595,8 +595,10 @@ def aggregate_to_publication_rows(
         ]
 
     aggregations = [
-        pl.col(IndCQC.estimate_filled_posts_by_job_role).sum().alias(Pub.filled_posts),
-        pl.col(IndCQC.location_id).n_unique().alias(Pub.locationid_count),
+        pl.col(IndCQC.estimate_filled_posts_by_job_role)
+        .sum()
+        .alias(Pub.unfiltered_filled_posts),
+        pl.col(IndCQC.location_id).n_unique().alias(Pub.unfiltered_locationid_count),
     ]
     if include_assessment:
         aggregations += _assessment_aggregations()
@@ -746,8 +748,7 @@ def calc_perc_change_from_previous_april(
     so 0.25 = +25%.
 
     Null on non-April rows, a group's first April, and (not inf/NaN) when the
-    previous April is 0. Cast to Float32 so integer counts don't widen the
-    result to Float64.
+    previous April is 0. Calculated as Float64 to avoid rounding drift.
 
     Args:
         column_name (str): the value column to measure change in.
@@ -760,7 +761,7 @@ def calc_perc_change_from_previous_april(
     """
     april_value = (
         pl.when(pl.col(IndCQC.cqc_location_import_date).dt.month() == 4)
-        .then(pl.col(column_name).cast(pl.Float32))
+        .then(pl.col(column_name).cast(pl.Float64))
         .otherwise(None)
     )
     previous_april_value = april_value.forward_fill().shift(1)
@@ -789,8 +790,7 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     since a term's window never borrows a baseline from before its own
     start. Null (not inf/NaN) when the baseline is exactly 0, since column_name
     is a sum over a filter and can legitimately be 0.
-    column_name is cast to Float32 before dividing, so an integer count
-    column (e.g. a location count) doesn't widen the result to Float64.
+    Calculated as Float64 to avoid rounding drift.
 
     Args:
         column_name (str): the value column to measure change in.
@@ -804,7 +804,7 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     """
     in_window_value = (
         pl.when(pl.col(IndCQC.cqc_location_import_date) >= from_date)
-        .then(pl.col(column_name).cast(pl.Float32))
+        .then(pl.col(column_name).cast(pl.Float64))
         .otherwise(None)
     )
     baseline_value = in_window_value.filter(in_window_value.is_not_null()).first()
@@ -829,7 +829,7 @@ def add_prev_run_filled_posts_columns(
     previous, so 0.25 = +25%. Null (not inf/NaN) when previous is 0.
 
     Rows with no match are null, as is every row when there is no previous run
-    or it lacks filled_posts. The previous keys are cast to the
+    or it lacks unfiltered_filled_posts. The previous keys are cast to the
     current dtypes so Enum/Categorical differences don't block the join.
 
     Args:
@@ -838,13 +838,13 @@ def add_prev_run_filled_posts_columns(
             data, or None when there is no earlier run.
 
     Returns:
-        pl.LazyFrame: assessment_summary_lf with prev_run_filled_posts and
-            filled_posts_perc_change_vs_prev_run added.
+        pl.LazyFrame: assessment_summary_lf with unfiltered_filled_posts_prev_run and
+            unfiltered_filled_posts_pct_change_vs_prev_run added.
     """
     current_schema = assessment_summary_lf.collect_schema()
     has_prev_filled_posts = (
         prev_assessment_lf is not None
-        and Pub.filled_posts in prev_assessment_lf.collect_schema().names()
+        and Pub.unfiltered_filled_posts in prev_assessment_lf.collect_schema().names()
     )
     if has_prev_filled_posts:
         join_keys = [
@@ -856,9 +856,9 @@ def add_prev_run_filled_posts_columns(
         prev_assessment_lf = prev_assessment_lf.select(
             [pl.col(key).cast(current_schema[key]) for key in join_keys]
             + [
-                pl.col(Pub.filled_posts)
-                .cast(current_schema[Pub.filled_posts])
-                .alias(Pub.prev_run_filled_posts)
+                pl.col(Pub.unfiltered_filled_posts)
+                .cast(current_schema[Pub.unfiltered_filled_posts])
+                .alias(Pub.unfiltered_filled_posts_prev_run)
             ]
         )
         assessment_summary_lf = assessment_summary_lf.join(
@@ -870,18 +870,18 @@ def add_prev_run_filled_posts_columns(
         )
     else:
         assessment_summary_lf = assessment_summary_lf.with_columns(
-            pl.lit(None, dtype=current_schema[Pub.filled_posts]).alias(
-                Pub.prev_run_filled_posts
+            pl.lit(None, dtype=current_schema[Pub.unfiltered_filled_posts]).alias(
+                Pub.unfiltered_filled_posts_prev_run
             )
         )
 
-    current_posts = pl.col(Pub.filled_posts).cast(pl.Float32)
-    prev_posts = pl.col(Pub.prev_run_filled_posts).cast(pl.Float32)
+    current_posts = pl.col(Pub.unfiltered_filled_posts).cast(pl.Float64)
+    prev_posts = pl.col(Pub.unfiltered_filled_posts_prev_run).cast(pl.Float64)
     return assessment_summary_lf.with_columns(
         pl.when(prev_posts == 0)
         .then(None)
         .otherwise((current_posts - prev_posts) / prev_posts)
-        .alias(Pub.filled_posts_perc_change_vs_prev_run)
+        .alias(Pub.unfiltered_filled_posts_pct_change_vs_prev_run)
     )
 
 

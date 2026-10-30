@@ -255,13 +255,13 @@ def build_download_workbook(
         "T0": prepare_t0_for_publication(publication_lf),
         "T1": prepare_perc_change_for_publication(
             publication_lf,
-            Pub.filled_posts_april_perc_change,
-            Pub.filled_posts_cum_perc_change_short,
+            Pub.unfiltered_filled_posts_april_pct_change,
+            Pub.unfiltered_short_sfc_cum_pct_change,
         ),
         "T2": prepare_perc_change_for_publication(
             publication_lf,
-            Pub.locationid_count_april_perc_change,
-            Pub.locationid_count_cum_perc_change_short,
+            Pub.unfiltered_locationid_count_april_pct_change,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
         ),
     }
     titles = {"T0": T0_TITLE, "T1": T1_TITLE, "T2": T2_TITLE}

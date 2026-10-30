@@ -206,17 +206,18 @@ def _period_dates(period_labels: list[str]) -> list[datetime.datetime]:
     ]
 
 
-def title_text(period_labels: list[str]) -> str:
-    """Title for each sheet, naming the latest period.
+def title_text(period_labels: list[str], run_number: int) -> str:
+    """Title for each sheet, naming the latest period and the run.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
+        run_number (int): the run the workbook is built from.
 
     Returns:
-        str: e.g. "End of March 2026".
+        str: e.g. "End of March 2026 (run 7)".
     """
     latest = max(_period_dates(period_labels))
-    return f"End of {latest.strftime(PERIOD_LABEL_LONG_FORMAT)}"
+    return f"End of {latest.strftime(PERIOD_LABEL_LONG_FORMAT)} (run {run_number})"
 
 
 def comp_prev_rows(
@@ -247,11 +248,11 @@ def comp_prev_rows(
 
 
 def sheet_text(
-    period_labels: list[str], term_from_dates: TermFromDates
+    period_labels: list[str], term_from_dates: TermFromDates, run_number: int
 ) -> dict[str, dict[str, str]]:
     """Text the writer sets, by sheet name then A1 cell.
 
-    - Every sheet gets the title.
+    - Every sheet gets the title, which names the run.
     - Short, medium and long term comparison sheets get a heading and criteria
       note dated from the month before the term's start.
     - "No filters - long term" gets the long term heading only.
@@ -262,6 +263,7 @@ def sheet_text(
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
         term_from_dates (TermFromDates): first import date of each comparison term.
+        run_number (int): the run the workbook is built from.
 
     Returns:
         dict[str, dict[str, str]]: text to write.
@@ -279,7 +281,7 @@ def sheet_text(
 
     # Title on every sheet
     text = {
-        sheet.name: {cell_map.TITLE_CELL: title_text(period_labels)}
+        sheet.name: {cell_map.TITLE_CELL: title_text(period_labels, run_number)}
         for sheet in cell_map.ASSESSMENT_SHEETS
     }
 
@@ -332,6 +334,7 @@ def _input_cells(sheet: cell_map.SheetMap) -> set[tuple[int, int]]:
 def fill_assessment_workbook(
     period_labels: list[str],
     term_from_dates: TermFromDates,
+    run_number: int,
     values: dict[str, dict[str, object]],
     template_path: Path,
     output_path: Path,
@@ -348,13 +351,14 @@ def fill_assessment_workbook(
     Args:
         period_labels (list[str]): the run's period labels, such as "Mar 2026".
         term_from_dates (TermFromDates): first import date of each comparison term.
+        run_number (int): the run the workbook is built from, shown in the titles.
         values (dict[str, dict[str, object]]): values to write, keyed by sheet
             name, then by A1 cell reference, e.g. `{"Filled posts": {"C24":
             1000}}`. Cells must be in the sheet's mapped input ranges.
         template_path (Path): template to load.
         output_path (Path): local path to save to.
     """
-    text = sheet_text(period_labels, term_from_dates)
+    text = sheet_text(period_labels, term_from_dates, run_number)
     workbook = openpyxl.load_workbook(template_path)
     check_template(workbook, values)
 
@@ -684,6 +688,7 @@ def fill_assessment_workbook_from_lf(
     assessment_lf: pl.LazyFrame,
     sheets: tuple[cell_map.SheetMap, ...],
     term_from_dates: TermFromDates,
+    run_number: int,
     template_path: Path,
     output_path: Path,
 ) -> None:
@@ -695,6 +700,7 @@ def fill_assessment_workbook_from_lf(
         assessment_lf (pl.LazyFrame): assessment data.
         sheets (tuple[cell_map.SheetMap, ...]): sheets to fill.
         term_from_dates (TermFromDates): first import date of each comparison term.
+        run_number (int): the run the data was built from, shown in the titles.
         template_path (Path): template to load.
         output_path (Path): local path to save to.
 
@@ -712,7 +718,7 @@ def fill_assessment_workbook_from_lf(
     }
     period_labels = assessment_df.get_column(Pub.period_label_short).unique().to_list()
     fill_assessment_workbook(
-        period_labels, term_from_dates, values, template_path, output_path
+        period_labels, term_from_dates, run_number, values, template_path, output_path
     )
 
 

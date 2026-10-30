@@ -120,7 +120,7 @@ class TestMain:
     ):
         resolve_run_sources_mock.return_value = [PREP_RUN, ASSESSMENT_RUN]
         read_parquet_mock.return_value = _assessment_df().with_columns(
-            pl.lit(5.0).alias(Pub.filtered_filled_posts_long)
+            pl.lit(5.0).alias(Pub.filtered_long_sfc_filled_posts)
         )
         count_expected_rows_mock.return_value = 1
 
@@ -132,7 +132,9 @@ class TestMain:
             for item in json.loads(validation_arg.get_json_report())
             if item["assertion_type"] == "col_vals_expr" and not item["all_passed"]
         ]
-        assert any(Pub.filtered_filled_posts_long in brief for brief in failed_briefs)
+        assert any(
+            Pub.filtered_long_sfc_filled_posts in brief for brief in failed_briefs
+        )
 
 
 class TestCountExpectedAssessmentRows:

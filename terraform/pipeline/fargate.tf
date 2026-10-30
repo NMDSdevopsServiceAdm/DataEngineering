@@ -86,6 +86,17 @@ module "_04_direct_payments" {
   tag_name = terraform.workspace
 }
 
+module "_98_hackathon" {
+  source        = "../modules/fargate-task"
+  task_name     = "_98_hackathon"
+  ecr_repo_name = "fargate/98_hackathon"
+  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" }
+  ]
+  tag_name = terraform.workspace
+}
+
 module "_99_publication" {
   source                      = "../modules/fargate-task"
   task_name                   = "_99_publication"

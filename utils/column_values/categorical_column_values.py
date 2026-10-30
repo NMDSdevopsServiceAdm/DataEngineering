@@ -475,6 +475,7 @@ class CQCCurrentOrHistoricValues(ColumnValues):
 @dataclass
 class CQCRatingsDatasetValues(ColumnValues):
     pre_saf: str = "Pre SAF"
+    saf: str = "SAF"
 
 
 @dataclass
