@@ -21,6 +21,7 @@ PATCH_PATH = (
 
 ASSESSMENT_SOURCE = "some/assessment/directory/"
 PROMOTED_ARCHIVE_SOURCE = "some/promoted/directory/"
+PROMOTED_METADATA_SOURCE = "some/promoted/metadata/directory/"
 RUN_LOG_DESTINATION = "some/run_log/directory/"
 ASSESSMENT_RUN_SOURCE = (
     "some/assessment/directory/archive_date=2026-10-01/run_number=2/"
@@ -283,7 +284,7 @@ class TestIsRunPromoted:
     ):
         list_archive_runs_mock.return_value = {1: "2026-10-01"}
 
-        assert job.is_run_promoted(PROMOTED_ARCHIVE_SOURCE, 2) is False
+        assert job.is_run_promoted(PROMOTED_METADATA_SOURCE, 2) is False
 
     @patch(f"{PATCH_PATH}.file_utils.list_archive_runs")
     def test_reports_run_promoted_when_the_long_term_partition_exists(
@@ -291,7 +292,7 @@ class TestIsRunPromoted:
     ):
         list_archive_runs_mock.return_value = {1: "2026-10-01", 2: "2026-10-08"}
 
-        assert job.is_run_promoted(PROMOTED_ARCHIVE_SOURCE, 2) is True
+        assert job.is_run_promoted(PROMOTED_METADATA_SOURCE, 2) is True
 
 
 class TestCheckMain:
@@ -299,7 +300,7 @@ class TestCheckMain:
     def test_returns_zero_when_the_run_is_promoted(self, list_archive_runs_mock: Mock):
         list_archive_runs_mock.return_value = {2: "2026-10-08"}
 
-        assert job.check_main(PROMOTED_ARCHIVE_SOURCE, 2) == 0
+        assert job.check_main(PROMOTED_METADATA_SOURCE, 2) == 0
 
     @patch(f"{PATCH_PATH}.file_utils.list_archive_runs")
     def test_returns_the_not_promoted_exit_code_when_the_run_is_not_promoted(
@@ -307,7 +308,7 @@ class TestCheckMain:
     ):
         list_archive_runs_mock.return_value = {1: "2026-10-01"}
 
-        assert job.check_main(PROMOTED_ARCHIVE_SOURCE, 2) == job.NOT_PROMOTED_EXIT_CODE
+        assert job.check_main(PROMOTED_METADATA_SOURCE, 2) == job.NOT_PROMOTED_EXIT_CODE
 
     def test_not_promoted_exit_code_is_not_the_generic_failure_code(self):
         # A crash exits 1; the state machine retries only on the code below.

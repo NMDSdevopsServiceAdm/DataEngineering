@@ -11,7 +11,7 @@ import polars as pl
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.publication_utils import (
     import_date_to_period_month,
-    round_percentage,
+    percentage_as_rounded_fraction,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_helpers import (
     set_column_widths,
@@ -156,10 +156,10 @@ def prepare_perc_change_for_publication(
         pl.col(Pub.period_label_short).alias(Pub.period),
         Pub.region,
         Pub.main_service,
-        _percentage_as_rounded_fraction(april_column).alias(
+        percentage_as_rounded_fraction(april_column).alias(
             Pub.annual_percentage_change
         ),
-        _percentage_as_rounded_fraction(cumulative_column).alias(
+        percentage_as_rounded_fraction(cumulative_column).alias(
             Pub.monthly_percentage_change
         ),
     )
@@ -170,20 +170,6 @@ def prepare_perc_change_for_publication(
             Pub.monthly_percentage_change: NOT_PUBLISHED_LABEL,
         },
     )
-
-
-def _percentage_as_rounded_fraction(column: str) -> pl.Expr:
-    """
-    Rounds a fractional percentage change to one decimal place of a
-    percentage (0.0321 -> 0.032) as a Float64 free of Float32 noise.
-
-    Args:
-        column (str): the fractional percentage change column.
-
-    Returns:
-        pl.Expr: the rounded fraction.
-    """
-    return (round_percentage(column) / 100).round(3)
 
 
 def get_latest_import_date(publication_lf: pl.LazyFrame) -> date:

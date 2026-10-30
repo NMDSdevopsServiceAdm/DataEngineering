@@ -49,4 +49,5 @@ Start `Publication-Assessment` again with that run's `run_number` to build its a
 
 ### Long term storage
 When a run is selected for publication the archived output used to make it is copied into a long-term storage bucket.
+The run log is not copied; the one beside the rolling archive is the only record of a run's flags.
 Archived data in the holding bucket that was never selected is removed after about two months.
