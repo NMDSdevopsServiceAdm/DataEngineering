@@ -27,8 +27,11 @@ All notable changes to this project will be documented in this file.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 - Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
+- Added a CircleCI workflow that, once approved, tags the selected and reconciled run's commit `vYYYY.MM.N`, records the tag in the archive run log, and opens a PR moving that commit's CHANGELOG entries under the version.
+- Extended the run log update script to automatically copy a selected run's estimates and metadata into the long-term archive bucket, setting a new `promoted` flag.
 - Extended the run log update script to automatically copy a selected run's estimates, metadata and run log into the long-term archive bucket, setting a new `promoted` flag.
 - Added a Publication-Output step that waits for a run to be promoted, reconciles the public output's total filled posts with the promoted archive's, and sets `reconciled` and `reconciled_at` in the run log.
+- Extended the run log update script to cut the release tag `vYYYY.MM.N` on a selected run's commit, record the tag in the run log and open a PR moving that commit's CHANGELOG entries under the version; a branch bucket only prints what it would do.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
@@ -39,6 +42,7 @@ All notable changes to this project will be documented in this file.
 - Renamed employment status and SLV columns to one naming scheme (`ascwds_`/`estimated_` prefix, `emp_stat_`, `pct`, ordered stage suffixes), so output column names change.
 - Changed the run log update script to default to the `run-log-updater` role for the main bucket.
 - Changed the DPR dataset version to be set once in a Terraform variable instead of hardcoded in the DPR step functions.
+- Stopped copying the run log into the long-term archive bucket; Publication-Output now waits for the run's metadata there.
 - Renamed the SLV step function to Ind-CQC-EmpStat-SLV and reordered it so worker and workplace data are prepared in separate branches, workplace data is validated, and the SLV counts steps are no longer run.
 - Changed the download workbook to build its T0, T1 and T2 sheets from the single publication output table.
 - Standardised `coalesce_with_source_labels` so values are always Float32 and the source column is cast to its Enum where one exists.
@@ -65,6 +69,7 @@ All notable changes to this project will be documented in this file.
 - Changed the merge-when-ready GitHub Action to run from `main` rather than the labelled PR's copy of the script and workflow.
 
 ### Improved
+- Rounded percentage values and removed decimals from count tables before writing them to the assessment workbook.
 - Replaced the literal table headings in the assessment cell map with shared column value classes.
 - Removed two Polars warnings from the filtering rule update and the ASC-WDS workplace duplicate cleaning.
 - Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
@@ -99,6 +104,7 @@ All notable changes to this project will be documented in this file.
 - Added display-formatted columns to the publication clean job: each filled posts aggregate gets a comma-formatted or millions-abbreviated string (e.g. "800,000" or "1.175m"), and the import date gets abbreviated and full month-year string formats (e.g. "Jan 2026" and "January 2026").
 - Added a data-quality cleaning step for the SLV clean job that nulls ASCWDS's `999` "not known" code in starters/leavers/vacancies and records why in a filtering-rule column per metric.
 - Joined cleaned PIR (staff leavers, staff vacancies) and Capacity Tracker (agency hours, plus care home agency headcounts) data into the employment status merge step, so it's available for checking SLV and employment status estimates.
+- Added a modelling dataset builder to investigate employment status models.
 - Added short-term imputation and a rolling average to the employment status impute job: each location and job role's 5 employment status percentages are imputed by interpolating gaps of up to 5 years and carrying the first/last known value up to 2 years beyond the known range, then smoothed into a 6-month rolling average per primary service type, region and job role, with each location counted equally. Region is now carried through from the job role metadata at the merge step. Validation covers region completeness and expected values, that imputed and rolling average percentages fall between 0 and 1, that the rolling average has no nulls, and that both sum to 1.
 - Added project-level model evaluation utilities to `_03_independent_cqc` (location cross-validation folds, a never-submitted flag and a period-to-period jumpiness measure) for the filled posts and employment status models to share.
 - Added `lookback_cap_filter_expr` (12-year cap, 6-month buffer) for job-role-estimates, replacing quarterly sampling; moved `reduced_data_filter_expr` to publication's own utils as its last remaining user.

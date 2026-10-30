@@ -5,8 +5,11 @@
 # update_run_log.py, shows the changed rows, and after you confirm replaces only
 # the changed runs' partitions on S3; declining deletes the updated copy and
 # uploads nothing. Selecting a run for publication can change two runs, and
-# automatically copies it into the long-term archive bucket, then offers to start
-# the bucket's Publication-Output state machine for it.
+# automatically copies it into the long-term archive bucket, offers to cut the
+# release tag for it (cut_release_tag.sh; a dry run for any bucket but production),
+# then offers to start the bucket's Publication-Output state machine for it. The tag
+# comes first so its run log write is done before Publication-Output can rewrite the
+# same row.
 #
 # Prerequisites: see update_run_log_runbook.md (aws-mfa login, uv sync).
 set -euo pipefail
@@ -103,6 +106,36 @@ start_publication_output() {
   echo "Started. The line above is the execution ARN."
 }
 
+# Shows the release tag cut_release_tag.sh would cut for the selected run, and after
+# you confirm cuts it. Any bucket but the production one only dry-runs.
+# Returns 0 if it was cut or you declined, 1 if it could not be.
+cut_release_tag() {
+  local dry_run=true question="Dry run the release tag now?"
+  if [[ "$bucket" == "$MAIN_BUCKET" ]]; then
+    dry_run=false
+    question="Cut the release tag now?"
+  fi
+  local release_env=(RELEASE_RUN_NUMBER="$run_number" RELEASE_BUCKET="$bucket"
+    RELEASE_DRY_RUN="$dry_run" AWS_PROFILE="$profile")
+
+  echo
+  if ! env "${release_env[@]}" bash scripts/cut_release_tag.sh plan; then
+    echo "Error: could not work out the release tag with profile '$profile'." >&2
+    return 1
+  fi
+  echo
+  if ! confirm "$question"; then
+    echo "Not cut. Cut it by hand, only while no Publication-Output execution is finishing:"
+    echo "  ${release_env[*]} bash scripts/cut_release_tag.sh plan"
+    echo "  ${release_env[*]} bash scripts/cut_release_tag.sh cut"
+    return 0
+  fi
+  if ! env "${release_env[@]}" bash scripts/cut_release_tag.sh cut; then
+    echo "Error: the release tag was not fully cut. It is safe to run it again." >&2
+    return 1
+  fi
+}
+
 # Prints how many objects are under an S3 prefix. aws s3 ls exits 1 when nothing
 # matches, which is a count of 0, not an error; any other failure is returned.
 count_objects() {
@@ -118,7 +151,7 @@ count_objects() {
   fi
 }
 
-# Marks the selected run promoted, then copies its estimates, metadata and run-log
+# Marks the selected run promoted, then copies its estimates and metadata
 # partitions from $bucket into the long-term archive bucket. Runs automatically
 # after a successful selection; never prompts. Returns 0 on success, 1 on any
 # failure; a failure before the copy loop copies nothing.
@@ -169,8 +202,10 @@ copy_run_to_long_term_archive() {
     return 1
   fi
 
-  # --- Copy estimates, metadata, then the now-promoted run log, into the long-term bucket ---
-  for prefix in "$ESTIMATES_PREFIX" "$METADATA_PREFIX" "$RUN_LOG_PREFIX"; do
+  # --- Copy estimates, then metadata, into the long-term bucket ---
+  # Metadata goes last: it is one file, so its partition appearing is what
+  # Publication-Output waits for as the sign the copy has finished.
+  for prefix in "$ESTIMATES_PREFIX" "$METADATA_PREFIX"; do
     if ! source_count="$(count_objects "s3://$bucket/$prefix/$partition/")"; then
       echo "Error: could not list s3://$bucket/$prefix/$partition/. Nothing copied for this dataset." >&2
       return 1
@@ -325,15 +360,24 @@ fi
 
 print_restore_commands "${partitions[@]}"
 
-# --- Promote the selected run, then start the public output for it ---
+# --- Promote the selected run, cut its release tag, then start the public output for it ---
 if [[ "$flag" == "$SELECTION_FLAG" ]]; then
   if ! copy_run_to_long_term_archive; then
     echo "The selection is saved, but promotion did not complete. See update_run_log_runbook.md to finish it by hand." >&2
     exit 1
   fi
 
+  # The tag goes first: it rewrites the run's run log row, which Publication-Output
+  # rewrites when it marks the run reconciled. Neither depends on the other, so both
+  # are always attempted.
+  steps_failed=false
+  if ! cut_release_tag; then
+    echo "The selection is saved. Cut the release tag by hand once Publication-Output has finished: see \"Cutting the release tag\" in update_run_log_runbook.md." >&2
+    steps_failed=true
+  fi
   if ! start_publication_output; then
     echo "The selection is saved. Start Publication-Output by hand with {\"run_number\": $run_number}." >&2
-    exit 1
+    steps_failed=true
   fi
+  [[ "$steps_failed" == "false" ]] || exit 1
 fi

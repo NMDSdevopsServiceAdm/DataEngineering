@@ -299,6 +299,35 @@ def round_percentage(column_name: str) -> pl.Expr:
     return _round_half_away_from_zero(percentage, 0.1).round(1)
 
 
+def percentage_as_rounded_fraction(column_name: str) -> pl.Expr:
+    """
+    Rounds a fractional percentage change to one decimal place of a
+    percentage (0.0321 -> 0.032) as a Float64 free of Float32 noise.
+
+    Args:
+        column_name (str): the fractional percentage change column.
+
+    Returns:
+        pl.Expr: the rounded fraction.
+    """
+    return (round_percentage(column_name) / 100).round(3)
+
+
+def round_to_whole_number(column_name: str) -> pl.Expr:
+    """
+    Rounds a column to a whole number, an exact half away from zero (3.5 -> 4).
+    Null stays null.
+
+    Args:
+        column_name (str): the column to round.
+
+    Returns:
+        pl.Expr: Int64 expression with the rounded value.
+    """
+    value = pl.col(column_name).cast(pl.Float64)
+    return _round_half_away_from_zero(value, 1).cast(pl.Int64)
+
+
 def add_dispersion_filter(
     lazy_df: pl.LazyFrame,
     column_names: list[str],
