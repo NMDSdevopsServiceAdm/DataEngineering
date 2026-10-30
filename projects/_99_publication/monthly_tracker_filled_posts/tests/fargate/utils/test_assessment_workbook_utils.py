@@ -2,9 +2,11 @@ import datetime
 import zipfile
 from pathlib import Path
 
+import boto3
 import openpyxl
 import polars as pl
 import pytest
+from moto import mock_aws
 from openpyxl.styles import Font
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
@@ -306,6 +308,9 @@ class TestSheetText:
         assert text[cell_map.COMP_MEDIUM_TERM.name][cell_map.HEADING_CELL].endswith(
             "Since March 2026"
         )
+        assert text[cell_map.COMP_LONG_TERM.name][cell_map.HEADING_CELL].endswith(
+            "Since March 2024"
+        )
         assert text[cell_map.FILLED_POSTS.name][
             cell_map.FILLED_POSTS_CHART_HEADING_CELL
         ].endswith("since March 2027")
@@ -330,7 +335,23 @@ class TestSheetText:
             " since March 2026"
         )
 
-    def test_only_short_and_medium_term_sheets_get_a_heading_and_note(self):
+    def test_long_term_heading_and_note_use_the_march_before(self):
+        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
+            cell_map.COMP_LONG_TERM.name
+        ]
+
+        assert text[cell_map.HEADING_CELL].endswith("Since March 2024")
+        assert text[cell_map.CRITERIA_NOTE_CELL].endswith("end of March 2024 onwards.")
+
+    def test_no_filters_sheet_gets_the_long_term_heading_but_no_note(self):
+        text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)[
+            cell_map.NO_FILTERS.name
+        ]
+
+        assert text[cell_map.HEADING_CELL].endswith("Since March 2024")
+        assert cell_map.CRITERIA_NOTE_CELL not in text
+
+    def test_only_comparison_sheets_get_a_note(self):
         text = job.sheet_text(self.PERIOD_LABELS, TERM_FROM_DATES)
 
         with_note = {
@@ -339,6 +360,7 @@ class TestSheetText:
         assert with_note == {
             cell_map.COMP_SHORT_TERM.name,
             cell_map.COMP_MEDIUM_TERM.name,
+            cell_map.COMP_LONG_TERM.name,
         }
 
     def test_raises_when_no_period_label_is_a_march(self):
@@ -769,3 +791,24 @@ class TestFillAssessmentWorkbookFromLf:
                 cell_map.TEMPLATE_PATH,
                 tmp_path / "out.xlsx",
             )
+
+
+class TestUploadToS3:
+    @mock_aws
+    @pytest.mark.parametrize(
+        "directory", ["s3://bucket/some/prefix/", "s3://bucket/some/prefix"]
+    )
+    def test_uploads_file_into_directory_with_its_name(self, tmp_path, directory):
+        s3 = boto3.client("s3", region_name="eu-west-2")
+        s3.create_bucket(
+            Bucket="bucket",
+            CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+        )
+        local_file = tmp_path / "nested" / "summary.xlsx"
+        local_file.parent.mkdir()
+        local_file.write_bytes(b"workbook bytes")
+
+        job.upload_to_s3(local_file, directory)
+
+        body = s3.get_object(Bucket="bucket", Key="some/prefix/summary.xlsx")["Body"]
+        assert body.read() == b"workbook bytes"

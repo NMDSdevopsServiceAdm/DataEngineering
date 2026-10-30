@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- The assessment job fills the assessment workbook and saves it to S3.
 - Added the mapping of assessment data to the Comp prev publication and comparison sheets of the assessment workbook.
 - Added the mapping of assessment data to the Filled posts sheet of the assessment workbook.
 - Added a writer that fills the assessment workbook template and fails if the template or written cells do not match the cell map.
@@ -22,6 +23,7 @@ All notable changes to this project will be documented in this file.
 - Extended the run log update script to select a run for publication and start Publication-Output for it, set the `reconciled` and `locally_checked` flags, and list the month's runs.
 - Added a builder for the public monthly statistics download workbook: pages written from `templates/workbook_pages.yaml`, plus gptables T0, T1 and T2 sheets with `< 10` shown for suppressed filled posts.
 - Mapped unfiltered Capacity Tracker posts and location counts to the assessment workbook's "No filters - long term" sheet.
+- The assessment workbook writer now fills the B7 heading and B14 criteria note on the long term comparison sheet, and the B7 heading on the No filters sheet.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 - Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
@@ -31,6 +33,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Converted the CQC ratings assessment flattening to Polars.
+- Changed the period label column names to `period_label_short` and `period_label_long`, so output column names change.
 - Changed the assessment template to fixed "Cumulative % change" table headings, no longer written per run.
 - Removed the unused GitHub merge queue CircleCI workflow and `gh-readonly-queue` branch exclusions.
 - Renamed employment status and SLV columns to one naming scheme (`ascwds_`/`estimated_` prefix, `emp_stat_`, `pct`, ordered stage suffixes), so output column names change.
@@ -62,11 +65,14 @@ All notable changes to this project will be documented in this file.
 - Changed the merge-when-ready GitHub Action to run from `main` rather than the labelled PR's copy of the script and workflow.
 
 ### Improved
+- Replaced the literal table headings in the assessment cell map with shared column value classes.
+- Removed two Polars warnings from the filtering rule update and the ASC-WDS workplace duplicate cleaning.
 - Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
 - Removed redundant starters, leavers and vacancies bounding from the ASC-WDS workplace cleaning job.
 
 
 ### Fixed
+- Fixed run promotion leaving an empty write-check test object in the long-term archive bucket on every run.
 - Fixed SLV deduplication keeping repeated values at workplaces where a job role stays blank.
 
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
