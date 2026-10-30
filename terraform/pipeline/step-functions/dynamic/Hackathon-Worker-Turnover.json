@@ -1,0 +1,37 @@
+{
+  "Comment": "Manually-started pipeline that filters the cleaned ASC-WDS worker data to permanent and temporary workers, keeping the earliest file in each month from January 2020, for the hackathon worker turnover project. Not scheduled; start with no execution input.",
+  "StartAt": "Filter worker turnover data",
+  "States": {
+    "Filter worker turnover data": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "LaunchType": "FARGATE",
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${hackathon_task_arn}",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${hackathon_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_98_hackathon-container",
+              "Command": [
+                "_01_worker_turnover.py",
+                "--cleaned_ascwds_worker_source",
+                "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/",
+                "--flagged_destination",
+                "${dataset_bucket_uri}/domain=98_hackathon/dataset=worker_turnover_01_flagged/"
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}
