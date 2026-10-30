@@ -115,6 +115,14 @@ class TestUpdateFilteringRule:
             uncapped_col_name=IndCQC.ascwds_filled_posts_dedup,
         )
 
+    def test_ignores_winsorized_rows_when_winsorized_rule_is_none(self):
+        self.run(
+            Data.update_filtering_rule_winsorized_to_nulled_rows,
+            Data.update_filtering_rule_winsorized_to_nulled_rows,
+            new_rule_name=AscwdsFilteringRule.contained_invalid_missing_data_code,
+            winsorized_rule=None,
+        )
+
     @pytest.mark.parametrize(
         "rows, expected_rows, new_rule_name, uncapped",
         [
