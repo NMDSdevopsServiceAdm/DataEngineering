@@ -57,22 +57,15 @@ class WorkerTurnoverData:
             ],
         ),
         FilterWorkerTurnoverDataCase(
-            id="removes_rows_before_jan_2020",
+            id="removes_rows_before_1_jan_2020_and_keeps_rows_from_then",
             input_rows=[
                 worker_row("1", date(2019, 12, 2), EmpStat.permanent),
-                worker_row("2", date(2020, 2, 3), EmpStat.permanent),
+                worker_row("2", date(2020, 1, 1), EmpStat.permanent),
+                worker_row("3", date(2020, 2, 3), EmpStat.permanent),
             ],
             expected_rows=[
-                worker_row("2", date(2020, 2, 3), EmpStat.permanent),
-            ],
-        ),
-        FilterWorkerTurnoverDataCase(
-            id="keeps_rows_on_1_jan_2020",
-            input_rows=[
-                worker_row("1", date(2020, 1, 1), EmpStat.permanent),
-            ],
-            expected_rows=[
-                worker_row("1", date(2020, 1, 1), EmpStat.permanent),
+                worker_row("2", date(2020, 1, 1), EmpStat.permanent),
+                worker_row("3", date(2020, 2, 3), EmpStat.permanent),
             ],
         ),
         FilterWorkerTurnoverDataCase(
@@ -136,5 +129,3 @@ class WorkerTurnoverData:
             ],
         ),
     ]
-
-    single_worker_rows = [worker_row("1", date(2021, 1, 5), EmpStat.permanent)]

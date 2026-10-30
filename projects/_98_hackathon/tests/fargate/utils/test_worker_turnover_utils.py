@@ -30,14 +30,3 @@ class TestFilterWorkerTurnoverData:
         returned_lf = job.filter_worker_turnover_data(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_returns_all_input_columns(self):
-        input_lf = pl.LazyFrame(
-            Data.single_worker_rows,
-            schema=Schemas.cleaned_worker_schema,
-            orient="row",
-        )
-
-        returned_lf = job.filter_worker_turnover_data(input_lf)
-
-        assert returned_lf.collect_schema() == Schemas.cleaned_worker_schema
