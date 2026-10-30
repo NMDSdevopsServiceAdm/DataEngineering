@@ -63,11 +63,13 @@ All notable changes to this project will be documented in this file.
 - Changed the merge-when-ready GitHub Action to run from `main` rather than the labelled PR's copy of the script and workflow.
 
 ### Improved
+- Removed two Polars warnings from the filtering rule update and the ASC-WDS workplace duplicate cleaning.
 - Renamed the monthly tracker workbook modules and template to `output_` and `assessment_` prefixes, and shared the period month, templates folder, column width and workbook-open test helpers between them.
 - Removed redundant starters, leavers and vacancies bounding from the ASC-WDS workplace cleaning job.
 
 
 ### Fixed
+- Fixed run promotion leaving an empty write-check test object in the long-term archive bucket on every run.
 - Fixed SLV deduplication keeping repeated values at workplaces where a job role stays blank.
 
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.

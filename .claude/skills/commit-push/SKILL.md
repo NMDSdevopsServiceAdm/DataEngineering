@@ -1,6 +1,6 @@
 ---
 name: commit-push
-description: Use when committing and pushing a chunk of work — "/commit-push", "commit and push this". Run repeatedly through a ticket, once per logical change, not just at the end. Pairs with `new-ticket` and `open-pr`.
+description: Use when committing and pushing a chunk of work — "/commit-push", "commit and push this". Run repeatedly through a ticket, once per logical change, not just at the end. Pairs with `open-pr`.
 ---
 
 # Committing and pushing
