@@ -160,7 +160,7 @@ def create_standard_ratings_dataset(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
     ).unique()
 
 
-def add_location_id_hash(lf: pl.LazyFrame) -> pl.LazyFrame:
+def add_location_id_hash(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Adds a 20 character hash of the location ID, used to link with anonymised files.
 
@@ -169,14 +169,14 @@ def add_location_id_hash(lf: pl.LazyFrame) -> pl.LazyFrame:
     result is joined back.
 
     Args:
-        lf (pl.LazyFrame): A LazyFrame containing the column location_id.
+        ratings_lf (pl.LazyFrame): CQC ratings containing the column location_id.
 
     Returns:
         pl.LazyFrame: The input with an additional column containing the hashed
             location ID. A null location ID gives a null hash.
     """
     location_id_hash_lf = (
-        lf.select(CQCL.location_id)
+        ratings_lf.select(CQCL.location_id)
         .unique()
         .with_columns(
             pl.col(CQCL.location_id)
@@ -190,7 +190,9 @@ def add_location_id_hash(lf: pl.LazyFrame) -> pl.LazyFrame:
             .alias(CQCRatings.location_id_hash)
         )
     )
-    return lf.join(location_id_hash_lf, on=CQCL.location_id, how="left", validate="m:1")
+    return ratings_lf.join(
+        location_id_hash_lf, on=CQCL.location_id, how="left", validate="m:1"
+    )
 
 
 if __name__ == "__main__":
