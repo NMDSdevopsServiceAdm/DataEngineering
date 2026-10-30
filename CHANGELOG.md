@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added experiment notebooks comparing employment status models with the rolling average on workplace features; no pipeline change.
 - The assessment job fills the assessment workbook and saves it to S3.
 - Added the mapping of assessment data to the Comp prev publication and comparison sheets of the assessment workbook.
 - Added the mapping of assessment data to the Filled posts sheet of the assessment workbook.
