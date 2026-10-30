@@ -473,7 +473,7 @@ class TestMain:
         args = mocks.fill_workbook.call_args.args
         assert args[0] is mocks.scan_parquet.return_value
         assert args[1] == job.cell_map.ASSESSMENT_SHEETS
-        assert args[2] == job.assessment_workbook_utils.TermFromDates(
+        assert args[2] == job.assessment_sheet_text.TermFromDates(
             short=SHORT_TERM_FROM_DATE,
             medium=MEDIUM_TERM_FROM_DATE,
             long=LONG_TERM_FROM_DATE,
@@ -493,7 +493,7 @@ class TestMain:
         mocks.fill_workbook.assert_called_once_with(
             mocks.scan_parquet.return_value,
             job.cell_map.ASSESSMENT_SHEETS,
-            job.assessment_workbook_utils.TermFromDates(
+            job.assessment_sheet_text.TermFromDates(
                 short=SHORT_TERM_FROM_DATE,
                 medium=MEDIUM_TERM_FROM_DATE,
                 long=LONG_TERM_FROM_DATE,

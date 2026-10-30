@@ -74,6 +74,7 @@ All notable changes to this project will be documented in this file.
 - Renamed the filled posts, total employed, location count and cumulative percentage change publication columns to the `<filtered/unfiltered>_<short/medium/long>_<ct/sfc>_<measure>` pattern, and prefixed the remaining filled posts and location count columns with `filtered_` or `unfiltered_`.
 
 ### Improved
+- Split the assessment workbook helpers into text, values and writer modules, with no change to the workbook produced.
 - Rounded percentage values and removed decimals from count tables before writing them to the assessment workbook.
 - Replaced the literal table headings in the assessment cell map with shared column value classes.
 - Removed two Polars warnings from the filtering rule update and the ASC-WDS workplace duplicate cleaning.

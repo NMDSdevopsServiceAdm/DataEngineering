@@ -9,6 +9,7 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
     assessment_cell_map as cell_map,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
+    assessment_sheet_text,
     assessment_workbook_utils,
     merge_utils,
     publication_utils,
@@ -251,7 +252,7 @@ def main(
         assessment_workbook_utils.fill_assessment_workbook_from_lf(
             run_assessment_lf,
             cell_map.ASSESSMENT_SHEETS,
-            assessment_workbook_utils.TermFromDates(
+            assessment_sheet_text.TermFromDates(
                 short=short_term_from_date,
                 medium=medium_term_from_date,
                 long=long_term_from_date,
