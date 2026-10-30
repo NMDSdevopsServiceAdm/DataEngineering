@@ -14,7 +14,8 @@ def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Only files from 1 January 2020 onwards are kept. The earliest file is
     chosen after the other filters, so it is the earliest with permanent or
-    temporary workers.
+    temporary workers. This month filter uses `.over()`, which the streaming
+    engine does not cover, so the sink may fall back to the in-memory engine.
 
     Args:
         worker_lf (pl.LazyFrame): Cleaned ASC-WDS worker data.

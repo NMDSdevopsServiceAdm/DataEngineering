@@ -113,6 +113,19 @@ class WorkerTurnoverData:
             ],
         ),
         FilterWorkerTurnoverDataCase(
+            id="keeps_one_import_date_per_month_across_years",
+            input_rows=[
+                worker_row("1", date(2020, 1, 22), EmpStat.permanent),
+                worker_row("1", date(2020, 1, 15), EmpStat.permanent),
+                worker_row("1", date(2021, 1, 12), EmpStat.permanent),
+                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
+            ],
+            expected_rows=[
+                worker_row("1", date(2020, 1, 15), EmpStat.permanent),
+                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
+            ],
+        ),
+        FilterWorkerTurnoverDataCase(
             id="picks_earliest_import_date_after_removing_other_workers",
             input_rows=[
                 worker_row("1", date(2021, 1, 5), EmpStat.agency),
@@ -123,3 +136,5 @@ class WorkerTurnoverData:
             ],
         ),
     ]
+
+    single_worker_rows = [worker_row("1", date(2021, 1, 5), EmpStat.permanent)]

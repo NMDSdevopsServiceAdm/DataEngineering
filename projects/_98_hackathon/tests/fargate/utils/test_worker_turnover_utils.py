@@ -33,7 +33,7 @@ class TestFilterWorkerTurnoverData:
 
     def test_returns_all_input_columns(self):
         input_lf = pl.LazyFrame(
-            Data.filter_worker_turnover_data_cases[0].input_rows,
+            Data.single_worker_rows,
             schema=Schemas.cleaned_worker_schema,
             orient="row",
         )
