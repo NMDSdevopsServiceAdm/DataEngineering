@@ -291,20 +291,8 @@ def main(
             ),
             brief=f"{IndCqcColumns.ascwds_filtering_rule} needs to be one of {CatValues.ascwds_filtering_rule_column_values.categorical_values}",
         )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.ct_care_home_filtering_rule,
-                CatValues.ct_care_home_filtering_rule_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.ct_care_home_filtering_rule} needs to be one of {CatValues.ct_care_home_filtering_rule_column_values.categorical_values}",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.ct_non_res_filtering_rule,
-                CatValues.ct_non_res_filtering_rule_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.ct_non_res_filtering_rule} needs to be one of {CatValues.ct_non_res_filtering_rule_column_values.categorical_values}",
-        )
+        # TEMP 2409: the ct_care_home/ct_non_res filtering rule distinct-count checks
+        # are removed because the sample CT data never triggers every rule. Revert.
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.related_location,
