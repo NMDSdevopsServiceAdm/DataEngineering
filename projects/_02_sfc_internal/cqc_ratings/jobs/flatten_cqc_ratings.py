@@ -599,6 +599,7 @@ def merge_cqc_ratings(
     return merged_df.select(*expected_columns)
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
     columns_to_clean = [
         CQCRatings.overall_rating,
@@ -638,6 +639,7 @@ def add_current_or_historic_column(
     return ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def remove_blank_and_duplicate_rows(ratings_df: DataFrame) -> DataFrame:
     ratings_df = ratings_df.where(
         (ratings_df[CQCRatings.overall_rating].isNotNull())
@@ -677,6 +679,7 @@ def add_rating_sequence_column(
     return ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
     """
     Adds a column to flag the latest rating per locationid as 1, otherwise 0.
@@ -699,6 +702,7 @@ def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
     return ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def add_numerical_ratings(df: DataFrame) -> DataFrame:
     """
     Adds numerical ratings columns for each of the key ratings and a total column.

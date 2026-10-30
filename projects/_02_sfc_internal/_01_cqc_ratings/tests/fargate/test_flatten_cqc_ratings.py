@@ -69,3 +69,4 @@ class TestMain:
                 CQCCurrentOrHistoricValues.historic,
             ]
             assert set(returned_df[CQCL.dataset]) == {CQCRatingsDatasetValues.pre_saf}
+            assert CQCRatings.total_rating_value in returned_df.columns
