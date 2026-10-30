@@ -121,10 +121,9 @@ def main(
 
 def create_standard_ratings_dataset(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Selects the standard ratings dataset columns and removes duplicate rows.
+    Selects the standard ratings columns, then removes duplicate rows.
 
-    Columns are selected before `unique`, so only the standard columns are compared
-    and held in memory.
+    Selecting first keeps `unique` to the standard columns only.
 
     Args:
         ratings_lf (pl.LazyFrame): CQC ratings and assessments.
@@ -166,8 +165,8 @@ def add_location_id_hash(lf: pl.LazyFrame) -> pl.LazyFrame:
     Adds a 20 character hash of the location ID, used to link with anonymised files.
 
     The hash is the first 20 characters of the SHA-256 hex digest. Polars has no
-    SHA-256 expression, so it is computed with `hashlib` on the distinct location IDs
-    only (a small frame) and joined back, rather than once per row.
+    SHA-256 expression, so `hashlib` hashes the distinct location IDs only and the
+    result is joined back.
 
     Args:
         lf (pl.LazyFrame): A LazyFrame containing the column location_id.
