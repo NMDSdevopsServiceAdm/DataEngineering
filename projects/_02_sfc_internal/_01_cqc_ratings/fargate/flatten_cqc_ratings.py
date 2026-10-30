@@ -4,6 +4,7 @@ import polars as pl
 
 from polars_utils import utils
 from projects._02_sfc_internal._01_cqc_ratings.fargate.utils import utils as rUtils
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
@@ -49,7 +50,7 @@ def main(
     """Flattens CQC ratings and assessments into standard and benchmark datasets.
 
     Commented-out calls are placeholders for steps not yet implemented. Until then,
-    both destinations receive the flattened current and historic ratings.
+    both destinations receive the flattened current, historic and assessment ratings.
 
     Args:
         cqc_full_snapshot_source (str): Source s3 directory for the latest full
@@ -91,10 +92,28 @@ def main(
     historic_ratings_lf = rUtils.prepare_historic_ratings(cqc_ratings_lf)
     assessment_ratings_lf = rUtils.prepare_assessment_ratings(cqc_ratings_lf)
 
-    rUtils.raise_error_when_assessment_lf_contains_overall_data(assessment_ratings_lf)
-
-    ratings_lf = pl.concat([current_ratings_lf, historic_ratings_lf], how="diagonal")
-    # ratings_lf = merge_cqc_ratings(assessment_ratings_lf, ratings_lf)
+    ratings_lf = pl.concat(
+        [current_ratings_lf, historic_ratings_lf, assessment_ratings_lf],
+        how="diagonal",
+    ).select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCRatings.date,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.source_path,
+        CQCL.dataset,
+        CQCRatings.current_or_historic,
+        CQCRatings.overall_rating,
+        CQCRatings.safe_rating,
+        CQCRatings.well_led_rating,
+        CQCRatings.caring_rating,
+        CQCRatings.responsive_rating,
+        CQCRatings.effective_rating,
+    )
 
     # ratings_lf = recode_unknown_codes_to_null(ratings_lf)
     # ratings_lf = remove_blank_and_duplicate_rows(ratings_lf)

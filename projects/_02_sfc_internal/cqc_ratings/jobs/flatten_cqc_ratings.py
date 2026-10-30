@@ -525,6 +525,7 @@ def extract_asg(assessment_df: DataFrame) -> DataFrame:
     return asg_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/flatten_cqc_ratings.py (casts and renames moved into the prepare_* functions; main concatenates)
 def merge_cqc_ratings(
     assessment_ratings_df: DataFrame,
     standard_ratings_df: DataFrame,

@@ -229,11 +229,6 @@ prepare_assessment_ratings_cases = [
         expected_data=Data.expected_prepare_assessment_ratings_null_key_question_ratings_data,
     ),
     PrepareAssessmentRatingsCase(
-        id="overall_ratings_have_null_asg_only_columns",
-        rows=Data.prepare_assessment_ratings_overall_rows,
-        expected_data=Data.expected_prepare_assessment_ratings_overall_data,
-    ),
-    PrepareAssessmentRatingsCase(
         id="unknown_key_question_is_ignored",
         rows=Data.prepare_assessment_ratings_unknown_key_question_rows,
         expected_data=Data.expected_prepare_assessment_ratings_unknown_key_question_data,
@@ -257,6 +252,16 @@ class TestPrepareAssessmentRatings:
             expected_data, schema=Schemas.assessment_ratings_output_schema
         ).collect()
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+    def test_raises_when_overall_rating_is_populated(self):
+        input_lf = pl.LazyFrame(
+            Data.prepare_assessment_ratings_overall_rows,
+            schema=Schemas.assessment_ratings_input_schema,
+            orient="row",
+        )
+
+        with pytest.raises(ValueError, match="overall object within the assessments"):
+            job.prepare_assessment_ratings(input_lf)
 
 
 class TestRaiseErrorWhenAssessmentLfContainsOverallData:

@@ -14,7 +14,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
-    CQCCurrentOrHistoricValues,
     CQCRatingsDatasetValues,
 )
 
@@ -63,9 +62,29 @@ class TestMain:
 
         for sunk_lf in sinks.values():
             returned_df = sunk_lf.collect()
-            assert set(returned_df[CQCL.location_id]) == {"1-001"}
-            assert sorted(returned_df[CQCRatings.current_or_historic]) == [
-                CQCCurrentOrHistoricValues.current,
-                CQCCurrentOrHistoricValues.historic,
+            assert returned_df.columns == [
+                CQCL.location_id,
+                CQCL.registration_status,
+                CQCRatings.date,
+                CQCL.assessment_plan_id,
+                CQCL.title,
+                CQCL.assessment_date,
+                CQCL.assessment_plan_status,
+                CQCL.name,
+                CQCL.source_path,
+                CQCL.dataset,
+                CQCRatings.current_or_historic,
+                CQCRatings.overall_rating,
+                CQCRatings.safe_rating,
+                CQCRatings.well_led_rating,
+                CQCRatings.caring_rating,
+                CQCRatings.responsive_rating,
+                CQCRatings.effective_rating,
             ]
-            assert set(returned_df[CQCL.dataset]) == {CQCRatingsDatasetValues.pre_saf}
+            assert set(returned_df[CQCL.location_id]) == {"1-001"}
+            assert sorted(returned_df[CQCL.dataset]) == [
+                CQCRatingsDatasetValues.pre_saf,
+                CQCRatingsDatasetValues.pre_saf,
+                CQCRatingsDatasetValues.saf,
+            ]
+            assert returned_df[CQCRatings.date].dtype == pl.Date
