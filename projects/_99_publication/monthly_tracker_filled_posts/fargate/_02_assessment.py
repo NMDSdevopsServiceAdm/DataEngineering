@@ -157,7 +157,7 @@ def main(
             Pub.unfiltered_locationid_count,
             short_term_from_date,
             group_columns,
-            Pub.unfiltered_locationid_count_cum_pct_change_short,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.filtered_long_sfc_filled_posts,

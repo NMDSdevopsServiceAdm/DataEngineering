@@ -62,7 +62,7 @@ def main(
             Pub.unfiltered_filled_posts_april_pct_change,
             Pub.unfiltered_short_sfc_cum_pct_change,
             Pub.unfiltered_locationid_count_april_pct_change,
-            Pub.unfiltered_locationid_count_cum_pct_change_short,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
         )
         .sort(publication_utils.DOWNLOAD_TABLE_SORT_COLUMNS)
     )

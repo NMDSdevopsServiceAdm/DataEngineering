@@ -439,7 +439,7 @@ EXPLICIT_VALUE_COLUMNS = [
     Pub.unfiltered_filled_posts_april_pct_change,
     Pub.unfiltered_locationid_count_april_pct_change,
     Pub.unfiltered_short_sfc_cum_pct_change,
-    Pub.unfiltered_locationid_count_cum_pct_change_short,
+    Pub.unfiltered_short_locationid_count_cum_pct_change,
     Pub.unfiltered_filled_posts_prev_run,
     Pub.unfiltered_filled_posts_pct_change_vs_prev_run,
 ]
@@ -473,7 +473,7 @@ def _assessment_lf(
             Pub.unfiltered_filled_posts_april_pct_change: 0.1 * (i + 1),
             Pub.unfiltered_locationid_count_april_pct_change: 0.2 * (i + 1),
             Pub.unfiltered_short_sfc_cum_pct_change: 0.3 * (i + 1),
-            Pub.unfiltered_locationid_count_cum_pct_change_short: 0.4 * (i + 1),
+            Pub.unfiltered_short_locationid_count_cum_pct_change: 0.4 * (i + 1),
             Pub.unfiltered_filled_posts_prev_run: 5000 * (i + 1) + 10 * j,
             Pub.unfiltered_filled_posts_pct_change_vs_prev_run: 0.5 * (i + 1),
         }

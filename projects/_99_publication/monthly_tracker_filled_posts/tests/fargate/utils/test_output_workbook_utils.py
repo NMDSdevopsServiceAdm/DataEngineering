@@ -44,7 +44,7 @@ PUBLICATION_SCHEMA = pl.Schema(
         (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float64),
         (Pub.unfiltered_locationid_count_april_pct_change, pl.Float64),
         (
-            Pub.unfiltered_locationid_count_cum_pct_change_short,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
             pl.Float64,
         ),
     ]

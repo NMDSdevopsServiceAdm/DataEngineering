@@ -261,7 +261,7 @@ def build_download_workbook(
         "T2": prepare_perc_change_for_publication(
             publication_lf,
             Pub.unfiltered_locationid_count_april_pct_change,
-            Pub.unfiltered_locationid_count_cum_pct_change_short,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
         ),
     }
     titles = {"T0": T0_TITLE, "T1": T1_TITLE, "T2": T2_TITLE}

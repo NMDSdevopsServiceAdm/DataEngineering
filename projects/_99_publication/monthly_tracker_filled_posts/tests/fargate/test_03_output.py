@@ -36,7 +36,7 @@ input_schema = pl.Schema(
         (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float32()),
         (Pub.unfiltered_locationid_count_april_pct_change, pl.Float32()),
         (
-            Pub.unfiltered_locationid_count_cum_pct_change_short,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
             pl.Float32(),
         ),
     ]
@@ -54,7 +54,7 @@ expected_schema = pl.Schema(
         (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float32()),
         (Pub.unfiltered_locationid_count_april_pct_change, pl.Float32()),
         (
-            Pub.unfiltered_locationid_count_cum_pct_change_short,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
             pl.Float32(),
         ),
     ]
@@ -209,7 +209,7 @@ class TestMain:
             Pub.unfiltered_filled_posts_april_pct_change,
             Pub.unfiltered_short_sfc_cum_pct_change,
             Pub.unfiltered_locationid_count_april_pct_change,
-            Pub.unfiltered_locationid_count_cum_pct_change_short,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
         ).collect().rows() == [
             (
                 pytest.approx(0.1),

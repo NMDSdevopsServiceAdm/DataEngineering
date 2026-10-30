@@ -241,7 +241,7 @@ FILLED_POSTS = SheetMap(
         ),
         InputRange(
             "J84:N96",
-            Pub.unfiltered_locationid_count_cum_pct_change_short,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
             note="monthly CQC locations % change",
             key="monthly_locations.change",
             number_format="percent",
