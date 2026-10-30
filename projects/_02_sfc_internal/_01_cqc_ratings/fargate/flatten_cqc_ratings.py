@@ -4,7 +4,6 @@ import polars as pl
 
 from polars_utils import utils
 from projects._02_sfc_internal._01_cqc_ratings.fargate.utils import utils as rUtils
-from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
@@ -95,24 +94,6 @@ def main(
     ratings_lf = pl.concat(
         [current_ratings_lf, historic_ratings_lf, assessment_ratings_lf],
         how="diagonal",
-    ).select(
-        CQCL.location_id,
-        CQCL.registration_status,
-        CQCRatings.date,
-        CQCL.assessment_plan_id,
-        CQCL.title,
-        CQCL.assessment_date,
-        CQCL.assessment_plan_status,
-        CQCL.name,
-        CQCL.source_path,
-        CQCL.dataset,
-        CQCRatings.current_or_historic,
-        CQCRatings.overall_rating,
-        CQCRatings.safe_rating,
-        CQCRatings.well_led_rating,
-        CQCRatings.caring_rating,
-        CQCRatings.responsive_rating,
-        CQCRatings.effective_rating,
     )
 
     # ratings_lf = recode_unknown_codes_to_null(ratings_lf)
