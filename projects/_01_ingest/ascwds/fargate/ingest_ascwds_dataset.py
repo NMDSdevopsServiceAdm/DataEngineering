@@ -1,4 +1,3 @@
-# TEMP 2409: no-op edit so CI seeds the ASC-WDS raw bucket; revert before merge.
 import sys
 
 import polars as pl

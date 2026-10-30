@@ -86,6 +86,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             "rows_distinct",
             "col_vals_expr",
             "col_vals_in_set",
+            "specially",
             "col_vals_gt",
             "col_vals_ge",
         }
