@@ -380,18 +380,16 @@ def raise_error_when_assessment_lf_contains_overall_data(
 
 def recode_unknown_codes_to_null(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Sets ratings that aren't a real rating (e.g. "No published rating") to null.
+    Sets unknown rating labels (e.g. "No published rating") and empty strings to null.
 
-    Only the overall and key question rating columns are changed. Rows are neither
-    dropped nor deduplicated.
+    Only the overall and key question rating columns are changed.
 
     Args:
         lf (pl.LazyFrame): CQC ratings with the overall and key question rating
             columns.
 
     Returns:
-        pl.LazyFrame: The input with unknown rating labels and empty strings
-            replaced by null in the rating columns.
+        pl.LazyFrame: The input with unknown ratings set to null.
     """
     unknown_labels = [
         "Inspected but not rated",
@@ -414,8 +412,8 @@ def remove_blank_and_duplicate_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
     Removes rows with no ratings, then removes duplicate rows.
 
     A row has no ratings when the overall and all key question rating columns are
-    null. Duplicates are compared across every column. Rows are small and few, so
-    `unique` over all columns is cheap.
+    null. Duplicates are matched on every column, which is cheap at this dataset's
+    size.
 
     Args:
         lf (pl.LazyFrame): CQC ratings with the overall and key question rating
@@ -431,12 +429,11 @@ def add_latest_rating_flag_column(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Flags the latest rating per location as 1, otherwise 0.
 
-    The latest rating has the newest `rating_date`, then the newest `assessment_date`;
-    nulls rank last. Rows tied on both dates are ordered by the remaining columns, so
-    exactly one row per location is flagged whatever the input row order. That
-    tie-break is only for determinism, not a business rule.
+    Latest is the newest `rating_date`, then `assessment_date`, nulls last. Rows tied
+    on both dates are ordered by the remaining columns so exactly one row per location
+    is flagged whatever the input order; this tie-break isn't a business rule.
 
-    Uses `.over()`, which the streaming engine doesn't cover, so it runs in memory.
+    Uses `.over()`, which the streaming engine doesn't cover.
 
     Args:
         lf (pl.LazyFrame): CQC ratings with `rating_date`, `assessment_date` and
