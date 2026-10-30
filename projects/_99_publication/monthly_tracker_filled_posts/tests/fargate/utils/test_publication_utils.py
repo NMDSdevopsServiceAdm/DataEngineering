@@ -204,13 +204,13 @@ class TestAggregateToPublicationRows:
             (Pub.unfiltered_filled_posts, pl.Float32()),
             (Pub.unfiltered_locationid_count, pl.UInt32()),
             (Pub.filtered_long_sfc_filled_posts, pl.Float32()),
-            (Pub.filtered_long_sfc_locationid_count, pl.UInt32()),
+            (Pub.filtered_long_locationid_count, pl.UInt32()),
             (Pub.filtered_long_ct_total_employed, pl.Float32()),
             (Pub.filtered_medium_sfc_filled_posts, pl.Float32()),
-            (Pub.filtered_medium_sfc_locationid_count, pl.UInt32()),
+            (Pub.filtered_medium_locationid_count, pl.UInt32()),
             (Pub.filtered_medium_ct_total_employed, pl.Float32()),
             (Pub.filtered_short_sfc_filled_posts, pl.Float32()),
-            (Pub.filtered_short_sfc_locationid_count, pl.UInt32()),
+            (Pub.filtered_short_locationid_count, pl.UInt32()),
             (Pub.filtered_short_ct_total_employed, pl.Float32()),
             (Pub.unfiltered_long_ct_total_employed, pl.Float32()),
         ]
@@ -278,13 +278,13 @@ class TestAggregateToPublicationRows:
                 (Pub.unfiltered_filled_posts, pl.Float32()),
                 (Pub.unfiltered_locationid_count, pl.UInt32()),
                 (Pub.filtered_long_sfc_filled_posts, pl.Float32()),
-                (Pub.filtered_long_sfc_locationid_count, pl.UInt32()),
+                (Pub.filtered_long_locationid_count, pl.UInt32()),
                 (Pub.filtered_long_ct_total_employed, pl.Float32()),
                 (Pub.filtered_medium_sfc_filled_posts, pl.Float32()),
-                (Pub.filtered_medium_sfc_locationid_count, pl.UInt32()),
+                (Pub.filtered_medium_locationid_count, pl.UInt32()),
                 (Pub.filtered_medium_ct_total_employed, pl.Float32()),
                 (Pub.filtered_short_sfc_filled_posts, pl.Float32()),
-                (Pub.filtered_short_sfc_locationid_count, pl.UInt32()),
+                (Pub.filtered_short_locationid_count, pl.UInt32()),
                 (Pub.filtered_short_ct_total_employed, pl.Float32()),
                 (Pub.unfiltered_long_ct_total_employed, pl.Float32()),
             ]
@@ -436,13 +436,13 @@ class TestAddRowsForPublicationGroups:
             (Pub.unfiltered_filled_posts, pl.Float32()),
             (Pub.unfiltered_locationid_count, pl.UInt32()),
             (Pub.filtered_long_sfc_filled_posts, pl.Float32()),
-            (Pub.filtered_long_sfc_locationid_count, pl.UInt32()),
+            (Pub.filtered_long_locationid_count, pl.UInt32()),
             (Pub.filtered_long_ct_total_employed, pl.Float32()),
             (Pub.filtered_medium_sfc_filled_posts, pl.Float32()),
-            (Pub.filtered_medium_sfc_locationid_count, pl.UInt32()),
+            (Pub.filtered_medium_locationid_count, pl.UInt32()),
             (Pub.filtered_medium_ct_total_employed, pl.Float32()),
             (Pub.filtered_short_sfc_filled_posts, pl.Float32()),
-            (Pub.filtered_short_sfc_locationid_count, pl.UInt32()),
+            (Pub.filtered_short_locationid_count, pl.UInt32()),
             (Pub.filtered_short_ct_total_employed, pl.Float32()),
             (Pub.unfiltered_long_ct_total_employed, pl.Float32()),
         ]
@@ -574,7 +574,7 @@ class TestAddPrevRunFilledPostsColumns:
             self._current_lf(), self._prev_lf()
         ).collect()
 
-        assert returned_df[Pub.unfiltered_prev_run_filled_posts].to_list() == [
+        assert returned_df[Pub.unfiltered_filled_posts_prev_run].to_list() == [
             100.0,
             None,
         ]
@@ -585,13 +585,13 @@ class TestAddPrevRunFilledPostsColumns:
         ).collect()
 
         assert returned_df[
-            Pub.unfiltered_filled_posts_perc_change_vs_prev_run
+            Pub.unfiltered_filled_posts_pct_change_vs_prev_run
         ].to_list() == [
             pytest.approx(0.1),
             None,
         ]
         assert (
-            returned_df.schema[Pub.unfiltered_filled_posts_perc_change_vs_prev_run]
+            returned_df.schema[Pub.unfiltered_filled_posts_pct_change_vs_prev_run]
             == pl.Float32()
         )
 
@@ -601,7 +601,7 @@ class TestAddPrevRunFilledPostsColumns:
         ).collect()
 
         assert returned_df[
-            Pub.unfiltered_filled_posts_perc_change_vs_prev_run
+            Pub.unfiltered_filled_posts_pct_change_vs_prev_run
         ].to_list() == [
             None,
             None,
@@ -628,7 +628,7 @@ class TestAddPrevRunFilledPostsColumns:
             current_lf, self._prev_lf()
         ).collect()
 
-        assert returned_df[Pub.unfiltered_prev_run_filled_posts].to_list() == [
+        assert returned_df[Pub.unfiltered_filled_posts_prev_run].to_list() == [
             100.0,
             None,
         ]
@@ -650,7 +650,7 @@ class TestAddPrevRunFilledPostsColumns:
             current_lf, prev_lf
         ).collect()
 
-        assert returned_df[Pub.unfiltered_prev_run_filled_posts].to_list() == [
+        assert returned_df[Pub.unfiltered_filled_posts_prev_run].to_list() == [
             100.0,
             None,
         ]
@@ -666,11 +666,9 @@ class TestAddPrevRunFilledPostsColumns:
             self._current_lf(), prev_lf
         ).collect()
 
-        assert returned_df[Pub.unfiltered_prev_run_filled_posts].null_count() == 2
+        assert returned_df[Pub.unfiltered_filled_posts_prev_run].null_count() == 2
         assert (
-            returned_df[
-                Pub.unfiltered_filled_posts_perc_change_vs_prev_run
-            ].null_count()
+            returned_df[Pub.unfiltered_filled_posts_pct_change_vs_prev_run].null_count()
             == 2
         )
 
@@ -679,16 +677,14 @@ class TestAddPrevRunFilledPostsColumns:
             self._current_lf(), None
         ).collect()
 
-        assert returned_df.schema[Pub.unfiltered_prev_run_filled_posts] == pl.Float64()
+        assert returned_df.schema[Pub.unfiltered_filled_posts_prev_run] == pl.Float64()
         assert (
-            returned_df.schema[Pub.unfiltered_filled_posts_perc_change_vs_prev_run]
+            returned_df.schema[Pub.unfiltered_filled_posts_pct_change_vs_prev_run]
             == pl.Float32()
         )
-        assert returned_df[Pub.unfiltered_prev_run_filled_posts].null_count() == 2
+        assert returned_df[Pub.unfiltered_filled_posts_prev_run].null_count() == 2
         assert (
-            returned_df[
-                Pub.unfiltered_filled_posts_perc_change_vs_prev_run
-            ].null_count()
+            returned_df[Pub.unfiltered_filled_posts_pct_change_vs_prev_run].null_count()
             == 2
         )
 

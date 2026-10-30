@@ -157,7 +157,7 @@ FILLED_POSTS = SheetMap(
         ),
         InputRange(
             "J25:N36",
-            Pub.unfiltered_filled_posts_april_perc_change,
+            Pub.unfiltered_filled_posts_april_pct_change,
             note="annual filled posts % change",
             key="annual_filled_posts.change",
             number_format="percent",
@@ -185,7 +185,7 @@ FILLED_POSTS = SheetMap(
         ),
         InputRange(
             "J45:N56",
-            Pub.unfiltered_locationid_count_april_perc_change,
+            Pub.unfiltered_locationid_count_april_pct_change,
             note="annual CQC locations % change",
             key="annual_locations.change",
             number_format="percent",
@@ -241,7 +241,7 @@ FILLED_POSTS = SheetMap(
         ),
         InputRange(
             "J84:N96",
-            Pub.filtered_locationid_count_cum_perc_change_short,
+            Pub.unfiltered_locationid_count_cum_pct_change_short,
             note="monthly CQC locations % change",
             key="monthly_locations.change",
             number_format="percent",
@@ -292,7 +292,7 @@ COMP_PREV_PUBLICATION = SheetMap(
         ),
         InputRange(
             "D23:H59",
-            Pub.unfiltered_prev_run_filled_posts,
+            Pub.unfiltered_filled_posts_prev_run,
             note="previous publication figures",
             key="previous.values",
             number_format="count",
@@ -322,7 +322,7 @@ COMP_PREV_PUBLICATION = SheetMap(
         ),
         InputRange(
             "D106:H142",
-            Pub.unfiltered_filled_posts_perc_change_vs_prev_run,
+            Pub.unfiltered_filled_posts_pct_change_vs_prev_run,
             note="difference as percentage",
             key="difference.values",
             number_format="percent",
@@ -503,7 +503,7 @@ COMP_SHORT_TERM = _comparison_sheet(
     Pub.filtered_short_sfc_cum_pct_change,
     Pub.filtered_short_ct_cum_pct_change,
     extra_inputs=_location_count_inputs(
-        "D25", "M25", Pub.filtered_short_sfc_locationid_count
+        "D25", "M25", Pub.filtered_short_locationid_count
     ),
 )
 COMP_MEDIUM_TERM = _comparison_sheet(
@@ -515,7 +515,7 @@ COMP_MEDIUM_TERM = _comparison_sheet(
     Pub.filtered_medium_sfc_cum_pct_change,
     Pub.filtered_medium_ct_cum_pct_change,
     extra_inputs=_location_count_inputs(
-        "D25", "M25", Pub.filtered_medium_sfc_locationid_count
+        "D25", "M25", Pub.filtered_medium_locationid_count
     ),
 )
 COMP_LONG_TERM = _comparison_sheet(
@@ -527,7 +527,7 @@ COMP_LONG_TERM = _comparison_sheet(
     Pub.filtered_long_sfc_cum_pct_change,
     Pub.filtered_long_ct_cum_pct_change,
     extra_inputs=_location_count_inputs(
-        "D25", "M25", Pub.filtered_long_sfc_locationid_count
+        "D25", "M25", Pub.filtered_long_locationid_count
     ),
 )
 

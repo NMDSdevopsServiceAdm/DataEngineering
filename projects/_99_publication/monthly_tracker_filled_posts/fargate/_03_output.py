@@ -59,10 +59,10 @@ def main(
                 Pub.unfiltered_filled_posts, Pub.estimated_filled_posts_rounded
             ),
             pl.col(Pub.unfiltered_locationid_count).alias(Pub.cqc_locations),
-            Pub.unfiltered_filled_posts_april_perc_change,
+            Pub.unfiltered_filled_posts_april_pct_change,
             Pub.unfiltered_short_sfc_cum_pct_change,
-            Pub.unfiltered_locationid_count_april_perc_change,
-            Pub.filtered_locationid_count_cum_perc_change_short,
+            Pub.unfiltered_locationid_count_april_pct_change,
+            Pub.unfiltered_locationid_count_cum_pct_change_short,
         )
         .sort(publication_utils.DOWNLOAD_TABLE_SORT_COLUMNS)
     )

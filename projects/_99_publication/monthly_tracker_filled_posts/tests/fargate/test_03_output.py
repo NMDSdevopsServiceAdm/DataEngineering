@@ -32,11 +32,11 @@ input_schema = pl.Schema(
         (IndCQC.primary_service_type, pl.String()),
         (Pub.unfiltered_filled_posts, pl.Float32()),
         (Pub.unfiltered_locationid_count, pl.UInt32()),
-        (Pub.unfiltered_filled_posts_april_perc_change, pl.Float32()),
+        (Pub.unfiltered_filled_posts_april_pct_change, pl.Float32()),
         (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float32()),
-        (Pub.unfiltered_locationid_count_april_perc_change, pl.Float32()),
+        (Pub.unfiltered_locationid_count_april_pct_change, pl.Float32()),
         (
-            Pub.filtered_locationid_count_cum_perc_change_short,
+            Pub.unfiltered_locationid_count_cum_pct_change_short,
             pl.Float32(),
         ),
     ]
@@ -50,11 +50,11 @@ expected_schema = pl.Schema(
         (Pub.main_service, pl.String()),
         (Pub.estimated_filled_posts_rounded, pl.Float32()),
         (Pub.cqc_locations, pl.UInt32()),
-        (Pub.unfiltered_filled_posts_april_perc_change, pl.Float32()),
+        (Pub.unfiltered_filled_posts_april_pct_change, pl.Float32()),
         (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float32()),
-        (Pub.unfiltered_locationid_count_april_perc_change, pl.Float32()),
+        (Pub.unfiltered_locationid_count_april_pct_change, pl.Float32()),
         (
-            Pub.filtered_locationid_count_cum_perc_change_short,
+            Pub.unfiltered_locationid_count_cum_pct_change_short,
             pl.Float32(),
         ),
     ]
@@ -206,10 +206,10 @@ class TestMain:
         returned_lf = _run_main(mocks, input_rows)
 
         assert returned_lf.select(
-            Pub.unfiltered_filled_posts_april_perc_change,
+            Pub.unfiltered_filled_posts_april_pct_change,
             Pub.unfiltered_short_sfc_cum_pct_change,
-            Pub.unfiltered_locationid_count_april_perc_change,
-            Pub.filtered_locationid_count_cum_perc_change_short,
+            Pub.unfiltered_locationid_count_april_pct_change,
+            Pub.unfiltered_locationid_count_cum_pct_change_short,
         ).collect().rows() == [
             (
                 pytest.approx(0.1),

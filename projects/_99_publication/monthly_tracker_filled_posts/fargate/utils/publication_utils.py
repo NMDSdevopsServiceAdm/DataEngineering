@@ -30,13 +30,13 @@ _PUBLICATION_METRIC_COLUMNS: list[str] = [
 ]
 _ASSESSMENT_METRIC_COLUMNS: list[str] = [
     Pub.filtered_long_sfc_filled_posts,
-    Pub.filtered_long_sfc_locationid_count,
+    Pub.filtered_long_locationid_count,
     Pub.filtered_long_ct_total_employed,
     Pub.filtered_medium_sfc_filled_posts,
-    Pub.filtered_medium_sfc_locationid_count,
+    Pub.filtered_medium_locationid_count,
     Pub.filtered_medium_ct_total_employed,
     Pub.filtered_short_sfc_filled_posts,
-    Pub.filtered_short_sfc_locationid_count,
+    Pub.filtered_short_locationid_count,
     Pub.filtered_short_ct_total_employed,
     Pub.unfiltered_long_ct_total_employed,
 ]
@@ -517,7 +517,7 @@ def _assessment_aggregations() -> list[pl.Expr]:
         pl.col(IndCQC.location_id)
         .filter(long_term_filter)
         .n_unique()
-        .alias(Pub.filtered_long_sfc_locationid_count),
+        .alias(Pub.filtered_long_locationid_count),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(long_term_filter & first_row_per_location)
         .sum()
@@ -529,7 +529,7 @@ def _assessment_aggregations() -> list[pl.Expr]:
         pl.col(IndCQC.location_id)
         .filter(medium_term_filter)
         .n_unique()
-        .alias(Pub.filtered_medium_sfc_locationid_count),
+        .alias(Pub.filtered_medium_locationid_count),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(medium_term_filter & first_row_per_location)
         .sum()
@@ -541,7 +541,7 @@ def _assessment_aggregations() -> list[pl.Expr]:
         pl.col(IndCQC.location_id)
         .filter(short_term_filter)
         .n_unique()
-        .alias(Pub.filtered_short_sfc_locationid_count),
+        .alias(Pub.filtered_short_locationid_count),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(short_term_filter & first_row_per_location)
         .sum()
@@ -840,8 +840,8 @@ def add_prev_run_filled_posts_columns(
             data, or None when there is no earlier run.
 
     Returns:
-        pl.LazyFrame: assessment_summary_lf with unfiltered_prev_run_filled_posts and
-            unfiltered_filled_posts_perc_change_vs_prev_run added.
+        pl.LazyFrame: assessment_summary_lf with unfiltered_filled_posts_prev_run and
+            unfiltered_filled_posts_pct_change_vs_prev_run added.
     """
     current_schema = assessment_summary_lf.collect_schema()
     has_prev_filled_posts = (
@@ -860,7 +860,7 @@ def add_prev_run_filled_posts_columns(
             + [
                 pl.col(Pub.unfiltered_filled_posts)
                 .cast(current_schema[Pub.unfiltered_filled_posts])
-                .alias(Pub.unfiltered_prev_run_filled_posts)
+                .alias(Pub.unfiltered_filled_posts_prev_run)
             ]
         )
         assessment_summary_lf = assessment_summary_lf.join(
@@ -873,17 +873,17 @@ def add_prev_run_filled_posts_columns(
     else:
         assessment_summary_lf = assessment_summary_lf.with_columns(
             pl.lit(None, dtype=current_schema[Pub.unfiltered_filled_posts]).alias(
-                Pub.unfiltered_prev_run_filled_posts
+                Pub.unfiltered_filled_posts_prev_run
             )
         )
 
     current_posts = pl.col(Pub.unfiltered_filled_posts).cast(pl.Float32)
-    prev_posts = pl.col(Pub.unfiltered_prev_run_filled_posts).cast(pl.Float32)
+    prev_posts = pl.col(Pub.unfiltered_filled_posts_prev_run).cast(pl.Float32)
     return assessment_summary_lf.with_columns(
         pl.when(prev_posts == 0)
         .then(None)
         .otherwise((current_posts - prev_posts) / prev_posts)
-        .alias(Pub.unfiltered_filled_posts_perc_change_vs_prev_run)
+        .alias(Pub.unfiltered_filled_posts_pct_change_vs_prev_run)
     )
 
 

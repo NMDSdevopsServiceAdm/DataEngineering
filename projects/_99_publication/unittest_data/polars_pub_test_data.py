@@ -1197,7 +1197,7 @@ calc_perc_change_from_previous_april_test_cases = [
         id="april_rows_are_compared_with_the_previous_april_across_quarterly_and_monthly_data",
         column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.unfiltered_filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
             (date(2024, 7, 1), *_NURSE_LONDON_CARE_HOME, 150.0, 1, None),
@@ -1210,7 +1210,7 @@ calc_perc_change_from_previous_april_test_cases = [
         id="first_april_in_the_group_has_no_change_to_report",
         column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.unfiltered_filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2024, 10, 1), *_NURSE_LONDON_CARE_HOME, 50.0, 1, None),
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
@@ -1222,7 +1222,7 @@ calc_perc_change_from_previous_april_test_cases = [
         id="compares_with_the_last_present_april_when_one_is_missing",
         column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.unfiltered_filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 150.0, 1, 0.5),
@@ -1232,7 +1232,7 @@ calc_perc_change_from_previous_april_test_cases = [
         id="null_when_the_previous_april_is_zero",
         column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.unfiltered_filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, 1, None),
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 50.0, 1, None),
@@ -1242,7 +1242,7 @@ calc_perc_change_from_previous_april_test_cases = [
         id="an_april_dropping_to_zero_is_a_full_decrease_not_a_null",
         column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.unfiltered_filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 1, None),
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, 1, -1.0),
@@ -1254,7 +1254,7 @@ calc_perc_change_from_previous_april_test_cases = [
         id="groups_do_not_affect_each_other",
         column_name=Pub.unfiltered_filled_posts,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.unfiltered_filled_posts_april_perc_change,
+        column_alias=Pub.unfiltered_filled_posts_april_pct_change,
         expected_data=[
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, 1, 1.0),
             (date(2025, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 30.0, 1, 0.5),
@@ -1266,7 +1266,7 @@ calc_perc_change_from_previous_april_test_cases = [
         id="honours_the_column_name_and_alias_arguments",
         column_name=Pub.unfiltered_locationid_count,
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
-        column_alias=Pub.unfiltered_locationid_count_april_perc_change,
+        column_alias=Pub.unfiltered_locationid_count_april_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 10, None),
             (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, 15, 0.5),

@@ -436,12 +436,12 @@ VALUE_COLUMNS = job._value_columns(cell_map.ASSESSMENT_SHEETS)
 EXPLICIT_VALUE_COLUMNS = [
     Pub.unfiltered_filled_posts,
     Pub.unfiltered_locationid_count,
-    Pub.unfiltered_filled_posts_april_perc_change,
-    Pub.unfiltered_locationid_count_april_perc_change,
+    Pub.unfiltered_filled_posts_april_pct_change,
+    Pub.unfiltered_locationid_count_april_pct_change,
     Pub.unfiltered_short_sfc_cum_pct_change,
-    Pub.filtered_locationid_count_cum_perc_change_short,
-    Pub.unfiltered_prev_run_filled_posts,
-    Pub.unfiltered_filled_posts_perc_change_vs_prev_run,
+    Pub.unfiltered_locationid_count_cum_pct_change_short,
+    Pub.unfiltered_filled_posts_prev_run,
+    Pub.unfiltered_filled_posts_pct_change_vs_prev_run,
 ]
 OTHER_VALUE_COLUMNS = [c for c in VALUE_COLUMNS if c not in EXPLICIT_VALUE_COLUMNS]
 
@@ -470,12 +470,12 @@ def _assessment_lf(
             IndCQC.primary_service_type: service_type,
             Pub.unfiltered_filled_posts: 1000 * (i + 1) + 10 * j,
             Pub.unfiltered_locationid_count: 100 * (i + 1) + j,
-            Pub.unfiltered_filled_posts_april_perc_change: 0.1 * (i + 1),
-            Pub.unfiltered_locationid_count_april_perc_change: 0.2 * (i + 1),
+            Pub.unfiltered_filled_posts_april_pct_change: 0.1 * (i + 1),
+            Pub.unfiltered_locationid_count_april_pct_change: 0.2 * (i + 1),
             Pub.unfiltered_short_sfc_cum_pct_change: 0.3 * (i + 1),
-            Pub.filtered_locationid_count_cum_perc_change_short: 0.4 * (i + 1),
-            Pub.unfiltered_prev_run_filled_posts: 5000 * (i + 1) + 10 * j,
-            Pub.unfiltered_filled_posts_perc_change_vs_prev_run: 0.5 * (i + 1),
+            Pub.unfiltered_locationid_count_cum_pct_change_short: 0.4 * (i + 1),
+            Pub.unfiltered_filled_posts_prev_run: 5000 * (i + 1) + 10 * j,
+            Pub.unfiltered_filled_posts_pct_change_vs_prev_run: 0.5 * (i + 1),
         }
         | {column: _generic_value(column, i, j) for column in OTHER_VALUE_COLUMNS}
         for i, import_date in enumerate(import_dates)
@@ -582,7 +582,7 @@ class TestFilledPostsValues:
 
     def test_percent_cells_are_rounded_to_one_decimal_place_of_a_percentage(self):
         lf = _assessment_lf(IMPORT_DATES).with_columns(
-            pl.col(Pub.unfiltered_filled_posts_april_perc_change) + 0.0021
+            pl.col(Pub.unfiltered_filled_posts_april_pct_change) + 0.0021
         )
         df = job.prepare_assessment_df(lf, VALUE_COLUMNS)
 
@@ -699,9 +699,9 @@ class TestComparisonSheetValues:
         cells = job.comparison_sheet_values(df, cell_map.COMP_SHORT_TERM, APRIL_2026)
 
         assert (cells["D25"], cells["M25"]) == (
-            _generic_value(Pub.filtered_short_sfc_locationid_count, 3, self.CARE_HOMES),
+            _generic_value(Pub.filtered_short_locationid_count, 3, self.CARE_HOMES),
             _generic_value(
-                Pub.filtered_short_sfc_locationid_count, 3, self.NON_RESIDENTIAL
+                Pub.filtered_short_locationid_count, 3, self.NON_RESIDENTIAL
             ),
         )
 

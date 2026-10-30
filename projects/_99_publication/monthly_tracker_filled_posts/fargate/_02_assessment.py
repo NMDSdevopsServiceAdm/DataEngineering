@@ -140,12 +140,12 @@ def main(
         publication_utils.calc_perc_change_from_previous_april(
             Pub.unfiltered_filled_posts,
             group_columns,
-            Pub.unfiltered_filled_posts_april_perc_change,
+            Pub.unfiltered_filled_posts_april_pct_change,
         ),
         publication_utils.calc_perc_change_from_previous_april(
             Pub.unfiltered_locationid_count,
             group_columns,
-            Pub.unfiltered_locationid_count_april_perc_change,
+            Pub.unfiltered_locationid_count_april_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.unfiltered_filled_posts,
@@ -157,7 +157,7 @@ def main(
             Pub.unfiltered_locationid_count,
             short_term_from_date,
             group_columns,
-            Pub.filtered_locationid_count_cum_perc_change_short,
+            Pub.unfiltered_locationid_count_cum_pct_change_short,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
             Pub.filtered_long_sfc_filled_posts,

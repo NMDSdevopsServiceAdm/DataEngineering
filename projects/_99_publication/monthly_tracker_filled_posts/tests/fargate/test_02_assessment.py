@@ -34,10 +34,10 @@ SHORT_TERM_FROM_DATE = date(2026, 4, 1)
 LATER_FIRST_IMPORT_DATE = date(2027, 4, 1)
 
 PERC_CHANGE_COLUMNS = [
-    Pub.unfiltered_filled_posts_april_perc_change,
-    Pub.unfiltered_locationid_count_april_perc_change,
+    Pub.unfiltered_filled_posts_april_pct_change,
+    Pub.unfiltered_locationid_count_april_pct_change,
     Pub.unfiltered_short_sfc_cum_pct_change,
-    Pub.filtered_locationid_count_cum_perc_change_short,
+    Pub.unfiltered_locationid_count_cum_pct_change_short,
     Pub.filtered_long_sfc_cum_pct_change,
     Pub.filtered_long_ct_cum_pct_change,
     Pub.filtered_medium_sfc_cum_pct_change,
@@ -288,12 +288,12 @@ class TestMain:
                 call(
                     Pub.unfiltered_filled_posts,
                     group_columns,
-                    Pub.unfiltered_filled_posts_april_perc_change,
+                    Pub.unfiltered_filled_posts_april_pct_change,
                 ),
                 call(
                     Pub.unfiltered_locationid_count,
                     group_columns,
-                    Pub.unfiltered_locationid_count_april_perc_change,
+                    Pub.unfiltered_locationid_count_april_pct_change,
                 ),
             ]
         )
@@ -309,7 +309,7 @@ class TestMain:
                     Pub.unfiltered_locationid_count,
                     SHORT_TERM_FROM_DATE,
                     group_columns,
-                    Pub.filtered_locationid_count_cum_perc_change_short,
+                    Pub.unfiltered_locationid_count_cum_pct_change_short,
                 ),
                 call(
                     Pub.filtered_long_sfc_filled_posts,
