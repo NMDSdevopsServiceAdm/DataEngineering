@@ -304,8 +304,8 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     are named and typed to match the current and historic ratings, so the three can be
     concatenated.
 
-    Collects one count to check the `overall` ratings are unpopulated (see
-    `raise_error_when_assessment_lf_contains_overall_data`).
+    Collects one count to check the `overall` ratings are unpopulated, raising a
+    ValueError if not (see `raise_error_when_assessment_lf_contains_overall_data`).
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
@@ -313,9 +313,6 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: One row per assessment plan, with `date` as a Date and a column
             per key question rating.
-
-    Raises:
-        ValueError: If any `overall` assessment row has a rating.
     """
     assessment_lf = extract_assessment_base(cqc_location_lf)
     overall_lf = extract_key_question_ratings(
