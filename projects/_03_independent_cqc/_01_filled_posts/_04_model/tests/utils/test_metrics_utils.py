@@ -3,6 +3,7 @@ from datetime import date
 import polars as pl
 import pytest
 
+from polars_utils.column_types import CategoricalColumnTypes
 from projects._03_independent_cqc._01_filled_posts._04_model.utils import (
     cross_validation_utils as cv,
 )
@@ -51,6 +52,13 @@ CARE_HOME_SPEC = {
 def folds_lf() -> pl.LazyFrame:
     return pl.LazyFrame(
         Data.folds_data, schema_overrides={ModelEvaluation.fold: pl.UInt8}
+    )
+
+
+def with_location_cat(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Cast the location ID to the dtype the pipeline datasets are read with."""
+    return lf.with_columns(
+        pl.col(IndCQC.location_id).cast(CategoricalColumnTypes.LocationCatType)
     )
 
 
@@ -341,7 +349,7 @@ class TestScoreJumpiness:
                 data[IndCQC.location_id], data[IndCQC.imputed_filled_post_model]
             )
         ]
-        return pl.LazyFrame(data)
+        return with_location_cat(pl.LazyFrame(data))
 
     def score(self, features_lf, seed=1, sample_size=10) -> pl.DataFrame:
         model = cv.fit_on_all_rows(features_lf, Data.spec)
@@ -350,8 +358,8 @@ class TestScoreJumpiness:
             Data.spec,
             model,
             features_lf,
-            folds_lf(),
-            pl.LazyFrame(metrics_locations_data()),
+            with_location_cat(folds_lf()),
+            with_location_cat(pl.LazyFrame(metrics_locations_data())),
             seed,
             sample_size,
         )
