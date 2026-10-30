@@ -34,18 +34,18 @@ SHORT_TERM_FROM_DATE = date(2026, 4, 1)
 LATER_FIRST_IMPORT_DATE = date(2027, 4, 1)
 
 PERC_CHANGE_COLUMNS = [
-    Pub.filled_posts_april_perc_change,
-    Pub.locationid_count_april_perc_change,
-    Pub.filled_posts_cum_perc_change_short,
-    Pub.locationid_count_cum_perc_change_short,
-    Pub.filtered_filled_posts_cum_perc_change_long,
-    Pub.filtered_ct_cum_perc_change_long,
-    Pub.filtered_filled_posts_cum_perc_change_medium,
-    Pub.filtered_ct_cum_perc_change_medium,
-    Pub.filtered_filled_posts_cum_perc_change_short,
-    Pub.filtered_ct_cum_perc_change_short,
-    Pub.filled_posts_cum_perc_change_long,
-    Pub.unfiltered_ct_total_employed_cum_perc_change_long,
+    Pub.unfiltered_filled_posts_april_pct_change,
+    Pub.unfiltered_locationid_count_april_pct_change,
+    Pub.unfiltered_short_sfc_cum_pct_change,
+    Pub.unfiltered_short_locationid_count_cum_pct_change,
+    Pub.filtered_long_sfc_cum_pct_change,
+    Pub.filtered_long_ct_cum_pct_change,
+    Pub.filtered_medium_sfc_cum_pct_change,
+    Pub.filtered_medium_ct_cum_pct_change,
+    Pub.filtered_short_sfc_cum_pct_change,
+    Pub.filtered_short_ct_cum_pct_change,
+    Pub.unfiltered_long_sfc_cum_pct_change,
+    Pub.unfiltered_long_ct_cum_pct_change,
 ]
 
 
@@ -62,10 +62,10 @@ def mocks():
     that add constant columns, so each test can assert on how main calls them.
     """
     null_perc_change = lambda column_name, from_date, group_columns, column_alias: (
-        pl.lit(None, dtype=pl.Float32).alias(column_alias)
+        pl.lit(None, dtype=pl.Float64).alias(column_alias)
     )
     null_april_perc_change = lambda column_name, group_columns, column_alias: (
-        pl.lit(None, dtype=pl.Float32).alias(column_alias)
+        pl.lit(None, dtype=pl.Float64).alias(column_alias)
     )
     with ExitStack() as stack:
         mocks = SimpleNamespace(
@@ -142,8 +142,8 @@ def mocks():
         mocks.aggregate.return_value = pl.LazyFrame(
             {
                 IndCQC.cqc_location_import_date: [date(2026, 4, 1)],
-                Pub.filled_posts: [42.0],
-                Pub.filtered_filled_posts_long: [40.0],
+                Pub.unfiltered_filled_posts: [42.0],
+                Pub.filtered_long_sfc_filled_posts: [40.0],
             }
         )
         mocks.add_rows.return_value = mocks.aggregate.return_value
@@ -286,78 +286,78 @@ class TestMain:
         mocks.perc_change_april.assert_has_calls(
             [
                 call(
-                    Pub.filled_posts,
+                    Pub.unfiltered_filled_posts,
                     group_columns,
-                    Pub.filled_posts_april_perc_change,
+                    Pub.unfiltered_filled_posts_april_pct_change,
                 ),
                 call(
-                    Pub.locationid_count,
+                    Pub.unfiltered_locationid_count,
                     group_columns,
-                    Pub.locationid_count_april_perc_change,
+                    Pub.unfiltered_locationid_count_april_pct_change,
                 ),
             ]
         )
         mocks.perc_change_cumulative.assert_has_calls(
             [
                 call(
-                    Pub.filled_posts,
+                    Pub.unfiltered_filled_posts,
                     SHORT_TERM_FROM_DATE,
                     group_columns,
-                    Pub.filled_posts_cum_perc_change_short,
+                    Pub.unfiltered_short_sfc_cum_pct_change,
                 ),
                 call(
-                    Pub.locationid_count,
+                    Pub.unfiltered_locationid_count,
                     SHORT_TERM_FROM_DATE,
                     group_columns,
-                    Pub.locationid_count_cum_perc_change_short,
+                    Pub.unfiltered_short_locationid_count_cum_pct_change,
                 ),
                 call(
-                    Pub.filtered_filled_posts_long,
+                    Pub.filtered_long_sfc_filled_posts,
                     LONG_TERM_FROM_DATE,
                     group_columns,
-                    Pub.filtered_filled_posts_cum_perc_change_long,
+                    Pub.filtered_long_sfc_cum_pct_change,
                 ),
                 call(
-                    Pub.filtered_ct_total_employed_long,
+                    Pub.filtered_long_ct_total_employed,
                     LONG_TERM_FROM_DATE,
                     group_columns,
-                    Pub.filtered_ct_cum_perc_change_long,
+                    Pub.filtered_long_ct_cum_pct_change,
                 ),
                 call(
-                    Pub.filtered_filled_posts_medium,
+                    Pub.filtered_medium_sfc_filled_posts,
                     MEDIUM_TERM_FROM_DATE,
                     group_columns,
-                    Pub.filtered_filled_posts_cum_perc_change_medium,
+                    Pub.filtered_medium_sfc_cum_pct_change,
                 ),
                 call(
-                    Pub.filtered_ct_total_employed_medium,
+                    Pub.filtered_medium_ct_total_employed,
                     MEDIUM_TERM_FROM_DATE,
                     group_columns,
-                    Pub.filtered_ct_cum_perc_change_medium,
+                    Pub.filtered_medium_ct_cum_pct_change,
                 ),
                 call(
-                    Pub.filtered_filled_posts_short,
+                    Pub.filtered_short_sfc_filled_posts,
                     SHORT_TERM_FROM_DATE,
                     group_columns,
-                    Pub.filtered_filled_posts_cum_perc_change_short,
+                    Pub.filtered_short_sfc_cum_pct_change,
                 ),
                 call(
-                    Pub.filtered_ct_total_employed_short,
+                    Pub.filtered_short_ct_total_employed,
                     SHORT_TERM_FROM_DATE,
                     group_columns,
-                    Pub.filtered_ct_cum_perc_change_short,
+                    Pub.filtered_short_ct_cum_pct_change,
                 ),
                 call(
-                    Pub.filled_posts,
+                    Pub.unfiltered_filled_posts,
                     LONG_TERM_FROM_DATE,
                     group_columns,
-                    Pub.filled_posts_cum_perc_change_long,
+                    Pub.unfiltered_long_sfc_cum_pct_change,
                 ),
                 call(
-                    Pub.unfiltered_ct_total_employed_long,
+                    Pub.unfiltered_long_ct_total_employed,
                     LONG_TERM_FROM_DATE,
                     group_columns,
-                    Pub.unfiltered_ct_total_employed_cum_perc_change_long,
+                    Pub.unfiltered_long_ct_cum_pct_change,
                 ),
             ]
         )
@@ -383,7 +383,7 @@ class TestMain:
         ]
         expected_lf = (
             mocks.aggregate.return_value.with_columns(
-                [pl.lit(None, dtype=pl.Float32).alias(c) for c in PERC_CHANGE_COLUMNS]
+                [pl.lit(None, dtype=pl.Float64).alias(c) for c in PERC_CHANGE_COLUMNS]
             )
             .with_columns(
                 pl.lit("Mar 2026").alias(Pub.period_label_short),
