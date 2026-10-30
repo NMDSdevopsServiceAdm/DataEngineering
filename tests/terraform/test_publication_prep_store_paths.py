@@ -154,17 +154,14 @@ def get_publication_crawler_exclusions() -> list[str]:
 
 class TestPublicationCrawlerExclusions:
     """
-    Guards against the crawler cataloguing the assessment workbooks, which are
-    .xlsx files written under the crawled publication domain.
+    Guards against the publication crawler cataloguing the assessment workbooks,
+    which are .xlsx files written under the crawled publication domain.
     """
 
     def test_crawler_excludes_the_assessment_workbook_folder(self):
-        [workbook_path] = {
-            path
-            for path in get_command_paths(
-                "Publication-Assessment.json", "--workbook_destination"
-            )
-        }
+        [workbook_path] = set(
+            get_command_paths("Publication-Assessment.json", "--workbook_destination")
+        )
         workbook_folder = workbook_path.removeprefix(PUBLICATION_DOMAIN_PREFIX)
 
         assert (

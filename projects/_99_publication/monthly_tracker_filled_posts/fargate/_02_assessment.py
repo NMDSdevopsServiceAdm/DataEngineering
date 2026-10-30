@@ -47,6 +47,7 @@ def main(
     """
     run_source = merge_utils.resolve_run_sources([prep_source], run_number)[0]
     print(f"Assessing prepared run: {run_source}")
+    assessed_run_number = merge_utils.run_number_from_source(run_source)
     prepared_lf = utils.scan_parquet(run_source)
 
     prepared_lf = prepared_lf.with_columns(
@@ -209,7 +210,7 @@ def main(
     )
 
     prev_run_number = run_log_utils.get_previous_published_run_number(
-        run_log_source, merge_utils.run_number_from_source(run_source)
+        run_log_source, assessed_run_number
     )
     if prev_run_number is None:
         print("No previously published run found; previous run columns are null")
@@ -243,7 +244,7 @@ def main(
     )
     workbook_name = (
         f"monthly_tracking_summary_{merge_utils.archive_date_from_source(run_source)}"
-        f"_{merge_utils.run_number_from_source(run_source)}.xlsx"
+        f"_{assessed_run_number}.xlsx"
     )
     with tempfile.TemporaryDirectory() as workbook_folder:
         workbook_path = Path(workbook_folder) / workbook_name
@@ -255,7 +256,7 @@ def main(
                 medium=medium_term_from_date,
                 long=long_term_from_date,
             ),
-            merge_utils.run_number_from_source(run_source),
+            assessed_run_number,
             cell_map.TEMPLATE_PATH,
             workbook_path,
         )
