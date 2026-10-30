@@ -586,7 +586,7 @@ class TestAddPrevRunFilledPostsColumns:
             None,
         ]
         assert (
-            returned_df.schema[Pub.filled_posts_perc_change_vs_prev_run] == pl.Float32()
+            returned_df.schema[Pub.filled_posts_perc_change_vs_prev_run] == pl.Float64()
         )
 
     def test_perc_change_is_null_when_prev_run_filled_posts_is_zero(self):
@@ -662,7 +662,7 @@ class TestAddPrevRunFilledPostsColumns:
 
         assert returned_df.schema[Pub.prev_run_filled_posts] == pl.Float64()
         assert (
-            returned_df.schema[Pub.filled_posts_perc_change_vs_prev_run] == pl.Float32()
+            returned_df.schema[Pub.filled_posts_perc_change_vs_prev_run] == pl.Float64()
         )
         assert returned_df[Pub.prev_run_filled_posts].null_count() == 2
         assert returned_df[Pub.filled_posts_perc_change_vs_prev_run].null_count() == 2
@@ -691,7 +691,7 @@ class TestCalcPercChangeFromPreviousApril:
         self, case
     ):
         expected_schema = pl.Schema(
-            list(self.perc_change_schema.items()) + [(case.column_alias, pl.Float32())]
+            list(self.perc_change_schema.items()) + [(case.column_alias, pl.Float64())]
         )
         expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
 
@@ -729,7 +729,7 @@ class TestCalcPercChangeCumulativeFromGivenPeriodOnwards:
         self, case
     ):
         expected_schema = pl.Schema(
-            list(self.perc_change_schema.items()) + [(case.column_alias, pl.Float32())]
+            list(self.perc_change_schema.items()) + [(case.column_alias, pl.Float64())]
         )
         expected_lf = pl.LazyFrame(case.expected_data, expected_schema, orient="row")
 
