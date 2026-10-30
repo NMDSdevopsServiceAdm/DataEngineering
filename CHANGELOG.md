@@ -40,6 +40,7 @@ All notable changes to this project will be documented in this file.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
 - Converted the CQC ratings assessment flattening to Polars.
 - Converted the CQC ratings overall-data check to Polars.
+- Converted the merging of CQC ratings to Polars.
 - Changed the period label column names to `period_label_short` and `period_label_long`, so output column names change.
 - Changed the assessment template to fixed "Cumulative % change" table headings, no longer written per run.
 - Removed the unused GitHub merge queue CircleCI workflow and `gh-readonly-queue` branch exclusions.

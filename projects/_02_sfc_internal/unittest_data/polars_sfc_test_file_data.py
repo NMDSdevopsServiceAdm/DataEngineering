@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -558,7 +559,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2024-01-01",
+            date(2024, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -578,7 +579,7 @@ class FlattenCQCRatings:
         (
             "1-002",
             "Registered",
-            "2024-01-01",
+            date(2024, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -620,7 +621,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2023-01-01",
+            date(2023, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -653,7 +654,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2023-01-01",
+            date(2023, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -666,7 +667,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2023-01-01",
+            date(2023, 1, 1),
             "Good",
             "other_safe_rating",
             "well_led_rating",
@@ -723,21 +724,21 @@ class FlattenCQCRatings:
     expected_prepare_assessment_ratings_data = {
         CQCL.location_id: ["1-001"],
         CQCL.registration_status: ["Registered"],
-        CQCL.assessment_plan_published_datetime: ["2024-01-01 00:00:00"],
+        CQCRatings.date: [date(2024, 1, 1)],
         CQCL.assessment_plan_id: ["AP1"],
         CQCL.title: ["Care Home Assessment"],
         CQCL.assessment_date: ["2024-01-02"],
         CQCL.assessment_plan_status: ["Assessed"],
         CQCL.dataset: ["SAF"],
         CQCL.name: ["Care Homes"],
-        CQCL.status: ["Current"],
-        CQCL.rating: ["Good"],
+        CQCRatings.current_or_historic: ["Current"],
+        CQCRatings.overall_rating: ["Good"],
         CQCL.source_path: ["assessment.ratings.asg_ratings"],
-        CQCL.safe: ["Good"],
-        CQCL.effective: ["Good"],
-        CQCL.caring: ["Good"],
-        CQCL.responsive: ["Good"],
-        CQCL.well_led: ["Good"],
+        CQCRatings.safe_rating: ["Good"],
+        CQCRatings.effective_rating: ["Good"],
+        CQCRatings.caring_rating: ["Good"],
+        CQCRatings.responsive_rating: ["Good"],
+        CQCRatings.well_led_rating: ["Good"],
     }
 
     # "Safe" appears twice; the first in raw array order must win
@@ -764,21 +765,21 @@ class FlattenCQCRatings:
     expected_prepare_assessment_ratings_tiebreaker_data = {
         CQCL.location_id: ["1-001"],
         CQCL.registration_status: ["Registered"],
-        CQCL.assessment_plan_published_datetime: ["2024-02-01 00:00:00"],
+        CQCRatings.date: [date(2024, 2, 1)],
         CQCL.assessment_plan_id: ["AP2"],
         CQCL.title: ["Care Home Assessment"],
         CQCL.assessment_date: ["2024-01-02"],
         CQCL.assessment_plan_status: ["Assessed"],
         CQCL.dataset: ["SAF"],
         CQCL.name: ["Care Homes"],
-        CQCL.status: ["Current"],
-        CQCL.rating: ["Good"],
+        CQCRatings.current_or_historic: ["Current"],
+        CQCRatings.overall_rating: ["Good"],
         CQCL.source_path: ["assessment.ratings.asg_ratings"],
-        CQCL.safe: ["Good"],
-        CQCL.effective: ["Good"],
-        CQCL.caring: ["Good"],
-        CQCL.responsive: ["Good"],
-        CQCL.well_led: ["Good"],
+        CQCRatings.safe_rating: ["Good"],
+        CQCRatings.effective_rating: ["Good"],
+        CQCRatings.caring_rating: ["Good"],
+        CQCRatings.responsive_rating: ["Good"],
+        CQCRatings.well_led_rating: ["Good"],
     }
 
     # 1-002 has null (not empty) keyQuestionRatings and must be dropped. 1-001 keeps
@@ -836,26 +837,6 @@ class FlattenCQCRatings:
             ],
         ),
     ]
-    expected_prepare_assessment_ratings_overall_data = {
-        CQCL.location_id: ["1-001"],
-        CQCL.registration_status: ["Registered"],
-        CQCL.assessment_plan_published_datetime: ["2024-01-01 00:00:00"],
-        CQCL.assessment_plan_id: [None],
-        CQCL.title: [None],
-        CQCL.assessment_date: [None],
-        CQCL.assessment_plan_status: [None],
-        CQCL.dataset: ["SAF"],
-        CQCL.name: [None],
-        CQCL.status: ["Assessed"],
-        CQCL.rating: ["Good"],
-        CQCL.source_path: ["assessment.ratings.overall"],
-        CQCL.safe: ["Good"],
-        CQCL.effective: ["Good"],
-        CQCL.caring: ["Good"],
-        CQCL.responsive: ["Good"],
-        CQCL.well_led: ["Good"],
-    }
-
     prepare_assessment_ratings_unknown_key_question_rows = [
         (
             "1-001",

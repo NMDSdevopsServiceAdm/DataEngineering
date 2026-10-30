@@ -14,7 +14,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
-    CQCCurrentOrHistoricValues,
     CQCRatingsDatasetValues,
 )
 
@@ -64,8 +63,9 @@ class TestMain:
         for sunk_lf in sinks.values():
             returned_df = sunk_lf.collect()
             assert set(returned_df[CQCL.location_id]) == {"1-001"}
-            assert sorted(returned_df[CQCRatings.current_or_historic]) == [
-                CQCCurrentOrHistoricValues.current,
-                CQCCurrentOrHistoricValues.historic,
+            assert sorted(returned_df[CQCL.dataset]) == [
+                CQCRatingsDatasetValues.pre_saf,
+                CQCRatingsDatasetValues.pre_saf,
+                CQCRatingsDatasetValues.saf,
             ]
-            assert set(returned_df[CQCL.dataset]) == {CQCRatingsDatasetValues.pre_saf}
+            assert returned_df[CQCRatings.date].dtype == pl.Date
