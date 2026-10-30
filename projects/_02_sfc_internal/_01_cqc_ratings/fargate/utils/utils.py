@@ -296,7 +296,7 @@ def extract_key_question_ratings(
 
 def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Flattens overall and ASG assessment ratings to one row per assessment plan.
+    Flattens ASG assessment ratings to one row per assessment plan.
 
     The feed doesn't guarantee one entry per key question, so the first in raw array
     order (`EXPLODE_ORDER`) is kept. Ratings are aggregated per key question column,
@@ -304,7 +304,7 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     names and types match the current and historic ratings.
 
     Collects one count to check `overall` ratings are unpopulated, raising a
-    ValueError if not.
+    ValueError if not. `overall` rows are therefore not included in the output.
 
     Args:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
@@ -328,8 +328,7 @@ def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
     }
 
     return (
-        pl.concat([overall_lf, asg_lf], how="diagonal_relaxed")
-        .group_by(ASSESSMENT_GRAIN_COLUMNS)
+        asg_lf.group_by(ASSESSMENT_GRAIN_COLUMNS)
         .agg(
             pl.col(CQCL.key_question_rating)
             .filter(is_key_question[name])
@@ -377,10 +376,7 @@ def raise_error_when_assessment_lf_contains_overall_data(
         ValueError: If any `overall` row has a rating.
     """
     populated_overall_count = (
-        assessment_ratings_lf.filter(
-            (pl.col(CQCL.source_path) == OVERALL_SOURCE_PATH)
-            & pl.col(CQCL.rating).is_not_null()
-        )
+        assessment_ratings_lf.filter(pl.col(CQCL.rating).is_not_null())
         .select(pl.len())
         .collect()
         .item()

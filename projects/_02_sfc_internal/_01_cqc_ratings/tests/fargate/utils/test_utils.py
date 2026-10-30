@@ -266,27 +266,12 @@ class TestPrepareAssessmentRatings:
 
 class TestRaiseErrorWhenAssessmentLfContainsOverallData:
     def test_raises_when_overall_rating_is_populated(self):
-        input_lf = pl.LazyFrame(
-            {
-                CQCL.source_path: [job.OVERALL_SOURCE_PATH],
-                CQCL.rating: ["Good"],
-            }
-        )
+        input_lf = pl.LazyFrame({CQCL.rating: ["Good"]})
 
         with pytest.raises(ValueError, match="contains 1 values"):
             job.raise_error_when_assessment_lf_contains_overall_data(input_lf)
 
-    @pytest.mark.parametrize(
-        "source_path,rating",
-        [
-            pytest.param(job.OVERALL_SOURCE_PATH, None, id="null_overall_rating"),
-            pytest.param(job.ASG_SOURCE_PATH, "Good", id="rating_only_in_asg"),
-        ],
-    )
-    def test_does_not_raise_when_overall_has_no_rating(self, source_path, rating):
-        input_lf = pl.LazyFrame(
-            {CQCL.source_path: [source_path], CQCL.rating: [rating]},
-            schema={CQCL.source_path: pl.String, CQCL.rating: pl.String},
-        )
+    def test_does_not_raise_when_overall_has_no_rating(self):
+        input_lf = pl.LazyFrame({CQCL.rating: [None]}, schema={CQCL.rating: pl.String})
 
         job.raise_error_when_assessment_lf_contains_overall_data(input_lf)
