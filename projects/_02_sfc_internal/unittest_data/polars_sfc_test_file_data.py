@@ -1124,3 +1124,15 @@ class FlattenCQCRatings:
         ("1-001", date(2024, 1, 1), "2024-01-02", "Historic"),
         ("1-001", date(2024, 1, 1), "2024-01-02", None),
     ]
+
+    # 1-001 sits between the two 1-002 rows.
+    add_latest_rating_flag_non_adjacent_rows = [
+        ("1-002", date(2024, 1, 1), None, "Historic"),
+        ("1-001", date(2024, 1, 1), None, "Historic"),
+        ("1-002", date(2024, 4, 1), None, "Current"),
+    ]
+    expected_add_latest_rating_flag_non_adjacent_rows = [
+        ("1-002", date(2024, 1, 1), None, "Historic", 0),
+        ("1-001", date(2024, 1, 1), None, "Historic", 1),
+        ("1-002", date(2024, 4, 1), None, "Current", 1),
+    ]

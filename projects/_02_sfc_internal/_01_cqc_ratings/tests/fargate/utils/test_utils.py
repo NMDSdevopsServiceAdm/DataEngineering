@@ -481,6 +481,11 @@ add_latest_rating_flag_column_cases = [
         expected_rows=Data.expected_add_latest_rating_flag_null_assessment_date_rows,
     ),
     AddLatestRatingFlagColumnCase(
+        id="flags_one_row_per_location_when_location_rows_are_not_adjacent",
+        rows=Data.add_latest_rating_flag_non_adjacent_rows,
+        expected_rows=Data.expected_add_latest_rating_flag_non_adjacent_rows,
+    ),
+    AddLatestRatingFlagColumnCase(
         id="ranks_null_rating_date_last",
         rows=Data.add_latest_rating_flag_null_rating_date_rows,
         expected_rows=Data.expected_add_latest_rating_flag_null_rating_date_rows,
@@ -505,7 +510,7 @@ class TestAddLatestRatingFlagColumn:
             schema=Schemas.expected_add_latest_rating_flag_schema,
             orient="row",
         )
-        pl_testing.assert_frame_equal(expected_lf, returned_lf)
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
 
     def test_flags_exactly_one_row_when_both_dates_tie(self):
         input_lf = pl.LazyFrame(

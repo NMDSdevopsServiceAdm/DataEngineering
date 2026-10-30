@@ -453,7 +453,8 @@ def add_latest_rating_flag_column(lf: pl.LazyFrame) -> pl.LazyFrame:
     on both dates are ordered by the remaining columns so exactly one row per location
     is flagged whatever the input order; this tie-break isn't a business rule.
 
-    Uses `.over()`, which the streaming engine doesn't cover.
+    Sorts by location and newest first, so the output row order is not the input
+    order. The sort and `.over()` aren't covered by the streaming engine.
 
     Args:
         lf (pl.LazyFrame): CQC ratings with `location_id`, `rating_date` and
@@ -468,15 +469,13 @@ def add_latest_rating_flag_column(lf: pl.LazyFrame) -> pl.LazyFrame:
         for column in lf.collect_schema().names()
         if column not in (CQCL.location_id, CQCRatings.date, CQCL.assessment_date)
     ]
-    newest_row_index = pl.arg_sort_by(
-        [CQCRatings.date, CQCL.assessment_date, *tie_break_columns],
-        descending=[True, True, *[False] * len(tie_break_columns)],
-        nulls_last=True,
-    ).first()
 
-    return lf.with_columns(
-        (pl.int_range(pl.len()) == newest_row_index)
-        .over(CQCL.location_id)
+    return lf.sort(
+        [CQCL.location_id, CQCRatings.date, CQCL.assessment_date, *tie_break_columns],
+        descending=[False, True, True, *[False] * len(tie_break_columns)],
+        nulls_last=True,
+    ).with_columns(
+        (pl.int_range(pl.len()).over(CQCL.location_id) == 0)
         .cast(pl.Int32)
         .alias(CQCRatings.latest_rating_flag)
     )
