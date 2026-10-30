@@ -13,43 +13,41 @@ class PublicationColumns:
     ct_dispersion_filter_long: str = "ct_dispersion_filter_long"
     ct_dispersion_filter_medium: str = "ct_dispersion_filter_medium"
     ct_dispersion_filter_short: str = "ct_dispersion_filter_short"
-    filled_posts: str = "filled_posts"
-    filled_posts_rounded: str = "filled_posts_rounded"
-    locationid_count: str = "locationid_count"
-    filtered_filled_posts_long: str = "filtered_filled_posts_long"
-    filtered_filled_posts_medium: str = "filtered_filled_posts_medium"
-    filtered_filled_posts_short: str = "filtered_filled_posts_short"
-    filtered_locationid_count_long: str = "filtered_locationid_count_long"
-    filtered_locationid_count_medium: str = "filtered_locationid_count_medium"
-    filtered_locationid_count_short: str = "filtered_locationid_count_short"
-    filtered_ct_total_employed_long: str = "filtered_ct_total_employed_long"
-    filtered_ct_total_employed_medium: str = "filtered_ct_total_employed_medium"
-    filtered_ct_total_employed_short: str = "filtered_ct_total_employed_short"
-    unfiltered_ct_total_employed_long: str = "unfiltered_ct_total_employed_long"
-    filtered_ct_cum_perc_change_long: str = "filtered_ct_cum_perc_change_long"
-    filtered_ct_cum_perc_change_medium: str = "filtered_ct_cum_perc_change_medium"
-    filtered_ct_cum_perc_change_short: str = "filtered_ct_cum_perc_change_short"
-    filtered_filled_posts_cum_perc_change_long: str = (
-        "filtered_filled_posts_cum_perc_change_long"
-    )
-    filtered_filled_posts_cum_perc_change_medium: str = (
-        "filtered_filled_posts_cum_perc_change_medium"
-    )
-    filtered_filled_posts_cum_perc_change_short: str = (
-        "filtered_filled_posts_cum_perc_change_short"
-    )
-    unfiltered_ct_total_employed_cum_perc_change_long: str = (
-        "unfiltered_ct_total_employed_cum_perc_change_long"
-    )
-    filled_posts_cum_perc_change_long: str = "filled_posts_cum_perc_change_long"
-    filled_posts_cum_perc_change_short: str = "filled_posts_cum_perc_change_short"
-    locationid_count_cum_perc_change_short: str = (
-        "locationid_count_cum_perc_change_short"
+    unfiltered_filled_posts: str = "unfiltered_filled_posts"
+    unfiltered_filled_posts_rounded: str = "unfiltered_filled_posts_rounded"
+    unfiltered_locationid_count: str = "unfiltered_locationid_count"
+    filtered_long_sfc_filled_posts: str = "filtered_long_sfc_filled_posts"
+    filtered_medium_sfc_filled_posts: str = "filtered_medium_sfc_filled_posts"
+    filtered_short_sfc_filled_posts: str = "filtered_short_sfc_filled_posts"
+    filtered_long_sfc_locationid_count: str = "filtered_long_sfc_locationid_count"
+    filtered_medium_sfc_locationid_count: str = "filtered_medium_sfc_locationid_count"
+    filtered_short_sfc_locationid_count: str = "filtered_short_sfc_locationid_count"
+    filtered_long_ct_total_employed: str = "filtered_long_ct_total_employed"
+    filtered_medium_ct_total_employed: str = "filtered_medium_ct_total_employed"
+    filtered_short_ct_total_employed: str = "filtered_short_ct_total_employed"
+    unfiltered_long_ct_total_employed: str = "unfiltered_long_ct_total_employed"
+    filtered_long_ct_cum_pct_change: str = "filtered_long_ct_cum_pct_change"
+    filtered_medium_ct_cum_pct_change: str = "filtered_medium_ct_cum_pct_change"
+    filtered_short_ct_cum_pct_change: str = "filtered_short_ct_cum_pct_change"
+    filtered_long_sfc_cum_pct_change: str = "filtered_long_sfc_cum_pct_change"
+    filtered_medium_sfc_cum_pct_change: str = "filtered_medium_sfc_cum_pct_change"
+    filtered_short_sfc_cum_pct_change: str = "filtered_short_sfc_cum_pct_change"
+    unfiltered_long_ct_cum_pct_change: str = "unfiltered_long_ct_cum_pct_change"
+    unfiltered_long_sfc_cum_pct_change: str = "unfiltered_long_sfc_cum_pct_change"
+    unfiltered_short_sfc_cum_pct_change: str = "unfiltered_short_sfc_cum_pct_change"
+    filtered_locationid_count_cum_perc_change_short: str = (
+        "filtered_locationid_count_cum_perc_change_short"
     )
     prev_run_filled_posts: str = "prev_run_filled_posts"
-    filled_posts_perc_change_vs_prev_run: str = "filled_posts_perc_change_vs_prev_run"
-    filled_posts_april_perc_change: str = "filled_posts_april_perc_change"
-    locationid_count_april_perc_change: str = "locationid_count_april_perc_change"
+    unfiltered_filled_posts_perc_change_vs_prev_run: str = (
+        "unfiltered_filled_posts_perc_change_vs_prev_run"
+    )
+    unfiltered_filled_posts_april_perc_change: str = (
+        "unfiltered_filled_posts_april_perc_change"
+    )
+    unfiltered_locationid_count_april_perc_change: str = (
+        "unfiltered_locationid_count_april_perc_change"
+    )
     main_service: str = "Main service"
     job_group: str = "Job group"
     region: str = "Region"

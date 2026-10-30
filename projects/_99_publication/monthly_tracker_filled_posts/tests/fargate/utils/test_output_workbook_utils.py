@@ -40,11 +40,11 @@ PUBLICATION_SCHEMA = pl.Schema(
         (Pub.main_service, pl.String),
         (Pub.estimated_filled_posts_rounded, pl.Float64),
         (Pub.cqc_locations, pl.Int64),
-        (Pub.filled_posts_april_perc_change, pl.Float64),
-        (Pub.filled_posts_cum_perc_change_short, pl.Float64),
-        (Pub.locationid_count_april_perc_change, pl.Float64),
+        (Pub.unfiltered_filled_posts_april_perc_change, pl.Float64),
+        (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float64),
+        (Pub.unfiltered_locationid_count_april_perc_change, pl.Float64),
         (
-            Pub.locationid_count_cum_perc_change_short,
+            Pub.filtered_locationid_count_cum_perc_change_short,
             pl.Float64,
         ),
     ]
@@ -76,8 +76,8 @@ class TestPrepareT0ForPublication:
 
 class TestPreparePercChangeForPublication:
     input_schema = PUBLICATION_SCHEMA
-    april_column = Pub.filled_posts_april_perc_change
-    cumulative_column = Pub.filled_posts_cum_perc_change_short
+    april_column = Pub.unfiltered_filled_posts_april_perc_change
+    cumulative_column = Pub.unfiltered_short_sfc_cum_pct_change
     expected_columns = [
         Pub.period,
         Pub.region,
