@@ -10,11 +10,11 @@ from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as 
 
 
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Keeps permanent and temporary workers from the earliest file in each month.
+    """Keeps permanent and temporary workers from each month's earliest file.
 
-    Only files imported from 1 January 2020 are kept. The earliest file in each
-    month is chosen after the other filters, so it is the earliest file with
-    permanent or temporary workers.
+    Only files from 1 January 2020 onwards are kept. The earliest file is
+    chosen after the other filters, so it is the earliest with permanent or
+    temporary workers.
 
     Args:
         worker_lf (pl.LazyFrame): Cleaned ASC-WDS worker data.

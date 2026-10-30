@@ -8,7 +8,7 @@ from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as 
 def worker_row(
     worker_id: str, import_date: date, employment_status_label: str
 ) -> tuple[Any, ...]:
-    """Returns a cleaned worker row in the column order of the cleaned worker schema."""
+    """Returns a cleaned worker row in schema column order."""
     return (
         "1-001",
         "1-001",

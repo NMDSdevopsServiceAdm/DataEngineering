@@ -1,5 +1,5 @@
 {
-  "Comment": "Manually-started pipeline that filters the cleaned ASC-WDS worker data to permanent and temporary workers, keeping the earliest file in each month from January 2020, for the hackathon worker turnover project. Not scheduled; start with no execution input.",
+  "Comment": "Manually-started. Filters the cleaned ASC-WDS worker data to permanent and temporary workers in the earliest file of each month since January 2020. Start with no execution input.",
   "StartAt": "Filter worker turnover data",
   "States": {
     "Filter worker turnover data": {
