@@ -32,12 +32,12 @@ input_schema = pl.Schema(
         (IndCQC.primary_service_type, pl.String()),
         (Pub.unfiltered_filled_posts, pl.Float32()),
         (Pub.unfiltered_locationid_count, pl.UInt32()),
-        (Pub.unfiltered_filled_posts_april_pct_change, pl.Float32()),
-        (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float32()),
-        (Pub.unfiltered_locationid_count_april_pct_change, pl.Float32()),
+        (Pub.unfiltered_filled_posts_april_pct_change, pl.Float64()),
+        (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float64()),
+        (Pub.unfiltered_locationid_count_april_pct_change, pl.Float64()),
         (
             Pub.unfiltered_short_locationid_count_cum_pct_change,
-            pl.Float32(),
+            pl.Float64(),
         ),
     ]
 )
@@ -50,12 +50,12 @@ expected_schema = pl.Schema(
         (Pub.main_service, pl.String()),
         (Pub.estimated_filled_posts_rounded, pl.Float32()),
         (Pub.cqc_locations, pl.UInt32()),
-        (Pub.unfiltered_filled_posts_april_pct_change, pl.Float32()),
-        (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float32()),
-        (Pub.unfiltered_locationid_count_april_pct_change, pl.Float32()),
+        (Pub.unfiltered_filled_posts_april_pct_change, pl.Float64()),
+        (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float64()),
+        (Pub.unfiltered_locationid_count_april_pct_change, pl.Float64()),
         (
             Pub.unfiltered_short_locationid_count_cum_pct_change,
-            pl.Float32(),
+            pl.Float64(),
         ),
     ]
 )

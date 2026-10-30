@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a manually-run Hackathon Worker Turnover Step Function that filters the cleaned ASC-WDS worker data to permanent and temporary workers, keeping the earliest file in each month from January 2020, then crawls the output.
 - The assessment job fills the assessment workbook and saves it to S3.
 - Added the mapping of assessment data to the Comp prev publication and comparison sheets of the assessment workbook.
 - Added the mapping of assessment data to the Filled posts sheet of the assessment workbook.
@@ -35,6 +36,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Assessment percentage change columns are now Float64 to reduce rounding drift.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
 - Converted the CQC ratings assessment flattening to Polars.
 - Converted the CQC ratings overall-data check to Polars.

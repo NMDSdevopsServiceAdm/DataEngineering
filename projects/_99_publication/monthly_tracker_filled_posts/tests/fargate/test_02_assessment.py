@@ -62,10 +62,10 @@ def mocks():
     that add constant columns, so each test can assert on how main calls them.
     """
     null_perc_change = lambda column_name, from_date, group_columns, column_alias: (
-        pl.lit(None, dtype=pl.Float32).alias(column_alias)
+        pl.lit(None, dtype=pl.Float64).alias(column_alias)
     )
     null_april_perc_change = lambda column_name, group_columns, column_alias: (
-        pl.lit(None, dtype=pl.Float32).alias(column_alias)
+        pl.lit(None, dtype=pl.Float64).alias(column_alias)
     )
     with ExitStack() as stack:
         mocks = SimpleNamespace(
@@ -383,7 +383,7 @@ class TestMain:
         ]
         expected_lf = (
             mocks.aggregate.return_value.with_columns(
-                [pl.lit(None, dtype=pl.Float32).alias(c) for c in PERC_CHANGE_COLUMNS]
+                [pl.lit(None, dtype=pl.Float64).alias(c) for c in PERC_CHANGE_COLUMNS]
             )
             .with_columns(
                 pl.lit("Mar 2026").alias(Pub.period_label_short),

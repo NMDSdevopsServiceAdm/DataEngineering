@@ -748,8 +748,7 @@ def calc_perc_change_from_previous_april(
     so 0.25 = +25%.
 
     Null on non-April rows, a group's first April, and (not inf/NaN) when the
-    previous April is 0. Cast to Float32 so integer counts don't widen the
-    result to Float64.
+    previous April is 0. Calculated as Float64 to avoid rounding drift.
 
     Args:
         column_name (str): the value column to measure change in.
@@ -762,7 +761,7 @@ def calc_perc_change_from_previous_april(
     """
     april_value = (
         pl.when(pl.col(IndCQC.cqc_location_import_date).dt.month() == 4)
-        .then(pl.col(column_name).cast(pl.Float32))
+        .then(pl.col(column_name).cast(pl.Float64))
         .otherwise(None)
     )
     previous_april_value = april_value.forward_fill().shift(1)
@@ -791,8 +790,7 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     since a term's window never borrows a baseline from before its own
     start. Null (not inf/NaN) when the baseline is exactly 0, since column_name
     is a sum over a filter and can legitimately be 0.
-    column_name is cast to Float32 before dividing, so an integer count
-    column (e.g. a location count) doesn't widen the result to Float64.
+    Calculated as Float64 to avoid rounding drift.
 
     Args:
         column_name (str): the value column to measure change in.
@@ -806,7 +804,7 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     """
     in_window_value = (
         pl.when(pl.col(IndCQC.cqc_location_import_date) >= from_date)
-        .then(pl.col(column_name).cast(pl.Float32))
+        .then(pl.col(column_name).cast(pl.Float64))
         .otherwise(None)
     )
     baseline_value = in_window_value.filter(in_window_value.is_not_null()).first()
@@ -877,8 +875,8 @@ def add_prev_run_filled_posts_columns(
             )
         )
 
-    current_posts = pl.col(Pub.unfiltered_filled_posts).cast(pl.Float32)
-    prev_posts = pl.col(Pub.unfiltered_filled_posts_prev_run).cast(pl.Float32)
+    current_posts = pl.col(Pub.unfiltered_filled_posts).cast(pl.Float64)
+    prev_posts = pl.col(Pub.unfiltered_filled_posts_prev_run).cast(pl.Float64)
     return assessment_summary_lf.with_columns(
         pl.when(prev_posts == 0)
         .then(None)
