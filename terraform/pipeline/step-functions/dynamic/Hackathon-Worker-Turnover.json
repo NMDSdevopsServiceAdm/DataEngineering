@@ -1,5 +1,5 @@
 {
-  "Comment": "Manually-started. Filters the cleaned ASC-WDS worker data to permanent and temporary workers in the earliest file of each month since January 2020. Start with no execution input.",
+  "Comment": "Manually-started. Filters the cleaned ASC-WDS worker data to permanent and temporary workers in the earliest file of each month since January 2020, then runs the crawler. Start with no execution input.",
   "StartAt": "Filter worker turnover data",
   "States": {
     "Filter worker turnover data": {
@@ -29,6 +29,18 @@
               ]
             }
           ]
+        }
+      },
+      "Next": "Run hackathon crawler"
+    },
+    "Run hackathon crawler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "${run_crawler_state_machine_arn}",
+        "Input": {
+          "crawler_name": "${hackathon_crawler_name}",
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
         }
       },
       "End": true

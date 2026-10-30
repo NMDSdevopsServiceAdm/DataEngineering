@@ -124,6 +124,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     ons_crawler_name         = module.ons_crawler.crawler_name
     sfc_crawler_name         = module.sfc_crawler.crawler_name
     ct_crawler_name          = module.capacity_tracker_crawler.crawler_name
+    hackathon_crawler_name   = module.hackathon_crawler.crawler_name
     publication_crawler_name = module.publication_crawler.crawler_name
 
     # parameter store
