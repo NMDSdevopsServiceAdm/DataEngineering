@@ -669,6 +669,29 @@ class PublishedMainService(ColumnValues):
 
 
 @dataclass
+class AssessmentMainService(ColumnValues):
+    """The main service headings in the assessment workbook template"""
+
+    care_homes: str = PublishedMainService.all_care_homes.removeprefix("All ")
+    care_home_with_nursing: str = (
+        PublishedMainService.care_home_with_nursing.removeprefix(" - ")
+    )
+    care_only_home: str = PublishedMainService.care_home_only.removeprefix(" - ")
+
+
+@dataclass
+class AssessmentHeadings(ColumnValues):
+    """The table headings in the assessment workbook template"""
+
+    filled_posts: str = "Filled posts"
+    skills_for_care: str = "Skills for Care"
+    capacity_tracker: str = "Capacity Tracker"
+    cumulative_perc_change: str = "Cumulative % change"
+    number_of_locations: str = "Number of locations"
+    number_of_locations_label: str = f"{number_of_locations}:"
+
+
+@dataclass
 class PublishedRegion(Region):
     """The possible values of the region column in publication data"""
 
