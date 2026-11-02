@@ -451,7 +451,8 @@ def add_latest_rating_flag_column(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Latest is the newest `rating_date`, then `assessment_date`, nulls last. Rows tied
     on both dates are ordered by the remaining columns so exactly one row per location
-    is flagged whatever the input order; this tie-break isn't a business rule.
+    is flagged whatever the input order; this tie-break isn't a business rule. Sorting
+    on every remaining column is cheap at this dataset's size (about 100k rows).
 
     Sorts by location and newest first, so the output row order is not the input
     order. The sort and `.over()` aren't covered by the streaming engine.
@@ -503,27 +504,25 @@ def add_numerical_ratings(lf: pl.LazyFrame) -> pl.LazyFrame:
         CQCRatingsValues.requires_improvement.lower(): 2,
         CQCRatingsValues.inadequate.lower(): 1,
     }
-    value_columns = {
-        CQCRatings.overall_rating: CQCRatings.overall_rating_value,
-        CQCRatings.safe_rating: CQCRatings.safe_rating_value,
-        CQCRatings.well_led_rating: CQCRatings.well_led_rating_value,
-        CQCRatings.caring_rating: CQCRatings.caring_rating_value,
-        CQCRatings.responsive_rating: CQCRatings.responsive_rating_value,
-        CQCRatings.effective_rating: CQCRatings.effective_rating_value,
-    }
+    # Same order as RATING_COLUMNS, overall first.
+    value_columns = [
+        CQCRatings.overall_rating_value,
+        CQCRatings.safe_rating_value,
+        CQCRatings.well_led_rating_value,
+        CQCRatings.caring_rating_value,
+        CQCRatings.responsive_rating_value,
+        CQCRatings.effective_rating_value,
+    ]
+    key_question_value_columns = value_columns[1:]
 
     return lf.with_columns(
         pl.col(rating_column)
         .str.to_lowercase()
         .replace_strict(rating_values, default=0, return_dtype=pl.Int32)
         .alias(value_column)
-        for rating_column, value_column in value_columns.items()
+        for rating_column, value_column in zip(RATING_COLUMNS, value_columns)
     ).with_columns(
-        pl.sum_horizontal(
-            CQCRatings.safe_rating_value,
-            CQCRatings.well_led_rating_value,
-            CQCRatings.caring_rating_value,
-            CQCRatings.responsive_rating_value,
-            CQCRatings.effective_rating_value,
-        ).alias(CQCRatings.total_rating_value)
+        pl.sum_horizontal(key_question_value_columns).alias(
+            CQCRatings.total_rating_value
+        )
     )
