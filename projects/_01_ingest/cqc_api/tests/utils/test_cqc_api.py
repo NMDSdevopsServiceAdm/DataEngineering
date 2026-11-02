@@ -175,6 +175,7 @@ def mock_connection_responses(
         conn_response.status = status
         conn_response.headers = {}
         conn_response.msg = HTTPMessage()
+        conn_response.get_redirect_location.return_value = False
         conn_responses.append(conn_response)
     getconn_mock.side_effect = conn_responses
 
@@ -269,7 +270,10 @@ class TestCallApi:
     ):
         mock_connection_responses(getconn_mock, response_mock, [502] * 4 + [200])
 
-        with pytest.raises(Exception, match="^CQC API retries exhausted: "):
+        with pytest.raises(
+            Exception,
+            match="^CQC API retries exhausted: .*too many 502 error responses",
+        ):
             cqc.call_api(url=RETRY_URL, id="1-001", query_params={"param": "value"})
 
         assert getconn_mock.call_count == 4  # total=3 allows 3 retries after the first

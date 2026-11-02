@@ -24,7 +24,8 @@ module "cqc-api" {
   tag_name      = terraform.workspace
   environment = [
     { "name" : "AWS_REGION", "value" : "eu-west-2" },
-    { "name" : "CQC_SECRET_NAME", "value" : "cqc_api_primary_key" }
+    { "name" : "CQC_SECRET_NAME", "value" : "cqc_api_primary_key" },
+    { "name" : "CQC_API_RETRY_BUDGET_SECONDS", "value" : "1800" }
   ]
 }
 
