@@ -11,6 +11,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_values.categorical_column_values import (
     CQCCurrentOrHistoricValues,
     CQCRatingsDatasetValues,
+    CQCRatingsValues,
 )
 
 # .explode() behaivour to drop empty and null lists.
@@ -52,6 +53,15 @@ ASSESSMENT_GRAIN_COLUMNS = [
 
 OVERALL_SOURCE_PATH = "assessment.ratings.overall"
 ASG_SOURCE_PATH = "assessment.ratings.asg_ratings"
+
+RATING_COLUMNS = [
+    CQCRatings.overall_rating,
+    CQCRatings.safe_rating,
+    CQCRatings.well_led_rating,
+    CQCRatings.caring_rating,
+    CQCRatings.responsive_rating,
+    CQCRatings.effective_rating,
+]
 
 
 def keep_latest_per_key(lf: pl.LazyFrame, key_col: str, order_col: str) -> pl.LazyFrame:
@@ -386,3 +396,134 @@ def raise_error_when_assessment_lf_contains_overall_data(
         raise ValueError(
             f"The overall object within the assessments column contains {populated_overall_count} values for social care locations."
         )
+
+
+def recode_unknown_codes_to_null(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Sets unknown rating labels (e.g. "No published rating") and empty strings to null.
+
+    Only the overall and key question rating columns are changed.
+
+    Args:
+        lf (pl.LazyFrame): CQC ratings with the overall and key question rating
+            columns.
+
+    Returns:
+        pl.LazyFrame: The input with unknown ratings set to null.
+    """
+    unknown_labels = [
+        "Inspected but not rated",
+        "No published rating",
+        "Insufficient evidence to rate",
+        "Evidence requirements partially / not yet scored",
+        "No Approved Rating",
+        "",
+    ]
+
+    return lf.with_columns(
+        pl.when(~pl.col(RATING_COLUMNS).is_in(unknown_labels)).then(
+            pl.col(RATING_COLUMNS)
+        )
+    )
+
+
+def remove_blank_and_duplicate_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Removes rows with no ratings, then removes duplicate rows.
+
+    A row has no ratings when the overall and all key question rating columns are
+    null. Duplicates are matched on every column, which is cheap at this dataset's
+    size.
+
+    Args:
+        lf (pl.LazyFrame): CQC ratings with the overall and key question rating
+            columns.
+
+    Returns:
+        pl.LazyFrame: The input without blank or duplicate rows, in no set order.
+    """
+    return lf.filter(pl.any_horizontal(pl.col(RATING_COLUMNS).is_not_null())).unique()
+
+
+def add_latest_rating_flag_column(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Flags the latest rating per location as 1, otherwise 0.
+
+    Latest is the newest `rating_date`, then `assessment_date`, nulls last. Rows tied
+    on both dates are ordered by the remaining columns so exactly one row per location
+    is flagged whatever the input order; this tie-break isn't a business rule.
+
+    Sorts by location and newest first, so the output row order is not the input
+    order. The sort and `.over()` aren't covered by the streaming engine.
+
+    Args:
+        lf (pl.LazyFrame): CQC ratings with `location_id`, `rating_date` and
+            `assessment_date` columns. `assessment_date` is compared as a string, so
+            it must be ISO format.
+
+    Returns:
+        pl.LazyFrame: The input with a `latest_rating_flag` Int32 column.
+    """
+    tie_break_columns = [
+        column
+        for column in lf.collect_schema().names()
+        if column not in (CQCL.location_id, CQCRatings.date, CQCL.assessment_date)
+    ]
+
+    return lf.sort(
+        [CQCL.location_id, CQCRatings.date, CQCL.assessment_date, *tie_break_columns],
+        descending=[False, True, True, *[False] * len(tie_break_columns)],
+        nulls_last=True,
+    ).with_columns(
+        (pl.int_range(pl.len()).over(CQCL.location_id) == 0)
+        .cast(pl.Int32)
+        .alias(CQCRatings.latest_rating_flag)
+    )
+
+
+def add_numerical_ratings(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Adds a numerical value for each rating column and a total of the key questions.
+
+    Ratings are matched ignoring case: Outstanding 4, Good 3, Requires improvement 2,
+    Inadequate 1. Null or unrecognised ratings are 0. The total sums the five key
+    question values and excludes the overall value.
+
+    Args:
+        lf (pl.LazyFrame): CQC ratings with the overall and key question rating
+            columns, all String.
+
+    Returns:
+        pl.LazyFrame: The input with a value column per rating column and
+            `total_rating_value`, all Int32.
+    """
+    rating_values = {
+        CQCRatingsValues.outstanding.lower(): 4,
+        CQCRatingsValues.good.lower(): 3,
+        CQCRatingsValues.requires_improvement.lower(): 2,
+        CQCRatingsValues.inadequate.lower(): 1,
+    }
+    value_columns = {
+        CQCRatings.overall_rating: CQCRatings.overall_rating_value,
+        CQCRatings.safe_rating: CQCRatings.safe_rating_value,
+        CQCRatings.well_led_rating: CQCRatings.well_led_rating_value,
+        CQCRatings.caring_rating: CQCRatings.caring_rating_value,
+        CQCRatings.responsive_rating: CQCRatings.responsive_rating_value,
+        CQCRatings.effective_rating: CQCRatings.effective_rating_value,
+    }
+
+    return lf.with_columns(
+        pl.col(rating_column)
+        .str.to_lowercase()
+        .replace_strict(rating_values, default=0, return_dtype=pl.Int32)
+        .alias(value_column)
+        for rating_column, value_column in value_columns.items()
+    ).with_columns(
+        pl.sum_horizontal(
+            CQCRatings.safe_rating_value,
+            CQCRatings.well_led_rating_value,
+            CQCRatings.caring_rating_value,
+            CQCRatings.responsive_rating_value,
+            CQCRatings.effective_rating_value,
+        ).alias(CQCRatings.total_rating_value)
+    )
