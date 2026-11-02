@@ -22,9 +22,9 @@ from utils.column_values.categorical_column_values import ImputationRowKind
 
 LOCATION_ROLE_COLUMNS = [IndCQC.location_id, IndCQC.published_job_role_label]
 LOCATION_ROLE_DATE_COLUMNS = [*LOCATION_ROLE_COLUMNS, IndCQC.cqc_location_import_date]
-AS_LOCATION_TYPE = pl.col(IndCQC.location_id).cast(CatColType.LocationCatType)
 
 SCHEMA_OVERRIDES = {
+    IndCQC.location_id: CatColType.LocationCatType,
     KNOWN_SHARE: pl.Float32,
     IMPUTED_SHARE: pl.Float32,
     ROLLING_AVERAGE_SHARE: pl.Float32,
@@ -70,13 +70,8 @@ class TestAddImputationRowKind:
 
 class TestBuildModellingDataset:
     def test_builder_does_not_duplicate_rows(self):
-        # Location IDs are categorical in both datasets, as in the pipeline.
-        shares_lf = to_lf(Data.build_modelling_dataset_shares_data).with_columns(
-            AS_LOCATION_TYPE
-        )
-        estimates_lf = pl.LazyFrame(
-            Data.build_modelling_dataset_estimates_data
-        ).with_columns(AS_LOCATION_TYPE)
+        shares_lf = to_lf(Data.build_modelling_dataset_shares_data)
+        estimates_lf = to_lf(Data.build_modelling_dataset_estimates_data)
 
         returned_lf = job.build_modelling_dataset(
             shares_lf,

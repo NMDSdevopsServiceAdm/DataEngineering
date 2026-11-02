@@ -82,17 +82,22 @@ class TestReshapeEmploymentStatusData:
         ]
         test_lf = pl.LazyFrame(
             case.input_data,
-            schema_overrides={EmpStatus.total_count: pl.UInt32},
-        ).with_columns(pl.col(AWKClean.location_id).cast(CatColType.LocationCatType))
+            schema_overrides={
+                AWKClean.location_id: CatColType.LocationCatType,
+                EmpStatus.total_count: pl.UInt32,
+            },
+        )
         expected_lf = pl.LazyFrame(
             case.expected_data,
             schema_overrides={
-                column: pl.UInt32
-                for column in emp_stat_count_cols
-                if column in case.expected_data
+                AWKClean.location_id: CatColType.LocationCatType,
+                **{
+                    column: pl.UInt32
+                    for column in emp_stat_count_cols
+                    if column in case.expected_data
+                },
             },
         ).with_columns(
-            pl.col(AWKClean.location_id).cast(CatColType.LocationCatType),
             pl.col(AWKClean.establishment_id).cast(CatColType.EstablishmentCatType),
         )
 

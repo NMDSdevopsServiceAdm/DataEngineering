@@ -4,8 +4,10 @@ from datetime import date
 from typing import Any, Optional
 
 import numpy as np
+import polars as pl
 import pytest
 
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc._01_filled_posts._04_model.utils.value_labels import (
     ModelTypes,
 )
@@ -3573,7 +3575,7 @@ def exact_cross_validation_dependent(service_count: int, activity_count: int) ->
     return service * service_count + activity * activity_count + intercept
 
 
-def cross_validation_features_data() -> dict[str, list[Any]]:
+def cross_validation_features_data() -> dict[str, Any]:
     """Three dates for each of six locations, with a dependent that is exactly linear."""
     rows = [
         (location, import_date, (i + j) % 4 + 1, (2 * i + j) % 3 + 1)
@@ -3581,7 +3583,9 @@ def cross_validation_features_data() -> dict[str, list[Any]]:
         for j, import_date in enumerate(CROSS_VALIDATION_DATES)
     ]
     return {
-        IndCQC.location_id: [row[0] for row in rows],
+        IndCQC.location_id: pl.Series(
+            [row[0] for row in rows], dtype=CatColType.LocationCatType
+        ),
         IndCQC.cqc_location_import_date: [row[1] for row in rows],
         IndCQC.care_home_status_count: [1] * len(rows),
         IndCQC.service_count_capped: [row[2] for row in rows],
@@ -3626,7 +3630,9 @@ class CrossValidationUtilsData:
 
     # Two locations in each of the three folds.
     folds_data = {
-        IndCQC.location_id: CROSS_VALIDATION_LOCATIONS,
+        IndCQC.location_id: pl.Series(
+            CROSS_VALIDATION_LOCATIONS, dtype=CatColType.LocationCatType
+        ),
         ModelEvaluation.fold: [0, 0, 1, 1, 2, 2],
     }
 
@@ -3729,7 +3735,7 @@ class IsTrainingRowData:
     ]
 
 
-def metrics_locations_data() -> dict[str, list[Any]]:
+def metrics_locations_data() -> dict[str, Any]:
     """
     Non-res rows for the cross validation locations, with the known value equal to the
     imputed target except for loc5, which has none.
@@ -3756,7 +3762,7 @@ def metrics_locations_data() -> dict[str, list[Any]]:
 METRICS_CARE_HOME_BEDS = 10
 
 
-def metrics_care_home_features_data() -> dict[str, list[Any]]:
+def metrics_care_home_features_data() -> dict[str, Any]:
     """The cross validation features with the dependent as a per bed ratio."""
     data = cross_validation_features_data()
     data[IndCQC.imputed_filled_posts_per_bed_ratio_model] = data.pop(
@@ -3765,7 +3771,7 @@ def metrics_care_home_features_data() -> dict[str, list[Any]]:
     return data
 
 
-def metrics_care_home_locations_data() -> dict[str, list[Any]]:
+def metrics_care_home_locations_data() -> dict[str, Any]:
     """
     Care home rows for the cross validation locations, 10 beds each, with known posts equal
     to the ratio times beds except for loc5, which has none.

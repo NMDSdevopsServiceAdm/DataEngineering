@@ -96,7 +96,6 @@ class TestMain:
         collapse_job_role_estimates_to_published_labels_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        # Dtypes mirror production: location_id is categorical in every dataset.
         job_role_estimates_lf = pl.LazyFrame(
             {
                 IndCQC.id_per_locationid_import_date: [1],
