@@ -618,6 +618,7 @@ class ModelEvaluationColumns:
     level: str = "level"
     locations: str = "locations"
     log_prediction: str = "log_prediction"
+    mae: str = "mae"
     mae_pp: str = "mae_pp"
     mae_skill_score: str = "mae_skill_score"
     max_iter: str = "max_iter"

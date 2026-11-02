@@ -477,6 +477,19 @@ class TestScoreShares:
             pytest.approx([10.0, 20.0])
         )
 
+    def test_skill_scores_use_pooled_baseline_across_groups(self):
+        lf = share_lf(self.PREDICTED, self.KNOWN, group=["x", "y"])
+
+        scores_df = run_score_shares(lf, by_columns=["group"]).sort("group")
+
+        # the pooled baseline scores 0.2 absolute error and 0.08 Brier on both rows
+        assert scores_df[ModelEvaluation.mae_skill_score].to_list() == pytest.approx(
+            [0.5, 0.0]
+        )
+        assert scores_df[ModelEvaluation.brier_skill_score].to_list() == pytest.approx(
+            [0.75, 0.0]
+        )
+
 
 class TestCalculateCoverage:
     def test_coverage_is_share_of_rows_with_non_null_prediction(self):

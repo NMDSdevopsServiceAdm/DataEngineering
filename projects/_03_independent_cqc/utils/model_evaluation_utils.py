@@ -377,7 +377,8 @@ def score_shares(
     Only rows with every known share and every predicted share are scored; use
     `calculate_coverage` for rows without a prediction. The skill scores compare each
     error with that of a baseline predicting the pooled mean known share on every row,
-    so they stay comparable across groups. A tied prediction counts as its first column for top 1.
+    so they stay comparable across groups; they are NaN or infinite if every known share is
+    identical. A tied prediction counts as its first column for top 1.
 
     Args:
         lf (pl.LazyFrame): dataset containing the predicted, known and "by" columns
@@ -403,7 +404,7 @@ def score_shares(
     row_scores_lf = scored_lf.select(
         *by_columns,
         calculate_mean_absolute_error(predicted, known_columns).alias(
-            ModelEvaluation.mae_pp
+            ModelEvaluation.mae
         ),
         calculate_summed_squared_error(predicted, known_columns).alias(
             ModelEvaluation.brier_score
@@ -422,7 +423,7 @@ def score_shares(
         ),
     )
 
-    mae = pl.col(ModelEvaluation.mae_pp).mean()
+    mae = pl.col(ModelEvaluation.mae).mean()
     brier = pl.col(ModelEvaluation.brier_score).mean()
     scores = [
         pl.len().alias(ModelEvaluation.number_of_rows),
