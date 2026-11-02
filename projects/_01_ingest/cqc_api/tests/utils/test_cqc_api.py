@@ -1,14 +1,17 @@
 import io
 import unittest
 from contextlib import redirect_stdout
+from dataclasses import dataclass
 from http.client import HTTPMessage
 from typing import Generator
 from unittest.mock import Mock, call, patch
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from requests.exceptions import RetryError
+from urllib3.util.retry import RequestHistory, Retry
 
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 
@@ -298,18 +301,31 @@ class CallApiTests(CqcApiTests):
 
         # When
         with self.assertRaises(Exception) as context:
-            result = cqc.call_api(
+            cqc.call_api(
                 url="https://api.service.cqc.org.uk/test",
                 id=self.test_location_id,
                 query_params={"param": "value"},
             )
-            # Then
-            self.assertIsNone(result)
-            self.assertTrue("Max retries exceeded" in str(context.exception))
 
+        # Then
+        assert str(context.exception).startswith("Max retries exceeded: ")
         assert (
             getconn_mock.call_count == 4
         )  # only 4 successful calls as 5th should fail
+
+    @patch("requests.Session.get")
+    def test_call_api_raises_max_retries_exceeded_on_retry_error(self, get_mock: Mock):
+        get_mock.side_effect = RetryError("too many 502 error responses")
+
+        with self.assertRaisesRegex(
+            Exception, "^Max retries exceeded: .*too many 502 error responses"
+        ):
+            cqc.call_api(
+                self.test_url,
+                self.test_location_id,
+                {"test": "body"},
+                headers_dict={"some": "header"},
+            )
 
 
 class GetUpdatedObjectsTests(CqcApiTests):
@@ -627,6 +643,88 @@ class BuildDataframeFromApi(CqcApiTests):
 class DaysToRollbackStartTimestampTest(unittest.TestCase):
     def test_expected_value(self):
         self.assertEqual(cqc.days_to_rollback_start_timestamp, 30)
+
+
+def backoff_schedule(retry: Retry) -> list[float]:
+    """Returns the sleep urllib3 applies before each retry, using its own schedule."""
+    history = RequestHistory("GET", "/", None, None, None)
+    return [
+        retry.new(history=(history,) * attempt).get_backoff_time()
+        for attempt in range(1, retry.total + 1)
+    ]
+
+
+@dataclass
+class RetryBudgetTestCase:
+    id: str
+    budget_seconds: int
+
+    def as_pytest_param(self):
+        return pytest.param(self.budget_seconds, id=self.id)
+
+
+retry_budget_cases = [
+    RetryBudgetTestCase(id="five_minutes", budget_seconds=300),
+    RetryBudgetTestCase(id="fifteen_minutes", budget_seconds=900),
+    RetryBudgetTestCase(id="thirty_minutes", budget_seconds=1800),
+]
+
+
+class TestBuildRetryStrategy:
+    @pytest.mark.parametrize(
+        "budget_seconds", [c.as_pytest_param() for c in retry_budget_cases]
+    )
+    def test_total_retries_cover_the_budget(self, budget_seconds: int):
+        retry = cqc.build_retry_strategy(budget_seconds)
+
+        assert sum(backoff_schedule(retry)) >= budget_seconds
+
+    @pytest.mark.parametrize(
+        "budget_seconds", [c.as_pytest_param() for c in retry_budget_cases]
+    )
+    def test_total_does_not_overshoot_budget_by_more_than_one_backoff_max(
+        self, budget_seconds: int
+    ):
+        retry = cqc.build_retry_strategy(budget_seconds)
+
+        overshoot = sum(backoff_schedule(retry)) - budget_seconds
+        assert overshoot < retry.backoff_max
+
+    def test_backoff_max_is_applied(self):
+        retry = cqc.build_retry_strategy(1800, backoff_max=30)
+
+        assert max(backoff_schedule(retry)) == 30
+
+    def test_502_is_in_status_forcelist(self):
+        retry = cqc.build_retry_strategy(1800)
+
+        assert 502 in retry.status_forcelist
+
+
+class TestGetRetryBudgetSeconds:
+    def test_returns_30_minutes_when_env_var_unset(self, monkeypatch):
+        monkeypatch.delenv("CQC_API_RETRY_BUDGET_SECONDS", raising=False)
+
+        assert cqc.get_retry_budget_seconds() == 1800
+
+    def test_returns_env_var_value_when_set(self, monkeypatch):
+        monkeypatch.setenv("CQC_API_RETRY_BUDGET_SECONDS", "600")
+
+        assert cqc.get_retry_budget_seconds() == 600
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            pytest.param("0", id="zero"),
+            pytest.param("-5", id="negative"),
+            pytest.param("ten", id="not_a_number"),
+        ],
+    )
+    def test_raises_when_env_var_is_not_a_positive_integer(self, monkeypatch, value):
+        monkeypatch.setenv("CQC_API_RETRY_BUDGET_SECONDS", value)
+
+        with pytest.raises(ValueError, match="positive integer"):
+            cqc.get_retry_budget_seconds()
 
 
 if __name__ == "__main__":
