@@ -877,3 +877,262 @@ class FlattenCQCRatings:
         ("20240101", "2024", "01", "01", "100", "1-001"),
     ]
     # fmt: on
+
+    def _formatted_ratings_row(
+        location_id,
+        ratings,
+        registration_status="Registered",
+        rating_date=date(2024, 1, 1),
+    ):
+        return (
+            location_id,
+            registration_status,
+            rating_date,
+            *ratings,
+            "Current",
+            "Pre SAF",
+        )
+
+    _valid_ratings = (
+        "Outstanding",
+        "Good",
+        "Requires improvement",
+        "Inadequate",
+        "Good",
+        "Good",
+    )
+
+    recode_unknown_codes_valid_ratings_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings),
+    ]
+
+    recode_unknown_codes_unknown_label_rows = [
+        _formatted_ratings_row("1-001", ("Inspected but not rated",) * 6),
+        _formatted_ratings_row("1-002", ("No published rating",) * 6),
+        _formatted_ratings_row("1-003", ("Insufficient evidence to rate",) * 6),
+        _formatted_ratings_row(
+            "1-004", ("Evidence requirements partially / not yet scored",) * 6
+        ),
+        _formatted_ratings_row("1-005", ("No Approved Rating",) * 6),
+        _formatted_ratings_row("1-006", ("",) * 6),
+    ]
+    expected_recode_unknown_codes_unknown_label_rows = [
+        _formatted_ratings_row("1-001", (None,) * 6),
+        _formatted_ratings_row("1-002", (None,) * 6),
+        _formatted_ratings_row("1-003", (None,) * 6),
+        _formatted_ratings_row("1-004", (None,) * 6),
+        _formatted_ratings_row("1-005", (None,) * 6),
+        _formatted_ratings_row("1-006", (None,) * 6),
+    ]
+
+    recode_unknown_codes_null_ratings_rows = [
+        _formatted_ratings_row("1-001", ("Good", None, None, None, None, None)),
+    ]
+
+    # Unknown labels outside the rating columns must survive.
+    recode_unknown_codes_non_rating_columns_rows = [
+        _formatted_ratings_row(
+            "1-001",
+            ("No published rating",) * 6,
+            registration_status="No published rating",
+        ),
+    ]
+    expected_recode_unknown_codes_non_rating_columns_rows = [
+        _formatted_ratings_row(
+            "1-001",
+            (None,) * 6,
+            registration_status="No published rating",
+        ),
+    ]
+
+    # One populated rating column per row: each must keep its row.
+    remove_blank_rows_one_rating_populated_rows = [
+        _formatted_ratings_row("1-001", ("Good", None, None, None, None, None)),
+        _formatted_ratings_row("1-002", (None, "Good", None, None, None, None)),
+        _formatted_ratings_row("1-003", (None, None, "Good", None, None, None)),
+        _formatted_ratings_row("1-004", (None, None, None, "Good", None, None)),
+        _formatted_ratings_row("1-005", (None, None, None, None, "Good", None)),
+        _formatted_ratings_row("1-006", (None, None, None, None, None, "Good")),
+    ]
+
+    # 1-002 has no ratings and must be removed. 1-001 keeps the output non-empty.
+    remove_blank_rows_all_ratings_null_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings),
+        _formatted_ratings_row("1-002", (None,) * 6),
+    ]
+    expected_remove_blank_rows_all_ratings_null_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings),
+    ]
+
+    remove_blank_rows_duplicate_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings),
+        _formatted_ratings_row("1-001", _valid_ratings),
+    ]
+    expected_remove_blank_rows_duplicate_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings),
+    ]
+
+    remove_blank_rows_differing_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings, rating_date=date(2024, 1, 1)),
+        _formatted_ratings_row("1-001", _valid_ratings, rating_date=date(2024, 2, 1)),
+    ]
+
+    def _numerical_ratings_row(location_id, ratings, values, total):
+        return (location_id, *ratings, *values, total)
+
+    add_numerical_ratings_rating_rows = [
+        ("1-001", *(("Outstanding",) * 6)),
+        ("1-002", *(("Good",) * 6)),
+        ("1-003", *(("Requires improvement",) * 6)),
+        ("1-004", *(("Inadequate",) * 6)),
+    ]
+    expected_add_numerical_ratings_rating_rows = [
+        _numerical_ratings_row("1-001", ("Outstanding",) * 6, (4,) * 6, 20),
+        _numerical_ratings_row("1-002", ("Good",) * 6, (3,) * 6, 15),
+        _numerical_ratings_row("1-003", ("Requires improvement",) * 6, (2,) * 6, 10),
+        _numerical_ratings_row("1-004", ("Inadequate",) * 6, (1,) * 6, 5),
+    ]
+
+    add_numerical_ratings_mixed_case_rows = [
+        (
+            "1-001",
+            "OUTSTANDING",
+            "good",
+            "rEQUIRES improvement",
+            "INADEQUATE",
+            "Good",
+            "Good",
+        ),
+    ]
+    expected_add_numerical_ratings_mixed_case_rows = [
+        _numerical_ratings_row(
+            "1-001",
+            (
+                "OUTSTANDING",
+                "good",
+                "rEQUIRES improvement",
+                "INADEQUATE",
+                "Good",
+                "Good",
+            ),
+            (4, 3, 2, 1, 3, 3),
+            12,
+        ),
+    ]
+
+    add_numerical_ratings_null_rows = [
+        ("1-001", *((None,) * 6)),
+    ]
+    expected_add_numerical_ratings_null_rows = [
+        _numerical_ratings_row("1-001", (None,) * 6, (0,) * 6, 0),
+    ]
+
+    add_numerical_ratings_unrecognised_rows = [
+        ("1-001", *(("Excellent",) * 6)),
+    ]
+    expected_add_numerical_ratings_unrecognised_rows = [
+        _numerical_ratings_row("1-001", ("Excellent",) * 6, (0,) * 6, 0),
+    ]
+
+    # Each column maps to its own value column. Overall (4) is left out of the total.
+    add_numerical_ratings_total_rows = [
+        (
+            "1-001",
+            "Outstanding",
+            "Good",
+            "Requires improvement",
+            "Inadequate",
+            "Good",
+            "Outstanding",
+        ),
+    ]
+    expected_add_numerical_ratings_total_rows = [
+        _numerical_ratings_row(
+            "1-001",
+            (
+                "Outstanding",
+                "Good",
+                "Requires improvement",
+                "Inadequate",
+                "Good",
+                "Outstanding",
+            ),
+            (4, 3, 2, 1, 3, 4),
+            13,
+        ),
+    ]
+
+    # (location_id, rating_date, assessment_date, current_or_historic)
+    add_latest_rating_flag_latest_date_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current"),
+        ("1-001", date(2024, 3, 1), None, "Current"),
+        ("1-001", date(2024, 2, 1), None, "Current"),
+    ]
+    expected_add_latest_rating_flag_latest_date_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current", 0),
+        ("1-001", date(2024, 3, 1), None, "Current", 1),
+        ("1-001", date(2024, 2, 1), None, "Current", 0),
+    ]
+
+    add_latest_rating_flag_two_locations_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current"),
+        ("1-001", date(2024, 2, 1), None, "Current"),
+        ("1-002", date(2023, 5, 1), None, "Current"),
+        ("1-002", date(2022, 5, 1), None, "Current"),
+    ]
+    expected_add_latest_rating_flag_two_locations_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current", 0),
+        ("1-001", date(2024, 2, 1), None, "Current", 1),
+        ("1-002", date(2023, 5, 1), None, "Current", 1),
+        ("1-002", date(2022, 5, 1), None, "Current", 0),
+    ]
+
+    add_latest_rating_flag_assessment_date_rows = [
+        ("1-001", date(2024, 1, 1), "2024-01-05", "Current"),
+        ("1-001", date(2024, 1, 1), "2024-02-05", "Current"),
+    ]
+    expected_add_latest_rating_flag_assessment_date_rows = [
+        ("1-001", date(2024, 1, 1), "2024-01-05", "Current", 0),
+        ("1-001", date(2024, 1, 1), "2024-02-05", "Current", 1),
+    ]
+
+    add_latest_rating_flag_null_assessment_date_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current"),
+        ("1-001", date(2024, 1, 1), "2023-01-01", "Current"),
+    ]
+    expected_add_latest_rating_flag_null_assessment_date_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current", 0),
+        ("1-001", date(2024, 1, 1), "2023-01-01", "Current", 1),
+    ]
+
+    add_latest_rating_flag_null_rating_date_rows = [
+        (
+            "1-001",
+            None,
+            "2025-01-01",
+            "Current",
+        ),
+        ("1-001", date(2020, 1, 1), None, "Current"),
+    ]
+    expected_add_latest_rating_flag_null_rating_date_rows = [
+        ("1-001", None, "2025-01-01", "Current", 0),
+        ("1-001", date(2020, 1, 1), None, "Current", 1),
+    ]
+
+    add_latest_rating_flag_tied_rows = [
+        ("1-001", date(2024, 1, 1), "2024-01-02", "Current"),
+        ("1-001", date(2024, 1, 1), "2024-01-02", "Historic"),
+        ("1-001", date(2024, 1, 1), "2024-01-02", None),
+    ]
+
+    # 1-001 sits between the two 1-002 rows.
+    add_latest_rating_flag_non_adjacent_rows = [
+        ("1-002", date(2024, 1, 1), None, "Historic"),
+        ("1-001", date(2024, 1, 1), None, "Historic"),
+        ("1-002", date(2024, 4, 1), None, "Current"),
+    ]
+    expected_add_latest_rating_flag_non_adjacent_rows = [
+        ("1-002", date(2024, 1, 1), None, "Historic", 0),
+        ("1-001", date(2024, 1, 1), None, "Historic", 1),
+        ("1-002", date(2024, 4, 1), None, "Current", 1),
+    ]
