@@ -51,8 +51,8 @@ def main(
     """Flattens CQC ratings and assessments into standard and benchmark datasets.
 
     Commented-out calls are placeholders for steps not yet implemented. Until then,
-    both destinations receive the cleaned current, historic and assessment ratings
-    with numerical rating values.
+    the benchmark destination receives the cleaned current, historic and assessment
+    ratings with numerical rating values.
 
     Args:
         cqc_full_snapshot_source (str): Source s3 directory for the latest full
@@ -104,9 +104,8 @@ def main(
     ratings_lf = rUtils.add_latest_rating_flag_column(ratings_lf)
     ratings_lf = rUtils.add_numerical_ratings(ratings_lf)
 
-    standard_ratings_lf = ratings_lf
-    # standard_ratings_lf = create_standard_ratings_dataset(ratings_lf)
-    # standard_ratings_lf = add_location_id_hash(standard_ratings_lf)
+    standard_ratings_lf = create_standard_ratings_dataset(ratings_lf)
+    standard_ratings_lf = add_location_id_hash(standard_ratings_lf)
 
     benchmark_ratings_lf = ratings_lf
     # benchmark_ratings_lf = select_ratings_for_benchmarks(ratings_lf)

@@ -76,6 +76,11 @@ class TestMain:
             assert CQCRatings.latest_rating_flag in returned_df.columns
             assert CQCRatings.total_rating_value in returned_df.columns
 
+        standard_columns = sinks["ratings_dest/"].collect_schema().names()
+        benchmark_columns = sinks["benchmark_dest/"].collect_schema().names()
+        assert CQCRatings.location_id_hash in standard_columns
+        assert CQCRatings.location_id_hash not in benchmark_columns
+
 
 class TestCreateStandardRatingsDataset:
     def test_keeps_only_standard_columns_in_order(self):
