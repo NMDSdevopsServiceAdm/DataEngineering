@@ -25,15 +25,14 @@ class NoProviderOrLocationException(Exception):
 def build_retry_strategy(
     budget_seconds: int, backoff_factor: float = 5, backoff_max: int = 120
 ) -> Retry:
-    """Builds a retry strategy that keeps retrying for at least the given budget.
+    """Builds a retry strategy whose total backoff covers the budget.
 
-    Counts retries until the cumulative sleep covers the budget, using urllib3's
-    schedule: no sleep before the first retry, then
-    `min(backoff_max, backoff_factor * 2 ** (retry - 1))`. Time spent in requests
-    and `Retry-After` waits are not counted.
+    Uses the fewest retries whose sleeps sum to at least the budget: none before
+    the first retry, then `min(backoff_max, backoff_factor * 2 ** (retry - 1))`.
+    Request time and `Retry-After` waits are not counted.
 
     Args:
-        budget_seconds (int): Minimum total seconds to spend sleeping between retries.
+        budget_seconds (int): Minimum total seconds to sleep between retries.
         backoff_factor (float): Multiplier for the exponential backoff.
         backoff_max (int): Maximum seconds to sleep before a single retry.
 
@@ -56,7 +55,7 @@ def build_retry_strategy(
 
 
 def get_retry_budget_seconds() -> int:
-    """Reads the retry budget from `CQC_API_RETRY_BUDGET_SECONDS`, defaulting to 30 minutes.
+    """Reads the retry budget from `CQC_API_RETRY_BUDGET_SECONDS` (default 1800).
 
     Returns:
         int: Seconds to keep retrying a failing CQC API request.
