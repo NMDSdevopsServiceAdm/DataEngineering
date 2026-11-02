@@ -163,8 +163,9 @@ def add_location_id_hash(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
     Adds a 20 character hash of the location ID, used to link with anonymised files.
 
     The hash is the first 20 characters of the SHA-256 hex digest. Polars has no
-    SHA-256 expression, so `hashlib` hashes the distinct location IDs only and the
-    result is joined back (the input is referenced twice).
+    SHA-256 expression, so `hashlib` hashes each row's location ID in a single pass.
+    A join back from the distinct IDs would read the input twice, holding the whole
+    upstream plan in memory twice.
 
     Args:
         ratings_lf (pl.LazyFrame): CQC ratings containing the column location_id.
@@ -173,24 +174,16 @@ def add_location_id_hash(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: The input with an additional column containing the hashed
             location ID. A null location ID gives a null hash.
     """
-    location_id_hash_lf = (
-        ratings_lf.select(CQCL.location_id)
-        .unique()
-        .with_columns(
-            pl.col(CQCL.location_id)
-            .cast(pl.String)
-            .map_elements(
-                lambda location_id: hashlib.sha256(
-                    location_id.encode("utf-8")
-                ).hexdigest()[:20],
-                return_dtype=pl.String,
-                skip_nulls=True,
-            )
-            .alias(CQCRatings.location_id_hash)
+    return ratings_lf.with_columns(
+        pl.col(CQCL.location_id)
+        .cast(pl.String)
+        .map_elements(
+            lambda location_id: hashlib.sha256(location_id.encode("utf-8")).hexdigest(),
+            return_dtype=pl.String,
+            skip_nulls=True,
         )
-    )
-    return ratings_lf.join(
-        location_id_hash_lf, on=CQCL.location_id, how="left", validate="m:1"
+        .str.slice(0, 20)
+        .alias(CQCRatings.location_id_hash)
     )
 
 
