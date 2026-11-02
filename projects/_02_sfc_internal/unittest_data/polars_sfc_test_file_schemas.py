@@ -299,6 +299,49 @@ class FlattenCQCRatings:
         )
     )
 
+    assessment_key_question_rating_struct = pl.Struct(
+        {CQCL.name: pl.String, CQCL.rating: pl.String, CQCL.status: pl.String}
+    )
+
+    assessment_struct = pl.List(
+        pl.Struct(
+            {
+                CQCL.assessment_plan_published_datetime: pl.String,
+                CQCL.ratings: pl.Struct(
+                    {
+                        CQCL.overall: pl.List(
+                            pl.Struct(
+                                {
+                                    CQCL.rating: pl.String,
+                                    CQCL.status: pl.String,
+                                    CQCL.key_question_ratings: pl.List(
+                                        assessment_key_question_rating_struct
+                                    ),
+                                }
+                            )
+                        ),
+                        CQCL.asg_ratings: pl.List(
+                            pl.Struct(
+                                {
+                                    CQCL.assessment_plan_id: pl.String,
+                                    CQCL.title: pl.String,
+                                    CQCL.assessment_date: pl.String,
+                                    CQCL.assessment_plan_status: pl.String,
+                                    CQCL.name: pl.String,
+                                    CQCL.rating: pl.String,
+                                    CQCL.status: pl.String,
+                                    CQCL.key_question_ratings: pl.List(
+                                        assessment_key_question_rating_struct
+                                    ),
+                                }
+                            )
+                        ),
+                    }
+                ),
+            }
+        )
+    )
+
     current_ratings_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String),
@@ -319,7 +362,7 @@ class FlattenCQCRatings:
         [
             (CQCL.location_id, pl.String),
             (CQCL.registration_status, pl.String),
-            (CQCRatingsColumns.date, pl.String),
+            (CQCRatingsColumns.date, pl.Date),
             (CQCRatingsColumns.overall_rating, pl.String),
             (CQCRatingsColumns.safe_rating, pl.String),
             (CQCRatingsColumns.well_led_rating, pl.String),
@@ -337,6 +380,36 @@ class FlattenCQCRatings:
         ]
     )
 
+    assessment_ratings_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCL.assessment, assessment_struct),
+        ]
+    )
+
+    assessment_ratings_output_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCL.assessment_plan_id, pl.String),
+            (CQCL.title, pl.String),
+            (CQCL.assessment_date, pl.String),
+            (CQCL.assessment_plan_status, pl.String),
+            (CQCL.dataset, pl.String),
+            (CQCL.name, pl.String),
+            (CQCRatingsColumns.current_or_historic, pl.String),
+            (CQCRatingsColumns.overall_rating, pl.String),
+            (CQCL.source_path, pl.String),
+            (CQCRatingsColumns.safe_rating, pl.String),
+            (CQCRatingsColumns.effective_rating, pl.String),
+            (CQCRatingsColumns.caring_rating, pl.String),
+            (CQCRatingsColumns.responsive_rating, pl.String),
+            (CQCRatingsColumns.well_led_rating, pl.String),
+            (CQCRatingsColumns.date, pl.Date),
+        ]
+    )
+
     main_snapshot_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String),
@@ -351,6 +424,7 @@ class FlattenCQCRatings:
             (RawKeys.import_date, pl.String),
             (CQCL.current_ratings, current_ratings_struct),
             (CQCL.historic_ratings, historic_ratings_struct),
+            (CQCL.assessment, assessment_struct),
         ]
     )
 

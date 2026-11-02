@@ -24,6 +24,35 @@ KEY_QUESTION_ALIASES = {
     CQCL.effective: CQCRatings.effective_rating,
 }
 
+# Row position after exploding, so the first entry per key question wins deterministically.
+EXPLODE_ORDER = "explode_order_index"
+
+ASSESSMENT_KEY_QUESTIONS = [
+    CQCL.safe,
+    CQCL.effective,
+    CQCL.caring,
+    CQCL.responsive,
+    CQCL.well_led,
+]
+
+ASSESSMENT_GRAIN_COLUMNS = [
+    CQCL.location_id,
+    CQCL.registration_status,
+    CQCL.assessment_plan_published_datetime,
+    CQCL.assessment_plan_id,
+    CQCL.title,
+    CQCL.assessment_date,
+    CQCL.assessment_plan_status,
+    CQCL.dataset,
+    CQCL.name,
+    CQCL.status,
+    CQCL.rating,
+    CQCL.source_path,
+]
+
+OVERALL_SOURCE_PATH = "assessment.ratings.overall"
+ASG_SOURCE_PATH = "assessment.ratings.asg_ratings"
+
 
 def keep_latest_per_key(lf: pl.LazyFrame, key_col: str, order_col: str) -> pl.LazyFrame:
     """
@@ -125,14 +154,15 @@ def prepare_current_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
 
     Returns:
-        pl.LazyFrame: Flattened current ratings, flagged as current and Pre SAF.
+        pl.LazyFrame: Flattened current ratings with `date` as a Date, flagged as
+            current and Pre SAF.
     """
     overall = pl.col(CQCL.current_ratings).struct.field(CQCL.overall)
 
     return cqc_location_lf.select(
         CQCL.location_id,
         CQCL.registration_status,
-        overall.struct.field(CQCL.report_date).alias(CQCRatings.date),
+        overall.struct.field(CQCL.report_date).str.to_date().alias(CQCRatings.date),
         overall.struct.field(CQCL.rating).alias(CQCRatings.overall_rating),
         *get_key_question_rating_exprs(overall.struct.field(CQCL.key_question_ratings)),
         pl.lit(CQCCurrentOrHistoricValues.current).alias(
@@ -154,7 +184,8 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
         cqc_location_lf (pl.LazyFrame): Raw CQC location data.
 
     Returns:
-        pl.LazyFrame: Flattened historic ratings, flagged as historic and Pre SAF.
+        pl.LazyFrame: Flattened historic ratings with `date` as a Date, flagged as
+            historic and Pre SAF.
     """
     key_question_ratings = (
         pl.col(CQCL.historic_ratings)
@@ -174,6 +205,7 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             CQCL.registration_status,
             pl.col(CQCL.historic_ratings)
             .struct.field(CQCL.report_date)
+            .str.to_date()
             .alias(CQCRatings.date),
             pl.col(CQCL.historic_ratings)
             .struct.field(CQCL.overall)
@@ -186,3 +218,171 @@ def prepare_historic_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
             pl.lit(CQCRatingsDatasetValues.pre_saf).alias(CQCL.dataset),
         )
     )
+
+
+def extract_assessment_base(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Explodes `assessment` to one row per location per assessment plan.
+
+    Args:
+        cqc_location_lf (pl.LazyFrame): Raw CQC location data.
+
+    Returns:
+        pl.LazyFrame: Assessment plans with the nested ratings struct left unflattened.
+    """
+    return (
+        cqc_location_lf.select(
+            CQCL.location_id,
+            CQCL.registration_status,
+            CQCL.assessment,
+        )
+        .explode(CQCL.assessment, **DROP_EMPTY_AND_NULL)
+        .select(
+            CQCL.location_id,
+            CQCL.registration_status,
+            pl.col(CQCL.assessment).struct.field(
+                CQCL.assessment_plan_published_datetime
+            ),
+            pl.col(CQCL.assessment)
+            .struct.field(CQCL.ratings)
+            .alias(CQCL.assessments_ratings),
+        )
+    )
+
+
+def extract_key_question_ratings(
+    assessment_lf: pl.LazyFrame, ratings_field: str, source_path: str
+) -> pl.LazyFrame:
+    """
+    Flattens one assessment ratings list to one row per key question.
+
+    Serves both the `overall` and `asgRatings` lists. Fields present in only one list
+    (e.g. `assessment_plan_id`) are null-filled when the two are concatenated.
+
+    Args:
+        assessment_lf (pl.LazyFrame): Output of `extract_assessment_base`.
+        ratings_field (str): List within the ratings struct to flatten
+            (`CQCL.overall` or `CQCL.asg_ratings`).
+        source_path (str): Value for the `source_path` column.
+
+    Returns:
+        pl.LazyFrame: One row per assessment plan and key question, with an
+            `EXPLODE_ORDER` column holding raw array order.
+    """
+    return (
+        assessment_lf.select(
+            CQCL.location_id,
+            CQCL.registration_status,
+            CQCL.assessment_plan_published_datetime,
+            pl.col(CQCL.assessments_ratings).struct.field(ratings_field),
+        )
+        .explode(ratings_field, **DROP_EMPTY_AND_NULL)
+        .unnest(ratings_field)
+        .explode(CQCL.key_question_ratings, **DROP_EMPTY_AND_NULL)
+        .with_columns(
+            pl.col(CQCL.key_question_ratings)
+            .struct.field(CQCL.name)
+            .alias(CQCL.key_question_name),
+            pl.col(CQCL.key_question_ratings)
+            .struct.field(CQCL.rating)
+            .alias(CQCL.key_question_rating),
+            pl.lit(CQCRatingsDatasetValues.saf).alias(CQCL.dataset),
+            pl.lit(source_path).alias(CQCL.source_path),
+        )
+        .drop(CQCL.key_question_ratings)
+        .with_row_index(EXPLODE_ORDER)
+    )
+
+
+def prepare_assessment_ratings(cqc_location_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Flattens ASG assessment ratings to one row per assessment plan.
+
+    The feed doesn't guarantee one entry per key question, so the first in raw array
+    order (`EXPLODE_ORDER`) is kept. Ratings are aggregated per key question column,
+    not pivoted, so the plan stays lazy. Only the five key questions are kept. Column
+    names and types match the current and historic ratings.
+
+    Collects one count to check `overall` ratings are unpopulated, raising a
+    ValueError if not. `overall` rows are therefore not included in the output.
+
+    Args:
+        cqc_location_lf (pl.LazyFrame): Raw CQC location data.
+
+    Returns:
+        pl.LazyFrame: One row per assessment plan, with `date` as a Date and a column
+            per key question rating.
+    """
+    assessment_lf = extract_assessment_base(cqc_location_lf)
+    overall_lf = extract_key_question_ratings(
+        assessment_lf, CQCL.overall, OVERALL_SOURCE_PATH
+    )
+    raise_error_when_assessment_lf_contains_overall_data(overall_lf)
+    asg_lf = extract_key_question_ratings(
+        assessment_lf, CQCL.asg_ratings, ASG_SOURCE_PATH
+    )
+
+    is_key_question = {
+        name: pl.col(CQCL.key_question_name) == name
+        for name in ASSESSMENT_KEY_QUESTIONS
+    }
+
+    return (
+        asg_lf.group_by(ASSESSMENT_GRAIN_COLUMNS)
+        .agg(
+            pl.col(CQCL.key_question_rating)
+            .filter(is_key_question[name])
+            .sort_by(pl.col(EXPLODE_ORDER).filter(is_key_question[name]))
+            .first()
+            .alias(name)
+            for name in ASSESSMENT_KEY_QUESTIONS
+        )
+        .with_columns(
+            pl.col(CQCL.assessment_plan_published_datetime)
+            .str.to_datetime("%Y-%m-%d %H:%M:%S")
+            .dt.date()
+            .alias(CQCRatings.date)
+        )
+        .drop(CQCL.assessment_plan_published_datetime)
+        .rename(
+            {
+                CQCL.status: CQCRatings.current_or_historic,
+                CQCL.rating: CQCRatings.overall_rating,
+                **KEY_QUESTION_ALIASES,
+            }
+        )
+    )
+
+
+def raise_error_when_assessment_lf_contains_overall_data(
+    assessment_ratings_lf: pl.LazyFrame,
+) -> None:
+    """
+    Raises an error if any assessment overall rating is populated.
+
+    CQC publish an `overall` object within `assessment`, but it isn't populated for
+    social care locations (checked 15/09/2025). Social care overall ratings come from
+    the service-level `asgRatings` object instead. If `overall` is populated, the
+    flattening of assessments needs refactoring.
+
+    Collects one count: memory stays small, but it is an extra full pass over the
+    assessments.
+
+    Args:
+        assessment_ratings_lf (pl.LazyFrame): Overall ratings from
+            `extract_key_question_ratings`.
+
+    Raises:
+        ValueError: If any `overall` row has a rating.
+    """
+    populated_overall_count = (
+        assessment_ratings_lf.filter(pl.col(CQCL.rating).is_not_null())
+        .select(pl.len())
+        .collect()
+        .item()
+    )
+
+    if populated_overall_count > 0:
+        raise ValueError(
+            f"The overall object within the assessments column contains {populated_overall_count} values for social care locations."
+        )
