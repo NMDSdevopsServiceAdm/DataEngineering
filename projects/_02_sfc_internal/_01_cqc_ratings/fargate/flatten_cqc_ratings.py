@@ -164,8 +164,7 @@ def add_location_id_hash(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     The hash is the first 20 characters of the SHA-256 hex digest. Polars has no
     SHA-256 expression, so `hashlib` hashes each row's location ID in a single pass.
-    A join back from the distinct IDs would read the input twice, holding the whole
-    upstream plan in memory twice.
+    A join back from the distinct IDs would read the input twice.
 
     Args:
         ratings_lf (pl.LazyFrame): CQC ratings containing the column location_id.
