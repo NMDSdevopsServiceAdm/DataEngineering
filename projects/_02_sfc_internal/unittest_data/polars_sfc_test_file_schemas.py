@@ -438,3 +438,44 @@ class FlattenCQCRatings:
             (AWP.location_id, pl.String),
         ]
     )
+
+    add_numerical_ratings_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCRatingsColumns.overall_rating, pl.String),
+            (CQCRatingsColumns.safe_rating, pl.String),
+            (CQCRatingsColumns.well_led_rating, pl.String),
+            (CQCRatingsColumns.caring_rating, pl.String),
+            (CQCRatingsColumns.responsive_rating, pl.String),
+            (CQCRatingsColumns.effective_rating, pl.String),
+        ]
+    )
+
+    expected_add_numerical_ratings_schema = pl.Schema(
+        [
+            *add_numerical_ratings_schema.items(),
+            (CQCRatingsColumns.overall_rating_value, pl.Int32),
+            (CQCRatingsColumns.safe_rating_value, pl.Int32),
+            (CQCRatingsColumns.well_led_rating_value, pl.Int32),
+            (CQCRatingsColumns.caring_rating_value, pl.Int32),
+            (CQCRatingsColumns.responsive_rating_value, pl.Int32),
+            (CQCRatingsColumns.effective_rating_value, pl.Int32),
+            (CQCRatingsColumns.total_rating_value, pl.Int32),
+        ]
+    )
+
+    add_latest_rating_flag_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCRatingsColumns.date, pl.Date),
+            (CQCL.assessment_date, pl.String),
+            (CQCRatingsColumns.current_or_historic, pl.String),
+        ]
+    )
+
+    expected_add_latest_rating_flag_schema = pl.Schema(
+        [
+            *add_latest_rating_flag_schema.items(),
+            (CQCRatingsColumns.latest_rating_flag, pl.Int32),
+        ]
+    )
