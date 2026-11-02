@@ -22,23 +22,23 @@ class NoProviderOrLocationException(Exception):
     pass
 
 
-def build_retry_strategy(
-    budget_seconds: int, backoff_factor: float = 5, backoff_max: int = 120
-) -> Retry:
+def build_retry_strategy(budget_seconds: int) -> Retry:
     """Builds a retry strategy whose total backoff covers the budget.
 
     Uses the fewest retries whose sleeps sum to at least the budget: none before
     the first retry, then `min(backoff_max, backoff_factor * 2 ** (retry - 1))`.
-    Request time and `Retry-After` waits are not counted.
+    `Retry-After` headers are ignored so the budget holds. Request time is not
+    counted.
 
     Args:
         budget_seconds (int): Minimum total seconds to sleep between retries.
-        backoff_factor (float): Multiplier for the exponential backoff.
-        backoff_max (int): Maximum seconds to sleep before a single retry.
 
     Returns:
-        Retry: Retry strategy for 429 and 5xx responses.
+        Retry: Retry strategy for 429, 500, 502, 503 and 504 responses.
     """
+    backoff_factor = 5
+    backoff_max = 120
+
     retries = 0
     total_sleep = 0.0
     while total_sleep < budget_seconds:
@@ -51,6 +51,7 @@ def build_retry_strategy(
         backoff_factor=backoff_factor,
         backoff_max=backoff_max,
         status_forcelist=[429, 500, 502, 503, 504],
+        respect_retry_after_header=False,
     )
 
 
@@ -61,14 +62,20 @@ def get_retry_budget_seconds() -> int:
         int: Seconds to keep retrying a failing CQC API request.
 
     Raises:
-        ValueError: If the environment variable is not a positive integer.
+        ValueError: If the environment variable is not an integer from 1 to 86400.
     """
+    max_budget_seconds = 86400
     value = os.environ.get("CQC_API_RETRY_BUDGET_SECONDS", "1800")
-    if not value.isdigit() or int(value) == 0:
+    try:
+        budget_seconds = int(value)
+    except ValueError:
+        budget_seconds = 0
+    if not 1 <= budget_seconds <= max_budget_seconds:
         raise ValueError(
-            f"CQC_API_RETRY_BUDGET_SECONDS must be a positive integer, got {value!r}"
+            "CQC_API_RETRY_BUDGET_SECONDS must be an integer between 1 and "
+            f"{max_budget_seconds}, got {value!r}"
         )
-    return int(value)
+    return budget_seconds
 
 
 RETRY_STRATEGY = build_retry_strategy(get_retry_budget_seconds())
@@ -107,7 +114,7 @@ def call_api(
                 full_url = url
             response = session.get(full_url, params=query_params, headers=headers_dict)
         except RetryError as e:
-            raise Exception("Max retries exceeded: {}".format(e)) from e
+            raise Exception(f"CQC API retries exhausted: {e}") from e
 
     if (response.status_code == 403) & (headers_dict is None):
         raise Exception(
@@ -127,10 +134,8 @@ def call_api(
             else:
                 full_url = url
             response = session.get(full_url, params=query_params, headers=headers_dict)
-        except:
-            raise Exception(
-                "API response: {} - {}".format(response.status_code, response.text)
-            )
+        except RetryError as e:
+            raise Exception(f"CQC API retries exhausted: {e}") from e
 
     if response.status_code != 200:
         raise Exception(
