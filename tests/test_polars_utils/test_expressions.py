@@ -1,4 +1,5 @@
 import unittest
+from dataclasses import dataclass
 
 import polars as pl
 import polars.testing as pl_testing
@@ -93,27 +94,64 @@ class TestPercentageShare:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestStrLengthCols(TestExpressions):
-    def test_single_column(self):
-        df = self.df_simple.select(job.str_length_cols(["c"]))
-        self.assertEqual(df["c_length"].to_list(), [6, 3, None, None])
+@dataclass
+class StrLengthColsTestCase:
+    id: str
+    dtype: pl.DataType
+    values: list[str | None]
+    expected_lengths: list[int | None]
 
-    def test_multiple_columns(self):
-        df = self.df_simple.with_columns(job.str_length_cols(["c", "d"]))
-        self.assertEqual(df["c_length"].to_list(), [6, 3, None, None])
-        self.assertEqual(df["d_length"].to_list(), [6, 3, None, 3])
+    def as_pytest_param(self):
+        return pytest.param(self.dtype, self.values, self.expected_lengths, id=self.id)
 
-    def test_empty_string(self):
-        df = pl.DataFrame({"str_col": ["", "abc", None]}).with_columns(
-            job.str_length_cols(["str_col"])
+
+str_length_cols_cases = [
+    StrLengthColsTestCase(
+        id="string_column",
+        dtype=pl.String,
+        values=["foobar", "foo", None],
+        expected_lengths=[6, 3, None],
+    ),
+    StrLengthColsTestCase(
+        id="string_column_with_empty_string",
+        dtype=pl.String,
+        values=["", "abc", None],
+        expected_lengths=[0, 3, None],
+    ),
+    StrLengthColsTestCase(
+        id="categorical_column",
+        dtype=pl.Categorical,
+        values=["foobar", "foo", None],
+        expected_lengths=[6, 3, None],
+    ),
+]
+
+
+class TestStrLengthCols:
+    @pytest.mark.parametrize(
+        "dtype, values, expected_lengths",
+        [case.as_pytest_param() for case in str_length_cols_cases],
+    )
+    def test_returns_length_of_each_value(self, dtype, values, expected_lengths):
+        input_lf = pl.LazyFrame({"col": values}, schema={"col": dtype})
+
+        returned_lf = input_lf.select(job.str_length_cols(["col"]))
+
+        expected_lf = pl.LazyFrame(
+            {"col_length": expected_lengths}, schema={"col_length": pl.UInt32}
         )
-        self.assertEqual(df["str_col_length"].to_list(), [0, 3, None])
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_non_string_column(self):
-        # Given
-        df = pl.DataFrame({"num_col": [1, 2, 3]})
-        with self.assertRaises(pl.exceptions.SchemaError):
-            df.with_columns(job.str_length_cols(["num_col"]))
+    def test_returns_a_length_column_for_each_column(self):
+        input_lf = pl.LazyFrame({"c": ["foobar", "foo"], "d": ["a", None]})
+
+        returned_lf = input_lf.select(job.str_length_cols(["c", "d"]))
+
+        expected_lf = pl.LazyFrame(
+            {"c_length": [6, 3], "d_length": [1, None]},
+            schema={"c_length": pl.UInt32, "d_length": pl.UInt32},
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class TestIsCareHome(TestExpressions):

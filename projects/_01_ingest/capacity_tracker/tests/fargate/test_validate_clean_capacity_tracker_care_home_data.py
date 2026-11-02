@@ -64,6 +64,7 @@ class TestMain:
 
         expected_assertions = {
             "row_count_match",
+            "col_schema_match",
             "col_vals_not_null",
             "rows_distinct",
             "col_vals_between",

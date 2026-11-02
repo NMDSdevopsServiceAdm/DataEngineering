@@ -96,10 +96,8 @@ def build_modelling_dataset(
         *rolling_average_columns,
     )
 
-    # Match the estimates' location ID type to this dataset's for the join.
-    location_type = lf.collect_schema()[IndCQC.location_id]
     estimates_lf = estimates_lf.select(
-        pl.col(IndCQC.location_id).cast(location_type),
+        IndCQC.location_id,
         date_column,
         IndCQC.specialisms_offered,
         IndCQC.regulated_activities_offered,

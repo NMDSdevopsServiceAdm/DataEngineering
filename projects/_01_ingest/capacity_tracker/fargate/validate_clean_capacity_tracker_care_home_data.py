@@ -3,6 +3,7 @@ import sys
 import pointblank as pb
 
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._01_ingest.capacity_tracker.fargate.utils import (
@@ -62,6 +63,15 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
+        )
+        # dataset schema
+        .col_schema_match(
+            schema=pb.Schema(
+                columns={CTCHClean.cqc_id: str(CategoricalColumnTypes.LocationCatType)}
+            ),
+            complete=False,
+            in_order=False,
+            brief=f"{CTCHClean.cqc_id} should be the LocationCatType dtype",
         )
         # complete columns
         .col_vals_not_null([CTCHClean.cqc_id, CTCHClean.ct_care_home_import_date])

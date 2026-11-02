@@ -1,5 +1,6 @@
 import polars as pl
 
+from polars_utils.column_types import CategoricalColumnTypes
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AscWdsColumns,
 )
@@ -255,6 +256,7 @@ class ReconciliationSchema:
 
     main_ascwds_workplace_schema = {
         **ascwds_workplace_schema,
+        AscWdsColumns.location_id: CategoricalColumnTypes.LocationCatType,
         AscWdsColumns.workplace_last_active_date: pl.Date,
         AscWdsColumns.purge_date: pl.Date,
     }
