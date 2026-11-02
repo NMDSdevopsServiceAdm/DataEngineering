@@ -434,14 +434,14 @@ class TestSheetText:
 
 VALUE_COLUMNS = job._value_columns(cell_map.ASSESSMENT_SHEETS)
 EXPLICIT_VALUE_COLUMNS = [
-    Pub.filled_posts,
-    Pub.locationid_count,
-    Pub.filled_posts_april_perc_change,
-    Pub.locationid_count_april_perc_change,
-    Pub.filled_posts_cum_perc_change_short,
-    Pub.locationid_count_cum_perc_change_short,
-    Pub.prev_run_filled_posts,
-    Pub.filled_posts_perc_change_vs_prev_run,
+    Pub.unfiltered_filled_posts,
+    Pub.unfiltered_locationid_count,
+    Pub.unfiltered_filled_posts_april_pct_change,
+    Pub.unfiltered_locationid_count_april_pct_change,
+    Pub.unfiltered_short_sfc_cum_pct_change,
+    Pub.unfiltered_short_locationid_count_cum_pct_change,
+    Pub.unfiltered_filled_posts_prev_run,
+    Pub.unfiltered_filled_posts_pct_change_vs_prev_run,
 ]
 OTHER_VALUE_COLUMNS = [c for c in VALUE_COLUMNS if c not in EXPLICIT_VALUE_COLUMNS]
 
@@ -468,14 +468,14 @@ def _assessment_lf(
             IndCQC.main_job_role_clean_labelled: job_role,
             IndCQC.current_region: region,
             IndCQC.primary_service_type: service_type,
-            Pub.filled_posts: 1000 * (i + 1) + 10 * j,
-            Pub.locationid_count: 100 * (i + 1) + j,
-            Pub.filled_posts_april_perc_change: 0.1 * (i + 1),
-            Pub.locationid_count_april_perc_change: 0.2 * (i + 1),
-            Pub.filled_posts_cum_perc_change_short: 0.3 * (i + 1),
-            Pub.locationid_count_cum_perc_change_short: 0.4 * (i + 1),
-            Pub.prev_run_filled_posts: 5000 * (i + 1) + 10 * j,
-            Pub.filled_posts_perc_change_vs_prev_run: 0.5 * (i + 1),
+            Pub.unfiltered_filled_posts: 1000 * (i + 1) + 10 * j,
+            Pub.unfiltered_locationid_count: 100 * (i + 1) + j,
+            Pub.unfiltered_filled_posts_april_pct_change: 0.1 * (i + 1),
+            Pub.unfiltered_locationid_count_april_pct_change: 0.2 * (i + 1),
+            Pub.unfiltered_short_sfc_cum_pct_change: 0.3 * (i + 1),
+            Pub.unfiltered_short_locationid_count_cum_pct_change: 0.4 * (i + 1),
+            Pub.unfiltered_filled_posts_prev_run: 5000 * (i + 1) + 10 * j,
+            Pub.unfiltered_filled_posts_pct_change_vs_prev_run: 0.5 * (i + 1),
         }
         | {column: _generic_value(column, i, j) for column in OTHER_VALUE_COLUMNS}
         for i, import_date in enumerate(import_dates)
@@ -534,7 +534,10 @@ class TestPrepareAssessmentDf:
         df = job.prepare_assessment_df(_assessment_lf(IMPORT_DATES[:1]), VALUE_COLUMNS)
 
         assert df.select(
-            [f"{Pub.filled_posts}|{service}" for service in job.SERVICE_TYPE_ORDER]
+            [
+                f"{Pub.unfiltered_filled_posts}|{service}"
+                for service in job.SERVICE_TYPE_ORDER
+            ]
         ).rows() == [(1000, 1010, 1020, 1030, 1040)]
 
 
@@ -579,7 +582,7 @@ class TestFilledPostsValues:
 
     def test_percent_cells_are_rounded_to_one_decimal_place_of_a_percentage(self):
         lf = _assessment_lf(IMPORT_DATES).with_columns(
-            pl.col(Pub.filled_posts_april_perc_change) + 0.0021
+            pl.col(Pub.unfiltered_filled_posts_april_pct_change) + 0.0021
         )
         df = job.prepare_assessment_df(lf, VALUE_COLUMNS)
 
@@ -588,7 +591,9 @@ class TestFilledPostsValues:
         assert cells["J25"] == 0.202
 
     def test_count_cells_are_rounded_to_whole_numbers(self):
-        lf = _assessment_lf(IMPORT_DATES).with_columns(pl.col(Pub.filled_posts) + 0.6)
+        lf = _assessment_lf(IMPORT_DATES).with_columns(
+            pl.col(Pub.unfiltered_filled_posts) + 0.6
+        )
         df = job.prepare_assessment_df(lf, VALUE_COLUMNS)
 
         cells = job.filled_posts_values(df)
@@ -670,10 +675,10 @@ class TestComparisonSheetValues:
         assert [cells[f"{col}29"] for col in "CDEF"] == [
             _generic_value(column, 2, self.CARE_HOMES)
             for column in (
-                Pub.filtered_filled_posts_short,
-                Pub.filtered_ct_total_employed_short,
-                Pub.filtered_filled_posts_cum_perc_change_short,
-                Pub.filtered_ct_cum_perc_change_short,
+                Pub.filtered_short_sfc_filled_posts,
+                Pub.filtered_short_ct_total_employed,
+                Pub.filtered_short_sfc_cum_pct_change,
+                Pub.filtered_short_ct_cum_pct_change,
             )
         ]
 
@@ -683,10 +688,10 @@ class TestComparisonSheetValues:
         assert [cells[f"{col}29"] for col in "LMNO"] == [
             _generic_value(column, 2, self.NON_RESIDENTIAL)
             for column in (
-                Pub.filtered_filled_posts_short,
-                Pub.filtered_ct_total_employed_short,
-                Pub.filtered_filled_posts_cum_perc_change_short,
-                Pub.filtered_ct_cum_perc_change_short,
+                Pub.filtered_short_sfc_filled_posts,
+                Pub.filtered_short_ct_total_employed,
+                Pub.filtered_short_sfc_cum_pct_change,
+                Pub.filtered_short_ct_cum_pct_change,
             )
         ]
 
@@ -694,9 +699,9 @@ class TestComparisonSheetValues:
         cells = job.comparison_sheet_values(df, cell_map.COMP_SHORT_TERM, APRIL_2026)
 
         assert (cells["D25"], cells["M25"]) == (
-            _generic_value(Pub.filtered_locationid_count_short, 3, self.CARE_HOMES),
+            _generic_value(Pub.filtered_short_locationid_count, 3, self.CARE_HOMES),
             _generic_value(
-                Pub.filtered_locationid_count_short, 3, self.NON_RESIDENTIAL
+                Pub.filtered_short_locationid_count, 3, self.NON_RESIDENTIAL
             ),
         )
 

@@ -362,7 +362,7 @@ class FlattenCQCRatings:
         [
             (CQCL.location_id, pl.String),
             (CQCL.registration_status, pl.String),
-            (CQCRatingsColumns.date, pl.String),
+            (CQCRatingsColumns.date, pl.Date),
             (CQCRatingsColumns.overall_rating, pl.String),
             (CQCRatingsColumns.safe_rating, pl.String),
             (CQCRatingsColumns.well_led_rating, pl.String),
@@ -392,21 +392,21 @@ class FlattenCQCRatings:
         [
             (CQCL.location_id, pl.String),
             (CQCL.registration_status, pl.String),
-            (CQCL.assessment_plan_published_datetime, pl.String),
             (CQCL.assessment_plan_id, pl.String),
             (CQCL.title, pl.String),
             (CQCL.assessment_date, pl.String),
             (CQCL.assessment_plan_status, pl.String),
             (CQCL.dataset, pl.String),
             (CQCL.name, pl.String),
-            (CQCL.status, pl.String),
-            (CQCL.rating, pl.String),
+            (CQCRatingsColumns.current_or_historic, pl.String),
+            (CQCRatingsColumns.overall_rating, pl.String),
             (CQCL.source_path, pl.String),
-            (CQCL.safe, pl.String),
-            (CQCL.effective, pl.String),
-            (CQCL.caring, pl.String),
-            (CQCL.responsive, pl.String),
-            (CQCL.well_led, pl.String),
+            (CQCRatingsColumns.safe_rating, pl.String),
+            (CQCRatingsColumns.effective_rating, pl.String),
+            (CQCRatingsColumns.caring_rating, pl.String),
+            (CQCRatingsColumns.responsive_rating, pl.String),
+            (CQCRatingsColumns.well_led_rating, pl.String),
+            (CQCRatingsColumns.date, pl.Date),
         ]
     )
 
