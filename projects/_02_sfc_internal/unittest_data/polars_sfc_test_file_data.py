@@ -1201,3 +1201,102 @@ class FlattenCQCRatings:
         ("1-001", date(2024, 1, 1), None, "Historic", 1),
         ("1-002", date(2024, 4, 1), None, "Current", 1),
     ]
+
+    select_ratings_for_benchmarks_registered_current_rows = [
+        ("1-001", "Registered", "Current"),
+    ]
+
+    select_ratings_for_benchmarks_deregistered_rows = [
+        ("1-001", "Deregistered", "Current"),
+        ("1-002", "Registered", "Current"),
+    ]
+    expected_select_ratings_for_benchmarks_deregistered_rows = [
+        ("1-002", "Registered", "Current"),
+    ]
+
+    select_ratings_for_benchmarks_historic_rows = [
+        ("1-001", "Registered", "Historic"),
+        ("1-002", "Registered", "Current"),
+    ]
+    expected_select_ratings_for_benchmarks_historic_rows = [
+        ("1-002", "Registered", "Current"),
+    ]
+
+    add_good_and_outstanding_flag_good_rows = [("1-001", 3)]
+    expected_add_good_and_outstanding_flag_good_rows = [("1-001", 3, 1)]
+
+    add_good_and_outstanding_flag_below_good_rows = [
+        ("1-001", 4),
+        ("1-001", 2),
+    ]
+    expected_add_good_and_outstanding_flag_below_good_rows = [
+        ("1-001", 4, 0),
+        ("1-001", 2, 0),
+    ]
+
+    # Rows of the two locations alternate to show each location is flagged on its own.
+    add_good_and_outstanding_flag_two_locations_rows = [
+        ("1-001", 4),
+        ("1-002", 4),
+        ("1-001", 3),
+        ("1-002", 2),
+    ]
+    expected_add_good_and_outstanding_flag_two_locations_rows = [
+        ("1-001", 4, 1),
+        ("1-002", 4, 0),
+        ("1-001", 3, 1),
+        ("1-002", 2, 0),
+    ]
+
+    add_good_and_outstanding_flag_null_rows = [("1-001", None)]
+    expected_add_good_and_outstanding_flag_null_rows = [("1-001", None, 0)]
+
+    join_establishment_ids_matching_ratings_rows = [("1-001", "Good")]
+    join_establishment_ids_matching_ascwds_rows = [("1-001", "100", "20240101")]
+    expected_join_establishment_ids_matching_rows = [("1-001", "Good", "100")]
+
+    join_establishment_ids_unmatched_ratings_rows = [
+        ("1-001", "Good"),
+        ("1-002", "Good"),
+    ]
+    join_establishment_ids_unmatched_ascwds_rows = [("1-001", "100", "20240101")]
+    expected_join_establishment_ids_unmatched_rows = [
+        ("1-001", "Good", "100"),
+        ("1-002", "Good", None),
+    ]
+
+    # Repeated location ID, with a null and two establishment IDs; the lowest is kept.
+    join_establishment_ids_repeated_ratings_rows = [("1-001", "Good")]
+    join_establishment_ids_repeated_ascwds_rows = [
+        ("1-001", "200", "20240101"),
+        ("1-001", None, "20240101"),
+        ("1-001", "100", "20240101"),
+    ]
+    expected_join_establishment_ids_repeated_rows = [("1-001", "Good", "100")]
+
+    # Input column order: location_id, establishment_id, name, dataset, flag,
+    # overall_rating, date, safe_rating (dropped from the output).
+    # fmt: off
+    create_benchmark_ratings_dataset_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1), "Good"),
+    ]
+    expected_create_benchmark_ratings_dataset_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1)),
+    ]
+
+    create_benchmark_ratings_dataset_null_establishment_id_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1), "Good"),
+        ("1-002", None, "Care Homes", "SAF", 1, "Good", date(2024, 1, 1), "Good"),
+    ]
+    expected_create_benchmark_ratings_dataset_null_establishment_id_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1)),
+    ]
+
+    create_benchmark_ratings_dataset_null_overall_rating_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1), "Good"),
+        ("1-002", "200", "Care Homes", "SAF", 0, None, date(2024, 1, 1), "Good"),
+    ]
+    expected_create_benchmark_ratings_dataset_null_overall_rating_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1)),
+    ]
+    # fmt: on

@@ -572,3 +572,72 @@ class FlattenCQCRatings:
             (CQCRatingsColumns.latest_rating_flag, pl.Int32),
         ]
     )
+
+    select_ratings_for_benchmarks_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCL.registration_status, pl.String),
+            (CQCRatingsColumns.current_or_historic, pl.String),
+        ]
+    )
+
+    add_good_and_outstanding_flag_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCRatingsColumns.overall_rating_value, pl.Int32),
+        ]
+    )
+
+    expected_add_good_and_outstanding_flag_schema = pl.Schema(
+        [
+            *add_good_and_outstanding_flag_schema.items(),
+            (CQCRatingsColumns.good_or_outstanding_flag, pl.Int32),
+        ]
+    )
+
+    join_establishment_ids_ratings_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (CQCRatingsColumns.overall_rating, pl.String),
+        ]
+    )
+
+    join_establishment_ids_ascwds_schema = pl.Schema(
+        [
+            (AWP.location_id, pl.String),
+            (AWP.establishment_id, pl.String),
+            (RawKeys.import_date, pl.String),
+        ]
+    )
+
+    expected_join_establishment_ids_schema = pl.Schema(
+        [
+            *join_establishment_ids_ratings_schema.items(),
+            (AWP.establishment_id, pl.String),
+        ]
+    )
+
+    create_benchmark_ratings_dataset_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String),
+            (AWP.establishment_id, pl.String),
+            (CQCL.name, pl.String),
+            (CQCL.dataset, pl.String),
+            (CQCRatingsColumns.good_or_outstanding_flag, pl.Int32),
+            (CQCRatingsColumns.overall_rating, pl.String),
+            (CQCRatingsColumns.date, pl.Date),
+            (CQCRatingsColumns.safe_rating, pl.String),
+        ]
+    )
+
+    expected_create_benchmark_ratings_dataset_schema = pl.Schema(
+        [
+            (CQCRatingsColumns.benchmarks_location_id, pl.String),
+            (CQCRatingsColumns.benchmarks_establishment_id, pl.String),
+            (CQCL.name, pl.String),
+            (CQCL.dataset, pl.String),
+            (CQCRatingsColumns.good_or_outstanding_flag, pl.Int32),
+            (CQCRatingsColumns.benchmarks_overall_rating, pl.String),
+            (CQCRatingsColumns.inspection_date, pl.Date),
+        ]
+    )

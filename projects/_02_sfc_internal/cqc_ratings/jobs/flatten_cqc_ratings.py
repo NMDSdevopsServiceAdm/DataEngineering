@@ -816,6 +816,7 @@ def add_location_id_hash(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/flatten_cqc_ratings.py
 def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
     """
     Filters to rows which are registered and current rating only.
@@ -836,6 +837,7 @@ def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
     return benchmark_ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/flatten_cqc_ratings.py
 def add_good_and_outstanding_flag_column(benchmark_ratings_df: DataFrame) -> DataFrame:
     """
     Flags locations where the minimum overall rating value is 3 (good).
@@ -858,6 +860,7 @@ def add_good_and_outstanding_flag_column(benchmark_ratings_df: DataFrame) -> Dat
     return benchmark_ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/flatten_cqc_ratings.py
 def join_establishment_ids(
     benchmark_ratings_df: DataFrame, ascwds_workplace_df: DataFrame
 ) -> DataFrame:
@@ -871,6 +874,7 @@ def join_establishment_ids(
     return benchmark_ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/flatten_cqc_ratings.py
 def create_benchmark_ratings_dataset(benchmark_ratings_df: DataFrame) -> DataFrame:
     benchmark_ratings_df = benchmark_ratings_df.select(
         benchmark_ratings_df[CQCL.location_id].alias(CQCRatings.benchmarks_location_id),

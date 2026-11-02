@@ -15,7 +15,11 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_values.categorical_column_values import LocationType
+from utils.column_values.categorical_column_values import (
+    CQCCurrentOrHistoricValues,
+    LocationType,
+    RegistrationStatus,
+)
 
 DELTA_COLUMNS_TO_IMPORT = [
     CQCL.location_id,
@@ -50,10 +54,6 @@ def main(
 ) -> None:
     """Flattens CQC ratings and assessments into standard and benchmark datasets.
 
-    Commented-out calls are placeholders for steps not yet implemented. Until then,
-    the benchmark destination receives the cleaned current, historic and assessment
-    ratings with numerical rating values.
-
     Args:
         cqc_full_snapshot_source (str): Source s3 directory for the latest full
             snapshot of CQC registered and deregistered locations.
@@ -82,7 +82,6 @@ def main(
 
     cqc_ratings_lf = cqc_snapshot_lf.join(cqc_delta_lf, on=CQCL.location_id, how="left")
 
-    # ascwds_workplace_lf is only used by the benchmark placeholders below.
     ascwds_workplace_lf = utils.scan_parquet(
         ascwds_workplace_source, selected_columns=ASCWDS_WORKPLACE_COLUMNS_TO_IMPORT
     )
@@ -107,11 +106,12 @@ def main(
     standard_ratings_lf = create_standard_ratings_dataset(ratings_lf)
     standard_ratings_lf = add_location_id_hash(standard_ratings_lf)
 
-    benchmark_ratings_lf = ratings_lf
-    # benchmark_ratings_lf = select_ratings_for_benchmarks(ratings_lf)
-    # benchmark_ratings_lf = add_good_and_outstanding_flag_column(benchmark_ratings_lf)
-    # benchmark_ratings_lf = join_establishment_ids(benchmark_ratings_lf, ascwds_workplace_lf)
-    # benchmark_ratings_lf = create_benchmark_ratings_dataset(benchmark_ratings_lf)
+    benchmark_ratings_lf = select_ratings_for_benchmarks(ratings_lf)
+    benchmark_ratings_lf = add_good_and_outstanding_flag_column(benchmark_ratings_lf)
+    benchmark_ratings_lf = join_establishment_ids(
+        benchmark_ratings_lf, ascwds_workplace_lf
+    )
+    benchmark_ratings_lf = create_benchmark_ratings_dataset(benchmark_ratings_lf)
 
     utils.sink_to_parquet(standard_ratings_lf, cqc_ratings_destination)
     utils.sink_to_parquet(benchmark_ratings_lf, benchmark_ratings_destination)
@@ -183,6 +183,112 @@ def add_location_id_hash(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
         )
         .str.slice(0, 20)
         .alias(CQCRatings.location_id_hash)
+    )
+
+
+def select_ratings_for_benchmarks(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Keeps current ratings of registered locations.
+
+    Args:
+        ratings_lf (pl.LazyFrame): CQC ratings containing the columns
+            registration_status and current_or_historic.
+
+    Returns:
+        pl.LazyFrame: The registered locations' current ratings.
+    """
+    return ratings_lf.filter(
+        (pl.col(CQCL.registration_status) == RegistrationStatus.registered)
+        & (pl.col(CQCRatings.current_or_historic) == CQCCurrentOrHistoricValues.current)
+    )
+
+
+def add_good_and_outstanding_flag_column(
+    benchmark_ratings_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Flags locations whose lowest overall rating value is good (3) or better.
+
+    The flag is set on every row of a location. A location with no overall rating
+    value is flagged 0.
+
+    Args:
+        benchmark_ratings_lf (pl.LazyFrame): Current ratings containing the columns
+            location_id and overall_rating_value.
+
+    Returns:
+        pl.LazyFrame: The input with an additional Int32 column flagging locations
+            with good or outstanding current ratings.
+    """
+    good_rating_value = 3
+
+    return benchmark_ratings_lf.with_columns(
+        pl.when(
+            pl.col(CQCRatings.overall_rating_value).min().over(CQCL.location_id)
+            >= good_rating_value
+        )
+        .then(1)
+        .otherwise(0)
+        .alias(CQCRatings.good_or_outstanding_flag)
+    )
+
+
+def join_establishment_ids(
+    benchmark_ratings_lf: pl.LazyFrame, ascwds_workplace_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """
+    Adds the ASC-WDS establishment ID of each location.
+
+    A location in ASC-WDS more than once keeps its lowest non-null establishment ID,
+    so each rating row matches at most one establishment ID. Locations not in ASC-WDS
+    get a null establishment ID.
+
+    Args:
+        benchmark_ratings_lf (pl.LazyFrame): Current ratings containing the column
+            location_id.
+        ascwds_workplace_lf (pl.LazyFrame): ASC-WDS workplace data containing the
+            columns location_id and establishment_id.
+
+    Returns:
+        pl.LazyFrame: The input with an additional establishment_id column.
+    """
+    establishment_ids_lf = ascwds_workplace_lf.group_by(
+        pl.col(AWP.location_id).alias(CQCL.location_id)
+    ).agg(pl.col(AWP.establishment_id).min())
+
+    return benchmark_ratings_lf.join(
+        establishment_ids_lf, on=CQCL.location_id, how="left", validate="m:1"
+    )
+
+
+def create_benchmark_ratings_dataset(
+    benchmark_ratings_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Selects and renames the benchmark columns, keeping rated locations in ASC-WDS.
+
+    Args:
+        benchmark_ratings_lf (pl.LazyFrame): Current ratings containing the columns
+            location_id, establishment_id, name, dataset, good_or_outstanding_flag,
+            overall_rating and rating_date.
+
+    Returns:
+        pl.LazyFrame: The benchmark columns, in output order, with rows removed where
+            the establishment ID or overall rating is null.
+    """
+    return benchmark_ratings_lf.select(
+        pl.col(CQCL.location_id).alias(CQCRatings.benchmarks_location_id),
+        pl.col(AWP.establishment_id).alias(CQCRatings.benchmarks_establishment_id),
+        CQCL.name,
+        CQCL.dataset,
+        CQCRatings.good_or_outstanding_flag,
+        pl.col(CQCRatings.overall_rating).alias(CQCRatings.benchmarks_overall_rating),
+        pl.col(CQCRatings.date).alias(CQCRatings.inspection_date),
+    ).drop_nulls(
+        [
+            CQCRatings.benchmarks_establishment_id,
+            CQCRatings.benchmarks_overall_rating,
+        ]
     )
 
 
