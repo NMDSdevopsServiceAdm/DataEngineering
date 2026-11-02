@@ -451,7 +451,8 @@ def add_latest_rating_flag_column(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Latest is the newest `rating_date`, then `assessment_date`, nulls last. Rows tied
     on both dates are ordered by the remaining columns so exactly one row per location
-    is flagged whatever the input order; this tie-break isn't a business rule.
+    is flagged whatever the input order; this tie-break isn't a business rule. Sorting
+    on every remaining column is cheap at this dataset's size (about 100k rows).
 
     Sorts by location and newest first, so the output row order is not the input
     order. The sort and `.over()` aren't covered by the streaming engine.
