@@ -414,7 +414,7 @@ class FlattenCQCRatings:
         [
             (CQCL.location_id, pl.String),
             (CQCL.registration_status, pl.String),
-            (CQCRatingsColumns.date, pl.String),
+            (CQCRatingsColumns.date, pl.Date),
             (CQCL.assessment_plan_id, pl.String),
             (CQCL.title, pl.String),
             (CQCL.assessment_date, pl.String),
@@ -446,7 +446,7 @@ class FlattenCQCRatings:
             (CQCRatingsColumns.rating_sequence, pl.Int32),
             (CQCRatingsColumns.reversed_rating_sequence, pl.Int32),
             (CQCL.registration_status, pl.String),
-            (CQCRatingsColumns.date, pl.String),
+            (CQCRatingsColumns.date, pl.Date),
             (CQCL.assessment_plan_id, pl.String),
             (CQCL.title, pl.String),
             (CQCL.assessment_date, pl.String),
@@ -480,15 +480,15 @@ class FlattenCQCRatings:
         ]
     )
 
-    location_id_hash_date_schema = pl.Schema(
+    location_id_hash_other_column_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String),
-            (CQCRatingsColumns.date, pl.String),
+            (CQCL.title, pl.String),
         ]
     )
-    expected_location_id_hash_date_schema = pl.Schema(
+    expected_location_id_hash_other_column_schema = pl.Schema(
         [
-            *location_id_hash_date_schema.items(),
+            *location_id_hash_other_column_schema.items(),
             (CQCRatingsColumns.location_id_hash, pl.String),
         ]
     )
