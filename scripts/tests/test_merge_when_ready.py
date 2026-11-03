@@ -444,17 +444,29 @@ class TestMergePr:
         assert DELETE_BRANCH_CALL not in calls
         assert DESTROY_CALL not in calls
 
-    def test_does_not_destroy_dev_environment_when_branch_delete_fails(self, stubs):
+    def test_still_destroys_dev_environment_when_branch_delete_fails(self, stubs):
         def gh(*args, check=True):
             if args[:3] == ("api", "-X", "DELETE"):
+                raise subprocess.CalledProcessError(1, "gh", stderr="HTTP 422")
+
+        stubs["_gh"].side_effect = gh
+
+        merge_pr()
+
+        assert DESTROY_CALL in gh_calls(stubs)
+
+    def test_removes_label_when_cleanup_after_merge_fails(self, stubs):
+        def gh(*args, check=True):
+            if args[:2] == ("workflow", "run"):
                 raise subprocess.CalledProcessError(1, "gh", stderr="HTTP 500")
 
         stubs["_gh"].side_effect = gh
 
-        with pytest.raises(subprocess.CalledProcessError):
-            merge_pr()
+        merge_pr()
 
-        assert DESTROY_CALL not in gh_calls(stubs)
+        assert ("pr", "edit", "7", "--repo", REPO, "--remove-label", LABEL) in gh_calls(
+            stubs
+        )
 
     def test_updates_branch_when_behind_main_then_merges(self, stubs):
         # Behind at the start, then up to date before and after the deploy wait.
