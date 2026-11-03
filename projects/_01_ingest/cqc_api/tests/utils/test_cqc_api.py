@@ -151,7 +151,7 @@ class StatusCodeTestCase:
 
 
 unexpected_status_cases = [
-    StatusCodeTestCase(id="server_error_500", status_code=500),
+    StatusCodeTestCase(id="unauthorized_401", status_code=401),
     StatusCodeTestCase(id="forbidden_403", status_code=403),
     StatusCodeTestCase(id="bad_request_400_when_id_is_uppercase", status_code=400),
 ]
@@ -679,10 +679,11 @@ class TestBuildRetryStrategy:
 
 
 class TestGetRetryBudgetSeconds:
-    def test_returns_30_minutes_when_env_var_unset(self, monkeypatch):
+    def test_raises_when_env_var_unset(self, monkeypatch):
         monkeypatch.delenv("CQC_API_RETRY_BUDGET_SECONDS", raising=False)
 
-        assert cqc.get_retry_budget_seconds() == 1800
+        with pytest.raises(ValueError, match="integer between 1 and 86400, got None"):
+            cqc.get_retry_budget_seconds()
 
     def test_returns_env_var_value_when_set(self, monkeypatch):
         monkeypatch.setenv("CQC_API_RETRY_BUDGET_SECONDS", "600")

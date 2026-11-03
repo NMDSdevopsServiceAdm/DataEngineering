@@ -56,19 +56,22 @@ def build_retry_strategy(budget_seconds: int) -> Retry:
 
 
 def get_retry_budget_seconds() -> int:
-    """Reads the retry budget from `CQC_API_RETRY_BUDGET_SECONDS` (default 1800).
+    """Reads the retry budget from `CQC_API_RETRY_BUDGET_SECONDS`, set by Terraform.
+
+    Terraform sets it per workspace so `main` rides out a CQC outage while branch
+    workspaces fail within minutes.
 
     Returns:
         int: Seconds to keep retrying a failing CQC API request.
 
     Raises:
-        ValueError: If the environment variable is not an integer from 1 to 86400.
+        ValueError: If the variable is unset or not an integer from 1 to 86400.
     """
     max_budget_seconds = 86400
-    value = os.environ.get("CQC_API_RETRY_BUDGET_SECONDS", "1800")
+    value = os.environ.get("CQC_API_RETRY_BUDGET_SECONDS")
     try:
         budget_seconds = int(value)
-    except ValueError:
+    except (TypeError, ValueError):
         budget_seconds = 0
     if not 1 <= budget_seconds <= max_budget_seconds:
         raise ValueError(

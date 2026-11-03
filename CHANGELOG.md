@@ -89,7 +89,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
 - Fixed a flaky thread-count test in the run diagnostics tests.
 - Fixed ASC-WDS workplace cleaning to null all starters, leavers or vacancies job roles when the total or any role is negative or 999.
-- Fixed the CQC API delta downloads failing on short CQC outages: requests now retry for up to 30 minutes (`CQC_API_RETRY_BUDGET_SECONDS`) and the Step Function retries failed download tasks.
+- Fixed the CQC API delta downloads failing on short CQC outages: requests now retry for up to 30 minutes in main and about a minute in other workspaces (`CQC_API_RETRY_BUDGET_SECONDS`, set in Terraform) and the Step Function retries failed download tasks.
 
 
 ## [v2026.09.0] - 13/10/2026

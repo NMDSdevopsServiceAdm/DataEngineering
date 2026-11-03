@@ -16,6 +16,14 @@ resource "aws_ecs_cluster" "model_cluster" {
   }
 }
 
+locals {
+  # Seconds each CQC API request keeps being retried before the download task
+  # fails. main rides out a CQC outage; other workspaces give up within a
+  # minute or so, so a failing branch run surfaces quickly instead of retrying
+  # for 30 minutes per attempt.
+  cqc_api_retry_budget_seconds = terraform.workspace == "main" ? 1800 : 60
+}
+
 module "cqc-api" {
   source        = "../modules/fargate-task"
   task_name     = "cqc-api"
@@ -25,7 +33,7 @@ module "cqc-api" {
   environment = [
     { "name" : "AWS_REGION", "value" : "eu-west-2" },
     { "name" : "CQC_SECRET_NAME", "value" : "cqc_api_primary_key" },
-    { "name" : "CQC_API_RETRY_BUDGET_SECONDS", "value" : "1800" }
+    { "name" : "CQC_API_RETRY_BUDGET_SECONDS", "value" : tostring(local.cqc_api_retry_budget_seconds) }
   ]
 }
 
