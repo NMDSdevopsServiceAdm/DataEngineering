@@ -38,8 +38,8 @@
               "Retry": [
                 {
                   "ErrorEquals": ["States.TaskFailed"],
-                  "IntervalSeconds": 300,
-                  "MaxAttempts": 2,
+                  "IntervalSeconds": ${cqc_api_retry_interval_seconds},
+                  "MaxAttempts": ${cqc_api_retry_max_attempts},
                   "BackoffRate": 2
                 }
               ],
@@ -112,8 +112,8 @@
               "Retry": [
                 {
                   "ErrorEquals": ["States.TaskFailed"],
-                  "IntervalSeconds": 300,
-                  "MaxAttempts": 2,
+                  "IntervalSeconds": ${cqc_api_retry_interval_seconds},
+                  "MaxAttempts": ${cqc_api_retry_max_attempts},
                   "BackoffRate": 2
                 }
               ],
