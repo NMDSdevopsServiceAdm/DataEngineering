@@ -35,6 +35,14 @@
                 }
               },
               "ResultPath": "$.providerResult",
+              "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "IntervalSeconds": ${cqc_api_retry_interval_seconds},
+                  "MaxAttempts": ${cqc_api_retry_max_attempts},
+                  "BackoffRate": 2
+                }
+              ],
               "Next": "Validate Providers API Raw"
             },
             "Validate Providers API Raw": {
@@ -101,6 +109,14 @@
                 }
               },
               "ResultPath": "$.locationResult",
+              "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "IntervalSeconds": ${cqc_api_retry_interval_seconds},
+                  "MaxAttempts": ${cqc_api_retry_max_attempts},
+                  "BackoffRate": 2
+                }
+              ],
               "Next": "Validate Locations Api Raw"
             },
             "Validate Locations Api Raw": {

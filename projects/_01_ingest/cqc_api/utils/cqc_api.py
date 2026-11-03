@@ -1,10 +1,11 @@
+import os
 from typing import Generator, List
 
 import polars as pl
 import requests
 from ratelimit import limits, sleep_and_retry
 from requests.adapters import HTTPAdapter
-from urllib3.exceptions import MaxRetryError, ResponseError
+from requests.exceptions import RetryError
 from urllib3.util.retry import Retry
 
 CQC_API_VERSION = "v1"
@@ -21,11 +22,66 @@ class NoProviderOrLocationException(Exception):
     pass
 
 
-RETRY_STRATEGY = Retry(
-    total=8,
-    backoff_factor=0.25,
-    status_forcelist=[429, 500, 502, 503, 504],
-)
+def build_retry_strategy(budget_seconds: int) -> Retry:
+    """Builds a retry strategy whose total backoff covers the budget.
+
+    Uses the fewest retries whose sleeps sum to at least the budget: none before
+    the first retry, then `min(backoff_max, backoff_factor * 2 ** (retry - 1))`.
+    `Retry-After` headers are ignored so the budget holds. Request time is not
+    counted.
+
+    Args:
+        budget_seconds (int): Minimum total seconds to sleep between retries.
+
+    Returns:
+        Retry: Retry strategy for 429, 500, 502, 503 and 504 responses.
+    """
+    backoff_factor = 5
+    backoff_max = 120
+
+    retries = 0
+    total_sleep = 0.0
+    while total_sleep < budget_seconds:
+        retries += 1
+        if retries > 1:
+            total_sleep += min(backoff_max, backoff_factor * 2 ** (retries - 1))
+
+    return Retry(
+        total=retries,
+        backoff_factor=backoff_factor,
+        backoff_max=backoff_max,
+        status_forcelist=[429, 500, 502, 503, 504],
+        respect_retry_after_header=False,
+    )
+
+
+def get_retry_budget_seconds() -> int:
+    """Reads the retry budget from `CQC_API_RETRY_BUDGET_SECONDS`, set by Terraform.
+
+    Terraform sets it per workspace so `main` rides out a CQC outage while branch
+    workspaces fail within minutes.
+
+    Returns:
+        int: Seconds to keep retrying a failing CQC API request.
+
+    Raises:
+        ValueError: If the variable is unset or not an integer from 1 to 86400.
+    """
+    max_budget_seconds = 86400
+    value = os.environ.get("CQC_API_RETRY_BUDGET_SECONDS")
+    try:
+        budget_seconds = int(value)
+    except (TypeError, ValueError):
+        budget_seconds = 0
+    if not 1 <= budget_seconds <= max_budget_seconds:
+        raise ValueError(
+            "CQC_API_RETRY_BUDGET_SECONDS must be an integer between 1 and "
+            f"{max_budget_seconds}, got {value!r}"
+        )
+    return budget_seconds
+
+
+RETRY_STRATEGY = build_retry_strategy(get_retry_budget_seconds())
 CQC_ADAPTER = HTTPAdapter(max_retries=RETRY_STRATEGY)
 
 
@@ -37,20 +93,20 @@ def call_api(
     query_params: dict | None = None,
     headers_dict: dict | None = None,
 ) -> dict:
-    """
-    Calls an API and returns the json response
+    """Calls an API and returns the json response.
+
     Args:
-        url (str): the api url
-        id (str | None): the id to request data for
-        query_params (dict | None): the parameters to pass to the api
-        headers_dict (dict | None): headers to pass to the api
+        url (str): The api url.
+        id (str | None): The id to request data for.
+        query_params (dict | None): The parameters to pass to the api.
+        headers_dict (dict | None): Headers to pass to the api.
 
     Returns:
-        dict: the json response
+        dict: The json response.
 
     Raises:
-        NoProviderOrLocationException: if the api is unavailable
-        Exception: if the api returns an unexpected code
+        NoProviderOrLocationException: If the api returns 404.
+        Exception: If retries are exhausted or the api returns an unexpected code.
     """
     with requests.Session() as session:
         try:
@@ -60,8 +116,8 @@ def call_api(
             else:
                 full_url = url
             response = session.get(full_url, params=query_params, headers=headers_dict)
-        except (MaxRetryError, ResponseError) as e:
-            raise Exception("Max retries exceeded: {}".format(e))
+        except RetryError as e:
+            raise Exception(f"CQC API retries exhausted: {e}") from e
 
     if (response.status_code == 403) & (headers_dict is None):
         raise Exception(
@@ -81,10 +137,8 @@ def call_api(
             else:
                 full_url = url
             response = session.get(full_url, params=query_params, headers=headers_dict)
-        except:
-            raise Exception(
-                "API response: {} - {}".format(response.status_code, response.text)
-            )
+        except RetryError as e:
+            raise Exception(f"CQC API retries exhausted: {e}") from e
 
     if response.status_code != 200:
         raise Exception(
