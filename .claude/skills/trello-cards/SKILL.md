@@ -63,6 +63,8 @@ Description block — markdown, sections in this order:
 
 ````
 ```
+/new-ticket <trello-number> Add Excel dependencies and decide where the workbook jobs live
+
 **TODO:** <What to build or change, 2 to 3 sentences, naming the real columns/datasets/outputs.>
 
 Where: <path or location, only if the plan or user gave one; otherwise delete this line>
@@ -81,6 +83,9 @@ Where: <path or location, only if the plan or user gave one; otherwise delete th
 ```
 ````
 
+- **First line** is the command the developer pastes into Claude to start the ticket:
+  `/new-ticket <trello-number> <title>`. Write `<trello-number>` literally — Claude can't know it — and
+  repeat the card title after it without the label, shortened if it isn't already extremely short.
 - **TODO** tells the developer who picks the card up exactly what is wanted: one concrete, actionable
   statement of 2 to 3 sentences. Name the real columns/datasets/outputs; plain words, no card labels or
   jargon. It restates what Scope implies and adds no new work. Example: "Add unfiltered sum of CT posts
