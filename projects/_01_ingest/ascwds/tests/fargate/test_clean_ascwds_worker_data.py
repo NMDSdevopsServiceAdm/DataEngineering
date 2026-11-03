@@ -1,5 +1,7 @@
 from unittest.mock import ANY, Mock, call, patch
 
+import polars as pl
+
 import projects._01_ingest.ascwds.fargate.clean_ascwds_worker_data as job
 
 PATCH_PATH = "projects._01_ingest.ascwds.fargate.clean_ascwds_worker_data"
@@ -29,6 +31,10 @@ class TestMain:
         create_clean_employment_status_column_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
+        scan_parquet_mock.side_effect = lambda source, schema: pl.LazyFrame(
+            schema=schema
+        )
+
         job.main(
             self.WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
@@ -60,16 +66,8 @@ class TestMain:
             ANY, output_path=self.CLEANED_WORKER_DESTINATION
         )
 
-
-class TestSchemas:
-    def test_worker_schema_reads_establishment_id_as_categorical(self):
+        worker_lf = column_to_date_mock.call_args.args[0]
         assert (
-            job.WORKER_SCHEMA[job.AWKClean.establishment_id]
-            == job.CategoricalColumnTypes.EstablishmentCatType
-        )
-
-    def test_workplace_schema_reads_establishment_id_as_categorical(self):
-        assert (
-            job.WORKPLACE_SCHEMA[job.AWPClean.establishment_id]
+            worker_lf.collect_schema()[job.AWKClean.establishment_id]
             == job.CategoricalColumnTypes.EstablishmentCatType
         )

@@ -15,7 +15,7 @@ from utils.column_values.ascwds_labelled_vocab import EMPLOYMENT_STATUS, MAIN_JO
 
 WORKER_SCHEMA = {
     AWKClean.location_id: pl.String,
-    AWKClean.establishment_id: CategoricalColumnTypes.EstablishmentCatType,
+    AWKClean.establishment_id: pl.String,
     AWKClean.worker_id: pl.String,
     AWKClean.main_job_role_id: pl.String,
     AWKClean.employment_status: pl.String,
@@ -44,8 +44,14 @@ def main(
         cleaned_worker_destination (str): destination for cleaned ASC-WDS
             worker output
     """
-    worker_lf = utils.scan_parquet(worker_source, schema=WORKER_SCHEMA).select(
-        WORKER_SCHEMA.keys()
+    worker_lf = (
+        utils.scan_parquet(worker_source, schema=WORKER_SCHEMA)
+        .select(WORKER_SCHEMA.keys())
+        .with_columns(
+            pl.col(AWKClean.establishment_id).cast(
+                CategoricalColumnTypes.EstablishmentCatType
+            )
+        )
     )
 
     worker_lf = cUtils.column_to_date(

@@ -179,6 +179,12 @@ def main(
         ),
     )
 
+    still_matching_duplicates_lf = still_matching_duplicates_lf.with_columns(
+        pl.col(AWPClean.establishment_id).cast(
+            CategoricalColumnTypes.EstablishmentCatType
+        )
+    )
+
     lf = wUtils.create_purge_date_columns(lf)
 
     # The LazyFrame is split into two at this point:
