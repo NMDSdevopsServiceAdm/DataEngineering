@@ -59,3 +59,17 @@ class TestMain:
         sink_to_parquet_mock.assert_called_once_with(
             ANY, output_path=self.CLEANED_WORKER_DESTINATION
         )
+
+
+class TestSchemas:
+    def test_worker_schema_reads_establishment_id_as_categorical(self):
+        assert (
+            job.WORKER_SCHEMA[job.AWKClean.establishment_id]
+            == job.CategoricalColumnTypes.EstablishmentCatType
+        )
+
+    def test_workplace_schema_reads_establishment_id_as_categorical(self):
+        assert (
+            job.WORKPLACE_SCHEMA[job.AWPClean.establishment_id]
+            == job.CategoricalColumnTypes.EstablishmentCatType
+        )

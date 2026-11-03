@@ -15,7 +15,7 @@ from utils.column_values.ascwds_labelled_vocab import EMPLOYMENT_STATUS, MAIN_JO
 
 WORKER_SCHEMA = {
     AWKClean.location_id: pl.String,
-    AWKClean.establishment_id: pl.String,
+    AWKClean.establishment_id: CategoricalColumnTypes.EstablishmentCatType,
     AWKClean.worker_id: pl.String,
     AWKClean.main_job_role_id: pl.String,
     AWKClean.employment_status: pl.String,
@@ -24,7 +24,7 @@ WORKER_SCHEMA = {
 
 WORKPLACE_SCHEMA = {
     AWPClean.import_date: pl.String,
-    AWPClean.establishment_id: pl.String,
+    AWPClean.establishment_id: CategoricalColumnTypes.EstablishmentCatType,
 }
 
 
