@@ -2,7 +2,7 @@ name: delete-dev-envs
 
 on:
   delete:
-  # Dispatched by merge-when-ready, as its branch delete doesn't fire `delete`.
+  # Dispatched by merge-when-ready, whose branch delete doesn't fire `delete`.
   workflow_dispatch:
     inputs:
       branch:
