@@ -1,9 +1,11 @@
+import hashlib
 import sys
 
 import polars as pl
 
 from polars_utils import utils
 from projects._02_sfc_internal._01_cqc_ratings.fargate.utils import utils as rUtils
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
@@ -49,8 +51,8 @@ def main(
     """Flattens CQC ratings and assessments into standard and benchmark datasets.
 
     Commented-out calls are placeholders for steps not yet implemented. Until then,
-    both destinations receive the cleaned current, historic and assessment ratings
-    with numerical rating values.
+    the benchmark destination receives the cleaned current, historic and assessment
+    ratings with numerical rating values.
 
     Args:
         cqc_full_snapshot_source (str): Source s3 directory for the latest full
@@ -102,9 +104,8 @@ def main(
     ratings_lf = rUtils.add_latest_rating_flag_column(ratings_lf)
     ratings_lf = rUtils.add_numerical_ratings(ratings_lf)
 
-    standard_ratings_lf = ratings_lf
-    # standard_ratings_lf = create_standard_ratings_dataset(ratings_lf)
-    # standard_ratings_lf = add_location_id_hash(standard_ratings_lf)
+    standard_ratings_lf = create_standard_ratings_dataset(ratings_lf)
+    standard_ratings_lf = add_location_id_hash(standard_ratings_lf)
 
     benchmark_ratings_lf = ratings_lf
     # benchmark_ratings_lf = select_ratings_for_benchmarks(ratings_lf)
@@ -114,6 +115,75 @@ def main(
 
     utils.sink_to_parquet(standard_ratings_lf, cqc_ratings_destination)
     utils.sink_to_parquet(benchmark_ratings_lf, benchmark_ratings_destination)
+
+
+def create_standard_ratings_dataset(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Selects the standard ratings columns, then removes duplicate rows.
+
+    Selecting first keeps `unique` to the standard columns only.
+
+    Args:
+        ratings_lf (pl.LazyFrame): CQC ratings and assessments.
+
+    Returns:
+        pl.LazyFrame: The standard columns, in output order, with duplicate rows
+            removed.
+    """
+    return ratings_lf.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCRatings.date,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.source_path,
+        CQCL.dataset,
+        CQCRatings.latest_rating_flag,
+        CQCRatings.current_or_historic,
+        CQCRatings.overall_rating,
+        CQCRatings.safe_rating,
+        CQCRatings.well_led_rating,
+        CQCRatings.caring_rating,
+        CQCRatings.responsive_rating,
+        CQCRatings.effective_rating,
+        CQCRatings.safe_rating_value,
+        CQCRatings.well_led_rating_value,
+        CQCRatings.caring_rating_value,
+        CQCRatings.responsive_rating_value,
+        CQCRatings.effective_rating_value,
+        CQCRatings.total_rating_value,
+    ).unique()
+
+
+def add_location_id_hash(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Adds a 20 character hash of the location ID, used to link with anonymised files.
+
+    The hash is the first 20 characters of the SHA-256 hex digest. Polars has no
+    SHA-256 expression, so `hashlib` hashes each row's location ID in a single pass.
+    A join back from the distinct IDs would read the input twice.
+
+    Args:
+        ratings_lf (pl.LazyFrame): CQC ratings containing the column location_id.
+
+    Returns:
+        pl.LazyFrame: The input with an additional column containing the hashed
+            location ID. A null location ID gives a null hash.
+    """
+    return ratings_lf.with_columns(
+        pl.col(CQCL.location_id)
+        .cast(pl.String)
+        .map_elements(
+            lambda location_id: hashlib.sha256(location_id.encode("utf-8")).hexdigest(),
+            return_dtype=pl.String,
+            skip_nulls=True,
+        )
+        .str.slice(0, 20)
+        .alias(CQCRatings.location_id_hash)
+    )
 
 
 if __name__ == "__main__":
