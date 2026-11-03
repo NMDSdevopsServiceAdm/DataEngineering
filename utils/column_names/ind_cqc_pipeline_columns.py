@@ -600,8 +600,12 @@ class StartersLeaversVacanciesColumns:
 class ModelEvaluationColumns:
     """The names of the columns added when evaluating models, such as filled posts."""
 
+    baseline_brier_score: str = "baseline_brier_score"
+    baseline_mae: str = "baseline_mae"
     bias: str = "bias"
     bias_slope_per_year: str = "bias_slope_per_year"
+    brier_score: str = "brier_score"
+    brier_skill_score: str = "brier_skill_score"
     column_name: str = "column_name"
     coverage: str = "coverage"
     financial_year: str = "financial_year"
@@ -614,6 +618,9 @@ class ModelEvaluationColumns:
     level: str = "level"
     locations: str = "locations"
     log_prediction: str = "log_prediction"
+    mae: str = "mae"
+    mae_pp: str = "mae_pp"
+    mae_skill_score: str = "mae_skill_score"
     max_iter: str = "max_iter"
     mean_period_to_period_change: str = "mean_period_to_period_change"
     metric: str = "metric"
@@ -629,6 +636,7 @@ class ModelEvaluationColumns:
     ratio_prediction: str = "ratio_prediction"
     rows: str = "rows"
     size_band: str = "size_band"
+    top_1_accuracy: str = "top_1_accuracy"
     value: str = "value"
     weighted_absolute_percentage_error: str = "weighted_absolute_percentage_error"
     zero_coefficients: str = "zero_coefficients"
@@ -658,6 +666,7 @@ class ModelEvaluationLabels:
 class ShareModelColumns:
     """The names of the columns added when modelling and scoring share breakdowns."""
 
+    imputation_row_kind: str = "imputation_row_kind"
     group_weight: str = "group_weight"
     share: str = "share"
     mean_absolute_error: str = "mean_absolute_error"

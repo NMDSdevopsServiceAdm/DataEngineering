@@ -475,6 +475,7 @@ class CQCCurrentOrHistoricValues(ColumnValues):
 @dataclass
 class CQCRatingsDatasetValues(ColumnValues):
     pre_saf: str = "Pre SAF"
+    saf: str = "SAF"
 
 
 @dataclass
@@ -655,6 +656,15 @@ class AscwdsJobRoleRatiosMergedSource(ColumnValues):
     imputed_ascwds_job_role_ratios: str = IndCQC.imputed_ascwds_job_role_ratios
     ascwds_job_role_rolling_ratio: str = IndCQC.ascwds_job_role_rolling_ratio
     ascwds_job_role_ratios: str = IndCQC.ascwds_job_role_ratios
+
+
+@dataclass
+class ImputationRowKind(ColumnValues):
+    """The possible values of the imputation row kind column"""
+
+    known: str = "known"
+    interpolated: str = "interpolated"
+    carried: str = "carried"
 
 
 @dataclass

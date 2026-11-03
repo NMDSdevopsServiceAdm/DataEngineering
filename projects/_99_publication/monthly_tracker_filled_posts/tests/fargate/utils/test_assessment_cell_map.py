@@ -20,26 +20,26 @@ def _cells(ranges: list[str]) -> set[tuple[int, int]]:
 COMPARISON_PERC_CHANGE_SOURCES = [
     pytest.param(
         job.COMP_SHORT_TERM,
-        Pub.filtered_filled_posts_cum_perc_change_short,
-        Pub.filtered_ct_cum_perc_change_short,
+        Pub.filtered_short_sfc_cum_pct_change,
+        Pub.filtered_short_ct_cum_pct_change,
         id="short_term",
     ),
     pytest.param(
         job.COMP_MEDIUM_TERM,
-        Pub.filtered_filled_posts_cum_perc_change_medium,
-        Pub.filtered_ct_cum_perc_change_medium,
+        Pub.filtered_medium_sfc_cum_pct_change,
+        Pub.filtered_medium_ct_cum_pct_change,
         id="medium_term",
     ),
     pytest.param(
         job.COMP_LONG_TERM,
-        Pub.filtered_filled_posts_cum_perc_change_long,
-        Pub.filtered_ct_cum_perc_change_long,
+        Pub.filtered_long_sfc_cum_pct_change,
+        Pub.filtered_long_ct_cum_pct_change,
         id="long_term",
     ),
     pytest.param(
         job.NO_FILTERS,
-        Pub.filled_posts_cum_perc_change_long,
-        Pub.unfiltered_ct_total_employed_cum_perc_change_long,
+        Pub.unfiltered_long_sfc_cum_pct_change,
+        Pub.unfiltered_long_ct_cum_pct_change,
         id="no_filters",
     ),
 ]
@@ -65,30 +65,32 @@ class TestAssessmentSheets:
         [
             pytest.param(
                 "care_homes.filled_posts",
-                Pub.filled_posts,
+                Pub.unfiltered_filled_posts,
                 id="care_homes_filled_posts",
             ),
             pytest.param(
-                "non_res.filled_posts", Pub.filled_posts, id="non_res_filled_posts"
+                "non_res.filled_posts",
+                Pub.unfiltered_filled_posts,
+                id="non_res_filled_posts",
             ),
             pytest.param(
                 "care_homes.locations_by_period",
-                Pub.locationid_count,
+                Pub.unfiltered_locationid_count,
                 id="care_homes_locations",
             ),
             pytest.param(
                 "non_res.locations_by_period",
-                Pub.locationid_count,
+                Pub.unfiltered_locationid_count,
                 id="non_res_locations",
             ),
             pytest.param(
                 "care_homes.ct",
-                Pub.unfiltered_ct_total_employed_long,
+                Pub.unfiltered_long_ct_total_employed,
                 id="care_homes_capacity_tracker",
             ),
             pytest.param(
                 "non_res.ct",
-                Pub.unfiltered_ct_total_employed_long,
+                Pub.unfiltered_long_ct_total_employed,
                 id="non_res_capacity_tracker",
             ),
         ],

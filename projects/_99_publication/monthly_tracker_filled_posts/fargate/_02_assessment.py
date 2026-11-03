@@ -9,6 +9,7 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
     assessment_cell_map as cell_map,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
+    assessment_sheet_text,
     assessment_workbook_utils,
     merge_utils,
     publication_utils,
@@ -47,6 +48,7 @@ def main(
     """
     run_source = merge_utils.resolve_run_sources([prep_source], run_number)[0]
     print(f"Assessing prepared run: {run_source}")
+    assessed_run_number = merge_utils.run_number_from_source(run_source)
     prepared_lf = utils.scan_parquet(run_source)
 
     prepared_lf = prepared_lf.with_columns(
@@ -137,79 +139,79 @@ def main(
     ]
     assessment_summary_lf = assessment_summary_lf.with_columns(
         publication_utils.calc_perc_change_from_previous_april(
-            Pub.filled_posts,
+            Pub.unfiltered_filled_posts,
             group_columns,
-            Pub.filled_posts_april_perc_change,
+            Pub.unfiltered_filled_posts_april_pct_change,
         ),
         publication_utils.calc_perc_change_from_previous_april(
-            Pub.locationid_count,
+            Pub.unfiltered_locationid_count,
             group_columns,
-            Pub.locationid_count_april_perc_change,
+            Pub.unfiltered_locationid_count_april_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.filled_posts,
+            Pub.unfiltered_filled_posts,
             short_term_from_date,
             group_columns,
-            Pub.filled_posts_cum_perc_change_short,
+            Pub.unfiltered_short_sfc_cum_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.locationid_count,
+            Pub.unfiltered_locationid_count,
             short_term_from_date,
             group_columns,
-            Pub.locationid_count_cum_perc_change_short,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.filtered_filled_posts_long,
+            Pub.filtered_long_sfc_filled_posts,
             long_term_from_date,
             group_columns,
-            Pub.filtered_filled_posts_cum_perc_change_long,
+            Pub.filtered_long_sfc_cum_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.filtered_ct_total_employed_long,
+            Pub.filtered_long_ct_total_employed,
             long_term_from_date,
             group_columns,
-            Pub.filtered_ct_cum_perc_change_long,
+            Pub.filtered_long_ct_cum_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.filtered_filled_posts_medium,
+            Pub.filtered_medium_sfc_filled_posts,
             medium_term_from_date,
             group_columns,
-            Pub.filtered_filled_posts_cum_perc_change_medium,
+            Pub.filtered_medium_sfc_cum_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.filtered_ct_total_employed_medium,
+            Pub.filtered_medium_ct_total_employed,
             medium_term_from_date,
             group_columns,
-            Pub.filtered_ct_cum_perc_change_medium,
+            Pub.filtered_medium_ct_cum_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.filtered_filled_posts_short,
+            Pub.filtered_short_sfc_filled_posts,
             short_term_from_date,
             group_columns,
-            Pub.filtered_filled_posts_cum_perc_change_short,
+            Pub.filtered_short_sfc_cum_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.filtered_ct_total_employed_short,
+            Pub.filtered_short_ct_total_employed,
             short_term_from_date,
             group_columns,
-            Pub.filtered_ct_cum_perc_change_short,
+            Pub.filtered_short_ct_cum_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.filled_posts,
+            Pub.unfiltered_filled_posts,
             long_term_from_date,
             group_columns,
-            Pub.filled_posts_cum_perc_change_long,
+            Pub.unfiltered_long_sfc_cum_pct_change,
         ),
         publication_utils.calc_perc_change_cumulative_from_given_period_onwards(
-            Pub.unfiltered_ct_total_employed_long,
+            Pub.unfiltered_long_ct_total_employed,
             long_term_from_date,
             group_columns,
-            Pub.unfiltered_ct_total_employed_cum_perc_change_long,
+            Pub.unfiltered_long_ct_cum_pct_change,
         ),
     )
 
     prev_run_number = run_log_utils.get_previous_published_run_number(
-        run_log_source, merge_utils.run_number_from_source(run_source)
+        run_log_source, assessed_run_number
     )
     if prev_run_number is None:
         print("No previously published run found; previous run columns are null")
@@ -243,18 +245,19 @@ def main(
     )
     workbook_name = (
         f"monthly_tracking_summary_{merge_utils.archive_date_from_source(run_source)}"
-        f"_{merge_utils.run_number_from_source(run_source)}.xlsx"
+        f"_{assessed_run_number}.xlsx"
     )
     with tempfile.TemporaryDirectory() as workbook_folder:
         workbook_path = Path(workbook_folder) / workbook_name
         assessment_workbook_utils.fill_assessment_workbook_from_lf(
             run_assessment_lf,
             cell_map.ASSESSMENT_SHEETS,
-            assessment_workbook_utils.TermFromDates(
+            assessment_sheet_text.TermFromDates(
                 short=short_term_from_date,
                 medium=medium_term_from_date,
                 long=long_term_from_date,
             ),
+            assessed_run_number,
             cell_map.TEMPLATE_PATH,
             workbook_path,
         )

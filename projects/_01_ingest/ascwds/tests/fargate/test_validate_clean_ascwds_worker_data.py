@@ -28,7 +28,7 @@ def build_source_df() -> pl.DataFrame:
             ASCWKClean.employment_status_clean_labelled: "permanent",
         },
         schema={
-            ASCWKClean.location_id: pl.String,
+            ASCWKClean.location_id: CategoricalColumnTypes.LocationCatType,
             ASCWKClean.establishment_id: pl.String,
             ASCWKClean.worker_id: pl.String,
             ASCWKClean.main_job_role_id: pl.String,

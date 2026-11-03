@@ -30,40 +30,40 @@ class ReconciliationMismatchError(ValueError):
     """The public output and archived estimate totals disagree beyond tolerance."""
 
 
-def is_run_promoted(promoted_run_log_source: str, run_number: int) -> bool:
+def is_run_promoted(promoted_metadata_source: str, run_number: int) -> bool:
     """
     Checks whether a run's promotion to the long-term archive has finished.
 
-    Promotion copies the run log last, so its partition marks a complete copy
-    (the estimates partition appears as soon as its first file is copied). Lists
-    partitions without reading data, so it is cheap to poll.
+    Metadata is copied last and is a single file, so its partition marks a
+    complete copy (estimates appear at their first file). Lists partitions without
+    reading data, so it is cheap to poll.
 
     Args:
-        promoted_run_log_source (str): S3 directory of the long-term archive's
-            run log, partitioned by archive_date and run_number
+        promoted_metadata_source (str): S3 directory of the long-term archive's
+            metadata, partitioned by archive_date and run_number
         run_number (int): the run to check
 
     Returns:
-        bool: True if the run's run log partition is in the long-term archive
+        bool: True if the run's metadata partition is in the long-term archive
     """
-    return run_number in file_utils.list_archive_runs(promoted_run_log_source)
+    return run_number in file_utils.list_archive_runs(promoted_metadata_source)
 
 
-def check_main(promoted_run_log_source: str, run_number: int) -> int:
+def check_main(promoted_metadata_source: str, run_number: int) -> int:
     """
     Reports whether a run's promotion has finished, as the task's exit code.
 
     Args:
-        promoted_run_log_source (str): S3 directory of the long-term archive's
-            run log, partitioned by archive_date and run_number
+        promoted_metadata_source (str): S3 directory of the long-term archive's
+            metadata, partitioned by archive_date and run_number
         run_number (int): the run to check
 
     Returns:
         int: 0 if promoted, else NOT_PROMOTED_EXIT_CODE
     """
-    promoted = is_run_promoted(promoted_run_log_source, run_number)
+    promoted = is_run_promoted(promoted_metadata_source, run_number)
     state = "is" if promoted else "is not"
-    print(f"Run {run_number} {state} in {promoted_run_log_source}")
+    print(f"Run {run_number} {state} in {promoted_metadata_source}")
     return 0 if promoted else NOT_PROMOTED_EXIT_CODE
 
 
@@ -119,7 +119,7 @@ def main(
             pl.col(IndCQC.current_region) == PublishedRegion.england,
             pl.col(IndCQC.primary_service_type) == PublishedMainService.all_locations,
         ),
-        Pub.filled_posts,
+        Pub.unfiltered_filled_posts,
     )
     if public_by_period.is_empty():
         raise ReconciliationMismatchError(
@@ -147,7 +147,7 @@ def main(
         archive_by_period, on=IndCQC.cqc_location_import_date
     ).with_columns(
         (
-            (pl.col(Pub.filled_posts) - pl.col(archive_column)).abs()
+            (pl.col(Pub.unfiltered_filled_posts) - pl.col(archive_column)).abs()
             / pl.col(archive_column)
         ).alias(RELATIVE_DIFFERENCE)
     )
@@ -157,14 +157,14 @@ def main(
     ).sort(IndCQC.cqc_location_import_date)
     # max() skips NaN, so the count is what shows a NaN period.
     print(
-        f"Run {run_number}: public output total {comparison_df[Pub.filled_posts].sum()}, "
+        f"Run {run_number}: public output total {comparison_df[Pub.unfiltered_filled_posts].sum()}, "
         f"promoted archive total {comparison_df[archive_column].sum()}, largest "
         f"period difference {comparison_df[RELATIVE_DIFFERENCE].max():.4%}, "
         f"{differing_df.height} of {comparison_df.height} periods over tolerance"
     )
     if not differing_df.is_empty():
         details = "; ".join(
-            f"{row[IndCQC.cqc_location_import_date]}: public {row[Pub.filled_posts]}, "
+            f"{row[IndCQC.cqc_location_import_date]}: public {row[Pub.unfiltered_filled_posts]}, "
             f"archive {row[archive_column]}"
             for row in differing_df.head(MAX_PERIODS_REPORTED).iter_rows(named=True)
         )
@@ -185,8 +185,8 @@ if __name__ == "__main__":
         ),
         ("--run_number", "The run to check or reconcile"),
         (
-            "--promoted_run_log_source",
-            "S3 directory of the long-term archive's run log (check mode)",
+            "--promoted_metadata_source",
+            "S3 directory of the long-term archive's metadata (check mode)",
             False,
             None,
         ),
@@ -212,7 +212,7 @@ if __name__ == "__main__":
     run_number = merge_utils.parse_run_number(args.run_number, required=True)
 
     if args.mode == "check":
-        sys.exit(check_main(args.promoted_run_log_source, run_number))
+        sys.exit(check_main(args.promoted_metadata_source, run_number))
     elif args.mode == "compare":
         main(
             assessment_source=args.assessment_source,
