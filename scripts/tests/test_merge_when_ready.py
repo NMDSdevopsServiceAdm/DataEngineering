@@ -26,6 +26,21 @@ MERGE_CALL = (
     "--match-head-commit",
     "headsha",
 )
+DELETE_BRANCH_CALL = (
+    "api",
+    "-X",
+    "DELETE",
+    f"repos/{REPO}/git/refs/heads/feature-branch",
+)
+DESTROY_CALL = (
+    "workflow",
+    "run",
+    "delete-development-environments.yml",
+    "--repo",
+    REPO,
+    "-f",
+    "branch=feature-branch",
+)
 
 
 @dataclass
@@ -398,6 +413,48 @@ class TestMergePr:
         calls = gh_calls(stubs)
         assert not any(c[:2] == ("pr", "merge") for c in calls)
         assert ("pr", "edit", "7", "--repo", REPO, "--remove-label", LABEL) in calls
+
+    def test_deletes_branch_then_destroys_dev_environment_after_merge(self, stubs):
+        merge_pr()
+
+        calls = gh_calls(stubs)
+        assert DELETE_BRANCH_CALL in calls
+        assert DESTROY_CALL in calls
+        assert calls.index(MERGE_CALL) < calls.index(DELETE_BRANCH_CALL)
+        assert calls.index(DELETE_BRANCH_CALL) < calls.index(DESTROY_CALL)
+
+    def test_dry_run_does_not_delete_branch_or_destroy_dev_environment(self, stubs):
+        job._merge_pr(REPO, LABEL, 7, SLUG, dry_run=True)
+
+        calls = gh_calls(stubs)
+        assert DELETE_BRANCH_CALL not in calls
+        assert DESTROY_CALL not in calls
+
+    def test_does_not_delete_branch_when_merge_fails(self, stubs):
+        def gh(*args, check=True):
+            if args[:2] == ("pr", "merge"):
+                raise subprocess.CalledProcessError(1, "gh", stderr="head changed")
+
+        stubs["_gh"].side_effect = gh
+
+        with pytest.raises(subprocess.CalledProcessError):
+            merge_pr()
+
+        calls = gh_calls(stubs)
+        assert DELETE_BRANCH_CALL not in calls
+        assert DESTROY_CALL not in calls
+
+    def test_does_not_destroy_dev_environment_when_branch_delete_fails(self, stubs):
+        def gh(*args, check=True):
+            if args[:3] == ("api", "-X", "DELETE"):
+                raise subprocess.CalledProcessError(1, "gh", stderr="HTTP 500")
+
+        stubs["_gh"].side_effect = gh
+
+        with pytest.raises(subprocess.CalledProcessError):
+            merge_pr()
+
+        assert DESTROY_CALL not in gh_calls(stubs)
 
     def test_updates_branch_when_behind_main_then_merges(self, stubs):
         # Behind at the start, then up to date before and after the deploy wait.

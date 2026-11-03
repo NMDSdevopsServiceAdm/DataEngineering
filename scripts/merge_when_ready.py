@@ -538,6 +538,13 @@ def _merge_pr(
             "--match-head-commit", head_sha,
         )  # fmt: skip
         print(f"Merged PR {number}.")
+        # Deletes made with GITHUB_TOKEN don't fire the workflow's `delete`
+        # trigger, so dispatch the dev environment destroy explicitly.
+        _gh("api", "-X", "DELETE", f"repos/{repo}/git/refs/heads/{head_branch}")
+        _gh(
+            "workflow", "run", "delete-development-environments.yml",
+            "--repo", repo, "-f", f"branch={head_branch}",
+        )  # fmt: skip
     _remove_label(repo, label, number)
 
 

@@ -1,22 +1,30 @@
 name: delete-dev-envs
 
-on: [ delete ]
+on:
+  delete:
+  # Dispatched by merge-when-ready, as its branch delete doesn't fire `delete`.
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch whose dev environment to destroy
+        type: string
+        required: true
 
 jobs:
   trigger-circleci-delete:
     # Only branches have a dev environment to destroy: skip tag deletes.
-    if: ${{ github.event.ref_type == 'branch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.ref_type == 'branch' }}
     runs-on: ubuntu-latest
     steps:
       - name: print branch name
         # Via env: so a branch name containing shell syntax like $(...) is never
         # spliced into the script and run on the runner.
         env:
-          BRANCH_NAME: ${{ github.event.ref }}
+          BRANCH_NAME: ${{ github.event.ref || inputs.branch }}
         run: echo "Calling Cicle CI pipeline with parameter GHA_Meta - $BRANCH_NAME"
       - name: Trigger circle CI delete development environment workflow
         uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.6
         with:
-          GHA_Meta: ${{ github.event.ref }}
+          GHA_Meta: ${{ github.event.ref || inputs.branch }}
         env:
           CCI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
