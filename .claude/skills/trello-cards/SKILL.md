@@ -12,7 +12,7 @@ rendered chat markdown, which loses its formatting on copy.
 ## 1. Identify the input and mode
 
 - **Breakdown** — a plan file path (usually a ticket memory file) or pasted plan text, and the user wants
-  several cards or the whole plan: draft several cards (step 2 onwards).
+  several cards or the whole plan: draft several cards (steps 2 to 4).
 - **Single card** — the user wants one card, whether from a bare one-line idea or for one item of a plan
   that exists: draft one card (see "Single card" below).
 
@@ -27,7 +27,7 @@ Label cards by dependency tier so "Depends on" can name them:
 - **Tier** = 1 + the highest tier among a card's dependencies; no dependencies = tier 1. Tier 1 cards can
   start immediately, tier 2 cards are unblocked by tier 1, and so on. A card only depends on lower tiers.
 - **Label** = a prefix (an uppercase letter or two from the plan's subject) + the tier, plus a lowercase
-  letter only when a tier has several cards: `E1`, `E2a`, `E2b`, `E3`. A tier with one card has no letter.
+  letter only when a tier has several cards: `E1`, `E2a`, `E2b`, `E3a`, `E3b`, `E4`. A tier with one card has no letter.
 - Letters let a dependency be specific: `E3a` may need only `E2a`, while `E3b` needs every tier 2 card.
 - Order cards by tier, then letter.
 
@@ -43,8 +43,8 @@ asking if the user says to park the rest.
 - Fold each answer into the card's TODO, Scope or Where as fact.
 - Keep "Confirm during scoping: ..." only for what can't be known yet: it depends on an earlier card's
   findings, on data not yet inspected, or on someone outside the conversation. Name which ("depends on
-  E1's findings").
-- The Q&A comes before any card output; the text limits in Output apply to the cards themselves.
+  E1's findings", or the card's title for a single card).
+- The Q&A comes before any card output; the text limits in Output apply only to the cards.
 
 ## 4. Card format
 
@@ -85,7 +85,7 @@ Where: <path or location, only if the plan or user gave one; otherwise delete th
 
 - **First line** is the command the developer pastes into Claude to start the ticket:
   `/new-ticket <trello-number> <title>`. Write `<trello-number>` literally — Claude can't know it — and
-  repeat the card title after it without the label, shortened if it isn't already extremely short.
+  repeat the card title after it without the label, cut to about 8 words.
 - **TODO** tells the developer who picks the card up exactly what is wanted: one concrete, actionable
   statement of 2 to 3 sentences. Name the real columns/datasets/outputs; plain words, no card labels or
   jargon. It restates what Scope implies and adds no new work. Example: "Add unfiltered sum of CT posts
@@ -95,7 +95,7 @@ Where: <path or location, only if the plan or user gave one; otherwise delete th
   differently.
 - **Depends on** names each card by label and title. "Nothing" if it can start immediately. One
   dependency stays on the line; two or more become a `-` bullet list under the label, one card per bullet.
-  Name only the cards that actually block this one. For a whole tier write "all tier 2 cards (E2a-E2c)",
+  Name only the cards that actually block this one. For a whole tier write "all tier 2 cards (E2a-E2b)",
   and for everything before it "all earlier cards", instead of listing every one. A conditional dependency gets its
   condition in brackets after the card ("(only if ...)"); a short reason may go there too ("(so each run
   is tracked)").
@@ -113,7 +113,7 @@ Where: <path or location, only if the plan or user gave one; otherwise delete th
 Around the cards, each in its own code block under a plain line naming it (so it copies cleanly):
 
 - **Board phases** (before the first card) — one suggested grouping on a single line, e.g.
-  `Foundation (E1) → Public download (E2a-E2c) → Monthly jobs (E3a-E3b)`. Follows the tiers. Only when it
+  `Foundation (E1) → Public download (E2a-E2b) → Monthly jobs (E3a-E3b)`. Follows the tiers. Only when it
   helps the board read well.
 - **Overlap edits** (after the cards) — only when the plan or the user says existing Trello cards overlap
   these. One line per card to edit: `<existing card> - <the one-line change that avoids double-counting>`.
@@ -130,8 +130,8 @@ Same two code blocks and section order as step 4, with these differences:
 
 - No label and no prefix — the title is just the title. The "Card ..." line is replaced by plain
   `Title:` and `Description:` lines above the two blocks.
-- Run the step 3 question round first for what's open (limits, thresholds, behaviour on failure, where
-  it lives), only the few that would change the work.
+- Run the step 3 question round first, on the (about four) open choices that would change the work
+  (limits, thresholds, behaviour on failure, where it lives).
 - **Scope** holds only what the idea states or directly implies — or, when a plan exists, what the plan
   states for this one item (never other items) — plus the answers from the question round. Whatever is
   still genuinely unknowable goes in as a "Confirm during scoping: ..." bullet. Don't add tests, logging,
@@ -160,7 +160,7 @@ In chat. Apart from the blocks, the only text allowed is:
   not prose.
 - **One lead-in sentence** before the first block. It states the prefix (breakdown) and, if the user asked
   to add the card to the board or get a link, that you can't reach Trello.
-- **One closing line** after the last block, only when there is something for the user to check: plan
+- **One closing line** after the last block, only when there is something for the user to check: `<trello-number>` to fill in on each card, plan
   references you replaced, or a plan that hints at existing cards without naming them (so no overlap
   block).
 

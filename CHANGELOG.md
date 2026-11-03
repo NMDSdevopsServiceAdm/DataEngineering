@@ -37,7 +37,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
-- Changed the Trello card drafting skill to ask open questions before drafting, label cards by dependency tier (E1, E2a, E2b, E3) instead of by position, and start each description with a /new-ticket command.
+- Changed the Trello card drafting skill to ask open questions first, label cards by dependency tier, and start each description with /new-ticket.
 - Assessment percentage change columns are now Float64 to reduce rounding drift.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
 - Converted the CQC ratings assessment flattening to Polars.
