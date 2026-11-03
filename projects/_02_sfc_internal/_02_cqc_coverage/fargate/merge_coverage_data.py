@@ -1,6 +1,9 @@
 import sys
 
+import polars as pl
+
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from projects._02_sfc_internal._02_cqc_coverage.fargate.utils import utils as cov_utils
 from projects._02_sfc_internal.utils.utils import add_parents_or_singles_and_subs_column
@@ -108,8 +111,11 @@ def main(
         ascwds_workplace_source,
         selected_columns=CLEANED_ASCWDS_WORKPLACE_COLUMNS_TO_IMPORT,
     )
+    # The ratings' location id is a String; cast it to match the cleaned data's join key.
     cqc_ratings_lf = utils.scan_parquet(
         cqc_ratings_source, selected_columns=CQC_RATINGS_COLUMNS_TO_IMPORT
+    ).with_columns(
+        pl.col(CQCLClean.location_id).cast(CategoricalColumnTypes.LocationCatType)
     )
     cqc_providers_lf = utils.scan_parquet(
         cleaned_cqc_providers_source,

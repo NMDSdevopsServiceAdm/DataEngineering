@@ -2,7 +2,7 @@
 Select which docker-bake targets CircleCI actually needs to build.
 
 `task-containerisation` is around 69% of this repo's CircleCI credit spend
-because it bakes all seven images on every push, whatever changed. This script
+because it bakes all the images on every push, whatever changed. This script
 narrows that to the targets a push can genuinely affect: those whose build
 context changed since the branch forked from main, plus any whose image is not
 yet in ECR under this branch's tag.

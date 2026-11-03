@@ -5,6 +5,7 @@ import polars as pl
 import pytest
 from sklearn.linear_model import LinearRegression
 
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc._01_filled_posts._04_model.utils import (
     cross_validation_utils as job,
 )
@@ -57,7 +58,7 @@ def locations_predictions(
     )
     joined_df = returned_df.join(
         exact_df, on=[IndCQC.location_id, IndCQC.cqc_location_import_date]
-    ).filter(pl.col(IndCQC.location_id).is_in(locations))
+    ).filter(pl.col(IndCQC.location_id).is_in(list(locations)))
 
     return joined_df[IndCQC.prediction].to_numpy(), joined_df["exact"].to_numpy()
 
@@ -221,7 +222,10 @@ class TestPredictInChunks:
                         IndCQC.location_id: ["not_in_features"],
                         ModelEvaluation.fold: [7],
                     },
-                    schema_overrides={ModelEvaluation.fold: pl.UInt8},
+                    schema_overrides={
+                        IndCQC.location_id: CatColType.LocationCatType,
+                        ModelEvaluation.fold: pl.UInt8,
+                    },
                 ),
             ]
         )

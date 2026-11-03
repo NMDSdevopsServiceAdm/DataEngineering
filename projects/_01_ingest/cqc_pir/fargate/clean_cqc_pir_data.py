@@ -83,7 +83,8 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str) -> None:
 
     # Cast to Categorical/Enum here so it's saved in the output parquet file.
     cqc_pir_lf = cqc_pir_lf.with_columns(
-        pl.col(PIRClean.care_home).cast(CategoricalColumnTypes.CareHomeEnumType)
+        pl.col(PIRClean.care_home).cast(CategoricalColumnTypes.CareHomeEnumType),
+        pl.col(PIRClean.location_id).cast(CategoricalColumnTypes.LocationCatType),
     )
 
     utils.sink_to_parquet(cqc_pir_lf, cleaned_cqc_pir_destination)

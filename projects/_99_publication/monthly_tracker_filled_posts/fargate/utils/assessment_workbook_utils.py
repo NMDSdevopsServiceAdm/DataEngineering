@@ -206,17 +206,18 @@ def _period_dates(period_labels: list[str]) -> list[datetime.datetime]:
     ]
 
 
-def title_text(period_labels: list[str]) -> str:
-    """Title for each sheet, naming the latest period.
+def title_text(period_labels: list[str], run_number: int) -> str:
+    """Title for each sheet, naming the latest period and the run.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
+        run_number (int): the run the workbook is built from.
 
     Returns:
-        str: e.g. "End of March 2026".
+        str: e.g. "End of March 2026 (run 7)".
     """
     latest = max(_period_dates(period_labels))
-    return f"End of {latest.strftime(PERIOD_LABEL_LONG_FORMAT)}"
+    return f"End of {latest.strftime(PERIOD_LABEL_LONG_FORMAT)} (run {run_number})"
 
 
 def comp_prev_rows(
@@ -247,19 +248,22 @@ def comp_prev_rows(
 
 
 def sheet_text(
-    period_labels: list[str], term_from_dates: TermFromDates
+    period_labels: list[str], term_from_dates: TermFromDates, run_number: int
 ) -> dict[str, dict[str, str]]:
     """Text the writer sets, by sheet name then A1 cell.
 
-    Every sheet gets the title. The short and medium term comparison sheets also
-    get a heading and criteria note dated from the month before their term's start
-    date, as does the chart heading on "Filled posts" (the short term's).
-    "Comp prev publication" gets an "Annual" row for each March period, then a "Monthly" row for each period
-    after the latest March, in each of its label ranges.
+    - Every sheet gets the title, which names the run.
+    - Short, medium and long term comparison sheets get a heading and criteria
+      note dated from the month before the term's start.
+    - "No filters - long term" gets the long term heading only.
+    - "Filled posts" gets a chart heading dated from the short term start.
+    - "Comp prev publication" gets an "Annual" row for each March period, then a
+      "Monthly" row for each period after the latest March, in each label range.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
         term_from_dates (TermFromDates): first import date of each comparison term.
+        run_number (int): the run the workbook is built from.
 
     Returns:
         dict[str, dict[str, str]]: text to write.
@@ -271,13 +275,13 @@ def sheet_text(
     dates = _period_dates(period_labels)
 
     # Period months the headings and notes refer back to
-    short_term_period, medium_term_period = _period_months(
-        [term_from_dates.short, term_from_dates.medium]
+    short_term_period, medium_term_period, long_term_period = _period_months(
+        [term_from_dates.short, term_from_dates.medium, term_from_dates.long]
     )
 
     # Title on every sheet
     text = {
-        sheet.name: {cell_map.TITLE_CELL: title_text(period_labels)}
+        sheet.name: {cell_map.TITLE_CELL: title_text(period_labels, run_number)}
         for sheet in cell_map.ASSESSMENT_SHEETS
     }
 
@@ -288,16 +292,22 @@ def sheet_text(
         )
     )
 
-    # Short and medium term comparisons: heading and criteria note
+    # Comparisons: heading and criteria note
     for sheet, period in (
         (cell_map.COMP_SHORT_TERM, short_term_period),
         (cell_map.COMP_MEDIUM_TERM, medium_term_period),
+        (cell_map.COMP_LONG_TERM, long_term_period),
     ):
         date = period.strftime(PERIOD_LABEL_LONG_FORMAT)
         text[sheet.name][cell_map.HEADING_CELL] = HEADING_TEXT.format(date=date)
         text[sheet.name][cell_map.CRITERIA_NOTE_CELL] = CRITERIA_NOTE_TEXT.format(
             date=date
         )
+
+    # No filters: heading only
+    text[cell_map.NO_FILTERS.name][cell_map.HEADING_CELL] = HEADING_TEXT.format(
+        date=long_term_period.strftime(PERIOD_LABEL_LONG_FORMAT)
+    )
 
     # Comp prev publication: an Annual or Monthly label for each period row
     row_labels = [label for _, label in comp_prev_rows([d.date() for d in dates])]
@@ -324,6 +334,7 @@ def _input_cells(sheet: cell_map.SheetMap) -> set[tuple[int, int]]:
 def fill_assessment_workbook(
     period_labels: list[str],
     term_from_dates: TermFromDates,
+    run_number: int,
     values: dict[str, dict[str, object]],
     template_path: Path,
     output_path: Path,
@@ -340,13 +351,14 @@ def fill_assessment_workbook(
     Args:
         period_labels (list[str]): the run's period labels, such as "Mar 2026".
         term_from_dates (TermFromDates): first import date of each comparison term.
+        run_number (int): the run the workbook is built from, shown in the titles.
         values (dict[str, dict[str, object]]): values to write, keyed by sheet
             name, then by A1 cell reference, e.g. `{"Filled posts": {"C24":
             1000}}`. Cells must be in the sheet's mapped input ranges.
         template_path (Path): template to load.
         output_path (Path): local path to save to.
     """
-    text = sheet_text(period_labels, term_from_dates)
+    text = sheet_text(period_labels, term_from_dates, run_number)
     workbook = openpyxl.load_workbook(template_path)
     check_template(workbook, values)
 
@@ -475,6 +487,9 @@ def _table_cells(
 ) -> dict[str, object]:
     """Cells for one table: period dates, service type values and % changes.
 
+    Percent ranges are rounded to one decimal place of a percentage and all other
+    value ranges to whole numbers.
+
     Args:
         sheet (cell_map.SheetMap): the sheet the table is on.
         period_df (pl.DataFrame): the table's periods, in workbook order.
@@ -508,11 +523,17 @@ def _table_cells(
     for key in value_keys:
         input_range = _input_range(sheet, key)
         cell_range = CellRange(input_range.cells)
+        round_values = (
+            publication_utils.percentage_as_rounded_fraction
+            if input_range.number_format == "percent"
+            else publication_utils.round_to_whole_number
+        )
+        value_columns = [
+            f"{input_range.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
+            for service_type in service_types
+        ]
         rows = period_df.select(
-            [
-                f"{input_range.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
-                for service_type in service_types
-            ]
+            round_values(column).alias(column) for column in value_columns
         ).rows()
         # A % change range can start below the first date row.
         rows = rows[cell_range.min_row - dates_range.min_row :]
@@ -667,6 +688,7 @@ def fill_assessment_workbook_from_lf(
     assessment_lf: pl.LazyFrame,
     sheets: tuple[cell_map.SheetMap, ...],
     term_from_dates: TermFromDates,
+    run_number: int,
     template_path: Path,
     output_path: Path,
 ) -> None:
@@ -678,6 +700,7 @@ def fill_assessment_workbook_from_lf(
         assessment_lf (pl.LazyFrame): assessment data.
         sheets (tuple[cell_map.SheetMap, ...]): sheets to fill.
         term_from_dates (TermFromDates): first import date of each comparison term.
+        run_number (int): the run the data was built from, shown in the titles.
         template_path (Path): template to load.
         output_path (Path): local path to save to.
 
@@ -695,7 +718,7 @@ def fill_assessment_workbook_from_lf(
     }
     period_labels = assessment_df.get_column(Pub.period_label_short).unique().to_list()
     fill_assessment_workbook(
-        period_labels, term_from_dates, values, template_path, output_path
+        period_labels, term_from_dates, run_number, values, template_path, output_path
     )
 
 

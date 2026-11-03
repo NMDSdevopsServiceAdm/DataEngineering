@@ -113,6 +113,7 @@ def main(
 
     # Cast to Categorical/Enum here so it's saved in the output parquet file.
     cqc_reg_lf = cqc_reg_lf.with_columns(
+        pl.col(CQCLClean.location_id).cast(CategoricalColumnTypes.LocationCatType),
         pl.col(CQCLClean.care_home).cast(CategoricalColumnTypes.CareHomeEnumType),
         pl.col(CQCLClean.dormancy).cast(CategoricalColumnTypes.DormancyEnumType),
         pl.col(CQCLClean.cqc_sector).cast(CategoricalColumnTypes.CqcSectorEnumType),

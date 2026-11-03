@@ -269,6 +269,7 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     return cleaned_historic_ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def prepare_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
     """
     Flatten overall and ASG ratings within assessment field extracted from CQC location data into a unified, pivoted DataFrame.
@@ -334,6 +335,7 @@ def prepare_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
     return final_df.select(*desired_column_order)
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def extract_assessment_base(cqc_location_df: DataFrame) -> DataFrame:
     """
     Extract and explode the base assessment data from the CQC location dataset.
@@ -359,6 +361,7 @@ def extract_assessment_base(cqc_location_df: DataFrame) -> DataFrame:
     return assessment_base_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def extract_overall(assessment_df: DataFrame) -> DataFrame:
     """
     Extract and flatten 'overall' ratings from assessment data.
@@ -412,6 +415,7 @@ def extract_overall(assessment_df: DataFrame) -> DataFrame:
     return overall_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def raise_error_when_assessment_df_contains_overall_data(df: DataFrame) -> None:
     """
     Raise an error when the assessments dataframe contains any overall ratings data.
@@ -446,6 +450,7 @@ def raise_error_when_assessment_df_contains_overall_data(df: DataFrame) -> None:
     return None
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def extract_asg(assessment_df: DataFrame) -> DataFrame:
     """
     Extract and flatten ASG ratings from assessment data.
@@ -520,6 +525,7 @@ def extract_asg(assessment_df: DataFrame) -> DataFrame:
     return asg_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/flatten_cqc_ratings.py
 def merge_cqc_ratings(
     assessment_ratings_df: DataFrame,
     standard_ratings_df: DataFrame,
@@ -594,6 +600,7 @@ def merge_cqc_ratings(
     return merged_df.select(*expected_columns)
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
     columns_to_clean = [
         CQCRatings.overall_rating,
@@ -633,6 +640,7 @@ def add_current_or_historic_column(
     return ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def remove_blank_and_duplicate_rows(ratings_df: DataFrame) -> DataFrame:
     ratings_df = ratings_df.where(
         (ratings_df[CQCRatings.overall_rating].isNotNull())
@@ -672,6 +680,7 @@ def add_rating_sequence_column(
     return ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
     """
     Adds a column to flag the latest rating per locationid as 1, otherwise 0.
@@ -694,6 +703,7 @@ def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
     return ratings_df
 
 
+# converted to polars -> projects/_02_sfc_internal/_01_cqc_ratings/fargate/utils/utils.py
 def add_numerical_ratings(df: DataFrame) -> DataFrame:
     """
     Adds numerical ratings columns for each of the key ratings and a total column.
