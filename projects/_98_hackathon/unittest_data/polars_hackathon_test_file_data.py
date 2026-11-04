@@ -6,12 +6,15 @@ from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as 
 
 
 def worker_row(
-    worker_id: str, import_date: date, employment_status_label: str
+    worker_id: str,
+    import_date: date,
+    employment_status_label: str = EmpStat.permanent,
+    establishment_id: str = "1-001",
 ) -> tuple[Any, ...]:
     """Returns a cleaned worker row in schema column order."""
     return (
         "1-001",
-        "1-001",
+        establishment_id,
         worker_id,
         "1",
         "1",
@@ -23,8 +26,28 @@ def worker_row(
     )
 
 
+def flagged_row(
+    worker_id: str,
+    import_date: date,
+    is_leaver: bool | None,
+    establishment_id: str = "1-001",
+) -> tuple[Any, ...]:
+    """Returns a permanent worker row with `is_leaver` appended."""
+    return (
+        *worker_row(worker_id, import_date, establishment_id=establishment_id),
+        is_leaver,
+    )
+
+
 @dataclass
 class FilterWorkerTurnoverDataCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class AddIsLeaverFlagCase:
     id: str
     input_rows: list[tuple[Any, ...]]
     expected_rows: list[tuple[Any, ...]]
@@ -126,6 +149,109 @@ class WorkerTurnoverData:
             ],
             expected_rows=[
                 worker_row("2", date(2021, 1, 12), EmpStat.permanent),
+            ],
+        ),
+    ]
+
+    add_is_leaver_flag_cases = [
+        AddIsLeaverFlagCase(
+            id="flags_worker_in_end_snapshot_as_not_leaver",
+            input_rows=[
+                worker_row("1", date(2021, 1, 5)),
+                worker_row("1", date(2022, 1, 5)),
+            ],
+            expected_rows=[
+                flagged_row("1", date(2021, 1, 5), False),
+                flagged_row("1", date(2022, 1, 5), None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="flags_worker_missing_from_end_snapshot_as_leaver",
+            input_rows=[
+                worker_row("1", date(2021, 1, 5)),
+                worker_row("2", date(2021, 1, 5)),
+                worker_row("1", date(2022, 1, 5)),
+            ],
+            expected_rows=[
+                flagged_row("1", date(2021, 1, 5), False),
+                flagged_row("2", date(2021, 1, 5), True),
+                flagged_row("1", date(2022, 1, 5), None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="matches_end_snapshot_on_month_and_year_ignoring_day",
+            input_rows=[
+                worker_row("1", date(2021, 1, 5)),
+                worker_row("1", date(2022, 1, 28)),
+            ],
+            expected_rows=[
+                flagged_row("1", date(2021, 1, 5), False),
+                flagged_row("1", date(2022, 1, 28), None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="flags_worker_as_leaver_when_only_in_other_months",
+            input_rows=[
+                worker_row("1", date(2021, 1, 5)),
+                worker_row("2", date(2022, 1, 5)),
+                worker_row("1", date(2022, 2, 5)),
+            ],
+            expected_rows=[
+                flagged_row("1", date(2021, 1, 5), True),
+                flagged_row("2", date(2022, 1, 5), None),
+                flagged_row("1", date(2022, 2, 5), None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="flags_same_worker_id_at_other_establishment_as_leaver",
+            input_rows=[
+                worker_row("1", date(2021, 1, 5), establishment_id="1-001"),
+                worker_row("1", date(2022, 1, 5), establishment_id="1-002"),
+            ],
+            expected_rows=[
+                flagged_row("1", date(2021, 1, 5), True, establishment_id="1-001"),
+                flagged_row("1", date(2022, 1, 5), None, establishment_id="1-002"),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="leaves_is_leaver_null_when_no_end_snapshot",
+            input_rows=[
+                worker_row("1", date(2021, 1, 5)),
+                worker_row("1", date(2021, 2, 5)),
+                worker_row("1", date(2022, 1, 5)),
+            ],
+            expected_rows=[
+                flagged_row("1", date(2021, 1, 5), False),
+                flagged_row("1", date(2021, 2, 5), None),
+                flagged_row("1", date(2022, 1, 5), None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="keeps_duplicate_stayers_without_multiplying_rows",
+            input_rows=[
+                worker_row("1", date(2021, 1, 5)),
+                worker_row("1", date(2021, 1, 5)),
+                worker_row("1", date(2022, 1, 5)),
+                worker_row("1", date(2022, 1, 5)),
+            ],
+            expected_rows=[
+                flagged_row("1", date(2021, 1, 5), False),
+                flagged_row("1", date(2021, 1, 5), False),
+                flagged_row("1", date(2022, 1, 5), None),
+                flagged_row("1", date(2022, 1, 5), None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="keeps_duplicate_leavers",
+            input_rows=[
+                worker_row("1", date(2021, 1, 5)),
+                worker_row("1", date(2021, 1, 5)),
+                worker_row("2", date(2022, 1, 5)),
+            ],
+            expected_rows=[
+                flagged_row("1", date(2021, 1, 5), True),
+                flagged_row("1", date(2021, 1, 5), True),
+                flagged_row("2", date(2022, 1, 5), None),
             ],
         ),
     ]

@@ -6,6 +6,7 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 
 @dataclass
@@ -26,4 +27,8 @@ class WorkerTurnoverSchemas:
                 CatColType.EmploymentStatusCatType,
             ),
         ]
+    )
+
+    leaver_worker_schema = pl.Schema(
+        [*cleaned_worker_schema.items(), (HackCols.is_leaver, pl.Boolean())]
     )
