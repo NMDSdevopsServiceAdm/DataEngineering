@@ -35,13 +35,12 @@ def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def add_is_leaver_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `is_leaver`, true when a worker is absent from the snapshot 12 months later.
+    """Flags workers absent from the snapshot 12 months later.
 
-    Each start month is paired with the snapshot 12 calendar months later,
-    matching on month and year only. A worker is the establishment and worker ID
-    combination. `is_leaver` is null where no snapshot exists 12 months later.
-    Semi and anti joins keep every input row exactly once, including duplicate
-    workers. Recombining them with `pl.concat` does not preserve row order.
+    Months are matched on month and year. A worker is an establishment ID and
+    worker ID pair. `is_leaver` is null where no snapshot exists 12 months later.
+    Semi and anti joins keep each input row once, including duplicates;
+    `pl.concat` does not preserve row order.
 
     Args:
         worker_lf (pl.LazyFrame): Filtered worker data, one snapshot per month.

@@ -3,7 +3,7 @@ from polars_utils import utils
 
 
 def main(cleaned_ascwds_worker_source: str, flagged_destination: str) -> None:
-    """Filters the cleaned ASC-WDS worker data and flags workers who left within 12 months.
+    """Filters the cleaned ASC-WDS worker data and flags leavers.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data

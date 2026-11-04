@@ -14,7 +14,7 @@ class WorkerTurnoverSchemas:
     cleaned_worker_schema = pl.Schema(
         [
             (AWKClean.location_id, pl.String()),
-            (AWKClean.establishment_id, pl.String()),
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
             (AWKClean.worker_id, pl.String()),
             (AWKClean.main_job_role_id, pl.String()),
             (AWKClean.employment_status, pl.String()),
