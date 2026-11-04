@@ -44,14 +44,8 @@ def main(
         cleaned_worker_destination (str): destination for cleaned ASC-WDS
             worker output
     """
-    worker_lf = (
-        utils.scan_parquet(worker_source, schema=WORKER_SCHEMA)
-        .select(WORKER_SCHEMA.keys())
-        .with_columns(
-            pl.col(AWKClean.establishment_id).cast(
-                CategoricalColumnTypes.EstablishmentCatType
-            )
-        )
+    worker_lf = utils.scan_parquet(worker_source, schema=WORKER_SCHEMA).select(
+        WORKER_SCHEMA.keys()
     )
 
     worker_lf = cUtils.column_to_date(
@@ -59,6 +53,13 @@ def main(
     )
 
     worker_lf = worker_lf.filter(is_unique_worker_data())
+
+    # Cast after is_unique_worker_data, which matches on the raw string.
+    worker_lf = worker_lf.with_columns(
+        pl.col(AWKClean.establishment_id).cast(
+            CategoricalColumnTypes.EstablishmentCatType
+        )
+    )
 
     workplace_lf = utils.scan_parquet(
         cleaned_workplace_source, schema=WORKPLACE_SCHEMA
