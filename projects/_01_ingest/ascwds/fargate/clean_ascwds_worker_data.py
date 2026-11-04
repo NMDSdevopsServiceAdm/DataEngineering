@@ -24,7 +24,7 @@ WORKER_SCHEMA = {
 
 WORKPLACE_SCHEMA = {
     AWPClean.import_date: pl.String,
-    AWPClean.establishment_id: pl.String,
+    AWPClean.establishment_id: CategoricalColumnTypes.EstablishmentCatType,
 }
 
 
@@ -53,6 +53,13 @@ def main(
     )
 
     worker_lf = worker_lf.filter(is_unique_worker_data())
+
+    # Cast after is_unique_worker_data, which matches on the raw string.
+    worker_lf = worker_lf.with_columns(
+        pl.col(AWKClean.establishment_id).cast(
+            CategoricalColumnTypes.EstablishmentCatType
+        )
+    )
 
     workplace_lf = utils.scan_parquet(
         cleaned_workplace_source, schema=WORKPLACE_SCHEMA

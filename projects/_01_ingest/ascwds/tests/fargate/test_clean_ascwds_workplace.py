@@ -48,6 +48,9 @@ class TestMain:
         merge_legacy_job_role_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
+        recheck_duplicate_establishments_mock.return_value = pl.LazyFrame(
+            schema={AWPClean.establishment_id: pl.String}
+        )
         discover_combined_schema_mock.return_value = {
             "jr09emp": pl.String,
             AWPClean.establishment_id: pl.String,
@@ -73,10 +76,20 @@ class TestMain:
         apply_data_corrections_mock.assert_called_once()
         recheck_duplicate_establishments_mock.assert_called_once()
         exclude_test_accounts_filter_mock.assert_called_once()
-        assert null_duplicate_establishment_numeric_data_mock.call_args_list == [
-            call(ANY, recheck_duplicate_establishments_mock.return_value),
-            call(ANY, recheck_duplicate_establishments_mock.return_value),
-        ]
+        assert null_duplicate_establishment_numeric_data_mock.call_count == 2
+        first_duplicates_lf = (
+            null_duplicate_establishment_numeric_data_mock.call_args_list[0].args[1]
+        )
+        second_duplicates_lf = (
+            null_duplicate_establishment_numeric_data_mock.call_args_list[1].args[1]
+        )
+        assert (
+            first_duplicates_lf.collect_schema()[AWPClean.establishment_id] == pl.String
+        )
+        assert (
+            second_duplicates_lf.collect_schema()[AWPClean.establishment_id]
+            == job.CategoricalColumnTypes.EstablishmentCatType
+        )
         cast_date_strings_to_dates_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
         build_labels_lf_mock.assert_called_once_with(

@@ -18,7 +18,7 @@ from utils.column_values.categorical_columns_by_dataset import (
 columns = {
     ASCWPClean.organisation_id: "String",
     ASCWPClean.period: "String",
-    ASCWPClean.establishment_id: "String",
+    ASCWPClean.establishment_id: str(CategoricalColumnTypes.EstablishmentCatType),
     ASCWPClean.establishment_id_from_nmds: "String",
     ASCWPClean.parent_id: "String",
     ASCWPClean.nmds_id: "String",
