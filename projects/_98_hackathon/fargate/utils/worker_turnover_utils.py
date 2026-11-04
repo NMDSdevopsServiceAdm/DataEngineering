@@ -11,12 +11,12 @@ from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as 
 
 
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Keeps permanent and temporary workers from each month's earliest file.
+    """Keeps permanent and temporary workers with a location ID.
 
-    Only files from 1 January 2020 onwards are kept. The earliest file is
-    chosen after the other filters, so it is the earliest with permanent or
-    temporary workers. This month filter uses `.over()`, which the streaming
-    engine does not cover, so the sink may fall back to the in-memory engine.
+    Only files from 1 January 2020 onwards are kept, and only each month's
+    earliest file after the other filters. That month filter uses `.over()`,
+    which the streaming engine does not cover, so the sink may fall back to the
+    in-memory engine.
 
     Args:
         worker_lf (pl.LazyFrame): Cleaned ASC-WDS worker data.
@@ -28,6 +28,7 @@ def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     return worker_lf.filter(
         pl.col(AWKClean.ascwds_worker_import_date) >= start_date,
+        pl.col(AWKClean.location_id).is_not_null(),
         pl.col(AWKClean.employment_status_clean_labelled).is_in(
             [EmpStat.permanent, EmpStat.temporary]
         ),
