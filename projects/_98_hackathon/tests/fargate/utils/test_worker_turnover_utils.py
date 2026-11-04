@@ -48,3 +48,26 @@ class TestAddIsLeaverFlag:
         returned_lf = job.add_is_leaver_flag(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.establishment_in_both_snapshots_cases
+        ],
+    )
+    def test_sets_establishment_in_both_snapshots_and_nulls_is_leaver_where_false(
+        self, case
+    ):
+        input_lf = pl.LazyFrame(
+            case.input_rows, schema=Schemas.cleaned_worker_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.establishment_flag_schema, orient="row"
+        )
+
+        returned_lf = job.add_is_leaver_flag(input_lf).select(
+            expected_lf.collect_schema().names()
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)

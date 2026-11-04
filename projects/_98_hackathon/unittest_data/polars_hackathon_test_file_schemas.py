@@ -29,6 +29,19 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    establishment_flag_schema = pl.Schema(
+        [
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.establishment_in_both_snapshots, pl.Boolean()),
+            (HackCols.is_leaver, pl.Boolean()),
+        ]
+    )
+
     leaver_worker_schema = pl.Schema(
-        [*cleaned_worker_schema.items(), (HackCols.is_leaver, pl.Boolean())]
+        [
+            *cleaned_worker_schema.items(),
+            (HackCols.establishment_in_both_snapshots, pl.Boolean()),
+            (HackCols.is_leaver, pl.Boolean()),
+        ]
     )
