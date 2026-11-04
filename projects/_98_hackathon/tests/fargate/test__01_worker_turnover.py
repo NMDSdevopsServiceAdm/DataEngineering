@@ -28,9 +28,7 @@ class TestMain:
         )
 
         assert scan_parquet_mock.call_count == 2
-        assert scan_parquet_mock.call_args_list[0].args == (
-            self.CLEANED_WORKER_SOURCE,
-        )
+        assert scan_parquet_mock.call_args_list[0].args == (self.CLEANED_WORKER_SOURCE,)
         assert scan_parquet_mock.call_args_list[1].args == (
             self.CLEANED_WORKPLACE_SOURCE,
         )
