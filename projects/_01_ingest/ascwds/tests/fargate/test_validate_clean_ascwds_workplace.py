@@ -59,7 +59,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
             schema={
                 ASCWPClean.organisation_id: pl.String,
                 ASCWPClean.period: pl.String,
-                ASCWPClean.establishment_id: pl.String,
+                ASCWPClean.establishment_id: CategoricalColumnTypes.EstablishmentCatType,
                 ASCWPClean.establishment_id_from_nmds: pl.String,
                 ASCWPClean.parent_id: pl.String,
                 ASCWPClean.nmds_id: pl.String,

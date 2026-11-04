@@ -29,7 +29,7 @@ def build_source_df() -> pl.DataFrame:
         },
         schema={
             ASCWKClean.location_id: CategoricalColumnTypes.LocationCatType,
-            ASCWKClean.establishment_id: pl.String,
+            ASCWKClean.establishment_id: CategoricalColumnTypes.EstablishmentCatType,
             ASCWKClean.worker_id: pl.String,
             ASCWKClean.main_job_role_id: pl.String,
             ASCWKClean.employment_status: pl.String,

@@ -84,6 +84,7 @@ class TestReshapeEmploymentStatusData:
             case.input_data,
             schema_overrides={
                 AWKClean.location_id: CatColType.LocationCatType,
+                AWKClean.establishment_id: CatColType.EstablishmentCatType,
                 EmpStatus.total_count: pl.UInt32,
             },
         )
@@ -91,14 +92,13 @@ class TestReshapeEmploymentStatusData:
             case.expected_data,
             schema_overrides={
                 AWKClean.location_id: CatColType.LocationCatType,
+                AWKClean.establishment_id: CatColType.EstablishmentCatType,
                 **{
                     column: pl.UInt32
                     for column in emp_stat_count_cols
                     if column in case.expected_data
                 },
             },
-        ).with_columns(
-            pl.col(AWKClean.establishment_id).cast(CatColType.EstablishmentCatType),
         )
 
         returned_lf = job.reshape_employment_status_data(test_lf)

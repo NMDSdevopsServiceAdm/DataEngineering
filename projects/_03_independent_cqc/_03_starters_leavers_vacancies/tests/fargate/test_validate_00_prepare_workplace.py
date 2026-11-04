@@ -6,6 +6,7 @@ import polars as pl
 import pytest
 
 import projects._03_independent_cqc._03_starters_leavers_vacancies.fargate.validate_00_prepare_workplace as job
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -29,7 +30,7 @@ class TestMain:
     @pytest.fixture(autouse=True)
     def setup(self):
         source_schema = {
-            AWPClean.establishment_id: pl.String,
+            AWPClean.establishment_id: CatColType.EstablishmentCatType,
             AWPClean.ascwds_workplace_import_date: pl.Date,
             IndCQC.published_job_role_label: pl.String,
             EmpStatus.employee_count: pl.Int64,
@@ -49,7 +50,7 @@ class TestMain:
         # must not count towards the expected row total.
         compare_schema = {
             AWPClean.location_id: pl.String,
-            AWPClean.establishment_id: pl.String,
+            AWPClean.establishment_id: CatColType.EstablishmentCatType,
             AWPClean.ascwds_workplace_import_date: pl.Date,
         }
         compare_rows = [

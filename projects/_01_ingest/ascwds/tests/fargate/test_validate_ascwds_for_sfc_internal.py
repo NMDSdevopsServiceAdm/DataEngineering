@@ -43,7 +43,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
             },
             schema={
                 AWPClean.ascwds_workplace_import_date: pl.Date,
-                AWPClean.establishment_id: pl.String,
+                AWPClean.establishment_id: CategoricalColumnTypes.EstablishmentCatType,
                 AWPClean.nmds_id: pl.String,
                 AWPClean.master_update_date: pl.Date,
                 AWPClean.master_update_date_org: pl.Date,
