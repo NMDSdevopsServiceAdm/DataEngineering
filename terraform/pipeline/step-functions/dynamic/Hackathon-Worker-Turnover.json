@@ -1,5 +1,5 @@
 {
-  "Comment": "Manually-started. Filters the cleaned ASC-WDS worker data to permanent and temporary workers in the earliest file of each month since January 2020, adds the main service ID from the cleaned workplace data and flags leavers, then runs the crawler. Start with no execution input.",
+  "Comment": "Manually-started. Filters the cleaned ASC-WDS worker data to permanent and temporary workers in the earliest file of each month since January 2020, adds the main service ID and its hackathon recode from the cleaned workplace data and flags leavers, then runs the crawler. Start with no execution input.",
   "StartAt": "Filter worker turnover data",
   "States": {
     "Filter worker turnover data": {

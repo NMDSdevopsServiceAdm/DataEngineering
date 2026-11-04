@@ -13,7 +13,7 @@ def main(
     cleaned_ascwds_workplace_source: str,
     flagged_destination: str,
 ) -> None:
-    """Filters the cleaned ASC-WDS worker data, adds main service ID and flags leavers.
+    """Filters the cleaned ASC-WDS worker data, adds main service and flags leavers.
 
     Main service ID comes from the workplace snapshot with the same establishment
     ID and import date; it is null where there is no match. Only the join keys and
@@ -41,6 +41,7 @@ def main(
         right_on=[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
         how="left",
     )
+    worker_lf = wUtils.add_main_service_hackathon(worker_lf)
     worker_lf = wUtils.add_is_leaver_flag(worker_lf)
 
     utils.sink_to_parquet(worker_lf, output_path=flagged_destination)

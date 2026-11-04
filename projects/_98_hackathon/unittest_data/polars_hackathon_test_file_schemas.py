@@ -6,6 +6,9 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 
@@ -31,4 +34,24 @@ class WorkerTurnoverSchemas:
 
     leaver_worker_schema = pl.Schema(
         [*cleaned_worker_schema.items(), (HackCols.is_leaver, pl.Boolean())]
+    )
+
+    main_service_input_schema = pl.Schema(
+        [(AWPClean.main_service_id, CatColType.MainServiceIdCatType)]
+    )
+
+    main_service_hackathon_schema = pl.Schema(
+        [
+            *main_service_input_schema.items(),
+            (
+                HackCols.main_service_hackathon,
+                pl.Enum(
+                    [
+                        "Care home with nursing",
+                        "Care home without nursing",
+                        "non-residential",
+                    ]
+                ),
+            ),
+        ]
     )

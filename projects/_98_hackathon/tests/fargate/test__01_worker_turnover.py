@@ -11,6 +11,7 @@ class TestMain:
     FLAGGED_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_main_service_hackathon")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
     @patch(f"{PATCH_PATH}.wUtils.filter_worker_turnover_data")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
@@ -19,6 +20,7 @@ class TestMain:
         scan_parquet_mock: Mock,
         filter_worker_turnover_data_mock: Mock,
         add_is_leaver_flag_mock: Mock,
+        add_main_service_hackathon_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -36,7 +38,10 @@ class TestMain:
             scan_parquet_mock.return_value
         )
         joined_lf = filter_worker_turnover_data_mock.return_value.join.return_value
-        add_is_leaver_flag_mock.assert_called_once_with(joined_lf)
+        add_main_service_hackathon_mock.assert_called_once_with(joined_lf)
+        add_is_leaver_flag_mock.assert_called_once_with(
+            add_main_service_hackathon_mock.return_value
+        )
         sink_to_parquet_mock.assert_called_once_with(
             add_is_leaver_flag_mock.return_value,
             output_path=self.FLAGGED_DESTINATION,

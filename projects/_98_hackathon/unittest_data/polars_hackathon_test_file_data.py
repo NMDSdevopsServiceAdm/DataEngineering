@@ -55,7 +55,47 @@ class AddIsLeaverFlagCase:
 
 
 @dataclass
+class AddMainServiceHackathonCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class WorkerTurnoverData:
+    add_main_service_hackathon_cases = [
+        AddMainServiceHackathonCase(
+            id="recodes_care_home_with_nursing",
+            input_rows=[("Care home services with nursing - CHN",)],
+            expected_rows=[
+                ("Care home services with nursing - CHN", "Care home with nursing")
+            ],
+        ),
+        AddMainServiceHackathonCase(
+            id="recodes_care_home_without_nursing",
+            input_rows=[("Care home services without nursing - CHS",)],
+            expected_rows=[
+                (
+                    "Care home services without nursing - CHS",
+                    "Care home without nursing",
+                )
+            ],
+        ),
+        AddMainServiceHackathonCase(
+            id="recodes_any_other_main_service_as_non_residential",
+            input_rows=[("Day care and day services",), ("Adult placement home",)],
+            expected_rows=[
+                ("Day care and day services", "non-residential"),
+                ("Adult placement home", "non-residential"),
+            ],
+        ),
+        AddMainServiceHackathonCase(
+            id="keeps_null_main_service_as_null",
+            input_rows=[(None,)],
+            expected_rows=[(None, None)],
+        ),
+    ]
+
     filter_worker_turnover_data_cases = [
         FilterWorkerTurnoverDataCase(
             id="keeps_permanent_and_temporary_workers",
