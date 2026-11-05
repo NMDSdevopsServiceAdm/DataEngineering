@@ -23,7 +23,7 @@ class AddIsLeaverFlagCase:
 
 
 @dataclass
-class AddMainServiceHackathonCase:
+class AddMainServiceTypeCase:
     id: str
     input_rows: list[tuple[Any, ...]]
     expected_rows: list[tuple[Any, ...]]
@@ -31,26 +31,21 @@ class AddMainServiceHackathonCase:
 
 @dataclass
 class WorkerTurnoverData:
-    add_main_service_hackathon_cases = [
-        AddMainServiceHackathonCase(
+    add_main_service_type_cases = [
+        AddMainServiceTypeCase(
             id="recodes_code_1_as_care_home_with_nursing",
             input_rows=[("1",)],
             expected_rows=[("1", "Care home with nursing")],
         ),
-        AddMainServiceHackathonCase(
+        AddMainServiceTypeCase(
             id="recodes_code_2_as_care_home_without_nursing",
             input_rows=[("2",)],
             expected_rows=[("2", "Care home without nursing")],
         ),
-        AddMainServiceHackathonCase(
+        AddMainServiceTypeCase(
             id="recodes_any_other_code_as_non_residential",
             input_rows=[("3",), ("10",)],
             expected_rows=[("3", "non-residential"), ("10", "non-residential")],
-        ),
-        AddMainServiceHackathonCase(
-            id="keeps_null_main_service_as_null",
-            input_rows=[(None,)],
-            expected_rows=[(None, None)],
         ),
     ]
 

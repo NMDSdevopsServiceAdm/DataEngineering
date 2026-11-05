@@ -7,4 +7,4 @@ class HackathonColumns:
     end_month: str = "end_month"
     establishment_in_both_snapshots: str = "establishment_in_both_snapshots"
     is_leaver: str = "is_leaver"
-    main_service_hackathon: str = "main_service_hackathon"
+    main_service_type: str = "main_service_type"

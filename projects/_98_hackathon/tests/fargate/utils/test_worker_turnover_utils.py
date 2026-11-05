@@ -32,13 +32,10 @@ class TestFilterWorkerTurnoverData:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestAddMainServiceHackathon:
+class TestAddMainServiceType:
     @pytest.mark.parametrize(
         "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.add_main_service_hackathon_cases
-        ],
+        [pytest.param(case, id=case.id) for case in Data.add_main_service_type_cases],
     )
     def test_returns_expected_rows(self, case):
         input_lf = pl.LazyFrame(
@@ -46,11 +43,11 @@ class TestAddMainServiceHackathon:
         )
         expected_lf = pl.LazyFrame(
             case.expected_rows,
-            schema=Schemas.main_service_hackathon_schema,
+            schema=Schemas.main_service_type_schema,
             orient="row",
         )
 
-        returned_lf = job.add_main_service_hackathon(input_lf)
+        returned_lf = job.add_main_service_type(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
