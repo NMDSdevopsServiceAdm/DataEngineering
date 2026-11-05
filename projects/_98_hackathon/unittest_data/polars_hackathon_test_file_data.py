@@ -2,7 +2,12 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
-from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
+from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
+    WORKER_CATEGORICAL_COLUMNS, WORKER_NUMERIC_COLUMNS, WORKER_STRING_COLUMNS)
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import \
+    AscwdsWorkerCleanedColumns as AWKClean
+from utils.column_values.ascwds_labelled_vocab import \
+    EmploymentStatusLabels as EmpStat
 
 
 def worker_row(
@@ -38,6 +43,27 @@ def flagged_row(
         *worker_row(worker_id, import_date, establishment_id=establishment_id),
         is_leaver,
     )
+
+
+def raw_worker_row(
+    worker_id: str,
+    import_date: str,
+    establishment_id: str = "1-001",
+    **values: str,
+) -> dict[str, str | None]:
+    """Returns a raw worker row with every modelling column null unless set."""
+    modelling_columns = [
+        *WORKER_CATEGORICAL_COLUMNS,
+        *WORKER_NUMERIC_COLUMNS,
+        *WORKER_STRING_COLUMNS,
+    ]
+    return {
+        AWKClean.establishment_id: establishment_id,
+        AWKClean.worker_id: worker_id,
+        AWKClean.import_date: import_date,
+        **{column: None for column in modelling_columns},
+        **values,
+    }
 
 
 @dataclass

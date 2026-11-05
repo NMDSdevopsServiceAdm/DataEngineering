@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added 19 raw ASC-WDS worker columns, with their change and save dates, to the Hackathon Worker Turnover job output for modelling who leaves.
 - Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
 - Added an `is_leaver` flag to the Hackathon Worker Turnover job, true when a worker is absent from the snapshot 12 months later (null if none exists).
 - Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils.

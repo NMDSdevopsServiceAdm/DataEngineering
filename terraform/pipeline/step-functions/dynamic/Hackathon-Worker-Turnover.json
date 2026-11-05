@@ -24,6 +24,8 @@
                 "_01_worker_turnover.py",
                 "--cleaned_ascwds_worker_source",
                 "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/",
+                "--raw_ascwds_worker_source",
+                "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker/",
                 "--flagged_destination",
                 "${dataset_bucket_uri}/domain=98_hackathon/dataset=worker_turnover_01_flagged/"
               ]
