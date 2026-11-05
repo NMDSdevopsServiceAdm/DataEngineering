@@ -37,43 +37,11 @@ WORKER_NUMERIC_COLUMNS = [
     AWKClean.start_age,
 ]
 
-# Kept as raw strings: the start date and the change/save date of each field.
-WORKER_STRING_COLUMNS = [
+# The start date and the pay change and save dates.
+WORKER_DATE_COLUMNS = [
     AWKClean.start_date,
-    AWKClean.gender_change_date,
-    AWKClean.gender_save_date,
-    AWKClean.age_change_date,
-    AWKClean.age_save_date,
-    AWKClean.ethnicity_change_date,
-    AWKClean.ethnicity_save_date,
-    AWKClean.is_british_change_date,  # nationality
-    AWKClean.is_british_save_date,
-    AWKClean.born_in_uk_change_date,  # country of birth
-    AWKClean.born_in_uk_save_date,
-    AWKClean.disabled_change_date,
-    AWKClean.disabled_save_date,
-    AWKClean.pay_change_date,  # hourly or annual pay
+    AWKClean.pay_change_date,
     AWKClean.pay_save_date,
-    AWKClean.highest_qual_level_change_date,
-    AWKClean.highest_qual_level_save_date,
-    AWKClean.level_social_care_qualification_held_change_date,
-    AWKClean.level_social_care_qualification_held_save_date,
-    AWKClean.care_certificate_status_change_date,
-    AWKClean.care_certificate_status_save_date,
-    AWKClean.apprentice_change_date,
-    AWKClean.apprentice_save_date,
-    AWKClean.contracted_hours_change_date,
-    AWKClean.contracted_hours_save_date,
-    AWKClean.average_hours_change_date,
-    AWKClean.average_hours_save_date,
-    AWKClean.zero_hours_change_date,
-    AWKClean.zero_hours_save_date,
-    AWKClean.start_date_change_date,
-    AWKClean.start_date_save_date,
-    AWKClean.source_of_recruitment_change_date,
-    AWKClean.source_of_recruitment_save_date,
-    AWKClean.start_in_sector_change_date,  # start age
-    AWKClean.start_in_sector_save_date,
 ]
 
 
@@ -85,8 +53,9 @@ def add_raw_worker_columns(
     Left joins on establishment ID, worker ID and import date. Only the needed
     raw columns are kept, selected before the join, to limit memory. Raw values
     are not cleaned: code columns become categorical, numeric columns are cast to
-    `Float32` (values that do not parse become null), and the rest stay strings.
-    A raw worker with duplicate keys would duplicate rows.
+    `Float32` (values that do not parse become null), and date columns are parsed
+    from `dd/mm/yyyy` (blank becomes null; any other value that does not parse
+    raises). A raw worker with duplicate keys would duplicate rows.
 
     Args:
         worker_lf (pl.LazyFrame): Flagged worker data with establishment ID,
@@ -109,11 +78,13 @@ def add_raw_worker_columns(
             AWKClean.import_date,
             *WORKER_CATEGORICAL_COLUMNS,
             *WORKER_NUMERIC_COLUMNS,
-            *WORKER_STRING_COLUMNS,
+            *WORKER_DATE_COLUMNS,
         ),
         AWKClean.import_date,
         AWKClean.ascwds_worker_import_date,
     ).drop(AWKClean.import_date)
+
+    day_first_format = "%d/%m/%Y"
 
     raw_worker_lf = raw_worker_lf.with_columns(
         pl.col(AWKClean.establishment_id).cast(
@@ -121,6 +92,7 @@ def add_raw_worker_columns(
         ),
         pl.col(WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical),
         pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False),
+        pl.col(WORKER_DATE_COLUMNS).replace("", None).str.to_date(day_first_format),
     )
 
     return worker_lf.join(raw_worker_lf, on=keys, how="left")

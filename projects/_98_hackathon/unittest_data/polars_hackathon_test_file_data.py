@@ -5,7 +5,7 @@ from typing import Any
 from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
     WORKER_CATEGORICAL_COLUMNS,
     WORKER_NUMERIC_COLUMNS,
-    WORKER_STRING_COLUMNS,
+    WORKER_DATE_COLUMNS,
 )
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -26,7 +26,7 @@ def raw_worker_row(
     modelling_columns = [
         *WORKER_CATEGORICAL_COLUMNS,
         *WORKER_NUMERIC_COLUMNS,
-        *WORKER_STRING_COLUMNS,
+        *WORKER_DATE_COLUMNS,
     ]
     return {
         AWKClean.establishment_id: establishment_id,

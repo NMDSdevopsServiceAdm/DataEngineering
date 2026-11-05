@@ -99,7 +99,7 @@ class TestAddRawWorkerColumns:
             *Schemas.raw_worker_join_input_schema.names(),
             *job.WORKER_CATEGORICAL_COLUMNS,
             *job.WORKER_NUMERIC_COLUMNS,
-            *job.WORKER_STRING_COLUMNS,
+            *job.WORKER_DATE_COLUMNS,
         ]
 
     def test_returns_raw_values_for_worker_with_matching_keys(self):
@@ -110,7 +110,6 @@ class TestAddRawWorkerColumns:
                 **{
                     AWKClean.gender: "1",
                     AWKClean.age: "42",
-                    AWKClean.start_date: "2015-03-01",
                 },
             )
         )
@@ -119,7 +118,6 @@ class TestAddRawWorkerColumns:
 
         assert returned_df[AWKClean.gender].to_list() == ["1"]
         assert returned_df[AWKClean.age].to_list() == [42.0]
-        assert returned_df[AWKClean.start_date].to_list() == ["2015-03-01"]
 
     @pytest.mark.parametrize(
         "raw_row",
@@ -153,7 +151,13 @@ class TestAddRawWorkerColumns:
 
         assert schema[AWKClean.gender] == pl.Categorical
         assert schema[AWKClean.age] == pl.Float32
-        assert schema[AWKClean.gender_change_date] == pl.String
+
+    def test_returns_date_type_for_date_columns(self):
+        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105"))
+
+        schema = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect_schema()
+
+        assert all(schema[column] == pl.Date for column in job.WORKER_DATE_COLUMNS)
 
     def test_returns_null_for_unparseable_numeric_value(self):
         raw_lf = raw_worker_lf(
@@ -163,3 +167,47 @@ class TestAddRawWorkerColumns:
         returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
 
         assert returned_df[AWKClean.age].to_list() == [None]
+
+    @pytest.mark.parametrize(
+        "raw_value, expected_date",
+        [
+            pytest.param("01/03/2015", date(2015, 3, 1), id="day_and_month_one_digit"),
+            pytest.param("25/12/2019", date(2019, 12, 25), id="day_above_twelve"),
+            pytest.param("", None, id="blank_string"),
+            pytest.param(None, None, id="null"),
+        ],
+    )
+    def test_returns_expected_date_for_day_first_string(self, raw_value, expected_date):
+        raw_lf = raw_worker_lf(
+            raw_worker_row("1", "20210105", **{AWKClean.start_date: raw_value})
+        )
+
+        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
+
+        assert returned_df[AWKClean.start_date].to_list() == [expected_date]
+
+    @pytest.mark.parametrize("raw_value", ["2015-03-01", "not a date", "13/13/2015"])
+    def test_raises_for_unparseable_date_value(self, raw_value):
+        raw_lf = raw_worker_lf(
+            raw_worker_row("1", "20210105", **{AWKClean.pay_change_date: raw_value})
+        )
+
+        with pytest.raises(pl.exceptions.PolarsError):
+            job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
+
+    def test_does_not_duplicate_rows_for_unique_keys(self):
+        flagged_lf = pl.LazyFrame(
+            [
+                ("1-001", "1", date(2021, 1, 5)),
+                ("1-001", "2", date(2021, 1, 5)),
+            ],
+            schema=Schemas.raw_worker_join_input_schema,
+            orient="row",
+        )
+        raw_lf = raw_worker_lf(
+            raw_worker_row("1", "20210105"), raw_worker_row("2", "20210105")
+        )
+
+        returned_df = job.add_raw_worker_columns(flagged_lf, raw_lf).collect()
+
+        assert returned_df.height == 2
