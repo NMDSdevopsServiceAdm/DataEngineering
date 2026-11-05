@@ -38,15 +38,6 @@ uv sync
 
 The script needs Git Bash (bash 4 or later), so run it from there. Steps 1 and 2 can be done in a separate PowerShell window: the credentials are saved in your `.aws` folder and shared. `aws` and `uv` must be on the Git Bash PATH. The AWS profiles the script uses must be set up as described in `WINDOWS_SETUP.md`.
 
-## If the script fails with an AWS permissions error
-The `run-log-updater` role is for the person running the script to use (see `WINDOWS_SETUP.md`). It is created by hand in the production AWS console, not in Terraform, so a permissions error is fixed by editing that role's identity policy there.
-
-1. Read the error. It names the denied action and the resource, for example `not authorized to perform: <action> on resource: <arn>`.
-2. In the console, add that action for that resource to the role's policy. Allow only what the error names.
-3. Run the failed step again. One step can need several actions, so repeat 1 and 2 until it succeeds.
-
-If the error came part way through a selection, the run log may already be updated and later steps skipped. Finish them by hand (see "Selecting a run for publication" and "Promoting a run", each under "If something is wrong"). Don't rerun the script for that run: it is already selected, so the script rejects it.
-
 ## How the script works
 Every flag uses the same script and the same prompts:
 
@@ -313,6 +304,15 @@ Use a branch bucket first: it only prints the changes. A branch bucket is seeded
 - **Could not authenticate**: repeat the prerequisites (the MFA credentials have expired after 12 hours).
 - **No run log found in the bucket**: check the bucket name. Nothing is uploaded.
 - **The upload fails part way**: the script names the runs it had already uploaded and the one that failed. The failed run's S3 folder may hold two parquet files, the old one and the new one, which reads as two rows for the run. A rerun then fails with "matches multiple rows". Restore every run it names (on a branch bucket, run the restore commands it prints), then run the script again from the start (see "Undoing an update").
+
+## If the script fails with an AWS permissions error
+Use this when the error comes from the `run-log-updater` role, which the person running the script uses (see `WINDOWS_SETUP.md`). An `sts:AssumeRole` error is the role's trust policy, not its permissions: see `WINDOWS_SETUP.md`. A branch bucket uses the `non-prod` profile, a different role in a different account.
+
+The role is created by hand in the production AWS console, not in Terraform, so a permissions error is fixed by editing its identity policy there. Ask whoever administers the production account if you don't have console access.
+
+1. Read the error. It usually names the denied action and resource, for example `not authorized to perform: <action> on resource: <arn>`. If it doesn't, work out the action from the step that failed. An explicit deny or a bucket policy is not fixed by the role's identity policy.
+2. Add that action to the role's policy for the prefix or resource the script uses, not a single object. Allow only what the step needs, and nothing the runbook says the role is denied: the role can't start `main-Publication-Assessment`, so use another profile (see "Selecting a run for publication" > "If something is wrong").
+3. If the error came before anything was uploaded, run the script again. Otherwise the run log may already be updated and later steps skipped: finish them by hand (see "If something is wrong" under "Selecting a run for publication" and "Promoting a run"). If the upload itself failed part way, restore the run (see "Undoing an update"). Don't rerun the script for a run that is already selected: it rejects it.
 
 ## Undoing an update
 - **Branch bucket**: after a successful upload the script prints one restore command per changed run (an `aws s3 cp --recursive` then `aws s3 sync --delete` from `run_log_original/`). Run all of them to put the runs back as they were. **Run them before running the script again**: every run replaces `run_log_original/`, and restoring from a later copy puts the changed value back. A failed upload prints the same commands for every run it uploaded and for the one that failed, which may be half written. Undoing does not stop a step function execution that was already started.

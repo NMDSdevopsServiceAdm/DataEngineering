@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added run log runbook guidance for fixing AWS permissions errors.
 - Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
 - Added an `is_leaver` flag to the Hackathon Worker Turnover job, true when a worker is absent from the snapshot 12 months later (null if none exists).
 - Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils.
@@ -92,7 +93,6 @@ All notable changes to this project will be documented in this file.
 
 
 ### Fixed
-- Fixed the run log runbook not saying what to do when the script fails with an AWS permissions error.
 - Fixed run promotion leaving an empty write-check test object in the long-term archive bucket on every run.
 - Fixed SLV deduplication keeping repeated values at workplaces where a job role stays blank.
 
