@@ -92,7 +92,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Fixed
-- Fixed run promotion failing with an object tagging access denied error for the `run-log-updater` role, and listed the role's permissions in the run log runbook.
+- Fixed run promotion failing with an object tagging access denied error for the `run-log-updater` role.
 - Fixed run promotion leaving an empty write-check test object in the long-term archive bucket on every run.
 - Fixed SLV deduplication keeping repeated values at workplaces where a job role stays blank.
 

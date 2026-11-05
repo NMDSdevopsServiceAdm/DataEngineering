@@ -41,15 +41,15 @@ The script needs Git Bash (bash 4 or later), so run it from there. Steps 1 and 2
 ## Permissions the run-log-updater role needs
 The default AWS profile, `run-log-updater`, assumes the `run-log-updater` role in the production account. The role is created by hand in the production AWS console, not in Terraform, so a permission error is fixed by editing the role's identity policy there. The role's trust policy must also name your IAM user (see `WINDOWS_SETUP.md`).
 
-In the table, `<datasets>` is `sfc-main-datasets` and `<archive>` is `sfc-main-archive-promoted`. The three dataset prefixes are `domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates`, the same with `_metadata` on the end, and the same with `_run_log` on the end.
+In the table, `<datasets>` is `sfc-main-datasets` and `<archive>` is `sfc-main-archive-promoted`. The three dataset prefixes are `<estimates>` (`domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates`), `<estimates>_metadata` and `<estimates>_run_log`. `cut_release_tag.sh` uses the same profile and only the run log statements.
 
 | Policy statement (Sid) | Actions | Resource | Used for |
 |---|---|---|---|
 | `ListDatasetPrefixes` | `s3:ListBucket`, `s3:ListBucketVersions` | `<datasets>`, limited by `s3:prefix` to the three dataset prefixes | Copying the run log down, and listing the run's partitions before and after the archive copy |
 | `ReadEstimatesAndMetadataObjects` | `s3:GetObject`, `s3:GetObjectVersion`, `s3:GetObjectTagging` | `<datasets>` estimates and metadata prefixes | Reading the run's files for the archive copy. The AWS CLI copies object tags, so `s3:GetObjectTagging` is needed here |
 | `ReadWriteDeleteRunLogObjects` | `s3:GetObject`, `s3:GetObjectVersion`, `s3:PutObject`, `s3:DeleteObject` | `<datasets>` run log prefix | Updating the run log. `aws s3 sync --delete` needs delete to replace a changed run's partition |
-| `ListPromotedArchivePrefixes` | `s3:ListBucket` | `<archive>`, limited by `s3:prefix` to the three dataset prefixes | Counting the copied files to check the archive copy |
-| `WritePromotedArchiveObjects` | `s3:PutObject`, `s3:PutObjectTagging` | `<archive>` estimates, metadata and run log prefixes | Writing the promoted run's files. `s3:PutObjectTagging` is needed to write the tags copied from the source |
+| `ListPromotedArchivePrefixes` | `s3:ListBucket` | `<archive>`, limited by `s3:prefix` to the three dataset prefixes | Counting the copied files to check the archive copy. The scripts only list the estimates and metadata prefixes |
+| `WritePromotedArchiveObjects` | `s3:PutObject`, `s3:PutObjectTagging` | `<archive>` estimates, metadata and run log prefixes | Writing the promoted run's files. `s3:PutObjectTagging` is needed to write the tags copied from the source. The scripts only write the estimates and metadata prefixes |
 | `WhoAmI` | `sts:GetCallerIdentity` | `*` | Checking the profile's credentials before anything is copied |
 | `FindPublicationStateMachine` | `states:ListStateMachines` | `*` | Finding `main-Publication-Output` after a selection |
 | `StartPublicationOutput` | `states:StartExecution` | `arn:aws:states:eu-west-2:<prod account id>:stateMachine:main-Publication-Output` | Starting `Publication-Output` after a selection |
@@ -57,7 +57,11 @@ In the table, `<datasets>` is `sfc-main-datasets` and `<archive>` is `sfc-main-a
 The role cannot start `main-Publication-Assessment`. Use another profile for that (see "Selecting a run for publication").
 
 ### If promotion fails with `AccessDenied` on `GetObjectTagging` or `PutObjectTagging`
-The copy into the long-term archive bucket fails with `copy failed: ... not authorized to perform: s3:GetObjectTagging` (or `s3:PutObjectTagging`). The run log is already marked `promoted`, so the run is half promoted: its estimates and metadata were not all copied. Add the missing action to the statement in the table above, then finish the copy by hand (see "Promoting a run" > "If something is wrong"). Do not rerun `update_run_log.sh`: the run is already promoted and the script stops at that point.
+The copy into the long-term archive bucket fails with `copy failed: ... not authorized to perform: s3:GetObjectTagging` (or `s3:PutObjectTagging`). The run log is already marked `promoted`, so the run is half promoted: its estimates and metadata were not all copied. Add `s3:GetObjectTagging` to `ReadEstimatesAndMetadataObjects` or `s3:PutObjectTagging` to `WritePromotedArchiveObjects` (see the table above), then:
+1. Finish the copy by hand, estimates first and then metadata (see "Promoting a run" > "If something is wrong").
+2. The script exited before the next steps, so cut the release tag (see "Cutting the release tag") and start `main-Publication-Output` with `{"run_number": <n>}` by hand.
+
+Do not rerun `update_run_log.sh`: the run is still selected, so the script rejects it.
 
 ## How the script works
 Every flag uses the same script and the same prompts:
