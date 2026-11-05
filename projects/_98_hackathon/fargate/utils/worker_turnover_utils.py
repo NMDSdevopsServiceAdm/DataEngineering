@@ -81,10 +81,10 @@ def add_establishment_active_flag(
 ) -> pl.LazyFrame:
     """Flags workers whose establishment saved data recently at both snapshots.
 
-    A gap is whole calendar months from the establishment's latest save date
-    to the import date, at the start snapshot and the snapshot 12 months
-    later. It is negative if the save date is after the import date, and null
-    with no save date. `establishment_active` is true when both gaps are at
+    A gap is the difference in calendar months between the establishment's
+    latest save date and the import date (31 Dec to 1 Jan is 1), at the start
+    snapshot and the snapshot 12 months later. It is negative if the save date
+    is after the import date, and null with no save date. `establishment_active` is true when both gaps are at
     most `n_months`, false when either gap is null, and null where `is_leaver`
     is null. Expects one snapshot per month. Gaps are built on the small save
     date frame so only one join reaches the worker rows.

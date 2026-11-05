@@ -525,4 +525,59 @@ class WorkerTurnoverData:
                 ("est_a", "1", END, None, 1, None, None),
             ],
         ),
+        AddEstablishmentActiveFlagCase(
+            id="matches_end_gap_only_to_snapshot_12_months_later",
+            worker_rows=[
+                ("est_a", "1", START, False),
+                ("est_a", "1", date(2021, 12, 5), None),
+                ("est_a", "1", END, None),
+                ("est_a", "1", date(2022, 2, 5), None),
+            ],
+            save_date_rows=[
+                ("est_a", START, date(2020, 12, 1)),
+                ("est_a", date(2021, 12, 5), date(2021, 1, 1)),  # 11 months later
+                ("est_a", END, date(2021, 12, 1)),
+                ("est_a", date(2022, 2, 5), date(2021, 1, 1)),  # 13 months later
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 1, 1, True),
+                ("est_a", "1", date(2021, 12, 5), None, 11, None, None),
+                ("est_a", "1", END, None, 1, None, None),
+                ("est_a", "1", date(2022, 2, 5), None, 13, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="flags_each_establishment_from_its_own_save_dates",
+            worker_rows=[
+                ("est_a", "1", START, False),
+                ("est_a", "1", END, None),
+                ("est_b", "1", START, False),
+                ("est_b", "1", END, None),
+            ],
+            save_date_rows=[
+                ("est_a", START, date(2020, 12, 1)),
+                ("est_a", END, date(2021, 12, 1)),
+                ("est_b", START, date(2020, 12, 1)),
+                ("est_b", END, date(2020, 1, 1)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 1, 1, True),
+                ("est_a", "1", END, None, 1, None, None),
+                ("est_b", "1", START, False, 1, 24, False),
+                ("est_b", "1", END, None, 24, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="keeps_gaps_and_nulls_flag_when_is_leaver_null_with_save_dates",
+            worker_rows=[("est_a", "1", START, None), ("est_b", "1", END, None)],
+            save_date_rows=[
+                ("est_a", START, date(2020, 12, 1)),
+                ("est_a", END, date(2021, 12, 1)),
+                ("est_b", END, date(2021, 12, 1)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, None, 1, 1, None),
+                ("est_b", "1", END, None, 1, None, None),
+            ],
+        ),
     ]

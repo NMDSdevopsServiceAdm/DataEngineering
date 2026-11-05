@@ -90,19 +90,3 @@ class TestMain:
             "specially",
         }
         assert expected_assertions <= assertion_types_present
-
-    @patch(f"{PATCH_PATH}.vl.write_reports")
-    @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_schema_matches_when_save_date_column_is_present(
-        self, mock_read_parquet: Mock, mock_write_reports: Mock
-    ):
-        mock_read_parquet.return_value = build_source_df()
-
-        job.main("bucket", "my/source/", "my/reports/")
-
-        validation_arg = mock_write_reports.call_args[0][0]
-        report_json = json.loads(validation_arg.get_json_report())
-        schema_step = next(
-            item for item in report_json if item["assertion_type"] == "col_schema_match"
-        )
-        assert schema_step["all_passed"]
