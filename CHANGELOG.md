@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Added a cleaned main service type ID to the cleaned ASC-WDS worker data, filling nulls from the establishment's other import dates, now used by the Hackathon Worker Turnover job.
 - Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
 - Added an `is_leaver` flag to the Hackathon Worker Turnover job, true when a worker is absent from the snapshot 12 months later (null if none exists).
+- Added an `establishment_in_both_snapshots` flag to the Hackathon Worker Turnover job; `is_leaver` is null where it is false.
 - Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils.
 - Added a manually-run Hackathon Worker Turnover Step Function that filters the cleaned ASC-WDS worker data to permanent and temporary workers, keeping the earliest file in each month from January 2020, then crawls the output.
 - The assessment job fills the assessment workbook and saves it to S3.
