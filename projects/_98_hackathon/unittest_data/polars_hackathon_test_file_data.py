@@ -10,10 +10,11 @@ def worker_row(
     import_date: date,
     employment_status_label: str = EmpStat.permanent,
     establishment_id: str = "1-001",
+    location_id: str | None = "1-001",
 ) -> tuple[Any, ...]:
     """Returns a cleaned worker row in schema column order."""
     return (
-        "1-001",
+        location_id,
         establishment_id,
         worker_id,
         "1",
@@ -69,7 +70,37 @@ class EstablishmentFlagCase:
 
 
 @dataclass
+class AddMainServiceHackathonCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class WorkerTurnoverData:
+    add_main_service_hackathon_cases = [
+        AddMainServiceHackathonCase(
+            id="recodes_code_1_as_care_home_with_nursing",
+            input_rows=[("1",)],
+            expected_rows=[("1", "Care home with nursing")],
+        ),
+        AddMainServiceHackathonCase(
+            id="recodes_code_2_as_care_home_without_nursing",
+            input_rows=[("2",)],
+            expected_rows=[("2", "Care home without nursing")],
+        ),
+        AddMainServiceHackathonCase(
+            id="recodes_any_other_code_as_non_residential",
+            input_rows=[("3",), ("10",)],
+            expected_rows=[("3", "non-residential"), ("10", "non-residential")],
+        ),
+        AddMainServiceHackathonCase(
+            id="keeps_null_main_service_as_null",
+            input_rows=[(None,)],
+            expected_rows=[(None, None)],
+        ),
+    ]
+
     filter_worker_turnover_data_cases = [
         FilterWorkerTurnoverDataCase(
             id="keeps_permanent_and_temporary_workers",
@@ -92,6 +123,16 @@ class WorkerTurnoverData:
             ],
             expected_rows=[
                 worker_row("1", date(2021, 1, 5), EmpStat.permanent),
+            ],
+        ),
+        FilterWorkerTurnoverDataCase(
+            id="removes_workers_with_null_location_id",
+            input_rows=[
+                worker_row("1", date(2021, 1, 5), location_id="1-002"),
+                worker_row("2", date(2021, 1, 5), location_id=None),
+            ],
+            expected_rows=[
+                worker_row("1", date(2021, 1, 5), location_id="1-002"),
             ],
         ),
         FilterWorkerTurnoverDataCase(
