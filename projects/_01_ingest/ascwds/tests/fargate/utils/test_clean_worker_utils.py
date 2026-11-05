@@ -179,23 +179,6 @@ class TestCreateCleanMainServiceTypeIdColumn:
             ),
         )
 
-    def test_removes_rows_for_establishments_never_known(self):
-        input_lf = pl.LazyFrame(
-            Data.create_clean_main_service_type_id_column_never_known_input_data,
-            schema=Schemas.create_clean_main_service_type_id_column_schema,
-            orient="row",
-        )
-
-        returned_lf = job.create_clean_main_service_type_id_column(input_lf)
-
-        returned_establishment_ids = (
-            returned_lf.select(AWKClean.establishment_id)
-            .collect()
-            .to_series()
-            .to_list()
-        )
-        assert returned_establishment_ids == ["1002"]
-
 
 class TestCreateCleanEmploymentStatusColumn:
     case = Data.create_clean_employment_status_column_case

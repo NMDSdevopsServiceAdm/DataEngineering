@@ -2687,12 +2687,13 @@ class TestCleanAscwdsWorkerUtilsData:
                 ("1001", date(2024, 2, 1), "2", "2"),
             ],
         ),
-    ]
-
-    create_clean_main_service_type_id_column_never_known_input_data = [
-        ("1001", date(2024, 1, 1), None),
-        ("1001", date(2024, 2, 1), None),
-        ("1002", date(2024, 1, 1), "1"),
+        CreateCleanMainServiceTypeIdColumnTestCase(
+            id="keeps_null_when_never_known",
+            expected_data=[
+                ("1001", date(2024, 1, 1), None, None),
+                ("1001", date(2024, 2, 1), None, None),
+            ],
+        ),
     ]
 
     create_clean_employment_status_column_case = (
