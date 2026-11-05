@@ -136,9 +136,6 @@ def main(
         lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
     )
 
-    # Fill before labelling so the clean column keeps the main service codes.
-    lf = wUtils.create_clean_main_service_id_column(lf)
-
     data_labels_lf = cUtils.build_labels_lf(
         {
             AWPClean.establishment_type: ESTABLISHMENT_TYPE_CODE_TO_LABEL,
@@ -155,6 +152,8 @@ def main(
         columns_to_apply_labels,
         add_as_new_column=False,
     )
+
+    lf = wUtils.create_clean_main_service_id_column(lf)
 
     # Cast to Categorical/Enum here so it's saved in the output parquet file.
     lf = lf.with_columns(

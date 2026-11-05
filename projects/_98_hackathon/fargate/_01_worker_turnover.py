@@ -18,7 +18,7 @@ def main(
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
         cleaned_ascwds_workplace_source (str): path to the cleaned ASC-WDS
-            workplace data, used for the cleaned main service ID
+            workplace data, used for the cleaned main service label
         flagged_destination (str): destination for the flagged worker data
     """
     worker_lf = utils.scan_parquet(cleaned_ascwds_worker_source)
