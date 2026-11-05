@@ -21,14 +21,6 @@ WORKER_SCHEMA = {
     AWKClean.main_service_type_id: pl.String,
     AWKClean.employment_status: pl.String,
     AWKClean.import_date: pl.String,
-    **{
-        column: pl.String
-        for column in [
-            *wUtils.WORKER_CATEGORICAL_COLUMNS,
-            *wUtils.WORKER_NUMERIC_COLUMNS,
-            *wUtils.WORKER_DATE_COLUMNS,
-        ]
-    },
 }
 
 WORKPLACE_SCHEMA = {
@@ -76,8 +68,6 @@ def main(
 
     worker_lf = wUtils.remove_workers_without_workplaces(worker_lf, workplace_lf)
     worker_lf = worker_lf.drop(AWKClean.import_date)
-
-    worker_lf = wUtils.cast_raw_worker_modelling_columns(worker_lf)
 
     data_labels_lf = cUtils.build_labels_lf(
         {

@@ -46,10 +46,7 @@ class TestMain:
             self.PREPARED_DATA_DESTINATION,
         )
 
-        scan_parquet_mock.assert_called_once_with(
-            self.CLEANED_ASCWDS_WORKER_SOURCE,
-            selected_columns=job.cleaned_ascwds_worker_columns_to_import,
-        )
+        scan_parquet_mock.assert_called_once_with(self.CLEANED_ASCWDS_WORKER_SOURCE)
 
         not_null_filter_expr_mock.assert_called_once_with(column=AWKClean.location_id)
         # Workplace and worker files always land the same day, so the worker date

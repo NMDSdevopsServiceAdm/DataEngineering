@@ -37,9 +37,6 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
 
-    Reads only the validated columns, so other columns in the dataset are not
-    loaded into memory.
-
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
             and output the report to (should correspond to workspace / feature
@@ -49,7 +46,6 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     """
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=list(columns),
     )
 
     validation = (

@@ -9,61 +9,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils.column_values.ascwds_labelled_vocab import NOT_KNOWN_JOB_ROLE
 
-WORKER_CATEGORICAL_COLUMNS = [
-    AWKClean.gender,
-    AWKClean.ethnicity,
-    AWKClean.nationality,
-    AWKClean.country_of_birth,
-    AWKClean.disabled,
-    AWKClean.hourly_or_annual_pay,
-    AWKClean.highest_qual_level,
-    AWKClean.level_social_care_qualification_held,
-    AWKClean.care_certificate_status,
-    AWKClean.apprentice,
-    AWKClean.zero_hours,
-    AWKClean.source_of_recruitment,
-]
-
-WORKER_NUMERIC_COLUMNS = [
-    AWKClean.age,
-    AWKClean.hourly_rate,
-    AWKClean.salary,
-    AWKClean.contracted_hours,
-    AWKClean.average_hours,
-    AWKClean.distance_to_work_in_miles,
-    AWKClean.start_age,
-]
-
-WORKER_DATE_COLUMNS = [
-    AWKClean.start_date,
-    AWKClean.pay_change_date,
-    AWKClean.pay_save_date,
-]
-
-
-def cast_raw_worker_modelling_columns(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Casts the raw worker modelling columns from strings to their types.
-
-    Values are not cleaned. Code columns become categorical and numeric columns
-    become `Float32` (values that do not parse become null). Date columns are
-    parsed from `dd/mm/yyyy`: blank becomes null and any other value that does
-    not parse raises.
-
-    Args:
-        worker_lf (pl.LazyFrame): Worker data with the raw modelling columns as
-            strings.
-
-    Returns:
-        pl.LazyFrame: The input rows and columns, with the modelling columns cast.
-    """
-    day_first_format = "%d/%m/%Y"
-
-    return worker_lf.with_columns(
-        pl.col(WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical),
-        pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False),
-        pl.col(WORKER_DATE_COLUMNS).replace("", None).str.to_date(day_first_format),
-    )
-
 
 def remove_workers_without_workplaces(
     worker_lf: pl.LazyFrame, workplace_lf: pl.LazyFrame

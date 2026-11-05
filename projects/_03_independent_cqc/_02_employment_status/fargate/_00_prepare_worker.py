@@ -9,11 +9,6 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
-cleaned_ascwds_worker_columns_to_import = [
-    *pWorkerUtils.RAW_RESHAPED_GROUP_COLUMNS,
-    AWKClean.employment_status_clean_labelled,
-]
-
 
 def main(
     cleaned_ascwds_worker_source: str,
@@ -40,10 +35,9 @@ def main(
         prepared_data_destination (str): destination for output
     """
     worker_lf = (
-        utils.scan_parquet(
-            cleaned_ascwds_worker_source,
-            selected_columns=cleaned_ascwds_worker_columns_to_import,
-        ).filter(not_null_filter_expr(column=AWKClean.location_id))
+        utils.scan_parquet(cleaned_ascwds_worker_source).filter(
+            not_null_filter_expr(column=AWKClean.location_id)
+        )
         # .implode() wraps the matched dates into a single list value - without it,
         # is_in() treats a Series of the same dtype as the filtered column as
         # ambiguous (row-wise set membership vs. a literal list to check against).
