@@ -27,11 +27,12 @@ class TestMain:
         job.main(self.CLEANED_WORKER_SOURCE, self.FLAGGED_DESTINATION)
 
         scan_parquet_mock.assert_called_once_with(self.CLEANED_WORKER_SOURCE)
-        get_latest_save_date_per_establishment_mock.assert_called_once_with(
-            scan_parquet_mock.return_value
-        )
         filter_worker_turnover_data_mock.assert_called_once_with(
             scan_parquet_mock.return_value
+        )
+        get_latest_save_date_per_establishment_mock.assert_called_once_with(
+            scan_parquet_mock.return_value,
+            filter_worker_turnover_data_mock.return_value,
         )
         add_is_leaver_flag_mock.assert_called_once_with(
             filter_worker_turnover_data_mock.return_value

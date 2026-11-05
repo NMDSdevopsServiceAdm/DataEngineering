@@ -34,24 +34,41 @@ def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     ).filter(earliest_file_per_month_filter_expr(AWKClean.ascwds_worker_import_date))
 
 
-def get_latest_save_date_per_establishment(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Finds the latest worker save date for each establishment and import date.
+def get_latest_save_date_per_establishment(
+    worker_lf: pl.LazyFrame, snapshot_worker_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """Finds the latest worker save date per establishment for each snapshot.
 
-    Covers workers of every employment status, so run it before
-    `filter_worker_turnover_data`. Only three columns are read and the
-    result has one row per establishment and import date.
+    Covers workers of every employment status, so `worker_lf` is the
+    unfiltered data. Only snapshot import dates are kept, and they are
+    semi-joined before aggregating so the aggregate stays small. Only three
+    columns are read from `worker_lf` and one from `snapshot_worker_lf`.
 
     Args:
         worker_lf (pl.LazyFrame): Cleaned ASC-WDS worker data.
+        snapshot_worker_lf (pl.LazyFrame): Output of
+            `filter_worker_turnover_data`, which defines the snapshot import
+            dates.
 
     Returns:
         pl.LazyFrame: Establishment ID, import date and `latest_save_date`
-            (null where every worker save date is null).
+            (null where every worker save date is null), one row per
+            establishment and snapshot.
     """
-    return worker_lf.group_by(
-        AWKClean.establishment_id, AWKClean.ascwds_worker_import_date
-    ).agg(
-        pl.col(AWKClean.ascwds_worker_save_date).max().alias(HackCols.latest_save_date)
+    snapshot_dates_lf = snapshot_worker_lf.select(
+        AWKClean.ascwds_worker_import_date
+    ).unique()
+
+    return (
+        worker_lf.join(
+            snapshot_dates_lf, on=AWKClean.ascwds_worker_import_date, how="semi"
+        )
+        .group_by(AWKClean.establishment_id, AWKClean.ascwds_worker_import_date)
+        .agg(
+            pl.col(AWKClean.ascwds_worker_save_date)
+            .max()
+            .alias(HackCols.latest_save_date)
+        )
     )
 
 
@@ -67,13 +84,13 @@ def add_establishment_active_flag(
     most `n_months`, false when either gap is null, and null where there is no
     snapshot 12 months later (`is_leaver` is null). Expects one snapshot per
     month. Gaps are built on the small save date frame so only one join
-    reaches the worker rows.
+    reaches the worker rows, which are not re-evaluated to find snapshots.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `is_leaver`, one snapshot
             per month.
         save_dates_lf (pl.LazyFrame): Latest save date per establishment and
-            import date, from `get_latest_save_date_per_establishment`.
+            snapshot import date, from `get_latest_save_date_per_establishment`.
         n_months (int): Most months since the latest save date for an
             establishment to count as active.
 
@@ -85,10 +102,7 @@ def add_establishment_active_flag(
     import_date = pl.col(AWKClean.ascwds_worker_import_date)
     save_date = pl.col(HackCols.latest_save_date)
 
-    snapshot_dates_lf = worker_lf.select(AWKClean.ascwds_worker_import_date).unique()
-    save_gap_lf = save_dates_lf.join(
-        snapshot_dates_lf, on=AWKClean.ascwds_worker_import_date, how="semi"
-    ).with_columns(
+    save_gap_lf = save_dates_lf.with_columns(
         import_date.dt.truncate("1mo").alias(HackCols.import_month),
         (
             (import_date.dt.year() - save_date.dt.year()) * 12

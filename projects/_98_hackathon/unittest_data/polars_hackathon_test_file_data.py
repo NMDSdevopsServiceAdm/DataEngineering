@@ -78,6 +78,7 @@ class GetLatestSaveDatePerEstablishmentCase:
     id: str
     input_rows: list[tuple[Any, ...]]
     expected_rows: list[tuple[Any, ...]]
+    snapshot_rows: list[tuple[Any, ...]] | None = None
 
 
 @dataclass
@@ -362,6 +363,15 @@ class WorkerTurnoverData:
             ],
             expected_rows=[("1-001", date(2021, 1, 5), date(2021, 1, 4))],
         ),
+        GetLatestSaveDatePerEstablishmentCase(
+            id="keeps_only_import_dates_present_in_snapshot_rows",
+            input_rows=[
+                worker_row("1", date(2022, 1, 5), save_date=date(2021, 4, 1)),
+                worker_row("1", date(2022, 1, 20), save_date=date(2022, 1, 18)),
+            ],
+            snapshot_rows=[worker_row("1", date(2022, 1, 5))],
+            expected_rows=[("1-001", date(2022, 1, 5), date(2021, 4, 1))],
+        ),
     ]
 
     add_establishment_active_flag_cases = [
@@ -486,26 +496,6 @@ class WorkerTurnoverData:
             worker_rows=[flagged_row("1", date(2021, 1, 5), None)],
             save_date_rows=[("1-001", date(2021, 1, 5), date(2020, 12, 1))],
             expected_rows=[active_row("1", date(2021, 1, 5), None, 1, None, None)],
-        ),
-        AddEstablishmentActiveFlagCase(
-            id="matches_end_save_date_to_earliest_file_in_end_month",
-            worker_rows=[
-                flagged_row("1", date(2021, 1, 5), False),
-                flagged_row("1", date(2022, 1, 5), None),
-            ],
-            save_date_rows=[
-                ("1-001", date(2021, 1, 5), date(2020, 12, 1)),
-                ("1-001", date(2022, 1, 5), date(2021, 4, 1)),
-                (
-                    "1-001",
-                    date(2022, 1, 20),
-                    date(2022, 1, 18),
-                ),  # later file, not a snapshot
-            ],
-            expected_rows=[
-                active_row("1", date(2021, 1, 5), False, 1, 9, False),
-                active_row("1", date(2022, 1, 5), None, 9, None, None),
-            ],
         ),
         AddEstablishmentActiveFlagCase(
             id="keeps_negative_gap_when_save_date_after_import_date",

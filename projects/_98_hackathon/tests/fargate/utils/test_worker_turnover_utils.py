@@ -45,11 +45,16 @@ class TestGetLatestSaveDatePerEstablishment:
         input_lf = pl.LazyFrame(
             case.input_rows, schema=Schemas.cleaned_worker_schema, orient="row"
         )
+        snapshot_lf = pl.LazyFrame(
+            case.snapshot_rows or case.input_rows,
+            schema=Schemas.cleaned_worker_schema,
+            orient="row",
+        )
         expected_lf = pl.LazyFrame(
             case.expected_rows, schema=Schemas.latest_save_date_schema, orient="row"
         )
 
-        returned_lf = job.get_latest_save_date_per_establishment(input_lf)
+        returned_lf = job.get_latest_save_date_per_establishment(input_lf, snapshot_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
