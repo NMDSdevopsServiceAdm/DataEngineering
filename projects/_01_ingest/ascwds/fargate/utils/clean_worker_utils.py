@@ -124,18 +124,15 @@ def create_clean_main_job_role_column(
 
 
 def create_clean_main_service_type_id_column(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `main_service_type_id_clean`, filling nulls from the same worker's other import dates.
+    """Adds `main_service_type_id_clean`, filling nulls from the worker's other import dates.
 
-    Nulls take the most recent earlier value for the worker or, where there is
-    none, the nearest later value. Rows for workers with no known value on any
-    import date are removed.
+    Fills forward, then backward. Rows for workers with no known value are removed.
 
     Args:
-        lf (pl.LazyFrame): LazyFrame containing `worker_id`,
-            `ascwds_worker_import_date` and `main_service_type_id`.
+        lf (pl.LazyFrame): Worker data with `main_service_type_id`.
 
     Returns:
-        pl.LazyFrame: LazyFrame with the `main_service_type_id_clean` column.
+        pl.LazyFrame: Input with `main_service_type_id_clean`.
     """
     return lf.with_columns(
         pl.col(AWKClean.main_service_type_id)
