@@ -5,14 +5,18 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as job
-from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import \
-    WorkerTurnoverData as Data
 from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import (
-    flagged_row, raw_worker_row)
-from projects._98_hackathon.unittest_data.polars_hackathon_test_file_schemas import \
-    WorkerTurnoverSchemas as Schemas
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import \
-    AscwdsWorkerCleanedColumns as AWKClean
+    WorkerTurnoverData as Data,
+)
+from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import (
+    raw_worker_row,
+)
+from projects._98_hackathon.unittest_data.polars_hackathon_test_file_schemas import (
+    WorkerTurnoverSchemas as Schemas,
+)
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 
 
 class TestFilterWorkerTurnoverData:
@@ -81,8 +85,8 @@ def raw_worker_lf(*rows: dict) -> pl.LazyFrame:
 
 class TestAddRawWorkerColumns:
     flagged_lf = pl.LazyFrame(
-        [flagged_row("1", date(2021, 1, 5), False)],
-        schema=Schemas.leaver_worker_schema,
+        [("1-001", "1", date(2021, 1, 5))],
+        schema=Schemas.raw_worker_join_input_schema,
         orient="row",
     )
 
@@ -92,7 +96,7 @@ class TestAddRawWorkerColumns:
         returned_lf = job.add_raw_worker_columns(self.flagged_lf, raw_lf)
 
         assert returned_lf.collect_schema().names() == [
-            *Schemas.leaver_worker_schema.names(),
+            *Schemas.raw_worker_join_input_schema.names(),
             *job.WORKER_CATEGORICAL_COLUMNS,
             *job.WORKER_NUMERIC_COLUMNS,
             *job.WORKER_STRING_COLUMNS,

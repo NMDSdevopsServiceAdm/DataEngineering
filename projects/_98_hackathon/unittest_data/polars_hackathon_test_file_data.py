@@ -3,11 +3,14 @@ from datetime import date
 from typing import Any
 
 from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
-    WORKER_CATEGORICAL_COLUMNS, WORKER_NUMERIC_COLUMNS, WORKER_STRING_COLUMNS)
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import \
-    AscwdsWorkerCleanedColumns as AWKClean
-from utils.column_values.ascwds_labelled_vocab import \
-    EmploymentStatusLabels as EmpStat
+    WORKER_CATEGORICAL_COLUMNS,
+    WORKER_NUMERIC_COLUMNS,
+    WORKER_STRING_COLUMNS,
+)
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
+from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 
 START = date(2021, 1, 5)
 END = date(2022, 1, 5)  # 12 months after START
