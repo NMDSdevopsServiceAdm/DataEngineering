@@ -508,6 +508,10 @@ jobs:
           command: |
             aws s3 sync "s3://sfc-main-pipeline-resources/models/" "s3://$BRANCH_RESOURCES_BUCKET/models/"
       - run:
+          name: Copy publication logo to non-prod resources bucket
+          command: |
+            aws s3 sync "s3://sfc-main-pipeline-resources/publication/logo/" "s3://$BRANCH_RESOURCES_BUCKET/publication/logo/"
+      - run:
           name: Seed non-prod raw bucket from sample bucket, per domain
           command: |
             # Wiped before resync since sync no-ops (and skips re-firing the
