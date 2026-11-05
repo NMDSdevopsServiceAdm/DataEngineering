@@ -72,15 +72,14 @@ def add_main_service_hackathon(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def add_is_leaver_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Flags workers absent from the snapshot 12 months later.
+    """Flags leavers and establishments present in the snapshot 12 months later.
 
     Months are matched on month and year. A worker is an establishment ID and
     worker ID pair. `establishment_in_both_snapshots` is true when the
-    establishment has a worker in the snapshot 12 months later. `is_leaver` is
-    null where that is false, so a worker at a vanished establishment is not
-    counted as a leaver. Both flags are null where no snapshot exists 12 months
-    later. Semi and anti joins keep each input row once, including duplicates;
-    `pl.concat` does not preserve row order.
+    establishment has a worker in the later snapshot; where false, `is_leaver`
+    is null as absence says nothing about leaving. Both are null where no
+    snapshot exists 12 months later. Semi and anti joins keep each input row
+    once, including duplicates; `pl.concat` does not preserve row order.
 
     Args:
         worker_lf (pl.LazyFrame): Filtered worker data, one snapshot per month.
