@@ -22,10 +22,10 @@ class TestFilterWorkerTurnoverData:
     )
     def test_returns_expected_rows(self, case):
         input_lf = pl.LazyFrame(
-            case.input_rows, schema=Schemas.cleaned_worker_schema, orient="row"
+            case.input_rows, schema=Schemas.filter_worker_schema, orient="row"
         )
         expected_lf = pl.LazyFrame(
-            case.expected_rows, schema=Schemas.cleaned_worker_schema, orient="row"
+            case.expected_rows, schema=Schemas.filter_worker_schema, orient="row"
         )
 
         returned_lf = job.filter_worker_turnover_data(input_lf)
@@ -43,11 +43,11 @@ class TestGetLatestSaveDatePerEstablishment:
     )
     def test_returns_expected_rows(self, case):
         input_lf = pl.LazyFrame(
-            case.input_rows, schema=Schemas.cleaned_worker_schema, orient="row"
+            case.input_rows, schema=Schemas.latest_save_date_input_schema, orient="row"
         )
         snapshot_lf = pl.LazyFrame(
             case.snapshot_rows or case.input_rows,
-            schema=Schemas.cleaned_worker_schema,
+            schema=Schemas.latest_save_date_input_schema,
             orient="row",
         )
         expected_lf = pl.LazyFrame(
@@ -63,7 +63,7 @@ class TestAddEstablishmentActiveFlag:
     @staticmethod
     def build_input_lfs(case):
         worker_lf = pl.LazyFrame(
-            case.worker_rows, schema=Schemas.leaver_worker_schema, orient="row"
+            case.worker_rows, schema=Schemas.active_input_schema, orient="row"
         )
         save_dates_lf = pl.LazyFrame(
             case.save_date_rows, schema=Schemas.latest_save_date_schema, orient="row"
@@ -80,7 +80,7 @@ class TestAddEstablishmentActiveFlag:
     def test_returns_expected_rows(self, case):
         worker_lf, save_dates_lf = self.build_input_lfs(case)
         expected_lf = pl.LazyFrame(
-            case.expected_rows, schema=Schemas.active_worker_schema, orient="row"
+            case.expected_rows, schema=Schemas.active_output_schema, orient="row"
         )
 
         returned_lf = job.add_establishment_active_flag(
@@ -103,6 +103,26 @@ class TestAddEstablishmentActiveFlag:
         assert returned_schema[HackCols.establishment_active] == pl.Boolean
 
 
+class TestAddMainServiceType:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.add_main_service_type_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows, schema=Schemas.main_service_input_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows,
+            schema=Schemas.main_service_type_schema,
+            orient="row",
+        )
+
+        returned_lf = job.add_main_service_type(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestAddIsLeaverFlag:
     @pytest.mark.parametrize(
         "case",
@@ -110,10 +130,10 @@ class TestAddIsLeaverFlag:
     )
     def test_returns_expected_rows(self, case):
         input_lf = pl.LazyFrame(
-            case.input_rows, schema=Schemas.cleaned_worker_schema, orient="row"
+            case.input_rows, schema=Schemas.is_leaver_input_schema, orient="row"
         )
         expected_lf = pl.LazyFrame(
-            case.expected_rows, schema=Schemas.leaver_worker_schema, orient="row"
+            case.expected_rows, schema=Schemas.is_leaver_output_schema, orient="row"
         )
 
         returned_lf = job.add_is_leaver_flag(input_lf)

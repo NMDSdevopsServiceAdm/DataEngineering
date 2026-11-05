@@ -2,21 +2,26 @@ from datetime import date
 
 import polars as pl
 
+from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
+from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Keeps permanent and temporary workers from each month's earliest file.
+    """Filters worker data to the rows kept for turnover analysis.
 
-    Only files from 1 January 2020 onwards are kept. The earliest file is
-    chosen after the other filters, so it is the earliest with permanent or
-    temporary workers. This month filter uses `.over()`, which the streaming
-    engine does not cover, so the sink may fall back to the in-memory engine.
+    Kept rows:
+    - Import date on or after 1 January 2020.
+    - Location ID is not null.
+    - Employment status is permanent or temporary.
+    - Import date is the earliest in its month, after the other filters. This
+      uses `.over()`, which the streaming engine does not cover, so the sink may
+      fall back to the in-memory engine.
 
     Args:
         worker_lf (pl.LazyFrame): Cleaned ASC-WDS worker data.
@@ -28,6 +33,7 @@ def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     return worker_lf.filter(
         pl.col(AWKClean.ascwds_worker_import_date) >= start_date,
+        pl.col(AWKClean.location_id).is_not_null(),
         pl.col(AWKClean.employment_status_clean_labelled).is_in(
             [EmpStat.permanent, EmpStat.temporary]
         ),
@@ -81,8 +87,8 @@ def add_establishment_active_flag(
     to the import date, at the start snapshot and the snapshot 12 months
     later. It is negative if the save date is after the import date, and null
     with no save date. `establishment_active` is true when both gaps are at
-    most `n_months`, false when either gap is null, and null where there is no
-    snapshot 12 months later (`is_leaver` is null). Expects one snapshot per
+    most `n_months`, false when either gap is null, and null where `is_leaver`
+    is null. Expects one snapshot per
     month. Gaps are built on the small save date frame so only one join
     reaches the worker rows, which are not re-evaluated to find snapshots.
 
@@ -139,19 +145,51 @@ def add_establishment_active_flag(
     )
 
 
+def add_main_service_type(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `main_service_type`, a three-way recode of main service ID.
+
+    Values:
+    - "Care home with nursing" for code 1 (CHN).
+    - "Care home without nursing" for code 2 (CHS).
+    - "non-residential" for any other main service code.
+
+    Args:
+        worker_lf (pl.LazyFrame): Cleaned worker data with main service type ID.
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus `main_service_type`.
+    """
+    main_service = pl.col(AWKClean.main_service_type_id)
+    with_nursing_code = "1"
+    without_nursing_code = "2"
+
+    return worker_lf.with_columns(
+        pl.when(main_service == with_nursing_code)
+        .then(pl.lit(PrimaryServiceType.care_home_with_nursing))
+        .when(main_service == without_nursing_code)
+        .then(pl.lit(PrimaryServiceType.care_home_only))
+        .otherwise(pl.lit(PrimaryServiceType.non_residential))
+        .cast(CategoricalColumnTypes.PrimaryServiceEnumType)
+        .alias(HackCols.main_service_type)
+    )
+
+
 def add_is_leaver_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Flags workers absent from the snapshot 12 months later.
+    """Flags leavers and establishments present in the snapshot 12 months later.
 
     Months are matched on month and year. A worker is an establishment ID and
-    worker ID pair. `is_leaver` is null where no snapshot exists 12 months later.
-    Semi and anti joins keep each input row once, including duplicates;
-    `pl.concat` does not preserve row order.
+    worker ID pair. `establishment_in_both_snapshots` is true when the
+    establishment has a worker in the later snapshot; where false, `is_leaver`
+    is null as absence says nothing about leaving. Both are null where no
+    snapshot exists 12 months later. Semi and anti joins keep each input row
+    once, including duplicates; `pl.concat` does not preserve row order.
 
     Args:
         worker_lf (pl.LazyFrame): Filtered worker data, one snapshot per month.
 
     Returns:
-        pl.LazyFrame: The input rows with all columns plus `is_leaver`.
+        pl.LazyFrame: The input rows with all columns plus
+            `establishment_in_both_snapshots` and `is_leaver`.
     """
     worker_keys = [AWKClean.establishment_id, AWKClean.worker_id]
 
@@ -172,11 +210,36 @@ def add_is_leaver_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         left_on=HackCols.end_month,
         right_on=HackCols.import_month,
         how="anti",
-    ).with_columns(pl.lit(None, dtype=pl.Boolean).alias(HackCols.is_leaver))
+    ).with_columns(
+        pl.lit(None, dtype=pl.Boolean).alias(HackCols.establishment_in_both_snapshots),
+        pl.lit(None, dtype=pl.Boolean).alias(HackCols.is_leaver),
+    )
     start_lf = start_lf.join(
         end_months_lf,
         left_on=HackCols.end_month,
         right_on=HackCols.import_month,
+        how="semi",
+    )
+
+    end_establishments_lf = end_lf.select(
+        AWKClean.establishment_id, HackCols.import_month
+    ).unique()
+    establishment_start_keys = [AWKClean.establishment_id, HackCols.end_month]
+    establishment_end_keys = [AWKClean.establishment_id, HackCols.import_month]
+
+    establishment_missing_lf = start_lf.join(
+        end_establishments_lf,
+        left_on=establishment_start_keys,
+        right_on=establishment_end_keys,
+        how="anti",
+    ).with_columns(
+        pl.lit(False).alias(HackCols.establishment_in_both_snapshots),
+        pl.lit(None, dtype=pl.Boolean).alias(HackCols.is_leaver),
+    )
+    start_lf = start_lf.join(
+        end_establishments_lf,
+        left_on=establishment_start_keys,
+        right_on=establishment_end_keys,
         how="semi",
     )
 
@@ -185,11 +248,17 @@ def add_is_leaver_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     stayers_lf = start_lf.join(
         end_lf, left_on=start_keys, right_on=end_keys, how="semi"
-    ).with_columns(pl.lit(False).alias(HackCols.is_leaver))
+    ).with_columns(
+        pl.lit(True).alias(HackCols.establishment_in_both_snapshots),
+        pl.lit(False).alias(HackCols.is_leaver),
+    )
     leavers_lf = start_lf.join(
         end_lf, left_on=start_keys, right_on=end_keys, how="anti"
-    ).with_columns(pl.lit(True).alias(HackCols.is_leaver))
-
-    return pl.concat([stayers_lf, leavers_lf, no_end_snapshot_lf]).drop(
-        HackCols.import_month, HackCols.end_month
+    ).with_columns(
+        pl.lit(True).alias(HackCols.establishment_in_both_snapshots),
+        pl.lit(True).alias(HackCols.is_leaver),
     )
+
+    return pl.concat(
+        [stayers_lf, leavers_lf, establishment_missing_lf, no_end_snapshot_lf]
+    ).drop(HackCols.import_month, HackCols.end_month)

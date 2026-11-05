@@ -18,6 +18,7 @@ columns = {
     ASCWKClean.establishment_id: str(CategoricalColumnTypes.EstablishmentCatType),
     ASCWKClean.worker_id: "String",
     ASCWKClean.main_job_role_id: "String",
+    ASCWKClean.main_service_type_id: "String",
     ASCWKClean.employment_status: "String",
     ASCWKClean.ascwds_worker_import_date: "Date",
     ASCWKClean.ascwds_worker_save_date: "Date",

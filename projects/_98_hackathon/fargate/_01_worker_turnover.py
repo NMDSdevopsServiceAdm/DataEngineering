@@ -1,11 +1,14 @@
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 
 
 def main(
     cleaned_ascwds_worker_source: str, flagged_destination: str, n_months: int = 6
 ) -> None:
-    """Filters the cleaned ASC-WDS worker data and flags leavers and active establishments.
+    """Filters the cleaned worker data, adds main service and flags leavers and active workplaces.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
@@ -20,6 +23,8 @@ def main(
         worker_lf, filtered_lf
     )
 
+    filtered_lf = filtered_lf.drop(AWKClean.location_id)
+    filtered_lf = wUtils.add_main_service_type(filtered_lf)
     filtered_lf = wUtils.add_is_leaver_flag(filtered_lf)
     filtered_lf = wUtils.add_establishment_active_flag(
         filtered_lf, save_dates_lf, n_months
