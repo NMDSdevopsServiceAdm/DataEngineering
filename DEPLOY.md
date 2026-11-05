@@ -74,7 +74,7 @@ terraform workspace delete <workspace_name>
 - Branch names may only use letters, digits, `.`, `_`, `-` and `/` (the `serial-group` key allows nothing else).
 
 ## Merging to main
-Merge by adding the `ready-to-merge` label, not the Merge button. The `merge-when-ready` GitHub Action then merges labelled PRs one at a time, in the order they were labelled. For each PR it checks the PR is approved, updates the branch from `main`, waits for the PR's checks and CircleCI workflows, then waits for the deploy of `main`'s latest commit to finish (including its manual `plan-approval`) before merging. It then deletes the branch and destroys its dev environment, and removes the label. Deleting a branch by hand still destroys its dev environment too.
+Merge by adding the `ready-to-merge` label, not the Merge button. The `merge-when-ready` GitHub Action then merges labelled PRs one at a time, in the order they were labelled. For each PR it checks the PR is approved, updates the branch from `main`, waits for the PR's checks and CircleCI workflows, then waits for the deploy of `main`'s latest commit to finish (including its manual `plan-approval`) before merging. It then re-targets any PRs stacked on the branch to `main`, deletes the branch, destroys its dev environment and removes the label. Deleting a branch by hand still destroys its dev environment too.
 
 - Before labelling, resolve any merge conflicts: GitHub doesn't run workflows for a PR with a conflict, so the label would do nothing.
 - When a PR is labelled, the bot comments its place in the queue ("Queued: position 2 of 3"). To see the queue, filter PRs by the `ready-to-merge` label. Run status and logs are under the repo's Actions tab > `merge-when-ready` > the run's "Merge labelled PRs in turn" step.

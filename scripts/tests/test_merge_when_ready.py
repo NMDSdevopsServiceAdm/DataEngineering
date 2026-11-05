@@ -374,6 +374,7 @@ def stubs():
             _pr_head=DEFAULT,
             _behind_by=DEFAULT,
             _gh=DEFAULT,
+            _gh_json=DEFAULT,
             _pr_checks=DEFAULT,
             _statuses_for_commit=DEFAULT,
             _main_tip=DEFAULT,
@@ -385,6 +386,7 @@ def stubs():
     ):
         mocks["_pr_head"].return_value = ("headsha", "feature-branch")
         mocks["_behind_by"].return_value = 0
+        mocks["_gh_json"].return_value = []  # no PRs stacked on the merged branch
         mocks["_pr_checks"].return_value = [PASS]
         mocks["_statuses_for_commit"].return_value = ["success"]
         mocks["_main_tip"].return_value = "tipsha123"
@@ -443,6 +445,43 @@ class TestMergePr:
         calls = gh_calls(stubs)
         assert DELETE_BRANCH_CALL not in calls
         assert DESTROY_CALL not in calls
+
+    def test_retargets_stacked_prs_to_main_before_deleting_branch(self, stubs):
+        stubs["_gh_json"].return_value = [{"number": 8}, {"number": 9}]
+
+        merge_pr()
+
+        calls = gh_calls(stubs)
+        retarget_8 = ("pr", "edit", "8", "--repo", REPO, "--base", "main")
+        retarget_9 = ("pr", "edit", "9", "--repo", REPO, "--base", "main")
+        assert retarget_8 in calls
+        assert retarget_9 in calls
+        assert calls.index(retarget_9) < calls.index(DELETE_BRANCH_CALL)
+
+    def test_lists_open_prs_based_on_merged_branch(self, stubs):
+        merge_pr()
+
+        stubs["_gh_json"].assert_called_with(
+            "pr", "list", "--repo", REPO, "--base", "feature-branch",
+            "--state", "open", "--json", "number",
+        )  # fmt: skip
+
+    def test_keeps_branch_but_still_destroys_dev_environment_when_retarget_fails(
+        self, stubs
+    ):
+        stubs["_gh_json"].return_value = [{"number": 8}]
+
+        def gh(*args, check=True):
+            if args[:3] == ("pr", "edit", "8"):
+                raise subprocess.CalledProcessError(1, "gh", stderr="HTTP 500")
+
+        stubs["_gh"].side_effect = gh
+
+        merge_pr()
+
+        calls = gh_calls(stubs)
+        assert DELETE_BRANCH_CALL not in calls
+        assert DESTROY_CALL in calls
 
     def test_still_destroys_dev_environment_when_branch_delete_fails(self, stubs):
         def gh(*args, check=True):
