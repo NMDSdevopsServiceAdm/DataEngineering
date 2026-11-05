@@ -30,3 +30,21 @@ class TestFilterWorkerTurnoverData:
         returned_lf = job.filter_worker_turnover_data(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestAddIsLeaverFlag:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.add_is_leaver_flag_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows, schema=Schemas.cleaned_worker_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.leaver_worker_schema, orient="row"
+        )
+
+        returned_lf = job.add_is_leaver_flag(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)

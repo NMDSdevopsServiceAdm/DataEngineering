@@ -3,15 +3,16 @@ from polars_utils import utils
 
 
 def main(cleaned_ascwds_worker_source: str, flagged_destination: str) -> None:
-    """Filters the cleaned ASC-WDS worker data to the monthly worker turnover input.
+    """Filters the cleaned ASC-WDS worker data and flags leavers.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
-        flagged_destination (str): destination for the filtered worker data
+        flagged_destination (str): destination for the flagged worker data
     """
     worker_lf = utils.scan_parquet(cleaned_ascwds_worker_source)
 
     worker_lf = wUtils.filter_worker_turnover_data(worker_lf)
+    worker_lf = wUtils.add_is_leaver_flag(worker_lf)
 
     utils.sink_to_parquet(worker_lf, output_path=flagged_destination)
 
