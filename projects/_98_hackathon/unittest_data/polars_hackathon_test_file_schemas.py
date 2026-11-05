@@ -40,15 +40,6 @@ class WorkerTurnoverSchemas:
     main_service_hackathon_schema = pl.Schema(
         [
             *main_service_input_schema.items(),
-            (
-                HackCols.main_service_hackathon,
-                pl.Enum(
-                    [
-                        "Care home with nursing",
-                        "Care home without nursing",
-                        "non-residential",
-                    ]
-                ),
-            ),
+            (HackCols.main_service_hackathon, CatColType.PrimaryServiceEnumType),
         ]
     )

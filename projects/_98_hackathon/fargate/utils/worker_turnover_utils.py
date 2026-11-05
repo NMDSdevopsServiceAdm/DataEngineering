@@ -2,12 +2,14 @@ from datetime import date
 
 import polars as pl
 
+from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
+from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -56,18 +58,15 @@ def add_main_service_hackathon(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     main_service = pl.col(AWKClean.main_service_type_id)
     with_nursing_code = "1"
     without_nursing_code = "2"
-    with_nursing = "Care home with nursing"
-    without_nursing = "Care home without nursing"
-    non_residential = "non-residential"
 
     return worker_lf.with_columns(
         pl.when(main_service == with_nursing_code)
-        .then(pl.lit(with_nursing))
+        .then(pl.lit(PrimaryServiceType.care_home_with_nursing))
         .when(main_service == without_nursing_code)
-        .then(pl.lit(without_nursing))
+        .then(pl.lit(PrimaryServiceType.care_home_only))
         .when(main_service.is_not_null())
-        .then(pl.lit(non_residential))
-        .cast(pl.Enum([with_nursing, without_nursing, non_residential]))
+        .then(pl.lit(PrimaryServiceType.non_residential))
+        .cast(CategoricalColumnTypes.PrimaryServiceEnumType)
         .alias(HackCols.main_service_hackathon)
     )
 
