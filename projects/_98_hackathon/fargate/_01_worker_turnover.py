@@ -8,7 +8,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 def main(
     cleaned_ascwds_worker_source: str, flagged_destination: str, n_months: int = 6
 ) -> None:
-    """Filters the cleaned worker data, adds main service and flags leavers and active workplaces.
+    """Filters worker data, adds main service type and flags leavers and active establishments.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
