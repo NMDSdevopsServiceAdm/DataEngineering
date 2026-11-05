@@ -65,29 +65,19 @@ class AddMainServiceHackathonCase:
 class WorkerTurnoverData:
     add_main_service_hackathon_cases = [
         AddMainServiceHackathonCase(
-            id="recodes_care_home_with_nursing",
-            input_rows=[("Care home services with nursing - CHN",)],
-            expected_rows=[
-                ("Care home services with nursing - CHN", "Care home with nursing")
-            ],
+            id="recodes_code_1_as_care_home_with_nursing",
+            input_rows=[("1",)],
+            expected_rows=[("1", "Care home with nursing")],
         ),
         AddMainServiceHackathonCase(
-            id="recodes_care_home_without_nursing",
-            input_rows=[("Care home services without nursing - CHS",)],
-            expected_rows=[
-                (
-                    "Care home services without nursing - CHS",
-                    "Care home without nursing",
-                )
-            ],
+            id="recodes_code_2_as_care_home_without_nursing",
+            input_rows=[("2",)],
+            expected_rows=[("2", "Care home without nursing")],
         ),
         AddMainServiceHackathonCase(
-            id="recodes_any_other_main_service_as_non_residential",
-            input_rows=[("Day care and day services",), ("Adult placement home",)],
-            expected_rows=[
-                ("Day care and day services", "non-residential"),
-                ("Adult placement home", "non-residential"),
-            ],
+            id="recodes_any_other_code_as_non_residential",
+            input_rows=[("3",), ("10",)],
+            expected_rows=[("3", "non-residential"), ("10", "non-residential")],
         ),
         AddMainServiceHackathonCase(
             id="keeps_null_main_service_as_null",

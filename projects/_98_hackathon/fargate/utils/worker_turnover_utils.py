@@ -7,11 +7,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
-from utils.column_values.ascwds_labelled_vocab import MainServiceID
 
 
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -46,26 +42,28 @@ def add_main_service_hackathon(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Adds `main_service_hackathon`, a three-way recode of main service ID.
 
     Values:
-    - "Care home with nursing" for CHN.
-    - "Care home without nursing" for CHS.
-    - "non-residential" for any other main service.
-    - Null where main service ID is null (no matching workplace).
+    - "Care home with nursing" for code 1 (CHN).
+    - "Care home without nursing" for code 2 (CHS).
+    - "non-residential" for any other main service code.
+    - Null where the main service code is null.
 
     Args:
-        worker_lf (pl.LazyFrame): Worker data with main service ID joined on.
+        worker_lf (pl.LazyFrame): Cleaned worker data with main service type ID.
 
     Returns:
         pl.LazyFrame: The input rows with all columns plus `main_service_hackathon`.
     """
-    main_service = pl.col(AWPClean.main_service_id)
+    main_service = pl.col(AWKClean.main_service_type_id)
+    with_nursing_code = "1"
+    without_nursing_code = "2"
     with_nursing = "Care home with nursing"
     without_nursing = "Care home without nursing"
     non_residential = "non-residential"
 
     return worker_lf.with_columns(
-        pl.when(main_service == MainServiceID.care_home_services_with_nursing_chn)
+        pl.when(main_service == with_nursing_code)
         .then(pl.lit(with_nursing))
-        .when(main_service == MainServiceID.care_home_services_without_nursing_chs)
+        .when(main_service == without_nursing_code)
         .then(pl.lit(without_nursing))
         .when(main_service.is_not_null())
         .then(pl.lit(non_residential))

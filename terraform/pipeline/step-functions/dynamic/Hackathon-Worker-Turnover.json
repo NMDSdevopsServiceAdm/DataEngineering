@@ -1,5 +1,5 @@
 {
-  "Comment": "Manually-started. Filters the cleaned ASC-WDS worker data to permanent and temporary workers in the earliest file of each month since January 2020, adds the main service ID and its hackathon recode from the cleaned workplace data and flags leavers, then runs the crawler. Start with no execution input.",
+  "Comment": "Manually-started. Filters the cleaned ASC-WDS worker data to permanent and temporary workers in the earliest file of each month since January 2020, adds a main service recode and flags leavers, then runs the crawler. Start with no execution input.",
   "StartAt": "Filter worker turnover data",
   "States": {
     "Filter worker turnover data": {
@@ -24,8 +24,6 @@
                 "_01_worker_turnover.py",
                 "--cleaned_ascwds_worker_source",
                 "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned/",
-                "--cleaned_ascwds_workplace_source",
-                "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
                 "--flagged_destination",
                 "${dataset_bucket_uri}/domain=98_hackathon/dataset=worker_turnover_01_flagged/"
               ]
