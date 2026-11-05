@@ -40,20 +40,19 @@ def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     ).filter(earliest_file_per_month_filter_expr(AWKClean.ascwds_worker_import_date))
 
 
-def add_main_service_hackathon(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `main_service_hackathon`, a three-way recode of main service ID.
+def add_main_service_type(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `main_service_type`, a three-way recode of main service ID.
 
     Values:
     - "Care home with nursing" for code 1 (CHN).
     - "Care home without nursing" for code 2 (CHS).
     - "non-residential" for any other main service code.
-    - Null where the main service code is null.
 
     Args:
         worker_lf (pl.LazyFrame): Cleaned worker data with main service type ID.
 
     Returns:
-        pl.LazyFrame: The input rows with all columns plus `main_service_hackathon`.
+        pl.LazyFrame: The input rows with all columns plus `main_service_type`.
     """
     main_service = pl.col(AWKClean.main_service_type_id)
     with_nursing_code = "1"
@@ -64,10 +63,9 @@ def add_main_service_hackathon(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         .then(pl.lit(PrimaryServiceType.care_home_with_nursing))
         .when(main_service == without_nursing_code)
         .then(pl.lit(PrimaryServiceType.care_home_only))
-        .when(main_service.is_not_null())
-        .then(pl.lit(PrimaryServiceType.non_residential))
+        .otherwise(pl.lit(PrimaryServiceType.non_residential))
         .cast(CategoricalColumnTypes.PrimaryServiceEnumType)
-        .alias(HackCols.main_service_hackathon)
+        .alias(HackCols.main_service_type)
     )
 
 

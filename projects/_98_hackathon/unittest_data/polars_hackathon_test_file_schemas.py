@@ -37,9 +37,9 @@ class WorkerTurnoverSchemas:
         [(AWKClean.main_service_type_id, pl.String())]
     )
 
-    main_service_hackathon_schema = pl.Schema(
+    main_service_type_schema = pl.Schema(
         [
             *main_service_input_schema.items(),
-            (HackCols.main_service_hackathon, CatColType.PrimaryServiceEnumType),
+            (HackCols.main_service_type, CatColType.PrimaryServiceEnumType),
         ]
     )

@@ -1,5 +1,5 @@
 {
-  "Comment": "Manually-started. Filters the cleaned ASC-WDS worker data to permanent and temporary workers in the earliest file of each month since January 2020, adds a main service recode and flags leavers, then runs the crawler. Start with no execution input.",
+  "Comment": "Manually-started. Pipeline to convert ascwds worker files to identify stayers and leavers after 12 months for hackathon",
   "StartAt": "Filter worker turnover data",
   "States": {
     "Filter worker turnover data": {

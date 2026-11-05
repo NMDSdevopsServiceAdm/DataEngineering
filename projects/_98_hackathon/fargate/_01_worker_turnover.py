@@ -1,5 +1,8 @@
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 
 
 def main(cleaned_ascwds_worker_source: str, flagged_destination: str) -> None:
@@ -11,8 +14,8 @@ def main(cleaned_ascwds_worker_source: str, flagged_destination: str) -> None:
     """
     worker_lf = utils.scan_parquet(cleaned_ascwds_worker_source)
 
-    worker_lf = wUtils.filter_worker_turnover_data(worker_lf)
-    worker_lf = wUtils.add_main_service_hackathon(worker_lf)
+    worker_lf = wUtils.filter_worker_turnover_data(worker_lf).drop(AWKClean.location_id)
+    worker_lf = wUtils.add_main_service_type(worker_lf)
     worker_lf = wUtils.add_is_leaver_flag(worker_lf)
 
     utils.sink_to_parquet(worker_lf, output_path=flagged_destination)
