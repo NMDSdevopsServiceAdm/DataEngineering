@@ -1,19 +1,23 @@
+import copy
 import os
 import re
 import zipfile
 from datetime import date, timedelta
 from pathlib import Path
 
+import boto3
 import gptables as gpt
 import holidays
 import pandas as pd
 import polars as pl
+from botocore.exceptions import ClientError
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.publication_utils import (
     import_date_to_period_month,
     percentage_as_rounded_fraction,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_helpers import (
+    run_workbook_name,
     set_column_widths,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_workbook_pages import (
@@ -28,7 +32,9 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_
     TABLE_TITLES,
 )
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.file_utils import split_s3_uri
 
+DOWNLOAD_WORKBOOK_STEM: str = "monthly_tracker_data_download"
 _PUBLICATION_DAY_OF_MONTH: int = 15
 _FIRST_WEEKEND_WEEKDAY: int = 5  # date.weekday(): Saturday
 
@@ -53,13 +59,57 @@ _THEME_CONFIG: dict = {
 _TABLE_ROW_INDEX: int = 4  # blank row between the sheet description and header
 _TABLE_INSTRUCTIONS = "This sheet contains 1 table."
 _TABLE_COLUMN_WIDTHS: list[int] = [18, 18, 29, 36, 36]
-_TABLE_NAMES: dict[str, str] = {
+TABLE_NAMES: dict[str, str] = {
     "T0": "t0_filled_posts",
     "T1": "t1_filled_posts_perc_change",
     "T2": "t2_location_count_perc_change",
 }
 _COUNT_FORMAT = {"num_format": "#,##0", "align": "right"}
 _PERCENTAGE_FORMAT = {"num_format": "0.0%", "align": "right"}
+
+
+class LogoUnavailableError(RuntimeError):
+    """The Frontpage logo could not be read from S3, or is empty."""
+
+
+def download_workbook_name(run_source: str) -> str:
+    """
+    Names the data download workbook after the run it was built from.
+
+    Args:
+        run_source (str): S3 directory of the run, which holds its archive_date
+            and run_number partitions.
+
+    Returns:
+        str: the workbook's file name.
+    """
+    return run_workbook_name(DOWNLOAD_WORKBOOK_STEM, run_source)
+
+
+def get_logo_bytes(logo_uri: str) -> bytes:
+    """
+    Reads the Frontpage logo PNG from S3.
+
+    A release must not go out without its logo, so a missing or empty object
+    raises rather than returning no logo.
+
+    Args:
+        logo_uri (str): S3 URI of the logo PNG.
+
+    Returns:
+        bytes: the PNG image.
+
+    Raises:
+        LogoUnavailableError: if the object cannot be read or is empty.
+    """
+    bucket, key = split_s3_uri(logo_uri)
+    try:
+        logo = boto3.client("s3").get_object(Bucket=bucket, Key=key)["Body"].read()
+    except ClientError as error:
+        raise LogoUnavailableError(f"Could not read the logo at {logo_uri}") from error
+    if not logo:
+        raise LogoUnavailableError(f"The logo at {logo_uri} is empty")
+    return logo
 
 
 def get_publication_date(latest_import_date: date) -> date:
@@ -172,6 +222,33 @@ def prepare_perc_change_for_publication(
     )
 
 
+def prepare_download_tables(publication_lf: pl.LazyFrame) -> dict[str, pd.DataFrame]:
+    """
+    Builds the three published tables of the data download, keyed by sheet name
+    (T0, T1, T2), as they appear in the workbook.
+
+    Args:
+        publication_lf (pl.LazyFrame): the publication data written by the
+            output stage.
+
+    Returns:
+        dict[str, pd.DataFrame]: the table to publish on each sheet.
+    """
+    return {
+        "T0": prepare_t0_for_publication(publication_lf),
+        "T1": prepare_perc_change_for_publication(
+            publication_lf,
+            Pub.unfiltered_filled_posts_april_pct_change,
+            Pub.unfiltered_short_sfc_cum_pct_change,
+        ),
+        "T2": prepare_perc_change_for_publication(
+            publication_lf,
+            Pub.unfiltered_locationid_count_april_pct_change,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
+        ),
+    }
+
+
 def get_latest_import_date(publication_lf: pl.LazyFrame) -> date:
     """
     Returns the latest value of the Period column, a CQC import date.
@@ -251,19 +328,7 @@ def build_download_workbook(
         get_publication_date(get_latest_import_date(publication_lf))
     )
     subtitles = [f"Skills for Care's workforce estimates as at {latest_period:%b-%Y}"]
-    tables = {
-        "T0": prepare_t0_for_publication(publication_lf),
-        "T1": prepare_perc_change_for_publication(
-            publication_lf,
-            Pub.unfiltered_filled_posts_april_pct_change,
-            Pub.unfiltered_short_sfc_cum_pct_change,
-        ),
-        "T2": prepare_perc_change_for_publication(
-            publication_lf,
-            Pub.unfiltered_locationid_count_april_pct_change,
-            Pub.unfiltered_short_locationid_count_cum_pct_change,
-        ),
-    }
+    tables = prepare_download_tables(publication_lf)
     titles = {"T0": T0_TITLE, "T1": T1_TITLE, "T2": T2_TITLE}
     value_formats = {
         "T0": _COUNT_FORMAT,
@@ -272,7 +337,8 @@ def build_download_workbook(
     }
 
     workbook = gpt.GPWorkbook(str(filename))
-    workbook.set_theme(gpt.Theme(_THEME_CONFIG))
+    # gptables alters the config it is given, so each build gets its own copy.
+    workbook.set_theme(gpt.Theme(copy.deepcopy(_THEME_CONFIG)))
     write_pages(
         workbook,
         {
@@ -285,7 +351,7 @@ def build_download_workbook(
     for sheet_name, table in tables.items():
         gptable = gpt.GPTable(
             table=table,
-            table_name=_TABLE_NAMES[sheet_name],
+            table_name=TABLE_NAMES[sheet_name],
             title=titles[sheet_name],
             subtitles=subtitles,
             instructions=_TABLE_INSTRUCTIONS,
@@ -297,7 +363,7 @@ def build_download_workbook(
         worksheet.write_gptable(gptable, False, [])
         set_column_widths(worksheet, _TABLE_COLUMN_WIDTHS)
     workbook.close()
-    _enable_table_filters(filename, list(_TABLE_NAMES.values()))
+    _enable_table_filters(filename, list(TABLE_NAMES.values()))
 
 
 def _table_formatting(value_format: dict) -> list[dict]:

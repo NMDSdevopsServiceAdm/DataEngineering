@@ -1,11 +1,14 @@
+import copy
 import zipfile
 from datetime import date
 
 import zipfile
 
+import boto3
 import openpyxl
 import polars as pl
 import pytest
+from moto import mock_aws
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_workbook_utils as job
 import projects._99_publication.unittest_data.polars_pub_test_data as Data
@@ -475,3 +478,56 @@ class TestEnableTableFilters:
 
         assert path.read_bytes() == original
         assert [file.name for file in tmp_path.iterdir()] == ["workbook.xlsx"]
+
+
+class TestGetLogoBytes:
+    LOGO_URI = "s3://bucket/publication/logo/logo.png"
+
+    @staticmethod
+    def _bucket():
+        s3 = boto3.client("s3", region_name="eu-west-2")
+        s3.create_bucket(
+            Bucket="bucket",
+            CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+        )
+        return s3
+
+    @mock_aws
+    def test_returns_the_object_bytes_for_the_logo_uri(self):
+        self._bucket().put_object(
+            Bucket="bucket", Key="publication/logo/logo.png", Body=b"png bytes"
+        )
+
+        assert job.get_logo_bytes(self.LOGO_URI) == b"png bytes"
+
+    @mock_aws
+    def test_raises_when_the_logo_object_is_missing(self):
+        self._bucket()
+
+        with pytest.raises(job.LogoUnavailableError, match=self.LOGO_URI):
+            job.get_logo_bytes(self.LOGO_URI)
+
+    @mock_aws
+    def test_raises_when_the_logo_object_is_empty(self):
+        self._bucket().put_object(
+            Bucket="bucket", Key="publication/logo/logo.png", Body=b""
+        )
+
+        with pytest.raises(job.LogoUnavailableError, match=self.LOGO_URI):
+            job.get_logo_bytes(self.LOGO_URI)
+
+
+class TestBuildDownloadWorkbookRepeatedBuilds:
+    def test_build_does_not_alter_the_shared_theme_config(self, tmp_path):
+        config_before = copy.deepcopy(job._THEME_CONFIG)
+
+        job.build_download_workbook(
+            pl.LazyFrame(
+                Data.download_workbook_publication_data,
+                PUBLICATION_SCHEMA,
+                orient="row",
+            ),
+            tmp_path / "download.xlsx",
+        )
+
+        assert job._THEME_CONFIG == config_before

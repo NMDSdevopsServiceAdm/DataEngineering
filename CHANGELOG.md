@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- The publication output job builds the public data download workbook from the publication data and saves it to S3, named by archive date and run number, and the reconciliation check reads it back and compares it with the prepared tables before marking the run reconciled.
 - Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
 - Added an `is_leaver` flag to the Hackathon Worker Turnover job, true when a worker is absent from the snapshot 12 months later (null if none exists).
 - Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils.
