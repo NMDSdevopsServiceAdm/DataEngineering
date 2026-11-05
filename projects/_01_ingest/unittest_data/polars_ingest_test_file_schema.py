@@ -496,6 +496,13 @@ class TestCleanAscwdsWorkplaceUtilsSchemas:
         AWPClean.workplace_last_active_date: pl.Date,
     }
 
+    create_clean_main_service_id_column_schema = {
+        AWPClean.establishment_id: pl.String,
+        AWPClean.ascwds_workplace_import_date: pl.Date,
+        AWPClean.main_service_id: pl.String,
+        AWPClean.main_service_id_clean: pl.String,
+    }
+
     apply_data_corrections_schema = {
         AWPClean.organisation_id: pl.String,
         AWPClean.period: pl.String,
@@ -566,16 +573,6 @@ class TestCleanAscwdsWorkerUtilsSchemas:
         **create_clean_main_job_role_column_schema,
         AWKClean.main_job_role_clean: pl.String,
         AWKClean.main_job_role_clean_labelled: pl.String,
-    }
-
-    create_clean_main_service_type_id_column_schema = {
-        AWKClean.establishment_id: pl.String,
-        AWKClean.ascwds_worker_import_date: pl.Date,
-        AWKClean.main_service_type_id: pl.String,
-    }
-    expected_create_clean_main_service_type_id_column_schema = {
-        **create_clean_main_service_type_id_column_schema,
-        AWKClean.main_service_type_id_clean: pl.String,
     }
 
     create_clean_employment_status_column_schema = {

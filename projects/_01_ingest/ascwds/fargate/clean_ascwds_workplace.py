@@ -136,6 +136,9 @@ def main(
         lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
     )
 
+    # Fill before labelling so the clean column keeps the main service codes.
+    lf = wUtils.create_clean_main_service_id_column(lf)
+
     data_labels_lf = cUtils.build_labels_lf(
         {
             AWPClean.establishment_type: ESTABLISHMENT_TYPE_CODE_TO_LABEL,
@@ -167,6 +170,9 @@ def main(
             CategoricalColumnTypes.RegistrationTypeCatType
         ),
         pl.col(AWPClean.main_service_id).cast(
+            CategoricalColumnTypes.MainServiceIdCatType
+        ),
+        pl.col(AWPClean.main_service_id_clean).cast(
             CategoricalColumnTypes.MainServiceIdCatType
         ),
         pl.col(AWPClean.la_permission).cast(CategoricalColumnTypes.LaPermissionCatType),

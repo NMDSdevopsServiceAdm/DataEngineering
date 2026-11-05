@@ -16,3 +16,4 @@ class AscwdsWorkplaceCleanedColumns(AWP):
     removed_by_purge_date_filter: str = "removed_by_purge_date_filter"
     total_staff_bounded: str = AWP.total_staff + "_bounded"
     worker_records_bounded: str = AWP.worker_records + "_bounded"
+    main_service_id_clean: str = AWP.main_service_id + "_clean"

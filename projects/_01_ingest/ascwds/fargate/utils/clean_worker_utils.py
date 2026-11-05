@@ -123,26 +123,6 @@ def create_clean_main_job_role_column(
     )
 
 
-def create_clean_main_service_type_id_column(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `main_service_type_id_clean`, filling nulls from the establishment's other import dates.
-
-    Fills forward, then backward. Establishments with no known value stay null.
-
-    Args:
-        lf (pl.LazyFrame): Worker data with `establishment_id` and `main_service_type_id`.
-
-    Returns:
-        pl.LazyFrame: Input with `main_service_type_id_clean`.
-    """
-    return lf.with_columns(
-        pl.col(AWKClean.main_service_type_id)
-        .forward_fill()
-        .backward_fill()
-        .over(AWKClean.establishment_id, order_by=AWKClean.ascwds_worker_import_date)
-        .alias(AWKClean.main_service_type_id_clean)
-    )
-
-
 def create_clean_employment_status_column(
     lf: pl.LazyFrame, data_labels_lf: pl.LazyFrame
 ) -> pl.LazyFrame:

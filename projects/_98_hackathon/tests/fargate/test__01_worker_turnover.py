@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 import projects._98_hackathon.fargate._01_worker_turnover as job
 
@@ -7,6 +7,7 @@ PATCH_PATH = "projects._98_hackathon.fargate._01_worker_turnover"
 
 class TestMain:
     CLEANED_WORKER_SOURCE = "some/worker/source"
+    CLEANED_WORKPLACE_SOURCE = "some/workplace/source"
     FLAGGED_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
@@ -22,14 +23,44 @@ class TestMain:
         add_is_leaver_flag_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        job.main(self.CLEANED_WORKER_SOURCE, self.FLAGGED_DESTINATION)
+        worker_lf_mock, workplace_lf_mock = Mock(), Mock()
+        scan_parquet_mock.side_effect = [worker_lf_mock, workplace_lf_mock]
 
-        scan_parquet_mock.assert_called_once_with(self.CLEANED_WORKER_SOURCE)
-        filter_worker_turnover_data_mock.assert_called_once_with(
-            scan_parquet_mock.return_value
+        job.main(
+            self.CLEANED_WORKER_SOURCE,
+            self.CLEANED_WORKPLACE_SOURCE,
+            self.FLAGGED_DESTINATION,
+        )
+
+        assert scan_parquet_mock.call_args_list == [
+            call(self.CLEANED_WORKER_SOURCE),
+            call(
+                self.CLEANED_WORKPLACE_SOURCE,
+                selected_columns=[
+                    job.AWPClean.establishment_id,
+                    job.AWPClean.ascwds_workplace_import_date,
+                    job.AWPClean.main_service_id_clean,
+                ],
+            ),
+        ]
+        filter_worker_turnover_data_mock.assert_called_once_with(worker_lf_mock)
+        filtered_lf_mock = (
+            filter_worker_turnover_data_mock.return_value.drop.return_value
+        )
+        filtered_lf_mock.join.assert_called_once_with(
+            workplace_lf_mock,
+            left_on=[
+                job.AWKClean.establishment_id,
+                job.AWKClean.ascwds_worker_import_date,
+            ],
+            right_on=[
+                job.AWPClean.establishment_id,
+                job.AWPClean.ascwds_workplace_import_date,
+            ],
+            how="left",
         )
         add_main_service_type_mock.assert_called_once_with(
-            filter_worker_turnover_data_mock.return_value.drop.return_value
+            filtered_lf_mock.join.return_value
         )
         filter_worker_turnover_data_mock.return_value.drop.assert_called_once_with(
             job.AWKClean.location_id

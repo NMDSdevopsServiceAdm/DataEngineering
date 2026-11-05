@@ -44,6 +44,7 @@ columns = {
     ASCWPClean.total_leavers: "Int32",
     ASCWPClean.total_vacancies: "Int32",
     ASCWPClean.main_service_id: str(CategoricalColumnTypes.MainServiceIdCatType),
+    ASCWPClean.main_service_id_clean: str(CategoricalColumnTypes.MainServiceIdCatType),
     ASCWPClean.version: "String",
     ASCWPClean.import_date: "String",
     ASCWPClean.ascwds_workplace_import_date: "Date",
