@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added an `establishment_active` flag to the Hackathon Worker Turnover job, true when the establishment's latest worker save date is within N months (default 6) of the import date at both the start and end snapshots, with the gap in months for each. The cleaned ASC-WDS worker data now carries the parsed save date, and a throwaway Step Function runs the job for N of 1 to 5 in parallel.
 - Added an `is_leaver` flag to the Hackathon Worker Turnover job, true when a worker is absent from the snapshot 12 months later (null if none exists).
 - Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils.
 - Added a manually-run Hackathon Worker Turnover Step Function that filters the cleaned ASC-WDS worker data to permanent and temporary workers, keeping the earliest file in each month from January 2020, then crawls the output.

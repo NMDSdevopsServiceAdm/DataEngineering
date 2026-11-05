@@ -19,6 +19,7 @@ class WorkerTurnoverSchemas:
             (AWKClean.main_job_role_id, pl.String()),
             (AWKClean.employment_status, pl.String()),
             (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.ascwds_worker_save_date, pl.Date()),
             (AWKClean.main_job_role_clean, CatColType.MainJobRoleIdCatType),
             (AWKClean.main_job_role_clean_labelled, CatColType.JobRoleCatType),
             (AWKClean.employment_status_clean, CatColType.EmploymentStatusIdCatType),
@@ -31,4 +32,21 @@ class WorkerTurnoverSchemas:
 
     leaver_worker_schema = pl.Schema(
         [*cleaned_worker_schema.items(), (HackCols.is_leaver, pl.Boolean())]
+    )
+
+    active_worker_schema = pl.Schema(
+        [
+            *leaver_worker_schema.items(),
+            (HackCols.months_since_save_start, pl.Int32()),
+            (HackCols.months_since_save_end, pl.Int32()),
+            (HackCols.establishment_active, pl.Boolean()),
+        ]
+    )
+
+    latest_save_date_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.latest_save_date, pl.Date()),
+        ]
     )

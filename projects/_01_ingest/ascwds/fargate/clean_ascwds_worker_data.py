@@ -20,6 +20,7 @@ WORKER_SCHEMA = {
     AWKClean.main_job_role_id: pl.String,
     AWKClean.employment_status: pl.String,
     AWKClean.import_date: pl.String,
+    AWKClean.save_date: pl.String,
 }
 
 WORKPLACE_SCHEMA = {
@@ -51,6 +52,8 @@ def main(
     worker_lf = cUtils.column_to_date(
         worker_lf, AWKClean.import_date, AWKClean.ascwds_worker_import_date
     )
+
+    worker_lf = wUtils.parse_save_date(worker_lf).drop(AWKClean.save_date)
 
     worker_lf = worker_lf.filter(is_unique_worker_data())
 

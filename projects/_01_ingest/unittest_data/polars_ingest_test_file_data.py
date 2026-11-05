@@ -2504,6 +2504,13 @@ class CreateCleanEmploymentStatusColumnTestCase:
 
 
 @dataclass
+class ParseSaveDateTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+
+@dataclass
 class TestCleanAscwdsWorkerUtilsData:
     remove_workers_without_workplaces_test_cases = [
         RemoveWorkersWithoutWorkplacesTestCase(
@@ -2692,6 +2699,44 @@ class TestCleanAscwdsWorkerUtilsData:
             ],
         )
     )
+
+    parse_save_date_test_cases = [
+        ParseSaveDateTestCase(
+            id="parses_save_date_string_to_date",
+            input_data=[
+                ("101", "05/03/2024"),
+                ("102", "25/12/2023"),
+            ],
+            expected_data=[
+                ("101", "05/03/2024", date(2024, 3, 5)),
+                ("102", "25/12/2023", date(2023, 12, 25)),
+            ],
+        ),
+        ParseSaveDateTestCase(
+            id="nulls_unparseable_save_date",
+            input_data=[
+                ("101", "not a date"),
+                ("102", "31/02/2024"),  # no such day
+                ("103", "2024-03-05"),  # wrong format
+            ],
+            expected_data=[
+                ("101", "not a date", None),
+                ("102", "31/02/2024", None),
+                ("103", "2024-03-05", None),
+            ],
+        ),
+        ParseSaveDateTestCase(
+            id="keeps_null_save_date_as_null",
+            input_data=[
+                ("101", None),
+                ("102", ""),
+            ],
+            expected_data=[
+                ("101", None, None),
+                ("102", "", None),
+            ],
+        ),
+    ]
 
 
 @dataclass
