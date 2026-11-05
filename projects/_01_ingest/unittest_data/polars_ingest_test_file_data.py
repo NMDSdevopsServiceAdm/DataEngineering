@@ -2673,7 +2673,7 @@ class TestCleanAscwdsWorkerUtilsData:
             ],
         ),
         CreateCleanMainServiceTypeIdColumnTestCase(
-            id="fills_from_same_worker_only",
+            id="fills_from_same_establishment_only",
             expected_data=[
                 ("1001", date(2024, 1, 1), "1", "1"),
                 ("1002", date(2024, 1, 1), "2", "2"),

@@ -171,11 +171,15 @@ class TestCreateCleanMainServiceTypeIdColumn:
         returned_lf = job.create_clean_main_service_type_id_column(input_lf)
 
         pl_testing.assert_frame_equal(
-            returned_lf.sort(AWKClean.worker_id, AWKClean.ascwds_worker_import_date),
-            expected_lf.sort(AWKClean.worker_id, AWKClean.ascwds_worker_import_date),
+            returned_lf.sort(
+                AWKClean.establishment_id, AWKClean.ascwds_worker_import_date
+            ),
+            expected_lf.sort(
+                AWKClean.establishment_id, AWKClean.ascwds_worker_import_date
+            ),
         )
 
-    def test_removes_rows_for_workers_never_known(self):
+    def test_removes_rows_for_establishments_never_known(self):
         input_lf = pl.LazyFrame(
             Data.create_clean_main_service_type_id_column_never_known_input_data,
             schema=Schemas.create_clean_main_service_type_id_column_schema,
@@ -184,10 +188,13 @@ class TestCreateCleanMainServiceTypeIdColumn:
 
         returned_lf = job.create_clean_main_service_type_id_column(input_lf)
 
-        returned_worker_ids = (
-            returned_lf.select(AWKClean.worker_id).collect().to_series().to_list()
+        returned_establishment_ids = (
+            returned_lf.select(AWKClean.establishment_id)
+            .collect()
+            .to_series()
+            .to_list()
         )
-        assert returned_worker_ids == ["1002"]
+        assert returned_establishment_ids == ["1002"]
 
 
 class TestCreateCleanEmploymentStatusColumn:

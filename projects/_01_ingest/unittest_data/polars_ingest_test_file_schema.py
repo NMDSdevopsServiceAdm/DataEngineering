@@ -569,7 +569,7 @@ class TestCleanAscwdsWorkerUtilsSchemas:
     }
 
     create_clean_main_service_type_id_column_schema = {
-        AWKClean.worker_id: pl.String,
+        AWKClean.establishment_id: pl.String,
         AWKClean.ascwds_worker_import_date: pl.Date,
         AWKClean.main_service_type_id: pl.String,
     }
