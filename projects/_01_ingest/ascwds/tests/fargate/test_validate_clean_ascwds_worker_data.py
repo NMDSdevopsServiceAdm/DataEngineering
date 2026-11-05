@@ -54,7 +54,9 @@ class TestMain:
 
         job.main("bucket", "my/source/", "my/reports/")
 
-        mock_read_parquet.assert_called_once_with(source="s3://bucket/my/source/")
+        mock_read_parquet.assert_called_once_with(
+            source="s3://bucket/my/source/", selected_columns=list(job.columns)
+        )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")

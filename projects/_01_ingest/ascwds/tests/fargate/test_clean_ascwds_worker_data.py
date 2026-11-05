@@ -14,6 +14,7 @@ class TestMain:
     CLEANED_WORKER_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.cast_raw_worker_modelling_columns")
     @patch(f"{PATCH_PATH}.wUtils.create_clean_employment_status_column")
     @patch(f"{PATCH_PATH}.wUtils.create_clean_main_job_role_column")
     @patch(f"{PATCH_PATH}.cUtils.build_labels_lf")
@@ -30,6 +31,7 @@ class TestMain:
         build_labels_lf_mock: Mock,
         create_clean_main_job_role_column_mock: Mock,
         create_clean_employment_status_column_mock: Mock,
+        cast_raw_worker_modelling_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.side_effect = lambda source, schema: pl.LazyFrame(
@@ -64,6 +66,7 @@ class TestMain:
         )
         create_clean_main_job_role_column_mock.assert_called_once()
         create_clean_employment_status_column_mock.assert_called_once()
+        cast_raw_worker_modelling_columns_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             ANY, output_path=self.CLEANED_WORKER_DESTINATION
