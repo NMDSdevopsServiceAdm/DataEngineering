@@ -92,7 +92,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Fixed
-- Fixed run promotion failing for the `run-log-updater` role with an `s3:GetObjectTagging` access denied error: the role's policy now allows reading object tags on the source estimates and metadata and writing them to the long-term archive bucket, and the runbook lists the permissions the role needs.
+- Fixed run promotion failing with an object tagging access denied error for the `run-log-updater` role, and listed the role's permissions in the run log runbook.
 - Fixed run promotion leaving an empty write-check test object in the long-term archive bucket on every run.
 - Fixed SLV deduplication keeping repeated values at workplaces where a job role stays blank.
 
