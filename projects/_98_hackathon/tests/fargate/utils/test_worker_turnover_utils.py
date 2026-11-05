@@ -21,10 +21,10 @@ class TestFilterWorkerTurnoverData:
     )
     def test_returns_expected_rows(self, case):
         input_lf = pl.LazyFrame(
-            case.input_rows, schema=Schemas.cleaned_worker_schema, orient="row"
+            case.input_rows, schema=Schemas.filter_worker_schema, orient="row"
         )
         expected_lf = pl.LazyFrame(
-            case.expected_rows, schema=Schemas.cleaned_worker_schema, orient="row"
+            case.expected_rows, schema=Schemas.filter_worker_schema, orient="row"
         )
 
         returned_lf = job.filter_worker_turnover_data(input_lf)
