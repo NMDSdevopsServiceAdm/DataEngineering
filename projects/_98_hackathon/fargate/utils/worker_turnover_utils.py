@@ -43,23 +43,21 @@ def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 def get_latest_save_date_per_establishment(
     worker_lf: pl.LazyFrame, snapshot_worker_lf: pl.LazyFrame
 ) -> pl.LazyFrame:
-    """Finds the latest worker save date per establishment for each snapshot.
+    """Finds the latest worker save date per establishment and snapshot.
 
-    Covers workers of every employment status, so `worker_lf` is the
-    unfiltered data. Only snapshot import dates are kept, and they are
-    semi-joined before aggregating so the aggregate stays small. Only three
-    columns are read from `worker_lf` and one from `snapshot_worker_lf`.
+    Uses workers of every employment status. Snapshots are the import dates
+    in `snapshot_worker_lf`, semi-joined before aggregating to keep the
+    aggregate small.
 
     Args:
-        worker_lf (pl.LazyFrame): Cleaned ASC-WDS worker data.
+        worker_lf (pl.LazyFrame): Unfiltered cleaned ASC-WDS worker data.
         snapshot_worker_lf (pl.LazyFrame): Output of
-            `filter_worker_turnover_data`, which defines the snapshot import
-            dates.
+            `filter_worker_turnover_data`.
 
     Returns:
         pl.LazyFrame: Establishment ID, import date and `latest_save_date`
-            (null where every worker save date is null), one row per
-            establishment and snapshot.
+            (null if every save date is null), one row per establishment and
+            snapshot.
     """
     snapshot_dates_lf = snapshot_worker_lf.select(
         AWKClean.ascwds_worker_import_date
@@ -83,14 +81,13 @@ def add_establishment_active_flag(
 ) -> pl.LazyFrame:
     """Flags workers whose establishment saved data recently at both snapshots.
 
-    The gap is whole calendar months from the establishment's latest save date
+    A gap is whole calendar months from the establishment's latest save date
     to the import date, at the start snapshot and the snapshot 12 months
     later. It is negative if the save date is after the import date, and null
     with no save date. `establishment_active` is true when both gaps are at
     most `n_months`, false when either gap is null, and null where `is_leaver`
-    is null. Expects one snapshot per
-    month. Gaps are built on the small save date frame so only one join
-    reaches the worker rows, which are not re-evaluated to find snapshots.
+    is null. Expects one snapshot per month. Gaps are built on the small save
+    date frame so only one join reaches the worker rows.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `is_leaver`, one snapshot

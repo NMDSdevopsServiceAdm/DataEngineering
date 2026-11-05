@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added an `establishment_active` flag to the Hackathon Worker Turnover job, true when the establishment's latest worker save date is within N months (default 6) of the import date at both the start and end snapshots, with the gap in months for each. The cleaned ASC-WDS worker data now carries the parsed save date.
+- Added an `establishment_active` flag, with the months since last save at each snapshot, to the Hackathon Worker Turnover job: true when the latest worker save date is within N months (default 6) of the import date at both snapshots. The cleaned ASC-WDS worker data now carries the save date.
 - Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
 - Added an `is_leaver` flag to the Hackathon Worker Turnover job, true when a worker is absent from the snapshot 12 months later (null if none exists).
 - Added an `establishment_in_both_snapshots` flag to the Hackathon Worker Turnover job; `is_leaver` is null where it is false.
