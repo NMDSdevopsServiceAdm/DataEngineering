@@ -568,6 +568,16 @@ class TestCleanAscwdsWorkerUtilsSchemas:
         AWKClean.main_job_role_clean_labelled: pl.String,
     }
 
+    create_clean_main_service_type_id_column_schema = {
+        AWKClean.worker_id: pl.String,
+        AWKClean.ascwds_worker_import_date: pl.Date,
+        AWKClean.main_service_type_id: pl.String,
+    }
+    expected_create_clean_main_service_type_id_column_schema = {
+        **create_clean_main_service_type_id_column_schema,
+        AWKClean.main_service_type_id_clean: pl.String,
+    }
+
     create_clean_employment_status_column_schema = {
         AWKClean.worker_id: pl.String,
         AWKClean.employment_status: pl.String,

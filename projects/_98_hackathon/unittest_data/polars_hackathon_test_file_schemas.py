@@ -34,7 +34,7 @@ class WorkerTurnoverSchemas:
     )
 
     main_service_input_schema = pl.Schema(
-        [(AWKClean.main_service_type_id, pl.String())]
+        [(AWKClean.main_service_type_id_clean, CatColType.MainServiceIdCatType)]
     )
 
     main_service_type_schema = pl.Schema(

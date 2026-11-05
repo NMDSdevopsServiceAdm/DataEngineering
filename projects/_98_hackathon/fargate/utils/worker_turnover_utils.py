@@ -49,12 +49,12 @@ def add_main_service_type(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     - "non-residential" for any other main service code.
 
     Args:
-        worker_lf (pl.LazyFrame): Cleaned worker data with main service type ID.
+        worker_lf (pl.LazyFrame): Cleaned worker data with clean main service type ID.
 
     Returns:
         pl.LazyFrame: The input rows with all columns plus `main_service_type`.
     """
-    main_service = pl.col(AWKClean.main_service_type_id)
+    main_service = pl.col(AWKClean.main_service_type_id_clean)
     with_nursing_code = "1"
     without_nursing_code = "2"
 

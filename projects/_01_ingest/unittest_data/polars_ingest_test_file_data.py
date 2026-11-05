@@ -2488,6 +2488,12 @@ class ImputeNotKnownJobRolesTestCase:
 
 
 @dataclass
+class CreateCleanMainServiceTypeIdColumnTestCase:
+    id: str
+    expected_data: list[Any]
+
+
+@dataclass
 class CreateCleanMainJobRoleColumnTestCase:
     id: str
     input_data: list[Any]
@@ -2649,6 +2655,45 @@ class TestCleanAscwdsWorkerUtilsData:
             ("141", date(2025, 1, 1), "41", "40", MainJobRoleLabels.care_coordinator),
         ],
     )
+
+    create_clean_main_service_type_id_column_test_cases = [
+        CreateCleanMainServiceTypeIdColumnTestCase(
+            id="fills_null_with_previous_value",
+            expected_data=[
+                ("1001", date(2024, 1, 1), "1", "1"),
+                ("1001", date(2024, 2, 1), None, "1"),
+                ("1001", date(2024, 3, 1), None, "1"),
+            ],
+        ),
+        CreateCleanMainServiceTypeIdColumnTestCase(
+            id="fills_leading_null_with_next_value",
+            expected_data=[
+                ("1001", date(2024, 1, 1), None, "2"),
+                ("1001", date(2024, 2, 1), "2", "2"),
+            ],
+        ),
+        CreateCleanMainServiceTypeIdColumnTestCase(
+            id="fills_from_same_worker_only",
+            expected_data=[
+                ("1001", date(2024, 1, 1), "1", "1"),
+                ("1002", date(2024, 1, 1), "2", "2"),
+                ("1002", date(2024, 2, 1), None, "2"),
+            ],
+        ),
+        CreateCleanMainServiceTypeIdColumnTestCase(
+            id="keeps_known_values_unchanged",
+            expected_data=[
+                ("1001", date(2024, 1, 1), "1", "1"),
+                ("1001", date(2024, 2, 1), "2", "2"),
+            ],
+        ),
+    ]
+
+    create_clean_main_service_type_id_column_never_known_input_data = [
+        ("1001", date(2024, 1, 1), None),
+        ("1001", date(2024, 2, 1), None),
+        ("1002", date(2024, 1, 1), "1"),
+    ]
 
     create_clean_employment_status_column_case = (
         CreateCleanEmploymentStatusColumnTestCase(

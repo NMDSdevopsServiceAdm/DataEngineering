@@ -77,6 +77,7 @@ def main(
     )
 
     worker_lf = wUtils.create_clean_main_job_role_column(worker_lf, data_labels_lf)
+    worker_lf = wUtils.create_clean_main_service_type_id_column(worker_lf)
     worker_lf = wUtils.create_clean_employment_status_column(worker_lf, data_labels_lf)
 
     # Cast to Categorical here so it's saved in the output parquet file.
@@ -87,6 +88,9 @@ def main(
         ),
         pl.col(AWKClean.main_job_role_clean_labelled).cast(
             CategoricalColumnTypes.JobRoleCatType
+        ),
+        pl.col(AWKClean.main_service_type_id_clean).cast(
+            CategoricalColumnTypes.MainServiceIdCatType
         ),
         pl.col(AWKClean.employment_status_clean).cast(
             CategoricalColumnTypes.EmploymentStatusIdCatType

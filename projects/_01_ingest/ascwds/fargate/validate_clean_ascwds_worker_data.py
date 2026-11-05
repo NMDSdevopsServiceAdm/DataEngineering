@@ -23,6 +23,9 @@ columns = {
     ASCWKClean.ascwds_worker_import_date: "Date",
     ASCWKClean.main_job_role_clean: str(CategoricalColumnTypes.MainJobRoleIdCatType),
     ASCWKClean.main_job_role_clean_labelled: str(CategoricalColumnTypes.JobRoleCatType),
+    ASCWKClean.main_service_type_id_clean: str(
+        CategoricalColumnTypes.MainServiceIdCatType
+    ),
     ASCWKClean.employment_status_clean: str(
         CategoricalColumnTypes.EmploymentStatusIdCatType
     ),

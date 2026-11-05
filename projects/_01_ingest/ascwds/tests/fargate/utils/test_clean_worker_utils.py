@@ -152,6 +152,44 @@ class TestCreateCleanMainJobRoleColumn:
         assert "102" not in returned_worker_ids
 
 
+class TestCreateCleanMainServiceTypeIdColumn:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.create_clean_main_service_type_id_column_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            schema=Schemas.expected_create_clean_main_service_type_id_column_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(AWKClean.main_service_type_id_clean)
+
+        returned_lf = job.create_clean_main_service_type_id_column(input_lf)
+
+        pl_testing.assert_frame_equal(
+            returned_lf.sort(AWKClean.worker_id, AWKClean.ascwds_worker_import_date),
+            expected_lf.sort(AWKClean.worker_id, AWKClean.ascwds_worker_import_date),
+        )
+
+    def test_removes_rows_for_workers_never_known(self):
+        input_lf = pl.LazyFrame(
+            Data.create_clean_main_service_type_id_column_never_known_input_data,
+            schema=Schemas.create_clean_main_service_type_id_column_schema,
+            orient="row",
+        )
+
+        returned_lf = job.create_clean_main_service_type_id_column(input_lf)
+
+        returned_worker_ids = (
+            returned_lf.select(AWKClean.worker_id).collect().to_series().to_list()
+        )
+        assert returned_worker_ids == ["1002"]
+
+
 class TestCreateCleanEmploymentStatusColumn:
     case = Data.create_clean_employment_status_column_case
     input_lf = pl.LazyFrame(
