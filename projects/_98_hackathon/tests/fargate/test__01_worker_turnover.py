@@ -44,8 +44,9 @@ class TestMain:
         filter_worker_turnover_data_mock.return_value.drop.assert_called_once_with(
             job.AWKClean.location_id
         )
+        add_main_service_type_mock.return_value.collect.assert_called_once_with()
         add_is_leaver_flag_mock.assert_called_once_with(
-            add_main_service_type_mock.return_value
+            add_main_service_type_mock.return_value.collect.return_value.lazy.return_value
         )
         add_raw_worker_columns_mock.assert_called_once_with(
             add_is_leaver_flag_mock.return_value, scan_parquet_mock.return_value

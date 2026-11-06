@@ -22,6 +22,11 @@ def main(
 
     worker_lf = wUtils.filter_worker_turnover_data(worker_lf).drop(AWKClean.location_id)
     worker_lf = wUtils.add_main_service_type(worker_lf)
+
+    # The leaver flags reference this frame many times. Left lazy, each reference
+    # re-scans and re-filters the cleaned data (9 scans, out of memory at 60 GB).
+    # The filtered frame is small, so collect it once.
+    worker_lf = worker_lf.collect().lazy()
     worker_lf = wUtils.add_is_leaver_flag(worker_lf)
 
     raw_worker_lf = utils.scan_parquet(
