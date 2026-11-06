@@ -79,7 +79,7 @@ def mocks():
                 )
             ),
             upload_workbook=stack.enter_context(
-                patch(f"{PATCH_PATH}.assessment_workbook_utils.upload_to_s3")
+                patch(f"{PATCH_PATH}.workbook_helpers.upload_to_s3")
             ),
             resolve_run_sources=stack.enter_context(
                 patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources")
