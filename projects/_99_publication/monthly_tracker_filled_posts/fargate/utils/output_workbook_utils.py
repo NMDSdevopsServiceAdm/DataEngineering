@@ -74,11 +74,10 @@ class LogoUnavailableError(RuntimeError):
 
 def download_workbook_name(run_source: str) -> str:
     """
-    Names the data download workbook after the run it was built from.
+    Names the data download workbook after its run.
 
     Args:
-        run_source (str): S3 directory of the run, which holds its archive_date
-            and run_number partitions.
+        run_source (str): S3 directory of the run.
 
     Returns:
         str: the workbook's file name.
@@ -88,10 +87,8 @@ def download_workbook_name(run_source: str) -> str:
 
 def get_logo_bytes(logo_uri: str) -> bytes:
     """
-    Reads the Frontpage logo PNG from S3.
-
-    A release must not go out without its logo, so a missing or empty object
-    raises rather than returning no logo.
+    Reads the Frontpage logo PNG from S3. A missing or empty logo raises, so a
+    release can't go out without it.
 
     Args:
         logo_uri (str): S3 URI of the logo PNG.
@@ -224,8 +221,7 @@ def prepare_perc_change_for_publication(
 
 def prepare_download_tables(publication_lf: pl.LazyFrame) -> dict[str, pd.DataFrame]:
     """
-    Builds the three published tables of the data download, keyed by sheet name
-    (T0, T1, T2), as they appear in the workbook.
+    Builds the published T0, T1 and T2 tables, keyed by sheet name.
 
     Args:
         publication_lf (pl.LazyFrame): the publication data written by the

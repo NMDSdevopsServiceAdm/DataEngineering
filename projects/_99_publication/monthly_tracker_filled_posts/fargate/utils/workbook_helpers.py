@@ -10,13 +10,12 @@ from utils.file_utils import split_s3_uri
 
 def run_workbook_name(stem: str, run_source: str) -> str:
     """
-    Names a workbook after the run it was built from, so it can be tied back to
-    that run.
+    Names a workbook after its run.
 
     Args:
-        stem (str): the start of the file name, which says what the workbook is.
-        run_source (str): S3 directory of the run, which holds its archive_date
-            and run_number partitions.
+        stem (str): what the workbook is, as the start of the file name.
+        run_source (str): S3 directory of the run, partitioned by archive_date
+            and run_number.
 
     Returns:
         str: the file name, as <stem>_<archive_date>_<run_number>.xlsx.
@@ -47,8 +46,7 @@ def upload_to_s3(local_path: Path, s3_directory: str) -> None:
 
 def download_from_s3(s3_directory: str, file_name: str, local_path: Path) -> None:
     """
-    Downloads a named file from an S3 directory. A file that cannot be read
-    raises botocore's ClientError.
+    Downloads a named file from an S3 directory; raises ClientError if unreadable.
 
     Args:
         s3_directory (str): S3 directory holding the file.
