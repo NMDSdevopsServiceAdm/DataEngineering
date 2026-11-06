@@ -95,12 +95,15 @@ class TestAddRawWorkerColumns:
 
         returned_lf = job.add_raw_worker_columns(self.flagged_lf, raw_lf)
 
-        assert returned_lf.collect_schema().names() == [
-            *Schemas.raw_worker_join_input_schema.names(),
+        returned_names = returned_lf.collect_schema().names()
+        input_names = Schemas.raw_worker_join_input_schema.names()
+        assert returned_names == [
+            *input_names,
             *job.WORKER_CATEGORICAL_COLUMNS,
             *job.WORKER_NUMERIC_COLUMNS,
             *job.WORKER_DATE_COLUMNS,
         ]
+        assert len(returned_names) - len(input_names) == 22
 
     def test_returns_raw_values_for_worker_with_matching_keys(self):
         raw_lf = raw_worker_lf(
@@ -144,7 +147,7 @@ class TestAddRawWorkerColumns:
         assert returned_df.height == 1
         assert returned_df[AWKClean.gender].to_list() == [None]
 
-    def test_ignores_raw_rows_for_workers_not_in_worker_data(self):
+    def test_does_not_parse_dates_of_raw_rows_outside_worker_data(self):
         raw_lf = raw_worker_lf(
             raw_worker_row("1", "20210105"),
             raw_worker_row("2", "20100105", **{AWKClean.pay_change_date: "not a date"}),
@@ -154,13 +157,19 @@ class TestAddRawWorkerColumns:
 
         assert returned_df.height == 1
 
-    def test_returns_expected_column_types(self):
+    @pytest.mark.parametrize(
+        "column, expected_type",
+        [
+            pytest.param(AWKClean.gender, pl.Categorical, id="code_column"),
+            pytest.param(AWKClean.age, pl.Float32, id="numeric_column"),
+        ],
+    )
+    def test_returns_expected_column_type(self, column, expected_type):
         raw_lf = raw_worker_lf(raw_worker_row("1", "20210105"))
 
         schema = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect_schema()
 
-        assert schema[AWKClean.gender] == pl.Categorical
-        assert schema[AWKClean.age] == pl.Float32
+        assert schema[column] == expected_type
 
     def test_returns_date_type_for_date_columns(self):
         raw_lf = raw_worker_lf(raw_worker_row("1", "20210105"))
@@ -181,7 +190,8 @@ class TestAddRawWorkerColumns:
     @pytest.mark.parametrize(
         "raw_value, expected_date",
         [
-            pytest.param("01/03/2015", date(2015, 3, 1), id="day_and_month_one_digit"),
+            pytest.param("01/03/2015", date(2015, 3, 1), id="day_first_when_ambiguous"),
+            pytest.param("1/3/2015", date(2015, 3, 1), id="no_zero_padding"),
             pytest.param("25/12/2019", date(2019, 12, 25), id="day_above_twelve"),
             pytest.param("", None, id="blank_string"),
             pytest.param(None, None, id="null"),

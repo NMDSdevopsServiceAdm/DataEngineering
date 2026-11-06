@@ -37,15 +37,13 @@ WORKER_NUMERIC_COLUMNS = [
     AWKClean.start_age,
 ]
 
-# The start date and the pay change and save dates.
 WORKER_DATE_COLUMNS = [
     AWKClean.start_date,
     AWKClean.pay_change_date,
     AWKClean.pay_save_date,
 ]
 
-# Without an explicit schema the raw scan takes its columns from the first file,
-# which predates some of these columns, so later files' values are dropped.
+# Explicit, because a scan infers columns from the oldest file, which lacks newer ones.
 RAW_WORKER_SCHEMA = {
     column: pl.String
     for column in [
@@ -62,16 +60,16 @@ RAW_WORKER_SCHEMA = {
 def add_raw_worker_columns(
     worker_lf: pl.LazyFrame, raw_worker_lf: pl.LazyFrame
 ) -> pl.LazyFrame:
-    """Adds raw worker modelling columns from the worker's own snapshot.
+    """Adds raw worker columns from the worker's own snapshot.
 
-    Left joins on establishment ID, worker ID and import date. To limit memory,
-    only the needed raw columns are kept and the raw rows are cut to the keys in
-    `worker_lf` by a semi join before any casting, so the full raw history is
-    never cast or held for the join. Raw values are not cleaned: code columns
-    become categorical, numeric columns are cast to `Float32` (values that do not
-    parse become null), and date columns are parsed from `dd/mm/yyyy` (blank
-    becomes null; any other value that does not parse raises). A raw worker with
-    duplicate keys would duplicate rows.
+    Left joins on establishment ID, worker ID and import date. Raw rows are cut
+    to the keys in `worker_lf` by a semi join before casting, so the full raw
+    history is never cast or joined. Values are not cleaned: code columns become
+    categorical, numeric columns `Float32` (about 7 significant digits;
+    unparseable becomes null), and date columns are parsed from `dd/mm/yyyy`
+    (blank becomes null; a value of another shape raises, but a two-digit year
+    parses literally, so `01/03/15` is year 15). Relies on unique keys, which the
+    cleaned data's validation checks.
 
     Args:
         worker_lf (pl.LazyFrame): Flagged worker data with establishment ID,
