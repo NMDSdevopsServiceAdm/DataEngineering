@@ -8,8 +8,12 @@ from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
+from utils.column_values.ascwds_labelled_vocab import MainServiceID
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
 WORKER_CATEGORICAL_COLUMNS = [
@@ -239,27 +243,25 @@ def add_establishment_active_flag(
 
 
 def add_main_service_type(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `main_service_type`, a three-way recode of main service ID.
+    """Adds `main_service_type`, a three-way recode of the main service label.
 
     Values:
-    - "Care home with nursing" for code 1 (CHN).
-    - "Care home without nursing" for code 2 (CHS).
-    - "non-residential" for any other main service code.
+    - "Care home with nursing" for the CHN main service.
+    - "Care home without nursing" for the CHS main service.
+    - "non-residential" for any other main service.
 
     Args:
-        worker_lf (pl.LazyFrame): Cleaned worker data with main service type ID.
+        worker_lf (pl.LazyFrame): Worker data with `main_service_id_clean`.
 
     Returns:
         pl.LazyFrame: The input rows with all columns plus `main_service_type`.
     """
-    main_service = pl.col(AWKClean.main_service_type_id)
-    with_nursing_code = "1"
-    without_nursing_code = "2"
+    main_service = pl.col(AWPClean.main_service_id_clean)
 
     return worker_lf.with_columns(
-        pl.when(main_service == with_nursing_code)
+        pl.when(main_service == MainServiceID.care_home_services_with_nursing_chn)
         .then(pl.lit(PrimaryServiceType.care_home_with_nursing))
-        .when(main_service == without_nursing_code)
+        .when(main_service == MainServiceID.care_home_services_without_nursing_chs)
         .then(pl.lit(PrimaryServiceType.care_home_only))
         .otherwise(pl.lit(PrimaryServiceType.non_residential))
         .cast(CategoricalColumnTypes.PrimaryServiceEnumType)

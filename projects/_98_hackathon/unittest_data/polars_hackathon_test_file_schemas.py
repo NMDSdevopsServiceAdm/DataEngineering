@@ -6,6 +6,9 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 
@@ -40,7 +43,7 @@ class WorkerTurnoverSchemas:
     )
 
     main_service_input_schema = pl.Schema(
-        [(AWKClean.main_service_type_id, pl.String())]
+        [(AWPClean.main_service_id_clean, CatColType.MainServiceIdCatType)]
     )
 
     main_service_type_schema = pl.Schema(
