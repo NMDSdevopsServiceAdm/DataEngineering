@@ -9,6 +9,7 @@ STEP_FUNCTIONS_DIR = (
 )
 
 GLUE_TF_PATH = Path(__file__).parents[2] / "terraform" / "pipeline" / "glue.tf"
+S3_TF_PATH = Path(__file__).parents[2] / "terraform" / "pipeline" / "s3.tf"
 
 DATASET_BUCKET_URI_PREFIX = "${dataset_bucket_uri}/"
 PUBLICATION_DOMAIN_PREFIX = "domain=99_publication/"
@@ -166,4 +167,110 @@ class TestPublicationCrawlerExclusions:
 
         assert (
             f"{workbook_folder.rstrip('/')}/**" in get_publication_crawler_exclusions()
+        )
+
+
+@dataclass
+class ExpirationRule:
+    id: str
+    prefix: str
+    expiration_days: int
+
+
+def get_datasets_bucket_expiration_rules() -> list[ExpirationRule]:
+    """
+    Extracts the expiration rules of the datasets bucket in s3.tf.
+
+    Returns:
+        list[ExpirationRule]: The rules, in file order.
+    """
+    s3_tf = S3_TF_PATH.read_text()
+    module_block = re.search(r'module "datasets_bucket" \{(.*?)\n\}', s3_tf, re.S)
+    assert module_block, f"datasets_bucket not found in {S3_TF_PATH}"
+    rules = [
+        ExpirationRule(rule_id, prefix, int(days))
+        for rule_id, prefix, days in re.findall(
+            r'id\s*=\s*"([^"]+)"\s*prefix\s*=\s*"([^"]+)"\s*expiration_days\s*=\s*(\d+)',
+            module_block.group(1),
+        )
+    ]
+    assert rules, f"No expiration rules parsed from {S3_TF_PATH}"
+    return rules
+
+
+store_expiry_test_cases = [
+    PrepStoreCommandTestCase(
+        id="expires_the_prep_store",
+        step_function_filename="Publication-Assessment.json",
+        flag="--prep_destination",
+    ),
+    PrepStoreCommandTestCase(
+        id="expires_the_assessment_store",
+        step_function_filename="Publication-Assessment.json",
+        flag="--assessment_destination",
+    ),
+    PrepStoreCommandTestCase(
+        id="expires_the_validation_report_folders",
+        step_function_filename="Publication-Assessment.json",
+        flag="--reports_path",
+    ),
+    PrepStoreCommandTestCase(
+        id="expires_the_assessment_workbook_folder",
+        step_function_filename="Publication-Assessment.json",
+        flag="--workbook_destination",
+    ),
+]
+
+
+class TestPublicationStoreExpiry:
+    """
+    Guards the datasets bucket's expiry rules against drifting from the paths the
+    publication jobs write to.
+    """
+
+    @pytest.mark.parametrize(
+        "step_function_filename,flag",
+        [case.as_pytest_param() for case in store_expiry_test_cases],
+    )
+    def test_store_is_expired(self, step_function_filename, flag):
+        rule_prefixes = {rule.prefix for rule in get_datasets_bucket_expiration_rules()}
+
+        assert set(get_command_paths(step_function_filename, flag)) <= rule_prefixes
+
+    def test_output_workbook_folder_is_expired(self):
+        # Literal: no step function path to compare against.
+        rule_prefixes = {rule.prefix for rule in get_datasets_bucket_expiration_rules()}
+
+        assert (
+            "domain=99_publication/dataset=monthly_tracker_filled_posts_03_output_workbook/"
+            in rule_prefixes
+        )
+
+    def test_publication_stores_expire_after_60_days(self):
+        publication_rules = [
+            rule
+            for rule in get_datasets_bucket_expiration_rules()
+            if rule.prefix.startswith(PUBLICATION_DOMAIN_PREFIX)
+        ]
+
+        assert len(publication_rules) == 6
+        assert {rule.expiration_days for rule in publication_rules} == {60}
+
+    def test_output_dataset_is_not_expired(self):
+        # Un-partitioned and overwritten each run: an age rule would delete the
+        # current output.
+        [output_path] = set(
+            get_command_paths("Publication-Output.json", "--output_destination")
+        )
+
+        assert not any(
+            output_path.startswith(rule.prefix)
+            for rule in get_datasets_bucket_expiration_rules()
+        )
+
+    def test_every_expiry_prefix_ends_with_a_slash(self):
+        # Without the slash a prefix also matches sibling datasets sharing its
+        # name, e.g. _03_output would catch _03_output_workbook.
+        assert all(
+            rule.prefix.endswith("/") for rule in get_datasets_bucket_expiration_rules()
         )
