@@ -75,3 +75,7 @@ class TestMain:
             worker_lf.collect_schema()[job.AWKClean.establishment_id]
             == job.CategoricalColumnTypes.EstablishmentCatType
         )
+        assert (
+            worker_lf.collect_schema()[job.AWKClean.ascwds_worker_save_date] == pl.Date
+        )
+        assert job.AWKClean.save_date not in worker_lf.collect_schema()
