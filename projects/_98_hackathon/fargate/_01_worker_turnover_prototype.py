@@ -7,9 +7,18 @@ Diagnose-Hackathon-Worker-Turnover Step Function) picks where to sink and stop:
 - filter: after the filters, `location_id` drop and main service type.
 - flag: after the leaver flags.
 - full: the whole job, including the raw worker join.
+
+DIAG_MATERIALIZE picks how the filtered frame is shared by the later steps:
+
+- none: leave it lazy, as the real job does.
+- collect: `.collect().lazy()`, one in-memory copy.
+- cache: `.cache()`, a lazy cache node.
+- sink: write to local scratch, then scan that file.
 """
 
 import os
+
+import polars as pl
 
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
@@ -33,12 +42,15 @@ def main(
         destination (str): throwaway destination, never the real output
     """
     stop_after = os.environ.get("DIAG_STOP_AFTER", "full")
+    materialize = os.environ.get("DIAG_MATERIALIZE", "none")
 
     data_bucket, _ = file_utils.split_s3_uri(destination)
     diagnostics = RunDiagnostics(
-        f"hackathon_proto_stop-{stop_after}", data_bucket, sample_interval_seconds=1
+        f"hackathon_proto_stop-{stop_after}_mat-{materialize}",
+        data_bucket,
+        sample_interval_seconds=1,
     ).start()
-    print(f"Variant: stop_after={stop_after}")
+    print(f"Variant: stop_after={stop_after} materialize={materialize}")
     print(f"Run diagnostics: s3://{diagnostics.bucket}/{diagnostics.prefix}")
 
     try:
@@ -48,6 +60,18 @@ def main(
             AWKClean.location_id
         )
         worker_lf = wUtils.add_main_service_type(worker_lf)
+
+        if materialize == "collect":
+            worker_lf = worker_lf.collect().lazy()
+        elif materialize == "cache":
+            worker_lf = worker_lf.cache()
+        elif materialize == "sink":
+            scratch_path = os.path.join(
+                os.environ.get("POLARS_TEMP_DIR", "/tmp"), "filtered_worker.parquet"
+            )
+            worker_lf.sink_parquet(scratch_path)
+            worker_lf = pl.scan_parquet(scratch_path)
+        diagnostics.checkpoint("after_materialize")
 
         if stop_after != "filter":
             worker_lf = wUtils.add_is_leaver_flag(worker_lf)

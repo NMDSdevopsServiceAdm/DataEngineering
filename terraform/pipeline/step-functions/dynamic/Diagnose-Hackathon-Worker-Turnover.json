@@ -1,5 +1,5 @@
 {
-  "Comment": "THROWAWAY, manually started. Memory diagnostic for the hackathon worker turnover job. Input: {\"stop_after\": \"filter\" | \"flag\" | \"full\"}. Delete before merge.",
+  "Comment": "THROWAWAY, manually started. Memory diagnostic for the hackathon worker turnover job. Input: {\"stop_after\": \"filter\" | \"flag\" | \"full\", \"materialize\": \"none\" | \"collect\" | \"cache\" | \"sink\"}. Delete before merge.",
   "StartAt": "Diagnose worker turnover",
   "States": {
     "Diagnose worker turnover": {
@@ -28,6 +28,10 @@
                 {
                   "Name": "DIAG_STOP_AFTER",
                   "Value.$": "$.stop_after"
+                },
+                {
+                  "Name": "DIAG_MATERIALIZE",
+                  "Value.$": "$.materialize"
                 }
               ],
               "Command": [
