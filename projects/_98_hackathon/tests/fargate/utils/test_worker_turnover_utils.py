@@ -174,7 +174,16 @@ class TestAddRawWorkerColumns:
             *job.WORKER_NUMERIC_COLUMNS,
             *job.WORKER_DATE_COLUMNS,
         ]
-        assert len(returned_names) - len(input_names) == 22
+        assert len(returned_names) - len(input_names) == 25
+
+    def test_excludes_highest_qualification_level(self):
+        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105"))
+
+        returned_names = (
+            job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect_schema().names()
+        )
+
+        assert AWKClean.highest_qual_level not in returned_names
 
     def test_returns_raw_values_for_worker_with_matching_keys(self):
         raw_lf = raw_worker_lf(
@@ -232,7 +241,13 @@ class TestAddRawWorkerColumns:
         "column, expected_type",
         [
             pytest.param(AWKClean.gender, pl.Categorical, id="code_column"),
+            pytest.param(
+                AWKClean.social_care_qual_held, pl.Categorical, id="social_care_qual"
+            ),
             pytest.param(AWKClean.age, pl.Float32, id="numeric_column"),
+            pytest.param(AWKClean.days_sick, pl.Float32, id="days_sick"),
+            pytest.param(AWKClean.start_in_sector, pl.Float32, id="start_in_sector"),
+            pytest.param(AWKClean.year_of_entry, pl.Float32, id="year_of_entry"),
         ],
     )
     def test_returns_expected_column_type(self, column, expected_type):
@@ -248,6 +263,25 @@ class TestAddRawWorkerColumns:
         schema = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect_schema()
 
         assert all(schema[column] == pl.Date for column in job.WORKER_DATE_COLUMNS)
+
+    @pytest.mark.parametrize(
+        "column, raw_value, expected_number",
+        [
+            pytest.param(AWKClean.days_sick, "3.5", 3.5, id="decimal_days"),
+            pytest.param(AWKClean.days_sick, ".5", 0.5, id="no_leading_digit"),
+            pytest.param(AWKClean.days_sick, " ", None, id="blank_days"),
+            pytest.param(AWKClean.start_in_sector, "2015", 2015.0, id="year"),
+            pytest.param(AWKClean.year_of_entry, "-1", -1.0, id="not_known_code_kept"),
+        ],
+    )
+    def test_returns_expected_number_for_numeric_string(
+        self, column, raw_value, expected_number
+    ):
+        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105", **{column: raw_value}))
+
+        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
+
+        assert returned_df[column].to_list() == [expected_number]
 
     def test_returns_null_for_unparseable_numeric_value(self):
         raw_lf = raw_worker_lf(

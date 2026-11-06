@@ -23,7 +23,7 @@ WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.country_of_birth,
     AWKClean.disabled,
     AWKClean.hourly_or_annual_pay,
-    AWKClean.highest_qual_level,
+    AWKClean.social_care_qual_held,
     AWKClean.level_social_care_qualification_held,
     AWKClean.care_certificate_status,
     AWKClean.apprentice,
@@ -39,6 +39,9 @@ WORKER_NUMERIC_COLUMNS = [
     AWKClean.average_hours,
     AWKClean.distance_to_work_in_miles,
     AWKClean.start_age,
+    AWKClean.days_sick,
+    AWKClean.start_in_sector,
+    AWKClean.year_of_entry,
 ]
 
 WORKER_DATE_COLUMNS = [
