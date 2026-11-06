@@ -3,6 +3,7 @@ from datetime import date
 from typing import Any
 
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
+from utils.column_values.ascwds_labelled_vocab import MainServiceID
 
 START = date(2021, 1, 5)
 END = date(2022, 1, 5)  # 12 months after START
@@ -50,19 +51,35 @@ class AddEstablishmentActiveFlagCase:
 class WorkerTurnoverData:
     add_main_service_type_cases = [
         AddMainServiceTypeCase(
-            id="recodes_code_1_as_care_home_with_nursing",
-            input_rows=[("1",)],
-            expected_rows=[("1", "Care home with nursing")],
+            id="recodes_chn_as_care_home_with_nursing",
+            input_rows=[(MainServiceID.care_home_services_with_nursing_chn,)],
+            expected_rows=[
+                (
+                    MainServiceID.care_home_services_with_nursing_chn,
+                    "Care home with nursing",
+                )
+            ],
         ),
         AddMainServiceTypeCase(
-            id="recodes_code_2_as_care_home_without_nursing",
-            input_rows=[("2",)],
-            expected_rows=[("2", "Care home without nursing")],
+            id="recodes_chs_as_care_home_without_nursing",
+            input_rows=[(MainServiceID.care_home_services_without_nursing_chs,)],
+            expected_rows=[
+                (
+                    MainServiceID.care_home_services_without_nursing_chs,
+                    "Care home without nursing",
+                )
+            ],
         ),
         AddMainServiceTypeCase(
-            id="recodes_any_other_code_as_non_residential",
-            input_rows=[("3",), ("10",)],
-            expected_rows=[("3", "non-residential"), ("10", "non-residential")],
+            id="recodes_any_other_service_as_non_residential",
+            input_rows=[
+                (MainServiceID.adult_placement_home,),
+                (MainServiceID.domestic_services_and_home_help,),
+            ],
+            expected_rows=[
+                (MainServiceID.adult_placement_home, "non-residential"),
+                (MainServiceID.domestic_services_and_home_help, "non-residential"),
+            ],
         ),
     ]
 
