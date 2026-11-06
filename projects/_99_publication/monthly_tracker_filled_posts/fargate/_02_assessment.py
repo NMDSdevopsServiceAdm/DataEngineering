@@ -14,6 +14,7 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
     merge_utils,
     publication_utils,
     run_log_utils,
+    workbook_helpers,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
@@ -243,9 +244,8 @@ def main(
     run_assessment_lf = utils.scan_parquet(
         merge_utils.run_partition_path(assessment_destination, run_source)
     )
-    workbook_name = (
-        f"monthly_tracking_summary_{merge_utils.archive_date_from_source(run_source)}"
-        f"_{assessed_run_number}.xlsx"
+    workbook_name = workbook_helpers.run_workbook_name(
+        "monthly_tracking_summary", run_source
     )
     with tempfile.TemporaryDirectory() as workbook_folder:
         workbook_path = Path(workbook_folder) / workbook_name
@@ -261,7 +261,7 @@ def main(
             cell_map.TEMPLATE_PATH,
             workbook_path,
         )
-        assessment_workbook_utils.upload_to_s3(workbook_path, workbook_destination)
+        workbook_helpers.upload_to_s3(workbook_path, workbook_destination)
 
 
 if __name__ == "__main__":

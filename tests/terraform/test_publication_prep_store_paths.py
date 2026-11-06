@@ -167,3 +167,23 @@ class TestPublicationCrawlerExclusions:
         assert (
             f"{workbook_folder.rstrip('/')}/**" in get_publication_crawler_exclusions()
         )
+
+    def test_crawler_excludes_the_output_workbook_folder(self):
+        [workbook_path] = set(
+            get_command_paths("Publication-Output.json", "--workbook_destination")
+        )
+        workbook_folder = workbook_path.removeprefix(PUBLICATION_DOMAIN_PREFIX)
+
+        assert (
+            f"{workbook_folder.rstrip('/')}/**" in get_publication_crawler_exclusions()
+        )
+
+
+class TestPublicationOutputWorkbookPaths:
+    """Guards the logo the data download workbook needs."""
+
+    def test_build_output_passes_a_png_logo_source(self):
+        [logo_source] = get_command_paths("Publication-Output.json", "--logo_source")
+
+        assert logo_source.startswith("${pipeline_resources_bucket_uri}/"), logo_source
+        assert logo_source.endswith(".png"), logo_source

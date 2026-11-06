@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- The publication output job builds the data download workbook and saves it to S3.
 - Added run log runbook guidance for fixing AWS permissions errors.
 - Added an `establishment_active` flag, with months since last save at each snapshot, to the Hackathon Worker Turnover job, and carried the save date through the cleaned ASC-WDS worker data.
 - Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
@@ -42,6 +43,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Publication output rows list England first, then regions alphabetically, with main services in their published order.
 - Changed the Trello card drafting skill to ask open questions first, label cards by dependency tier, and start each description with /new-ticket.
 - Assessment percentage change columns are now Float64 to reduce rounding drift.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
