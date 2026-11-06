@@ -36,24 +36,6 @@ def remove_workers_without_workplaces(
     )
 
 
-def parse_save_date(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds the raw `dd/mm/yyyy` save date string as a Date column.
-
-    Blank and unparseable values become null.
-
-    Args:
-        lf (pl.LazyFrame): LazyFrame containing the raw `savedate` string column.
-
-    Returns:
-        pl.LazyFrame: The input LazyFrame with an `ascwds_worker_save_date` column.
-    """
-    return lf.with_columns(
-        pl.col(AWKClean.save_date)
-        .str.to_date("%d/%m/%Y", strict=False)
-        .alias(AWKClean.ascwds_worker_save_date)
-    )
-
-
 def remap_mainjrid_codes(lf: pl.LazyFrame) -> pl.LazyFrame:
     """Recodes job roles by replacing raw mainjrid codes.
 

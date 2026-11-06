@@ -582,12 +582,3 @@ class TestCleanAscwdsWorkerUtilsSchemas:
         DLC.code: pl.String,
         DLC.label: pl.String,
     }
-
-    parse_save_date_schema = {
-        AWKClean.worker_id: pl.String,
-        AWKClean.save_date: pl.String,
-    }
-    expected_parse_save_date_schema = {
-        **parse_save_date_schema,
-        AWKClean.ascwds_worker_save_date: pl.Date,
-    }

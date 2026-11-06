@@ -5,8 +5,13 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 )
 
 
+DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
+
+
 def main(
-    cleaned_ascwds_worker_source: str, flagged_destination: str, n_months: int = 6
+    cleaned_ascwds_worker_source: str,
+    flagged_destination: str,
+    n_months: int = DEFAULT_MAX_MONTHS_SINCE_SAVE,
 ) -> None:
     """Filters worker data, adds main service type and flags leavers and active establishments.
 
@@ -47,7 +52,7 @@ if __name__ == "__main__":
             "--n_months",
             "Most months since an establishment's latest save date to count as active",
             False,
-            6,
+            DEFAULT_MAX_MONTHS_SINCE_SAVE,
         ),
     )
     main(

@@ -75,34 +75,7 @@ class TestMain:
             worker_lf.collect_schema()[job.AWKClean.establishment_id]
             == job.CategoricalColumnTypes.EstablishmentCatType
         )
-
-    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.wUtils.create_clean_employment_status_column")
-    @patch(f"{PATCH_PATH}.wUtils.create_clean_main_job_role_column")
-    @patch(f"{PATCH_PATH}.cUtils.build_labels_lf")
-    @patch(f"{PATCH_PATH}.wUtils.remove_workers_without_workplaces")
-    @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_keeps_parsed_save_date_column(
-        self,
-        scan_parquet_mock: Mock,
-        remove_workers_without_workplaces_mock: Mock,
-        build_labels_lf_mock: Mock,
-        create_clean_main_job_role_column_mock: Mock,
-        create_clean_employment_status_column_mock: Mock,
-        sink_to_parquet_mock: Mock,
-    ):
-        scan_parquet_mock.side_effect = lambda source, schema: pl.LazyFrame(
-            schema=schema
+        assert (
+            worker_lf.collect_schema()[job.AWKClean.ascwds_worker_save_date] == pl.Date
         )
-
-        job.main(
-            self.WORKER_SOURCE,
-            self.CLEANED_WORKPLACE_SOURCE,
-            self.CLEANED_WORKER_DESTINATION,
-        )
-
-        worker_schema = remove_workers_without_workplaces_mock.call_args.args[
-            0
-        ].collect_schema()
-        assert worker_schema[job.AWKClean.ascwds_worker_save_date] == pl.Date
-        assert job.AWKClean.save_date not in worker_schema
+        assert job.AWKClean.save_date not in worker_lf.collect_schema()

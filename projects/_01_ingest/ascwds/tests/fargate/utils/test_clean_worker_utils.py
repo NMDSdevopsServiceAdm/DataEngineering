@@ -56,26 +56,6 @@ class TestRemoveWorkersWithoutWorkplaces:
         )
 
 
-class TestParseSaveDate:
-    @pytest.mark.parametrize(
-        "case",
-        [pytest.param(case, id=case.id) for case in Data.parse_save_date_test_cases],
-    )
-    def test_returns_expected_save_date_column(self, case):
-        input_lf = pl.LazyFrame(
-            case.input_data, schema=Schemas.parse_save_date_schema, orient="row"
-        )
-        expected_lf = pl.LazyFrame(
-            case.expected_data,
-            schema=Schemas.expected_parse_save_date_schema,
-            orient="row",
-        )
-
-        returned_lf = job.parse_save_date(input_lf)
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
 class TestRemapMainjridCodes:
     @pytest.mark.parametrize(
         "case",

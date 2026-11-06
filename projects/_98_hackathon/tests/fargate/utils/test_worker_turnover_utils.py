@@ -95,7 +95,7 @@ class TestAddEstablishmentActiveFlag:
         )
 
         returned_schema = job.add_establishment_active_flag(
-            worker_lf, save_dates_lf
+            worker_lf, save_dates_lf, n_months=6
         ).collect_schema()
 
         assert returned_schema[HackCols.months_since_save_start] == pl.Int32

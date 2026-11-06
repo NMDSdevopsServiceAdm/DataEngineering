@@ -77,7 +77,7 @@ def get_latest_save_date_per_establishment(
 
 
 def add_establishment_active_flag(
-    worker_lf: pl.LazyFrame, save_dates_lf: pl.LazyFrame, n_months: int = 6
+    worker_lf: pl.LazyFrame, save_dates_lf: pl.LazyFrame, n_months: int
 ) -> pl.LazyFrame:
     """Flags workers whose establishment saved data recently at both snapshots.
 

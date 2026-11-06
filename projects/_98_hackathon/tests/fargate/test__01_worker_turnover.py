@@ -48,7 +48,7 @@ class TestMain:
         add_establishment_active_flag_mock.assert_called_once_with(
             add_is_leaver_flag_mock.return_value,
             get_latest_save_date_per_establishment_mock.return_value,
-            6,
+            job.DEFAULT_MAX_MONTHS_SINCE_SAVE,
         )
         sink_to_parquet_mock.assert_called_once_with(
             add_establishment_active_flag_mock.return_value,

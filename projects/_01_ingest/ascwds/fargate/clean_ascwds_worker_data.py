@@ -54,7 +54,12 @@ def main(
         worker_lf, AWKClean.import_date, AWKClean.ascwds_worker_import_date
     )
 
-    worker_lf = wUtils.parse_save_date(worker_lf).drop(AWKClean.save_date)
+    # Raw save date is dd/mm/yyyy; blank or unparseable values become null.
+    worker_lf = worker_lf.with_columns(
+        pl.col(AWKClean.save_date)
+        .str.to_date("%d/%m/%Y", strict=False)
+        .alias(AWKClean.ascwds_worker_save_date)
+    ).drop(AWKClean.save_date)
 
     worker_lf = worker_lf.filter(is_unique_worker_data())
 
