@@ -513,8 +513,9 @@ jobs:
             aws s3 sync "s3://sfc-main-pipeline-resources/publication/logo/" "s3://$BRANCH_RESOURCES_BUCKET/publication/logo/"
       - run:
           name: Copy job role archive, run log and assessments to non-prod dataset bucket
-          # No --delete: runs a branch archived itself stay. Main's archive expires
-          # after 60 days (datasets bucket lifecycle), so this stays bounded.
+          # Mirrors main (--delete), so a branch never holds a run main doesn't, or
+          # two files for one run. Main's archive expires after 60 days (datasets
+          # bucket lifecycle), so this stays bounded.
           # The run log marks main's published runs, and an assessment compares
           # against the previous published run's assessment, so those come too.
           command: |
@@ -523,10 +524,10 @@ jobs:
             if [ "$(cat bake/seed-archive-sample 2>/dev/null)" = "false" ]; then
               echo "No archive-related changes detected. Skipping archive copy."
             else
-              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/"
-              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/"
-              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/"
-              aws s3 sync "s3://sfc-main-datasets/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/" "s3://$BRANCH_DATASET_BUCKET/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/"
+              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/" --delete
+              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/" --delete
+              aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/" --delete
+              aws s3 sync "s3://sfc-main-datasets/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/" "s3://$BRANCH_DATASET_BUCKET/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/" --delete
             fi
       - run:
           name: Seed non-prod raw bucket from sample bucket, per domain
