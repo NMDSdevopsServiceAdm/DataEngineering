@@ -144,6 +144,16 @@ class TestAddRawWorkerColumns:
         assert returned_df.height == 1
         assert returned_df[AWKClean.gender].to_list() == [None]
 
+    def test_ignores_raw_rows_for_workers_not_in_worker_data(self):
+        raw_lf = raw_worker_lf(
+            raw_worker_row("1", "20210105"),
+            raw_worker_row("2", "20100105", **{AWKClean.pay_change_date: "not a date"}),
+        )
+
+        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
+
+        assert returned_df.height == 1
+
     def test_returns_expected_column_types(self):
         raw_lf = raw_worker_lf(raw_worker_row("1", "20210105"))
 

@@ -64,12 +64,14 @@ def add_raw_worker_columns(
 ) -> pl.LazyFrame:
     """Adds raw worker modelling columns from the worker's own snapshot.
 
-    Left joins on establishment ID, worker ID and import date. Only the needed
-    raw columns are kept, selected before the join, to limit memory. Raw values
-    are not cleaned: code columns become categorical, numeric columns are cast to
-    `Float32` (values that do not parse become null), and date columns are parsed
-    from `dd/mm/yyyy` (blank becomes null; any other value that does not parse
-    raises). A raw worker with duplicate keys would duplicate rows.
+    Left joins on establishment ID, worker ID and import date. To limit memory,
+    only the needed raw columns are kept and the raw rows are cut to the keys in
+    `worker_lf` by a semi join before any casting, so the full raw history is
+    never cast or held for the join. Raw values are not cleaned: code columns
+    become categorical, numeric columns are cast to `Float32` (values that do not
+    parse become null), and date columns are parsed from `dd/mm/yyyy` (blank
+    becomes null; any other value that does not parse raises). A raw worker with
+    duplicate keys would duplicate rows.
 
     Args:
         worker_lf (pl.LazyFrame): Flagged worker data with establishment ID,
@@ -91,12 +93,15 @@ def add_raw_worker_columns(
         AWKClean.ascwds_worker_import_date,
     ).drop(AWKClean.import_date)
 
-    day_first_format = "%d/%m/%Y"
-
     raw_worker_lf = raw_worker_lf.with_columns(
         pl.col(AWKClean.establishment_id).cast(
             CategoricalColumnTypes.EstablishmentCatType
-        ),
+        )
+    ).join(worker_lf.select(keys), on=keys, how="semi")
+
+    day_first_format = "%d/%m/%Y"
+
+    raw_worker_lf = raw_worker_lf.with_columns(
         pl.col(WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical),
         pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False),
         pl.col(WORKER_DATE_COLUMNS).replace("", None).str.to_date(day_first_format),
