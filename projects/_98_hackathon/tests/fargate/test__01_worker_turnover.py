@@ -64,7 +64,7 @@ class TestMain:
             how="left",
         )
         get_latest_save_date_per_establishment_mock.assert_called_once_with(
-            scan_parquet_mock.return_value,
+            worker_lf_mock,
             filter_worker_turnover_data_mock.return_value,
         )
         add_main_service_type_mock.assert_called_once_with(
@@ -103,7 +103,12 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        job.main(self.CLEANED_WORKER_SOURCE, self.FLAGGED_DESTINATION, n_months=3)
+        job.main(
+            self.CLEANED_WORKER_SOURCE,
+            self.CLEANED_WORKPLACE_SOURCE,
+            self.FLAGGED_DESTINATION,
+            n_months=3,
+        )
 
         add_establishment_active_flag_mock.assert_called_once_with(
             add_is_leaver_flag_mock.return_value,

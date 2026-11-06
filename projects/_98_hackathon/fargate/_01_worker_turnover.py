@@ -42,7 +42,7 @@ def main(
     )
 
     filtered_lf = filtered_lf.drop(AWKClean.location_id)
-    worker_lf = worker_lf.join(
+    filtered_lf = filtered_lf.join(
         workplace_lf,
         left_on=[AWKClean.establishment_id, AWKClean.ascwds_worker_import_date],
         right_on=[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
