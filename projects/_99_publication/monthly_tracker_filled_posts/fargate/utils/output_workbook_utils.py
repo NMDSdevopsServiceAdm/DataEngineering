@@ -1,3 +1,4 @@
+import copy
 import os
 import re
 import zipfile
@@ -54,7 +55,7 @@ _THEME_CONFIG: dict = {
 _TABLE_ROW_INDEX: int = 4  # blank row between the sheet description and header
 _TABLE_INSTRUCTIONS = "This sheet contains 1 table."
 _TABLE_COLUMN_WIDTHS: list[int] = [18, 18, 29, 36, 36]
-_TABLE_NAMES: dict[str, str] = {
+TABLE_NAMES: dict[str, str] = {
     "T0": "t0_filled_posts",
     "T1": "t1_filled_posts_perc_change",
     "T2": "t2_location_count_perc_change",
@@ -186,6 +187,32 @@ def prepare_perc_change_for_publication(
     )
 
 
+def prepare_download_tables(publication_lf: pl.LazyFrame) -> dict[str, pd.DataFrame]:
+    """
+    Builds the published T0, T1 and T2 tables, keyed by sheet name.
+
+    Args:
+        publication_lf (pl.LazyFrame): the publication data written by the
+            output stage.
+
+    Returns:
+        dict[str, pd.DataFrame]: the table to publish on each sheet.
+    """
+    return {
+        "T0": prepare_t0_for_publication(publication_lf),
+        "T1": prepare_perc_change_for_publication(
+            publication_lf,
+            Pub.unfiltered_filled_posts_april_pct_change,
+            Pub.unfiltered_short_sfc_cum_pct_change,
+        ),
+        "T2": prepare_perc_change_for_publication(
+            publication_lf,
+            Pub.unfiltered_locationid_count_april_pct_change,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
+        ),
+    }
+
+
 def get_latest_import_date(publication_lf: pl.LazyFrame) -> date:
     """
     Returns the latest value of the Period column, a CQC import date.
@@ -265,19 +292,7 @@ def build_download_workbook(
         get_publication_date(get_latest_import_date(publication_lf))
     )
     subtitles = [f"Skills for Care's workforce estimates as at {latest_period:%b-%Y}"]
-    tables = {
-        "T0": prepare_t0_for_publication(publication_lf),
-        "T1": prepare_perc_change_for_publication(
-            publication_lf,
-            Pub.unfiltered_filled_posts_april_pct_change,
-            Pub.unfiltered_short_sfc_cum_pct_change,
-        ),
-        "T2": prepare_perc_change_for_publication(
-            publication_lf,
-            Pub.unfiltered_locationid_count_april_pct_change,
-            Pub.unfiltered_short_locationid_count_cum_pct_change,
-        ),
-    }
+    tables = prepare_download_tables(publication_lf)
     titles = {"T0": T0_TITLE, "T1": T1_TITLE, "T2": T2_TITLE}
     value_formats = {
         "T0": _COUNT_FORMAT,
@@ -286,7 +301,8 @@ def build_download_workbook(
     }
 
     workbook = gpt.GPWorkbook(str(filename))
-    workbook.set_theme(gpt.Theme(_THEME_CONFIG))
+    # gptables alters the config it is given, so each build gets its own copy.
+    workbook.set_theme(gpt.Theme(copy.deepcopy(_THEME_CONFIG)))
     write_pages(
         workbook,
         {
@@ -299,7 +315,7 @@ def build_download_workbook(
     for sheet_name, table in tables.items():
         gptable = gpt.GPTable(
             table=table,
-            table_name=_TABLE_NAMES[sheet_name],
+            table_name=TABLE_NAMES[sheet_name],
             title=titles[sheet_name],
             subtitles=subtitles,
             instructions=_TABLE_INSTRUCTIONS,
@@ -311,7 +327,7 @@ def build_download_workbook(
         worksheet.write_gptable(gptable, False, [])
         set_column_widths(worksheet, _TABLE_COLUMN_WIDTHS)
     workbook.close()
-    _enable_table_filters(filename, list(_TABLE_NAMES.values()))
+    _enable_table_filters(filename, list(TABLE_NAMES.values()))
 
 
 def _table_formatting(value_format: dict) -> list[dict]:
