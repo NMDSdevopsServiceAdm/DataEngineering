@@ -17,6 +17,7 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     PublishedJobGroupLabels,
     PublishedMainService,
+    PublishedRegion,
 )
 
 PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._03_output"
@@ -72,6 +73,7 @@ def _input_row(
     import_date: date,
     job_role: str = PublishedJobGroupLabels.all_job_roles,
     region: str = "London",
+    service: str = PrimaryServiceType.care_home_with_nursing,
     values: tuple = (100.0, 10, None, None, None, None),
     period_label_short: str = "Mar 2026",
     period_label_long: str = "March 2026",
@@ -82,7 +84,7 @@ def _input_row(
         period_label_long,
         job_role,
         region,
-        PrimaryServiceType.care_home_with_nursing,
+        service,
         *values,
     )
 
@@ -240,15 +242,90 @@ class TestMain:
         input_rows = [
             _input_row(date(2026, 5, 1), region="London"),
             _input_row(date(2026, 4, 1), region="South West"),
+            _input_row(
+                date(2026, 4, 1),
+                region="London",
+                service=PrimaryServiceType.non_residential,
+            ),
             _input_row(date(2026, 4, 1), region="London"),
         ]
 
         returned_lf = _run_main(mocks, input_rows)
 
-        assert returned_lf.select(Pub.period, Pub.region).collect().rows() == [
-            (date(2026, 4, 1), "London"),
-            (date(2026, 4, 1), "South West"),
-            (date(2026, 5, 1), "London"),
+        assert returned_lf.select(
+            Pub.period, Pub.region, Pub.main_service
+        ).collect().rows() == [
+            (date(2026, 4, 1), "London", PublishedMainService.care_home_with_nursing),
+            (date(2026, 4, 1), "London", PublishedMainService.non_residential),
+            (
+                date(2026, 4, 1),
+                "South West",
+                PublishedMainService.care_home_with_nursing,
+            ),
+            (date(2026, 5, 1), "London", PublishedMainService.care_home_with_nursing),
+        ]
+
+    def test_main_puts_england_before_the_other_regions_in_alphabetical_order(
+        self, mocks
+    ):
+        input_rows = [
+            _input_row(date(2026, 4, 1), region="South West"),
+            _input_row(date(2026, 4, 1), region="London"),
+            _input_row(date(2026, 4, 1), region=PublishedRegion.england),
+            _input_row(date(2026, 4, 1), region="East Midlands"),
+        ]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.select(Pub.region).collect()[Pub.region].to_list() == [
+            PublishedRegion.england,
+            "East Midlands",
+            "London",
+            "South West",
+        ]
+
+    def test_main_sorts_region_before_main_service(self, mocks):
+        input_rows = [
+            _input_row(
+                date(2026, 4, 1),
+                region="East Midlands",
+                service=PublishedMainService.all_locations,
+            ),
+            _input_row(
+                date(2026, 4, 1),
+                region=PublishedRegion.england,
+                service=PrimaryServiceType.non_residential,
+            ),
+        ]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.select(Pub.region).collect()[Pub.region].to_list() == [
+            PublishedRegion.england,
+            "East Midlands",
+        ]
+
+    def test_main_orders_main_services_in_published_order(self, mocks):
+        input_rows = [
+            _input_row(date(2026, 4, 1), service=PrimaryServiceType.non_residential),
+            _input_row(date(2026, 4, 1), service=PublishedMainService.all_care_homes),
+            _input_row(date(2026, 4, 1), service=PrimaryServiceType.care_home_only),
+            _input_row(date(2026, 4, 1), service=PublishedMainService.all_locations),
+            _input_row(
+                date(2026, 4, 1), service=PrimaryServiceType.care_home_with_nursing
+            ),
+        ]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.select(Pub.main_service).collect()[
+            Pub.main_service
+        ].to_list() == [
+            PublishedMainService.all_locations,
+            PublishedMainService.all_care_homes,
+            PublishedMainService.care_home_with_nursing,
+            PublishedMainService.care_home_only,
+            PublishedMainService.non_residential,
         ]
 
     def test_main_passes_percentage_change_columns_through_unchanged(self, mocks):

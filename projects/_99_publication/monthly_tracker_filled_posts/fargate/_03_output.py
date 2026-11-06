@@ -78,7 +78,7 @@ def main(
             Pub.unfiltered_locationid_count_april_pct_change,
             Pub.unfiltered_short_locationid_count_cum_pct_change,
         )
-        .sort(publication_utils.DOWNLOAD_TABLE_SORT_COLUMNS)
+        .sort(publication_utils.DOWNLOAD_TABLE_SORT_KEYS)
     )
 
     utils.sink_to_parquet(
