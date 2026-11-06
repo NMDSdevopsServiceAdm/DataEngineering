@@ -512,9 +512,11 @@ jobs:
           command: |
             aws s3 sync "s3://sfc-main-pipeline-resources/publication/logo/" "s3://$BRANCH_RESOURCES_BUCKET/publication/logo/"
       - run:
-          name: Copy job role archive and run log to non-prod dataset bucket
+          name: Copy job role archive, run log and assessments to non-prod dataset bucket
           # No --delete: runs a branch archived itself stay. Main's archive expires
           # after 60 days (datasets bucket lifecycle), so this stays bounded.
+          # The run log marks main's published runs, and an assessment compares
+          # against the previous published run's assessment, so those come too.
           command: |
             # Defaults to copying when the flag file is missing/unreadable --
             # same defensive direction as the raw bucket seed.
@@ -524,6 +526,7 @@ jobs:
               aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/"
               aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/"
               aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/"
+              aws s3 sync "s3://sfc-main-datasets/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/" "s3://$BRANCH_DATASET_BUCKET/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/"
             fi
       - run:
           name: Seed non-prod raw bucket from sample bucket, per domain
