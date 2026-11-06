@@ -5,12 +5,10 @@ import zipfile
 from datetime import date, timedelta
 from pathlib import Path
 
-import boto3
 import gptables as gpt
 import holidays
 import pandas as pd
 import polars as pl
-from botocore.exceptions import ClientError
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.publication_utils import (
     import_date_to_period_month,
@@ -32,7 +30,6 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_
     TABLE_TITLES,
 )
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.file_utils import split_s3_uri
 
 _PUBLICATION_DAY_OF_MONTH: int = 15
 _FIRST_WEEKEND_WEEKDAY: int = 5  # date.weekday(): Saturday
@@ -67,10 +64,6 @@ _COUNT_FORMAT = {"num_format": "#,##0", "align": "right"}
 _PERCENTAGE_FORMAT = {"num_format": "0.0%", "align": "right"}
 
 
-class LogoUnavailableError(RuntimeError):
-    """The Frontpage logo could not be read from S3, or is empty."""
-
-
 def download_workbook_name(run_source: str) -> str:
     """
     Names the data download workbook after its run.
@@ -82,30 +75,6 @@ def download_workbook_name(run_source: str) -> str:
         str: the workbook's file name.
     """
     return run_workbook_name("monthly_tracker_data_download", run_source)
-
-
-def get_logo_bytes(logo_uri: str) -> bytes:
-    """
-    Reads the Frontpage logo PNG from S3. A missing or empty logo raises, so a
-    release can't go out without it.
-
-    Args:
-        logo_uri (str): S3 URI of the logo PNG.
-
-    Returns:
-        bytes: the PNG image.
-
-    Raises:
-        LogoUnavailableError: if the object cannot be read or is empty.
-    """
-    bucket, key = split_s3_uri(logo_uri)
-    try:
-        logo = boto3.client("s3").get_object(Bucket=bucket, Key=key)["Body"].read()
-    except ClientError as error:
-        raise LogoUnavailableError(f"Could not read the logo at {logo_uri}") from error
-    if not logo:
-        raise LogoUnavailableError(f"The logo at {logo_uri} is empty")
-    return logo
 
 
 def get_publication_date(latest_import_date: date) -> date:

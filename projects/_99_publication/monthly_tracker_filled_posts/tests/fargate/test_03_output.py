@@ -8,7 +8,7 @@ import pytest
 from polars.testing import assert_frame_equal
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate._03_output as job
-from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_workbook_utils import (
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_helpers import (
     LogoUnavailableError,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -118,7 +118,7 @@ def mocks():
         patch(f"{PATCH_PATH}.utils.scan_parquet") as scan_parquet,
         patch(f"{PATCH_PATH}.utils.sink_to_parquet") as sink_to_parquet,
         patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources") as resolve_run_sources,
-        patch(f"{PATCH_PATH}.output_workbook_utils.get_logo_bytes") as get_logo_bytes,
+        patch(f"{PATCH_PATH}.workbook_helpers.get_logo_bytes") as get_logo_bytes,
         patch(
             f"{PATCH_PATH}.output_workbook_utils.build_download_workbook"
         ) as build_download_workbook,

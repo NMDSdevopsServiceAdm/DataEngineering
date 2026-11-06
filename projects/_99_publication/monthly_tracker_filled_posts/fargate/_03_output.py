@@ -93,7 +93,7 @@ def main(
             f"Run {run_number}: the publication data has no rows, so there is "
             "no data download to build"
         )
-    logo = output_workbook_utils.get_logo_bytes(logo_source)
+    logo = workbook_helpers.get_logo_bytes(logo_source)
     workbook_name = output_workbook_utils.download_workbook_name(run_source)
     with tempfile.TemporaryDirectory() as workbook_folder:
         workbook_path = Path(workbook_folder) / workbook_name

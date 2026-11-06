@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import boto3
+from botocore.exceptions import ClientError
 
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     merge_utils,
@@ -67,3 +68,31 @@ def set_column_widths(worksheet: object, widths: list[int]) -> None:
     """
     for column, width in enumerate(widths):
         worksheet.set_column(column, column, width)
+
+
+class LogoUnavailableError(RuntimeError):
+    """The Frontpage logo could not be read from S3, or is empty."""
+
+
+def get_logo_bytes(logo_uri: str) -> bytes:
+    """
+    Reads the Frontpage logo PNG from S3. A missing or empty logo raises, so a
+    release can't go out without it.
+
+    Args:
+        logo_uri (str): S3 URI of the logo PNG.
+
+    Returns:
+        bytes: the PNG image.
+
+    Raises:
+        LogoUnavailableError: if the object cannot be read or is empty.
+    """
+    bucket, key = split_s3_uri(logo_uri)
+    try:
+        logo = boto3.client("s3").get_object(Bucket=bucket, Key=key)["Body"].read()
+    except ClientError as error:
+        raise LogoUnavailableError(f"Could not read the logo at {logo_uri}") from error
+    if not logo:
+        raise LogoUnavailableError(f"The logo at {logo_uri} is empty")
+    return logo
