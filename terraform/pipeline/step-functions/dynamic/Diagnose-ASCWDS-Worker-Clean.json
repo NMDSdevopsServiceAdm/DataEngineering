@@ -1,0 +1,53 @@
+{
+  "Comment": "THROWAWAY, manually started. Memory diagnostic for the clean worker job. Input: {\"skip\": \"\" | \"estab_cat\" | \"mainstid\" | \"estab_cat,mainstid\", \"stop_after\": \"join\" | \"impute\" | \"full\"}. Delete before merge.",
+  "StartAt": "Diagnose clean worker",
+  "States": {
+    "Diagnose clean worker": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "LaunchType": "FARGATE",
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${ingest_task_arn}",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${ingest_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_01_ingest-container",
+              "Environment": [
+                {
+                  "Name": "POLARS_VERBOSE",
+                  "Value": "1"
+                },
+                {
+                  "Name": "DIAG_SKIP",
+                  "Value.$": "$.skip"
+                },
+                {
+                  "Name": "DIAG_STOP_AFTER",
+                  "Value.$": "$.stop_after"
+                }
+              ],
+              "Command": [
+                "clean_ascwds_worker_data_prototype.py",
+                "--worker_source",
+                "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker/",
+                "--cleaned_workplace_source",
+                "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
+                "--destination",
+                "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker_cleaned_diag/"
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}
