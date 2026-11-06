@@ -373,13 +373,12 @@ def null_slv_job_roles_when_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def create_clean_main_service_id_column(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `main_service_id_clean`, filling nulls from the establishment's other import dates.
+    """Adds `main_service_id_clean`: `main_service_id` filled forward then backward per establishment.
 
-    Fills forward, then backward. Establishments with no known value stay null.
+    Establishments with no known value stay null.
 
     Args:
-        lf (pl.LazyFrame): Workplace data with `establishment_id`,
-            `ascwds_workplace_import_date` and `main_service_id`.
+        lf (pl.LazyFrame): Workplace data with `main_service_id`.
 
     Returns:
         pl.LazyFrame: Input with `main_service_id_clean`.

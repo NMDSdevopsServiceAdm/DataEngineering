@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added a cleaned main service ID to the cleaned ASC-WDS workplace data, filling nulls from the establishment's other import dates. The Hackathon Worker Turnover job joins it onto the worker data for its `main_service_type` recode, and main service type ID is no longer carried in the cleaned ASC-WDS worker data.
+- Added a cleaned main service ID (nulls filled from other import dates) to the cleaned ASC-WDS workplace data, now used by the Hackathon Worker Turnover job in place of the worker data's main service type ID.
 - Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
 - Added an `is_leaver` flag to the Hackathon Worker Turnover job, true when a worker is absent from the snapshot 12 months later (null if none exists).
 - Added an `establishment_in_both_snapshots` flag to the Hackathon Worker Turnover job; `is_leaver` is null where it is false.
