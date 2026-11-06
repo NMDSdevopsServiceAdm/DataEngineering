@@ -187,43 +187,34 @@ def get_datasets_bucket_expiration_rules() -> list[ExpirationRule]:
     s3_tf = S3_TF_PATH.read_text()
     module_block = re.search(r'module "datasets_bucket" \{(.*?)\n\}', s3_tf, re.S)
     assert module_block, f"datasets_bucket not found in {S3_TF_PATH}"
-    return [
+    rules = [
         ExpirationRule(rule_id, prefix, int(days))
         for rule_id, prefix, days in re.findall(
             r'id\s*=\s*"([^"]+)"\s*prefix\s*=\s*"([^"]+)"\s*expiration_days\s*=\s*(\d+)',
             module_block.group(1),
         )
     ]
-
-
-@dataclass
-class StoreExpiryTestCase:
-    id: str
-    step_function_filename: str
-    flag: str
-
-    def as_pytest_param(self):
-        """Return test case as pytest ParameterSet."""
-        return pytest.param(self.step_function_filename, self.flag, id=self.id)
+    assert rules, f"No expiration rules parsed from {S3_TF_PATH}"
+    return rules
 
 
 store_expiry_test_cases = [
-    StoreExpiryTestCase(
+    PrepStoreCommandTestCase(
         id="expires_the_prep_store",
         step_function_filename="Publication-Assessment.json",
         flag="--prep_destination",
     ),
-    StoreExpiryTestCase(
+    PrepStoreCommandTestCase(
         id="expires_the_assessment_store",
         step_function_filename="Publication-Assessment.json",
         flag="--assessment_destination",
     ),
-    StoreExpiryTestCase(
+    PrepStoreCommandTestCase(
         id="expires_the_validation_report_folders",
         step_function_filename="Publication-Assessment.json",
         flag="--reports_path",
     ),
-    StoreExpiryTestCase(
+    PrepStoreCommandTestCase(
         id="expires_the_assessment_workbook_folder",
         step_function_filename="Publication-Assessment.json",
         flag="--workbook_destination",
