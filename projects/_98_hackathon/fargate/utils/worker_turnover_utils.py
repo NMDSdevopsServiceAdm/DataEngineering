@@ -44,6 +44,108 @@ def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     ).filter(earliest_file_per_month_filter_expr(AWKClean.ascwds_worker_import_date))
 
 
+def get_latest_save_date_per_establishment(
+    worker_lf: pl.LazyFrame, snapshot_worker_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """Finds the latest worker save date per establishment and snapshot.
+
+    Uses workers of every employment status. Snapshots are the import dates
+    in `snapshot_worker_lf`, semi-joined before aggregating to keep the
+    aggregate small.
+
+    Args:
+        worker_lf (pl.LazyFrame): Unfiltered cleaned ASC-WDS worker data.
+        snapshot_worker_lf (pl.LazyFrame): Output of
+            `filter_worker_turnover_data`.
+
+    Returns:
+        pl.LazyFrame: Establishment ID, import date and `latest_save_date`
+            (null if every save date is null), one row per establishment and
+            snapshot.
+    """
+    snapshot_dates_lf = snapshot_worker_lf.select(
+        AWKClean.ascwds_worker_import_date
+    ).unique()
+
+    return (
+        worker_lf.join(
+            snapshot_dates_lf, on=AWKClean.ascwds_worker_import_date, how="semi"
+        )
+        .group_by(AWKClean.establishment_id, AWKClean.ascwds_worker_import_date)
+        .agg(
+            pl.col(AWKClean.ascwds_worker_save_date)
+            .max()
+            .alias(HackCols.latest_save_date)
+        )
+    )
+
+
+def add_establishment_active_flag(
+    worker_lf: pl.LazyFrame, save_dates_lf: pl.LazyFrame, n_months: int
+) -> pl.LazyFrame:
+    """Flags workers whose establishment saved data recently at both snapshots.
+
+    A gap is the difference in calendar months between the establishment's
+    latest save date and the import date (31 Dec to 1 Jan is 1), at the start
+    snapshot and the snapshot 12 months later. It is negative if the save date
+    is after the import date, and null with no save date. `establishment_active` is true when both gaps are at
+    most `n_months`, false when either gap is null, and null where `is_leaver`
+    is null. Expects one snapshot per month. Gaps are built on the small save
+    date frame so only one join reaches the worker rows.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `is_leaver`, one snapshot
+            per month.
+        save_dates_lf (pl.LazyFrame): Latest save date per establishment and
+            snapshot import date, from `get_latest_save_date_per_establishment`.
+        n_months (int): Most months since the latest save date for an
+            establishment to count as active.
+
+    Returns:
+        pl.LazyFrame: The input rows with `months_since_save_start`,
+            `months_since_save_end` and `establishment_active` added.
+    """
+    keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    save_date = pl.col(HackCols.latest_save_date)
+
+    save_gap_lf = save_dates_lf.with_columns(
+        import_date.dt.truncate("1mo").alias(HackCols.import_month),
+        (
+            (import_date.dt.year() - save_date.dt.year()) * 12
+            + (import_date.dt.month() - save_date.dt.month())
+        ).alias(HackCols.months_since_save_start),
+    )
+
+    start_gap_lf = save_gap_lf.select(
+        *keys,
+        pl.col(HackCols.import_month).dt.offset_by("12mo").alias(HackCols.end_month),
+        HackCols.months_since_save_start,
+    )
+    end_gap_lf = save_gap_lf.select(
+        AWKClean.establishment_id,
+        pl.col(HackCols.import_month).alias(HackCols.end_month),
+        pl.col(HackCols.months_since_save_start).alias(HackCols.months_since_save_end),
+    )
+    gap_lf = start_gap_lf.join(
+        end_gap_lf, on=[AWKClean.establishment_id, HackCols.end_month], how="left"
+    ).drop(HackCols.end_month)
+
+    worker_lf = worker_lf.join(gap_lf, on=keys, how="left")
+
+    both_gaps_within_limit = (
+        (pl.col(HackCols.months_since_save_start) <= n_months)
+        & (pl.col(HackCols.months_since_save_end) <= n_months)
+    ).fill_null(False)
+
+    return worker_lf.with_columns(
+        pl.when(pl.col(HackCols.is_leaver).is_null())
+        .then(None)
+        .otherwise(both_gaps_within_limit)
+        .alias(HackCols.establishment_active)
+    )
+
+
 def add_main_service_type(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Adds `main_service_type`, a three-way recode of the main service label.
 
