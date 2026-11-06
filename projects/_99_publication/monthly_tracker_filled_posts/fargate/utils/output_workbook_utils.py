@@ -34,7 +34,6 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_
 from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.file_utils import split_s3_uri
 
-DOWNLOAD_WORKBOOK_STEM: str = "monthly_tracker_data_download"
 _PUBLICATION_DAY_OF_MONTH: int = 15
 _FIRST_WEEKEND_WEEKDAY: int = 5  # date.weekday(): Saturday
 
@@ -82,7 +81,7 @@ def download_workbook_name(run_source: str) -> str:
     Returns:
         str: the workbook's file name.
     """
-    return run_workbook_name(DOWNLOAD_WORKBOOK_STEM, run_source)
+    return run_workbook_name("monthly_tracker_data_download", run_source)
 
 
 def get_logo_bytes(logo_uri: str) -> bytes:

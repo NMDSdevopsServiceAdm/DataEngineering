@@ -31,13 +31,6 @@ RECONCILIATION_RELATIVE_TOLERANCE = 0.0001
 NOT_PROMOTED_EXIT_CODE = 75
 MAX_PERIODS_REPORTED = 5
 RELATIVE_DIFFERENCE = "relative_difference"
-MAX_CELLS_REPORTED = 5
-# The workbook stores the prepared values exactly; this only allows for float text.
-DOWNLOAD_RELATIVE_TOLERANCE = 1e-9
-T0_SHEET = "T0"
-# T0 columns: Period, Region, Main service, Estimated filled posts, CQC locations.
-T0_PERIOD_COLUMN = 0
-T0_VALUE_COLUMNS = (3, 4)
 
 
 class ReconciliationMismatchError(ValueError):
@@ -95,6 +88,8 @@ def _read_workbook_tables(workbook_path: Path) -> dict[str, list[tuple]]:
 
 def _values_match(workbook_value: object, prepared_value: object) -> bool:
     """Compares two cell values, allowing only float text noise on numbers."""
+    # The workbook stores the prepared values exactly, so this is only text noise.
+    float_tolerance = 1e-9
     both_numbers = all(
         isinstance(value, (int, float)) and not isinstance(value, bool)
         for value in (workbook_value, prepared_value)
@@ -103,18 +98,22 @@ def _values_match(workbook_value: object, prepared_value: object) -> bool:
         return math.isclose(
             workbook_value,
             prepared_value,
-            rel_tol=DOWNLOAD_RELATIVE_TOLERANCE,
-            abs_tol=DOWNLOAD_RELATIVE_TOLERANCE,
+            rel_tol=float_tolerance,
+            abs_tol=float_tolerance,
         )
     return workbook_value == prepared_value
 
 
-def _t0_totals_by_period(data_rows: list[tuple]) -> dict[str, list[float]]:
+def _t0_totals_by_period(
+    data_rows: list[tuple], period_column: int, value_columns: list[int]
+) -> dict[str, list[float]]:
     """Sums the numeric T0 values for each period; suppressed labels add nothing."""
     totals: dict[str, list[float]] = {}
     for row in data_rows:
-        period_totals = totals.setdefault(row[T0_PERIOD_COLUMN], [0.0, 0.0])
-        for position, column in enumerate(T0_VALUE_COLUMNS):
+        period_totals = totals.setdefault(
+            row[period_column], [0.0] * len(value_columns)
+        )
+        for position, column in enumerate(value_columns):
             if isinstance(row[column], (int, float)):
                 period_totals[position] += row[column]
     return totals
@@ -127,7 +126,7 @@ def compare_download_tables(
 ) -> None:
     """
     Checks the workbook's published tables against the prepared tables: the same
-    sheets, rows, T0 totals for each period, and cell values.
+    sheets, rows, columns, T0 totals for each period, and cell values.
 
     Args:
         workbook_tables (dict[str, list[tuple]]): rows read from the workbook
@@ -149,9 +148,25 @@ def compare_download_tables(
                 f"Run {run_number}: {sheet} has {len(workbook_tables[sheet]) - 1} data "
                 f"rows in the workbook but {len(prepared_rows) - 1} in the prepared table"
             )
+        if len(workbook_tables[sheet][0]) != len(prepared_rows[0]):
+            raise ReconciliationMismatchError(
+                f"Run {run_number}: {sheet} has {len(workbook_tables[sheet][0])} "
+                f"columns in the workbook but {len(prepared_rows[0])} in the "
+                "prepared table"
+            )
 
-    workbook_totals = _t0_totals_by_period(workbook_tables[T0_SHEET][1:])
-    prepared_totals = _t0_totals_by_period(prepared_tables[T0_SHEET][1:])
+    t0_header = prepared_tables["T0"][0]
+    period_column = t0_header.index(Pub.period)
+    value_columns = [
+        t0_header.index(Pub.estimated_filled_posts),
+        t0_header.index(Pub.cqc_locations),
+    ]
+    workbook_totals = _t0_totals_by_period(
+        workbook_tables["T0"][1:], period_column, value_columns
+    )
+    prepared_totals = _t0_totals_by_period(
+        prepared_tables["T0"][1:], period_column, value_columns
+    )
     differing_periods = [
         period
         for period in prepared_totals
@@ -168,6 +183,7 @@ def compare_download_tables(
             f"prepared table for {differing_periods[:MAX_PERIODS_REPORTED]}"
         )
 
+    max_cells_reported = 5
     differences = []
     for sheet, prepared_rows in prepared_tables.items():
         for row_number, (workbook_row, prepared_row) in enumerate(
@@ -187,7 +203,7 @@ def compare_download_tables(
     if differences:
         raise ReconciliationMismatchError(
             f"Run {run_number}: {len(differences)} cells differ between the workbook "
-            f"and the prepared tables ({'; '.join(differences[:MAX_CELLS_REPORTED])})"
+            f"and the prepared tables ({'; '.join(differences[:max_cells_reported])})"
         )
 
 

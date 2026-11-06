@@ -509,6 +509,8 @@ jobs:
             aws s3 sync "s3://sfc-main-pipeline-resources/models/" "s3://$BRANCH_RESOURCES_BUCKET/models/"
       - run:
           name: Copy publication logo to non-prod resources bucket
+          # Main's pipeline resources bucket policy allows this read through a
+          # statement added by hand in the console (it isn't in Terraform).
           command: |
             aws s3 sync "s3://sfc-main-pipeline-resources/publication/logo/" "s3://$BRANCH_RESOURCES_BUCKET/publication/logo/"
       - run:

@@ -520,6 +520,40 @@ class TestDownloadReconciliation:
         self._reconcile()  # does not raise
 
 
+TABLE_HEADER = (
+    Pub.period,
+    Pub.region,
+    Pub.main_service,
+    Pub.estimated_filled_posts,
+    Pub.cqc_locations,
+)
+TABLE_ROW = ("Mar 2026", "London", "All CQC locations", 120.0, 10)
+
+
+def _tables() -> dict[str, list[tuple]]:
+    """Three identical rows-as-tuples tables, header first, keyed by sheet name."""
+    return {sheet: [TABLE_HEADER, TABLE_ROW] for sheet in ("T0", "T1", "T2")}
+
+
+class TestCompareDownloadTables:
+    def test_raises_when_a_workbook_table_has_an_extra_column(self):
+        workbook_tables = _tables()
+        workbook_tables["T1"] = [TABLE_HEADER + ("Extra",), TABLE_ROW + (1,)]
+
+        with pytest.raises(job.ReconciliationMismatchError, match="T1.*column"):
+            job.compare_download_tables(workbook_tables, _tables(), 2)
+
+    def test_raises_when_a_workbook_table_lacks_a_column(self):
+        workbook_tables = _tables()
+        workbook_tables["T2"] = [TABLE_HEADER[:-1], TABLE_ROW[:-1]]
+
+        with pytest.raises(job.ReconciliationMismatchError, match="T2.*column"):
+            job.compare_download_tables(workbook_tables, _tables(), 2)
+
+    def test_passes_when_the_tables_match(self):
+        job.compare_download_tables(_tables(), _tables(), 2)  # does not raise
+
+
 class TestIsRunPromoted:
     @patch(f"{PATCH_PATH}.file_utils.list_archive_runs")
     def test_reports_run_not_yet_promoted_when_the_long_term_partition_is_missing(
