@@ -233,8 +233,8 @@ store_expiry_test_cases = [
 
 class TestPublicationStoreExpiry:
     """
-    Guards against a run-partitioned publication store growing without limit, and
-    against an expiry rule drifting from the path its job writes to.
+    Guards the datasets bucket's expiry rules against drifting from the paths the
+    publication jobs write to.
     """
 
     @pytest.mark.parametrize(
@@ -247,7 +247,7 @@ class TestPublicationStoreExpiry:
         assert set(get_command_paths(step_function_filename, flag)) <= rule_prefixes
 
     def test_output_workbook_folder_is_expired(self):
-        # Literal path: the data download workbook job (2432) is not on main yet.
+        # Literal: no step function path to compare against.
         rule_prefixes = {rule.prefix for rule in get_datasets_bucket_expiration_rules()}
 
         assert (
