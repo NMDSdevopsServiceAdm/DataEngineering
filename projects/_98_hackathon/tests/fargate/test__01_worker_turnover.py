@@ -33,7 +33,7 @@ class TestMain:
 
         assert scan_parquet_mock.call_args_list == [
             call(self.CLEANED_WORKER_SOURCE),
-            call(self.RAW_WORKER_SOURCE),
+            call(self.RAW_WORKER_SOURCE, schema=job.wUtils.RAW_WORKER_SCHEMA),
         ]
         filter_worker_turnover_data_mock.assert_called_once_with(
             scan_parquet_mock.return_value

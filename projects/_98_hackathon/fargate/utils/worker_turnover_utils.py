@@ -44,6 +44,20 @@ WORKER_DATE_COLUMNS = [
     AWKClean.pay_save_date,
 ]
 
+# Without an explicit schema the raw scan takes its columns from the first file,
+# which predates some of these columns, so later files' values are dropped.
+RAW_WORKER_SCHEMA = {
+    column: pl.String
+    for column in [
+        AWKClean.establishment_id,
+        AWKClean.worker_id,
+        AWKClean.import_date,
+        *WORKER_CATEGORICAL_COLUMNS,
+        *WORKER_NUMERIC_COLUMNS,
+        *WORKER_DATE_COLUMNS,
+    ]
+}
+
 
 def add_raw_worker_columns(
     worker_lf: pl.LazyFrame, raw_worker_lf: pl.LazyFrame
@@ -72,14 +86,7 @@ def add_raw_worker_columns(
     ]
 
     raw_worker_lf = column_to_date(
-        raw_worker_lf.select(
-            AWKClean.establishment_id,
-            AWKClean.worker_id,
-            AWKClean.import_date,
-            *WORKER_CATEGORICAL_COLUMNS,
-            *WORKER_NUMERIC_COLUMNS,
-            *WORKER_DATE_COLUMNS,
-        ),
+        raw_worker_lf.select(RAW_WORKER_SCHEMA.keys()),
         AWKClean.import_date,
         AWKClean.ascwds_worker_import_date,
     ).drop(AWKClean.import_date)

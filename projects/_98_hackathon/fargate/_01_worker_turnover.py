@@ -24,7 +24,9 @@ def main(
     worker_lf = wUtils.add_main_service_type(worker_lf)
     worker_lf = wUtils.add_is_leaver_flag(worker_lf)
 
-    raw_worker_lf = utils.scan_parquet(raw_ascwds_worker_source)
+    raw_worker_lf = utils.scan_parquet(
+        raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
+    )
     worker_lf = wUtils.add_raw_worker_columns(worker_lf, raw_worker_lf)
 
     utils.sink_to_parquet(worker_lf, output_path=flagged_destination)
