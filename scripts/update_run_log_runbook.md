@@ -305,6 +305,15 @@ Use a branch bucket first: it only prints the changes. A branch bucket is seeded
 - **No run log found in the bucket**: check the bucket name. Nothing is uploaded.
 - **The upload fails part way**: the script names the runs it had already uploaded and the one that failed. The failed run's S3 folder may hold two parquet files, the old one and the new one, which reads as two rows for the run. A rerun then fails with "matches multiple rows". Restore every run it names (on a branch bucket, run the restore commands it prints), then run the script again from the start (see "Undoing an update").
 
+## If the script fails with an AWS permissions error
+Use this when the error comes from the `run-log-updater` role, which the person running the script uses (see `WINDOWS_SETUP.md`). An `sts:AssumeRole` error is the role's trust policy, not its permissions: see `WINDOWS_SETUP.md`. A branch bucket uses the `non-prod` profile, a different role in a different account.
+
+The role is created by hand in the production AWS console, not in Terraform, so a permissions error is fixed by editing its identity policy there. Ask whoever administers the production account if you don't have console access.
+
+1. Read the error. It usually names the denied action and resource, for example `not authorized to perform: <action> on resource: <arn>`. If it doesn't, work out the action from the step that failed. An explicit deny or a bucket policy is not fixed by the role's identity policy.
+2. Add that action to the role's policy for the prefix or resource the script uses, not a single object. Allow only what the step needs, and nothing the runbook says the role is denied: the role can't start `main-Publication-Assessment`, so use another profile (see "Selecting a run for publication" > "If something is wrong").
+3. If the error came before anything was uploaded, run the script again. Otherwise the run log may already be updated and later steps skipped: finish them by hand (see "If something is wrong" under "Selecting a run for publication" and "Promoting a run"). If the upload itself failed part way, restore the run (see "Undoing an update"). Don't rerun the script for a run that is already selected: it rejects it.
+
 ## Undoing an update
 - **Branch bucket**: after a successful upload the script prints one restore command per changed run (an `aws s3 cp --recursive` then `aws s3 sync --delete` from `run_log_original/`). Run all of them to put the runs back as they were. **Run them before running the script again**: every run replaces `run_log_original/`, and restoring from a later copy puts the changed value back. A failed upload prints the same commands for every run it uploaded and for the one that failed, which may be half written. Undoing does not stop a step function execution that was already started.
 - **Production bucket (`sfc-main-datasets`)**: the bucket is versioned. No restore command is printed; restore the previous version of each changed run's parquet file from S3 object versions.
