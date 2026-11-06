@@ -24,6 +24,36 @@ module "datasets_bucket" {
       prefix          = "domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/"
       expiration_days = 60
     },
+    {
+      id              = "expire-publication-prep"
+      prefix          = "domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge_and_prep/"
+      expiration_days = 60
+    },
+    {
+      id              = "expire-publication-prep-validation"
+      prefix          = "domain=99_publication/dataset=monthly_tracker_filled_posts_01_merge_and_prep_validation/"
+      expiration_days = 60
+    },
+    {
+      id              = "expire-publication-assessment"
+      prefix          = "domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/"
+      expiration_days = 60
+    },
+    {
+      id              = "expire-publication-assessment-validation"
+      prefix          = "domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment_validation/"
+      expiration_days = 60
+    },
+    {
+      id              = "expire-publication-assessment-workbook"
+      prefix          = "domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment_workbook/"
+      expiration_days = 60
+    },
+    {
+      id              = "expire-publication-output-workbook"
+      prefix          = "domain=99_publication/dataset=monthly_tracker_filled_posts_03_output_workbook/"
+      expiration_days = 60
+    },
   ]
 }
 
