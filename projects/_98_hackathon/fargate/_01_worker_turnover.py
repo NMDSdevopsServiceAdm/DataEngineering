@@ -8,8 +8,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 
 DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
-# Only rates of 0 (no leavers) and 1 (everyone left) are implausible.
-DEFAULT_TURNOVER_RATE_LIMIT = 1.0
 
 
 def main(
@@ -18,7 +16,6 @@ def main(
     raw_ascwds_worker_source: str,
     flagged_destination: str,
     n_months: int = DEFAULT_MAX_MONTHS_SINCE_SAVE,
-    turnover_rate_limit: float = DEFAULT_TURNOVER_RATE_LIMIT,
 ) -> None:
     """Filters worker data, adds main service type, flags leavers and active
     establishments, adds turnover rate and validity flags, and adds raw worker
@@ -32,8 +29,6 @@ def main(
         flagged_destination (str): destination for the flagged worker data
         n_months (int): most months since an establishment's latest save date for
             it to count as active
-        turnover_rate_limit (float): establishment turnover rate at and above which
-            it is implausible
     """
     worker_lf = utils.scan_parquet(cleaned_ascwds_worker_source)
     workplace_lf = utils.scan_parquet(
@@ -68,7 +63,7 @@ def main(
         filtered_lf, save_dates_lf, n_months
     )
     filtered_lf = wUtils.add_turnover_rate(filtered_lf)
-    filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf, turnover_rate_limit)
+    filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf)
 
     raw_worker_lf = utils.scan_parquet(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
@@ -102,12 +97,6 @@ if __name__ == "__main__":
             False,
             DEFAULT_MAX_MONTHS_SINCE_SAVE,
         ),
-        (
-            "--turnover_rate_limit",
-            "Establishment turnover rate at and above which it is implausible",
-            False,
-            DEFAULT_TURNOVER_RATE_LIMIT,
-        ),
     )
     main(
         cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
@@ -115,5 +104,4 @@ if __name__ == "__main__":
         raw_ascwds_worker_source=args.raw_ascwds_worker_source,
         flagged_destination=args.flagged_destination,
         n_months=int(args.n_months),
-        turnover_rate_limit=float(args.turnover_rate_limit),
     )
