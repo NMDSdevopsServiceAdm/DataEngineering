@@ -852,16 +852,14 @@ def add_prev_run_filled_posts_columns(
     """
     Adds the previous run's filled posts, April % change and short-term SFC
     cumulative % change, matched on import date, job role, region and service
-    type, then derives comparisons against the current run.
+    type, plus comparisons with the current run.
 
-    Filled posts % change is a net change fraction, (current - previous) /
-    previous, so 0.25 = +25%, and is null when previous is 0. The two %
-    change comparisons are current minus previous.
+    Filled posts % change is (current - previous) / previous, null when previous
+    is 0. The % change comparisons are current minus previous.
 
-    Rows with no match are null, as is every row of a column the previous run
-    lacks (or of all columns when there is no previous run). The previous
-    keys are cast to the current dtypes so Enum/Categorical differences don't
-    block the join.
+    Unmatched rows are null, as are columns the previous run lacks (all of them
+    when there is no previous run). Previous keys are cast to the current dtypes
+    so Enum/Categorical differences don't block the join.
 
     Args:
         assessment_summary_lf (pl.LazyFrame): the current run's assessment data.
@@ -869,11 +867,8 @@ def add_prev_run_filled_posts_columns(
             data, or None when there is no earlier run.
 
     Returns:
-        pl.LazyFrame: assessment_summary_lf with the unfiltered_filled_posts,
-            unfiltered_filled_posts_april_pct_change and
-            unfiltered_short_sfc_cum_pct_change `_prev_run` columns,
-            unfiltered_filled_posts_pct_change_vs_prev_run, and the two
-            `_comparison` columns added.
+        pl.LazyFrame: assessment_summary_lf with the `_prev_run`,
+            `pct_change_vs_prev_run` and `_comparison` columns added.
     """
     prev_run_columns = {
         Pub.unfiltered_filled_posts: Pub.unfiltered_filled_posts_prev_run,
