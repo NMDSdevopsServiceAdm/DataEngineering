@@ -28,8 +28,10 @@ EXPLICIT_VALUE_COLUMNS = [
     Pub.unfiltered_locationid_count_april_pct_change,
     Pub.unfiltered_short_sfc_cum_pct_change,
     Pub.unfiltered_short_locationid_count_cum_pct_change,
-    Pub.unfiltered_filled_posts_prev_run,
-    Pub.unfiltered_filled_posts_pct_change_vs_prev_run,
+    Pub.unfiltered_filled_posts_april_pct_change_prev_run,
+    Pub.unfiltered_short_sfc_cum_pct_change_prev_run,
+    Pub.unfiltered_filled_posts_april_pct_change_comparison,
+    Pub.unfiltered_short_sfc_cum_pct_change_comparison,
 ]
 OTHER_VALUE_COLUMNS = [c for c in VALUE_COLUMNS if c not in EXPLICIT_VALUE_COLUMNS]
 
@@ -62,8 +64,10 @@ def _assessment_lf(
             Pub.unfiltered_locationid_count_april_pct_change: 0.2 * (i + 1),
             Pub.unfiltered_short_sfc_cum_pct_change: 0.3 * (i + 1),
             Pub.unfiltered_short_locationid_count_cum_pct_change: 0.4 * (i + 1),
-            Pub.unfiltered_filled_posts_prev_run: 5000 * (i + 1) + 10 * j,
-            Pub.unfiltered_filled_posts_pct_change_vs_prev_run: 0.5 * (i + 1),
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run: 0.5 * (i + 1),
+            Pub.unfiltered_short_sfc_cum_pct_change_prev_run: 0.6 * (i + 1),
+            Pub.unfiltered_filled_posts_april_pct_change_comparison: 0.7 * (i + 1),
+            Pub.unfiltered_short_sfc_cum_pct_change_comparison: 0.8 * (i + 1),
         }
         | {column: _generic_value(column, i, j) for column in OTHER_VALUE_COLUMNS}
         for i, import_date in enumerate(import_dates)
@@ -212,14 +216,24 @@ class TestCompPrevPublicationValues:
             assert [cells[f"C{first_row + i}"] for i in range(4)] == expected_dates
             assert f"C{first_row + 4}" not in cells
 
-    def test_previous_publication_holds_the_previous_run_filled_posts(self, cells):
-        assert [cells[f"{col}23"] for col in "DEFGH"] == [5000, 5010, 5020, 5030, 5040]
+    @pytest.mark.parametrize(
+        "first_row, march_values, april_value",
+        [
+            pytest.param(23, [0.5, 1.0, 1.5], 2.4, id="previous"),
+            pytest.param(64, [0.1, 0.2, 0.3], 1.2, id="current"),
+            pytest.param(106, [0.7, 1.4, 2.1], 3.2, id="difference"),
+        ],
+    )
+    def test_march_rows_read_april_columns_and_later_rows_read_cumulative_columns(
+        self, cells, first_row, march_values, april_value
+    ):
+        march_cells = [cells[f"D{first_row + i}"] for i in range(3)]
 
-    def test_current_publication_holds_this_runs_filled_posts(self, cells):
-        assert [cells[f"{col}64"] for col in "DEFGH"] == [1000, 1010, 1020, 1030, 1040]
+        assert march_cells == pytest.approx(march_values)
+        assert cells[f"D{first_row + 3}"] == pytest.approx(april_value)
 
-    def test_difference_holds_the_percentage_change_from_the_previous_run(self, cells):
-        assert [cells[f"{col}106"] for col in "DEFGH"] == [0.5] * 5
+    def test_values_are_spread_across_service_type_columns(self, cells):
+        assert [cells[f"{col}23"] for col in "DEFGH"] == pytest.approx([0.5] * 5)
 
     def test_raises_when_periods_exceed_the_block_rows(self):
         april_dates = [datetime.date(1990 + year, 4, 1) for year in range(38)]

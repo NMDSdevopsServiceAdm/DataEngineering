@@ -119,3 +119,39 @@ class TestAssessmentSheets:
                 "non_res.ct_change",
             )
         ] == [filled_posts_source, ct_source, filled_posts_source, ct_source]
+
+
+class TestCompPrevPublicationSources:
+    @pytest.mark.parametrize(
+        "key, march_source, later_source",
+        [
+            pytest.param(
+                "previous.values",
+                Pub.unfiltered_filled_posts_april_pct_change_prev_run,
+                Pub.unfiltered_short_sfc_cum_pct_change_prev_run,
+                id="previous",
+            ),
+            pytest.param(
+                "current.values",
+                Pub.unfiltered_filled_posts_april_pct_change,
+                Pub.unfiltered_short_sfc_cum_pct_change,
+                id="current",
+            ),
+            pytest.param(
+                "difference.values",
+                Pub.unfiltered_filled_posts_april_pct_change_comparison,
+                Pub.unfiltered_short_sfc_cum_pct_change_comparison,
+                id="difference",
+            ),
+        ],
+    )
+    def test_march_and_later_rows_read_their_own_percentage_change_columns(
+        self, key: str, march_source: str, later_source: str
+    ):
+        input_range = {r.key: r for r in job.COMP_PREV_PUBLICATION.input_ranges}[key]
+
+        assert (
+            input_range.source_column,
+            input_range.monthly_source_column,
+            input_range.number_format,
+        ) == (march_source, later_source, "percent")
