@@ -41,11 +41,7 @@ COMPARE_COLUMNS = [
 
 
 def has_at_most_one_end_month_per_start_month(df: pl.DataFrame) -> bool:
-    """Checks that no month 12 months after a snapshot month has several snapshots.
-
-    A start month's end month is 12 months later, so each end month must hold
-    at most one distinct import date. Takes a `pl.DataFrame` as `specially`
-    passes the whole dataset.
+    """Checks each end month, 12 months after a start month, has at most one import date.
 
     Args:
         df (pl.DataFrame): Worker turnover data with `ascwds_worker_import_date`.
@@ -65,19 +61,15 @@ def has_at_most_one_end_month_per_start_month(df: pl.DataFrame) -> bool:
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
 ) -> None:
-    """Validates the flagged worker turnover data and writes a summary report and
-    the failing records.
+    """Validates the flagged worker turnover data and writes the reports.
 
     Only the columns the checks need are read, as the dataset is large.
 
     Args:
-        bucket_name (str): the bucket (name only) in which to source the datasets
-            and output the report to (should correspond to workspace / feature
-            branch name)
+        bucket_name (str): the bucket (name only) for the datasets and reports
         source_path (str): the flagged worker turnover dataset path to validate
-        compare_path (str): the cleaned ASC-WDS worker dataset path. Its rows kept
-            by `filter_worker_turnover_data` give the expected row count; only the
-            filter's columns are scanned.
+        compare_path (str): the cleaned ASC-WDS worker dataset path; its rows kept
+            by `filter_worker_turnover_data` give the expected row count
         reports_path (str): the output path to write reports to
     """
     source_df = utils.read_parquet(
@@ -126,12 +118,10 @@ def main(
             brief=True,
             actions=GLOBAL_ACTIONS,
         )
-        # dataset size
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
         )
-        # columns and keys
         .col_exists(SOURCE_COLUMNS, brief="expected flag and raw columns exist")
         .col_vals_not_null(KEY_COLUMNS, brief="key columns have no nulls")
         .rows_distinct(
@@ -142,7 +132,6 @@ def main(
             has_at_most_one_end_month_per_start_month,
             brief="each start month has at most one end month, 12 months later",
         )
-        # filters applied by the job
         .col_vals_ge(
             AWKClean.ascwds_worker_import_date,
             wUtils.EARLIEST_IMPORT_DATE,
@@ -153,13 +142,11 @@ def main(
             [EmpStat.permanent, EmpStat.temporary],
             brief="employment status is permanent or temporary",
         )
-        # main service type
         .col_vals_in_set(
             HackCols.main_service_type,
             PrimaryServiceType(HackCols.main_service_type).categorical_values,
             brief="main_service_type is a known value",
         )
-        # flags
         .col_vals_expr(
             expr=is_leaver.is_not_null().eq(
                 establishment_in_both_snapshots.eq_missing(True)
@@ -178,7 +165,6 @@ def main(
             expr=establishment_active.ne_missing(True) | gaps_within_limit,
             brief="establishment_active is true only when both save gaps are within the limit",
         )
-        # raw worker columns
         .col_vals_ge(
             wUtils.WORKER_NUMERIC_COLUMNS,
             0,
