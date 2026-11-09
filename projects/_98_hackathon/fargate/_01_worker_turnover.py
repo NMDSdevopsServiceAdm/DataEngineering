@@ -1,10 +1,25 @@
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
+from polars_utils import cleaning_utils as cUtils
 from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_values.ascwds_labelled_vocab import (
+    APPRENTICE,
+    CARE_CERTIFICATE_STATUS,
+    COUNTRY_OF_BIRTH_CODE_TO_LABEL,
+    DISABLED,
+    ETHNICITY,
+    GENDER,
+    HOURLY_OR_ANNUAL_PAY,
+    LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
+    NATIONALITY_CODE_TO_LABEL,
+    SOCIAL_CARE_QUAL_HELD,
+    SOURCE_OF_RECRUITMENT,
+    ZERO_HOURS,
 )
 
 DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
@@ -18,7 +33,7 @@ def main(
     n_months: int = DEFAULT_MAX_MONTHS_SINCE_SAVE,
 ) -> None:
     """Filters worker data, adds main service type, flags leavers and active
-    establishments, and adds raw worker columns.
+    establishments, and adds raw worker columns with their labelled versions.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
@@ -66,6 +81,26 @@ def main(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
+
+    labels_lf = cUtils.build_labels_lf(
+        {
+            AWKClean.gender: GENDER.code_to_label(),
+            AWKClean.ethnicity: ETHNICITY.code_to_label(),
+            AWKClean.nationality: NATIONALITY_CODE_TO_LABEL,
+            AWKClean.country_of_birth: COUNTRY_OF_BIRTH_CODE_TO_LABEL,
+            AWKClean.disabled: DISABLED.code_to_label(),
+            AWKClean.hourly_or_annual_pay: HOURLY_OR_ANNUAL_PAY.code_to_label(),
+            AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD.code_to_label(),
+            AWKClean.level_social_care_qualification_held: (
+                LEVEL_SOCIAL_CARE_QUALIFICATION_HELD.code_to_label()
+            ),
+            AWKClean.care_certificate_status: CARE_CERTIFICATE_STATUS.code_to_label(),
+            AWKClean.apprentice: APPRENTICE.code_to_label(),
+            AWKClean.zero_hours: ZERO_HOURS.code_to_label(),
+            AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT.code_to_label(),
+        }
+    )
+    filtered_lf = wUtils.add_labelled_worker_columns(filtered_lf, labels_lf)
 
     utils.sink_to_parquet(filtered_lf, output_path=flagged_destination)
 

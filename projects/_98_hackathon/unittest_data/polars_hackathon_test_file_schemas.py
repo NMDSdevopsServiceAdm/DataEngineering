@@ -3,6 +3,9 @@ from dataclasses import dataclass
 import polars as pl
 
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
+    WORKER_CATEGORICAL_COLUMNS,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -84,6 +87,13 @@ class WorkerTurnoverSchemas:
             (HackCols.months_since_save_start, pl.Int32()),
             (HackCols.months_since_save_end, pl.Int32()),
             (HackCols.establishment_active, pl.Boolean()),
+        ]
+    )
+
+    labelled_input_schema = pl.Schema(
+        [
+            (AWKClean.worker_id, pl.String()),
+            *[(column, pl.Categorical()) for column in WORKER_CATEGORICAL_COLUMNS],
         ]
     )
 

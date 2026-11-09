@@ -1,6 +1,9 @@
 from unittest.mock import Mock, call, patch
 
 import projects._98_hackathon.fargate._01_worker_turnover as job
+from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import (
+    WORKER_LABELS_DICT,
+)
 
 PATCH_PATH = "projects._98_hackathon.fargate._01_worker_turnover"
 
@@ -12,6 +15,8 @@ class TestMain:
     FLAGGED_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_labelled_worker_columns")
+    @patch(f"{PATCH_PATH}.cUtils.build_labels_lf")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
@@ -28,6 +33,8 @@ class TestMain:
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        build_labels_lf_mock: Mock,
+        add_labelled_worker_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
@@ -95,11 +102,80 @@ class TestMain:
             add_establishment_active_flag_mock.return_value, raw_worker_lf_mock
         )
         sink_to_parquet_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value,
+            add_labelled_worker_columns_mock.return_value,
             output_path=self.FLAGGED_DESTINATION,
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_labelled_worker_columns")
+    @patch(f"{PATCH_PATH}.cUtils.build_labels_lf")
+    @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
+    @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_main_service_type")
+    @patch(f"{PATCH_PATH}.wUtils.filter_worker_turnover_data")
+    @patch(f"{PATCH_PATH}.wUtils.get_latest_save_date_per_establishment")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_main_calls_add_labelled_worker_columns_after_add_raw_worker_columns(
+        self,
+        scan_parquet_mock: Mock,
+        get_latest_save_date_per_establishment_mock: Mock,
+        filter_worker_turnover_data_mock: Mock,
+        add_main_service_type_mock: Mock,
+        add_is_leaver_flag_mock: Mock,
+        add_establishment_active_flag_mock: Mock,
+        add_raw_worker_columns_mock: Mock,
+        build_labels_lf_mock: Mock,
+        add_labelled_worker_columns_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
+        job.main(
+            self.CLEANED_WORKER_SOURCE,
+            self.CLEANED_WORKPLACE_SOURCE,
+            self.RAW_WORKER_SOURCE,
+            self.FLAGGED_DESTINATION,
+        )
+
+        add_labelled_worker_columns_mock.assert_called_once_with(
+            add_raw_worker_columns_mock.return_value,
+            build_labels_lf_mock.return_value,
+        )
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_labelled_worker_columns")
+    @patch(f"{PATCH_PATH}.cUtils.build_labels_lf")
+    @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
+    @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_main_service_type")
+    @patch(f"{PATCH_PATH}.wUtils.filter_worker_turnover_data")
+    @patch(f"{PATCH_PATH}.wUtils.get_latest_save_date_per_establishment")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_main_builds_labels_lf_from_worker_vocabs(
+        self,
+        scan_parquet_mock: Mock,
+        get_latest_save_date_per_establishment_mock: Mock,
+        filter_worker_turnover_data_mock: Mock,
+        add_main_service_type_mock: Mock,
+        add_is_leaver_flag_mock: Mock,
+        add_establishment_active_flag_mock: Mock,
+        add_raw_worker_columns_mock: Mock,
+        build_labels_lf_mock: Mock,
+        add_labelled_worker_columns_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
+        job.main(
+            self.CLEANED_WORKER_SOURCE,
+            self.CLEANED_WORKPLACE_SOURCE,
+            self.RAW_WORKER_SOURCE,
+            self.FLAGGED_DESTINATION,
+        )
+
+        build_labels_lf_mock.assert_called_once_with(WORKER_LABELS_DICT)
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_labelled_worker_columns")
+    @patch(f"{PATCH_PATH}.cUtils.build_labels_lf")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
@@ -116,6 +192,8 @@ class TestMain:
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        build_labels_lf_mock: Mock,
+        add_labelled_worker_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
