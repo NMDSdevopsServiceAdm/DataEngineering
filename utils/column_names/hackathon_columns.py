@@ -12,3 +12,5 @@ class HackathonColumns:
     months_since_save_end: str = "months_since_save_end"
     establishment_active: str = "establishment_active"
     main_service_type: str = "main_service_type"
+    nationality_group: str = "nationality_group"
+    country_of_birth_group: str = "country_of_birth_group"

@@ -202,6 +202,61 @@ class JobGroupLabels(ColumnValues):
     other: str = "Other"
 
 
+# ISO 3166-1 numeric codes, as held in the ASC-WDS nationality and country of
+# birth columns. This is the SPSS EEA list plus Croatia (191), which it omits.
+EEA_COUNTRY_CODES: list[str] = [
+    "40",  # Austria
+    "56",  # Belgium
+    "100",  # Bulgaria
+    "196",  # Cyprus
+    "203",  # Czechia
+    "208",  # Denmark
+    "233",  # Estonia
+    "246",  # Finland
+    "250",  # France
+    "276",  # Germany
+    "300",  # Greece
+    "348",  # Hungary
+    "372",  # Ireland
+    "380",  # Italy
+    "428",  # Latvia
+    "440",  # Lithuania
+    "442",  # Luxembourg
+    "470",  # Malta
+    "528",  # Netherlands
+    "616",  # Poland
+    "620",  # Portugal
+    "642",  # Romania
+    "703",  # Slovakia
+    "705",  # Slovenia
+    "724",  # Spain
+    "752",  # Sweden
+    "352",  # Iceland
+    "438",  # Liechtenstein
+    "578",  # Norway
+    "191",  # Croatia
+]
+UK_COUNTRY_CODE: str = "826"
+
+
+@dataclass
+class NationalityGroupLabels(ColumnValues):
+    """The possible values of the grouped nationality column"""
+
+    non_eea: str = "Non-EEA"
+    eea_non_british: str = "EEA (non-British)"
+    british: str = "British"
+
+
+@dataclass
+class CountryOfBirthGroupLabels(ColumnValues):
+    """The possible values of the grouped country of birth column"""
+
+    non_eea: str = "Non-EEA"
+    eea_non_uk: str = "EEA (non-UK)"
+    uk: str = "UK"
+
+
 @dataclass
 class Region(ColumnValues):
     """The possible values of the region columns in ONS data"""

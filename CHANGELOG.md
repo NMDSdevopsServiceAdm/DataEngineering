@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
+- Added `nationality_group` and `country_of_birth_group` to the Hackathon Worker Turnover job output, grouping the raw codes into British or UK, EEA (including Croatia) and Non-EEA.
 
 ### Changed
 - Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.

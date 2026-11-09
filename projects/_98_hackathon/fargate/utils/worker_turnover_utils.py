@@ -14,7 +14,13 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import MainServiceID
-from utils.column_values.categorical_column_values import PrimaryServiceType
+from utils.column_values.categorical_column_values import (
+    EEA_COUNTRY_CODES,
+    UK_COUNTRY_CODE,
+    CountryOfBirthGroupLabels,
+    NationalityGroupLabels,
+    PrimaryServiceType,
+)
 
 WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.gender,
@@ -113,6 +119,98 @@ def add_raw_worker_columns(
     )
 
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
+
+
+def _group_country_code(
+    worker_lf: pl.LazyFrame,
+    code_column: str,
+    group_column: str,
+    eea_label: str,
+    uk_label: str,
+    non_eea_label: str,
+) -> pl.LazyFrame:
+    """Adds a categorical group column built from a country code column.
+
+    Codes are ISO 3166-1 numeric, held as strings. The UK code gives
+    `uk_label`, a code in `EEA_COUNTRY_CODES` gives `eea_label`, and any other
+    code gives `non_eea_label`. A null or blank code gives null.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the code column.
+        code_column (str): Name of the country code column.
+        group_column (str): Name of the group column to add.
+        eea_label (str): Label for EEA codes.
+        uk_label (str): Label for the UK code.
+        non_eea_label (str): Label for any other code.
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus the group column.
+    """
+    code = pl.col(code_column).cast(pl.String).replace("", None)
+
+    return worker_lf.with_columns(
+        pl.when(code.is_null())
+        .then(None)
+        .when(code == UK_COUNTRY_CODE)
+        .then(pl.lit(uk_label))
+        .when(code.is_in(EEA_COUNTRY_CODES))
+        .then(pl.lit(eea_label))
+        .otherwise(pl.lit(non_eea_label))
+        .cast(pl.Categorical)
+        .alias(group_column)
+    )
+
+
+def add_nationality_group(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `nationality_group`, a three-way grouping of the nationality code.
+
+    Values:
+    - "British" for the UK code (826).
+    - "EEA (non-British)" for any other EEA code, including Croatia.
+    - "Non-EEA" for any other code, including "not known" (-1), which is
+      handled in a separate ticket.
+    - null for a null or blank code.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the raw nationality code.
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus `nationality_group`.
+    """
+    return _group_country_code(
+        worker_lf,
+        AWKClean.nationality,
+        HackCols.nationality_group,
+        eea_label=NationalityGroupLabels.eea_non_british,
+        uk_label=NationalityGroupLabels.british,
+        non_eea_label=NationalityGroupLabels.non_eea,
+    )
+
+
+def add_country_of_birth_group(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `country_of_birth_group`, a three-way grouping of the country of birth code.
+
+    Values:
+    - "UK" for the UK code (826).
+    - "EEA (non-UK)" for any other EEA code, including Croatia.
+    - "Non-EEA" for any other code, including "not known" (-1), which is
+      handled in a separate ticket.
+    - null for a null or blank code.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the raw country of birth code.
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus `country_of_birth_group`.
+    """
+    return _group_country_code(
+        worker_lf,
+        AWKClean.country_of_birth,
+        HackCols.country_of_birth_group,
+        eea_label=CountryOfBirthGroupLabels.eea_non_uk,
+        uk_label=CountryOfBirthGroupLabels.uk,
+        non_eea_label=CountryOfBirthGroupLabels.non_eea,
+    )
 
 
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:

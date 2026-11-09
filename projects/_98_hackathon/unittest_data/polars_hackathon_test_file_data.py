@@ -60,6 +60,53 @@ class AddMainServiceTypeCase:
 
 
 @dataclass
+class AddCodeGroupCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+# The EEA codes, written out here rather than imported so the test checks the
+# constant in the job.
+EEA_CODES = [
+    "40", "56", "100", "196", "203", "208", "233", "246", "250", "276",
+    "300", "348", "372", "380", "428", "440", "442", "470", "528", "616",
+    "620", "642", "703", "705", "724", "752", "352", "438", "578", "191",
+]  # fmt: skip
+
+
+def build_code_group_cases(eea_label: str, uk_label: str) -> list[AddCodeGroupCase]:
+    """Builds the code to group cases shared by nationality and country of birth."""
+    return [
+        AddCodeGroupCase(
+            id="eea_non_british_when_code_is_eea",
+            input_rows=[("250",)],
+            expected_rows=[("250", eea_label)],
+        ),
+        AddCodeGroupCase(
+            id="british_when_code_is_826",
+            input_rows=[("826",)],
+            expected_rows=[("826", uk_label)],
+        ),
+        AddCodeGroupCase(
+            id="non_eea_when_code_is_other",
+            input_rows=[("356",)],
+            expected_rows=[("356", "Non-EEA")],
+        ),
+        AddCodeGroupCase(
+            id="null_when_code_is_null",
+            input_rows=[(None,)],
+            expected_rows=[(None, None)],
+        ),
+        AddCodeGroupCase(
+            id="null_when_code_is_blank",
+            input_rows=[("",)],
+            expected_rows=[("", None)],
+        ),
+    ]
+
+
+@dataclass
 class GetLatestSaveDatePerEstablishmentCase:
     id: str
     input_rows: list[tuple[Any, ...]]
@@ -78,6 +125,14 @@ class AddEstablishmentActiveFlagCase:
 
 @dataclass
 class WorkerTurnoverData:
+    add_nationality_group_cases = build_code_group_cases(
+        eea_label="EEA (non-British)", uk_label="British"
+    )
+
+    add_country_of_birth_group_cases = build_code_group_cases(
+        eea_label="EEA (non-UK)", uk_label="UK"
+    )
+
     add_main_service_type_cases = [
         AddMainServiceTypeCase(
             id="recodes_chn_as_care_home_with_nursing",

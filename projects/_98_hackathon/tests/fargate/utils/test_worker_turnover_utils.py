@@ -9,6 +9,7 @@ from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import
     WorkerTurnoverData as Data,
 )
 from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import (
+    EEA_CODES,
     raw_worker_row,
 )
 from projects._98_hackathon.unittest_data.polars_hackathon_test_file_schemas import (
@@ -129,6 +130,115 @@ class TestAddMainServiceType:
         returned_lf = job.add_main_service_type(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestAddNationalityGroup:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.add_nationality_group_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows, schema=Schemas.nationality_input_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.nationality_group_schema, orient="row"
+        )
+
+        returned_lf = job.add_nationality_group(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    @pytest.mark.parametrize("code", EEA_CODES)
+    def test_returns_eea_non_british_for_each_eea_code(self, code):
+        input_lf = pl.LazyFrame(
+            [(code,)], schema=Schemas.nationality_input_schema, orient="row"
+        )
+
+        returned_df = job.add_nationality_group(input_lf).collect()
+
+        assert returned_df[HackCols.nationality_group].to_list() == [
+            "EEA (non-British)"
+        ]
+
+    def test_returns_categorical_group_column(self):
+        input_lf = pl.LazyFrame(
+            [("250",)], schema=Schemas.nationality_input_schema, orient="row"
+        )
+
+        returned_schema = job.add_nationality_group(input_lf).collect_schema()
+
+        assert returned_schema[HackCols.nationality_group] == pl.Categorical
+
+    def test_keeps_input_columns_unchanged(self):
+        input_lf = pl.LazyFrame(
+            [("250",), ("826",), (None,)],
+            schema=Schemas.nationality_input_schema,
+            orient="row",
+        )
+
+        returned_lf = job.add_nationality_group(input_lf)
+
+        pl_testing.assert_frame_equal(
+            returned_lf.select(AWKClean.nationality), input_lf
+        )
+
+
+class TestAddCountryOfBirthGroup:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.add_country_of_birth_group_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows, schema=Schemas.country_of_birth_input_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows,
+            schema=Schemas.country_of_birth_group_schema,
+            orient="row",
+        )
+
+        returned_lf = job.add_country_of_birth_group(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    @pytest.mark.parametrize("code", EEA_CODES)
+    def test_returns_eea_non_uk_for_each_eea_code(self, code):
+        input_lf = pl.LazyFrame(
+            [(code,)], schema=Schemas.country_of_birth_input_schema, orient="row"
+        )
+
+        returned_df = job.add_country_of_birth_group(input_lf).collect()
+
+        assert returned_df[HackCols.country_of_birth_group].to_list() == [
+            "EEA (non-UK)"
+        ]
+
+    def test_returns_categorical_group_column(self):
+        input_lf = pl.LazyFrame(
+            [("250",)], schema=Schemas.country_of_birth_input_schema, orient="row"
+        )
+
+        returned_schema = job.add_country_of_birth_group(input_lf).collect_schema()
+
+        assert returned_schema[HackCols.country_of_birth_group] == pl.Categorical
+
+    def test_keeps_input_columns_unchanged(self):
+        input_lf = pl.LazyFrame(
+            [("250",), ("826",), (None,)],
+            schema=Schemas.country_of_birth_input_schema,
+            orient="row",
+        )
+
+        returned_lf = job.add_country_of_birth_group(input_lf)
+
+        pl_testing.assert_frame_equal(
+            returned_lf.select(AWKClean.country_of_birth), input_lf
+        )
 
 
 class TestAddIsLeaverFlag:

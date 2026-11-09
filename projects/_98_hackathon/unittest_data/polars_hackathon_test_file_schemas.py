@@ -53,6 +53,26 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    nationality_input_schema = pl.Schema([(AWKClean.nationality, pl.Categorical())])
+
+    nationality_group_schema = pl.Schema(
+        [
+            *nationality_input_schema.items(),
+            (HackCols.nationality_group, pl.Categorical()),
+        ]
+    )
+
+    country_of_birth_input_schema = pl.Schema(
+        [(AWKClean.country_of_birth, pl.Categorical())]
+    )
+
+    country_of_birth_group_schema = pl.Schema(
+        [
+            *country_of_birth_input_schema.items(),
+            (HackCols.country_of_birth_group, pl.Categorical()),
+        ]
+    )
+
     latest_save_date_input_schema = pl.Schema(
         [
             (AWKClean.establishment_id, CatColType.EstablishmentCatType),
