@@ -43,6 +43,9 @@ Only an approved run archived since the 1st of the month can be selected, and se
 The script can then start the `Publication-Output` step function with `{"run_number": N}`; otherwise start it by hand with that input.
 It builds the public data from that run's prepared data: the publication summary behind the Tableau output and the T0, T1 and T2 data-download tables.
 Public data is only built for a selected run, so the step function fails without a `run_number`.
+It also builds the data download workbook from that data and saves `monthly_tracker_data_download_<archive_date>_<run_number>.xlsx` under `dataset=monthly_tracker_filled_posts_03_output_workbook/`, which the publication crawler excludes.
+The workbook's Frontpage logo is read from `publication/logo/skills_for_care_logo.png` in the pipeline resources bucket; the job fails if it is missing or empty, so upload it before the first run.
+The reconciliation step reads the workbook back and checks its T0, T1 and T2 tables against the prepared values (with their `[s]` and `[x]` labels and rounding), as well as the archive totals.
 
 If a second estimates run finishes while `Publication-Assessment` is still running for the previous run, the assessment step may read the other run's prepared data.
 Start `Publication-Assessment` again with that run's `run_number` to build its assessment data.
