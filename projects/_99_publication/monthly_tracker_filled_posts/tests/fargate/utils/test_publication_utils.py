@@ -548,15 +548,20 @@ class TestAddPrevRunFilledPostsColumns:
         ]
     )
     current_schema = pl.Schema(
-        list(key_schema.items()) + [(Pub.unfiltered_filled_posts, pl.Float64())]
+        list(key_schema.items())
+        + [
+            (Pub.unfiltered_filled_posts, pl.Float64()),
+            (Pub.unfiltered_filled_posts_april_pct_change, pl.Float64()),
+            (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float64()),
+        ]
     )
     prev_schema = current_schema
 
     def _current_lf(self) -> pl.LazyFrame:
         return pl.LazyFrame(
             [
-                (date(2026, 4, 1), "A", "North", "care", 110.0),
-                (date(2026, 5, 1), "A", "North", "care", 50.0),
+                (date(2026, 4, 1), "A", "North", "care", 110.0, 0.5, 0.25),
+                (date(2026, 5, 1), "A", "North", "care", 50.0, 0.4, 0.2),
             ],
             self.current_schema,
             orient="row",
@@ -564,12 +569,45 @@ class TestAddPrevRunFilledPostsColumns:
 
     def _prev_lf(self, prev_posts: float = 100.0) -> pl.LazyFrame:
         return pl.LazyFrame(
-            [(date(2026, 4, 1), "A", "North", "care", prev_posts)],
+            [(date(2026, 4, 1), "A", "North", "care", prev_posts, 0.3, 0.1)],
             self.prev_schema,
             orient="row",
         )
 
-    def test_adds_prev_run_filled_posts_on_matching_keys_and_null_on_new_keys(self):
+    def test_comparison_is_current_minus_prev_run_pct_change(self):
+        returned_df = job.add_prev_run_filled_posts_columns(
+            self._current_lf(), self._prev_lf()
+        ).collect()
+
+        assert returned_df[
+            Pub.unfiltered_filled_posts_april_pct_change_comparison
+        ].to_list() == [pytest.approx(0.2), None]
+        assert returned_df[
+            Pub.unfiltered_short_sfc_cum_pct_change_comparison
+        ].to_list() == [pytest.approx(0.15), None]
+
+    def test_prev_run_pct_changes_are_null_when_prev_run_lacks_them(self):
+        prev_lf = self._prev_lf().select(
+            *self.key_schema.names(), Pub.unfiltered_filled_posts
+        )
+
+        returned_df = job.add_prev_run_filled_posts_columns(
+            self._current_lf(), prev_lf
+        ).collect()
+
+        assert returned_df[Pub.unfiltered_filled_posts_prev_run].to_list() == [
+            100.0,
+            None,
+        ]
+        for column in [
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run,
+            Pub.unfiltered_short_sfc_cum_pct_change_prev_run,
+            Pub.unfiltered_filled_posts_april_pct_change_comparison,
+            Pub.unfiltered_short_sfc_cum_pct_change_comparison,
+        ]:
+            assert returned_df[column].null_count() == 2
+
+    def test_adds_prev_run_columns_on_matching_keys_and_null_on_new_keys(self):
         returned_df = job.add_prev_run_filled_posts_columns(
             self._current_lf(), self._prev_lf()
         ).collect()
@@ -578,6 +616,12 @@ class TestAddPrevRunFilledPostsColumns:
             100.0,
             None,
         ]
+        assert returned_df[
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run
+        ].to_list() == [0.3, None]
+        assert returned_df[
+            Pub.unfiltered_short_sfc_cum_pct_change_prev_run
+        ].to_list() == [0.1, None]
 
     def test_adds_perc_change_from_prev_run_as_net_change_fraction(self):
         returned_df = job.add_prev_run_filled_posts_columns(
@@ -641,7 +685,7 @@ class TestAddPrevRunFilledPostsColumns:
             .alias(IndCQC.current_region)
         )
         prev_lf = pl.LazyFrame(
-            [(date(2026, 4, 1), "A", None, "care", 100.0)],
+            [(date(2026, 4, 1), "A", None, "care", 100.0, 0.3, 0.1)],
             self.prev_schema,
             orient="row",
         )
@@ -677,16 +721,16 @@ class TestAddPrevRunFilledPostsColumns:
             self._current_lf(), None
         ).collect()
 
-        assert returned_df.schema[Pub.unfiltered_filled_posts_prev_run] == pl.Float64()
-        assert (
-            returned_df.schema[Pub.unfiltered_filled_posts_pct_change_vs_prev_run]
-            == pl.Float64()
-        )
-        assert returned_df[Pub.unfiltered_filled_posts_prev_run].null_count() == 2
-        assert (
-            returned_df[Pub.unfiltered_filled_posts_pct_change_vs_prev_run].null_count()
-            == 2
-        )
+        for column in [
+            Pub.unfiltered_filled_posts_prev_run,
+            Pub.unfiltered_filled_posts_pct_change_vs_prev_run,
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run,
+            Pub.unfiltered_short_sfc_cum_pct_change_prev_run,
+            Pub.unfiltered_filled_posts_april_pct_change_comparison,
+            Pub.unfiltered_short_sfc_cum_pct_change_comparison,
+        ]:
+            assert returned_df.schema[column] == pl.Float64()
+            assert returned_df[column].null_count() == 2
 
 
 class TestCalcPercChangeFromPreviousApril:
