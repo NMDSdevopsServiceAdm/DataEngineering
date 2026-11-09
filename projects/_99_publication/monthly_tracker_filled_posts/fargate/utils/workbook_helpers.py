@@ -27,6 +27,12 @@ def generate_workbook_name(stem: str, run_source: str) -> str:
     )
 
 
+def _s3_key(s3_directory: str, file_name: str) -> tuple[str, str]:
+    """Splits an S3 directory and a file name into the file's bucket and key."""
+    bucket, prefix = split_s3_uri(s3_directory)
+    return bucket, f"{prefix.rstrip('/')}/{file_name}"
+
+
 def upload_to_s3(local_path: Path, s3_directory: str) -> None:
     """
     Uploads a local file into an S3 directory, keeping its file name.
@@ -35,9 +41,21 @@ def upload_to_s3(local_path: Path, s3_directory: str) -> None:
         local_path (Path): file to upload.
         s3_directory (str): S3 directory to put the file in.
     """
-    bucket, prefix = split_s3_uri(s3_directory)
-    key = f"{prefix.rstrip('/')}/{local_path.name}"
+    bucket, key = _s3_key(s3_directory, local_path.name)
     boto3.client("s3").upload_file(str(local_path), bucket, key)
+
+
+def download_from_s3(s3_directory: str, file_name: str, local_path: Path) -> None:
+    """
+    Downloads a named file from an S3 directory; raises ClientError if unreadable.
+
+    Args:
+        s3_directory (str): S3 directory holding the file.
+        file_name (str): name of the file in that directory.
+        local_path (Path): where to save the file.
+    """
+    bucket, key = _s3_key(s3_directory, file_name)
+    boto3.client("s3").download_file(bucket, key, str(local_path))
 
 
 def set_column_widths(worksheet: object, widths: list[int]) -> None:

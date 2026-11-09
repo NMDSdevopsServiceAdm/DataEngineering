@@ -279,7 +279,24 @@ class TestPublicationStoreExpiry:
 
 
 class TestPublicationOutputWorkbookPaths:
-    """Guards the logo the data download workbook needs."""
+    """
+    Guards the data download workbook's paths between the task that writes it
+    and the task that reconciles it, and the logo the workbook needs.
+    """
+
+    def test_build_output_and_compare_totals_use_the_same_workbook_path(self):
+        written = get_command_paths("Publication-Output.json", "--workbook_destination")
+        read = get_command_paths("Publication-Output.json", "--workbook_source")
+
+        assert len(set(written)) == 1, written
+        assert set(written) == set(read), (written, read)
+
+    def test_build_output_and_compare_totals_use_the_same_output_store_path(self):
+        written = get_command_paths("Publication-Output.json", "--output_destination")
+        read = get_command_paths("Publication-Output.json", "--output_source")
+
+        assert len(set(written)) == 1, written
+        assert set(written) == set(read), (written, read)
 
     def test_build_output_passes_a_png_logo_source(self):
         [logo_source] = get_command_paths("Publication-Output.json", "--logo_source")
