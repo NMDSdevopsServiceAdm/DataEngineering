@@ -12,3 +12,6 @@ class HackathonColumns:
     months_since_save_end: str = "months_since_save_end"
     establishment_active: str = "establishment_active"
     main_service_type: str = "main_service_type"
+    turnover_rate: str = "turnover_rate"
+    plausible_turnover: str = "plausible_turnover"
+    valid_for_analysis: str = "valid_for_analysis"

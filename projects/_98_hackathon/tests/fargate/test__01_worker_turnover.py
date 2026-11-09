@@ -13,6 +13,8 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
+    @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_main_service_type")
@@ -27,6 +29,8 @@ class TestMain:
         add_main_service_type_mock: Mock,
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
+        add_turnover_rate_mock: Mock,
+        add_valid_for_analysis_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -91,8 +95,14 @@ class TestMain:
             get_latest_save_date_per_establishment_mock.return_value,
             job.DEFAULT_MAX_MONTHS_SINCE_SAVE,
         )
+        add_turnover_rate_mock.assert_called_once_with(
+            add_establishment_active_flag_mock.return_value
+        )
+        add_valid_for_analysis_flag_mock.assert_called_once_with(
+            add_turnover_rate_mock.return_value, job.DEFAULT_MAX_TURNOVER_RATE
+        )
         add_raw_worker_columns_mock.assert_called_once_with(
-            add_establishment_active_flag_mock.return_value, raw_worker_lf_mock
+            add_valid_for_analysis_flag_mock.return_value, raw_worker_lf_mock
         )
         sink_to_parquet_mock.assert_called_once_with(
             add_raw_worker_columns_mock.return_value,
@@ -101,6 +111,43 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
+    @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
+    @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_main_service_type")
+    @patch(f"{PATCH_PATH}.wUtils.filter_worker_turnover_data")
+    @patch(f"{PATCH_PATH}.wUtils.get_latest_save_date_per_establishment")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_main_passes_max_turnover_rate_to_valid_for_analysis_flag(
+        self,
+        scan_parquet_mock: Mock,
+        get_latest_save_date_per_establishment_mock: Mock,
+        filter_worker_turnover_data_mock: Mock,
+        add_main_service_type_mock: Mock,
+        add_is_leaver_flag_mock: Mock,
+        add_establishment_active_flag_mock: Mock,
+        add_turnover_rate_mock: Mock,
+        add_valid_for_analysis_flag_mock: Mock,
+        add_raw_worker_columns_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
+        job.main(
+            self.CLEANED_WORKER_SOURCE,
+            self.CLEANED_WORKPLACE_SOURCE,
+            self.RAW_WORKER_SOURCE,
+            self.FLAGGED_DESTINATION,
+            max_turnover_rate=0.5,
+        )
+
+        add_valid_for_analysis_flag_mock.assert_called_once_with(
+            add_turnover_rate_mock.return_value, 0.5
+        )
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
+    @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_main_service_type")
@@ -115,6 +162,8 @@ class TestMain:
         add_main_service_type_mock: Mock,
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
+        add_turnover_rate_mock: Mock,
+        add_valid_for_analysis_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
