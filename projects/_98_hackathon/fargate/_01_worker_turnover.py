@@ -31,7 +31,7 @@ def main(
     n_months: int = DEFAULT_MAX_MONTHS_SINCE_SAVE,
 ) -> None:
     """Filters worker data, adds main service type, flags leavers and active
-    establishments, and adds raw worker columns with their labelled versions.
+    establishments, and adds raw worker columns plus labels for the coded ones.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
