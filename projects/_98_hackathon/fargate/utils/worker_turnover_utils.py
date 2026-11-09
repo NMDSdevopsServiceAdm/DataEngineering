@@ -15,8 +15,6 @@ from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import MainServiceID
 from utils.column_values.categorical_column_values import (
-    EEA_COUNTRY_CODES,
-    UK_COUNTRY_CODE,
     CountryOfBirthGroupLabels,
     NationalityGroupLabels,
     PrimaryServiceType,
@@ -137,9 +135,9 @@ def _group_country_code(
 ) -> pl.LazyFrame:
     """Adds a categorical group column from an ISO 3166-1 numeric country code.
 
-    The UK code gives `uk_label`, a code in `EEA_COUNTRY_CODES` gives
-    `eea_label` and any other code gives `non_eea_label`. A null or blank code
-    gives null.
+    The UK code gives `uk_label`, an EEA code (EU, Iceland, Liechtenstein or
+    Norway) gives `eea_label` and any other code gives `non_eea_label`. A null
+    or blank code gives null.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the code column.
@@ -152,14 +150,48 @@ def _group_country_code(
     Returns:
         pl.LazyFrame: The input rows with all columns plus the group column.
     """
+    # ISO 3166-1 numeric codes, unpadded as held in the raw data.
+    uk_code = "826"
+    eea_codes = [
+        "40",  # Austria
+        "56",  # Belgium
+        "100",  # Bulgaria
+        "191",  # Croatia
+        "196",  # Cyprus
+        "203",  # Czechia
+        "208",  # Denmark
+        "233",  # Estonia
+        "246",  # Finland
+        "250",  # France
+        "276",  # Germany
+        "300",  # Greece
+        "348",  # Hungary
+        "352",  # Iceland
+        "372",  # Ireland
+        "380",  # Italy
+        "428",  # Latvia
+        "438",  # Liechtenstein
+        "440",  # Lithuania
+        "442",  # Luxembourg
+        "470",  # Malta
+        "528",  # Netherlands
+        "578",  # Norway
+        "616",  # Poland
+        "620",  # Portugal
+        "642",  # Romania
+        "703",  # Slovakia
+        "705",  # Slovenia
+        "724",  # Spain
+        "752",  # Sweden
+    ]
     code = pl.col(code_column).cast(pl.String).replace("", None)
 
     return worker_lf.with_columns(
         pl.when(code.is_null())
         .then(None)
-        .when(code == UK_COUNTRY_CODE)
+        .when(code == uk_code)
         .then(pl.lit(uk_label))
-        .when(code.is_in(EEA_COUNTRY_CODES))
+        .when(code.is_in(eea_codes))
         .then(pl.lit(eea_label))
         .otherwise(pl.lit(non_eea_label))
         .cast(pl.Categorical)

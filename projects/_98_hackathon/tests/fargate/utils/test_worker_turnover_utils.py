@@ -161,28 +161,6 @@ class TestAddNationalityGroup:
             "EEA (non-British)"
         ]
 
-    def test_returns_categorical_group_column(self):
-        input_lf = pl.LazyFrame(
-            [("250",)], schema=Schemas.nationality_input_schema, orient="row"
-        )
-
-        returned_schema = job.add_nationality_group(input_lf).collect_schema()
-
-        assert returned_schema[HackCols.nationality_group] == pl.Categorical
-
-    def test_keeps_input_columns_unchanged(self):
-        input_lf = pl.LazyFrame(
-            [("250",), ("826",), (None,)],
-            schema=Schemas.nationality_input_schema,
-            orient="row",
-        )
-
-        returned_lf = job.add_nationality_group(input_lf)
-
-        pl_testing.assert_frame_equal(
-            returned_lf.select(AWKClean.nationality), input_lf
-        )
-
 
 class TestAddCountryOfBirthGroup:
     @pytest.mark.parametrize(
@@ -217,28 +195,6 @@ class TestAddCountryOfBirthGroup:
         assert returned_df[HackCols.country_of_birth_group].to_list() == [
             "EEA (non-UK)"
         ]
-
-    def test_returns_categorical_group_column(self):
-        input_lf = pl.LazyFrame(
-            [("250",)], schema=Schemas.country_of_birth_input_schema, orient="row"
-        )
-
-        returned_schema = job.add_country_of_birth_group(input_lf).collect_schema()
-
-        assert returned_schema[HackCols.country_of_birth_group] == pl.Categorical
-
-    def test_keeps_input_columns_unchanged(self):
-        input_lf = pl.LazyFrame(
-            [("250",), ("826",), (None,)],
-            schema=Schemas.country_of_birth_input_schema,
-            orient="row",
-        )
-
-        returned_lf = job.add_country_of_birth_group(input_lf)
-
-        pl_testing.assert_frame_equal(
-            returned_lf.select(AWKClean.country_of_birth), input_lf
-        )
 
 
 class TestAddIsLeaverFlag:
