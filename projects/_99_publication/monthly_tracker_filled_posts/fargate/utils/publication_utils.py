@@ -16,10 +16,38 @@ from utils.column_values.categorical_column_values import (
 _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 
-DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
-    Pub.period,
-    Pub.region,
-    Pub.main_service,
+# Period, then region (England, Eastern and East Midlands first, the rest
+# alphabetical), then main service in its published order. An unlisted region
+# or main service fails the cast.
+DOWNLOAD_TABLE_SORT_KEYS: list[pl.Expr] = [
+    pl.col(Pub.period),
+    pl.col(Pub.region).cast(
+        pl.Enum(
+            [
+                PublishedRegion.england,
+                PublishedRegion.eastern,
+                PublishedRegion.east_midlands,
+                PublishedRegion.london,
+                PublishedRegion.north_east,
+                PublishedRegion.north_west,
+                PublishedRegion.south_east,
+                PublishedRegion.south_west,
+                PublishedRegion.west_midlands,
+                PublishedRegion.yorkshire_and_the_humber,
+            ]
+        )
+    ),
+    pl.col(Pub.main_service).cast(
+        pl.Enum(
+            [
+                PublishedMainService.all_locations,
+                PublishedMainService.all_care_homes,
+                PublishedMainService.care_home_with_nursing,
+                PublishedMainService.care_home_only,
+                PublishedMainService.non_residential,
+            ]
+        )
+    ),
 ]
 
 # The summed columns of the publication summary, and the extra ones added for

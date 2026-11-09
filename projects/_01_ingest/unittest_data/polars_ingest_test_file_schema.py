@@ -496,6 +496,13 @@ class TestCleanAscwdsWorkplaceUtilsSchemas:
         AWPClean.workplace_last_active_date: pl.Date,
     }
 
+    create_clean_main_service_id_column_schema = {
+        AWPClean.establishment_id: pl.String,
+        AWPClean.ascwds_workplace_import_date: pl.Date,
+        AWPClean.main_service_id: pl.String,
+        AWPClean.main_service_id_clean: pl.String,
+    }
+
     apply_data_corrections_schema = {
         AWPClean.organisation_id: pl.String,
         AWPClean.period: pl.String,

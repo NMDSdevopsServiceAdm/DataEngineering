@@ -18,9 +18,9 @@ WORKER_SCHEMA = {
     AWKClean.establishment_id: pl.String,
     AWKClean.worker_id: pl.String,
     AWKClean.main_job_role_id: pl.String,
-    AWKClean.main_service_type_id: pl.String,
     AWKClean.employment_status: pl.String,
     AWKClean.import_date: pl.String,
+    AWKClean.save_date: pl.String,
 }
 
 WORKPLACE_SCHEMA = {
@@ -52,6 +52,13 @@ def main(
     worker_lf = cUtils.column_to_date(
         worker_lf, AWKClean.import_date, AWKClean.ascwds_worker_import_date
     )
+
+    # Raw save date is dd/mm/yyyy; blank or unparseable values become null.
+    worker_lf = worker_lf.with_columns(
+        pl.col(AWKClean.save_date)
+        .str.to_date("%d/%m/%Y", strict=False)
+        .alias(AWKClean.ascwds_worker_save_date)
+    ).drop(AWKClean.save_date)
 
     worker_lf = worker_lf.filter(is_unique_worker_data())
 
