@@ -119,18 +119,18 @@ def add_raw_worker_columns(
 def add_labelled_worker_columns(
     worker_lf: pl.LazyFrame, labels_lf: pl.LazyFrame
 ) -> pl.LazyFrame:
-    """Adds a categorical `<column>_labelled` column for each coded worker column.
+    """Adds a categorical `<column>_labelled` column for 10 coded worker columns.
 
-    Blank and null codes give a null label. Any other code without a label gets
-    the label "Unmapped"; the raw code column, which is kept, shows which code.
-    Each column's mapping is collected from the small `labels_lf`; the worker
-    data stays lazy.
+    Nationality and country of birth are not labelled. Blank and null codes give
+    a null label. Any other code without a label gets the label "Unmapped"; the
+    raw code column, which is kept, shows which code. Each column's mapping is
+    collected from the small `labels_lf`; the worker data stays lazy.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the columns in
             `WORKER_CATEGORICAL_COLUMNS`.
-        labels_lf (pl.LazyFrame): Code to label mappings for those columns, from
-            `build_labels_lf`.
+        labels_lf (pl.LazyFrame): Code to label mappings for the labelled
+            columns, from `build_labels_lf`.
 
     Returns:
         pl.LazyFrame: The input rows with all columns plus the labelled columns.
@@ -138,8 +138,6 @@ def add_labelled_worker_columns(
     labelled_names = {
         AWKClean.gender: HackCols.gender_labelled,
         AWKClean.ethnicity: HackCols.ethnicity_labelled,
-        AWKClean.nationality: HackCols.nationality_labelled,
-        AWKClean.country_of_birth: HackCols.country_of_birth_labelled,
         AWKClean.disabled: HackCols.disabled_labelled,
         AWKClean.hourly_or_annual_pay: HackCols.hourly_or_annual_pay_labelled,
         AWKClean.social_care_qual_held: HackCols.social_care_qual_held_labelled,

@@ -350,8 +350,6 @@ class TestAddLabelledWorkerColumns:
     labelled_columns = [
         HackCols.gender_labelled,
         HackCols.ethnicity_labelled,
-        HackCols.nationality_labelled,
-        HackCols.country_of_birth_labelled,
         HackCols.disabled_labelled,
         HackCols.hourly_or_annual_pay_labelled,
         HackCols.social_care_qual_held_labelled,
@@ -362,7 +360,7 @@ class TestAddLabelledWorkerColumns:
         HackCols.source_of_recruitment_labelled,
     ]
 
-    def test_adds_a_labelled_column_for_each_of_the_12_coded_columns(self):
+    def test_adds_a_labelled_column_for_each_of_the_10_coded_columns(self):
         worker_lf = coded_worker_lf(coded_worker_row("1"))
 
         returned_names = (
@@ -375,7 +373,7 @@ class TestAddLabelledWorkerColumns:
             *Schemas.labelled_input_schema.names(),
             *self.labelled_columns,
         ]
-        assert len(self.labelled_columns) == 12
+        assert len(self.labelled_columns) == 10
 
     def test_keeps_raw_code_columns_unchanged(self):
         worker_lf = coded_worker_lf(
@@ -404,20 +402,6 @@ class TestAddLabelledWorkerColumns:
                 "31",
                 "English / Welsh / Scottish / Northern Irish / British",
                 id="ethnicity",
-            ),
-            pytest.param(
-                AWKClean.nationality,
-                HackCols.nationality_labelled,
-                "826",
-                "British",
-                id="nationality",
-            ),
-            pytest.param(
-                AWKClean.country_of_birth,
-                HackCols.country_of_birth_labelled,
-                "826",
-                "United Kingdom",
-                id="country_of_birth",
             ),
             pytest.param(
                 AWKClean.disabled,
@@ -533,7 +517,7 @@ class TestAddLabelledWorkerColumns:
 
         assert [schema[column] for column in self.labelled_columns] == [
             pl.Categorical
-        ] * 12
+        ] * 10
 
     def test_does_not_change_row_count(self):
         worker_lf = coded_worker_lf(

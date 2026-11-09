@@ -15,8 +15,6 @@ class HackathonColumns:
 
     gender_labelled: str = "gender_labelled"
     ethnicity_labelled: str = "ethnicity_labelled"
-    nationality_labelled: str = "nationality_labelled"
-    country_of_birth_labelled: str = "country_of_birth_labelled"
     disabled_labelled: str = "disabled_labelled"
     hourly_or_annual_pay_labelled: str = "hourly_or_annual_pay_labelled"
     social_care_qual_held_labelled: str = "social_care_qual_held_labelled"

@@ -5,7 +5,6 @@ import pytest
 from utils.column_values.ascwds_labelled_vocab import (
     APPRENTICE,
     CARE_CERTIFICATE_STATUS,
-    COUNTRY_OF_BIRTH_CODE_TO_LABEL,
     DISABLED,
     EMPLOYMENT_STATUS,
     ESTABLISHMENT_TYPE_CODE_TO_LABEL,
@@ -16,7 +15,6 @@ from utils.column_values.ascwds_labelled_vocab import (
     LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
     MAIN_JOB_ROLE,
     MAIN_SERVICE_ID_CODE_TO_LABEL,
-    NATIONALITY_CODE_TO_LABEL,
     PARENT_PERMISSION_CODE_TO_LABEL,
     REGION_ID_CODE_TO_LABEL,
     REGISTRATION_TYPE_CODE_TO_LABEL,
@@ -384,30 +382,6 @@ worker_code_to_label_test_cases = [
             "227": "First role after education",
         },
     ),
-    WorkerCodeToLabelTestCase(
-        id="nationality",
-        code_to_label=NATIONALITY_CODE_TO_LABEL,
-        expected_code_count=216,
-        expected_pairs={
-            "4": "Afghan",
-            "504": "Moroccan",
-            "732": "Moroccan",
-            "894": "Zambian",
-            "999": "Unknown",
-        },
-    ),
-    WorkerCodeToLabelTestCase(
-        id="country_of_birth",
-        code_to_label=COUNTRY_OF_BIRTH_CODE_TO_LABEL,
-        expected_code_count=250,
-        expected_pairs={
-            "4": "Afghanistan",
-            "92": "Virgin Islands British",
-            "180": "Congo Democratic Republic of the",
-            "826": "United Kingdom",
-            "999": "Unknown",
-        },
-    ),
 ]
 
 
@@ -437,14 +411,3 @@ class TestWorkerCodeToLabel:
     )
     def test_unlabelled_codes_is_empty(self, vocab):
         assert vocab.unlabelled_codes() == {}
-
-    @pytest.mark.parametrize(
-        "code, expected_label",
-        [
-            pytest.param("36", "Australian", id="repeated_5_times"),
-            pytest.param("250", "French", id="repeated_11_times"),
-            pytest.param("826", "British", id="repeated_8_times"),
-        ],
-    )
-    def test_nationality_has_one_label_per_duplicated_code(self, code, expected_label):
-        assert NATIONALITY_CODE_TO_LABEL[code] == expected_label

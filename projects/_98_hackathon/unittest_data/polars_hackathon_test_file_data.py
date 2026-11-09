@@ -13,13 +13,11 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_values.ascwds_labelled_vocab import (
     APPRENTICE,
     CARE_CERTIFICATE_STATUS,
-    COUNTRY_OF_BIRTH_CODE_TO_LABEL,
     DISABLED,
     ETHNICITY,
     GENDER,
     HOURLY_OR_ANNUAL_PAY,
     LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
-    NATIONALITY_CODE_TO_LABEL,
     SOCIAL_CARE_QUAL_HELD,
     SOURCE_OF_RECRUITMENT,
     ZERO_HOURS,
@@ -33,8 +31,6 @@ END = date(2022, 1, 5)  # 12 months after START
 WORKER_LABELS_DICT = {
     AWKClean.gender: GENDER.code_to_label(),
     AWKClean.ethnicity: ETHNICITY.code_to_label(),
-    AWKClean.nationality: NATIONALITY_CODE_TO_LABEL,
-    AWKClean.country_of_birth: COUNTRY_OF_BIRTH_CODE_TO_LABEL,
     AWKClean.disabled: DISABLED.code_to_label(),
     AWKClean.hourly_or_annual_pay: HOURLY_OR_ANNUAL_PAY.code_to_label(),
     AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD.code_to_label(),
