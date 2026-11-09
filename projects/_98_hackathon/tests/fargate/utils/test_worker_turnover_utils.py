@@ -373,7 +373,6 @@ class TestAddLabelledWorkerColumns:
             *Schemas.labelled_input_schema.names(),
             *self.labelled_columns,
         ]
-        assert len(self.labelled_columns) == 10
 
     def test_keeps_raw_code_columns_unchanged(self):
         worker_lf = coded_worker_lf(

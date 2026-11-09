@@ -119,7 +119,7 @@ def add_raw_worker_columns(
 def add_labelled_worker_columns(
     worker_lf: pl.LazyFrame, labels_lf: pl.LazyFrame
 ) -> pl.LazyFrame:
-    """Adds a categorical `<column>_labelled` column for 10 coded worker columns.
+    """Adds a categorical `<column>_labelled` column for each labelled worker column.
 
     Nationality and country of birth are not labelled. Blank and null codes give
     a null label; any other code without a label gets "Unmapped", and the kept
@@ -127,8 +127,7 @@ def add_labelled_worker_columns(
     `labels_lf`; the worker data stays lazy.
 
     Args:
-        worker_lf (pl.LazyFrame): Worker data with the columns in
-            `WORKER_CATEGORICAL_COLUMNS`.
+        worker_lf (pl.LazyFrame): Worker data with the coded columns to label.
         labels_lf (pl.LazyFrame): Code to label mappings for the labelled
             columns, from `build_labels_lf`.
 
