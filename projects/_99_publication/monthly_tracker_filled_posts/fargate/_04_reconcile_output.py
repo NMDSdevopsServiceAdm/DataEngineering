@@ -272,9 +272,8 @@ def _raise_if_roles_differ(
             f"archive ({details})"
         )
 
-    # Multiplied out rather than divided, so a role with 0 posts in both sources
-    # matches (0 <= 0) instead of giving NaN. Compared as "not within" so a NaN
-    # total fails.
+    # Not divided, so 0 posts in both sources matches (0 <= 0) rather than NaN.
+    # "Not within" so a NaN total fails.
     is_within_tolerance = (
         pl.col(public_column) - pl.col(archive_column)
     ).abs() <= RECONCILIATION_RELATIVE_TOLERANCE * pl.col(archive_column).abs()
@@ -304,16 +303,16 @@ def main(
 ) -> None:
     """
     Compares a run's public and promoted archive filled posts for each period
-    and for each period and job role, then checks its data download workbook
-    holds the prepared values, marking the run reconciled in the run log only if
-    all pass.
+    and each period and job role, then checks its data download workbook holds
+    the prepared values, marking the run reconciled in the run log only if all
+    pass.
 
     Periods are those in the assessment data; other archive periods are
     ignored. The public figures are the assessment's pre-rounding national rows
     (the public output only holds banded figures, and the assessment's other
-    rows are overlapping rollups): "All job roles" for the period total, and one
-    row per job role. The archive figures sum every job-role row for the period,
-    and each job role's rows for that role, as the archive has no rollups.
+    rows are overlapping rollups): "All job roles" for each period's total, and
+    one row per job role. The archive has no rollups, so its figures sum the
+    job-role rows.
 
     Args:
         assessment_source (str): S3 directory holding the assessed data of every
