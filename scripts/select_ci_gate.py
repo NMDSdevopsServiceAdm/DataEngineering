@@ -62,8 +62,8 @@ GATE_TRIGGER_PATHS: dict[str, tuple[str, ...]] = {
         "projects/_01_ingest/ons_pd/fargate/validate_postcode_directory_raw_data.py",
         *SHARED_RAW_BUCKET_TRIGGER_PATHS,
     ),
-    # Seeds the branch's dataset bucket with `sfc-main-datasets`' job role
-    # archive datasets.
+    # Mirrors `sfc-main-datasets`' job role archive, run log and publication
+    # assessments into the branch's dataset bucket.
     "archive-sample": (
         "projects/_03_independent_cqc/_01_filled_posts/_07_archive",
         "projects/_99_publication",

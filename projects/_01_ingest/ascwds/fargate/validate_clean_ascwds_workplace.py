@@ -47,6 +47,7 @@ columns = {
     ASCWPClean.version: "String",
     ASCWPClean.import_date: "String",
     ASCWPClean.ascwds_workplace_import_date: "Date",
+    ASCWPClean.main_service_id_clean: str(CategoricalColumnTypes.MainServiceIdCatType),
     ASCWPClean.master_update_date_org: "Date",
     ASCWPClean.purge_date: "Date",
     ASCWPClean.data_last_amended_date: "Date",
