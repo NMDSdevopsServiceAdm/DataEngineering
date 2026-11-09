@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, using the hourly rate or else salary over annual hours.
+- Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job.
 
 ### Changed
 
