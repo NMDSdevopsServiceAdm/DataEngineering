@@ -5,7 +5,6 @@ from pathlib import Path
 
 import openpyxl
 import polars as pl
-from botocore.exceptions import ClientError
 
 from polars_utils import utils
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
@@ -35,29 +34,6 @@ RELATIVE_DIFFERENCE = "relative_difference"
 
 class ReconciliationMismatchError(ValueError):
     """The public output and archived estimate totals disagree beyond tolerance."""
-
-
-def _download_workbook(
-    workbook_source: str, workbook_name: str, local_path: Path
-) -> None:
-    """
-    Downloads the data download workbook from S3.
-
-    Args:
-        workbook_source (str): S3 directory holding the data download workbooks
-        workbook_name (str): the workbook's file name
-        local_path (Path): where to save the workbook
-
-    Raises:
-        ReconciliationMismatchError: if the workbook cannot be read from S3
-    """
-    try:
-        workbook_helpers.download_from_s3(workbook_source, workbook_name, local_path)
-    except ClientError as error:
-        raise ReconciliationMismatchError(
-            f"The data download workbook {workbook_name} could not be read from "
-            f"{workbook_source}"
-        ) from error
 
 
 def _read_workbook_tables(workbook_path: Path) -> dict[str, list[tuple]]:
@@ -104,21 +80,6 @@ def _values_match(workbook_value: object, prepared_value: object) -> bool:
     return workbook_value == prepared_value
 
 
-def _t0_totals_by_period(
-    data_rows: list[tuple], period_column: int, value_columns: list[int]
-) -> dict[str, list[float]]:
-    """Sums the numeric T0 values for each period; suppressed labels add nothing."""
-    totals: dict[str, list[float]] = {}
-    for row in data_rows:
-        period_totals = totals.setdefault(
-            row[period_column], [0.0] * len(value_columns)
-        )
-        for position, column in enumerate(value_columns):
-            if isinstance(row[column], (int, float)):
-                period_totals[position] += row[column]
-    return totals
-
-
 def compare_download_tables(
     workbook_tables: dict[str, list[tuple]],
     prepared_tables: dict[str, list[tuple]],
@@ -126,7 +87,7 @@ def compare_download_tables(
 ) -> None:
     """
     Checks the workbook's published tables against the prepared tables: the same
-    sheets, rows, columns, T0 totals for each period, and cell values.
+    sheets, rows, columns and cell values.
 
     Args:
         workbook_tables (dict[str, list[tuple]]): rows read from the workbook
@@ -154,34 +115,6 @@ def compare_download_tables(
                 f"columns in the workbook but {len(prepared_rows[0])} in the "
                 "prepared table"
             )
-
-    t0_header = prepared_tables["T0"][0]
-    period_column = t0_header.index(Pub.period)
-    value_columns = [
-        t0_header.index(Pub.estimated_filled_posts),
-        t0_header.index(Pub.cqc_locations),
-    ]
-    workbook_totals = _t0_totals_by_period(
-        workbook_tables["T0"][1:], period_column, value_columns
-    )
-    prepared_totals = _t0_totals_by_period(
-        prepared_tables["T0"][1:], period_column, value_columns
-    )
-    differing_periods = [
-        period
-        for period in prepared_totals
-        if not all(
-            _values_match(workbook, prepared)
-            for workbook, prepared in zip(
-                workbook_totals.get(period, [None, None]), prepared_totals[period]
-            )
-        )
-    ]
-    if differing_periods:
-        raise ReconciliationMismatchError(
-            f"Run {run_number}: T0 totals differ between the workbook and the "
-            f"prepared table for {differing_periods[:MAX_PERIODS_REPORTED]}"
-        )
 
     max_cells_reported = 5
     differences = []
@@ -214,7 +147,8 @@ def reconcile_download(
     Reads a run's data download workbook back from S3 and checks it holds the
     prepared values: the tables rebuilt from the publication data, with the
     published labels and rounding (not the raw data). Fails with
-    ReconciliationMismatchError if the workbook is missing or differs.
+    ReconciliationMismatchError if the workbook differs, and with the S3 error if
+    it cannot be downloaded.
 
     Args:
         output_source (str): S3 directory of the publication data
@@ -234,7 +168,7 @@ def reconcile_download(
     }
     with tempfile.TemporaryDirectory() as workbook_folder:
         workbook_path = Path(workbook_folder) / workbook_name
-        _download_workbook(workbook_source, workbook_name, workbook_path)
+        workbook_helpers.download_from_s3(workbook_source, workbook_name, workbook_path)
         workbook_tables = _read_workbook_tables(workbook_path)
     compare_download_tables(workbook_tables, prepared_tables, run_number)
 

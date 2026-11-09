@@ -6,6 +6,7 @@ import boto3
 import openpyxl
 import polars as pl
 import pytest
+from botocore.exceptions import ClientError
 from moto import mock_aws
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate._04_reconcile_output as job
@@ -456,7 +457,7 @@ class TestDownloadReconciliation:
     def test_raises_when_the_workbook_is_missing_from_s3(self, s3, scan_parquet):
         scan_parquet.return_value = _publication_lf([_publication_row()])
 
-        with pytest.raises(job.ReconciliationMismatchError, match=WORKBOOK_NAME):
+        with pytest.raises(ClientError):
             self._reconcile()
 
     def test_locates_the_workbook_by_archive_date_and_run_number(
@@ -472,7 +473,9 @@ class TestDownloadReconciliation:
 
         self._reconcile()  # does not raise
 
-    def test_compares_t0_totals_for_each_period(self, s3, scan_parquet, tmp_path):
+    def test_raises_when_a_t0_value_differs_in_one_period(
+        self, s3, scan_parquet, tmp_path
+    ):
         self._put_workbook(
             s3,
             tmp_path,
@@ -488,12 +491,12 @@ class TestDownloadReconciliation:
             ]
         )
 
-        with pytest.raises(job.ReconciliationMismatchError) as error:
+        with pytest.raises(job.ReconciliationMismatchError, match="T0") as error:
             self._reconcile()
 
-        assert "T0 totals" in str(error.value)
-        assert "Apr 2026" in str(error.value)
-        assert "Mar 2026" not in str(error.value)
+        assert "1 cells differ" in str(error.value)
+        assert "200" in str(error.value)
+        assert "300" in str(error.value)
 
     @pytest.mark.parametrize(
         "row",
