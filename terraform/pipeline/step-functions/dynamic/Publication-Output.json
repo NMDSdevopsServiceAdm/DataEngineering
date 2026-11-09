@@ -173,7 +173,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "_99_publication-container",
-                      "Command.$": "States.Array('_04_reconcile_output.py', '--mode', 'compare', '--assessment_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/', '--promoted_archive_source', '${archive_promoted_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/', '--run_log_destination', '${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/', '--run_number', States.Format('{}', $.run_number))"
+                      "Command.$": "States.Array('_04_reconcile_output.py', '--mode', 'compare', '--assessment_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment/', '--promoted_archive_source', '${archive_promoted_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/', '--run_log_destination', '${dataset_bucket_uri}/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/', '--output_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_03_output/', '--workbook_source', '${dataset_bucket_uri}/domain=99_publication/dataset=monthly_tracker_filled_posts_03_output_workbook/', '--run_number', States.Format('{}', $.run_number))"
                     }
                   ]
                 }

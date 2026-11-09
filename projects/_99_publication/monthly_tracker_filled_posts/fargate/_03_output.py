@@ -87,7 +87,7 @@ def main(
     written_output_lf = utils.scan_parquet(output_destination)
     logo = workbook_helpers.get_logo_bytes(logo_source)
     workbook_name = workbook_helpers.generate_workbook_name(
-        "monthly_tracker_data_download", run_source
+        output_workbook_utils.DOWNLOAD_WORKBOOK_STEM, run_source
     )
     with tempfile.TemporaryDirectory() as workbook_folder:
         workbook_path = Path(workbook_folder) / workbook_name
