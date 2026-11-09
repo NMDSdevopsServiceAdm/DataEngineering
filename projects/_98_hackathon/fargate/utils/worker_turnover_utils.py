@@ -16,6 +16,9 @@ from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as 
 from utils.column_values.ascwds_labelled_vocab import MainServiceID
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
+DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
+EARLIEST_IMPORT_DATE = date(2020, 1, 1)
+
 WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.gender,
     AWKClean.ethnicity,
@@ -138,10 +141,8 @@ def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The filtered worker data with all input columns.
     """
-    start_date = date(2020, 1, 1)
-
     return worker_lf.filter(
-        pl.col(AWKClean.ascwds_worker_import_date) >= start_date,
+        pl.col(AWKClean.ascwds_worker_import_date) >= EARLIEST_IMPORT_DATE,
         pl.col(AWKClean.location_id).is_not_null(),
         pl.col(AWKClean.employment_status_clean_labelled).is_in(
             [EmpStat.permanent, EmpStat.temporary]

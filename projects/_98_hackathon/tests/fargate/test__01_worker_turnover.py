@@ -89,7 +89,7 @@ class TestMain:
         add_establishment_active_flag_mock.assert_called_once_with(
             add_is_leaver_flag_mock.return_value,
             get_latest_save_date_per_establishment_mock.return_value,
-            job.DEFAULT_MAX_MONTHS_SINCE_SAVE,
+            job.wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
         )
         add_raw_worker_columns_mock.assert_called_once_with(
             add_establishment_active_flag_mock.return_value, raw_worker_lf_mock

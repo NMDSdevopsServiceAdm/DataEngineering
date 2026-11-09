@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a validation job for the Hackathon Worker Turnover output, run in parallel with the crawler, which checks the row count, keys, flag columns and raw worker columns.
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
 
 ### Changed

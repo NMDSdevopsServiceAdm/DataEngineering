@@ -7,15 +7,13 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
-DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
-
 
 def main(
     cleaned_ascwds_worker_source: str,
     cleaned_ascwds_workplace_source: str,
     raw_ascwds_worker_source: str,
     flagged_destination: str,
-    n_months: int = DEFAULT_MAX_MONTHS_SINCE_SAVE,
+    n_months: int = wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
 ) -> None:
     """Filters worker data, adds main service type, flags leavers and active
     establishments, and adds raw worker columns.
@@ -92,7 +90,7 @@ if __name__ == "__main__":
             "--n_months",
             "Most months since an establishment's latest save date to count as active",
             False,
-            DEFAULT_MAX_MONTHS_SINCE_SAVE,
+            wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
         ),
     )
     main(
