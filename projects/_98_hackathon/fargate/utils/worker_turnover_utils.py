@@ -173,9 +173,9 @@ def add_nationality_group(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     Values:
     - "British" for the UK code (826).
     - "EEA (non-British)" for any other EEA code, including Croatia.
-    - "Non-EEA" for any other code, including "not known" (-1), which is
-      handled in a separate ticket.
-    - null for a null or blank code.
+    - "Non-EEA" for any other code.
+    - null for a null or blank code. "Not known" (-1) is already null in the
+      raw columns.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw nationality code.
@@ -199,9 +199,9 @@ def add_country_of_birth_group(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     Values:
     - "UK" for the UK code (826).
     - "EEA (non-UK)" for any other EEA code, including Croatia.
-    - "Non-EEA" for any other code, including "not known" (-1), which is
-      handled in a separate ticket.
-    - null for a null or blank code.
+    - "Non-EEA" for any other code.
+    - null for a null or blank code. "Not known" (-1) is already null in the
+      raw columns.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw country of birth code.
