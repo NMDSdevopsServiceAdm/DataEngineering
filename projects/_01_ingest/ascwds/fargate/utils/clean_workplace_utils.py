@@ -372,6 +372,26 @@ def null_slv_job_roles_when_not_known(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf.with_columns(null_expressions)
 
 
+def create_clean_main_service_id_column(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `main_service_id_clean`: `main_service_id` filled forward then backward per establishment.
+
+    Establishments with no known value stay null.
+
+    Args:
+        lf (pl.LazyFrame): Workplace data with `main_service_id`.
+
+    Returns:
+        pl.LazyFrame: Input with `main_service_id_clean`.
+    """
+    return lf.with_columns(
+        pl.col(AWPClean.main_service_id)
+        .forward_fill()
+        .backward_fill()
+        .over(AWPClean.establishment_id, order_by=AWPClean.ascwds_workplace_import_date)
+        .alias(AWPClean.main_service_id_clean)
+    )
+
+
 def merge_legacy_job_role_columns(
     lf: pl.LazyFrame, job_role_mapping: dict[str, list[str]]
 ) -> pl.LazyFrame:

@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - The publication output job builds the data download workbook and saves it to S3.
+
+### Changed
+
+### Improved
+
+### Fixed
+
+
+## [v2026.10.0] - 09/11/2026
+
+### Added
+- Added 25 raw ASC-WDS worker columns to the Hackathon Worker Turnover job output, with start and pay dates as dates.
+- Added a cleaned main service ID (nulls filled from other import dates) to the cleaned ASC-WDS workplace data, now used by the Hackathon Worker Turnover job in place of the worker data's main service type ID.
 - Added run log runbook guidance for fixing AWS permissions errors.
 - Added an `establishment_active` flag, with months since last save at each snapshot, to the Hackathon Worker Turnover job, and carried the save date through the cleaned ASC-WDS worker data.
 - Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
@@ -87,6 +100,7 @@ All notable changes to this project will be documented in this file.
 - Cast the ASC-WDS establishment ID to `EstablishmentCatType` in the workplace and worker clean jobs, validated in both, and removed the later casts that only existed because it arrived as a string.
 - Renamed the Sub ICB areas based on the May 2026 ONS Postcode Directory.
 - Renamed the filled posts, total employed, location count and cumulative percentage change publication columns to the `<filtered/unfiltered>_<short/medium/long>_<ct/sfc>_<measure>` pattern, and prefixed the remaining filled posts and location count columns with `filtered_` or `unfiltered_`.
+- Changed the merge-when-ready GitHub Action to delete the branch and destroy its dev environment after merging.
 
 ### Improved
 - Split the assessment workbook helpers into text, values and writer modules, with no change to the workbook produced.
