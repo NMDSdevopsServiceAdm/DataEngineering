@@ -6,8 +6,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- The publication output job builds the data download workbook and saves it to S3.
 
 ### Changed
+- Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
 
 ### Improved
 
