@@ -122,7 +122,7 @@ def add_raw_worker_columns(
 
 
 def add_hours_and_hourly_pay(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `hours` and `hourly_pay`.
+    """Adds `hours` and `hourly_pay`, then drops the raw columns they come from.
 
     - `hours` is the first of contracted hours then average hours that is above
       0 (raw hours can be 0), else null.
@@ -134,7 +134,8 @@ def add_hours_and_hourly_pay(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
             contracted hours and average hours.
 
     Returns:
-        pl.LazyFrame: The input rows with all columns plus `hours` and `hourly_pay`.
+        pl.LazyFrame: The input rows with `hours` and `hourly_pay` in place of
+            the raw hourly rate, salary, contracted hours and average hours.
     """
     weeks_per_year = 52
 
@@ -156,6 +157,11 @@ def add_hours_and_hourly_pay(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.coalesce(AWKClean.hourly_rate, annual_salary_to_hourly_pay).alias(
             HackCols.hourly_pay
         )
+    ).drop(
+        AWKClean.hourly_rate,
+        AWKClean.salary,
+        AWKClean.contracted_hours,
+        AWKClean.average_hours,
     )
 
 
