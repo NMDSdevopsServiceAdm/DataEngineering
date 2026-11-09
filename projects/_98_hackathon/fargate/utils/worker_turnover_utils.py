@@ -115,6 +115,39 @@ def add_raw_worker_columns(
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
 
 
+def add_hours_and_hourly_pay(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `hours` and `hourly_pay`, calculated per row from its own snapshot.
+
+    - `hours` is contracted hours, else average hours.
+    - `hourly_pay` is the hourly rate where given, else salary / (hours * 52)
+      when hours is above 0 and below 50, else null.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the raw hourly rate, salary,
+            contracted hours and average hours.
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus `hours` and `hourly_pay`.
+    """
+    weeks_per_year = 52
+    max_hours = 50
+
+    hours = pl.col(HackCols.hours)
+
+    return worker_lf.with_columns(
+        pl.coalesce(AWKClean.contracted_hours, AWKClean.average_hours).alias(
+            HackCols.hours
+        )
+    ).with_columns(
+        pl.coalesce(
+            AWKClean.hourly_rate,
+            pl.when(hours > 0, hours < max_hours).then(
+                pl.col(AWKClean.salary) / (hours * weeks_per_year)
+            ),
+        ).alias(HackCols.hourly_pay)
+    )
+
+
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Filters worker data to the rows kept for turnover analysis.
 

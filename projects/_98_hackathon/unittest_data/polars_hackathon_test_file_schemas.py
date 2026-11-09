@@ -53,6 +53,23 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    pay_input_schema = pl.Schema(
+        [
+            (AWKClean.hourly_rate, pl.Float32()),
+            (AWKClean.salary, pl.Float32()),
+            (AWKClean.contracted_hours, pl.Float32()),
+            (AWKClean.average_hours, pl.Float32()),
+        ]
+    )
+
+    pay_output_schema = pl.Schema(
+        [
+            *pay_input_schema.items(),
+            (HackCols.hours, pl.Float32()),
+            (HackCols.hourly_pay, pl.Float32()),
+        ]
+    )
+
     latest_save_date_input_schema = pl.Schema(
         [
             (AWKClean.establishment_id, CatColType.EstablishmentCatType),
