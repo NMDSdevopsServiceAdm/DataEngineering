@@ -109,7 +109,7 @@ def add_raw_worker_columns(
     code_columns = pl.col(WORKER_CATEGORICAL_COLUMNS)
     numeric_columns = pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False)
 
-    # Codes stay text, so negatives are matched on the string, not compared as numbers.
+    # Codes stay text, so match negatives on the string.
     raw_worker_lf = raw_worker_lf.with_columns(
         pl.when(~code_columns.str.starts_with("-"))
         .then(code_columns)
