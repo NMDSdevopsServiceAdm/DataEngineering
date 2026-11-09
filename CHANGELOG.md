@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added a `_labelled` column for 10 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; codes with no label are labelled "Unmapped".
+- The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
+
+### Changed
+- Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
+
+### Improved
+
+### Fixed
+
+
+## [v2026.10.0] - 09/11/2026
+
+### Added
 - Added 25 raw ASC-WDS worker columns to the Hackathon Worker Turnover job output, with start and pay dates as dates.
 - Added a cleaned main service ID (nulls filled from other import dates) to the cleaned ASC-WDS workplace data, now used by the Hackathon Worker Turnover job in place of the worker data's main service type ID.
 - Added run log runbook guidance for fixing AWS permissions errors.
