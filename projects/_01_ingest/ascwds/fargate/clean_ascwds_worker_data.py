@@ -20,11 +20,12 @@ WORKER_SCHEMA = {
     AWKClean.main_job_role_id: pl.String,
     AWKClean.employment_status: pl.String,
     AWKClean.import_date: pl.String,
+    AWKClean.save_date: pl.String,
 }
 
 WORKPLACE_SCHEMA = {
     AWPClean.import_date: pl.String,
-    AWPClean.establishment_id: pl.String,
+    AWPClean.establishment_id: CategoricalColumnTypes.EstablishmentCatType,
 }
 
 
@@ -52,7 +53,21 @@ def main(
         worker_lf, AWKClean.import_date, AWKClean.ascwds_worker_import_date
     )
 
+    # Raw save date is dd/mm/yyyy; blank or unparseable values become null.
+    worker_lf = worker_lf.with_columns(
+        pl.col(AWKClean.save_date)
+        .str.to_date("%d/%m/%Y", strict=False)
+        .alias(AWKClean.ascwds_worker_save_date)
+    ).drop(AWKClean.save_date)
+
     worker_lf = worker_lf.filter(is_unique_worker_data())
+
+    # Cast after is_unique_worker_data, which matches on the raw string.
+    worker_lf = worker_lf.with_columns(
+        pl.col(AWKClean.establishment_id).cast(
+            CategoricalColumnTypes.EstablishmentCatType
+        )
+    )
 
     workplace_lf = utils.scan_parquet(
         cleaned_workplace_source, schema=WORKPLACE_SCHEMA

@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added 25 raw ASC-WDS worker columns to the Hackathon Worker Turnover job output, with start and pay dates as dates.
+- Added a cleaned main service ID (nulls filled from other import dates) to the cleaned ASC-WDS workplace data, now used by the Hackathon Worker Turnover job in place of the worker data's main service type ID.
+- Added run log runbook guidance for fixing AWS permissions errors.
+- Added an `establishment_active` flag, with months since last save at each snapshot, to the Hackathon Worker Turnover job, and carried the save date through the cleaned ASC-WDS worker data.
+- Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
+- Added an `is_leaver` flag to the Hackathon Worker Turnover job, true when a worker is absent from the snapshot 12 months later (null if none exists).
+- Added an `establishment_in_both_snapshots` flag to the Hackathon Worker Turnover job; `is_leaver` is null where it is false.
 - Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils.
 - Added a manually-run Hackathon Worker Turnover Step Function that filters the cleaned ASC-WDS worker data to permanent and temporary workers, keeping the earliest file in each month from January 2020, then crawls the output.
 - The assessment job fills the assessment workbook and saves it to S3.
@@ -37,10 +44,12 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Changed the Trello card drafting skill to ask open questions first, label cards by dependency tier, and start each description with /new-ticket.
 - Assessment percentage change columns are now Float64 to reduce rounding drift.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
 - Converted the CQC ratings assessment flattening to Polars.
 - Converted the CQC ratings overall-data check to Polars.
+- Converted the CQC ratings standard dataset creation and location ID hashing to Polars.
 - Converted the CQC ratings formatting steps to Polars.
 - Converted the merging of CQC ratings to Polars.
 - Changed the period label column names to `period_label_short` and `period_label_long`, so output column names change.
@@ -75,6 +84,8 @@ All notable changes to this project will be documented in this file.
 - Changed the Trello card drafting skill to start each card with a TODO and to rename "Summary" to "The problem to solve".
 - Changed the merge-when-ready GitHub Action to run from `main` rather than the labelled PR's copy of the script and workflow.
 - Cast the CQC location ID to `LocationCatType` in each ingest clean job and removed the later casts that only existed because it arrived as a string.
+- Cast the ASC-WDS establishment ID to `EstablishmentCatType` in the workplace and worker clean jobs, validated in both, and removed the later casts that only existed because it arrived as a string.
+- Renamed the Sub ICB areas based on the May 2026 ONS Postcode Directory.
 - Renamed the filled posts, total employed, location count and cumulative percentage change publication columns to the `<filtered/unfiltered>_<short/medium/long>_<ct/sfc>_<measure>` pattern, and prefixed the remaining filled posts and location count columns with `filtered_` or `unfiltered_`.
 - Changed the merge-when-ready GitHub Action to delete the branch and destroy its dev environment after merging.
 
@@ -94,6 +105,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
 - Fixed a flaky thread-count test in the run diagnostics tests.
 - Fixed ASC-WDS workplace cleaning to null all starters, leavers or vacancies job roles when the total or any role is negative or 999.
+- Fixed the CQC API delta downloads failing on short CQC outages: requests now retry for up to 30 minutes in main and about a minute in other workspaces (`CQC_API_RETRY_BUDGET_SECONDS`, set in Terraform) and the Step Function retries failed download tasks.
 
 
 ## [v2026.09.0] - 13/10/2026

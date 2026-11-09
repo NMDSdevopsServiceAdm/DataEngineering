@@ -16,7 +16,7 @@ from utils.column_values.categorical_columns_by_dataset import (
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         AWPClean.ascwds_workplace_import_date: "Date",
-        AWPClean.establishment_id: "String",
+        AWPClean.establishment_id: str(CategoricalColumnTypes.EstablishmentCatType),
         AWPClean.nmds_id: "String",
         AWPClean.master_update_date: "Date",
         AWPClean.master_update_date_org: "Date",

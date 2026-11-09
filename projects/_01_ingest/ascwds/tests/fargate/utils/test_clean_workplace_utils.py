@@ -200,6 +200,27 @@ class TestAddMasterUpdateDateOrg:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
+class TestCreateCleanMainServiceIdColumn:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.create_clean_main_service_id_column_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            schema=Schemas.create_clean_main_service_id_column_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(AWPClean.main_service_id_clean)
+
+        returned_lf = job.create_clean_main_service_id_column(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
 class TestCreatePurgeDateColumns:
     def test_function_returns_expected_values(self):
         expected_lf = pl.LazyFrame(Data.expected_create_purge_date_columns_rows)

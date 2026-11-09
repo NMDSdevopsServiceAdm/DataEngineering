@@ -153,8 +153,13 @@ def main(
         add_as_new_column=False,
     )
 
+    lf = wUtils.create_clean_main_service_id_column(lf)
+
     # Cast to Categorical/Enum here so it's saved in the output parquet file.
     lf = lf.with_columns(
+        pl.col(AWPClean.establishment_id).cast(
+            CategoricalColumnTypes.EstablishmentCatType
+        ),
         pl.col(AWPClean.location_id).cast(CategoricalColumnTypes.LocationCatType),
         pl.col(AWPClean.region_id).cast(CategoricalColumnTypes.RegionIdCatType),
         pl.col(AWPClean.establishment_type).cast(
@@ -166,6 +171,9 @@ def main(
         pl.col(AWPClean.main_service_id).cast(
             CategoricalColumnTypes.MainServiceIdCatType
         ),
+        pl.col(AWPClean.main_service_id_clean).cast(
+            CategoricalColumnTypes.MainServiceIdCatType
+        ),
         pl.col(AWPClean.la_permission).cast(CategoricalColumnTypes.LaPermissionCatType),
         pl.col(AWPClean.is_bulk_uploader).cast(
             CategoricalColumnTypes.IsBulkUploaderCatType
@@ -174,6 +182,12 @@ def main(
         pl.col(AWPClean.parent_permission).cast(
             CategoricalColumnTypes.ParentPermissionCatType
         ),
+    )
+
+    still_matching_duplicates_lf = still_matching_duplicates_lf.with_columns(
+        pl.col(AWPClean.establishment_id).cast(
+            CategoricalColumnTypes.EstablishmentCatType
+        )
     )
 
     lf = wUtils.create_purge_date_columns(lf)
@@ -206,7 +220,12 @@ def main(
     # This role has a dedicated survey, therefore ASC-WDS data is not required.
     slv_lf = slv_lf.drop(cs.starts_with("jr33"))
 
-    slv_lf = slv_lf.with_columns(pl.col(AWPClean.import_date).cast(pl.String))
+    slv_lf = slv_lf.with_columns(
+        pl.col(AWPClean.import_date).cast(pl.String),
+        pl.col(AWPClean.establishment_id).cast(
+            CategoricalColumnTypes.EstablishmentCatType
+        ),
+    )
 
     workplace_lf = workplace_lf.join(
         slv_lf, on=[AWPClean.establishment_id, AWPClean.import_date], how="left"
