@@ -272,6 +272,40 @@ class TestMain:
         assert "Renamed role" in str(error.value)
         assert "Registered nurse" in str(error.value)
 
+    def test_passes_when_a_role_has_no_posts_in_either_source(self, mocks):
+        # A role not yet in use in a period totals 0 on both sides (0 / 0 is NaN).
+        _set_sources(
+            mocks,
+            [
+                _assessment_row(IN_PERIOD, 1000.0),
+                _assessment_row(IN_PERIOD, 1000.0, job_role="Registered nurse"),
+                _assessment_row(IN_PERIOD, 0.0, job_role="Data analyst"),
+            ],
+            [
+                _archive_row(IN_PERIOD, 1000.0, job_role="Registered nurse"),
+                _archive_row(IN_PERIOD, 0.0, job_role="Data analyst"),
+            ],
+        )
+
+        _run_main(mocks)  # does not raise
+
+    def test_raises_when_a_role_has_posts_in_the_public_output_only(self, mocks):
+        _set_sources(
+            mocks,
+            [
+                _assessment_row(IN_PERIOD, 1000.0),
+                _assessment_row(IN_PERIOD, 990.0, job_role="Registered nurse"),
+                _assessment_row(IN_PERIOD, 10.0, job_role="Data analyst"),
+            ],
+            [
+                _archive_row(IN_PERIOD, 1000.0, job_role="Registered nurse"),
+                _archive_row(IN_PERIOD, 0.0, job_role="Data analyst"),
+            ],
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError, match="Data analyst"):
+            _run_main(mocks)
+
     def test_raises_when_a_role_total_is_nan(self, mocks):
         _set_sources(
             mocks,

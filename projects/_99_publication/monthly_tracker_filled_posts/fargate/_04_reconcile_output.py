@@ -272,17 +272,13 @@ def _raise_if_roles_differ(
             f"archive ({details})"
         )
 
-    # Compared as "not within" so a NaN difference fails.
-    differing_df = (
-        comparison_df.with_columns(
-            (
-                (pl.col(public_column) - pl.col(archive_column)).abs()
-                / pl.col(archive_column)
-            ).alias(RELATIVE_DIFFERENCE)
-        )
-        .filter(~(pl.col(RELATIVE_DIFFERENCE) <= RECONCILIATION_RELATIVE_TOLERANCE))
-        .sort(sort_columns)
-    )
+    # Multiplied out rather than divided, so a role with 0 posts in both sources
+    # matches (0 <= 0) instead of giving NaN. Compared as "not within" so a NaN
+    # total fails.
+    is_within_tolerance = (
+        pl.col(public_column) - pl.col(archive_column)
+    ).abs() <= RECONCILIATION_RELATIVE_TOLERANCE * pl.col(archive_column).abs()
+    differing_df = comparison_df.filter(~is_within_tolerance).sort(sort_columns)
     if not differing_df.is_empty():
         details = "; ".join(
             f"{row[IndCQC.cqc_location_import_date]} "
