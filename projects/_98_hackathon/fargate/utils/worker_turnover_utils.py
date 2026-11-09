@@ -2,6 +2,7 @@ from datetime import date
 
 import polars as pl
 
+from polars_utils.cleaning_utils import column_to_date
 from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
@@ -14,6 +15,104 @@ from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import MainServiceID
 from utils.column_values.categorical_column_values import PrimaryServiceType
+
+WORKER_CATEGORICAL_COLUMNS = [
+    AWKClean.gender,
+    AWKClean.ethnicity,
+    AWKClean.nationality,
+    AWKClean.country_of_birth,
+    AWKClean.disabled,
+    AWKClean.hourly_or_annual_pay,
+    AWKClean.social_care_qual_held,
+    AWKClean.level_social_care_qualification_held,
+    AWKClean.care_certificate_status,
+    AWKClean.apprentice,
+    AWKClean.zero_hours,
+    AWKClean.source_of_recruitment,
+]
+
+WORKER_NUMERIC_COLUMNS = [
+    AWKClean.age,
+    AWKClean.hourly_rate,
+    AWKClean.salary,
+    AWKClean.contracted_hours,
+    AWKClean.average_hours,
+    AWKClean.distance_to_work_in_miles,
+    AWKClean.start_age,
+    AWKClean.days_sick,
+    AWKClean.start_in_sector,
+    AWKClean.year_of_entry,
+]
+
+WORKER_DATE_COLUMNS = [
+    AWKClean.start_date,
+    AWKClean.pay_change_date,
+    AWKClean.pay_save_date,
+]
+
+# Explicit, because a scan infers columns from the oldest file, which lacks newer ones.
+RAW_WORKER_SCHEMA = {
+    column: pl.String
+    for column in [
+        AWKClean.establishment_id,
+        AWKClean.worker_id,
+        AWKClean.import_date,
+        *WORKER_CATEGORICAL_COLUMNS,
+        *WORKER_NUMERIC_COLUMNS,
+        *WORKER_DATE_COLUMNS,
+    ]
+}
+
+
+def add_raw_worker_columns(
+    worker_lf: pl.LazyFrame, raw_worker_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """Adds raw worker columns from the worker's own snapshot.
+
+    Left joins on establishment ID, worker ID and import date. Raw rows are cut
+    to the keys in `worker_lf` by a semi join before casting, so the full raw
+    history is never cast or joined. Values are not cleaned: code columns become
+    categorical, numeric columns `Float32` (about 7 significant digits;
+    unparseable becomes null), and date columns are parsed from `dd/mm/yyyy`
+    (blank becomes null; a value of another shape raises, but a two-digit year
+    parses literally, so `01/03/15` is year 15). Relies on unique keys, which the
+    cleaned data's validation checks.
+
+    Args:
+        worker_lf (pl.LazyFrame): Flagged worker data with establishment ID,
+            worker ID and `ascwds_worker_import_date`.
+        raw_worker_lf (pl.LazyFrame): Raw ASC-WDS worker data, all strings.
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus the raw worker columns.
+    """
+    keys = [
+        AWKClean.establishment_id,
+        AWKClean.worker_id,
+        AWKClean.ascwds_worker_import_date,
+    ]
+
+    raw_worker_lf = column_to_date(
+        raw_worker_lf.select(RAW_WORKER_SCHEMA.keys()),
+        AWKClean.import_date,
+        AWKClean.ascwds_worker_import_date,
+    ).drop(AWKClean.import_date)
+
+    raw_worker_lf = raw_worker_lf.with_columns(
+        pl.col(AWKClean.establishment_id).cast(
+            CategoricalColumnTypes.EstablishmentCatType
+        )
+    ).join(worker_lf.select(keys), on=keys, how="semi")
+
+    day_first_format = "%d/%m/%Y"
+
+    raw_worker_lf = raw_worker_lf.with_columns(
+        pl.col(WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical),
+        pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False),
+        pl.col(WORKER_DATE_COLUMNS).replace("", None).str.to_date(day_first_format),
+    )
+
+    return worker_lf.join(raw_worker_lf, on=keys, how="left")
 
 
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:

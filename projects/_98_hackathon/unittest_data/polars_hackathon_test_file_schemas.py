@@ -86,3 +86,11 @@ class WorkerTurnoverSchemas:
             (HackCols.establishment_active, pl.Boolean()),
         ]
     )
+
+    raw_worker_join_input_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+        ]
+    )

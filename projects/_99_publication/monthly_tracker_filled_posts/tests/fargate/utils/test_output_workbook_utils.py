@@ -1,3 +1,4 @@
+import copy
 import zipfile
 from datetime import date
 
@@ -475,3 +476,19 @@ class TestEnableTableFilters:
 
         assert path.read_bytes() == original
         assert [file.name for file in tmp_path.iterdir()] == ["workbook.xlsx"]
+
+
+class TestBuildDownloadWorkbookRepeatedBuilds:
+    def test_build_does_not_alter_the_shared_theme_config(self, tmp_path):
+        config_before = copy.deepcopy(job._THEME_CONFIG)
+
+        job.build_download_workbook(
+            pl.LazyFrame(
+                Data.download_workbook_publication_data,
+                PUBLICATION_SCHEMA,
+                orient="row",
+            ),
+            tmp_path / "download.xlsx",
+        )
+
+        assert job._THEME_CONFIG == config_before
