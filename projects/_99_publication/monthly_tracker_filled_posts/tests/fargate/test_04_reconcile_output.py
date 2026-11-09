@@ -10,6 +10,7 @@ from botocore.exceptions import ClientError
 from moto import mock_aws
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate._04_reconcile_output as job
+from polars_utils.column_types import CategoricalColumnTypes
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     output_workbook_utils,
 )
@@ -106,11 +107,20 @@ def mocks():
 
 
 def _set_sources(
-    mocks, assessment_rows: list[tuple], archive_rows: list[tuple]
+    mocks,
+    assessment_rows: list[tuple],
+    archive_rows: list[tuple],
+    assessment_role_type: pl.DataType = pl.String(),
+    archive_role_type: pl.DataType = pl.String(),
 ) -> None:
     """Points the mocked scan_parquet at the right fixture frame for each source."""
-    assessment_lf = pl.LazyFrame(assessment_rows, ASSESSMENT_SCHEMA, orient="row")
-    archive_lf = pl.LazyFrame(archive_rows, ARCHIVE_SCHEMA, orient="row")
+    role = pl.col(IndCQC.main_job_role_clean_labelled)
+    assessment_lf = pl.LazyFrame(
+        assessment_rows, ASSESSMENT_SCHEMA, orient="row"
+    ).with_columns(role.cast(assessment_role_type))
+    archive_lf = pl.LazyFrame(archive_rows, ARCHIVE_SCHEMA, orient="row").with_columns(
+        role.cast(archive_role_type)
+    )
     sources = {ASSESSMENT_RUN_SOURCE: assessment_lf, ARCHIVE_RUN_SOURCE: archive_lf}
     mocks.scan_parquet.side_effect = lambda source: sources[source]
 
@@ -143,7 +153,21 @@ class TestMain:
             [_archive_row(IN_PERIOD, 2000.0)],
         )
 
-        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
+        with pytest.raises(job.ReconciliationMismatchError, match="periods differ"):
+            _run_main(mocks)
+
+    def test_raises_when_only_the_national_total_differs(self, mocks):
+        # The job role rows match the archive, so only the period check can fail.
+        _set_sources(
+            mocks,
+            [
+                _assessment_row(IN_PERIOD, 2000.0),
+                _assessment_row(IN_PERIOD, 1000.0, job_role="Registered nurse"),
+            ],
+            [_archive_row(IN_PERIOD, 1000.0, job_role="Registered nurse")],
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError, match="periods differ"):
             _run_main(mocks)
 
     def test_raises_when_a_period_is_off_though_the_totals_match(self, mocks):
@@ -157,7 +181,7 @@ class TestMain:
             ],
         )
 
-        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
+        with pytest.raises(job.ReconciliationMismatchError, match="periods differ"):
             _run_main(mocks)
 
     def test_names_the_periods_that_differ(self, mocks):
@@ -208,7 +232,7 @@ class TestMain:
             ],
         )
 
-        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
+        with pytest.raises(job.ReconciliationMismatchError, match="job role totals"):
             _run_main(mocks)
 
     def test_names_the_role_and_period_that_differ(self, mocks):
@@ -252,8 +276,7 @@ class TestMain:
         with pytest.raises(job.ReconciliationMismatchError, match="only") as error:
             _run_main(mocks)
 
-        assert "Care worker" in str(error.value)
-        assert str(IN_PERIOD) in str(error.value)
+        assert f"{IN_PERIOD} Care worker (only in the archive)" in str(error.value)
 
     def test_raises_when_a_role_is_only_in_the_assessment(self, mocks):
         # A role renamed in the assessment leaves the total unchanged.
@@ -269,8 +292,8 @@ class TestMain:
         with pytest.raises(job.ReconciliationMismatchError, match="only") as error:
             _run_main(mocks)
 
-        assert "Renamed role" in str(error.value)
-        assert "Registered nurse" in str(error.value)
+        assert "Renamed role (only in the public output)" in str(error.value)
+        assert "Registered nurse (only in the archive)" in str(error.value)
 
     def test_passes_when_a_role_has_no_posts_in_either_source(self, mocks):
         # A role not yet in use in a period totals 0 on both sides (0 / 0 is NaN).
@@ -316,8 +339,62 @@ class TestMain:
             [_archive_row(IN_PERIOD, 1000.0, job_role="Registered nurse")],
         )
 
-        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
+        with pytest.raises(job.ReconciliationMismatchError, match="job role totals"):
             _run_main(mocks)
+
+    @pytest.mark.parametrize(
+        "assessment_role_type",
+        [pl.String(), CategoricalColumnTypes.JobRoleCatType],
+        ids=["assessment_string", "assessment_categorical"],
+    )
+    @pytest.mark.parametrize(
+        "archive_role_type",
+        [pl.String(), CategoricalColumnTypes.JobRoleCatType],
+        ids=["archive_string", "archive_categorical"],
+    )
+    def test_matches_roles_whatever_their_type_in_each_source(
+        self, mocks, assessment_role_type, archive_role_type
+    ):
+        _set_sources(
+            mocks,
+            _national_rows(IN_PERIOD, 1000.0),
+            [_archive_row(IN_PERIOD, 1000.0)],
+            assessment_role_type,
+            archive_role_type,
+        )
+
+        _run_main(mocks)  # does not raise
+
+    def test_raises_when_a_period_has_job_role_rows_but_no_all_job_roles_row(
+        self, mocks
+    ):
+        _set_sources(
+            mocks,
+            _national_rows(IN_PERIOD, 1000.0)
+            + [_assessment_row(OTHER_PERIOD, 1000.0, job_role="Registered nurse")],
+            [
+                _archive_row(IN_PERIOD, 1000.0),
+                _archive_row(OTHER_PERIOD, 1000.0),
+            ],
+        )
+
+        with pytest.raises(
+            job.ReconciliationMismatchError, match="no national"
+        ) as error:
+            _run_main(mocks)
+
+        assert str(OTHER_PERIOD) in str(error.value)
+
+    def test_reports_the_largest_job_role_difference(self, mocks, capsys):
+        _set_sources(
+            mocks,
+            _national_rows(IN_PERIOD, 1000.0),
+            [_archive_row(IN_PERIOD, 1000.05)],
+        )
+
+        _run_main(mocks)
+
+        assert "largest job role difference 0.0050%" in capsys.readouterr().out
 
     def test_excludes_the_all_job_roles_and_non_national_rows_from_the_role_comparison(
         self, mocks
@@ -448,7 +525,7 @@ class TestMain:
             [_archive_row(IN_PERIOD, 1000.0)],
         )
 
-        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
+        with pytest.raises(job.ReconciliationMismatchError, match="periods differ"):
             _run_main(mocks)
 
     def test_raises_when_the_assessment_has_no_national_row(self, mocks):
@@ -771,6 +848,64 @@ class TestCompareDownloadTables:
 
     def test_passes_when_the_tables_match(self):
         job.compare_download_tables(_tables(), _tables(), 2)  # does not raise
+
+
+def _role_totals(rows: list[tuple], value_column: str) -> pl.DataFrame:
+    """Period and job role totals as the comparison receives them."""
+    schema = {
+        IndCQC.cqc_location_import_date: pl.Date(),
+        IndCQC.main_job_role_clean_labelled: pl.String(),
+        value_column: pl.Float64(),
+    }
+    return pl.DataFrame(rows, schema, orient="row")
+
+
+def _raise_if_roles_differ(
+    public_posts: list[float], archive_posts: list[float]
+) -> None:
+    """Compares totals for roles named role_0, role_1 and so on in one period."""
+    roles = [f"role_{i}" for i in range(len(public_posts))]
+    job._raise_if_roles_differ(
+        _role_totals(
+            [(IN_PERIOD, role, posts) for role, posts in zip(roles, public_posts)],
+            Pub.unfiltered_filled_posts,
+        ),
+        _role_totals(
+            [(IN_PERIOD, role, posts) for role, posts in zip(roles, archive_posts)],
+            IndCQC.estimate_filled_posts_by_job_role,
+        ),
+        run_number=2,
+    )
+
+
+class TestRaiseIfRolesDiffer:
+    def test_raises_when_the_archive_total_is_nan(self):
+        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
+            _raise_if_roles_differ([1000.0], [float("nan")])
+
+    def test_raises_when_both_totals_are_nan(self):
+        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
+            _raise_if_roles_differ([float("nan")], [float("nan")])
+
+    def test_raises_when_a_role_is_just_over_tolerance(self):
+        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
+            _raise_if_roles_differ([1000.2], [1000.0])  # 0.02%
+
+    def test_passes_when_a_role_is_just_within_tolerance(self):
+        _raise_if_roles_differ([1000.09], [1000.0])  # 0.009%, does not raise
+
+    def test_names_the_largest_differences_first(self):
+        # The archive differs more with each role, so the worst roles sort last
+        # alphabetically.
+        count = job.MAX_DIFFERENCES_REPORTED + 2
+        public_posts = [1000.0] * count
+        archive_posts = [1000.0 + 10 * (i + 1) for i in range(count)]
+
+        with pytest.raises(job.ReconciliationMismatchError) as error:
+            _raise_if_roles_differ(public_posts, archive_posts)
+
+        assert f"role_{count - 1}" in str(error.value)
+        assert "role_0" not in str(error.value)
 
 
 class TestIsRunPromoted:
