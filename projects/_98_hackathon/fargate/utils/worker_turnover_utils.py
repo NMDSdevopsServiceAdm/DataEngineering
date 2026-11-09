@@ -115,23 +115,6 @@ def add_raw_worker_columns(
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
 
 
-def annual_salary_to_hourly_pay(salary: pl.Expr, weekly_hours: pl.Expr) -> pl.Expr:
-    """Converts annual salary to hourly pay over 52 weeks.
-
-    Does not guard against zero hours; the caller must exclude them.
-
-    Args:
-        salary (pl.Expr): Annual salary.
-        weekly_hours (pl.Expr): Hours worked per week, above 0 or null.
-
-    Returns:
-        pl.Expr: Hourly pay.
-    """
-    weeks_per_year = 52
-
-    return salary / (weekly_hours * weeks_per_year)
-
-
 def add_hours_and_hourly_pay(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Adds `hours` and `hourly_pay`.
 
@@ -147,21 +130,26 @@ def add_hours_and_hourly_pay(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The input rows with all columns plus `hours` and `hourly_pay`.
     """
+    weeks_per_year = 52
+
     contracted_hours = pl.col(AWKClean.contracted_hours)
     average_hours = pl.col(AWKClean.average_hours)
 
-    return worker_lf.with_columns(
+    worker_lf = worker_lf.with_columns(
         pl.coalesce(
             pl.when(contracted_hours > 0).then(contracted_hours),
             pl.when(average_hours > 0).then(average_hours),
         ).alias(HackCols.hours)
-    ).with_columns(
-        pl.coalesce(
-            AWKClean.hourly_rate,
-            annual_salary_to_hourly_pay(
-                pl.col(AWKClean.salary), pl.col(HackCols.hours)
-            ),
-        ).alias(HackCols.hourly_pay)
+    )
+
+    annual_salary_to_hourly_pay = pl.col(AWKClean.salary) / (
+        pl.col(HackCols.hours) * weeks_per_year
+    )
+
+    return worker_lf.with_columns(
+        pl.coalesce(AWKClean.hourly_rate, annual_salary_to_hourly_pay).alias(
+            HackCols.hourly_pay
+        )
     )
 
 
