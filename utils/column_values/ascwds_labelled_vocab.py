@@ -347,7 +347,6 @@ class RegionID(ColumnValues):
 class GenderID(ColumnValues):
     """The possible values of the gender column in ASCWDS worker data"""
 
-    not_recorded: str = "-1"
     male: str = "1"
     female: str = "2"
     unknown: str = "3"
@@ -358,7 +357,6 @@ class GenderID(ColumnValues):
 class GenderLabels(ColumnValues):
     """The possible labels of the gender column in ASCWDS worker data"""
 
-    not_recorded: str = "Not recorded"
     male: str = "Male"
     female: str = "Female"
     unknown: str = "Unknown"
@@ -369,7 +367,6 @@ class GenderLabels(ColumnValues):
 class EthnicityID(ColumnValues):
     """The possible values of the ethnicity column in ASCWDS worker data"""
 
-    not_recorded: str = "-1"
     english_welsh_scottish_northern_irish_british: str = "31"
     irish: str = "32"
     gypsy_or_irish_traveller: str = "33"
@@ -395,7 +392,6 @@ class EthnicityID(ColumnValues):
 class EthnicityLabels(ColumnValues):
     """The possible labels of the ethnicity column in ASCWDS worker data"""
 
-    not_recorded: str = "Not recorded"
     english_welsh_scottish_northern_irish_british: str = (
         "English / Welsh / Scottish / Northern Irish / British"
     )
@@ -425,8 +421,6 @@ class EthnicityLabels(ColumnValues):
 class DisabledID(ColumnValues):
     """The possible values of the disabled column in ASCWDS worker data"""
 
-    dont_know: str = "-2"
-    not_recorded: str = "-1"
     no: str = "0"
     yes: str = "1"
     not_disclosed: str = "2"
@@ -436,8 +430,6 @@ class DisabledID(ColumnValues):
 class DisabledLabels(ColumnValues):
     """The possible labels of the disabled column in ASCWDS worker data"""
 
-    dont_know: str = "Don't know"
-    not_recorded: str = "Not recorded"
     no: str = "No"
     yes: str = "Yes"
     not_disclosed: str = "Not disclosed"
@@ -447,7 +439,6 @@ class DisabledLabels(ColumnValues):
 class SocialCareQualHeldID(ColumnValues):
     """The possible values of the social care qualification held column in ASCWDS worker data"""
 
-    not_recorded: str = "-1"
     yes: str = "1"
     no: str = "2"
     not_known: str = "3"
@@ -457,7 +448,6 @@ class SocialCareQualHeldID(ColumnValues):
 class SocialCareQualHeldLabels(ColumnValues):
     """The possible labels of the social care qualification held column in ASCWDS worker data"""
 
-    not_recorded: str = "Not recorded"
     yes: str = "Yes"
     no: str = "No"
     not_known: str = "Not known"
@@ -467,8 +457,6 @@ class SocialCareQualHeldLabels(ColumnValues):
 class LevelSocialCareQualificationHeldID(ColumnValues):
     """The possible values of the level of social care qualification held column in ASCWDS worker data"""
 
-    not_applicable: str = "-2"
-    missing: str = "-1"
     entry: str = "0"
     level_1: str = "1"
     level_2: str = "2"
@@ -485,8 +473,6 @@ class LevelSocialCareQualificationHeldID(ColumnValues):
 class LevelSocialCareQualificationHeldLabels(ColumnValues):
     """The possible labels of the level of social care qualification held column in ASCWDS worker data"""
 
-    not_applicable: str = "N/A if no to the above"
-    missing: str = "Missing"
     entry: str = "Entry"
     level_1: str = "Level 1"
     level_2: str = "Level 2"
@@ -503,7 +489,6 @@ class LevelSocialCareQualificationHeldLabels(ColumnValues):
 class CareCertificateStatusID(ColumnValues):
     """The possible values of the care certificate status column in ASCWDS worker data"""
 
-    not_provided: str = "-1"
     completed: str = "1"
     not_started: str = "2"
     in_progress: str = "3"
@@ -513,7 +498,6 @@ class CareCertificateStatusID(ColumnValues):
 class CareCertificateStatusLabels(ColumnValues):
     """The possible labels of the care certificate status column in ASCWDS worker data"""
 
-    not_provided: str = "Not provided"
     completed: str = "Completed"
     not_started: str = "Not started"
     in_progress: str = "In progress or partially completed"
@@ -523,7 +507,6 @@ class CareCertificateStatusLabels(ColumnValues):
 class ApprenticeID(ColumnValues):
     """The possible values of the apprentice column in ASCWDS worker data"""
 
-    not_recorded: str = "-1"
     yes: str = "1"
     no: str = "2"
     not_known: str = "3"
@@ -533,7 +516,6 @@ class ApprenticeID(ColumnValues):
 class ApprenticeLabels(ColumnValues):
     """The possible labels of the apprentice column in ASCWDS worker data"""
 
-    not_recorded: str = "Not recorded"
     yes: str = "Yes"
     no: str = "No"
     not_known: str = "Not known"
@@ -543,8 +525,6 @@ class ApprenticeLabels(ColumnValues):
 class ZeroHoursID(ColumnValues):
     """The possible values of the zero hours column in ASCWDS worker data"""
 
-    not_known: str = "-2"
-    not_recorded: str = "-1"
     no: str = "0"
     yes: str = "1"
 
@@ -553,8 +533,6 @@ class ZeroHoursID(ColumnValues):
 class ZeroHoursLabels(ColumnValues):
     """The possible labels of the zero hours column in ASCWDS worker data"""
 
-    not_known: str = "Not known"
-    not_recorded: str = "Not recorded"
     no: str = "No"
     yes: str = "Yes"
 
@@ -563,7 +541,6 @@ class ZeroHoursLabels(ColumnValues):
 class SourceOfRecruitmentID(ColumnValues):
     """The possible values of the source of recruitment column in ASCWDS worker data"""
 
-    not_recorded: str = "-1"
     adult_care_local_authority: str = "210"
     adult_care_private_or_voluntary: str = "211"
     health_sector: str = "214"
@@ -581,7 +558,6 @@ class SourceOfRecruitmentID(ColumnValues):
 class SourceOfRecruitmentLabels(ColumnValues):
     """The possible labels of the source of recruitment column in ASCWDS worker data"""
 
-    not_recorded: str = "Not recorded"
     adult_care_local_authority: str = "Adult care sector: local authority"
     adult_care_private_or_voluntary: str = (
         "Adult care sector: private or voluntary sector"
