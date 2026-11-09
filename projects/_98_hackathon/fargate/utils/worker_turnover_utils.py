@@ -252,10 +252,9 @@ def add_establishment_active_flag(
 
 
 def add_turnover_rate(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `turnover_rate`, leavers divided by start headcount per establishment-month.
+    """Adds `turnover_rate`: leavers divided by start headcount per establishment-month.
 
-    The rate is repeated on every worker row of the establishment and import
-    date. Null `is_leaver` rows are not counted, so the rate is null where the
+    Repeated on every worker row of the establishment-month. Null where the
     establishment is not in both snapshots. Uses `.over()`, which the streaming
     engine does not cover, so the sink may fall back to the in-memory engine.
 
@@ -288,16 +287,16 @@ def add_valid_for_analysis_flag(
 ) -> pl.LazyFrame:
     """Adds `plausible_turnover` and `valid_for_analysis`.
 
-    `plausible_turnover` is true when the turnover rate is above 0 and below
-    `turnover_rate_limit`, and null when the rate is null. `valid_for_analysis` is
-    true only when `establishment_in_both_snapshots`, `establishment_active` and
-    `plausible_turnover` are all true, otherwise false. No rows are removed.
+    `plausible_turnover` is true when 0 < `turnover_rate` < `turnover_rate_limit`,
+    null when the rate is null. `valid_for_analysis` is true only when
+    `establishment_in_both_snapshots`, `establishment_active` and
+    `plausible_turnover` are all true, otherwise false. Keeps every row.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `turnover_rate`,
             `establishment_in_both_snapshots` and `establishment_active`.
-        turnover_rate_limit (float): Turnover rate at and above which a rate is
-            implausible. 1 marks only establishments where everyone left.
+        turnover_rate_limit (float): Rate at and above which turnover is
+            implausible.
 
     Returns:
         pl.LazyFrame: The input rows with `plausible_turnover` and
