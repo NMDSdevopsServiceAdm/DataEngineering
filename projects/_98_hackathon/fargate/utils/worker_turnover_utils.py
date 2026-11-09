@@ -122,9 +122,9 @@ def add_labelled_worker_columns(
     """Adds a categorical `<column>_labelled` column for each labelled worker column.
 
     Nationality and country of birth are not labelled. Blank and null codes give
-    a null label; any other code without a label gets "Unmapped", and the kept
-    raw column shows which code. Each mapping is collected from the small
-    `labels_lf`; the worker data stays lazy.
+    a null label; any other code without a label raises when the frame is
+    collected, as `replace_strict` has no default. Each mapping is collected
+    from the small `labels_lf`; the worker data stays lazy.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the coded columns to label.
@@ -149,22 +149,17 @@ def add_labelled_worker_columns(
         AWKClean.source_of_recruitment: HackCols.source_of_recruitment_labelled,
     }
 
-    unmapped_label = "Unmapped"
-
     labelled_expressions = []
     for column, labelled_name in labelled_names.items():
         mapping_df = labels_lf.filter(pl.col(DLC.column_name) == column).collect()
-        code = pl.col(column).cast(pl.String).replace("", None)
         labelled_expressions.append(
-            pl.when(code.is_null())
-            .then(None)
-            .otherwise(
-                code.replace_strict(
-                    old=mapping_df[DLC.code],
-                    new=mapping_df[DLC.label],
-                    default=unmapped_label,
-                    return_dtype=pl.String,
-                )
+            pl.col(column)
+            .cast(pl.String)
+            .replace("", None)
+            .replace_strict(
+                old=mapping_df[DLC.code],
+                new=mapping_df[DLC.label],
+                return_dtype=pl.String,
             )
             .cast(pl.Categorical)
             .alias(labelled_name)

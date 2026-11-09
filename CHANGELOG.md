@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 ## [v2026.10.0] - 09/11/2026
 
 ### Added
+- Added a `_labelled` column for 10 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; the job fails if a code has no label.
 - Added 25 raw ASC-WDS worker columns to the Hackathon Worker Turnover job output, with start and pay dates as dates.
 - Added a cleaned main service ID (nulls filled from other import dates) to the cleaned ASC-WDS workplace data, now used by the Hackathon Worker Turnover job in place of the worker data's main service type ID.
 - Added run log runbook guidance for fixing AWS permissions errors.

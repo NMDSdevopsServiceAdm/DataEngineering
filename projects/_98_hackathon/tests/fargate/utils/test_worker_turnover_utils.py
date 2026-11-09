@@ -489,23 +489,11 @@ class TestAddLabelledWorkerColumns:
 
         assert returned_df[HackCols.gender_labelled].to_list() == [None]
 
-    def test_returns_unmapped_label_for_unmapped_code(self):
+    def test_raises_for_unmapped_code(self):
         worker_lf = coded_worker_lf(coded_worker_row("1", **{AWKClean.gender: "99"}))
 
-        returned_df = job.add_labelled_worker_columns(
-            worker_lf, self.labels_lf
-        ).collect()
-
-        assert returned_df[HackCols.gender_labelled].to_list() == ["Unmapped"]
-
-    def test_keeps_raw_code_for_unmapped_code(self):
-        worker_lf = coded_worker_lf(coded_worker_row("1", **{AWKClean.gender: "99"}))
-
-        returned_df = job.add_labelled_worker_columns(
-            worker_lf, self.labels_lf
-        ).collect()
-
-        assert returned_df[AWKClean.gender].to_list() == ["99"]
+        with pytest.raises(pl.exceptions.InvalidOperationError):
+            job.add_labelled_worker_columns(worker_lf, self.labels_lf).collect()
 
     def test_returns_categorical_type_for_labelled_columns(self):
         worker_lf = coded_worker_lf(coded_worker_row("1", **{AWKClean.gender: "1"}))
