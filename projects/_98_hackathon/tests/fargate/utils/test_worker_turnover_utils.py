@@ -149,6 +149,17 @@ class TestAddIsLeaverFlag:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
+class TestAnnualSalaryToHourlyPay:
+    def test_divides_salary_by_hours_over_52_weeks(self):
+        lf = pl.LazyFrame({"salary": [20800.0], "hours": [40.0]})
+
+        returned_df = lf.select(
+            job.annual_salary_to_hourly_pay(pl.col("salary"), pl.col("hours"))
+        ).collect()
+
+        assert returned_df.item() == 10.0
+
+
 class TestAddHoursAndHourlyPay:
     @pytest.mark.parametrize(
         "case",

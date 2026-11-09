@@ -115,12 +115,30 @@ def add_raw_worker_columns(
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
 
 
-def add_hours_and_hourly_pay(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `hours` and `hourly_pay`, calculated per row from its own snapshot.
+def annual_salary_to_hourly_pay(salary: pl.Expr, weekly_hours: pl.Expr) -> pl.Expr:
+    """Converts annual salary to hourly pay over 52 weeks.
 
-    - `hours` is contracted hours, else average hours.
-    - `hourly_pay` is the hourly rate where given, else salary / (hours * 52)
-      when hours is above 0 and below 50, else null.
+    Does not guard against zero hours; the caller must exclude them.
+
+    Args:
+        salary (pl.Expr): Annual salary.
+        weekly_hours (pl.Expr): Hours worked per week, above 0 or null.
+
+    Returns:
+        pl.Expr: Hourly pay.
+    """
+    weeks_per_year = 52
+
+    return salary / (weekly_hours * weeks_per_year)
+
+
+def add_hours_and_hourly_pay(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `hours` and `hourly_pay`.
+
+    - `hours` is the first of contracted hours then average hours that is above
+      0 (raw hours can be 0), else null.
+    - `hourly_pay` is the hourly rate where given, else the salary converted to
+      hourly pay, null when hours is null.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw hourly rate, salary,
@@ -129,20 +147,19 @@ def add_hours_and_hourly_pay(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The input rows with all columns plus `hours` and `hourly_pay`.
     """
-    weeks_per_year = 52
-    max_hours = 50
-
-    hours = pl.col(HackCols.hours)
+    contracted_hours = pl.col(AWKClean.contracted_hours)
+    average_hours = pl.col(AWKClean.average_hours)
 
     return worker_lf.with_columns(
-        pl.coalesce(AWKClean.contracted_hours, AWKClean.average_hours).alias(
-            HackCols.hours
-        )
+        pl.coalesce(
+            pl.when(contracted_hours > 0).then(contracted_hours),
+            pl.when(average_hours > 0).then(average_hours),
+        ).alias(HackCols.hours)
     ).with_columns(
         pl.coalesce(
             AWKClean.hourly_rate,
-            pl.when(hours > 0, hours < max_hours).then(
-                pl.col(AWKClean.salary) / (hours * weeks_per_year)
+            annual_salary_to_hourly_pay(
+                pl.col(AWKClean.salary), pl.col(HackCols.hours)
             ),
         ).alias(HackCols.hourly_pay)
     )

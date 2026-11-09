@@ -89,67 +89,44 @@ class WorkerTurnoverData:
     # add (hours, hourly_pay). 20800 / (40 * 52) is exactly 10.
     add_hours_and_hourly_pay_cases = [
         AddHoursAndHourlyPayCase(
-            id="hours_is_contracted_hours_when_only_contracted_given",
-            input_rows=[(None, None, 30.0, None)],
-            expected_rows=[(None, None, 30.0, None, 30.0, None)],
-        ),
-        AddHoursAndHourlyPayCase(
-            id="hours_is_average_hours_when_only_average_given",
-            input_rows=[(None, None, None, 25.0)],
-            expected_rows=[(None, None, None, 25.0, 25.0, None)],
-        ),
-        AddHoursAndHourlyPayCase(
-            id="hours_is_null_when_neither_given",
+            id="rate_without_hours",
             input_rows=[(12.5, None, None, None)],
             expected_rows=[(12.5, None, None, None, None, 12.5)],
         ),
         AddHoursAndHourlyPayCase(
-            id="hourly_pay_is_hourly_rate_when_given",
+            id="rate_with_contracted_hours",
             input_rows=[(12.5, None, 40.0, None)],
             expected_rows=[(12.5, None, 40.0, None, 40.0, 12.5)],
         ),
         AddHoursAndHourlyPayCase(
-            id="hourly_pay_is_salary_over_annual_hours_with_contracted_hours",
+            id="salary_with_contracted_hours",
             input_rows=[(None, 20800.0, 40.0, None)],
             expected_rows=[(None, 20800.0, 40.0, None, 40.0, 10.0)],
         ),
         AddHoursAndHourlyPayCase(
-            id="hourly_pay_is_salary_over_annual_hours_with_average_hours",
-            input_rows=[(None, 20800.0, None, 40.0)],
-            expected_rows=[(None, 20800.0, None, 40.0, 40.0, 10.0)],
+            id="salary_with_average_hours",
+            input_rows=[(None, 10400.0, None, 20.0)],
+            expected_rows=[(None, 10400.0, None, 20.0, 20.0, 10.0)],
         ),
         AddHoursAndHourlyPayCase(
-            id="hourly_pay_calculated_for_hours_just_under_50",
-            input_rows=[(None, 49.5 * 52, 49.5, None)],
-            expected_rows=[(None, 49.5 * 52, 49.5, None, 49.5, 1.0)],
-        ),
-        AddHoursAndHourlyPayCase(
-            id="hourly_pay_null_for_salary_without_hours",
+            id="salary_without_hours",
             input_rows=[(None, 20800.0, None, None)],
             expected_rows=[(None, 20800.0, None, None, None, None)],
         ),
         AddHoursAndHourlyPayCase(
-            id="hourly_pay_null_for_salary_with_zero_hours",
-            input_rows=[(None, 20800.0, 0.0, None)],
-            expected_rows=[(None, 20800.0, 0.0, None, 0.0, None)],
+            id="salary_with_zero_contracted_hours_uses_average_hours",
+            input_rows=[(None, 11960.0, 0.0, 23.0)],
+            expected_rows=[(None, 11960.0, 0.0, 23.0, 23.0, 10.0)],
         ),
         AddHoursAndHourlyPayCase(
-            id="hourly_pay_null_for_salary_with_50_hours",
-            input_rows=[(None, 20800.0, 50.0, None)],
-            expected_rows=[(None, 20800.0, 50.0, None, 50.0, None)],
+            id="salary_with_zero_hours_in_both",
+            input_rows=[(None, 20800.0, 0.0, 0.0)],
+            expected_rows=[(None, 20800.0, 0.0, 0.0, None, None)],
         ),
         AddHoursAndHourlyPayCase(
-            id="hourly_pay_null_when_nothing_given",
+            id="nothing_given",
             input_rows=[(None, None, None, None)],
             expected_rows=[(None, None, None, None, None, None)],
-        ),
-        AddHoursAndHourlyPayCase(
-            id="each_row_calculated_independently",
-            input_rows=[(None, 20800.0, 40.0, None), (None, 10400.0, None, 20.0)],
-            expected_rows=[
-                (None, 20800.0, 40.0, None, 40.0, 10.0),
-                (None, 10400.0, None, 20.0, 20.0, 10.0),
-            ],
         ),
     ]
 
