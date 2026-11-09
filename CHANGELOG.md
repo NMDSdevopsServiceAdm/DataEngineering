@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, using the hourly rate or else salary over annual hours.
+
+### Changed
+
+### Improved
+
+### Fixed
+
+
+## [v2026.10.0] - 09/11/2026
+
+### Added
 - Added 25 raw ASC-WDS worker columns to the Hackathon Worker Turnover job output, with start and pay dates as dates.
 - Added a cleaned main service ID (nulls filled from other import dates) to the cleaned ASC-WDS workplace data, now used by the Hackathon Worker Turnover job in place of the worker data's main service type ID.
 - Added run log runbook guidance for fixing AWS permissions errors.
