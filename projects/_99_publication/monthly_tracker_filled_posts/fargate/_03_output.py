@@ -38,9 +38,6 @@ def main(
         workbook_destination (str): s3 directory for the data download workbook,
             named by archive_date and run_number
         logo_source (str): s3 uri of the PNG logo shown on the workbook's Frontpage
-
-    Raises:
-        ValueError: if the written publication data has no rows
     """
     run_source = merge_utils.resolve_run_sources([assessment_source], run_number)[0]
     print(f"Publishing assessed run: {run_source}")
@@ -88,13 +85,10 @@ def main(
 
     # Read back the small written output so the plan above isn't computed twice.
     written_output_lf = utils.scan_parquet(output_destination)
-    if written_output_lf.select(pl.len()).collect().item() == 0:
-        raise ValueError(
-            f"Run {run_number}: the publication data has no rows, so there is "
-            "no data download to build"
-        )
     logo = workbook_helpers.get_logo_bytes(logo_source)
-    workbook_name = output_workbook_utils.download_workbook_name(run_source)
+    workbook_name = workbook_helpers.generate_workbook_name(
+        output_workbook_utils.DOWNLOAD_WORKBOOK_STEM, run_source
+    )
     with tempfile.TemporaryDirectory() as workbook_folder:
         workbook_path = Path(workbook_folder) / workbook_name
         output_workbook_utils.build_download_workbook(

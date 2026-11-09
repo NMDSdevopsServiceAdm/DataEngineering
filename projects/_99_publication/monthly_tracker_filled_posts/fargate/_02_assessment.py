@@ -244,7 +244,7 @@ def main(
     run_assessment_lf = utils.scan_parquet(
         merge_utils.run_partition_path(assessment_destination, run_source)
     )
-    workbook_name = workbook_helpers.run_workbook_name(
+    workbook_name = workbook_helpers.generate_workbook_name(
         "monthly_tracking_summary", run_source
     )
     with tempfile.TemporaryDirectory() as workbook_folder:

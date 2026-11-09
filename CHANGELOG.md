@@ -7,6 +7,20 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
+
+### Changed
+- Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
+
+### Improved
+
+### Fixed
+
+
+## [v2026.10.0] - 09/11/2026
+
+### Added
+- Added 25 raw ASC-WDS worker columns to the Hackathon Worker Turnover job output, with start and pay dates as dates.
+- Added a cleaned main service ID (nulls filled from other import dates) to the cleaned ASC-WDS workplace data, now used by the Hackathon Worker Turnover job in place of the worker data's main service type ID.
 - Added run log runbook guidance for fixing AWS permissions errors.
 - Added an `establishment_active` flag, with months since last save at each snapshot, to the Hackathon Worker Turnover job, and carried the save date through the cleaned ASC-WDS worker data.
 - Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
@@ -43,7 +57,6 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
-- Publication output rows list England first, then regions alphabetically, with main services in their published order.
 - Changed the Trello card drafting skill to ask open questions first, label cards by dependency tier, and start each description with /new-ticket.
 - Assessment percentage change columns are now Float64 to reduce rounding drift.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
@@ -87,6 +100,7 @@ All notable changes to this project will be documented in this file.
 - Cast the ASC-WDS establishment ID to `EstablishmentCatType` in the workplace and worker clean jobs, validated in both, and removed the later casts that only existed because it arrived as a string.
 - Renamed the Sub ICB areas based on the May 2026 ONS Postcode Directory.
 - Renamed the filled posts, total employed, location count and cumulative percentage change publication columns to the `<filtered/unfiltered>_<short/medium/long>_<ct/sfc>_<measure>` pattern, and prefixed the remaining filled posts and location count columns with `filtered_` or `unfiltered_`.
+- Changed the merge-when-ready GitHub Action to delete the branch and destroy its dev environment after merging.
 
 ### Improved
 - Split the assessment workbook helpers into text, values and writer modules, with no change to the workbook produced.

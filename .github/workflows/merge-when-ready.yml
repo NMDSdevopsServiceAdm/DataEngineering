@@ -16,6 +16,7 @@ on:
         default: true
 
 permissions:
+  actions: write  # dispatch delete-development-environments after a merge
   contents: write
   pull-requests: write
   checks: read

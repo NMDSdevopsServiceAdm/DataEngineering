@@ -15,7 +15,6 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.publica
     percentage_as_rounded_fraction,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_helpers import (
-    run_workbook_name,
     set_column_widths,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_workbook_pages import (
@@ -55,6 +54,7 @@ _THEME_CONFIG: dict = {
 _TABLE_ROW_INDEX: int = 4  # blank row between the sheet description and header
 _TABLE_INSTRUCTIONS = "This sheet contains 1 table."
 _TABLE_COLUMN_WIDTHS: list[int] = [18, 18, 29, 36, 36]
+DOWNLOAD_WORKBOOK_STEM: str = "monthly_tracker_data_download"
 TABLE_NAMES: dict[str, str] = {
     "T0": "t0_filled_posts",
     "T1": "t1_filled_posts_perc_change",
@@ -62,19 +62,6 @@ TABLE_NAMES: dict[str, str] = {
 }
 _COUNT_FORMAT = {"num_format": "#,##0", "align": "right"}
 _PERCENTAGE_FORMAT = {"num_format": "0.0%", "align": "right"}
-
-
-def download_workbook_name(run_source: str) -> str:
-    """
-    Names the data download workbook after its run.
-
-    Args:
-        run_source (str): S3 directory of the run.
-
-    Returns:
-        str: the workbook's file name.
-    """
-    return run_workbook_name("monthly_tracker_data_download", run_source)
 
 
 def get_publication_date(latest_import_date: date) -> date:

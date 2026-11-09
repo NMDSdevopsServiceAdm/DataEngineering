@@ -154,23 +154,19 @@ def get_publication_crawler_exclusions() -> list[str]:
 
 class TestPublicationCrawlerExclusions:
     """
-    Guards against the publication crawler cataloguing the assessment workbooks,
-    which are .xlsx files written under the crawled publication domain.
+    Guards against the publication crawler cataloguing the assessment and data
+    download workbooks, which are .xlsx files written under the crawled
+    publication domain.
     """
 
-    def test_crawler_excludes_the_assessment_workbook_folder(self):
+    @pytest.mark.parametrize(
+        "step_function_filename",
+        ["Publication-Assessment.json", "Publication-Output.json"],
+        ids=["assessment_workbook", "data_download_workbook"],
+    )
+    def test_crawler_excludes_the_workbook_folder(self, step_function_filename):
         [workbook_path] = set(
-            get_command_paths("Publication-Assessment.json", "--workbook_destination")
-        )
-        workbook_folder = workbook_path.removeprefix(PUBLICATION_DOMAIN_PREFIX)
-
-        assert (
-            f"{workbook_folder.rstrip('/')}/**" in get_publication_crawler_exclusions()
-        )
-
-    def test_crawler_excludes_the_output_workbook_folder(self):
-        [workbook_path] = set(
-            get_command_paths("Publication-Output.json", "--workbook_destination")
+            get_command_paths(step_function_filename, "--workbook_destination")
         )
         workbook_folder = workbook_path.removeprefix(PUBLICATION_DOMAIN_PREFIX)
 

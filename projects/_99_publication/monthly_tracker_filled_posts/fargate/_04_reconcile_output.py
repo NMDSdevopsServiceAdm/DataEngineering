@@ -223,7 +223,9 @@ def reconcile_download(
             by its archive_date and run_number
     """
     run_number = merge_utils.run_number_from_source(run_source)
-    workbook_name = output_workbook_utils.download_workbook_name(run_source)
+    workbook_name = workbook_helpers.generate_workbook_name(
+        output_workbook_utils.DOWNLOAD_WORKBOOK_STEM, run_source
+    )
     prepared_tables = {
         sheet: [tuple(table.columns)] + [tuple(row) for row in table.values.tolist()]
         for sheet, table in output_workbook_utils.prepare_download_tables(

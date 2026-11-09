@@ -153,6 +153,8 @@ def main(
         add_as_new_column=False,
     )
 
+    lf = wUtils.create_clean_main_service_id_column(lf)
+
     # Cast to Categorical/Enum here so it's saved in the output parquet file.
     lf = lf.with_columns(
         pl.col(AWPClean.establishment_id).cast(
@@ -167,6 +169,9 @@ def main(
             CategoricalColumnTypes.RegistrationTypeCatType
         ),
         pl.col(AWPClean.main_service_id).cast(
+            CategoricalColumnTypes.MainServiceIdCatType
+        ),
+        pl.col(AWPClean.main_service_id_clean).cast(
             CategoricalColumnTypes.MainServiceIdCatType
         ),
         pl.col(AWPClean.la_permission).cast(CategoricalColumnTypes.LaPermissionCatType),

@@ -9,9 +9,9 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
 from utils.file_utils import split_s3_uri
 
 
-def run_workbook_name(stem: str, run_source: str) -> str:
+def generate_workbook_name(stem: str, run_source: str) -> str:
     """
-    Names a workbook after its run.
+    Generates a name for a .xlsx workbook by combining the given stem and run_source.
 
     Args:
         stem (str): what the workbook is, as the start of the file name.
