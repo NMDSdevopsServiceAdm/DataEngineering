@@ -135,11 +135,11 @@ def _group_country_code(
     uk_label: str,
     non_eea_label: str,
 ) -> pl.LazyFrame:
-    """Adds a categorical group column built from a country code column.
+    """Adds a categorical group column from an ISO 3166-1 numeric country code.
 
-    Codes are ISO 3166-1 numeric, held as strings. The UK code gives
-    `uk_label`, a code in `EEA_COUNTRY_CODES` gives `eea_label`, and any other
-    code gives `non_eea_label`. A null or blank code gives null.
+    The UK code gives `uk_label`, a code in `EEA_COUNTRY_CODES` gives
+    `eea_label` and any other code gives `non_eea_label`. A null or blank code
+    gives null.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the code column.
@@ -168,14 +168,13 @@ def _group_country_code(
 
 
 def add_nationality_group(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `nationality_group`, a three-way grouping of the nationality code.
+    """Adds `nationality_group` from the nationality code.
 
     Values:
     - "British" for the UK code (826).
-    - "EEA (non-British)" for any other EEA code, including Croatia.
+    - "EEA (non-British)" for any other EEA code.
     - "Non-EEA" for any other code.
-    - null for a null or blank code. "Not known" (-1) is already null in the
-      raw columns.
+    - null for a null or blank code.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw nationality code.
@@ -194,14 +193,13 @@ def add_nationality_group(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def add_country_of_birth_group(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `country_of_birth_group`, a three-way grouping of the country of birth code.
+    """Adds `country_of_birth_group` from the country of birth code.
 
     Values:
     - "UK" for the UK code (826).
-    - "EEA (non-UK)" for any other EEA code, including Croatia.
+    - "EEA (non-UK)" for any other EEA code.
     - "Non-EEA" for any other code.
-    - null for a null or blank code. "Not known" (-1) is already null in the
-      raw columns.
+    - null for a null or blank code.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw country of birth code.

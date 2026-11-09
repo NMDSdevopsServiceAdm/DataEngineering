@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
-- Added `nationality_group` and `country_of_birth_group` to the Hackathon Worker Turnover job output, grouping the raw codes into British or UK, EEA (including Croatia) and Non-EEA.
+- Added nationality and country of birth groups (British or UK, EEA, Non-EEA) to the Hackathon Worker Turnover job output.
 
 ### Changed
 - Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.

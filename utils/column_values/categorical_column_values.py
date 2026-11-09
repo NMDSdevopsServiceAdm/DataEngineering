@@ -202,8 +202,8 @@ class JobGroupLabels(ColumnValues):
     other: str = "Other"
 
 
-# ISO 3166-1 numeric codes, as held in the ASC-WDS nationality and country of
-# birth columns. This is the SPSS EEA list plus Croatia (191), which it omits.
+# ISO 3166-1 numeric codes of the EEA countries (EU, Iceland, Liechtenstein and
+# Norway), as held in the ASC-WDS nationality and country of birth columns.
 EEA_COUNTRY_CODES: list[str] = [
     "40",  # Austria
     "56",  # Belgium
