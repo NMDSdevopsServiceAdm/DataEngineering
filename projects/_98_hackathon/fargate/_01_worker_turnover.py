@@ -1,3 +1,5 @@
+import polars as pl
+
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import cleaning_utils as cUtils
 from polars_utils import utils
@@ -7,13 +9,13 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_values.ascwds_labelled_vocab import (
     APPRENTICE,
     CARE_CERTIFICATE_STATUS,
     DISABLED,
     ETHNICITY,
     GENDER,
-    HOURLY_OR_ANNUAL_PAY,
     LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
     SOCIAL_CARE_QUAL_HELD,
     SOURCE_OF_RECRUITMENT,
@@ -80,23 +82,29 @@ def main(
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
 
-    labels_lf = cUtils.build_labels_lf(
-        {
-            AWKClean.gender: GENDER.code_to_label(),
-            AWKClean.ethnicity: ETHNICITY.code_to_label(),
-            AWKClean.disabled: DISABLED.code_to_label(),
-            AWKClean.hourly_or_annual_pay: HOURLY_OR_ANNUAL_PAY.code_to_label(),
-            AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD.code_to_label(),
-            AWKClean.level_social_care_qualification_held: (
-                LEVEL_SOCIAL_CARE_QUALIFICATION_HELD.code_to_label()
-            ),
-            AWKClean.care_certificate_status: CARE_CERTIFICATE_STATUS.code_to_label(),
-            AWKClean.apprentice: APPRENTICE.code_to_label(),
-            AWKClean.zero_hours: ZERO_HOURS.code_to_label(),
-            AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT.code_to_label(),
-        }
+    worker_labels = {
+        AWKClean.gender: GENDER.code_to_label(),
+        AWKClean.ethnicity: ETHNICITY.code_to_label(),
+        AWKClean.disabled: DISABLED.code_to_label(),
+        AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD.code_to_label(),
+        AWKClean.level_social_care_qualification_held: (
+            LEVEL_SOCIAL_CARE_QUALIFICATION_HELD.code_to_label()
+        ),
+        AWKClean.care_certificate_status: CARE_CERTIFICATE_STATUS.code_to_label(),
+        AWKClean.apprentice: APPRENTICE.code_to_label(),
+        AWKClean.zero_hours: ZERO_HOURS.code_to_label(),
+        AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT.code_to_label(),
+    }
+    labels_lf = cUtils.build_labels_lf(worker_labels)
+    filtered_lf = cUtils.apply_categorical_labels(
+        filtered_lf, labels_lf, list(worker_labels), add_as_new_column=True
     )
-    filtered_lf = wUtils.add_labelled_worker_columns(filtered_lf, labels_lf)
+
+    # Unmapped codes keep their raw code in the label column; blanks become null.
+    label_columns = [f"{column}_{DLC.label}s" for column in worker_labels]
+    filtered_lf = filtered_lf.with_columns(
+        pl.col(label_columns).replace("", None).cast(pl.Categorical)
+    )
 
     utils.sink_to_parquet(filtered_lf, output_path=flagged_destination)
 

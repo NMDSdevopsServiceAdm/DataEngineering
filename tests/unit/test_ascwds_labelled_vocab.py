@@ -10,7 +10,6 @@ from utils.column_values.ascwds_labelled_vocab import (
     ESTABLISHMENT_TYPE_CODE_TO_LABEL,
     ETHNICITY,
     GENDER,
-    HOURLY_OR_ANNUAL_PAY,
     IS_PARENT_CODE_TO_LABEL,
     LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
     MAIN_JOB_ROLE,
@@ -253,7 +252,6 @@ worker_paired_vocabs = {
     "gender": GENDER,
     "ethnicity": ETHNICITY,
     "disabled": DISABLED,
-    "hourly_or_annual_pay": HOURLY_OR_ANNUAL_PAY,
     "social_care_qual_held": SOCIAL_CARE_QUAL_HELD,
     "level_social_care_qualification_held": LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
     "care_certificate_status": CARE_CERTIFICATE_STATUS,
@@ -298,17 +296,6 @@ worker_code_to_label_test_cases = [
             "0": "No",
             "1": "Yes",
             "2": "Not disclosed",
-        },
-    ),
-    WorkerCodeToLabelTestCase(
-        id="hourly_or_annual_pay",
-        code_to_label=HOURLY_OR_ANNUAL_PAY.code_to_label(),
-        expected_code_count=4,
-        expected_pairs={
-            "-2": "Not known",
-            "-1": "Not recorded",
-            "250": "Annual",
-            "252": "Hourly",
         },
     ),
     WorkerCodeToLabelTestCase(

@@ -9,7 +9,7 @@ Retires several duplicate mechanisms:
   region_id code->label dict, used only by reconciliation.py)
 
 main_job_role, employment_status and the hackathon worker columns (gender,
-ethnicity, disabled, hourly_or_annual_pay, social_care_qual_held,
+ethnicity, disabled, social_care_qual_held,
 level_social_care_qualification_held, care_certificate_status, apprentice,
 zero_hours, source_of_recruitment) have both a code-side and a label-side
 ColumnValues class; PairedVocab derives their {code: label} mapping by shared
@@ -444,26 +444,6 @@ class DisabledLabels(ColumnValues):
 
 
 @dataclass
-class HourlyOrAnnualPayID(ColumnValues):
-    """The possible values of the hourly or annual pay column in ASCWDS worker data"""
-
-    not_known: str = "-2"
-    not_recorded: str = "-1"
-    annual: str = "250"
-    hourly: str = "252"
-
-
-@dataclass
-class HourlyOrAnnualPayLabels(ColumnValues):
-    """The possible labels of the hourly or annual pay column in ASCWDS worker data"""
-
-    not_known: str = "Not known"
-    not_recorded: str = "Not recorded"
-    annual: str = "Annual"
-    hourly: str = "Hourly"
-
-
-@dataclass
 class SocialCareQualHeldID(ColumnValues):
     """The possible values of the social care qualification held column in ASCWDS worker data"""
 
@@ -681,7 +661,6 @@ EMPLOYMENT_STATUS = PairedVocab(EmploymentStatusID, EmploymentStatusLabels)
 GENDER = PairedVocab(GenderID, GenderLabels)
 ETHNICITY = PairedVocab(EthnicityID, EthnicityLabels)
 DISABLED = PairedVocab(DisabledID, DisabledLabels)
-HOURLY_OR_ANNUAL_PAY = PairedVocab(HourlyOrAnnualPayID, HourlyOrAnnualPayLabels)
 SOCIAL_CARE_QUAL_HELD = PairedVocab(SocialCareQualHeldID, SocialCareQualHeldLabels)
 LEVEL_SOCIAL_CARE_QUALIFICATION_HELD = PairedVocab(
     LevelSocialCareQualificationHeldID, LevelSocialCareQualificationHeldLabels

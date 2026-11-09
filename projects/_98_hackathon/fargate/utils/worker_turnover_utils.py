@@ -11,7 +11,6 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import MainServiceID
@@ -114,58 +113,6 @@ def add_raw_worker_columns(
     )
 
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
-
-
-def add_labelled_worker_columns(
-    worker_lf: pl.LazyFrame, labels_lf: pl.LazyFrame
-) -> pl.LazyFrame:
-    """Adds a categorical `<column>_labelled` column for each labelled worker column.
-
-    Nationality and country of birth are not labelled. Blank and null codes give
-    a null label; any other code without a label raises when the frame is
-    collected, as `replace_strict` has no default. Each mapping is collected
-    from the small `labels_lf`; the worker data stays lazy.
-
-    Args:
-        worker_lf (pl.LazyFrame): Worker data with the coded columns to label.
-        labels_lf (pl.LazyFrame): Code to label mappings for the labelled
-            columns, from `build_labels_lf`.
-
-    Returns:
-        pl.LazyFrame: The input rows with all columns plus the labelled columns.
-    """
-    labelled_names = {
-        AWKClean.gender: HackCols.gender_labelled,
-        AWKClean.ethnicity: HackCols.ethnicity_labelled,
-        AWKClean.disabled: HackCols.disabled_labelled,
-        AWKClean.hourly_or_annual_pay: HackCols.hourly_or_annual_pay_labelled,
-        AWKClean.social_care_qual_held: HackCols.social_care_qual_held_labelled,
-        AWKClean.level_social_care_qualification_held: (
-            HackCols.level_social_care_qualification_held_labelled
-        ),
-        AWKClean.care_certificate_status: HackCols.care_certificate_status_labelled,
-        AWKClean.apprentice: HackCols.apprentice_labelled,
-        AWKClean.zero_hours: HackCols.zero_hours_labelled,
-        AWKClean.source_of_recruitment: HackCols.source_of_recruitment_labelled,
-    }
-
-    labelled_expressions = []
-    for column, labelled_name in labelled_names.items():
-        mapping_df = labels_lf.filter(pl.col(DLC.column_name) == column).collect()
-        labelled_expressions.append(
-            pl.col(column)
-            .cast(pl.String)
-            .replace("", None)
-            .replace_strict(
-                old=mapping_df[DLC.code],
-                new=mapping_df[DLC.label],
-                return_dtype=pl.String,
-            )
-            .cast(pl.Categorical)
-            .alias(labelled_name)
-        )
-
-    return worker_lf.with_columns(labelled_expressions)
 
 
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:

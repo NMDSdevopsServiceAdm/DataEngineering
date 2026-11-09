@@ -10,46 +10,11 @@ from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_values.ascwds_labelled_vocab import (
-    APPRENTICE,
-    CARE_CERTIFICATE_STATUS,
-    DISABLED,
-    ETHNICITY,
-    GENDER,
-    HOURLY_OR_ANNUAL_PAY,
-    LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
-    SOCIAL_CARE_QUAL_HELD,
-    SOURCE_OF_RECRUITMENT,
-    ZERO_HOURS,
-)
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import MainServiceID
 
 START = date(2021, 1, 5)
 END = date(2022, 1, 5)  # 12 months after START
-
-WORKER_LABELS_DICT = {
-    AWKClean.gender: GENDER.code_to_label(),
-    AWKClean.ethnicity: ETHNICITY.code_to_label(),
-    AWKClean.disabled: DISABLED.code_to_label(),
-    AWKClean.hourly_or_annual_pay: HOURLY_OR_ANNUAL_PAY.code_to_label(),
-    AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD.code_to_label(),
-    AWKClean.level_social_care_qualification_held: (
-        LEVEL_SOCIAL_CARE_QUALIFICATION_HELD.code_to_label()
-    ),
-    AWKClean.care_certificate_status: CARE_CERTIFICATE_STATUS.code_to_label(),
-    AWKClean.apprentice: APPRENTICE.code_to_label(),
-    AWKClean.zero_hours: ZERO_HOURS.code_to_label(),
-    AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT.code_to_label(),
-}
-
-
-def coded_worker_row(worker_id: str, **codes: str) -> tuple[str | None, ...]:
-    """Returns a (worker_id, *coded columns) row with every code null unless set."""
-    return (
-        worker_id,
-        *[codes.get(column) for column in WORKER_CATEGORICAL_COLUMNS],
-    )
 
 
 def raw_worker_row(
