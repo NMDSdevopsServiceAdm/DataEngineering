@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-- Replaced negative (not known/recorded) values in the raw worker columns of the Hackathon Worker Turnover job with null.
+- Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.
 
 ### Improved
 
