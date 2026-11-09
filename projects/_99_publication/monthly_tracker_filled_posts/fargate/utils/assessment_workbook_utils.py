@@ -3,7 +3,6 @@
 from copy import copy
 from pathlib import Path
 
-import boto3
 import openpyxl
 import polars as pl
 from openpyxl.utils.cell import coordinate_to_tuple
@@ -22,7 +21,6 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.assessm
     sheet_text,
 )
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.file_utils import split_s3_uri
 
 
 class TemplateMismatchError(ValueError):
@@ -226,15 +224,3 @@ def fill_assessment_workbook_from_lf(
     fill_assessment_workbook(
         period_labels, term_from_dates, run_number, values, template_path, output_path
     )
-
-
-def upload_to_s3(local_path: Path, s3_directory: str) -> None:
-    """Uploads a local file into an S3 directory, keeping its file name.
-
-    Args:
-        local_path (Path): file to upload.
-        s3_directory (str): S3 directory to put the file in.
-    """
-    bucket, prefix = split_s3_uri(s3_directory)
-    key = f"{prefix.rstrip('/')}/{local_path.name}"
-    boto3.client("s3").upload_file(str(local_path), bucket, key)
