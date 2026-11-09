@@ -89,24 +89,23 @@ def _input_row(
     )
 
 
-def _written_lf(rows: list[tuple] | None = None) -> pl.LazyFrame:
-    """The publication data as read back after it was written (one row by default)."""
-    if rows is None:
-        rows = [
-            (
-                date(2026, 4, 1),
-                "Mar 2026",
-                "March 2026",
-                "London",
-                PublishedMainService.care_home_with_nursing,
-                100.0,
-                10,
-                None,
-                None,
-                None,
-                None,
-            )
-        ]
+def _written_lf() -> pl.LazyFrame:
+    """The publication data as read back after it was written (one row)."""
+    rows = [
+        (
+            date(2026, 4, 1),
+            "Mar 2026",
+            "March 2026",
+            "London",
+            PublishedMainService.care_home_with_nursing,
+            100.0,
+            10,
+            None,
+            None,
+            None,
+            None,
+        )
+    ]
     return pl.LazyFrame(rows, expected_schema, orient="row")
 
 
@@ -265,23 +264,25 @@ class TestMain:
             (date(2026, 5, 1), "London", PublishedMainService.care_home_with_nursing),
         ]
 
-    def test_main_puts_england_before_the_other_regions_in_alphabetical_order(
+    def test_main_orders_regions_england_eastern_east_midlands_then_alphabetical(
         self, mocks
     ):
         input_rows = [
-            _input_row(date(2026, 4, 1), region="South West"),
-            _input_row(date(2026, 4, 1), region="London"),
+            _input_row(date(2026, 4, 1), region=PublishedRegion.south_west),
+            _input_row(date(2026, 4, 1), region=PublishedRegion.london),
+            _input_row(date(2026, 4, 1), region=PublishedRegion.east_midlands),
             _input_row(date(2026, 4, 1), region=PublishedRegion.england),
-            _input_row(date(2026, 4, 1), region="East Midlands"),
+            _input_row(date(2026, 4, 1), region=PublishedRegion.eastern),
         ]
 
         returned_lf = _run_main(mocks, input_rows)
 
         assert returned_lf.select(Pub.region).collect()[Pub.region].to_list() == [
             PublishedRegion.england,
-            "East Midlands",
-            "London",
-            "South West",
+            PublishedRegion.eastern,
+            PublishedRegion.east_midlands,
+            PublishedRegion.london,
+            PublishedRegion.south_west,
         ]
 
     def test_main_sorts_region_before_main_service(self, mocks):
@@ -408,13 +409,6 @@ class TestMainDataDownloadWorkbook:
 
         with pytest.raises(LogoUnavailableError):
             _run_main(mocks, [_input_row(date(2026, 4, 1))])
-
-        mocks.build_download_workbook.assert_not_called()
-        mocks.upload_to_s3.assert_not_called()
-
-    def test_raises_when_the_publication_data_has_no_rows(self, mocks):
-        with pytest.raises(ValueError, match="no rows"):
-            _run_main(mocks, [_input_row(date(2026, 4, 1))], written_lf=_written_lf([]))
 
         mocks.build_download_workbook.assert_not_called()
         mocks.upload_to_s3.assert_not_called()

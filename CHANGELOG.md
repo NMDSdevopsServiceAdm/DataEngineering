@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - The publication output job builds the data download workbook and saves it to S3.
 
 ### Changed
+- Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
 
 ### Improved
 
@@ -56,7 +57,6 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
-- Publication output rows list England first, then regions alphabetically, with main services in their published order.
 - Changed the Trello card drafting skill to ask open questions first, label cards by dependency tier, and start each description with /new-ticket.
 - Assessment percentage change columns are now Float64 to reduce rounding drift.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.

@@ -16,12 +16,27 @@ from utils.column_values.categorical_column_values import (
 _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 
-# Period, then region (England first, the rest alphabetical), then main service
-# in its published order. An unlisted main service fails the cast.
+# Period, then region (England, Eastern and East Midlands first, the rest
+# alphabetical), then main service in its published order. An unlisted region
+# or main service fails the cast.
 DOWNLOAD_TABLE_SORT_KEYS: list[pl.Expr] = [
     pl.col(Pub.period),
-    pl.col(Pub.region) != PublishedRegion.england,
-    pl.col(Pub.region),
+    pl.col(Pub.region).cast(
+        pl.Enum(
+            [
+                PublishedRegion.england,
+                PublishedRegion.eastern,
+                PublishedRegion.east_midlands,
+                PublishedRegion.london,
+                PublishedRegion.north_east,
+                PublishedRegion.north_west,
+                PublishedRegion.south_east,
+                PublishedRegion.south_west,
+                PublishedRegion.west_midlands,
+                PublishedRegion.yorkshire_and_the_humber,
+            ]
+        )
+    ),
     pl.col(Pub.main_service).cast(
         pl.Enum(
             [

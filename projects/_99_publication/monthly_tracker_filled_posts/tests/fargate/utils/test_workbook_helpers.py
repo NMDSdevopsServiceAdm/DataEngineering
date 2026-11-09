@@ -46,12 +46,12 @@ class TestUploadToS3:
         assert body.read() == b"workbook bytes"
 
 
-class TestRunWorkbookName:
+class TestGenerateWorkbookName:
     def test_names_the_workbook_by_stem_archive_date_and_run_number(self):
         run_source = "some/dir/archive_date=2026-10-01/run_number=2/"
 
         assert (
-            job.run_workbook_name("some_stem", run_source)
+            job.generate_workbook_name("some_stem", run_source)
             == "some_stem_2026-10-01_2.xlsx"
         )
 
