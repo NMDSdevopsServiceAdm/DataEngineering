@@ -232,8 +232,29 @@ class TestCompPrevPublicationValues:
         assert march_cells == pytest.approx(march_values)
         assert cells[f"D{first_row + 3}"] == pytest.approx(april_value)
 
-    def test_values_are_spread_across_service_type_columns(self, cells):
-        assert [cells[f"{col}23"] for col in "DEFGH"] == pytest.approx([0.5] * 5)
+    @pytest.mark.parametrize("row, expected", [(23, 0.5), (26, 2.4)])
+    def test_values_are_spread_across_service_type_columns(self, cells, row, expected):
+        assert [cells[f"{col}{row}"] for col in "DEFGH"] == pytest.approx(
+            [expected] * 5
+        )
+
+    def test_later_rows_after_the_first_each_read_cumulative_columns_in_order(self):
+        import_dates = [*IMPORT_DATES, datetime.date(2026, 6, 1)]
+        df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
+
+        cells = job.comp_prev_publication_values(df)
+
+        assert [cells[f"D{row}"] for row in (26, 27)] == pytest.approx([2.4, 3.0])
+
+    def test_all_rows_read_april_columns_when_there_are_no_later_rows(self):
+        df = job.prepare_assessment_df(_assessment_lf(IMPORT_DATES[:3]), VALUE_COLUMNS)
+
+        cells = job.comp_prev_publication_values(df)
+
+        assert [cells[f"D{row}"] for row in (23, 24, 25)] == pytest.approx(
+            [0.5, 1.0, 1.5]
+        )
+        assert "D26" not in cells
 
     def test_raises_when_periods_exceed_the_block_rows(self):
         april_dates = [datetime.date(1990 + year, 4, 1) for year in range(38)]
