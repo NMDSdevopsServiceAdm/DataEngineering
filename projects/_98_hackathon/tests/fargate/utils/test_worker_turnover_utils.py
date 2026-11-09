@@ -381,7 +381,7 @@ class TestAddRawWorkerColumns:
             pytest.param(AWKClean.days_sick, ".5", 0.5, id="no_leading_digit"),
             pytest.param(AWKClean.days_sick, " ", None, id="blank_days"),
             pytest.param(AWKClean.start_in_sector, "2015", 2015.0, id="year"),
-            pytest.param(AWKClean.year_of_entry, "-1", -1.0, id="not_known_code_kept"),
+            pytest.param(AWKClean.days_sick, "0", 0.0, id="zero_kept"),
         ],
     )
     def test_returns_expected_number_for_numeric_string(
@@ -392,6 +392,32 @@ class TestAddRawWorkerColumns:
         returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
 
         assert returned_df[column].to_list() == [expected_number]
+
+    @pytest.mark.parametrize("raw_value", ["-1", "-8", "-2.5"])
+    @pytest.mark.parametrize("column", job.WORKER_NUMERIC_COLUMNS)
+    def test_returns_null_for_negative_numeric_value(self, column, raw_value):
+        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105", **{column: raw_value}))
+
+        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
+
+        assert returned_df[column].to_list() == [None]
+
+    @pytest.mark.parametrize("raw_value", ["-1", "-8"])
+    @pytest.mark.parametrize("column", job.WORKER_CATEGORICAL_COLUMNS)
+    def test_returns_null_for_negative_code_value(self, column, raw_value):
+        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105", **{column: raw_value}))
+
+        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
+
+        assert returned_df[column].to_list() == [None]
+
+    @pytest.mark.parametrize("column", job.WORKER_CATEGORICAL_COLUMNS)
+    def test_keeps_non_negative_code_value(self, column):
+        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105", **{column: "1"}))
+
+        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
+
+        assert returned_df[column].to_list() == ["1"]
 
     def test_returns_null_for_unparseable_numeric_value(self):
         raw_lf = raw_worker_lf(

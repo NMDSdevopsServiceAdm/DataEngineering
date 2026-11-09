@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added `nationality_group` and `country_of_birth_group` to the Hackathon Worker Turnover job output, grouping the raw codes into British or UK, EEA (including Croatia) and Non-EEA.
 
 ### Changed
+- Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.
 - Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
 
 ### Improved
