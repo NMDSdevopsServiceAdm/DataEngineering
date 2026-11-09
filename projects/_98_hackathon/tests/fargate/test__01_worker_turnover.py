@@ -104,14 +104,8 @@ class TestMain:
         add_raw_worker_columns_mock.assert_called_once_with(
             add_valid_for_analysis_flag_mock.return_value, raw_worker_lf_mock
         )
-        add_raw_worker_columns_mock.return_value.drop.assert_called_once_with(
-            job.AWKClean.hourly_rate,
-            job.AWKClean.salary,
-            job.AWKClean.contracted_hours,
-            job.AWKClean.average_hours,
-        )
         sink_to_parquet_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value.drop.return_value,
+            add_raw_worker_columns_mock.return_value,
             output_path=self.FLAGGED_DESTINATION,
         )
 

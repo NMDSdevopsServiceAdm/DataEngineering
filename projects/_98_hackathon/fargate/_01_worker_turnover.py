@@ -70,14 +70,6 @@ def main(
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
 
-    # Raw pay and hours columns are only needed to derive the final columns.
-    filtered_lf = filtered_lf.drop(
-        AWKClean.hourly_rate,
-        AWKClean.salary,
-        AWKClean.contracted_hours,
-        AWKClean.average_hours,
-    )
-
     utils.sink_to_parquet(filtered_lf, output_path=flagged_destination)
 
 
