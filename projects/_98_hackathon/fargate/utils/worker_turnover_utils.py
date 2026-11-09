@@ -71,9 +71,10 @@ def add_raw_worker_columns(
 
     Left joins on establishment ID, worker ID and import date. Raw rows are cut
     to the keys in `worker_lf` by a semi join before casting, so the full raw
-    history is never cast or joined. Values are not cleaned: code columns become
-    categorical, numeric columns `Float32` (about 7 significant digits;
-    unparseable becomes null), and date columns are parsed from `dd/mm/yyyy`
+    history is never cast or joined. Negative values (not known/recorded) in code
+    and numeric columns become null. Code columns become categorical, numeric
+    columns `Float32` (about 7 significant digits; unparseable becomes null),
+    and date columns are parsed from `dd/mm/yyyy`
     (blank becomes null; a value of another shape raises, but a two-digit year
     parses literally, so `01/03/15` is year 15). Relies on unique keys, which the
     cleaned data's validation checks.
@@ -106,9 +107,14 @@ def add_raw_worker_columns(
 
     day_first_format = "%d/%m/%Y"
 
+    code_column = pl.col(WORKER_CATEGORICAL_COLUMNS)
+    numeric_column = pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False)
+
     raw_worker_lf = raw_worker_lf.with_columns(
-        pl.col(WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical),
-        pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False),
+        pl.when(~code_column.str.starts_with("-"))
+        .then(code_column)
+        .cast(pl.Categorical),
+        pl.when(numeric_column >= 0).then(numeric_column),
         pl.col(WORKER_DATE_COLUMNS).replace("", None).str.to_date(day_first_format),
     )
 
