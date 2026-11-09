@@ -22,7 +22,6 @@ WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.nationality,
     AWKClean.country_of_birth,
     AWKClean.disabled,
-    AWKClean.hourly_or_annual_pay,
     AWKClean.social_care_qual_held,
     AWKClean.level_social_care_qualification_held,
     AWKClean.care_certificate_status,
@@ -121,13 +120,16 @@ def add_raw_worker_columns(
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
 
 
-def add_hours_and_hourly_pay(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `hours` and `hourly_pay`, then drops the raw columns they come from.
+def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Combines pay and hours into `hours` and `hourly_pay`, dropping the raw columns.
 
     - `hours` is the first of contracted hours then average hours that is above
       0 (raw hours can be 0), else null.
     - `hourly_pay` is the hourly rate where given, else the salary converted to
       hourly pay, null when hours is null.
+
+    A worker has an hourly rate or a salary, never both, so null checks choose
+    between them; if both were given, the rate is used. Rates of 0 are kept.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw hourly rate, salary,

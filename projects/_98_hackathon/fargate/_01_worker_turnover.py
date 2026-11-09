@@ -18,7 +18,7 @@ def main(
     n_months: int = DEFAULT_MAX_MONTHS_SINCE_SAVE,
 ) -> None:
     """Filters worker data, adds main service type, flags leavers and active
-    establishments, and adds raw worker columns, hours and hourly pay.
+    establishments, and adds raw worker columns with pay and hours combined into hours and hourly pay.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
@@ -66,7 +66,7 @@ def main(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
-    filtered_lf = wUtils.add_hours_and_hourly_pay(filtered_lf)
+    filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
 
     utils.sink_to_parquet(filtered_lf, output_path=flagged_destination)
 
