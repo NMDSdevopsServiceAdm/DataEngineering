@@ -265,7 +265,6 @@ def add_turnover_rate(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The input rows with `turnover_rate` (`Float32`) added.
     """
-    is_leaver = pl.col(HackCols.is_leaver)
     establishment_month = [
         AWKClean.establishment_id,
         AWKClean.ascwds_worker_import_date,
@@ -274,9 +273,7 @@ def add_turnover_rate(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     return worker_lf.with_columns(
         pl.when(pl.col(HackCols.establishment_in_both_snapshots))
         .then(
-            (is_leaver.sum() / is_leaver.count())
-            .over(establishment_month)
-            .cast(pl.Float32)
+            pl.col(HackCols.is_leaver).mean().over(establishment_month).cast(pl.Float32)
         )
         .alias(HackCols.turnover_rate)
     )
@@ -303,6 +300,7 @@ def add_valid_for_analysis_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
             `valid_for_analysis` added.
     """
     return worker_lf.with_columns(
+        # Endpoints excluded: 0 and 1 are the implausible rates.
         pl.col(HackCols.turnover_rate)
         .is_between(0, 1, closed="none")
         .alias(HackCols.plausible_turnover)
