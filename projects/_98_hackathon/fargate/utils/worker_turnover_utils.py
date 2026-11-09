@@ -278,19 +278,20 @@ def add_turnover_rate(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def add_valid_for_analysis_flag(
-    worker_lf: pl.LazyFrame, max_turnover_rate: float
+    worker_lf: pl.LazyFrame, turnover_rate_limit: float
 ) -> pl.LazyFrame:
     """Adds `plausible_turnover` and `valid_for_analysis`.
 
-    `plausible_turnover` is true when the turnover rate is above 0 and at most
-    `max_turnover_rate`, and null when the rate is null. `valid_for_analysis` is
+    `plausible_turnover` is true when the turnover rate is above 0 and below
+    `turnover_rate_limit`, and null when the rate is null. `valid_for_analysis` is
     true only when `establishment_in_both_snapshots`, `establishment_active` and
     `plausible_turnover` are all true, otherwise false. No rows are removed.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `turnover_rate`,
             `establishment_in_both_snapshots` and `establishment_active`.
-        max_turnover_rate (float): Highest turnover rate treated as plausible.
+        turnover_rate_limit (float): Turnover rate at and above which a rate is
+            implausible. 1 marks only establishments where everyone left.
 
     Returns:
         pl.LazyFrame: The input rows with `plausible_turnover` and
@@ -299,7 +300,7 @@ def add_valid_for_analysis_flag(
     turnover_rate = pl.col(HackCols.turnover_rate)
 
     return worker_lf.with_columns(
-        ((turnover_rate > 0) & (turnover_rate <= max_turnover_rate)).alias(
+        ((turnover_rate > 0) & (turnover_rate < turnover_rate_limit)).alias(
             HackCols.plausible_turnover
         )
     ).with_columns(

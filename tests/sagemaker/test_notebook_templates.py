@@ -12,7 +12,6 @@ EXPECTED_TEMPLATES = [
     "compare_outputs",
     "compare_before_after_filter",
     "interpolation_durations",
-    "rate_threshold_distribution",
     "sagemaker_setup",
 ]
 TEMPLATE_CASES = [

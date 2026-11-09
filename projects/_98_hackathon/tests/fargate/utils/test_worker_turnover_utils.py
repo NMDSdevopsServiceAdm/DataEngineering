@@ -145,7 +145,9 @@ class TestAddValidForAnalysisFlag:
             case.expected_rows, schema=Schemas.valid_output_schema, orient="row"
         )
 
-        returned_lf = job.add_valid_for_analysis_flag(input_lf, case.max_turnover_rate)
+        returned_lf = job.add_valid_for_analysis_flag(
+            input_lf, case.turnover_rate_limit
+        )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 

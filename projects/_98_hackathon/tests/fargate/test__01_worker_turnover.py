@@ -99,7 +99,7 @@ class TestMain:
             add_establishment_active_flag_mock.return_value
         )
         add_valid_for_analysis_flag_mock.assert_called_once_with(
-            add_turnover_rate_mock.return_value, job.DEFAULT_MAX_TURNOVER_RATE
+            add_turnover_rate_mock.return_value, job.DEFAULT_TURNOVER_RATE_LIMIT
         )
         add_raw_worker_columns_mock.assert_called_once_with(
             add_valid_for_analysis_flag_mock.return_value, raw_worker_lf_mock
@@ -119,7 +119,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.filter_worker_turnover_data")
     @patch(f"{PATCH_PATH}.wUtils.get_latest_save_date_per_establishment")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_main_passes_max_turnover_rate_to_valid_for_analysis_flag(
+    def test_main_passes_turnover_rate_limit_to_valid_for_analysis_flag(
         self,
         scan_parquet_mock: Mock,
         get_latest_save_date_per_establishment_mock: Mock,
@@ -137,7 +137,7 @@ class TestMain:
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
             self.FLAGGED_DESTINATION,
-            max_turnover_rate=0.5,
+            turnover_rate_limit=0.5,
         )
 
         add_valid_for_analysis_flag_mock.assert_called_once_with(

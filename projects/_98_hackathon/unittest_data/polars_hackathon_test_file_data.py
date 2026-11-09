@@ -88,7 +88,7 @@ class AddValidForAnalysisFlagCase:
     id: str
     input_rows: list[tuple[Any, ...]]
     expected_rows: list[tuple[Any, ...]]
-    max_turnover_rate: float = 0.8
+    turnover_rate_limit: float = 0.8
 
 
 @dataclass
@@ -167,15 +167,21 @@ class WorkerTurnoverData:
             expected_rows=[("est_a", "1", START, True, True, 0.0, False, False)],
         ),
         AddValidForAnalysisFlagCase(
-            id="implausible_and_invalid_when_rate_above_max",
+            id="implausible_and_invalid_when_rate_above_limit",
             input_rows=[("est_a", "1", START, True, True, 0.875)],
             expected_rows=[("est_a", "1", START, True, True, 0.875, False, False)],
         ),
         AddValidForAnalysisFlagCase(
-            id="plausible_when_rate_equals_max",
-            max_turnover_rate=0.5,
+            id="implausible_and_invalid_when_rate_equals_limit",
+            turnover_rate_limit=0.5,
             input_rows=[("est_a", "1", START, True, True, 0.5)],
-            expected_rows=[("est_a", "1", START, True, True, 0.5, True, True)],
+            expected_rows=[("est_a", "1", START, True, True, 0.5, False, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="implausible_and_invalid_when_everyone_left_at_limit_of_one",
+            turnover_rate_limit=1.0,
+            input_rows=[("est_a", "1", START, True, True, 1.0)],
+            expected_rows=[("est_a", "1", START, True, True, 1.0, False, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_establishment_inactive",
