@@ -2,7 +2,11 @@ from datetime import date
 
 import polars as pl
 
-from polars_utils.cleaning_utils import column_to_date
+from polars_utils.cleaning_utils import (
+    apply_categorical_labels,
+    build_labels_lf,
+    column_to_date,
+)
 from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
@@ -11,7 +15,19 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
+from utils.column_values.ascwds_labelled_vocab import (
+    APPRENTICE,
+    CARE_CERTIFICATE_STATUS,
+    DISABLED,
+    ETHNICITY,
+    GENDER,
+    LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
+    SOCIAL_CARE_QUAL_HELD,
+    SOURCE_OF_RECRUITMENT,
+    ZERO_HOURS,
+)
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import MainServiceID
 from utils.column_values.categorical_column_values import PrimaryServiceType
@@ -119,6 +135,42 @@ def add_raw_worker_columns(
     )
 
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
+
+
+def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds a categorical `<column>_labels` column beside each coded worker column.
+
+    Codes with no label keep their raw code in the label column. Null codes stay null.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the raw coded worker columns.
+
+    Returns:
+        pl.LazyFrame: The input with a `_labels` column for each coded column.
+    """
+    code_to_label = {
+        AWKClean.gender: GENDER.code_to_label(),
+        AWKClean.ethnicity: ETHNICITY.code_to_label(),
+        AWKClean.disabled: DISABLED.code_to_label(),
+        AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD.code_to_label(),
+        AWKClean.level_social_care_qualification_held: (
+            LEVEL_SOCIAL_CARE_QUALIFICATION_HELD.code_to_label()
+        ),
+        AWKClean.care_certificate_status: CARE_CERTIFICATE_STATUS.code_to_label(),
+        AWKClean.apprentice: APPRENTICE.code_to_label(),
+        AWKClean.zero_hours: ZERO_HOURS.code_to_label(),
+        AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT.code_to_label(),
+    }
+
+    worker_lf = apply_categorical_labels(
+        worker_lf,
+        build_labels_lf(code_to_label),
+        list(code_to_label),
+        add_as_new_column=True,
+    )
+
+    label_columns = [f"{column}_{DLC.label}s" for column in code_to_label]
+    return worker_lf.with_columns(pl.col(label_columns).cast(pl.Categorical))
 
 
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:

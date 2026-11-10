@@ -12,8 +12,7 @@ class TestMain:
     FLAGGED_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
-    @patch(f"{PATCH_PATH}.cUtils.build_labels_lf")
+    @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
@@ -30,8 +29,7 @@ class TestMain:
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
-        build_labels_lf_mock: Mock,
-        apply_categorical_labels_mock: Mock,
+        add_worker_labels_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
@@ -98,32 +96,16 @@ class TestMain:
         add_raw_worker_columns_mock.assert_called_once_with(
             add_establishment_active_flag_mock.return_value, raw_worker_lf_mock
         )
-        build_labels_lf_mock.assert_called_once()
-        apply_categorical_labels_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value,
-            build_labels_lf_mock.return_value,
-            [
-                job.AWKClean.gender,
-                job.AWKClean.ethnicity,
-                job.AWKClean.disabled,
-                job.AWKClean.social_care_qual_held,
-                job.AWKClean.level_social_care_qualification_held,
-                job.AWKClean.care_certificate_status,
-                job.AWKClean.apprentice,
-                job.AWKClean.zero_hours,
-                job.AWKClean.source_of_recruitment,
-            ],
-            add_as_new_column=True,
+        add_worker_labels_mock.assert_called_once_with(
+            add_raw_worker_columns_mock.return_value
         )
-        apply_categorical_labels_mock.return_value.with_columns.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
-            apply_categorical_labels_mock.return_value.with_columns.return_value,
+            add_worker_labels_mock.return_value,
             output_path=self.FLAGGED_DESTINATION,
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
-    @patch(f"{PATCH_PATH}.cUtils.build_labels_lf")
+    @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
@@ -140,8 +122,7 @@ class TestMain:
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
-        build_labels_lf_mock: Mock,
-        apply_categorical_labels_mock: Mock,
+        add_worker_labels_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
