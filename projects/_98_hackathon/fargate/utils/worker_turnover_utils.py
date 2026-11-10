@@ -147,27 +147,31 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The input rows with those values set to null.
     """
-    code_columns = pl.col(WORKER_CATEGORICAL_COLUMNS)
-    numeric_columns = pl.col(WORKER_NUMERIC_COLUMNS)
-
-    worker_lf = worker_lf.with_columns(
-        pl.when(~code_columns.cast(pl.String).str.starts_with("-")).then(code_columns),
-        pl.when(numeric_columns >= 0).then(numeric_columns),
-    )
-
-    column_not_known_codes = {
-        AWKClean.gender: "3",
-        AWKClean.ethnicity: "99",
-        AWKClean.disabled: "2",
-        AWKClean.social_care_qual_held: "3",
-        AWKClean.level_social_care_qualification_held: "10",
-        AWKClean.apprentice: "3",
-        AWKClean.source_of_recruitment: "225",
+    not_known_vocabs = {
+        AWKClean.gender: GENDER,
+        AWKClean.ethnicity: ETHNICITY,
+        AWKClean.disabled: DISABLED,
+        AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD,
+        AWKClean.level_social_care_qualification_held: (
+            LEVEL_SOCIAL_CARE_QUALIFICATION_HELD
+        ),
+        AWKClean.apprentice: APPRENTICE,
+        AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT,
     }
 
+    code_expressions = []
+    for column in WORKER_CATEGORICAL_COLUMNS:
+        code = pl.col(column)
+        keep = ~code.cast(pl.String).str.starts_with("-")
+        if column in not_known_vocabs:
+            for not_known_code in not_known_vocabs[column].unlabelled_codes().values():
+                keep &= code != not_known_code
+        code_expressions.append(pl.when(keep).then(code))
+
+    numeric_columns = pl.col(WORKER_NUMERIC_COLUMNS)
+
     return worker_lf.with_columns(
-        pl.when(pl.col(column) != code).then(pl.col(column))
-        for column, code in column_not_known_codes.items()
+        *code_expressions, pl.when(numeric_columns >= 0).then(numeric_columns)
     )
 
 

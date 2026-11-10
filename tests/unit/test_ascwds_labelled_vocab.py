@@ -381,7 +381,28 @@ class TestWorkerCodeToLabel:
             assert label == label.strip()
 
     @pytest.mark.parametrize(
-        "vocab", worker_paired_vocabs.values(), ids=worker_paired_vocabs.keys()
+        "vocab_name, expected_unlabelled_codes",
+        [
+            pytest.param("gender", {"unknown": "3"}, id="gender"),
+            pytest.param("ethnicity", {"not_known": "99"}, id="ethnicity"),
+            pytest.param("disabled", {"not_disclosed": "2"}, id="disabled"),
+            pytest.param("social_care_qual_held", {"not_known": "3"}, id="qual_held"),
+            pytest.param(
+                "level_social_care_qualification_held",
+                {"not_known": "10"},
+                id="qual_level",
+            ),
+            pytest.param("apprentice", {"not_known": "3"}, id="apprentice"),
+            pytest.param(
+                "source_of_recruitment", {"not_known": "225"}, id="recruitment"
+            ),
+            pytest.param("care_certificate_status", {}, id="care_certificate"),
+            pytest.param("zero_hours", {}, id="zero_hours"),
+        ],
     )
-    def test_unlabelled_codes_is_empty(self, vocab):
-        assert vocab.unlabelled_codes() == {}
+    def test_unlabelled_codes_are_the_not_known_codes(
+        self, vocab_name, expected_unlabelled_codes
+    ):
+        vocab = worker_paired_vocabs[vocab_name]
+
+        assert vocab.unlabelled_codes() == expected_unlabelled_codes

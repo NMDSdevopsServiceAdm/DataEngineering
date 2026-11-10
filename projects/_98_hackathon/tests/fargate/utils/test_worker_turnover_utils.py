@@ -19,6 +19,15 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
+from utils.column_values.ascwds_labelled_vocab import (
+    ApprenticeID,
+    DisabledID,
+    EthnicityID,
+    GenderID,
+    LevelSocialCareQualificationHeldID,
+    SocialCareQualHeldID,
+    SourceOfRecruitmentID,
+)
 
 
 class TestFilterWorkerTurnoverData:
@@ -447,13 +456,15 @@ class TestAddRawWorkerColumns:
 
 class TestNullNotKnownCodes:
     not_known_codes = {
-        AWKClean.gender: "3",
-        AWKClean.ethnicity: "99",
-        AWKClean.disabled: "2",
-        AWKClean.social_care_qual_held: "3",
-        AWKClean.level_social_care_qualification_held: "10",
-        AWKClean.apprentice: "3",
-        AWKClean.source_of_recruitment: "225",
+        AWKClean.gender: GenderID.unknown,
+        AWKClean.ethnicity: EthnicityID.not_known,
+        AWKClean.disabled: DisabledID.not_disclosed,
+        AWKClean.social_care_qual_held: SocialCareQualHeldID.not_known,
+        AWKClean.level_social_care_qualification_held: (
+            LevelSocialCareQualificationHeldID.not_known
+        ),
+        AWKClean.apprentice: ApprenticeID.not_known,
+        AWKClean.source_of_recruitment: SourceOfRecruitmentID.not_known,
     }
 
     def codes_lf(self, **values: str | float | None) -> pl.LazyFrame:
@@ -519,12 +530,16 @@ class TestNullNotKnownCodes:
 
         assert returned_df[column].to_list() == [code]
 
-    def test_keeps_nulls_and_column_types(self):
+    def test_keeps_nulls(self):
+        returned_df = job.null_not_known_codes(self.codes_lf()).collect()
+
+        assert returned_df.row(0) == (None,) * returned_df.width
+
+    def test_keeps_column_types(self):
         input_lf = self.codes_lf()
 
         returned_lf = job.null_not_known_codes(input_lf)
 
-        assert returned_lf.collect().row(0) == (None,) * len(input_lf.collect_schema())
         assert returned_lf.collect_schema() == input_lf.collect_schema()
 
     def test_gives_null_label_after_labelling(self):
