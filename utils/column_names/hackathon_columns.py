@@ -14,6 +14,8 @@ class HackathonColumns:
     main_service_type: str = "main_service_type"
     hours: str = "hours"
     hourly_pay: str = "hourly_pay"
+    nationality_group: str = "nationality_group"
+    country_of_birth_group: str = "country_of_birth_group"
     turnover_rate: str = "turnover_rate"
     plausible_turnover: str = "plausible_turnover"
     valid_for_analysis: str = "valid_for_analysis"

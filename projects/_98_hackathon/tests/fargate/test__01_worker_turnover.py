@@ -12,6 +12,7 @@ class TestMain:
     FLAGGED_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
@@ -36,6 +37,7 @@ class TestMain:
         add_raw_worker_columns_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_worker_labels_mock: Mock,
+        add_country_code_group_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
@@ -114,12 +116,20 @@ class TestMain:
         add_worker_labels_mock.assert_called_once_with(
             combine_pay_and_hours_mock.return_value
         )
+        assert add_country_code_group_mock.call_args_list == [
+            call(add_worker_labels_mock.return_value, job.AWKClean.nationality),
+            call(
+                add_country_code_group_mock.return_value,
+                job.AWKClean.country_of_birth,
+            ),
+        ]
         sink_to_parquet_mock.assert_called_once_with(
-            add_worker_labels_mock.return_value,
+            add_country_code_group_mock.return_value,
             output_path=self.FLAGGED_DESTINATION,
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
@@ -144,6 +154,7 @@ class TestMain:
         add_raw_worker_columns_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_worker_labels_mock: Mock,
+        add_country_code_group_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
