@@ -14,3 +14,8 @@ class HackathonColumns:
     main_service_type: str = "main_service_type"
     hours: str = "hours"
     hourly_pay: str = "hourly_pay"
+    nlw_hourly_rate: str = "nlw_hourly_rate"
+    hourly_pay_minus_nlw: str = "hourly_pay_minus_nlw"
+    nlw_effective_date: str = "nlw_effective_date"
+    nlw_is_apprentice: str = "nlw_is_apprentice"
+    nlw_band_start: str = "nlw_band_start"

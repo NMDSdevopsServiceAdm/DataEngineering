@@ -9,6 +9,11 @@ from polars_utils.cleaning_utils import (
 )
 from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
+from projects._98_hackathon.fargate.utils.nlw_rates import (
+    BAND_STARTS,
+    NLW_RATES,
+    build_nlw_lookup_rows,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -216,6 +221,86 @@ def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         AWKClean.salary,
         AWKClean.contracted_hours,
         AWKClean.average_hours,
+    )
+
+
+def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds the National Living Wage in force and the hourly pay difference from it.
+
+    - `nlw_hourly_rate` is the rate in force the day before the import date, as
+      an import date is when data was received and covers the period before it
+      (a 1 April import still has the March rate).
+    - Apprentices (`apprentice_labels` is "Yes") get the apprentice rate whatever
+      their age; any other label, including null, is treated as not an apprentice.
+    - Other workers get the rate for their age band, or the oldest band if age is
+      null.
+    - `hourly_pay_minus_nlw` is `hourly_pay` minus `nlw_hourly_rate`, null when
+      `hourly_pay` is null.
+
+    The lookup has a row per rate date and band start (under 100 rows), joined on
+    exact keys so each worker matches one row, the frame stays lazy and rows keep
+    their order. Rates start in April 2019; earlier import dates get a null rate.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
+            `apprentice_labels`, `age` and `hourly_pay`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `nlw_hourly_rate` and
+            `hourly_pay_minus_nlw` added.
+    """
+    lookup_lf = pl.LazyFrame(
+        build_nlw_lookup_rows(),
+        schema={
+            HackCols.nlw_effective_date: pl.Date,
+            HackCols.nlw_is_apprentice: pl.Boolean,
+            HackCols.nlw_band_start: pl.Int16,
+            HackCols.nlw_hourly_rate: pl.Float32,
+        },
+        orient="row",
+    )
+
+    rate_dates = sorted(NLW_RATES, reverse=True)
+    rate_lookup_date = pl.col(AWKClean.ascwds_worker_import_date).dt.offset_by("-1d")
+    # A chain of comparisons against the few rate dates avoids the sort an as-of
+    # join needs on the worker data.
+    nlw_effective_date = pl.coalesce(
+        *[
+            pl.when(rate_lookup_date >= rate_date).then(pl.lit(rate_date))
+            for rate_date in rate_dates
+        ]
+    )
+    apprentice_label = pl.col(f"{AWKClean.apprentice}_{DLC.label}s")
+    is_apprentice = (apprentice_label == APPRENTICE.label_cls.yes).fill_null(False)
+    age = pl.col(AWKClean.age)
+    # Highest band start at or below age; null age gets the oldest band.
+    age_band_start = pl.coalesce(
+        *[pl.when(age >= start).then(start) for start in BAND_STARTS],
+        BAND_STARTS[0],
+    )
+    nlw_band_start = pl.when(is_apprentice).then(0).otherwise(age_band_start)
+
+    worker_lf = worker_lf.with_columns(
+        nlw_effective_date.alias(HackCols.nlw_effective_date),
+        is_apprentice.alias(HackCols.nlw_is_apprentice),
+        nlw_band_start.cast(pl.Int16).alias(HackCols.nlw_band_start),
+    )
+    worker_lf = worker_lf.join(
+        lookup_lf,
+        on=[
+            HackCols.nlw_effective_date,
+            HackCols.nlw_is_apprentice,
+            HackCols.nlw_band_start,
+        ],
+        how="left",
+    )
+
+    return worker_lf.with_columns(
+        (pl.col(HackCols.hourly_pay) - pl.col(HackCols.nlw_hourly_rate)).alias(
+            HackCols.hourly_pay_minus_nlw
+        )
+    ).drop(
+        HackCols.nlw_effective_date, HackCols.nlw_is_apprentice, HackCols.nlw_band_start
     )
 
 

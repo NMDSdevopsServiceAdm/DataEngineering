@@ -19,7 +19,7 @@ def main(
 ) -> None:
     """Filters worker data, adds main service type, flags leavers and active
     establishments, and adds raw worker columns with pay and hours combined into hours and hourly pay,
-    plus labels for the coded columns.
+    the National Living Wage in force and hourly pay minus it, plus labels for the coded columns.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
@@ -70,6 +70,7 @@ def main(
     filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
 
     filtered_lf = wUtils.add_worker_labels(filtered_lf)
+    filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
 
     utils.sink_to_parquet(filtered_lf, output_path=flagged_destination)
 

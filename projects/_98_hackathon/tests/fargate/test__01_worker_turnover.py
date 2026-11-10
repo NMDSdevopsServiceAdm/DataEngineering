@@ -13,6 +13,7 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
+    @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -31,6 +32,7 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
         combine_pay_and_hours_mock: Mock,
+        add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -104,13 +106,17 @@ class TestMain:
         add_worker_labels_mock.assert_called_once_with(
             combine_pay_and_hours_mock.return_value
         )
+        add_nlw_and_pay_difference_mock.assert_called_once_with(
+            add_worker_labels_mock.return_value
+        )
         sink_to_parquet_mock.assert_called_once_with(
-            add_worker_labels_mock.return_value,
+            add_nlw_and_pay_difference_mock.return_value,
             output_path=self.FLAGGED_DESTINATION,
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
+    @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -129,6 +135,7 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
         combine_pay_and_hours_mock: Mock,
+        add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
