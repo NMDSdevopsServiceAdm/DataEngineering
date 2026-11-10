@@ -140,10 +140,10 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
       known/recorded values).
     - The not known, not disclosed or unknown code of gender, ethnicity,
       disabled, social care qualification held, level of social care
-      qualification held, apprentice and source of recruitment.
+      qualification held, apprentice and source of recruitment. These have no
+      vocab entry, so `add_worker_labels` only labels valid answers.
 
-    Run before `add_worker_labels` so the label column is null there too. Other
-    codes, such as "Other" and "Not started", are real answers and are kept.
+    Other codes, such as "Other" and "Not started", are real answers and are kept.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw worker columns, codes
@@ -160,26 +160,19 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.when(numeric_columns >= 0).then(numeric_columns),
     )
 
-    vocabs = {
-        AWKClean.gender: GENDER,
-        AWKClean.ethnicity: ETHNICITY,
-        AWKClean.disabled: DISABLED,
-        AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD,
-        AWKClean.level_social_care_qualification_held: (
-            LEVEL_SOCIAL_CARE_QUALIFICATION_HELD
-        ),
-        AWKClean.apprentice: APPRENTICE,
-        AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT,
+    column_not_known_codes = {
+        AWKClean.gender: "3",
+        AWKClean.ethnicity: "99",
+        AWKClean.disabled: "2",
+        AWKClean.social_care_qual_held: "3",
+        AWKClean.level_social_care_qualification_held: "10",
+        AWKClean.apprentice: "3",
+        AWKClean.source_of_recruitment: "225",
     }
-    not_known_fields = ("not_known", "not_disclosed", "unknown")
 
     return worker_lf.with_columns(
-        pl.when(pl.col(column) != getattr(vocab.id_cls, field))
-        .then(pl.col(column))
-        .alias(column)
-        for column, vocab in vocabs.items()
-        for field in not_known_fields
-        if hasattr(vocab.id_cls, field)
+        pl.when(pl.col(column) != code).then(pl.col(column))
+        for column, code in column_not_known_codes.items()
     )
 
 

@@ -264,56 +264,51 @@ worker_code_to_label_test_cases = [
     WorkerCodeToLabelTestCase(
         id="gender",
         code_to_label=GENDER.code_to_label(),
-        expected_code_count=4,
+        expected_code_count=3,
         expected_pairs={
             "1": "Male",
             "2": "Female",
-            "3": "Unknown",
             "4": "Other",
         },
     ),
     WorkerCodeToLabelTestCase(
         id="ethnicity",
         code_to_label=ETHNICITY.code_to_label(),
-        expected_code_count=19,
+        expected_code_count=18,
         expected_pairs={
             "31": "English / Welsh / Scottish / Northern Irish / British",
             "38": "Any Other Mixed / multiple ethnic background",
             "46": "Any other Black / African / Caribbean background",
             "98": "Any other ethnic group",
-            "99": "Not known",
         },
     ),
     WorkerCodeToLabelTestCase(
         id="disabled",
         code_to_label=DISABLED.code_to_label(),
-        expected_code_count=3,
+        expected_code_count=2,
         expected_pairs={
             "0": "No",
             "1": "Yes",
-            "2": "Not disclosed",
         },
     ),
     WorkerCodeToLabelTestCase(
         id="social_care_qual_held",
         code_to_label=SOCIAL_CARE_QUAL_HELD.code_to_label(),
-        expected_code_count=3,
+        expected_code_count=2,
         expected_pairs={
             "1": "Yes",
             "2": "No",
-            "3": "Not known",
         },
     ),
     WorkerCodeToLabelTestCase(
         id="level_social_care_qualification_held",
         code_to_label=LEVEL_SOCIAL_CARE_QUALIFICATION_HELD.code_to_label(),
-        expected_code_count=10,
+        expected_code_count=9,
         expected_pairs={
             "0": "Entry",
             "1": "Level 1",
             "7": "Level 7",
             "8": "Level 8 or above",
-            "10": "Not known",
         },
     ),
     WorkerCodeToLabelTestCase(
@@ -329,11 +324,10 @@ worker_code_to_label_test_cases = [
     WorkerCodeToLabelTestCase(
         id="apprentice",
         code_to_label=APPRENTICE.code_to_label(),
-        expected_code_count=3,
+        expected_code_count=2,
         expected_pairs={
             "1": "Yes",
             "2": "No",
-            "3": "Not known",
         },
     ),
     WorkerCodeToLabelTestCase(
@@ -348,11 +342,10 @@ worker_code_to_label_test_cases = [
     WorkerCodeToLabelTestCase(
         id="source_of_recruitment",
         code_to_label=SOURCE_OF_RECRUITMENT.code_to_label(),
-        expected_code_count=11,
+        expected_code_count=10,
         expected_pairs={
             "210": "Adult care sector: local authority",
             "217": "Internal promotion or transfer or career development",
-            "225": "Not known",
             "226": "Children’s/young people’s social care",
             "227": "First role after education",
         },

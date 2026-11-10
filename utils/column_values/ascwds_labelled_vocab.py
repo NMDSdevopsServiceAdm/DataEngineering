@@ -346,7 +346,6 @@ class GenderID(ColumnValues):
 
     male: str = "1"
     female: str = "2"
-    unknown: str = "3"
     other: str = "4"
 
 
@@ -356,7 +355,6 @@ class GenderLabels(ColumnValues):
 
     male: str = "Male"
     female: str = "Female"
-    unknown: str = "Unknown"
     other: str = "Other"
 
 
@@ -382,7 +380,6 @@ class EthnicityID(ColumnValues):
     other_black_african_caribbean: str = "46"
     arab: str = "47"
     other_ethnic_group: str = "98"
-    not_known: str = "99"
 
 
 @dataclass
@@ -411,7 +408,6 @@ class EthnicityLabels(ColumnValues):
     )
     arab: str = "Arab"
     other_ethnic_group: str = "Any other ethnic group"
-    not_known: str = "Not known"
 
 
 @dataclass
@@ -420,7 +416,6 @@ class DisabledID(ColumnValues):
 
     no: str = "0"
     yes: str = "1"
-    not_disclosed: str = "2"
 
 
 @dataclass
@@ -429,7 +424,6 @@ class DisabledLabels(ColumnValues):
 
     no: str = "No"
     yes: str = "Yes"
-    not_disclosed: str = "Not disclosed"
 
 
 @dataclass
@@ -438,7 +432,6 @@ class SocialCareQualHeldID(ColumnValues):
 
     yes: str = "1"
     no: str = "2"
-    not_known: str = "3"
 
 
 @dataclass
@@ -447,7 +440,6 @@ class SocialCareQualHeldLabels(ColumnValues):
 
     yes: str = "Yes"
     no: str = "No"
-    not_known: str = "Not known"
 
 
 @dataclass
@@ -463,7 +455,6 @@ class LevelSocialCareQualificationHeldID(ColumnValues):
     level_6: str = "6"
     level_7: str = "7"
     level_8_or_above: str = "8"
-    not_known: str = "10"
 
 
 @dataclass
@@ -479,7 +470,6 @@ class LevelSocialCareQualificationHeldLabels(ColumnValues):
     level_6: str = "Level 6"
     level_7: str = "Level 7"
     level_8_or_above: str = "Level 8 or above"
-    not_known: str = "Not known"
 
 
 @dataclass
@@ -506,7 +496,6 @@ class ApprenticeID(ColumnValues):
 
     yes: str = "1"
     no: str = "2"
-    not_known: str = "3"
 
 
 @dataclass
@@ -515,7 +504,6 @@ class ApprenticeLabels(ColumnValues):
 
     yes: str = "Yes"
     no: str = "No"
-    not_known: str = "Not known"
 
 
 @dataclass
@@ -546,7 +534,6 @@ class SourceOfRecruitmentID(ColumnValues):
     not_previously_employed: str = "219"
     agency: str = "221"
     other_sources: str = "224"
-    not_known: str = "225"
     childrens_social_care: str = "226"
     first_role_after_education: str = "227"
 
@@ -565,7 +552,6 @@ class SourceOfRecruitmentLabels(ColumnValues):
     not_previously_employed: str = "Not previously employed"
     agency: str = "Agency"
     other_sources: str = "Other sources"
-    not_known: str = "Not known"
     childrens_social_care: str = "Children’s/young people’s social care"
     first_role_after_education: str = "First role after education"
 
