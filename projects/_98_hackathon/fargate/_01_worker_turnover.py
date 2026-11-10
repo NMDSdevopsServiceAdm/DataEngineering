@@ -1,3 +1,5 @@
+import polars as pl
+
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
@@ -71,6 +73,9 @@ def main(
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
     filtered_lf = wUtils.null_not_known_codes(filtered_lf)
+    filtered_lf = filtered_lf.with_columns(
+        pl.col(wUtils.WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical)
+    )
     filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
     filtered_lf = wUtils.add_worker_labels(filtered_lf)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)

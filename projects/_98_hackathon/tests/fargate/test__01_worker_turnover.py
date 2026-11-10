@@ -115,8 +115,9 @@ class TestMain:
         null_not_known_codes_mock.assert_called_once_with(
             add_raw_worker_columns_mock.return_value
         )
+        null_not_known_codes_mock.return_value.with_columns.assert_called_once()
         combine_pay_and_hours_mock.assert_called_once_with(
-            null_not_known_codes_mock.return_value
+            null_not_known_codes_mock.return_value.with_columns.return_value
         )
         add_worker_labels_mock.assert_called_once_with(
             combine_pay_and_hours_mock.return_value

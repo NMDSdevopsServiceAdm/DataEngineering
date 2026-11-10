@@ -90,8 +90,8 @@ def add_raw_worker_columns(
 
     Left joins on establishment ID, worker ID and import date. Raw rows are cut
     to the keys in `worker_lf` by a semi join before casting, so the full raw
-    history is never cast or joined. Code columns become categorical and numeric
-    columns `Float32` (about 7 significant digits; unparseable becomes null).
+    history is never cast or joined. Code columns stay strings and numeric
+    columns become `Float32` (about 7 significant digits; unparseable becomes null).
     Date columns are parsed from `dd/mm/yyyy` (blank becomes null; another shape
     raises; a two-digit year parses literally, so `01/03/15` is year 15). Relies
     on unique keys, which the cleaned data's validation checks.
@@ -125,7 +125,6 @@ def add_raw_worker_columns(
     day_first_format = "%d/%m/%Y"
 
     raw_worker_lf = raw_worker_lf.with_columns(
-        pl.col(WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical),
         pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False),
         pl.col(WORKER_DATE_COLUMNS).replace("", None).str.to_date(day_first_format),
     )
@@ -142,7 +141,7 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw worker columns, codes
-            categorical and numbers `Float32`.
+            as strings and numbers `Float32`.
 
     Returns:
         pl.LazyFrame: The input rows with those values set to null.
@@ -162,7 +161,7 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     code_expressions = []
     for column in WORKER_CATEGORICAL_COLUMNS:
         code = pl.col(column)
-        keep = ~code.cast(pl.String).str.starts_with("-")
+        keep = ~code.str.starts_with("-")
         if column in not_known_vocabs:
             for not_known_code in not_known_vocabs[column].unlabelled_codes().values():
                 keep &= code != not_known_code

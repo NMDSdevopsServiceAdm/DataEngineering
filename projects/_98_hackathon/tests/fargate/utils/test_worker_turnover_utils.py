@@ -356,9 +356,9 @@ class TestAddRawWorkerColumns:
     @pytest.mark.parametrize(
         "column, expected_type",
         [
-            pytest.param(AWKClean.gender, pl.Categorical, id="code_column"),
+            pytest.param(AWKClean.gender, pl.String, id="code_column"),
             pytest.param(
-                AWKClean.social_care_qual_held, pl.Categorical, id="social_care_qual"
+                AWKClean.social_care_qual_held, pl.String, id="social_care_qual"
             ),
             pytest.param(AWKClean.age, pl.Float32, id="numeric_column"),
             pytest.param(AWKClean.days_sick, pl.Float32, id="days_sick"),
@@ -469,7 +469,7 @@ class TestNullNotKnownCodes:
 
     def codes_lf(self, **values: str | float | None) -> pl.LazyFrame:
         schema = {
-            **{column: pl.Categorical for column in job.WORKER_CATEGORICAL_COLUMNS},
+            **{column: pl.String for column in job.WORKER_CATEGORICAL_COLUMNS},
             **{column: pl.Float32 for column in job.WORKER_NUMERIC_COLUMNS},
         }
         return pl.LazyFrame({c: [values.get(c)] for c in schema}, schema=schema)
@@ -543,8 +543,10 @@ class TestNullNotKnownCodes:
         assert returned_lf.collect_schema() == input_lf.collect_schema()
 
     def test_gives_null_label_after_labelling(self):
+        nulled_lf = job.null_not_known_codes(self.codes_lf(**{AWKClean.gender: "3"}))
+
         returned_df = job.add_worker_labels(
-            job.null_not_known_codes(self.codes_lf(**{AWKClean.gender: "3"}))
+            nulled_lf.with_columns(pl.col(AWKClean.gender).cast(pl.Categorical))
         ).collect()
 
         assert returned_df[f"{AWKClean.gender}_labels"].to_list() == [None]
