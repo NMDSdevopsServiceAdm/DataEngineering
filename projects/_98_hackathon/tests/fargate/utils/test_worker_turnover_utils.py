@@ -19,15 +19,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
-from utils.column_values.ascwds_labelled_vocab import (
-    ApprenticeID,
-    DisabledID,
-    EthnicityID,
-    GenderID,
-    LevelSocialCareQualificationHeldID,
-    SocialCareQualHeldID,
-    SourceOfRecruitmentID,
-)
+from utils.column_values.ascwds_labelled_vocab import NotKnownWorkerCodes
 
 
 class TestFilterWorkerTurnoverData:
@@ -456,15 +448,15 @@ class TestAddRawWorkerColumns:
 
 class TestNullNotKnownCodes:
     not_known_codes = {
-        AWKClean.gender: GenderID.unknown,
-        AWKClean.ethnicity: EthnicityID.not_known,
-        AWKClean.disabled: DisabledID.not_disclosed,
-        AWKClean.social_care_qual_held: SocialCareQualHeldID.not_known,
+        AWKClean.gender: NotKnownWorkerCodes.gender,
+        AWKClean.ethnicity: NotKnownWorkerCodes.ethnicity,
+        AWKClean.disabled: NotKnownWorkerCodes.disabled,
+        AWKClean.social_care_qual_held: NotKnownWorkerCodes.social_care_qual_held,
         AWKClean.level_social_care_qualification_held: (
-            LevelSocialCareQualificationHeldID.not_known
+            NotKnownWorkerCodes.level_social_care_qualification_held
         ),
-        AWKClean.apprentice: ApprenticeID.not_known,
-        AWKClean.source_of_recruitment: SourceOfRecruitmentID.not_known,
+        AWKClean.apprentice: NotKnownWorkerCodes.apprentice,
+        AWKClean.source_of_recruitment: NotKnownWorkerCodes.source_of_recruitment,
     }
 
     def codes_lf(self, **values: str | float | None) -> pl.LazyFrame:

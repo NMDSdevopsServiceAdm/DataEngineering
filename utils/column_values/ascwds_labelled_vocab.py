@@ -342,17 +342,16 @@ class RegionID(ColumnValues):
 
 @dataclass
 class GenderID(ColumnValues):
-    """The possible values of the gender column in ASCWDS worker data"""
+    """The valid values of the gender column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
 
     male: str = "1"
     female: str = "2"
-    unknown: str = "3"
     other: str = "4"
 
 
 @dataclass
 class GenderLabels(ColumnValues):
-    """The possible labels of the gender column in ASCWDS worker data"""
+    """The valid labels of the gender column in ASCWDS worker data"""
 
     male: str = "Male"
     female: str = "Female"
@@ -361,7 +360,7 @@ class GenderLabels(ColumnValues):
 
 @dataclass
 class EthnicityID(ColumnValues):
-    """The possible values of the ethnicity column in ASCWDS worker data"""
+    """The valid values of the ethnicity column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
 
     english_welsh_scottish_northern_irish_british: str = "31"
     irish: str = "32"
@@ -381,12 +380,11 @@ class EthnicityID(ColumnValues):
     other_black_african_caribbean: str = "46"
     arab: str = "47"
     other_ethnic_group: str = "98"
-    not_known: str = "99"
 
 
 @dataclass
 class EthnicityLabels(ColumnValues):
-    """The possible labels of the ethnicity column in ASCWDS worker data"""
+    """The valid labels of the ethnicity column in ASCWDS worker data"""
 
     english_welsh_scottish_northern_irish_british: str = (
         "English / Welsh / Scottish / Northern Irish / British"
@@ -414,16 +412,15 @@ class EthnicityLabels(ColumnValues):
 
 @dataclass
 class DisabledID(ColumnValues):
-    """The possible values of the disabled column in ASCWDS worker data"""
+    """The valid values of the disabled column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
 
     no: str = "0"
     yes: str = "1"
-    not_disclosed: str = "2"
 
 
 @dataclass
 class DisabledLabels(ColumnValues):
-    """The possible labels of the disabled column in ASCWDS worker data"""
+    """The valid labels of the disabled column in ASCWDS worker data"""
 
     no: str = "No"
     yes: str = "Yes"
@@ -431,16 +428,15 @@ class DisabledLabels(ColumnValues):
 
 @dataclass
 class SocialCareQualHeldID(ColumnValues):
-    """The possible values of the social care qualification held column in ASCWDS worker data"""
+    """The valid values of the social care qualification held column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
 
     yes: str = "1"
     no: str = "2"
-    not_known: str = "3"
 
 
 @dataclass
 class SocialCareQualHeldLabels(ColumnValues):
-    """The possible labels of the social care qualification held column in ASCWDS worker data"""
+    """The valid labels of the social care qualification held column in ASCWDS worker data"""
 
     yes: str = "Yes"
     no: str = "No"
@@ -448,7 +444,7 @@ class SocialCareQualHeldLabels(ColumnValues):
 
 @dataclass
 class LevelSocialCareQualificationHeldID(ColumnValues):
-    """The possible values of the level of social care qualification held column in ASCWDS worker data"""
+    """The valid values of the level of social care qualification held column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
 
     entry: str = "0"
     level_1: str = "1"
@@ -459,12 +455,11 @@ class LevelSocialCareQualificationHeldID(ColumnValues):
     level_6: str = "6"
     level_7: str = "7"
     level_8_or_above: str = "8"
-    not_known: str = "10"
 
 
 @dataclass
 class LevelSocialCareQualificationHeldLabels(ColumnValues):
-    """The possible labels of the level of social care qualification held column in ASCWDS worker data"""
+    """The valid labels of the level of social care qualification held column in ASCWDS worker data"""
 
     entry: str = "Entry"
     level_1: str = "Level 1"
@@ -497,16 +492,15 @@ class CareCertificateStatusLabels(ColumnValues):
 
 @dataclass
 class ApprenticeID(ColumnValues):
-    """The possible values of the apprentice column in ASCWDS worker data"""
+    """The valid values of the apprentice column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
 
     yes: str = "1"
     no: str = "2"
-    not_known: str = "3"
 
 
 @dataclass
 class ApprenticeLabels(ColumnValues):
-    """The possible labels of the apprentice column in ASCWDS worker data"""
+    """The valid labels of the apprentice column in ASCWDS worker data"""
 
     yes: str = "Yes"
     no: str = "No"
@@ -530,7 +524,7 @@ class ZeroHoursLabels(ColumnValues):
 
 @dataclass
 class SourceOfRecruitmentID(ColumnValues):
-    """The possible values of the source of recruitment column in ASCWDS worker data"""
+    """The valid values of the source of recruitment column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
 
     adult_care_local_authority: str = "210"
     adult_care_private_or_voluntary: str = "211"
@@ -540,14 +534,13 @@ class SourceOfRecruitmentID(ColumnValues):
     not_previously_employed: str = "219"
     agency: str = "221"
     other_sources: str = "224"
-    not_known: str = "225"
     childrens_social_care: str = "226"
     first_role_after_education: str = "227"
 
 
 @dataclass
 class SourceOfRecruitmentLabels(ColumnValues):
-    """The possible labels of the source of recruitment column in ASCWDS worker data"""
+    """The valid labels of the source of recruitment column in ASCWDS worker data"""
 
     adult_care_local_authority: str = "Adult care sector: local authority"
     adult_care_private_or_voluntary: str = (
@@ -561,6 +554,23 @@ class SourceOfRecruitmentLabels(ColumnValues):
     other_sources: str = "Other sources"
     childrens_social_care: str = "Children’s/young people’s social care"
     first_role_after_education: str = "First role after education"
+
+
+@dataclass
+class NotKnownWorkerCodes(ColumnValues):
+    """The positive codes meaning not known, not recorded or not disclosed in ASCWDS worker data.
+
+    The worker vocabs above hold valid responses only, so these are kept apart.
+    Negative codes, the standard not recorded and not known values, are not listed.
+    """
+
+    gender: str = "3"  # Unknown
+    ethnicity: str = "99"  # Not known
+    disabled: str = "2"  # Not disclosed
+    social_care_qual_held: str = "3"  # Not known
+    level_social_care_qualification_held: str = "10"  # Not known
+    apprentice: str = "3"  # Not known
+    source_of_recruitment: str = "225"  # Not known
 
 
 @dataclass

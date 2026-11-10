@@ -30,16 +30,10 @@ from utils.column_values.ascwds_labelled_vocab import (
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import (
-    ApprenticeID,
     CountryOfBirthGroupLabels,
-    DisabledID,
-    EthnicityID,
-    GenderID,
-    LevelSocialCareQualificationHeldID,
     MainServiceID,
     NationalityGroupLabels,
-    SocialCareQualHeldID,
-    SourceOfRecruitmentID,
+    NotKnownWorkerCodes,
 )
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
@@ -98,7 +92,7 @@ def add_raw_worker_columns(
     Left joins on establishment ID, worker ID and import date. Raw rows are cut
     to the keys in `worker_lf` by a semi join before casting, so the full raw
     history is never cast or joined. Code columns stay strings and numeric
-    columns become `Float32` (about 7 significant digits; unparseable becomes null).
+    columns become `Float32`.
     Date columns are parsed from `dd/mm/yyyy` (blank becomes null; another shape
     raises; a two-digit year parses literally, so `01/03/15` is year 15). Relies
     on unique keys, which the cleaned data's validation checks.
@@ -143,8 +137,8 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Nulls not known, not recorded, not disclosed and unknown values.
 
     - Negative values in the code and numeric columns (the standard not
-      known/recorded values).
-    - Column-specific not known, not disclosed or unknown codes.
+      recorded/known values).
+    - The positive not known codes of each column, from `NotKnownWorkerCodes`.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw worker columns, codes
@@ -153,18 +147,16 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The input rows with those values set to null.
     """
-    # Column-specific codes meaning not known, not disclosed or unknown. The
-    # vocab has IDs for these but no labels, so they are never labelled.
     column_not_known_code = {
-        AWKClean.gender: GenderID.unknown,
-        AWKClean.ethnicity: EthnicityID.not_known,
-        AWKClean.disabled: DisabledID.not_disclosed,
-        AWKClean.social_care_qual_held: SocialCareQualHeldID.not_known,
+        AWKClean.gender: NotKnownWorkerCodes.gender,
+        AWKClean.ethnicity: NotKnownWorkerCodes.ethnicity,
+        AWKClean.disabled: NotKnownWorkerCodes.disabled,
+        AWKClean.social_care_qual_held: NotKnownWorkerCodes.social_care_qual_held,
         AWKClean.level_social_care_qualification_held: (
-            LevelSocialCareQualificationHeldID.not_known
+            NotKnownWorkerCodes.level_social_care_qualification_held
         ),
-        AWKClean.apprentice: ApprenticeID.not_known,
-        AWKClean.source_of_recruitment: SourceOfRecruitmentID.not_known,
+        AWKClean.apprentice: NotKnownWorkerCodes.apprentice,
+        AWKClean.source_of_recruitment: NotKnownWorkerCodes.source_of_recruitment,
     }
 
     code_expressions = []

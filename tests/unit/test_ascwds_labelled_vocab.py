@@ -3,6 +3,7 @@ from dataclasses import dataclass, fields
 import pytest
 
 from utils.column_values.ascwds_labelled_vocab import (
+    NotKnownWorkerCodes,
     APPRENTICE,
     CARE_CERTIFICATE_STATUS,
     DISABLED,
@@ -260,6 +261,16 @@ worker_paired_vocabs = {
     "source_of_recruitment": SOURCE_OF_RECRUITMENT,
 }
 
+not_known_worker_code_params = [
+    pytest.param("gender", "3", id="gender"),
+    pytest.param("ethnicity", "99", id="ethnicity"),
+    pytest.param("disabled", "2", id="disabled"),
+    pytest.param("social_care_qual_held", "3", id="qual_held"),
+    pytest.param("level_social_care_qualification_held", "10", id="qual_level"),
+    pytest.param("apprentice", "3", id="apprentice"),
+    pytest.param("source_of_recruitment", "225", id="recruitment"),
+]
+
 worker_code_to_label_test_cases = [
     WorkerCodeToLabelTestCase(
         id="gender",
@@ -381,28 +392,15 @@ class TestWorkerCodeToLabel:
             assert label == label.strip()
 
     @pytest.mark.parametrize(
-        "vocab_name, expected_unlabelled_codes",
-        [
-            pytest.param("gender", {"unknown": "3"}, id="gender"),
-            pytest.param("ethnicity", {"not_known": "99"}, id="ethnicity"),
-            pytest.param("disabled", {"not_disclosed": "2"}, id="disabled"),
-            pytest.param("social_care_qual_held", {"not_known": "3"}, id="qual_held"),
-            pytest.param(
-                "level_social_care_qualification_held",
-                {"not_known": "10"},
-                id="qual_level",
-            ),
-            pytest.param("apprentice", {"not_known": "3"}, id="apprentice"),
-            pytest.param(
-                "source_of_recruitment", {"not_known": "225"}, id="recruitment"
-            ),
-            pytest.param("care_certificate_status", {}, id="care_certificate"),
-            pytest.param("zero_hours", {}, id="zero_hours"),
-        ],
+        "vocab", worker_paired_vocabs.values(), ids=worker_paired_vocabs.keys()
     )
-    def test_unlabelled_codes_are_the_not_known_codes(
-        self, vocab_name, expected_unlabelled_codes
-    ):
-        vocab = worker_paired_vocabs[vocab_name]
+    def test_unlabelled_codes_is_empty(self, vocab):
+        assert vocab.unlabelled_codes() == {}
 
-        assert vocab.unlabelled_codes() == expected_unlabelled_codes
+    @pytest.mark.parametrize("column, expected_code", not_known_worker_code_params)
+    def test_not_known_worker_codes_has_expected_code(self, column, expected_code):
+        assert getattr(NotKnownWorkerCodes, column) == expected_code
+
+    @pytest.mark.parametrize("column, not_known_code", not_known_worker_code_params)
+    def test_not_known_worker_code_has_no_label(self, column, not_known_code):
+        assert not_known_code not in worker_paired_vocabs[column].code_to_label()
