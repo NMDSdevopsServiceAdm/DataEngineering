@@ -199,6 +199,24 @@ class TestAddIsLeaverFlag:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
+class TestCombinePayAndHours:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.combine_pay_and_hours_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows, schema=Schemas.pay_input_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.pay_output_schema, orient="row"
+        )
+
+        returned_lf = job.combine_pay_and_hours(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 def raw_worker_lf(*rows: dict) -> pl.LazyFrame:
     """Returns raw worker rows as a LazyFrame with all-string columns."""
     return pl.LazyFrame(list(rows), schema={column: pl.String for column in rows[0]})
@@ -224,7 +242,7 @@ class TestAddRawWorkerColumns:
             *job.WORKER_NUMERIC_COLUMNS,
             *job.WORKER_DATE_COLUMNS,
         ]
-        assert len(returned_names) - len(input_names) == 25
+        assert len(returned_names) - len(input_names) == 24
 
     def test_excludes_highest_qualification_level(self):
         raw_lf = raw_worker_lf(raw_worker_row("1", "20210105"))

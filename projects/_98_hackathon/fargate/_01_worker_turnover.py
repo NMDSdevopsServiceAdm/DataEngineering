@@ -18,8 +18,8 @@ def main(
     n_months: int = DEFAULT_MAX_MONTHS_SINCE_SAVE,
 ) -> None:
     """Filters worker data, adds main service type, flags leavers and active
-    establishments, adds raw worker columns, and groups nationality and country
-    of birth.
+    establishments, and adds raw worker columns with pay and hours combined into hours and hourly pay,
+    and groups nationality and country of birth.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
@@ -67,6 +67,7 @@ def main(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
+    filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.country_of_birth)
 

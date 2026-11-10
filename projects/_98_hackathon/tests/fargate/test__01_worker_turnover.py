@@ -13,6 +13,7 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
+    @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
@@ -29,6 +30,7 @@ class TestMain:
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        combine_pay_and_hours_mock: Mock,
         add_country_code_group_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -96,8 +98,11 @@ class TestMain:
         add_raw_worker_columns_mock.assert_called_once_with(
             add_establishment_active_flag_mock.return_value, raw_worker_lf_mock
         )
+        combine_pay_and_hours_mock.assert_called_once_with(
+            add_raw_worker_columns_mock.return_value
+        )
         assert add_country_code_group_mock.call_args_list == [
-            call(add_raw_worker_columns_mock.return_value, job.AWKClean.nationality),
+            call(combine_pay_and_hours_mock.return_value, job.AWKClean.nationality),
             call(
                 add_country_code_group_mock.return_value,
                 job.AWKClean.country_of_birth,
@@ -110,6 +115,7 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
+    @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
@@ -126,6 +132,7 @@ class TestMain:
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        combine_pay_and_hours_mock: Mock,
         add_country_code_group_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
