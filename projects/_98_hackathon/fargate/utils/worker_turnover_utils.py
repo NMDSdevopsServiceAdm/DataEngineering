@@ -350,7 +350,7 @@ def add_establishment_active_flag(
 
 
 def add_turnover_rate(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `turnover_rate`: leavers divided by start headcount per establishment-month.
+    """Adds `turnover_rate`: leavers / start employees per establishment-month.
 
     Repeated on every worker row of the establishment-month. Null where the
     establishment is not in both snapshots. Uses `.over()`, which the streaming

@@ -101,7 +101,7 @@ class WorkerTurnoverData:
     # establishment_in_both_snapshots, is_leaver, turnover_rate).
     add_turnover_rate_cases = [
         AddTurnoverRateCase(
-            id="returns_leavers_divided_by_start_headcount",
+            id="returns_leavers_divided_by_start_employees",
             expected_rows=[
                 ("est_a", "1", START, True, True, 0.25),
                 ("est_a", "2", START, True, False, 0.25),
