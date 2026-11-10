@@ -8,11 +8,8 @@ Retires several duplicate mechanisms:
 - utils/value_labels/reconciliation/ascwds_recon_regionid.py (hand-copied
   region_id code->label dict, used only by reconciliation.py)
 
-main_job_role, employment_status and the hackathon worker columns (gender,
-ethnicity, disabled, social_care_qual_held,
-level_social_care_qualification_held, care_certificate_status, apprentice,
-zero_hours, source_of_recruitment) have both a code-side and a label-side
-ColumnValues class; PairedVocab derives their {code: label} mapping by shared
+main_job_role, employment_status and the other coded ASC-WDS worker columns
+have both a code-side and a label-side ColumnValues class; PairedVocab derives their {code: label} mapping by shared
 field name instead of maintaining it a third time. Establishment_type,
 parent_permission, is_parent, main_service_id, and registration_type only
 ever had a label-side ColumnValues class - their raw ASC-WDS code is
