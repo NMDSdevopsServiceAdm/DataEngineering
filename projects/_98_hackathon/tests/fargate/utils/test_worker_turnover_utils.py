@@ -138,14 +138,16 @@ class TestAddCountryCodeGroup:
         [pytest.param(case, id=case.id) for case in Data.add_country_code_group_cases],
     )
     def test_returns_expected_rows(self, case):
-        input_schema = pl.Schema([(case.code_column, pl.Categorical())])
         expected_schema = pl.Schema(
-            [*input_schema.items(), (case.group_column, pl.Categorical())]
+            [
+                (case.code_column, pl.Categorical()),
+                (case.group_column, pl.Categorical()),
+            ]
         )
-        input_lf = pl.LazyFrame(case.input_rows, schema=input_schema, orient="row")
         expected_lf = pl.LazyFrame(
             case.expected_rows, schema=expected_schema, orient="row"
         )
+        input_lf = expected_lf.drop(case.group_column)
 
         returned_lf = job.add_country_code_group(input_lf, case.code_column)
 

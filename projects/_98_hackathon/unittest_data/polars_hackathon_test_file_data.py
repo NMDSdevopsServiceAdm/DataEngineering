@@ -72,7 +72,6 @@ class AddCodeGroupCase:
     id: str
     code_column: str
     group_column: str
-    input_rows: list[tuple[Any, ...]]
     expected_rows: list[tuple[Any, ...]]
 
 
@@ -94,35 +93,30 @@ def build_code_group_cases(
             id=f"{code_column}_eea_when_code_is_eea",
             code_column=code_column,
             group_column=group_column,
-            input_rows=[("250",)],
             expected_rows=[("250", eea_label)],
         ),
         AddCodeGroupCase(
             id=f"{code_column}_uk_when_code_is_826",
             code_column=code_column,
             group_column=group_column,
-            input_rows=[("826",)],
             expected_rows=[("826", uk_label)],
         ),
         AddCodeGroupCase(
             id=f"{code_column}_non_eea_when_code_is_other",
             code_column=code_column,
             group_column=group_column,
-            input_rows=[("356",)],
             expected_rows=[("356", "Non-EEA")],
         ),
         AddCodeGroupCase(
             id=f"{code_column}_null_when_code_is_null",
             code_column=code_column,
             group_column=group_column,
-            input_rows=[(None,)],
             expected_rows=[(None, None)],
         ),
         AddCodeGroupCase(
             id=f"{code_column}_null_when_code_is_blank",
             code_column=code_column,
             group_column=group_column,
-            input_rows=[("",)],
             expected_rows=[("", None)],
         ),
     ]
