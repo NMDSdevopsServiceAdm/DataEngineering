@@ -13,8 +13,7 @@ All notable changes to this project will be documented in this file.
 - Added nationality and country of birth groups (British or UK, EEA, Non-EEA) to the Hackathon Worker Turnover job output.
 
 ### Changed
-- Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.
-- Replaced the not known, not disclosed and unknown codes in the Hackathon Worker Turnover job's coded worker columns, and so their `_labels` columns, with null.
+- Replaced negative (not known/recorded) values and the not known, not disclosed and unknown codes in the Hackathon Worker Turnover job's raw worker columns with null.
 - Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
 
 ### Improved

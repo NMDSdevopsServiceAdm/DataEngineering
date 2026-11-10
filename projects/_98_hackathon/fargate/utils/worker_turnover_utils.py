@@ -138,12 +138,7 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     - Negative values in the code and numeric columns (the standard not
       known/recorded values).
-    - The not known, not disclosed or unknown code of gender, ethnicity,
-      disabled, social care qualification held, level of social care
-      qualification held, apprentice and source of recruitment. These have no
-      vocab entry, so `add_worker_labels` only labels valid answers.
-
-    Other codes, such as "Other" and "Not started", are real answers and are kept.
+    - Column-specific not known, not disclosed or unknown codes.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw worker columns, codes
