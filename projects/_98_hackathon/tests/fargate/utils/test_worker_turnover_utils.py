@@ -117,12 +117,10 @@ class TestAddTurnoverRate:
         [pytest.param(case, id=case.id) for case in Data.add_turnover_rate_cases],
     )
     def test_returns_expected_rows(self, case):
-        input_lf = pl.LazyFrame(
-            case.input_rows, schema=Schemas.turnover_rate_input_schema, orient="row"
-        )
         expected_lf = pl.LazyFrame(
-            case.expected_rows, schema=Schemas.turnover_rate_output_schema, orient="row"
+            case.expected_rows, schema=Schemas.turnover_rate_schema, orient="row"
         )
+        input_lf = expected_lf.drop(HackCols.turnover_rate)
 
         returned_lf = job.add_turnover_rate(input_lf)
 
@@ -138,11 +136,11 @@ class TestAddValidForAnalysisFlag:
         ],
     )
     def test_returns_expected_rows(self, case):
-        input_lf = pl.LazyFrame(
-            case.input_rows, schema=Schemas.valid_input_schema, orient="row"
-        )
         expected_lf = pl.LazyFrame(
-            case.expected_rows, schema=Schemas.valid_output_schema, orient="row"
+            case.expected_rows, schema=Schemas.valid_for_analysis_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(
+            HackCols.plausible_turnover, HackCols.valid_for_analysis
         )
 
         returned_lf = job.add_valid_for_analysis_flag(input_lf)
