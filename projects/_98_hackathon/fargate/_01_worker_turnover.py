@@ -71,6 +71,7 @@ def main(
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
     filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
+    filtered_lf = wUtils.null_not_known_codes(filtered_lf)
     filtered_lf = wUtils.add_worker_labels(filtered_lf)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.country_of_birth)

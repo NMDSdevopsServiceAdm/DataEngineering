@@ -140,6 +140,41 @@ def add_raw_worker_columns(
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
 
 
+def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Nulls the not known, not disclosed and unknown codes in the coded worker columns.
+
+    Run before `add_worker_labels` so the label column is null there too. Other
+    codes, such as "Other" and "Not started", are real answers and are kept.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the raw coded worker columns.
+
+    Returns:
+        pl.LazyFrame: The input rows with those codes set to null.
+    """
+    vocabs = {
+        AWKClean.gender: GENDER,
+        AWKClean.ethnicity: ETHNICITY,
+        AWKClean.disabled: DISABLED,
+        AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD,
+        AWKClean.level_social_care_qualification_held: (
+            LEVEL_SOCIAL_CARE_QUALIFICATION_HELD
+        ),
+        AWKClean.apprentice: APPRENTICE,
+        AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT,
+    }
+    not_known_fields = ("not_known", "not_disclosed", "unknown")
+
+    return worker_lf.with_columns(
+        pl.when(pl.col(column) != getattr(vocab.id_cls, field))
+        .then(pl.col(column))
+        .alias(column)
+        for column, vocab in vocabs.items()
+        for field in not_known_fields
+        if hasattr(vocab.id_cls, field)
+    )
+
+
 def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Adds a categorical `<column>_labels` column beside each coded worker column.
 

@@ -471,6 +471,68 @@ class TestAddRawWorkerColumns:
         assert returned_df.height == 2
 
 
+class TestNullNotKnownCodes:
+    not_known_codes = {
+        AWKClean.gender: "3",
+        AWKClean.ethnicity: "99",
+        AWKClean.disabled: "2",
+        AWKClean.social_care_qual_held: "3",
+        AWKClean.level_social_care_qualification_held: "10",
+        AWKClean.apprentice: "3",
+        AWKClean.source_of_recruitment: "225",
+    }
+    unchanged_columns = [AWKClean.care_certificate_status, AWKClean.zero_hours]
+
+    def codes_lf(self, **codes: str | None) -> pl.LazyFrame:
+        columns = [*self.not_known_codes, *self.unchanged_columns]
+        return pl.LazyFrame(
+            {column: [codes.get(column)] for column in columns},
+            schema={column: pl.Categorical for column in columns},
+        )
+
+    @pytest.mark.parametrize("column, code", not_known_codes.items())
+    def test_returns_null_for_not_known_code(self, column, code):
+        returned_df = job.null_not_known_codes(
+            self.codes_lf(**{column: code})
+        ).collect()
+
+        assert returned_df[column].to_list() == [None]
+
+    @pytest.mark.parametrize(
+        "column, code",
+        [
+            pytest.param(AWKClean.gender, "4", id="gender_other"),
+            pytest.param(AWKClean.ethnicity, "98", id="ethnicity_other"),
+            pytest.param(AWKClean.disabled, "0", id="disabled_no"),
+            pytest.param(AWKClean.source_of_recruitment, "224", id="other_sources"),
+            pytest.param(AWKClean.care_certificate_status, "2", id="not_started"),
+            pytest.param(AWKClean.zero_hours, "1", id="zero_hours_yes"),
+        ],
+    )
+    def test_keeps_other_codes(self, column, code):
+        returned_df = job.null_not_known_codes(
+            self.codes_lf(**{column: code})
+        ).collect()
+
+        assert returned_df[column].to_list() == [code]
+
+    def test_keeps_null_codes_and_categorical_type(self):
+        returned_lf = job.null_not_known_codes(self.codes_lf())
+
+        returned_df = returned_lf.collect()
+        assert returned_df.row(0) == (None,) * returned_df.width
+        assert all(
+            dtype == pl.Categorical for dtype in returned_lf.collect_schema().values()
+        )
+
+    def test_gives_null_label_after_labelling(self):
+        returned_df = job.add_worker_labels(
+            job.null_not_known_codes(self.codes_lf(**{AWKClean.gender: "3"}))
+        ).collect()
+
+        assert returned_df[f"{AWKClean.gender}_labels"].to_list() == [None]
+
+
 class TestAddWorkerLabels:
     coded_columns = [
         AWKClean.gender,
