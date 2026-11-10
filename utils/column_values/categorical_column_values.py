@@ -203,24 +203,6 @@ class JobGroupLabels(ColumnValues):
 
 
 @dataclass
-class NationalityGroupLabels(ColumnValues):
-    """The possible values of the grouped nationality column"""
-
-    non_eea: str = "Non-EEA"
-    eea_non_british: str = "EEA (non-British)"
-    british: str = "British"
-
-
-@dataclass
-class CountryOfBirthGroupLabels(ColumnValues):
-    """The possible values of the grouped country of birth column"""
-
-    non_eea: str = "Non-EEA"
-    eea_non_uk: str = "EEA (non-UK)"
-    uk: str = "UK"
-
-
-@dataclass
 class Region(ColumnValues):
     """The possible values of the region columns in ONS data"""
 

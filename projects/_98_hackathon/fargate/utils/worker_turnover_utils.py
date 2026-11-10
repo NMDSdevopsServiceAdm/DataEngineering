@@ -13,12 +13,12 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
-from utils.column_values.ascwds_labelled_vocab import MainServiceID
-from utils.column_values.categorical_column_values import (
+from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
+    MainServiceID,
     NationalityGroupLabels,
-    PrimaryServiceType,
 )
+from utils.column_values.categorical_column_values import PrimaryServiceType
 
 WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.gender,

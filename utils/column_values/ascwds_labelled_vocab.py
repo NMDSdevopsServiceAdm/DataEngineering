@@ -340,6 +340,24 @@ class RegionID(ColumnValues):
     not_known: str = "-1"
 
 
+@dataclass
+class NationalityGroupLabels(ColumnValues):
+    """The possible values of the grouped nationality column"""
+
+    non_eea: str = "Non-EEA"
+    eea_non_british: str = "EEA (non-British)"
+    british: str = "British"
+
+
+@dataclass
+class CountryOfBirthGroupLabels(ColumnValues):
+    """The possible values of the grouped country of birth column"""
+
+    non_eea: str = "Non-EEA"
+    eea_non_uk: str = "EEA (non-UK)"
+    uk: str = "UK"
+
+
 @dataclass(frozen=True)
 class PairedVocab:
     """Links a code `ColumnValues` class to its label `ColumnValues` class by field name."""
