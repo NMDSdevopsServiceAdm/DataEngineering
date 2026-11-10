@@ -74,6 +74,7 @@ def main(
     filtered_lf = wUtils.add_worker_labels(filtered_lf)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.country_of_birth)
+    filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
 
     utils.sink_to_parquet(filtered_lf, output_path=flagged_destination)
 
