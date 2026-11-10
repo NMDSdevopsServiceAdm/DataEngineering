@@ -12,8 +12,7 @@ class TestMain:
     FLAGGED_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.wUtils.add_country_of_birth_group")
-    @patch(f"{PATCH_PATH}.wUtils.add_nationality_group")
+    @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
@@ -30,8 +29,7 @@ class TestMain:
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
-        add_nationality_group_mock: Mock,
-        add_country_of_birth_group_mock: Mock,
+        add_country_code_group_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
@@ -98,20 +96,20 @@ class TestMain:
         add_raw_worker_columns_mock.assert_called_once_with(
             add_establishment_active_flag_mock.return_value, raw_worker_lf_mock
         )
-        add_nationality_group_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value
-        )
-        add_country_of_birth_group_mock.assert_called_once_with(
-            add_nationality_group_mock.return_value
-        )
+        assert add_country_code_group_mock.call_args_list == [
+            call(add_raw_worker_columns_mock.return_value, job.AWKClean.nationality),
+            call(
+                add_country_code_group_mock.return_value,
+                job.AWKClean.country_of_birth,
+            ),
+        ]
         sink_to_parquet_mock.assert_called_once_with(
-            add_country_of_birth_group_mock.return_value,
+            add_country_code_group_mock.return_value,
             output_path=self.FLAGGED_DESTINATION,
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.wUtils.add_country_of_birth_group")
-    @patch(f"{PATCH_PATH}.wUtils.add_nationality_group")
+    @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
@@ -128,8 +126,7 @@ class TestMain:
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
-        add_nationality_group_mock: Mock,
-        add_country_of_birth_group_mock: Mock,
+        add_country_code_group_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(

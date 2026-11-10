@@ -132,69 +132,53 @@ class TestAddMainServiceType:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestAddNationalityGroup:
+class TestAddCountryCodeGroup:
     @pytest.mark.parametrize(
         "case",
-        [pytest.param(case, id=case.id) for case in Data.add_nationality_group_cases],
+        [pytest.param(case, id=case.id) for case in Data.add_country_code_group_cases],
     )
     def test_returns_expected_rows(self, case):
-        input_lf = pl.LazyFrame(
-            case.input_rows, schema=Schemas.nationality_input_schema, orient="row"
+        input_schema = pl.Schema([(case.code_column, pl.Categorical())])
+        expected_schema = pl.Schema(
+            [*input_schema.items(), (case.group_column, pl.Categorical())]
         )
+        input_lf = pl.LazyFrame(case.input_rows, schema=input_schema, orient="row")
         expected_lf = pl.LazyFrame(
-            case.expected_rows, schema=Schemas.nationality_group_schema, orient="row"
+            case.expected_rows, schema=expected_schema, orient="row"
         )
 
-        returned_lf = job.add_nationality_group(input_lf)
+        returned_lf = job.add_country_code_group(input_lf, case.code_column)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    @pytest.mark.parametrize("code", EEA_CODES)
-    def test_returns_eea_non_british_for_each_eea_code(self, code):
-        input_lf = pl.LazyFrame(
-            [(code,)], schema=Schemas.nationality_input_schema, orient="row"
-        )
-
-        returned_df = job.add_nationality_group(input_lf).collect()
-
-        assert returned_df[HackCols.nationality_group].to_list() == [
-            "EEA (non-British)"
-        ]
-
-
-class TestAddCountryOfBirthGroup:
     @pytest.mark.parametrize(
-        "case",
+        "code_column, group_column, eea_label",
         [
-            pytest.param(case, id=case.id)
-            for case in Data.add_country_of_birth_group_cases
+            (AWKClean.nationality, HackCols.nationality_group, "EEA (non-British)"),
+            (
+                AWKClean.country_of_birth,
+                HackCols.country_of_birth_group,
+                "EEA (non-UK)",
+            ),
         ],
     )
-    def test_returns_expected_rows(self, case):
-        input_lf = pl.LazyFrame(
-            case.input_rows, schema=Schemas.country_of_birth_input_schema, orient="row"
-        )
-        expected_lf = pl.LazyFrame(
-            case.expected_rows,
-            schema=Schemas.country_of_birth_group_schema,
-            orient="row",
-        )
-
-        returned_lf = job.add_country_of_birth_group(input_lf)
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
     @pytest.mark.parametrize("code", EEA_CODES)
-    def test_returns_eea_non_uk_for_each_eea_code(self, code):
+    def test_returns_eea_label_for_each_eea_code(
+        self, code, code_column, group_column, eea_label
+    ):
         input_lf = pl.LazyFrame(
-            [(code,)], schema=Schemas.country_of_birth_input_schema, orient="row"
+            [(code,)], schema=pl.Schema([(code_column, pl.Categorical())]), orient="row"
         )
 
-        returned_df = job.add_country_of_birth_group(input_lf).collect()
+        returned_df = job.add_country_code_group(input_lf, code_column).collect()
 
-        assert returned_df[HackCols.country_of_birth_group].to_list() == [
-            "EEA (non-UK)"
-        ]
+        assert returned_df[group_column].to_list() == [eea_label]
+
+    def test_raises_value_error_for_unsupported_column(self):
+        input_lf = pl.LazyFrame({AWKClean.gender: ["1"]})
+
+        with pytest.raises(ValueError):
+            job.add_country_code_group(input_lf, AWKClean.gender)
 
 
 class TestAddIsLeaverFlag:

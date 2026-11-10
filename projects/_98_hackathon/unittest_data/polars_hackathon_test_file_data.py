@@ -10,6 +10,7 @@ from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import MainServiceID
 
@@ -62,6 +63,8 @@ class AddMainServiceTypeCase:
 @dataclass
 class AddCodeGroupCase:
     id: str
+    code_column: str
+    group_column: str
     input_rows: list[tuple[Any, ...]]
     expected_rows: list[tuple[Any, ...]]
 
@@ -75,31 +78,43 @@ EEA_CODES = [
 ]  # fmt: skip
 
 
-def build_code_group_cases(eea_label: str, uk_label: str) -> list[AddCodeGroupCase]:
+def build_code_group_cases(
+    code_column: str, group_column: str, eea_label: str, uk_label: str
+) -> list[AddCodeGroupCase]:
     """Builds the code to group cases shared by nationality and country of birth."""
     return [
         AddCodeGroupCase(
-            id="eea_non_british_when_code_is_eea",
+            id=f"{code_column}_eea_when_code_is_eea",
+            code_column=code_column,
+            group_column=group_column,
             input_rows=[("250",)],
             expected_rows=[("250", eea_label)],
         ),
         AddCodeGroupCase(
-            id="british_when_code_is_826",
+            id=f"{code_column}_uk_when_code_is_826",
+            code_column=code_column,
+            group_column=group_column,
             input_rows=[("826",)],
             expected_rows=[("826", uk_label)],
         ),
         AddCodeGroupCase(
-            id="non_eea_when_code_is_other",
+            id=f"{code_column}_non_eea_when_code_is_other",
+            code_column=code_column,
+            group_column=group_column,
             input_rows=[("356",)],
             expected_rows=[("356", "Non-EEA")],
         ),
         AddCodeGroupCase(
-            id="null_when_code_is_null",
+            id=f"{code_column}_null_when_code_is_null",
+            code_column=code_column,
+            group_column=group_column,
             input_rows=[(None,)],
             expected_rows=[(None, None)],
         ),
         AddCodeGroupCase(
-            id="null_when_code_is_blank",
+            id=f"{code_column}_null_when_code_is_blank",
+            code_column=code_column,
+            group_column=group_column,
             input_rows=[("",)],
             expected_rows=[("", None)],
         ),
@@ -125,13 +140,20 @@ class AddEstablishmentActiveFlagCase:
 
 @dataclass
 class WorkerTurnoverData:
-    add_nationality_group_cases = build_code_group_cases(
-        eea_label="EEA (non-British)", uk_label="British"
-    )
-
-    add_country_of_birth_group_cases = build_code_group_cases(
-        eea_label="EEA (non-UK)", uk_label="UK"
-    )
+    add_country_code_group_cases = [
+        *build_code_group_cases(
+            code_column=AWKClean.nationality,
+            group_column=HackCols.nationality_group,
+            eea_label="EEA (non-British)",
+            uk_label="British",
+        ),
+        *build_code_group_cases(
+            code_column=AWKClean.country_of_birth,
+            group_column=HackCols.country_of_birth_group,
+            eea_label="EEA (non-UK)",
+            uk_label="UK",
+        ),
+    ]
 
     add_main_service_type_cases = [
         AddMainServiceTypeCase(

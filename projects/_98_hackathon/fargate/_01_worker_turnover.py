@@ -67,8 +67,8 @@ def main(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
-    filtered_lf = wUtils.add_nationality_group(filtered_lf)
-    filtered_lf = wUtils.add_country_of_birth_group(filtered_lf)
+    filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
+    filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.country_of_birth)
 
     utils.sink_to_parquet(filtered_lf, output_path=flagged_destination)
 

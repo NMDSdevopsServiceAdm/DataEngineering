@@ -125,31 +125,44 @@ def add_raw_worker_columns(
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
 
 
-def _group_country_code(
-    worker_lf: pl.LazyFrame,
-    code_column: str,
-    group_column: str,
-    eea_label: str,
-    uk_label: str,
-    non_eea_label: str,
-) -> pl.LazyFrame:
+def add_country_code_group(worker_lf: pl.LazyFrame, code_column: str) -> pl.LazyFrame:
     """Adds a categorical group column from an ISO 3166-1 numeric country code.
 
-    The UK code gives `uk_label`, an EEA code (EU, Iceland, Liechtenstein or
-    Norway) gives `eea_label` and any other code gives `non_eea_label`. A null
-    or blank code gives null.
+    The UK code gives the UK label, an EEA code (EU, Iceland, Liechtenstein or
+    Norway) gives the EEA label and any other code gives "Non-EEA". A null or
+    blank code gives null.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the code column.
-        code_column (str): Name of the country code column.
-        group_column (str): Name of the group column to add.
-        eea_label (str): Label for EEA codes.
-        uk_label (str): Label for the UK code.
-        non_eea_label (str): Label for any other code.
+        code_column (str): `AWKClean.nationality` (adds `nationality_group`) or
+            `AWKClean.country_of_birth` (adds `country_of_birth_group`).
 
     Returns:
         pl.LazyFrame: The input rows with all columns plus the group column.
+
+    Raises:
+        ValueError: If `code_column` is not a supported column.
     """
+    group_columns_and_labels = {
+        AWKClean.nationality: (
+            HackCols.nationality_group,
+            NationalityGroupLabels.british,
+            NationalityGroupLabels.eea_non_british,
+            NationalityGroupLabels.non_eea,
+        ),
+        AWKClean.country_of_birth: (
+            HackCols.country_of_birth_group,
+            CountryOfBirthGroupLabels.uk,
+            CountryOfBirthGroupLabels.eea_non_uk,
+            CountryOfBirthGroupLabels.non_eea,
+        ),
+    }
+    if code_column not in group_columns_and_labels:
+        raise ValueError(f"Unsupported country code column: {code_column}")
+    group_column, uk_label, eea_label, non_eea_label = group_columns_and_labels[
+        code_column
+    ]
+
     # ISO 3166-1 numeric codes, unpadded as held in the raw data.
     uk_code = "826"
     eea_codes = [
@@ -196,56 +209,6 @@ def _group_country_code(
         .otherwise(pl.lit(non_eea_label))
         .cast(pl.Categorical)
         .alias(group_column)
-    )
-
-
-def add_nationality_group(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `nationality_group` from the nationality code.
-
-    Values:
-    - "British" for the UK code (826).
-    - "EEA (non-British)" for any other EEA code.
-    - "Non-EEA" for any other code.
-    - null for a null or blank code.
-
-    Args:
-        worker_lf (pl.LazyFrame): Worker data with the raw nationality code.
-
-    Returns:
-        pl.LazyFrame: The input rows with all columns plus `nationality_group`.
-    """
-    return _group_country_code(
-        worker_lf,
-        AWKClean.nationality,
-        HackCols.nationality_group,
-        eea_label=NationalityGroupLabels.eea_non_british,
-        uk_label=NationalityGroupLabels.british,
-        non_eea_label=NationalityGroupLabels.non_eea,
-    )
-
-
-def add_country_of_birth_group(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `country_of_birth_group` from the country of birth code.
-
-    Values:
-    - "UK" for the UK code (826).
-    - "EEA (non-UK)" for any other EEA code.
-    - "Non-EEA" for any other code.
-    - null for a null or blank code.
-
-    Args:
-        worker_lf (pl.LazyFrame): Worker data with the raw country of birth code.
-
-    Returns:
-        pl.LazyFrame: The input rows with all columns plus `country_of_birth_group`.
-    """
-    return _group_country_code(
-        worker_lf,
-        AWKClean.country_of_birth,
-        HackCols.country_of_birth_group,
-        eea_label=CountryOfBirthGroupLabels.eea_non_uk,
-        uk_label=CountryOfBirthGroupLabels.uk,
-        non_eea_label=CountryOfBirthGroupLabels.non_eea,
     )
 
 
