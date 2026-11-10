@@ -30,9 +30,16 @@ from utils.column_values.ascwds_labelled_vocab import (
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import (
+    ApprenticeID,
     CountryOfBirthGroupLabels,
+    DisabledID,
+    EthnicityID,
+    GenderID,
+    LevelSocialCareQualificationHeldID,
     MainServiceID,
     NationalityGroupLabels,
+    SocialCareQualHeldID,
+    SourceOfRecruitmentID,
 )
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
@@ -146,25 +153,26 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The input rows with those values set to null.
     """
-    not_known_vocabs = {
-        AWKClean.gender: GENDER,
-        AWKClean.ethnicity: ETHNICITY,
-        AWKClean.disabled: DISABLED,
-        AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD,
+    # Column-specific codes meaning not known, not disclosed or unknown. The
+    # vocab has IDs for these but no labels, so they are never labelled.
+    column_not_known_code = {
+        AWKClean.gender: GenderID.unknown,
+        AWKClean.ethnicity: EthnicityID.not_known,
+        AWKClean.disabled: DisabledID.not_disclosed,
+        AWKClean.social_care_qual_held: SocialCareQualHeldID.not_known,
         AWKClean.level_social_care_qualification_held: (
-            LEVEL_SOCIAL_CARE_QUALIFICATION_HELD
+            LevelSocialCareQualificationHeldID.not_known
         ),
-        AWKClean.apprentice: APPRENTICE,
-        AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT,
+        AWKClean.apprentice: ApprenticeID.not_known,
+        AWKClean.source_of_recruitment: SourceOfRecruitmentID.not_known,
     }
 
     code_expressions = []
     for column in WORKER_CATEGORICAL_COLUMNS:
         code = pl.col(column)
         keep = ~code.str.starts_with("-")
-        if column in not_known_vocabs:
-            for not_known_code in not_known_vocabs[column].unlabelled_codes().values():
-                keep &= code != not_known_code
+        if column in column_not_known_code:
+            keep &= code != column_not_known_code[column]
         code_expressions.append(pl.when(keep).then(code))
 
     numeric_columns = pl.col(WORKER_NUMERIC_COLUMNS)
