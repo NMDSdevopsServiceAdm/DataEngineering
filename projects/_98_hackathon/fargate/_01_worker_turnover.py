@@ -17,9 +17,10 @@ def main(
     flagged_destination: str,
     n_months: int = DEFAULT_MAX_MONTHS_SINCE_SAVE,
 ) -> None:
-    """Filters worker data, adds main service type, flags leavers and active
-    establishments, and adds raw worker columns with pay and hours combined into hours and hourly pay,
-    and groups nationality and country of birth.
+    """Creates the worker-level dataset for the turnover hackathon.
+
+    Combines ASC-WDS worker data with workplace information, adds the leaver flags
+    and workplace turnover measures needed to analyse and model worker turnover.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
