@@ -157,6 +157,8 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         ),
         AWKClean.apprentice: NotKnownWorkerCodes.apprentice,
         AWKClean.source_of_recruitment: NotKnownWorkerCodes.source_of_recruitment,
+        AWKClean.nationality: NotKnownWorkerCodes.nationality,
+        AWKClean.country_of_birth: NotKnownWorkerCodes.country_of_birth,
     }
 
     code_expressions = []

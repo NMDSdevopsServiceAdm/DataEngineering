@@ -271,6 +271,11 @@ not_known_worker_code_params = [
     pytest.param("source_of_recruitment", "225", id="recruitment"),
 ]
 
+not_known_ungrouped_code_params = [
+    pytest.param("nationality", "999", id="nationality"),
+    pytest.param("country_of_birth", "999", id="country_of_birth"),
+]
+
 worker_code_to_label_test_cases = [
     WorkerCodeToLabelTestCase(
         id="gender",
@@ -397,7 +402,10 @@ class TestWorkerCodeToLabel:
     def test_unlabelled_codes_is_empty(self, vocab):
         assert vocab.unlabelled_codes() == {}
 
-    @pytest.mark.parametrize("column, expected_code", not_known_worker_code_params)
+    @pytest.mark.parametrize(
+        "column, expected_code",
+        [*not_known_worker_code_params, *not_known_ungrouped_code_params],
+    )
     def test_not_known_worker_codes_has_expected_code(self, column, expected_code):
         assert getattr(NotKnownWorkerCodes, column) == expected_code
 

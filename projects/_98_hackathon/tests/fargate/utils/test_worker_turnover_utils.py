@@ -457,6 +457,8 @@ class TestNullNotKnownCodes:
         ),
         AWKClean.apprentice: NotKnownWorkerCodes.apprentice,
         AWKClean.source_of_recruitment: NotKnownWorkerCodes.source_of_recruitment,
+        AWKClean.nationality: NotKnownWorkerCodes.nationality,
+        AWKClean.country_of_birth: NotKnownWorkerCodes.country_of_birth,
     }
 
     def codes_lf(self, **values: str | float | None) -> pl.LazyFrame:
@@ -542,6 +544,23 @@ class TestNullNotKnownCodes:
         ).collect()
 
         assert returned_df[f"{AWKClean.gender}_labels"].to_list() == [None]
+
+    @pytest.mark.parametrize(
+        "code_column, group_column",
+        [
+            (AWKClean.nationality, HackCols.nationality_group),
+            (AWKClean.country_of_birth, HackCols.country_of_birth_group),
+        ],
+    )
+    def test_gives_null_group_after_grouping(self, code_column, group_column):
+        nulled_lf = job.null_not_known_codes(self.codes_lf(**{code_column: "999"}))
+
+        returned_df = job.add_country_code_group(
+            nulled_lf.with_columns(pl.col(code_column).cast(pl.Categorical)),
+            code_column,
+        ).collect()
+
+        assert returned_df[group_column].to_list() == [None]
 
 
 class TestAddWorkerLabels:

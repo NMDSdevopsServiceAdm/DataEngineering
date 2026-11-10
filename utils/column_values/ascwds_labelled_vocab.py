@@ -571,6 +571,8 @@ class NotKnownWorkerCodes(ColumnValues):
     level_social_care_qualification_held: str = "10"  # Not known
     apprentice: str = "3"  # Not known
     source_of_recruitment: str = "225"  # Not known
+    nationality: str = "999"  # Not known
+    country_of_birth: str = "999"  # Not known
 
 
 @dataclass
