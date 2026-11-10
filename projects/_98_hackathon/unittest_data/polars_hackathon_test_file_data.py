@@ -16,6 +16,8 @@ from utils.column_values.ascwds_labelled_vocab import MainServiceID
 
 START = date(2021, 1, 5)
 END = date(2022, 1, 5)  # 12 months after START
+MID = date(2021, 6, 1)  # between START and END
+BEFORE_START = date(2020, 6, 1)
 
 
 def raw_worker_row(
@@ -146,6 +148,12 @@ class AddTurnoverRateCase:
 
 
 @dataclass
+class AddHeadcountGapCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class AddValidForAnalysisFlagCase:
     id: str
     expected_rows: list[tuple[Any, ...]]
@@ -194,41 +202,143 @@ class WorkerTurnoverData:
         ),
     ]
 
+    # Rows: (establishment_id, worker_id, import_date, created_date, is_leaver,
+    # headcount_reconciliation_gap, headcount_gap_within_tolerance). Tolerance is 1.
+    add_headcount_reconciliation_gap_cases = [
+        AddHeadcountGapCase(
+            id="returns_zero_when_headcounts_reconcile",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "2", START, None, False, 0, True),
+                ("est_a", "3", START, None, True, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, None, None, None, None),
+                ("est_a", "4", END, MID, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_positive_gap_when_workers_missing_from_end",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 1, True),
+                ("est_a", "2", START, None, False, 1, True),
+                ("est_a", "1", END, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_negative_gap_when_unexplained_workers_at_end",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -1, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, BEFORE_START, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="flags_false_when_positive_gap_above_tolerance",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 2, False),
+                ("est_a", "2", START, None, False, 2, False),
+                ("est_a", "3", START, None, False, 2, False),
+                ("est_a", "1", END, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="flags_false_when_negative_gap_beyond_tolerance",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -2, False),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, BEFORE_START, None, None, None),
+                ("est_a", "3", END, BEFORE_START, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="does_not_count_worker_created_on_start_date",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -1, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, START, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="counts_worker_created_on_end_date",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, END, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="does_not_count_worker_with_null_created_date",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -1, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_null_when_establishment_not_in_end_snapshot",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_b", "1", START, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_null_when_no_end_snapshot",
+            expected_rows=[("est_a", "1", START, None, None, None, None)],
+        ),
+        AddHeadcountGapCase(
+            id="calculates_gap_separately_per_establishment",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_b", "1", START, None, False, 2, False),
+                ("est_b", "2", START, None, False, 2, False),
+                ("est_b", "3", START, None, False, 2, False),
+                ("est_b", "1", END, None, None, None, None),
+            ],
+        ),
+    ]
+
     # Rows: (establishment_id, worker_id, import_date,
-    # establishment_in_both_snapshots, establishment_active, turnover_rate,
-    # plausible_turnover, valid_for_analysis).
+    # establishment_in_both_snapshots, establishment_active,
+    # headcount_gap_within_tolerance, turnover_rate, plausible_turnover,
+    # valid_for_analysis).
     add_valid_for_analysis_flag_cases = [
         AddValidForAnalysisFlagCase(
             id="valid_when_all_components_true",
-            expected_rows=[("est_a", "1", START, True, True, 0.25, True, True)],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.25, True, True)],
         ),
         AddValidForAnalysisFlagCase(
             id="implausible_and_invalid_when_rate_is_zero",
-            expected_rows=[("est_a", "1", START, True, True, 0.0, False, False)],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.0, False, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="implausible_and_invalid_when_rate_is_one",
-            expected_rows=[("est_a", "1", START, True, True, 1.0, False, False)],
+            expected_rows=[("est_a", "1", START, True, True, True, 1.0, False, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="plausible_when_rate_just_above_zero",
-            expected_rows=[("est_a", "1", START, True, True, 0.125, True, True)],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.125, True, True)],
         ),
         AddValidForAnalysisFlagCase(
             id="plausible_when_rate_just_below_one",
-            expected_rows=[("est_a", "1", START, True, True, 0.875, True, True)],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.875, True, True)],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_establishment_inactive",
-            expected_rows=[("est_a", "1", START, True, False, 0.25, True, False)],
+            expected_rows=[("est_a", "1", START, True, False, True, 0.25, True, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_headcount_gap_outside_tolerance",
+            expected_rows=[("est_a", "1", START, True, True, False, 0.25, True, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_establishment_not_in_both_snapshots",
-            expected_rows=[("est_a", "1", START, False, None, None, None, False)],
+            expected_rows=[("est_a", "1", START, False, None, None, None, None, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_no_end_snapshot",
-            expected_rows=[("est_a", "1", START, None, None, None, None, False)],
+            expected_rows=[("est_a", "1", START, None, None, None, None, None, False)],
         ),
     ]
 

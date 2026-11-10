@@ -116,6 +116,18 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    headcount_gap_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.created_date, pl.Date()),
+            (HackCols.is_leaver, pl.Boolean()),
+            (HackCols.headcount_reconciliation_gap, pl.Int32()),
+            (HackCols.headcount_gap_within_tolerance, pl.Boolean()),
+        ]
+    )
+
     valid_for_analysis_schema = pl.Schema(
         [
             (AWKClean.establishment_id, CatColType.EstablishmentCatType),
@@ -123,6 +135,7 @@ class WorkerTurnoverSchemas:
             (AWKClean.ascwds_worker_import_date, pl.Date()),
             (HackCols.establishment_in_both_snapshots, pl.Boolean()),
             (HackCols.establishment_active, pl.Boolean()),
+            (HackCols.headcount_gap_within_tolerance, pl.Boolean()),
             (HackCols.turnover_rate, pl.Float32()),
             (HackCols.plausible_turnover, pl.Boolean()),
             (HackCols.valid_for_analysis, pl.Boolean()),
