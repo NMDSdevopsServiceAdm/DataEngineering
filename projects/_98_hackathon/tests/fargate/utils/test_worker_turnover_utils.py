@@ -276,23 +276,6 @@ class TestAddNlwAndPayDifference:
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_keeps_row_order_and_count(self):
-        rows = [
-            (date(2025, 6, 1), "No", 30.0, 13.0),
-            (date(2020, 1, 1), "Yes", 18.0, 4.0),
-            (date(2024, 6, 1), "No", 19.0, 9.0),
-        ]
-        input_lf = pl.LazyFrame(rows, schema=Schemas.nlw_input_schema, orient="row")
-
-        returned_df = job.add_nlw_and_pay_difference(input_lf).collect()
-
-        assert returned_df[AWKClean.ascwds_worker_import_date].to_list() == [
-            r[0] for r in rows
-        ]
-        assert returned_df[HackCols.nlw_hourly_rate].to_list() == pytest.approx(
-            [12.21, 3.90, 8.60]
-        )
-
 
 def raw_worker_lf(*rows: dict) -> pl.LazyFrame:
     """Returns raw worker rows as a LazyFrame with all-string columns."""

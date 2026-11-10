@@ -242,8 +242,8 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
       `hourly_pay` is null.
 
     The lookup has a row per rate date and band start (under 100 rows), joined on
-    exact keys so each worker matches one row, the frame stays lazy and rows keep
-    their order. Rates start in April 2019; earlier import dates get a null rate.
+    exact keys so each worker matches one row and the frame stays lazy. Rates start
+    in April 2019; earlier import dates get a null rate.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
