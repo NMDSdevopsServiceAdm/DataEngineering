@@ -90,8 +90,7 @@ def add_raw_worker_columns(
 
     Left joins on establishment ID, worker ID and import date. Raw rows are cut
     to the keys in `worker_lf` by a semi join before casting, so the full raw
-    history is never cast or joined. Negative values (not known/recorded) in code
-    and numeric columns become null. Code columns become categorical and numeric
+    history is never cast or joined. Code columns become categorical and numeric
     columns `Float32` (about 7 significant digits; unparseable becomes null).
     Date columns are parsed from `dd/mm/yyyy` (blank becomes null; another shape
     raises; a two-digit year parses literally, so `01/03/15` is year 15). Relies
@@ -125,15 +124,9 @@ def add_raw_worker_columns(
 
     day_first_format = "%d/%m/%Y"
 
-    code_columns = pl.col(WORKER_CATEGORICAL_COLUMNS)
-    numeric_columns = pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False)
-
-    # Codes stay text, so match negatives on the string.
     raw_worker_lf = raw_worker_lf.with_columns(
-        pl.when(~code_columns.str.starts_with("-"))
-        .then(code_columns)
-        .cast(pl.Categorical),
-        pl.when(numeric_columns >= 0).then(numeric_columns),
+        pl.col(WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical),
+        pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False),
         pl.col(WORKER_DATE_COLUMNS).replace("", None).str.to_date(day_first_format),
     )
 
@@ -141,17 +134,32 @@ def add_raw_worker_columns(
 
 
 def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Nulls the not known, not disclosed and unknown codes in the coded worker columns.
+    """Nulls not known, not recorded, not disclosed and unknown values.
+
+    - Negative values in the code and numeric columns (the standard not
+      known/recorded values).
+    - The not known, not disclosed or unknown code of gender, ethnicity,
+      disabled, social care qualification held, level of social care
+      qualification held, apprentice and source of recruitment.
 
     Run before `add_worker_labels` so the label column is null there too. Other
     codes, such as "Other" and "Not started", are real answers and are kept.
 
     Args:
-        worker_lf (pl.LazyFrame): Worker data with the raw coded worker columns.
+        worker_lf (pl.LazyFrame): Worker data with the raw worker columns, codes
+            categorical and numbers `Float32`.
 
     Returns:
-        pl.LazyFrame: The input rows with those codes set to null.
+        pl.LazyFrame: The input rows with those values set to null.
     """
+    code_columns = pl.col(WORKER_CATEGORICAL_COLUMNS)
+    numeric_columns = pl.col(WORKER_NUMERIC_COLUMNS)
+
+    worker_lf = worker_lf.with_columns(
+        pl.when(~code_columns.cast(pl.String).str.starts_with("-")).then(code_columns),
+        pl.when(numeric_columns >= 0).then(numeric_columns),
+    )
+
     vocabs = {
         AWKClean.gender: GENDER,
         AWKClean.ethnicity: ETHNICITY,
