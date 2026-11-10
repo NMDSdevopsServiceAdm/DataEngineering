@@ -186,6 +186,24 @@ class TestAddIsLeaverFlag:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
+class TestCombinePayAndHours:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.combine_pay_and_hours_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows, schema=Schemas.pay_input_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.pay_output_schema, orient="row"
+        )
+
+        returned_lf = job.combine_pay_and_hours(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 def raw_worker_lf(*rows: dict) -> pl.LazyFrame:
     """Returns raw worker rows as a LazyFrame with all-string columns."""
     return pl.LazyFrame(list(rows), schema={column: pl.String for column in rows[0]})
@@ -211,7 +229,7 @@ class TestAddRawWorkerColumns:
             *job.WORKER_NUMERIC_COLUMNS,
             *job.WORKER_DATE_COLUMNS,
         ]
-        assert len(returned_names) - len(input_names) == 25
+        assert len(returned_names) - len(input_names) == 24
 
     def test_excludes_highest_qualification_level(self):
         raw_lf = raw_worker_lf(raw_worker_row("1", "20210105"))
@@ -399,3 +417,52 @@ class TestAddRawWorkerColumns:
         returned_df = job.add_raw_worker_columns(flagged_lf, raw_lf).collect()
 
         assert returned_df.height == 2
+
+
+class TestAddWorkerLabels:
+    coded_columns = [
+        AWKClean.gender,
+        AWKClean.ethnicity,
+        AWKClean.disabled,
+        AWKClean.social_care_qual_held,
+        AWKClean.level_social_care_qualification_held,
+        AWKClean.care_certificate_status,
+        AWKClean.apprentice,
+        AWKClean.zero_hours,
+        AWKClean.source_of_recruitment,
+    ]
+    label_columns = [f"{column}_labels" for column in coded_columns]
+
+    def codes_lf(self, code: str | None) -> pl.LazyFrame:
+        return pl.LazyFrame(
+            {column: [code] for column in self.coded_columns},
+            schema={column: pl.Categorical for column in self.coded_columns},
+        )
+
+    def test_adds_a_label_column_beside_each_coded_column(self):
+        returned_lf = job.add_worker_labels(self.codes_lf("1"))
+
+        assert returned_lf.collect_schema().names() == [
+            *self.coded_columns,
+            *self.label_columns,
+        ]
+
+    def test_returns_label_for_mapped_code(self):
+        returned_df = job.add_worker_labels(self.codes_lf("1")).collect()
+
+        assert returned_df[f"{AWKClean.gender}_labels"].to_list() == ["Male"]
+
+    def test_returns_null_label_for_null_code(self):
+        returned_df = job.add_worker_labels(self.codes_lf(None)).collect()
+
+        assert returned_df.select(self.label_columns).row(0) == (None,) * 9
+
+    def test_keeps_raw_code_as_label_for_unmapped_code(self):
+        returned_df = job.add_worker_labels(self.codes_lf("999")).collect()
+
+        assert returned_df[f"{AWKClean.gender}_labels"].to_list() == ["999"]
+
+    def test_label_columns_are_categorical(self):
+        returned_schema = job.add_worker_labels(self.codes_lf("1")).collect_schema()
+
+        assert all(returned_schema[c] == pl.Categorical for c in self.label_columns)
