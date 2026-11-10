@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
+- Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, replacing the raw hourly rate, salary, contracted hours and average hours columns.
 - Added previous run April and short-term cumulative percentage changes, and their differences from the current run, to the Monthly Tracker assessment.
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
 

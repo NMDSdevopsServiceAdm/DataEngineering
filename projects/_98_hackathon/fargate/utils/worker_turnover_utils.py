@@ -38,7 +38,6 @@ WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.nationality,
     AWKClean.country_of_birth,
     AWKClean.disabled,
-    AWKClean.hourly_or_annual_pay,
     AWKClean.social_care_qual_held,
     AWKClean.level_social_care_qualification_held,
     AWKClean.care_certificate_status,
@@ -171,6 +170,53 @@ def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     label_columns = [f"{column}_{DLC.label}s" for column in code_to_label]
     return worker_lf.with_columns(pl.col(label_columns).cast(pl.Categorical))
+
+
+def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Combines pay and hours into `hours` and `hourly_pay`, dropping the raw columns.
+
+    - `hours` is the first of contracted hours then average hours that is above
+      0 (raw hours can be 0), else null.
+    - `hourly_pay` is the hourly rate where given, else the salary converted to
+      hourly pay, null when hours is null.
+
+    A worker has an hourly rate or a salary, never both, so null checks choose
+    between them; if both were given, the rate is used. Rates of 0 are kept.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the raw hourly rate, salary,
+            contracted hours and average hours.
+
+    Returns:
+        pl.LazyFrame: The input rows with `hours` and `hourly_pay` in place of
+            the raw hourly rate, salary, contracted hours and average hours.
+    """
+    weeks_per_year = 52
+
+    contracted_hours = pl.col(AWKClean.contracted_hours)
+    average_hours = pl.col(AWKClean.average_hours)
+
+    worker_lf = worker_lf.with_columns(
+        pl.coalesce(
+            pl.when(contracted_hours > 0).then(contracted_hours),
+            pl.when(average_hours > 0).then(average_hours),
+        ).alias(HackCols.hours)
+    )
+
+    annual_salary_to_hourly_pay = pl.col(AWKClean.salary) / (
+        pl.col(HackCols.hours) * weeks_per_year
+    )
+
+    return worker_lf.with_columns(
+        pl.coalesce(AWKClean.hourly_rate, annual_salary_to_hourly_pay).alias(
+            HackCols.hourly_pay
+        )
+    ).drop(
+        AWKClean.hourly_rate,
+        AWKClean.salary,
+        AWKClean.contracted_hours,
+        AWKClean.average_hours,
+    )
 
 
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
