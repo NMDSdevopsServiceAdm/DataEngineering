@@ -3,14 +3,23 @@ from dataclasses import dataclass, fields
 import pytest
 
 from utils.column_values.ascwds_labelled_vocab import (
+    APPRENTICE,
+    CARE_CERTIFICATE_STATUS,
+    DISABLED,
     EMPLOYMENT_STATUS,
     ESTABLISHMENT_TYPE_CODE_TO_LABEL,
+    ETHNICITY,
+    GENDER,
     IS_PARENT_CODE_TO_LABEL,
+    LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
     MAIN_JOB_ROLE,
     MAIN_SERVICE_ID_CODE_TO_LABEL,
     PARENT_PERMISSION_CODE_TO_LABEL,
     REGION_ID_CODE_TO_LABEL,
     REGISTRATION_TYPE_CODE_TO_LABEL,
+    SOCIAL_CARE_QUAL_HELD,
+    SOURCE_OF_RECRUITMENT,
+    ZERO_HOURS,
     ColumnValues,
     EmploymentStatusID,
     EmploymentStatusLabels,
@@ -224,3 +233,162 @@ class TestWorkplaceCodeToLabelDicts:
     def test_specific_codes_map_to_their_expected_label(self, case):
         for code, expected_label in case.expected_pairs.items():
             assert case.code_to_label[code] == expected_label
+
+
+@dataclass
+class WorkerCodeToLabelTestCase:
+    id: str
+    code_to_label: dict[str, str]
+    expected_code_count: int
+    # Hand-written pairs, independent of the vocab classes, to catch a
+    # transposed or mistyped code or label.
+    expected_pairs: dict[str, str]
+
+    def as_pytest_param(self):
+        return pytest.param(self, id=self.id)
+
+
+worker_paired_vocabs = {
+    "gender": GENDER,
+    "ethnicity": ETHNICITY,
+    "disabled": DISABLED,
+    "social_care_qual_held": SOCIAL_CARE_QUAL_HELD,
+    "level_social_care_qualification_held": LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
+    "care_certificate_status": CARE_CERTIFICATE_STATUS,
+    "apprentice": APPRENTICE,
+    "zero_hours": ZERO_HOURS,
+    "source_of_recruitment": SOURCE_OF_RECRUITMENT,
+}
+
+worker_code_to_label_test_cases = [
+    WorkerCodeToLabelTestCase(
+        id="gender",
+        code_to_label=GENDER.code_to_label(),
+        expected_code_count=4,
+        expected_pairs={
+            "1": "Male",
+            "2": "Female",
+            "3": "Unknown",
+            "4": "Other",
+        },
+    ),
+    WorkerCodeToLabelTestCase(
+        id="ethnicity",
+        code_to_label=ETHNICITY.code_to_label(),
+        expected_code_count=19,
+        expected_pairs={
+            "31": "English / Welsh / Scottish / Northern Irish / British",
+            "38": "Any Other Mixed / multiple ethnic background",
+            "46": "Any other Black / African / Caribbean background",
+            "98": "Any other ethnic group",
+            "99": "Not known",
+        },
+    ),
+    WorkerCodeToLabelTestCase(
+        id="disabled",
+        code_to_label=DISABLED.code_to_label(),
+        expected_code_count=3,
+        expected_pairs={
+            "0": "No",
+            "1": "Yes",
+            "2": "Not disclosed",
+        },
+    ),
+    WorkerCodeToLabelTestCase(
+        id="social_care_qual_held",
+        code_to_label=SOCIAL_CARE_QUAL_HELD.code_to_label(),
+        expected_code_count=3,
+        expected_pairs={
+            "1": "Yes",
+            "2": "No",
+            "3": "Not known",
+        },
+    ),
+    WorkerCodeToLabelTestCase(
+        id="level_social_care_qualification_held",
+        code_to_label=LEVEL_SOCIAL_CARE_QUALIFICATION_HELD.code_to_label(),
+        expected_code_count=10,
+        expected_pairs={
+            "0": "Entry",
+            "1": "Level 1",
+            "7": "Level 7",
+            "8": "Level 8 or above",
+            "10": "Not known",
+        },
+    ),
+    WorkerCodeToLabelTestCase(
+        id="care_certificate_status",
+        code_to_label=CARE_CERTIFICATE_STATUS.code_to_label(),
+        expected_code_count=3,
+        expected_pairs={
+            "1": "Completed",
+            "2": "Not started",
+            "3": "In progress or partially completed",
+        },
+    ),
+    WorkerCodeToLabelTestCase(
+        id="apprentice",
+        code_to_label=APPRENTICE.code_to_label(),
+        expected_code_count=3,
+        expected_pairs={
+            "1": "Yes",
+            "2": "No",
+            "3": "Not known",
+        },
+    ),
+    WorkerCodeToLabelTestCase(
+        id="zero_hours",
+        code_to_label=ZERO_HOURS.code_to_label(),
+        expected_code_count=2,
+        expected_pairs={
+            "0": "No",
+            "1": "Yes",
+        },
+    ),
+    WorkerCodeToLabelTestCase(
+        id="source_of_recruitment",
+        code_to_label=SOURCE_OF_RECRUITMENT.code_to_label(),
+        expected_code_count=11,
+        expected_pairs={
+            "210": "Adult care sector: local authority",
+            "217": "Internal promotion or transfer or career development",
+            "225": "Not known",
+            "226": "Children’s/young people’s social care",
+            "227": "First role after education",
+        },
+    ),
+]
+
+
+class TestWorkerCodeToLabel:
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in worker_code_to_label_test_cases]
+    )
+    def test_code_to_label_has_expected_code_count(self, case):
+        assert len(case.code_to_label) == case.expected_code_count
+
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in worker_code_to_label_test_cases]
+    )
+    def test_specific_codes_map_to_expected_label(self, case):
+        for code, expected_label in case.expected_pairs.items():
+            assert case.code_to_label[code] == expected_label
+
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in worker_code_to_label_test_cases]
+    )
+    def test_code_to_label_has_no_negative_codes(self, case):
+        assert all(int(code) >= 0 for code in case.code_to_label)
+
+    @pytest.mark.parametrize(
+        "case", [c.as_pytest_param() for c in worker_code_to_label_test_cases]
+    )
+    def test_labels_have_no_surrounding_whitespace(self, case):
+        for label in case.code_to_label.values():
+            assert label == label.strip()
+
+    @pytest.mark.parametrize(
+        "vocab", worker_paired_vocabs.values(), ids=worker_paired_vocabs.keys()
+    )
+    def test_unlabelled_codes_is_empty(self, vocab):
+        assert vocab.unlabelled_codes() == {}
