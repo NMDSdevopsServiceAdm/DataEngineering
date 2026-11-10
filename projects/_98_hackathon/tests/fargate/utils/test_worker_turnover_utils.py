@@ -9,6 +9,7 @@ from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import
     WorkerTurnoverData as Data,
 )
 from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import (
+    EEA_CODES,
     raw_worker_row,
 )
 from projects._98_hackathon.unittest_data.polars_hackathon_test_file_schemas import (
@@ -111,6 +112,43 @@ class TestAddEstablishmentActiveFlag:
         assert returned_schema[HackCols.establishment_active] == pl.Boolean
 
 
+class TestAddTurnoverRate:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.add_turnover_rate_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.turnover_rate_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(HackCols.turnover_rate)
+
+        returned_lf = job.add_turnover_rate(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
+class TestAddValidForAnalysisFlag:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.add_valid_for_analysis_flag_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.valid_for_analysis_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(
+            HackCols.plausible_turnover, HackCols.valid_for_analysis
+        )
+
+        returned_lf = job.add_valid_for_analysis_flag(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
 class TestAddMainServiceType:
     @pytest.mark.parametrize(
         "case",
@@ -129,6 +167,57 @@ class TestAddMainServiceType:
         returned_lf = job.add_main_service_type(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestAddCountryCodeGroup:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.add_country_code_group_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_schema = pl.Schema(
+            [
+                (case.code_column, pl.Categorical()),
+                (case.group_column, pl.Categorical()),
+            ]
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=expected_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(case.group_column)
+
+        returned_lf = job.add_country_code_group(input_lf, case.code_column)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    @pytest.mark.parametrize(
+        "code_column, group_column, eea_label",
+        [
+            (AWKClean.nationality, HackCols.nationality_group, "EEA (non-British)"),
+            (
+                AWKClean.country_of_birth,
+                HackCols.country_of_birth_group,
+                "EEA (non-UK)",
+            ),
+        ],
+    )
+    @pytest.mark.parametrize("code", EEA_CODES)
+    def test_returns_eea_label_for_each_eea_code(
+        self, code, code_column, group_column, eea_label
+    ):
+        input_lf = pl.LazyFrame(
+            [(code,)], schema=pl.Schema([(code_column, pl.Categorical())]), orient="row"
+        )
+
+        returned_df = job.add_country_code_group(input_lf, code_column).collect()
+
+        assert returned_df[group_column].to_list() == [eea_label]
+
+    def test_raises_value_error_for_unsupported_column(self):
+        input_lf = pl.LazyFrame({AWKClean.gender: ["1"]})
+
+        with pytest.raises(ValueError):
+            job.add_country_code_group(input_lf, AWKClean.gender)
 
 
 class TestAddIsLeaverFlag:

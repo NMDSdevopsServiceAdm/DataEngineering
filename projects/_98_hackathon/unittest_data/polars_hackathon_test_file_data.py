@@ -10,6 +10,7 @@ from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import MainServiceID
 
@@ -73,6 +74,61 @@ class AddNlwAndPayDifferenceCase:
 
 
 @dataclass
+class AddCodeGroupCase:
+    id: str
+    code_column: str
+    group_column: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+# The EEA codes, written out here rather than imported so the test checks the
+# constant in the job.
+EEA_CODES = [
+    "40", "56", "100", "196", "203", "208", "233", "246", "250", "276",
+    "300", "348", "372", "380", "428", "440", "442", "470", "528", "616",
+    "620", "642", "703", "705", "724", "752", "352", "438", "578", "191",
+]  # fmt: skip
+
+
+def build_code_group_cases(
+    code_column: str, group_column: str, eea_label: str, uk_label: str
+) -> list[AddCodeGroupCase]:
+    """Builds the code to group cases shared by nationality and country of birth."""
+    return [
+        AddCodeGroupCase(
+            id=f"{code_column}_eea_when_code_is_eea",
+            code_column=code_column,
+            group_column=group_column,
+            expected_rows=[("250", eea_label)],
+        ),
+        AddCodeGroupCase(
+            id=f"{code_column}_uk_when_code_is_826",
+            code_column=code_column,
+            group_column=group_column,
+            expected_rows=[("826", uk_label)],
+        ),
+        AddCodeGroupCase(
+            id=f"{code_column}_non_eea_when_code_is_other",
+            code_column=code_column,
+            group_column=group_column,
+            expected_rows=[("356", "Non-EEA")],
+        ),
+        AddCodeGroupCase(
+            id=f"{code_column}_null_when_code_is_null",
+            code_column=code_column,
+            group_column=group_column,
+            expected_rows=[(None, None)],
+        ),
+        AddCodeGroupCase(
+            id=f"{code_column}_null_when_code_is_blank",
+            code_column=code_column,
+            group_column=group_column,
+            expected_rows=[("", None)],
+        ),
+    ]
+
+
+@dataclass
 class GetLatestSaveDatePerEstablishmentCase:
     id: str
     input_rows: list[tuple[Any, ...]]
@@ -90,7 +146,113 @@ class AddEstablishmentActiveFlagCase:
 
 
 @dataclass
+class AddTurnoverRateCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class AddValidForAnalysisFlagCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class WorkerTurnoverData:
+    # Rows: (establishment_id, worker_id, import_date,
+    # establishment_in_both_snapshots, is_leaver, turnover_rate).
+    add_turnover_rate_cases = [
+        AddTurnoverRateCase(
+            id="returns_leavers_divided_by_start_employees",
+            expected_rows=[
+                ("est_a", "1", START, True, True, 0.25),
+                ("est_a", "2", START, True, False, 0.25),
+                ("est_a", "3", START, True, False, 0.25),
+                ("est_a", "4", START, True, False, 0.25),
+            ],
+        ),
+        AddTurnoverRateCase(
+            id="returns_zero_when_no_leavers",
+            expected_rows=[("est_a", "1", START, True, False, 0.0)],
+        ),
+        AddTurnoverRateCase(
+            id="calculates_rate_separately_per_establishment",
+            expected_rows=[
+                ("est_a", "1", START, True, True, 0.5),
+                ("est_a", "2", START, True, False, 0.5),
+                ("est_b", "1", START, True, False, 0.0),
+            ],
+        ),
+        AddTurnoverRateCase(
+            id="calculates_rate_separately_per_start_month",
+            expected_rows=[
+                ("est_a", "1", START, True, True, 1.0),
+                ("est_a", "1", date(2021, 2, 5), True, False, 0.0),
+            ],
+        ),
+        AddTurnoverRateCase(
+            id="returns_null_when_establishment_not_in_both_snapshots",
+            expected_rows=[("est_a", "1", START, False, None, None)],
+        ),
+        AddTurnoverRateCase(
+            id="returns_null_when_no_end_snapshot",
+            expected_rows=[("est_a", "1", START, None, None, None)],
+        ),
+    ]
+
+    # Rows: (establishment_id, worker_id, import_date,
+    # establishment_in_both_snapshots, establishment_active, turnover_rate,
+    # plausible_turnover, valid_for_analysis).
+    add_valid_for_analysis_flag_cases = [
+        AddValidForAnalysisFlagCase(
+            id="valid_when_all_components_true",
+            expected_rows=[("est_a", "1", START, True, True, 0.25, True, True)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="implausible_and_invalid_when_rate_is_zero",
+            expected_rows=[("est_a", "1", START, True, True, 0.0, False, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="implausible_and_invalid_when_rate_is_one",
+            expected_rows=[("est_a", "1", START, True, True, 1.0, False, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="plausible_when_rate_just_above_zero",
+            expected_rows=[("est_a", "1", START, True, True, 0.125, True, True)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="plausible_when_rate_just_below_one",
+            expected_rows=[("est_a", "1", START, True, True, 0.875, True, True)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_establishment_inactive",
+            expected_rows=[("est_a", "1", START, True, False, 0.25, True, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_establishment_not_in_both_snapshots",
+            expected_rows=[("est_a", "1", START, False, None, None, None, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_no_end_snapshot",
+            expected_rows=[("est_a", "1", START, None, None, None, None, False)],
+        ),
+    ]
+
+    add_country_code_group_cases = [
+        *build_code_group_cases(
+            code_column=AWKClean.nationality,
+            group_column=HackCols.nationality_group,
+            eea_label="EEA (non-British)",
+            uk_label="British",
+        ),
+        *build_code_group_cases(
+            code_column=AWKClean.country_of_birth,
+            group_column=HackCols.country_of_birth_group,
+            eea_label="EEA (non-UK)",
+            uk_label="UK",
+        ),
+    ]
+
     # Rows: (worker_id, hourly_rate, salary, contracted_hours, average_hours);
     # expected rows are (worker_id, hours, hourly_pay). 20800 / (40 * 52) is
     # exactly 10.

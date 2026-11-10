@@ -34,7 +34,11 @@ from utils.column_values.ascwds_labelled_vocab import (
     ZERO_HOURS,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
-from utils.column_values.ascwds_labelled_vocab import MainServiceID
+from utils.column_values.ascwds_labelled_vocab import (
+    CountryOfBirthGroupLabels,
+    MainServiceID,
+    NationalityGroupLabels,
+)
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
 WORKER_CATEGORICAL_COLUMNS = [
@@ -304,6 +308,93 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
+def add_country_code_group(worker_lf: pl.LazyFrame, code_column: str) -> pl.LazyFrame:
+    """Adds a categorical group column from an ISO 3166-1 numeric country code.
+
+    The UK code gives the UK label, an EEA code (EU, Iceland, Liechtenstein or
+    Norway) gives the EEA label and any other code gives "Non-EEA". A null or
+    blank code gives null.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the code column.
+        code_column (str): `AWKClean.nationality` (adds `nationality_group`) or
+            `AWKClean.country_of_birth` (adds `country_of_birth_group`).
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus the group column.
+
+    Raises:
+        ValueError: If `code_column` is not a supported column.
+    """
+    group_columns_and_labels = {
+        AWKClean.nationality: (
+            HackCols.nationality_group,
+            NationalityGroupLabels.british,
+            NationalityGroupLabels.eea_non_british,
+            NationalityGroupLabels.non_eea,
+        ),
+        AWKClean.country_of_birth: (
+            HackCols.country_of_birth_group,
+            CountryOfBirthGroupLabels.uk,
+            CountryOfBirthGroupLabels.eea_non_uk,
+            CountryOfBirthGroupLabels.non_eea,
+        ),
+    }
+    if code_column not in group_columns_and_labels:
+        raise ValueError(f"Unsupported country code column: {code_column}")
+    group_column, uk_label, eea_label, non_eea_label = group_columns_and_labels[
+        code_column
+    ]
+
+    # ISO 3166-1 numeric codes, unpadded as held in the raw data.
+    uk_code = "826"
+    eea_codes = [
+        "40",  # Austria
+        "56",  # Belgium
+        "100",  # Bulgaria
+        "191",  # Croatia
+        "196",  # Cyprus
+        "203",  # Czechia
+        "208",  # Denmark
+        "233",  # Estonia
+        "246",  # Finland
+        "250",  # France
+        "276",  # Germany
+        "300",  # Greece
+        "348",  # Hungary
+        "352",  # Iceland
+        "372",  # Ireland
+        "380",  # Italy
+        "428",  # Latvia
+        "438",  # Liechtenstein
+        "440",  # Lithuania
+        "442",  # Luxembourg
+        "470",  # Malta
+        "528",  # Netherlands
+        "578",  # Norway
+        "616",  # Poland
+        "620",  # Portugal
+        "642",  # Romania
+        "703",  # Slovakia
+        "705",  # Slovenia
+        "724",  # Spain
+        "752",  # Sweden
+    ]
+    code = pl.col(code_column).cast(pl.String).replace("", None)
+
+    return worker_lf.with_columns(
+        pl.when(code.is_null())
+        .then(None)
+        .when(code == uk_code)
+        .then(pl.lit(uk_label))
+        .when(code.is_in(eea_codes))
+        .then(pl.lit(eea_label))
+        .otherwise(pl.lit(non_eea_label))
+        .cast(pl.Categorical)
+        .alias(group_column)
+    )
+
+
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Filters worker data to the rows kept for turnover analysis.
 
@@ -431,6 +522,70 @@ def add_establishment_active_flag(
         .then(None)
         .otherwise(both_gaps_within_limit)
         .alias(HackCols.establishment_active)
+    )
+
+
+def add_turnover_rate(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `turnover_rate`: leavers / start employees per establishment-month.
+
+    Repeated on every worker row of the establishment-month. Null where the
+    establishment is not in both snapshots. Uses `.over()`, which the streaming
+    engine does not cover, so the sink may fall back to the in-memory engine.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `is_leaver`, one snapshot per
+            month.
+
+    Returns:
+        pl.LazyFrame: The input rows with `turnover_rate` (`Float32`) added.
+    """
+    establishment_month = [
+        AWKClean.establishment_id,
+        AWKClean.ascwds_worker_import_date,
+    ]
+
+    return worker_lf.with_columns(
+        pl.when(pl.col(HackCols.establishment_in_both_snapshots))
+        .then(
+            pl.col(HackCols.is_leaver).mean().over(establishment_month).cast(pl.Float32)
+        )
+        .alias(HackCols.turnover_rate)
+    )
+
+
+def add_valid_for_analysis_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `plausible_turnover` and `valid_for_analysis`.
+
+    `plausible_turnover` is false for a `turnover_rate` of:
+    - 0: no leavers over the whole year.
+    - 1: everyone left within the year.
+
+    It is true for any rate between them and null when the rate is null.
+    `valid_for_analysis` is true only when `establishment_in_both_snapshots`,
+    `establishment_active` and `plausible_turnover` are all true, otherwise
+    false. Keeps every row.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `turnover_rate`,
+            `establishment_in_both_snapshots` and `establishment_active`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `plausible_turnover` and
+            `valid_for_analysis` added.
+    """
+    return worker_lf.with_columns(
+        # Endpoints excluded: 0 and 1 are the implausible rates.
+        pl.col(HackCols.turnover_rate)
+        .is_between(0, 1, closed="none")
+        .alias(HackCols.plausible_turnover)
+    ).with_columns(
+        (
+            pl.col(HackCols.establishment_in_both_snapshots)
+            & pl.col(HackCols.establishment_active)
+            & pl.col(HackCols.plausible_turnover)
+        )
+        .fill_null(False)
+        .alias(HackCols.valid_for_analysis)
     )
 
 
