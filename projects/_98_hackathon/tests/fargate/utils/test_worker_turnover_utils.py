@@ -112,6 +112,43 @@ class TestAddEstablishmentActiveFlag:
         assert returned_schema[HackCols.establishment_active] == pl.Boolean
 
 
+class TestAddTurnoverRate:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.add_turnover_rate_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.turnover_rate_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(HackCols.turnover_rate)
+
+        returned_lf = job.add_turnover_rate(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
+class TestAddValidForAnalysisFlag:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.add_valid_for_analysis_flag_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.valid_for_analysis_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(
+            HackCols.plausible_turnover, HackCols.valid_for_analysis
+        )
+
+        returned_lf = job.add_valid_for_analysis_flag(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
 class TestAddMainServiceType:
     @pytest.mark.parametrize(
         "case",

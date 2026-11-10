@@ -63,6 +63,8 @@ def main(
     filtered_lf = wUtils.add_establishment_active_flag(
         filtered_lf, save_dates_lf, n_months
     )
+    filtered_lf = wUtils.add_turnover_rate(filtered_lf)
+    filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf)
 
     raw_worker_lf = utils.scan_parquet(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA

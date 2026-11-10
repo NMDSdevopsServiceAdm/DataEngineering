@@ -440,6 +440,70 @@ def add_establishment_active_flag(
     )
 
 
+def add_turnover_rate(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `turnover_rate`: leavers / start employees per establishment-month.
+
+    Repeated on every worker row of the establishment-month. Null where the
+    establishment is not in both snapshots. Uses `.over()`, which the streaming
+    engine does not cover, so the sink may fall back to the in-memory engine.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `is_leaver`, one snapshot per
+            month.
+
+    Returns:
+        pl.LazyFrame: The input rows with `turnover_rate` (`Float32`) added.
+    """
+    establishment_month = [
+        AWKClean.establishment_id,
+        AWKClean.ascwds_worker_import_date,
+    ]
+
+    return worker_lf.with_columns(
+        pl.when(pl.col(HackCols.establishment_in_both_snapshots))
+        .then(
+            pl.col(HackCols.is_leaver).mean().over(establishment_month).cast(pl.Float32)
+        )
+        .alias(HackCols.turnover_rate)
+    )
+
+
+def add_valid_for_analysis_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `plausible_turnover` and `valid_for_analysis`.
+
+    `plausible_turnover` is false for a `turnover_rate` of:
+    - 0: no leavers over the whole year.
+    - 1: everyone left within the year.
+
+    It is true for any rate between them and null when the rate is null.
+    `valid_for_analysis` is true only when `establishment_in_both_snapshots`,
+    `establishment_active` and `plausible_turnover` are all true, otherwise
+    false. Keeps every row.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `turnover_rate`,
+            `establishment_in_both_snapshots` and `establishment_active`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `plausible_turnover` and
+            `valid_for_analysis` added.
+    """
+    return worker_lf.with_columns(
+        # Endpoints excluded: 0 and 1 are the implausible rates.
+        pl.col(HackCols.turnover_rate)
+        .is_between(0, 1, closed="none")
+        .alias(HackCols.plausible_turnover)
+    ).with_columns(
+        (
+            pl.col(HackCols.establishment_in_both_snapshots)
+            & pl.col(HackCols.establishment_active)
+            & pl.col(HackCols.plausible_turnover)
+        )
+        .fill_null(False)
+        .alias(HackCols.valid_for_analysis)
+    )
+
+
 def add_main_service_type(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Adds `main_service_type`, a three-way recode of the main service label.
 

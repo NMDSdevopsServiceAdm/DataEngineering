@@ -140,7 +140,98 @@ class AddEstablishmentActiveFlagCase:
 
 
 @dataclass
+class AddTurnoverRateCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class AddValidForAnalysisFlagCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class WorkerTurnoverData:
+    # Rows: (establishment_id, worker_id, import_date,
+    # establishment_in_both_snapshots, is_leaver, turnover_rate).
+    add_turnover_rate_cases = [
+        AddTurnoverRateCase(
+            id="returns_leavers_divided_by_start_employees",
+            expected_rows=[
+                ("est_a", "1", START, True, True, 0.25),
+                ("est_a", "2", START, True, False, 0.25),
+                ("est_a", "3", START, True, False, 0.25),
+                ("est_a", "4", START, True, False, 0.25),
+            ],
+        ),
+        AddTurnoverRateCase(
+            id="returns_zero_when_no_leavers",
+            expected_rows=[("est_a", "1", START, True, False, 0.0)],
+        ),
+        AddTurnoverRateCase(
+            id="calculates_rate_separately_per_establishment",
+            expected_rows=[
+                ("est_a", "1", START, True, True, 0.5),
+                ("est_a", "2", START, True, False, 0.5),
+                ("est_b", "1", START, True, False, 0.0),
+            ],
+        ),
+        AddTurnoverRateCase(
+            id="calculates_rate_separately_per_start_month",
+            expected_rows=[
+                ("est_a", "1", START, True, True, 1.0),
+                ("est_a", "1", date(2021, 2, 5), True, False, 0.0),
+            ],
+        ),
+        AddTurnoverRateCase(
+            id="returns_null_when_establishment_not_in_both_snapshots",
+            expected_rows=[("est_a", "1", START, False, None, None)],
+        ),
+        AddTurnoverRateCase(
+            id="returns_null_when_no_end_snapshot",
+            expected_rows=[("est_a", "1", START, None, None, None)],
+        ),
+    ]
+
+    # Rows: (establishment_id, worker_id, import_date,
+    # establishment_in_both_snapshots, establishment_active, turnover_rate,
+    # plausible_turnover, valid_for_analysis).
+    add_valid_for_analysis_flag_cases = [
+        AddValidForAnalysisFlagCase(
+            id="valid_when_all_components_true",
+            expected_rows=[("est_a", "1", START, True, True, 0.25, True, True)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="implausible_and_invalid_when_rate_is_zero",
+            expected_rows=[("est_a", "1", START, True, True, 0.0, False, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="implausible_and_invalid_when_rate_is_one",
+            expected_rows=[("est_a", "1", START, True, True, 1.0, False, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="plausible_when_rate_just_above_zero",
+            expected_rows=[("est_a", "1", START, True, True, 0.125, True, True)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="plausible_when_rate_just_below_one",
+            expected_rows=[("est_a", "1", START, True, True, 0.875, True, True)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_establishment_inactive",
+            expected_rows=[("est_a", "1", START, True, False, 0.25, True, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_establishment_not_in_both_snapshots",
+            expected_rows=[("est_a", "1", START, False, None, None, None, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_no_end_snapshot",
+            expected_rows=[("est_a", "1", START, None, None, None, None, False)],
+        ),
+    ]
+
     add_country_code_group_cases = [
         *build_code_group_cases(
             code_column=AWKClean.nationality,

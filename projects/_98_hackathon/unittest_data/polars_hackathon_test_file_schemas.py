@@ -105,6 +105,30 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    turnover_rate_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.establishment_in_both_snapshots, pl.Boolean()),
+            (HackCols.is_leaver, pl.Boolean()),
+            (HackCols.turnover_rate, pl.Float32()),
+        ]
+    )
+
+    valid_for_analysis_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.establishment_in_both_snapshots, pl.Boolean()),
+            (HackCols.establishment_active, pl.Boolean()),
+            (HackCols.turnover_rate, pl.Float32()),
+            (HackCols.plausible_turnover, pl.Boolean()),
+            (HackCols.valid_for_analysis, pl.Boolean()),
+        ]
+    )
+
     raw_worker_join_input_schema = pl.Schema(
         [
             (AWKClean.establishment_id, CatColType.EstablishmentCatType),
