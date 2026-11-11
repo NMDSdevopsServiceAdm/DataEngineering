@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - Added previous run April and short-term cumulative percentage changes, and their differences from the current run, to the Monthly Tracker assessment.
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
 - Added nationality and country of birth groups (British or UK, EEA, Non-EEA) to the Hackathon Worker Turnover job output.
-- Added a headcount reconciliation gap and a within-tolerance flag to the Hackathon Worker Turnover job output; establishments outside the tolerance are no longer valid for analysis.
+- Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
 
 ### Changed
 - Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.

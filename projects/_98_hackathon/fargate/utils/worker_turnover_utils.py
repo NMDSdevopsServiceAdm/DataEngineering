@@ -472,24 +472,21 @@ def add_turnover_rate(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 def add_headcount_reconciliation_gap(
     worker_lf: pl.LazyFrame, max_gap: int
 ) -> pl.LazyFrame:
-    """Adds the headcount reconciliation gap and a within-tolerance flag.
+    """Adds `headcount_reconciliation_gap` and `headcount_gap_within_tolerance`.
 
-    `headcount_reconciliation_gap` per establishment and start month is start
-    headcount + workers created after the start import date - leavers - end
-    headcount. The end snapshot is 12 months after the start. Created workers
-    are counted on end snapshot rows by `created_date`, which is never after the
-    snapshot's import date; a null `created_date` is not counted. Zero means the
-    stayer and leaver labels reconcile. The gap is null where the establishment
-    has no end snapshot. `headcount_gap_within_tolerance` is true when the gap is
-    at most `max_gap` in either direction, and null when the gap is null.
+    The gap per establishment and start month is start headcount + workers
+    created after the start import date - leavers - end headcount, with the end
+    snapshot 12 months later. Created workers are counted on end snapshot rows;
+    a null `created_date` is not counted. Zero means the stayer and leaver
+    labels reconcile. The gap and flag are null with no end snapshot. The flag
+    is true when the absolute gap is at most `max_gap`.
 
-    Counts are built on a narrow frame and aggregated to establishment-month, so
-    one join reaches the worker rows. Expects one import date per month.
+    Aggregates on a narrow frame so one join reaches the worker rows. Expects
+    one import date per month.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `is_leaver` and `created_date`.
-        max_gap (int): Largest absolute gap, in workers, that counts as within
-            tolerance.
+        max_gap (int): Largest absolute gap, in workers, within tolerance.
 
     Returns:
         pl.LazyFrame: The input rows with `headcount_reconciliation_gap` (`Int32`)
