@@ -17,6 +17,9 @@ from utils.column_values.ascwds_labelled_vocab import (
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.categorical_column_values import PrimaryServiceType
+from utils.column_values.categorical_columns_by_dataset import (
+    ASCWDSWorkerCleanedCategoricalValues as CatValues,
+)
 
 KEY_COLUMNS = [
     AWKClean.establishment_id,
@@ -187,9 +190,10 @@ def main(
             [EmpStat.permanent, EmpStat.temporary],
             brief="employment status is permanent or temporary",
         )
-        .col_vals_not_null(
+        .col_vals_in_set(
             AWKClean.main_job_role_clean_labelled,
-            brief="main job role label has no nulls",
+            CatValues.main_job_role_labels_column_values.categorical_values,
+            brief="main job role label is a known value",
         )
         .col_vals_in_set(
             HackCols.main_service_type,
