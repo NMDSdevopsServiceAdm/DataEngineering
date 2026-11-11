@@ -66,6 +66,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Extended the Publication-Output reconciliation to compare filled posts for each period and job role, failing with the role and period named when a role differs or is in only one source.
 - Changed the Trello card drafting skill to ask open questions first, label cards by dependency tier, and start each description with /new-ticket.
 - Assessment percentage change columns are now Float64 to reduce rounding drift.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
