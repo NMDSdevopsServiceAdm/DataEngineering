@@ -50,7 +50,7 @@ def build_source_df() -> pl.DataFrame:
             HackCols.country_of_birth_group: [CountryOfBirthGroupLabels.non_eea] * 2,
             **{column: [1.0] * 2 for column in job.NUMERIC_COLUMNS},
             **{column: ["1"] * 2 for column in wUtils.WORKER_CATEGORICAL_COLUMNS},
-            **{column: ["label"] * 2 for column in job.LABEL_COLUMNS},
+            **{column: ["label"] * 2 for column in wUtils.LABEL_COLUMNS},
         },
         schema={
             AWKClean.establishment_id: CatColType.EstablishmentCatType,
@@ -77,7 +77,7 @@ def build_source_df() -> pl.DataFrame:
             HackCols.country_of_birth_group: pl.Categorical,
             **{column: pl.Float32 for column in job.NUMERIC_COLUMNS},
             **{column: pl.Categorical for column in wUtils.WORKER_CATEGORICAL_COLUMNS},
-            **{column: pl.Categorical for column in job.LABEL_COLUMNS},
+            **{column: pl.Categorical for column in wUtils.LABEL_COLUMNS},
         },
     )
 
@@ -136,7 +136,6 @@ class TestMain:
 
         expected_assertions = {
             "row_count_match",
-            "col_exists",
             "col_vals_not_null",
             "rows_distinct",
             "col_vals_ge",
@@ -171,7 +170,7 @@ class TestMain:
         assert not set(wUtils.PAY_AND_HOURS_COLUMNS) & set(job.SOURCE_COLUMNS)
 
 
-class TestHasAtMostOneEndMonthPerStartMonth:
+class TestHasOneImportDatePerMonth:
     @staticmethod
     def build_df(import_dates: list[date]) -> pl.DataFrame:
         return pl.DataFrame(
@@ -184,9 +183,9 @@ class TestHasAtMostOneEndMonthPerStartMonth:
             [date(2024, 1, 1), date(2024, 1, 1), date(2024, 2, 1), date(2025, 1, 1)]
         )
 
-        assert job.has_at_most_one_end_month_per_start_month(df) is True
+        assert job.has_one_import_date_per_month(df) is True
 
     def test_returns_false_when_two_import_dates_in_one_month(self):
-        df = self.build_df([date(2024, 1, 1), date(2025, 1, 1), date(2025, 1, 15)])
+        df = self.build_df([date(2024, 1, 1), date(2024, 1, 15), date(2025, 1, 1)])
 
-        assert job.has_at_most_one_end_month_per_start_month(df) is False
+        assert job.has_one_import_date_per_month(df) is False

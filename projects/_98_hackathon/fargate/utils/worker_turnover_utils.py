@@ -59,6 +59,23 @@ WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.source_of_recruitment,
 ]
 
+# Nationality and country of birth get a group column instead of a label column.
+LABEL_VOCABULARIES = {
+    AWKClean.gender: GENDER,
+    AWKClean.ethnicity: ETHNICITY,
+    AWKClean.disabled: DISABLED,
+    AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD,
+    AWKClean.level_social_care_qualification_held: (
+        LEVEL_SOCIAL_CARE_QUALIFICATION_HELD
+    ),
+    AWKClean.care_certificate_status: CARE_CERTIFICATE_STATUS,
+    AWKClean.apprentice: APPRENTICE,
+    AWKClean.zero_hours: ZERO_HOURS,
+    AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT,
+}
+LABELLED_COLUMNS = list(LABEL_VOCABULARIES)
+LABEL_COLUMNS = [f"{column}_{DLC.label}s" for column in LABELLED_COLUMNS]
+
 WORKER_NUMERIC_COLUMNS = [
     AWKClean.age,
     AWKClean.hourly_rate,
@@ -170,17 +187,8 @@ def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: The input with a `_labels` column for each coded column.
     """
     code_to_label = {
-        AWKClean.gender: GENDER.code_to_label(),
-        AWKClean.ethnicity: ETHNICITY.code_to_label(),
-        AWKClean.disabled: DISABLED.code_to_label(),
-        AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD.code_to_label(),
-        AWKClean.level_social_care_qualification_held: (
-            LEVEL_SOCIAL_CARE_QUALIFICATION_HELD.code_to_label()
-        ),
-        AWKClean.care_certificate_status: CARE_CERTIFICATE_STATUS.code_to_label(),
-        AWKClean.apprentice: APPRENTICE.code_to_label(),
-        AWKClean.zero_hours: ZERO_HOURS.code_to_label(),
-        AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT.code_to_label(),
+        column: vocabulary.code_to_label()
+        for column, vocabulary in LABEL_VOCABULARIES.items()
     }
 
     worker_lf = apply_categorical_labels(
@@ -190,8 +198,7 @@ def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         add_as_new_column=True,
     )
 
-    label_columns = [f"{column}_{DLC.label}s" for column in code_to_label]
-    return worker_lf.with_columns(pl.col(label_columns).cast(pl.Categorical))
+    return worker_lf.with_columns(pl.col(LABEL_COLUMNS).cast(pl.Categorical))
 
 
 def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:

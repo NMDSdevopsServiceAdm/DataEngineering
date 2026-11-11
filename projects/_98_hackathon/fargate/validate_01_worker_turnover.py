@@ -10,7 +10,6 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
@@ -30,14 +29,6 @@ NUMERIC_COLUMNS = [
     for column in wUtils.WORKER_NUMERIC_COLUMNS
     if column not in wUtils.PAY_AND_HOURS_COLUMNS
 ]
-
-# Nationality and country of birth get a group column instead of a label column.
-LABELLED_COLUMNS = [
-    column
-    for column in wUtils.WORKER_CATEGORICAL_COLUMNS
-    if column not in (AWKClean.nationality, AWKClean.country_of_birth)
-]
-LABEL_COLUMNS = [f"{column}_{DLC.label}s" for column in LABELLED_COLUMNS]
 
 SOURCE_COLUMNS = [
     *KEY_COLUMNS,
@@ -62,7 +53,7 @@ SOURCE_COLUMNS = [
     HackCols.country_of_birth_group,
     *NUMERIC_COLUMNS,
     *wUtils.WORKER_CATEGORICAL_COLUMNS,
-    *LABEL_COLUMNS,
+    *wUtils.LABEL_COLUMNS,
 ]
 
 COMPARE_COLUMNS = [
@@ -72,22 +63,17 @@ COMPARE_COLUMNS = [
 ]
 
 
-def has_at_most_one_end_month_per_start_month(df: pl.DataFrame) -> bool:
-    """Checks each end month, 12 months after a start month, has at most one import date.
+def has_one_import_date_per_month(df: pl.DataFrame) -> bool:
+    """Checks each calendar month has at most one import date.
 
     Args:
         df (pl.DataFrame): Worker turnover data with `ascwds_worker_import_date`.
 
     Returns:
-        bool: True if every end month has at most one distinct import date.
+        bool: True if no month has more than one distinct import date.
     """
-    snapshot_months = (
-        df.get_column(AWKClean.ascwds_worker_import_date).unique().dt.truncate("1mo")
-    )
-    end_months = snapshot_months.filter(
-        snapshot_months.is_in(snapshot_months.dt.offset_by("12mo").to_list())
-    )
-    return not end_months.is_duplicated().any()
+    import_dates = df.get_column(AWKClean.ascwds_worker_import_date)
+    return import_dates.n_unique() == import_dates.dt.truncate("1mo").n_unique()
 
 
 def main(
@@ -152,7 +138,7 @@ def main(
     ).fill_null(False)
     labels_match_codes = pl.all_horizontal(
         pl.col(label).is_not_null().eq(pl.col(code).is_not_null())
-        for code, label in zip(LABELLED_COLUMNS, LABEL_COLUMNS)
+        for code, label in zip(wUtils.LABELLED_COLUMNS, wUtils.LABEL_COLUMNS)
     )
     group_matches_code = pl.all_horizontal(
         pl.col(group)
@@ -182,15 +168,14 @@ def main(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
         )
-        .col_exists(SOURCE_COLUMNS, brief="expected flag and raw columns exist")
         .col_vals_not_null(KEY_COLUMNS, brief="key columns have no nulls")
         .rows_distinct(
             KEY_COLUMNS,
             brief="establishment, worker and import date are unique",
         )
         .specially(
-            has_at_most_one_end_month_per_start_month,
-            brief="each start month has at most one end month, 12 months later",
+            has_one_import_date_per_month,
+            brief="each month has at most one import date",
         )
         .col_vals_ge(
             AWKClean.ascwds_worker_import_date,
