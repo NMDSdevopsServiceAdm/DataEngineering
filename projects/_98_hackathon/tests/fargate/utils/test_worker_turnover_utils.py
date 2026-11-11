@@ -128,6 +128,30 @@ class TestAddTurnoverRate:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
+class TestAddHeadcountReconciliationGap:
+    MAX_GAP = 1
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.add_headcount_reconciliation_gap_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.headcount_gap_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(
+            HackCols.headcount_reconciliation_gap,
+            HackCols.headcount_gap_within_tolerance,
+        )
+
+        returned_lf = job.add_headcount_reconciliation_gap(input_lf, self.MAX_GAP)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
 class TestAddValidForAnalysisFlag:
     @pytest.mark.parametrize(
         "case",
@@ -302,7 +326,7 @@ class TestAddRawWorkerColumns:
             *job.WORKER_NUMERIC_COLUMNS,
             *job.WORKER_DATE_COLUMNS,
         ]
-        assert len(returned_names) - len(input_names) == 24
+        assert len(returned_names) - len(input_names) == 25
 
     def test_excludes_highest_qualification_level(self):
         raw_lf = raw_worker_lf(raw_worker_row("1", "20210105"))

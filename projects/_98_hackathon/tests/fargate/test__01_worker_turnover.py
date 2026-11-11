@@ -16,8 +16,9 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
-    @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
@@ -34,8 +35,9 @@ class TestMain:
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
-        add_valid_for_analysis_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        add_headcount_reconciliation_gap_mock: Mock,
+        add_valid_for_analysis_flag_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
@@ -106,14 +108,18 @@ class TestMain:
         add_turnover_rate_mock.assert_called_once_with(
             add_establishment_active_flag_mock.return_value
         )
-        add_valid_for_analysis_flag_mock.assert_called_once_with(
-            add_turnover_rate_mock.return_value
-        )
         add_raw_worker_columns_mock.assert_called_once_with(
-            add_valid_for_analysis_flag_mock.return_value, raw_worker_lf_mock
+            add_turnover_rate_mock.return_value, raw_worker_lf_mock
+        )
+        add_headcount_reconciliation_gap_mock.assert_called_once_with(
+            add_raw_worker_columns_mock.return_value,
+            job.DEFAULT_MAX_HEADCOUNT_GAP,
+        )
+        add_valid_for_analysis_flag_mock.assert_called_once_with(
+            add_headcount_reconciliation_gap_mock.return_value
         )
         combine_pay_and_hours_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value
+            add_valid_for_analysis_flag_mock.return_value
         )
         add_worker_labels_mock.assert_called_once_with(
             combine_pay_and_hours_mock.return_value
@@ -138,8 +144,9 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
-    @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
@@ -156,8 +163,9 @@ class TestMain:
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
-        add_valid_for_analysis_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        add_headcount_reconciliation_gap_mock: Mock,
+        add_valid_for_analysis_flag_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
@@ -176,4 +184,47 @@ class TestMain:
             add_is_leaver_flag_mock.return_value,
             get_latest_save_date_per_establishment_mock.return_value,
             3,
+        )
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
+    @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
+    @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
+    @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
+    @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
+    @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_main_service_type")
+    @patch(f"{PATCH_PATH}.wUtils.filter_worker_turnover_data")
+    @patch(f"{PATCH_PATH}.wUtils.get_latest_save_date_per_establishment")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_main_passes_max_gap_to_headcount_reconciliation_gap(
+        self,
+        scan_parquet_mock: Mock,
+        get_latest_save_date_per_establishment_mock: Mock,
+        filter_worker_turnover_data_mock: Mock,
+        add_main_service_type_mock: Mock,
+        add_is_leaver_flag_mock: Mock,
+        add_establishment_active_flag_mock: Mock,
+        add_turnover_rate_mock: Mock,
+        add_raw_worker_columns_mock: Mock,
+        add_headcount_reconciliation_gap_mock: Mock,
+        add_valid_for_analysis_flag_mock: Mock,
+        combine_pay_and_hours_mock: Mock,
+        add_worker_labels_mock: Mock,
+        add_country_code_group_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
+        job.main(
+            self.CLEANED_WORKER_SOURCE,
+            self.CLEANED_WORKPLACE_SOURCE,
+            self.RAW_WORKER_SOURCE,
+            self.FLAGGED_DESTINATION,
+            max_gap=5,
+        )
+
+        add_headcount_reconciliation_gap_mock.assert_called_once_with(
+            add_raw_worker_columns_mock.return_value, 5
         )
