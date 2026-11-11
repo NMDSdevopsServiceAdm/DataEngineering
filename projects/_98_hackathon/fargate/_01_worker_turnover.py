@@ -8,7 +8,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 
 DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
-DEFAULT_MAX_HEADCOUNT_GAP = 2
+DEFAULT_MAX_HEADCOUNT_GAP = 0
 
 
 def main(
