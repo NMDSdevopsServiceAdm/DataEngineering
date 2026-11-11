@@ -850,15 +850,16 @@ def add_prev_run_filled_posts_columns(
     prev_assessment_lf: pl.LazyFrame | None,
 ) -> pl.LazyFrame:
     """
-    Adds the previous run's filled posts and the percentage change
-    from it, matched on import date, job role, region and service type.
+    Adds the previous run's filled posts, April % change and short-term SFC
+    cumulative % change, matched on import date, job role, region and service
+    type, plus comparisons with the current run.
 
-    The percentage change is a net change fraction, (current - previous) /
-    previous, so 0.25 = +25%. Null (not inf/NaN) when previous is 0.
+    Filled posts % change is (current - previous) / previous, null when previous
+    is 0. The % change comparisons are current minus previous.
 
-    Rows with no match are null, as is every row when there is no previous run
-    or it lacks unfiltered_filled_posts. The previous keys are cast to the
-    current dtypes so Enum/Categorical differences don't block the join.
+    Unmatched rows are null, as are columns the previous run lacks (all of them
+    when there is no previous run). Previous keys are cast to the current dtypes
+    so Enum/Categorical differences don't block the join.
 
     Args:
         assessment_summary_lf (pl.LazyFrame): the current run's assessment data.
@@ -866,15 +867,37 @@ def add_prev_run_filled_posts_columns(
             data, or None when there is no earlier run.
 
     Returns:
-        pl.LazyFrame: assessment_summary_lf with unfiltered_filled_posts_prev_run and
-            unfiltered_filled_posts_pct_change_vs_prev_run added.
+        pl.LazyFrame: assessment_summary_lf with the `_prev_run`,
+            `pct_change_vs_prev_run` and `_comparison` columns added.
     """
+    prev_run_columns = {
+        Pub.unfiltered_filled_posts: Pub.unfiltered_filled_posts_prev_run,
+        Pub.unfiltered_filled_posts_april_pct_change: (
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run
+        ),
+        Pub.unfiltered_short_sfc_cum_pct_change: (
+            Pub.unfiltered_short_sfc_cum_pct_change_prev_run
+        ),
+    }
+    comparison_columns = {
+        Pub.unfiltered_filled_posts_april_pct_change: (
+            Pub.unfiltered_filled_posts_april_pct_change_comparison
+        ),
+        Pub.unfiltered_short_sfc_cum_pct_change: (
+            Pub.unfiltered_short_sfc_cum_pct_change_comparison
+        ),
+    }
+
     current_schema = assessment_summary_lf.collect_schema()
-    has_prev_filled_posts = (
-        prev_assessment_lf is not None
-        and Pub.unfiltered_filled_posts in prev_assessment_lf.collect_schema().names()
+    prev_names = (
+        prev_assessment_lf.collect_schema().names()
+        if prev_assessment_lf is not None
+        else []
     )
-    if has_prev_filled_posts:
+    available = {k: v for k, v in prev_run_columns.items() if k in prev_names}
+    missing = {k: v for k, v in prev_run_columns.items() if k not in available}
+
+    if available:
         join_keys = [
             IndCQC.cqc_location_import_date,
             IndCQC.main_job_role_clean_labelled,
@@ -884,9 +907,8 @@ def add_prev_run_filled_posts_columns(
         prev_assessment_lf = prev_assessment_lf.select(
             [pl.col(key).cast(current_schema[key]) for key in join_keys]
             + [
-                pl.col(Pub.unfiltered_filled_posts)
-                .cast(current_schema[Pub.unfiltered_filled_posts])
-                .alias(Pub.unfiltered_filled_posts_prev_run)
+                pl.col(column).cast(current_schema[column]).alias(prev_column)
+                for column, prev_column in available.items()
             ]
         )
         assessment_summary_lf = assessment_summary_lf.join(
@@ -896,12 +918,12 @@ def add_prev_run_filled_posts_columns(
             validate="1:1",
             nulls_equal=True,
         )
-    else:
-        assessment_summary_lf = assessment_summary_lf.with_columns(
-            pl.lit(None, dtype=current_schema[Pub.unfiltered_filled_posts]).alias(
-                Pub.unfiltered_filled_posts_prev_run
-            )
-        )
+    assessment_summary_lf = assessment_summary_lf.with_columns(
+        [
+            pl.lit(None, dtype=current_schema[column]).alias(prev_column)
+            for column, prev_column in missing.items()
+        ]
+    )
 
     current_posts = pl.col(Pub.unfiltered_filled_posts).cast(pl.Float64)
     prev_posts = pl.col(Pub.unfiltered_filled_posts_prev_run).cast(pl.Float64)
@@ -909,7 +931,11 @@ def add_prev_run_filled_posts_columns(
         pl.when(prev_posts == 0)
         .then(None)
         .otherwise((current_posts - prev_posts) / prev_posts)
-        .alias(Pub.unfiltered_filled_posts_pct_change_vs_prev_run)
+        .alias(Pub.unfiltered_filled_posts_pct_change_vs_prev_run),
+        *[
+            (pl.col(column) - pl.col(prev_run_columns[column])).alias(comparison)
+            for column, comparison in comparison_columns.items()
+        ],
     )
 
 

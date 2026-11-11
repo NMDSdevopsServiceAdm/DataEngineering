@@ -7,7 +7,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added a validation job for the Hackathon Worker Turnover output, checking its row count, keys, flags and raw worker columns.
+- Added the National Living Wage rate at each snapshot, and hourly pay minus it, to the Hackathon Worker Turnover job.
+- Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
+- Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, replacing the raw hourly rate, salary, contracted hours and average hours columns.
+- Added previous run April and short-term cumulative percentage changes, and their differences from the current run, to the Monthly Tracker assessment.
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
+- Added nationality and country of birth groups (British or UK, EEA, Non-EEA) to the Hackathon Worker Turnover job output.
+- Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
 
 ### Changed
 - Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.
@@ -28,6 +34,7 @@ All notable changes to this project will be documented in this file.
 - Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
 - Added an `is_leaver` flag to the Hackathon Worker Turnover job, true when a worker is absent from the snapshot 12 months later (null if none exists).
 - Added an `establishment_in_both_snapshots` flag to the Hackathon Worker Turnover job; `is_leaver` is null where it is false.
+- Added `turnover_rate`, `plausible_turnover` and `valid_for_analysis` to the Hackathon Worker Turnover job; a turnover rate of 0 (no leavers in the year) or 1 (everyone left) is implausible.
 - Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils.
 - Added a manually-run Hackathon Worker Turnover Step Function that filters the cleaned ASC-WDS worker data to permanent and temporary workers, keeping the earliest file in each month from January 2020, then crawls the output.
 - The assessment job fills the assessment workbook and saves it to S3.
