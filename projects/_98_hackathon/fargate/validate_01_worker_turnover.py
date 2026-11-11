@@ -42,6 +42,7 @@ LABEL_COLUMNS = [f"{column}_{DLC.label}s" for column in LABELLED_COLUMNS]
 SOURCE_COLUMNS = [
     *KEY_COLUMNS,
     AWKClean.employment_status_clean_labelled,
+    AWKClean.main_job_role_clean_labelled,
     HackCols.main_service_type,
     HackCols.establishment_in_both_snapshots,
     HackCols.is_leaver,
@@ -90,7 +91,11 @@ def has_at_most_one_end_month_per_start_month(df: pl.DataFrame) -> bool:
 
 
 def main(
-    bucket_name: str, source_path: str, compare_path: str, reports_path: str
+    bucket_name: str,
+    source_path: str,
+    compare_path: str,
+    reports_path: str,
+    max_gap: int = wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
 ) -> None:
     """Validates the flagged worker turnover data and writes the reports.
 
@@ -102,6 +107,8 @@ def main(
         compare_path (str): the cleaned ASC-WDS worker dataset path; its rows kept
             by `filter_worker_turnover_data` give the expected row count
         reports_path (str): the output path to write reports to
+        max_gap (int): largest absolute headcount reconciliation gap, in workers,
+            for the tolerance flag to be true; must match the job's `max_gap`
     """
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}", selected_columns=SOURCE_COLUMNS
@@ -201,6 +208,10 @@ def main(
             [EmpStat.permanent, EmpStat.temporary],
             brief="employment status is permanent or temporary",
         )
+        .col_vals_not_null(
+            AWKClean.main_job_role_clean_labelled,
+            brief="main job role label has no nulls",
+        )
         .col_vals_in_set(
             HackCols.main_service_type,
             PrimaryServiceType(HackCols.main_service_type).categorical_values,
@@ -248,8 +259,8 @@ def main(
             brief="headcount_reconciliation_gap is populated exactly when establishment_in_both_snapshots is true",
         )
         .col_vals_expr(
-            expr=gap_within_tolerance.is_not_null().eq(gap.is_not_null()),
-            brief="headcount_gap_within_tolerance is populated exactly when the gap is populated",
+            expr=gap_within_tolerance.eq_missing(gap.abs() <= max_gap),
+            brief=f"headcount_gap_within_tolerance is true exactly when the absolute gap is at most {max_gap}, null when the gap is null",
         )
         .col_vals_expr(
             expr=plausible_turnover.eq_missing(
@@ -329,8 +340,20 @@ if __name__ == "__main__":
         ("--source_path", "The filepath of the dataset to validate"),
         ("--compare_path", "The filepath of the dataset to compare against"),
         ("--reports_path", "The filepath to output reports"),
+        (
+            "--max_gap",
+            "Largest absolute headcount reconciliation gap to count as within tolerance",
+            False,
+            wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
+        ),
     )
     print(f"Starting validation for {args.source_path}")
 
-    main(args.bucket_name, args.source_path, args.compare_path, args.reports_path)
+    main(
+        args.bucket_name,
+        args.source_path,
+        args.compare_path,
+        args.reports_path,
+        int(args.max_gap),
+    )
     print(f"Validation of {args.source_path} complete")

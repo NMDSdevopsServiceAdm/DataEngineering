@@ -42,6 +42,7 @@ from utils.column_values.ascwds_labelled_vocab import (
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
 DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
+DEFAULT_MAX_HEADCOUNT_GAP = 0
 EARLIEST_IMPORT_DATE = date(2020, 1, 1)
 
 WORKER_CATEGORICAL_COLUMNS = [

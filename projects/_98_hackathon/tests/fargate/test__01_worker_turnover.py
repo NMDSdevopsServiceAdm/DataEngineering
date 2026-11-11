@@ -113,7 +113,7 @@ class TestMain:
         )
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
             add_raw_worker_columns_mock.return_value,
-            job.DEFAULT_MAX_HEADCOUNT_GAP,
+            job.wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
         )
         add_valid_for_analysis_flag_mock.assert_called_once_with(
             add_headcount_reconciliation_gap_mock.return_value

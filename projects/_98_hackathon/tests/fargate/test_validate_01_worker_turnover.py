@@ -30,6 +30,7 @@ def build_source_df() -> pl.DataFrame:
             AWKClean.worker_id: ["1", "1"],
             AWKClean.ascwds_worker_import_date: [date(2024, 1, 1), date(2025, 1, 1)],
             AWKClean.employment_status_clean_labelled: [EmpStat.permanent] * 2,
+            AWKClean.main_job_role_clean_labelled: ["Care worker"] * 2,
             HackCols.main_service_type: [PrimaryServiceType.non_residential] * 2,
             HackCols.establishment_in_both_snapshots: [True, None],
             HackCols.is_leaver: [False, None],
@@ -56,6 +57,7 @@ def build_source_df() -> pl.DataFrame:
             AWKClean.worker_id: pl.String,
             AWKClean.ascwds_worker_import_date: pl.Date,
             AWKClean.employment_status_clean_labelled: CatColType.EmploymentStatusCatType,
+            AWKClean.main_job_role_clean_labelled: pl.Categorical,
             HackCols.main_service_type: CatColType.PrimaryServiceEnumType,
             HackCols.establishment_in_both_snapshots: pl.Boolean,
             HackCols.is_leaver: pl.Boolean,
@@ -168,7 +170,7 @@ class TestMain:
 
 class TestMainChecks:
     @staticmethod
-    def run_main(source_df: pl.DataFrame) -> list[dict]:
+    def run_main(source_df: pl.DataFrame, **kwargs) -> list[dict]:
         with (
             patch(f"{PATCH_PATH}.vl.write_reports") as mock_write_reports,
             patch(f"{PATCH_PATH}.utils.scan_parquet") as mock_scan_parquet,
@@ -177,7 +179,7 @@ class TestMainChecks:
             mock_read_parquet.return_value = source_df
             mock_scan_parquet.return_value = build_compare_lf()
 
-            job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+            job.main("bucket", "my/source/", "my/compare/", "my/reports/", **kwargs)
 
         validation_arg = mock_write_reports.call_args[0][0]
         return json.loads(validation_arg.get_json_report())
@@ -200,6 +202,44 @@ class TestMainChecks:
 
         failed = [item["brief"] for item in report if not item["all_passed"]]
         assert any("valid_for_analysis is true exactly" in brief for brief in failed)
+
+    def test_fails_when_main_job_role_label_is_null(self):
+        source_df = build_source_df().with_columns(
+            pl.lit(None, dtype=pl.Categorical).alias(
+                AWKClean.main_job_role_clean_labelled
+            )
+        )
+
+        report = self.run_main(source_df)
+
+        failed = [item["brief"] for item in report if not item["all_passed"]]
+        assert "main job role label has no nulls" in failed
+
+    def test_fails_when_tolerance_flag_true_for_gap_above_max_gap(self):
+        source_df = build_source_df().with_columns(
+            pl.when(pl.col(HackCols.headcount_reconciliation_gap).is_not_null())
+            .then(3)
+            .cast(pl.Int32)
+            .alias(HackCols.headcount_reconciliation_gap)
+        )
+
+        report = self.run_main(source_df)
+
+        failed = [item["brief"] for item in report if not item["all_passed"]]
+        assert any("headcount_gap_within_tolerance is true" in b for b in failed)
+
+    def test_passes_tolerance_check_when_gap_within_given_max_gap(self):
+        source_df = build_source_df().with_columns(
+            pl.when(pl.col(HackCols.headcount_reconciliation_gap).is_not_null())
+            .then(3)
+            .cast(pl.Int32)
+            .alias(HackCols.headcount_reconciliation_gap)
+        )
+
+        report = self.run_main(source_df, max_gap=3)
+
+        failed = [item["brief"] for item in report if not item["all_passed"]]
+        assert failed == []
 
     def test_fails_when_turnover_rate_above_one(self):
         source_df = build_source_df().with_columns(
