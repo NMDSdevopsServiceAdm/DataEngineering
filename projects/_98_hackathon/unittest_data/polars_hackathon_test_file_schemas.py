@@ -9,6 +9,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 
@@ -68,6 +69,23 @@ class WorkerTurnoverSchemas:
             (AWKClean.worker_id, pl.String()),
             (HackCols.hours, pl.Float32()),
             (HackCols.hourly_pay, pl.Float32()),
+        ]
+    )
+
+    nlw_input_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (f"{AWKClean.apprentice}_{DLC.label}s", pl.Categorical()),
+            (AWKClean.age, pl.Float32()),
+            (HackCols.hourly_pay, pl.Float32()),
+        ]
+    )
+
+    nlw_output_schema = pl.Schema(
+        [
+            *nlw_input_schema.items(),
+            (HackCols.nlw_hourly_rate, pl.Float32()),
+            (HackCols.hourly_pay_minus_nlw, pl.Float32()),
         ]
     )
 

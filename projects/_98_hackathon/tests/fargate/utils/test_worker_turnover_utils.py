@@ -280,6 +280,27 @@ class TestCombinePayAndHours:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestAddNlwAndPayDifference:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.add_nlw_and_pay_difference_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.nlw_output_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(
+            HackCols.nlw_hourly_rate, HackCols.hourly_pay_minus_nlw
+        )
+
+        returned_lf = job.add_nlw_and_pay_difference(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 def raw_worker_lf(*rows: dict) -> pl.LazyFrame:
     """Returns raw worker rows as a LazyFrame with all-string columns."""
     return pl.LazyFrame(list(rows), schema={column: pl.String for column in rows[0]})
