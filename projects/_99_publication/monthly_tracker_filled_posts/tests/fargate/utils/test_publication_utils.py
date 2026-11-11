@@ -653,9 +653,7 @@ class TestAddPrevRunPctChangeColumns:
             orient="row",
         )
 
-        returned_df = job.add_prev_run_pct_change_columns(
-            current_lf, prev_lf
-        ).collect()
+        returned_df = job.add_prev_run_pct_change_columns(current_lf, prev_lf).collect()
 
         assert returned_df[
             Pub.unfiltered_filled_posts_april_pct_change_prev_run
