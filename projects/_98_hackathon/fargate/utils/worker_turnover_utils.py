@@ -2,18 +2,43 @@ from datetime import date
 
 import polars as pl
 
-from polars_utils.cleaning_utils import column_to_date
+from polars_utils.cleaning_utils import (
+    apply_categorical_labels,
+    build_labels_lf,
+    column_to_date,
+)
 from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
+from projects._98_hackathon.fargate.utils.nlw_rates import (
+    BAND_STARTS,
+    NLW_RATES,
+    build_nlw_lookup_rows,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
+from utils.column_values.ascwds_labelled_vocab import (
+    APPRENTICE,
+    CARE_CERTIFICATE_STATUS,
+    DISABLED,
+    ETHNICITY,
+    GENDER,
+    LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
+    SOCIAL_CARE_QUAL_HELD,
+    SOURCE_OF_RECRUITMENT,
+    ZERO_HOURS,
+)
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
-from utils.column_values.ascwds_labelled_vocab import MainServiceID
+from utils.column_values.ascwds_labelled_vocab import (
+    CountryOfBirthGroupLabels,
+    MainServiceID,
+    NationalityGroupLabels,
+)
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
 WORKER_CATEGORICAL_COLUMNS = [
@@ -22,7 +47,6 @@ WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.nationality,
     AWKClean.country_of_birth,
     AWKClean.disabled,
-    AWKClean.hourly_or_annual_pay,
     AWKClean.social_care_qual_held,
     AWKClean.level_social_care_qualification_held,
     AWKClean.care_certificate_status,
@@ -45,6 +69,7 @@ WORKER_NUMERIC_COLUMNS = [
 ]
 
 WORKER_DATE_COLUMNS = [
+    AWKClean.created_date,
     AWKClean.start_date,
     AWKClean.pay_change_date,
     AWKClean.pay_save_date,
@@ -71,12 +96,12 @@ def add_raw_worker_columns(
 
     Left joins on establishment ID, worker ID and import date. Raw rows are cut
     to the keys in `worker_lf` by a semi join before casting, so the full raw
-    history is never cast or joined. Values are not cleaned: code columns become
-    categorical, numeric columns `Float32` (about 7 significant digits;
-    unparseable becomes null), and date columns are parsed from `dd/mm/yyyy`
-    (blank becomes null; a value of another shape raises, but a two-digit year
-    parses literally, so `01/03/15` is year 15). Relies on unique keys, which the
-    cleaned data's validation checks.
+    history is never cast or joined. Negative values (not known/recorded) in code
+    and numeric columns become null. Code columns become categorical and numeric
+    columns `Float32` (about 7 significant digits; unparseable becomes null).
+    Date columns are parsed from `dd/mm/yyyy` (blank becomes null; another shape
+    raises; a two-digit year parses literally, so `01/03/15` is year 15). Relies
+    on unique keys, which the cleaned data's validation checks.
 
     Args:
         worker_lf (pl.LazyFrame): Flagged worker data with establishment ID,
@@ -106,13 +131,269 @@ def add_raw_worker_columns(
 
     day_first_format = "%d/%m/%Y"
 
+    code_columns = pl.col(WORKER_CATEGORICAL_COLUMNS)
+    numeric_columns = pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False)
+
+    # Codes stay text, so match negatives on the string.
     raw_worker_lf = raw_worker_lf.with_columns(
-        pl.col(WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical),
-        pl.col(WORKER_NUMERIC_COLUMNS).cast(pl.Float32, strict=False),
+        pl.when(~code_columns.str.starts_with("-"))
+        .then(code_columns)
+        .cast(pl.Categorical),
+        pl.when(numeric_columns >= 0).then(numeric_columns),
         pl.col(WORKER_DATE_COLUMNS).replace("", None).str.to_date(day_first_format),
     )
 
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
+
+
+def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds a categorical `<column>_labels` column beside each coded worker column.
+
+    Codes with no label keep their raw code in the label column. Null codes stay null.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the raw coded worker columns.
+
+    Returns:
+        pl.LazyFrame: The input with a `_labels` column for each coded column.
+    """
+    code_to_label = {
+        AWKClean.gender: GENDER.code_to_label(),
+        AWKClean.ethnicity: ETHNICITY.code_to_label(),
+        AWKClean.disabled: DISABLED.code_to_label(),
+        AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD.code_to_label(),
+        AWKClean.level_social_care_qualification_held: (
+            LEVEL_SOCIAL_CARE_QUALIFICATION_HELD.code_to_label()
+        ),
+        AWKClean.care_certificate_status: CARE_CERTIFICATE_STATUS.code_to_label(),
+        AWKClean.apprentice: APPRENTICE.code_to_label(),
+        AWKClean.zero_hours: ZERO_HOURS.code_to_label(),
+        AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT.code_to_label(),
+    }
+
+    worker_lf = apply_categorical_labels(
+        worker_lf,
+        build_labels_lf(code_to_label),
+        list(code_to_label),
+        add_as_new_column=True,
+    )
+
+    label_columns = [f"{column}_{DLC.label}s" for column in code_to_label]
+    return worker_lf.with_columns(pl.col(label_columns).cast(pl.Categorical))
+
+
+def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Combines pay and hours into `hours` and `hourly_pay`, dropping the raw columns.
+
+    - `hours` is the first of contracted hours then average hours that is above
+      0 (raw hours can be 0), else null.
+    - `hourly_pay` is the hourly rate where given, else the salary converted to
+      hourly pay, null when hours is null.
+
+    A worker has an hourly rate or a salary, never both, so null checks choose
+    between them; if both were given, the rate is used. Rates of 0 are kept.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the raw hourly rate, salary,
+            contracted hours and average hours.
+
+    Returns:
+        pl.LazyFrame: The input rows with `hours` and `hourly_pay` in place of
+            the raw hourly rate, salary, contracted hours and average hours.
+    """
+    weeks_per_year = 52
+
+    contracted_hours = pl.col(AWKClean.contracted_hours)
+    average_hours = pl.col(AWKClean.average_hours)
+
+    worker_lf = worker_lf.with_columns(
+        pl.coalesce(
+            pl.when(contracted_hours > 0).then(contracted_hours),
+            pl.when(average_hours > 0).then(average_hours),
+        ).alias(HackCols.hours)
+    )
+
+    annual_salary_to_hourly_pay = pl.col(AWKClean.salary) / (
+        pl.col(HackCols.hours) * weeks_per_year
+    )
+
+    return worker_lf.with_columns(
+        pl.coalesce(AWKClean.hourly_rate, annual_salary_to_hourly_pay).alias(
+            HackCols.hourly_pay
+        )
+    ).drop(
+        AWKClean.hourly_rate,
+        AWKClean.salary,
+        AWKClean.contracted_hours,
+        AWKClean.average_hours,
+    )
+
+
+def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds the National Living Wage in force and the hourly pay difference from it.
+
+    - `nlw_hourly_rate` is the rate in force the day before the import date, as
+      an import date is when data was received and covers the period before it
+      (a 1 April import still has the March rate).
+    - Apprentices (`apprentice_labels` is "Yes") get the apprentice rate whatever
+      their age; any other label, including null, is treated as not an apprentice.
+    - Other workers get the rate for their age band, or the oldest band if age is
+      null.
+    - `hourly_pay_minus_nlw` is `hourly_pay` minus `nlw_hourly_rate`, null when
+      `hourly_pay` is null.
+
+    The lookup has a row per rate date and band start (under 100 rows), joined on
+    exact keys so each worker matches one row and the frame stays lazy. Rates start
+    in April 2019; earlier import dates get a null rate.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
+            `apprentice_labels`, `age` and `hourly_pay`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `nlw_hourly_rate` and
+            `hourly_pay_minus_nlw` added.
+    """
+    lookup_lf = pl.LazyFrame(
+        build_nlw_lookup_rows(),
+        schema={
+            HackCols.nlw_effective_date: pl.Date,
+            HackCols.nlw_is_apprentice: pl.Boolean,
+            HackCols.nlw_band_start: pl.Int16,
+            HackCols.nlw_hourly_rate: pl.Float32,
+        },
+        orient="row",
+    )
+
+    rate_dates = sorted(NLW_RATES, reverse=True)
+    rate_lookup_date = pl.col(AWKClean.ascwds_worker_import_date).dt.offset_by("-1d")
+    # A chain of comparisons against the few rate dates avoids the sort an as-of
+    # join needs on the worker data.
+    nlw_effective_date = pl.coalesce(
+        *[
+            pl.when(rate_lookup_date >= rate_date).then(pl.lit(rate_date))
+            for rate_date in rate_dates
+        ]
+    )
+    apprentice_label = pl.col(f"{AWKClean.apprentice}_{DLC.label}s")
+    is_apprentice = (apprentice_label == APPRENTICE.label_cls.yes).fill_null(False)
+    age = pl.col(AWKClean.age)
+    # Highest band start at or below age; null age gets the oldest band.
+    age_band_start = pl.coalesce(
+        *[pl.when(age >= start).then(start) for start in BAND_STARTS],
+        BAND_STARTS[0],
+    )
+    nlw_band_start = pl.when(is_apprentice).then(0).otherwise(age_band_start)
+
+    worker_lf = worker_lf.with_columns(
+        nlw_effective_date.alias(HackCols.nlw_effective_date),
+        is_apprentice.alias(HackCols.nlw_is_apprentice),
+        nlw_band_start.cast(pl.Int16).alias(HackCols.nlw_band_start),
+    )
+    worker_lf = worker_lf.join(
+        lookup_lf,
+        on=[
+            HackCols.nlw_effective_date,
+            HackCols.nlw_is_apprentice,
+            HackCols.nlw_band_start,
+        ],
+        how="left",
+    )
+
+    return worker_lf.with_columns(
+        (pl.col(HackCols.hourly_pay) - pl.col(HackCols.nlw_hourly_rate)).alias(
+            HackCols.hourly_pay_minus_nlw
+        )
+    ).drop(
+        HackCols.nlw_effective_date, HackCols.nlw_is_apprentice, HackCols.nlw_band_start
+    )
+
+
+def add_country_code_group(worker_lf: pl.LazyFrame, code_column: str) -> pl.LazyFrame:
+    """Adds a categorical group column from an ISO 3166-1 numeric country code.
+
+    The UK code gives the UK label, an EEA code (EU, Iceland, Liechtenstein or
+    Norway) gives the EEA label and any other code gives "Non-EEA". A null or
+    blank code gives null.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the code column.
+        code_column (str): `AWKClean.nationality` (adds `nationality_group`) or
+            `AWKClean.country_of_birth` (adds `country_of_birth_group`).
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus the group column.
+
+    Raises:
+        ValueError: If `code_column` is not a supported column.
+    """
+    group_columns_and_labels = {
+        AWKClean.nationality: (
+            HackCols.nationality_group,
+            NationalityGroupLabels.british,
+            NationalityGroupLabels.eea_non_british,
+            NationalityGroupLabels.non_eea,
+        ),
+        AWKClean.country_of_birth: (
+            HackCols.country_of_birth_group,
+            CountryOfBirthGroupLabels.uk,
+            CountryOfBirthGroupLabels.eea_non_uk,
+            CountryOfBirthGroupLabels.non_eea,
+        ),
+    }
+    if code_column not in group_columns_and_labels:
+        raise ValueError(f"Unsupported country code column: {code_column}")
+    group_column, uk_label, eea_label, non_eea_label = group_columns_and_labels[
+        code_column
+    ]
+
+    # ISO 3166-1 numeric codes, unpadded as held in the raw data.
+    uk_code = "826"
+    eea_codes = [
+        "40",  # Austria
+        "56",  # Belgium
+        "100",  # Bulgaria
+        "191",  # Croatia
+        "196",  # Cyprus
+        "203",  # Czechia
+        "208",  # Denmark
+        "233",  # Estonia
+        "246",  # Finland
+        "250",  # France
+        "276",  # Germany
+        "300",  # Greece
+        "348",  # Hungary
+        "352",  # Iceland
+        "372",  # Ireland
+        "380",  # Italy
+        "428",  # Latvia
+        "438",  # Liechtenstein
+        "440",  # Lithuania
+        "442",  # Luxembourg
+        "470",  # Malta
+        "528",  # Netherlands
+        "578",  # Norway
+        "616",  # Poland
+        "620",  # Portugal
+        "642",  # Romania
+        "703",  # Slovakia
+        "705",  # Slovenia
+        "724",  # Spain
+        "752",  # Sweden
+    ]
+    code = pl.col(code_column).cast(pl.String).replace("", None)
+
+    return worker_lf.with_columns(
+        pl.when(code.is_null())
+        .then(None)
+        .when(code == uk_code)
+        .then(pl.lit(uk_label))
+        .when(code.is_in(eea_codes))
+        .then(pl.lit(eea_label))
+        .otherwise(pl.lit(non_eea_label))
+        .cast(pl.Categorical)
+        .alias(group_column)
+    )
 
 
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -242,6 +523,164 @@ def add_establishment_active_flag(
         .then(None)
         .otherwise(both_gaps_within_limit)
         .alias(HackCols.establishment_active)
+    )
+
+
+def add_turnover_rate(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `turnover_rate`: leavers / start employees per establishment-month.
+
+    Repeated on every worker row of the establishment-month. Null where the
+    establishment is not in both snapshots. Uses `.over()`, which the streaming
+    engine does not cover, so the sink may fall back to the in-memory engine.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `is_leaver`, one snapshot per
+            month.
+
+    Returns:
+        pl.LazyFrame: The input rows with `turnover_rate` (`Float32`) added.
+    """
+    establishment_month = [
+        AWKClean.establishment_id,
+        AWKClean.ascwds_worker_import_date,
+    ]
+
+    return worker_lf.with_columns(
+        pl.when(pl.col(HackCols.establishment_in_both_snapshots))
+        .then(
+            pl.col(HackCols.is_leaver).mean().over(establishment_month).cast(pl.Float32)
+        )
+        .alias(HackCols.turnover_rate)
+    )
+
+
+def add_headcount_reconciliation_gap(
+    worker_lf: pl.LazyFrame, max_gap: int
+) -> pl.LazyFrame:
+    """Adds `headcount_reconciliation_gap` and `headcount_gap_within_tolerance`.
+
+    The gap per establishment and start month is start headcount + workers
+    created after the start import date - leavers - end headcount, with the end
+    snapshot 12 months later. Created workers are counted on end snapshot rows;
+    a null `created_date` is not counted. Zero means the stayer and leaver
+    labels reconcile. The gap and flag are null with no end snapshot. The flag
+    is true when the absolute gap is at most `max_gap`.
+
+    Aggregates on a narrow frame so one join reaches the worker rows. Expects
+    one import date per month.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `is_leaver` and `created_date`.
+        max_gap (int): Largest absolute gap, in workers, within tolerance.
+
+    Returns:
+        pl.LazyFrame: The input rows with `headcount_reconciliation_gap` (`Int32`)
+            and `headcount_gap_within_tolerance` added.
+    """
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    import_month = pl.col(HackCols.import_month)
+    keys = [AWKClean.establishment_id, HackCols.import_month]
+
+    snapshot_lf = worker_lf.select(
+        AWKClean.establishment_id,
+        import_date,
+        AWKClean.created_date,
+        HackCols.is_leaver,
+    ).with_columns(import_date.dt.truncate("1mo").alias(HackCols.import_month))
+
+    start_lf = snapshot_lf.group_by(keys).agg(
+        pl.len().cast(pl.Int32).alias(HackCols.start_headcount),
+        pl.col(HackCols.is_leaver).sum().cast(pl.Int32).alias(HackCols.leaver_count),
+    )
+
+    start_dates_lf = (
+        snapshot_lf.select(
+            import_month.dt.offset_by("12mo"),
+            import_date.alias(HackCols.start_import_date),
+        )
+        .unique()
+        .rename({HackCols.import_month: HackCols.end_month})
+    )
+
+    end_lf = (
+        snapshot_lf.join(
+            start_dates_lf, left_on=HackCols.import_month, right_on=HackCols.end_month
+        )
+        .group_by(keys)
+        .agg(
+            pl.len().cast(pl.Int32).alias(HackCols.end_headcount),
+            (pl.col(AWKClean.created_date) > pl.col(HackCols.start_import_date))
+            .sum()
+            .cast(pl.Int32)
+            .alias(HackCols.created_count),
+        )
+        .with_columns(import_month.dt.offset_by("-12mo"))
+    )
+
+    gap_lf = (
+        start_lf.join(end_lf, on=keys, how="left")
+        .with_columns(
+            (
+                pl.col(HackCols.start_headcount)
+                + pl.col(HackCols.created_count)
+                - pl.col(HackCols.leaver_count)
+                - pl.col(HackCols.end_headcount)
+            ).alias(HackCols.headcount_reconciliation_gap)
+        )
+        .select(
+            *keys,
+            HackCols.headcount_reconciliation_gap,
+            (pl.col(HackCols.headcount_reconciliation_gap).abs() <= max_gap).alias(
+                HackCols.headcount_gap_within_tolerance
+            ),
+        )
+    )
+
+    return (
+        worker_lf.with_columns(
+            import_date.dt.truncate("1mo").alias(HackCols.import_month)
+        )
+        .join(gap_lf, on=keys, how="left")
+        .drop(HackCols.import_month)
+    )
+
+
+def add_valid_for_analysis_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `plausible_turnover` and `valid_for_analysis`.
+
+    `plausible_turnover` is false for a `turnover_rate` of:
+    - 0: no leavers over the whole year.
+    - 1: everyone left within the year.
+
+    It is true for any rate between them and null when the rate is null.
+    `valid_for_analysis` is true only when `establishment_in_both_snapshots`,
+    `establishment_active`, `plausible_turnover` and
+    `headcount_gap_within_tolerance` are all true, otherwise false. Keeps every
+    row.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `turnover_rate`,
+            `establishment_in_both_snapshots`, `establishment_active` and
+            `headcount_gap_within_tolerance`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `plausible_turnover` and
+            `valid_for_analysis` added.
+    """
+    return worker_lf.with_columns(
+        # Endpoints excluded: 0 and 1 are the implausible rates.
+        pl.col(HackCols.turnover_rate)
+        .is_between(0, 1, closed="none")
+        .alias(HackCols.plausible_turnover)
+    ).with_columns(
+        (
+            pl.col(HackCols.establishment_in_both_snapshots)
+            & pl.col(HackCols.establishment_active)
+            & pl.col(HackCols.plausible_turnover)
+            & pl.col(HackCols.headcount_gap_within_tolerance)
+        )
+        .fill_null(False)
+        .alias(HackCols.valid_for_analysis)
     )
 
 

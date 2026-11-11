@@ -135,6 +135,10 @@ EXPECTED_SCHEMA = pb.Schema(
         Pub.unfiltered_short_locationid_count_cum_pct_change: "Float64",
         Pub.unfiltered_filled_posts_april_pct_change: "Float64",
         Pub.unfiltered_locationid_count_april_pct_change: "Float64",
+        Pub.unfiltered_filled_posts_april_pct_change_prev_run: "Float64",
+        Pub.unfiltered_short_sfc_cum_pct_change_prev_run: "Float64",
+        Pub.unfiltered_filled_posts_april_pct_change_comparison: "Float64",
+        Pub.unfiltered_short_sfc_cum_pct_change_comparison: "Float64",
     }
 )
 

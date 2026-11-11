@@ -9,6 +9,7 @@ from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import
     WorkerTurnoverData as Data,
 )
 from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import (
+    EEA_CODES,
     raw_worker_row,
 )
 from projects._98_hackathon.unittest_data.polars_hackathon_test_file_schemas import (
@@ -111,6 +112,67 @@ class TestAddEstablishmentActiveFlag:
         assert returned_schema[HackCols.establishment_active] == pl.Boolean
 
 
+class TestAddTurnoverRate:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.add_turnover_rate_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.turnover_rate_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(HackCols.turnover_rate)
+
+        returned_lf = job.add_turnover_rate(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
+class TestAddHeadcountReconciliationGap:
+    MAX_GAP = 1
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.add_headcount_reconciliation_gap_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.headcount_gap_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(
+            HackCols.headcount_reconciliation_gap,
+            HackCols.headcount_gap_within_tolerance,
+        )
+
+        returned_lf = job.add_headcount_reconciliation_gap(input_lf, self.MAX_GAP)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
+class TestAddValidForAnalysisFlag:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.add_valid_for_analysis_flag_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.valid_for_analysis_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(
+            HackCols.plausible_turnover, HackCols.valid_for_analysis
+        )
+
+        returned_lf = job.add_valid_for_analysis_flag(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
 class TestAddMainServiceType:
     @pytest.mark.parametrize(
         "case",
@@ -131,6 +193,57 @@ class TestAddMainServiceType:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestAddCountryCodeGroup:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.add_country_code_group_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_schema = pl.Schema(
+            [
+                (case.code_column, pl.Categorical()),
+                (case.group_column, pl.Categorical()),
+            ]
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=expected_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(case.group_column)
+
+        returned_lf = job.add_country_code_group(input_lf, case.code_column)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    @pytest.mark.parametrize(
+        "code_column, group_column, eea_label",
+        [
+            (AWKClean.nationality, HackCols.nationality_group, "EEA (non-British)"),
+            (
+                AWKClean.country_of_birth,
+                HackCols.country_of_birth_group,
+                "EEA (non-UK)",
+            ),
+        ],
+    )
+    @pytest.mark.parametrize("code", EEA_CODES)
+    def test_returns_eea_label_for_each_eea_code(
+        self, code, code_column, group_column, eea_label
+    ):
+        input_lf = pl.LazyFrame(
+            [(code,)], schema=pl.Schema([(code_column, pl.Categorical())]), orient="row"
+        )
+
+        returned_df = job.add_country_code_group(input_lf, code_column).collect()
+
+        assert returned_df[group_column].to_list() == [eea_label]
+
+    def test_raises_value_error_for_unsupported_column(self):
+        input_lf = pl.LazyFrame({AWKClean.gender: ["1"]})
+
+        with pytest.raises(ValueError):
+            job.add_country_code_group(input_lf, AWKClean.gender)
+
+
 class TestAddIsLeaverFlag:
     @pytest.mark.parametrize(
         "case",
@@ -147,6 +260,45 @@ class TestAddIsLeaverFlag:
         returned_lf = job.add_is_leaver_flag(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
+class TestCombinePayAndHours:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.combine_pay_and_hours_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows, schema=Schemas.pay_input_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.pay_output_schema, orient="row"
+        )
+
+        returned_lf = job.combine_pay_and_hours(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestAddNlwAndPayDifference:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.add_nlw_and_pay_difference_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.nlw_output_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(
+            HackCols.nlw_hourly_rate, HackCols.hourly_pay_minus_nlw
+        )
+
+        returned_lf = job.add_nlw_and_pay_difference(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 def raw_worker_lf(*rows: dict) -> pl.LazyFrame:
@@ -271,7 +423,7 @@ class TestAddRawWorkerColumns:
             pytest.param(AWKClean.days_sick, ".5", 0.5, id="no_leading_digit"),
             pytest.param(AWKClean.days_sick, " ", None, id="blank_days"),
             pytest.param(AWKClean.start_in_sector, "2015", 2015.0, id="year"),
-            pytest.param(AWKClean.year_of_entry, "-1", -1.0, id="not_known_code_kept"),
+            pytest.param(AWKClean.days_sick, "0", 0.0, id="zero_kept"),
         ],
     )
     def test_returns_expected_number_for_numeric_string(
@@ -282,6 +434,32 @@ class TestAddRawWorkerColumns:
         returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
 
         assert returned_df[column].to_list() == [expected_number]
+
+    @pytest.mark.parametrize("raw_value", ["-1", "-8", "-2.5"])
+    @pytest.mark.parametrize("column", job.WORKER_NUMERIC_COLUMNS)
+    def test_returns_null_for_negative_numeric_value(self, column, raw_value):
+        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105", **{column: raw_value}))
+
+        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
+
+        assert returned_df[column].to_list() == [None]
+
+    @pytest.mark.parametrize("raw_value", ["-1", "-8"])
+    @pytest.mark.parametrize("column", job.WORKER_CATEGORICAL_COLUMNS)
+    def test_returns_null_for_negative_code_value(self, column, raw_value):
+        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105", **{column: raw_value}))
+
+        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
+
+        assert returned_df[column].to_list() == [None]
+
+    @pytest.mark.parametrize("column", job.WORKER_CATEGORICAL_COLUMNS)
+    def test_keeps_non_negative_code_value(self, column):
+        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105", **{column: "1"}))
+
+        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
+
+        assert returned_df[column].to_list() == ["1"]
 
     def test_returns_null_for_unparseable_numeric_value(self):
         raw_lf = raw_worker_lf(
@@ -336,3 +514,52 @@ class TestAddRawWorkerColumns:
         returned_df = job.add_raw_worker_columns(flagged_lf, raw_lf).collect()
 
         assert returned_df.height == 2
+
+
+class TestAddWorkerLabels:
+    coded_columns = [
+        AWKClean.gender,
+        AWKClean.ethnicity,
+        AWKClean.disabled,
+        AWKClean.social_care_qual_held,
+        AWKClean.level_social_care_qualification_held,
+        AWKClean.care_certificate_status,
+        AWKClean.apprentice,
+        AWKClean.zero_hours,
+        AWKClean.source_of_recruitment,
+    ]
+    label_columns = [f"{column}_labels" for column in coded_columns]
+
+    def codes_lf(self, code: str | None) -> pl.LazyFrame:
+        return pl.LazyFrame(
+            {column: [code] for column in self.coded_columns},
+            schema={column: pl.Categorical for column in self.coded_columns},
+        )
+
+    def test_adds_a_label_column_beside_each_coded_column(self):
+        returned_lf = job.add_worker_labels(self.codes_lf("1"))
+
+        assert returned_lf.collect_schema().names() == [
+            *self.coded_columns,
+            *self.label_columns,
+        ]
+
+    def test_returns_label_for_mapped_code(self):
+        returned_df = job.add_worker_labels(self.codes_lf("1")).collect()
+
+        assert returned_df[f"{AWKClean.gender}_labels"].to_list() == ["Male"]
+
+    def test_returns_null_label_for_null_code(self):
+        returned_df = job.add_worker_labels(self.codes_lf(None)).collect()
+
+        assert returned_df.select(self.label_columns).row(0) == (None,) * 9
+
+    def test_keeps_raw_code_as_label_for_unmapped_code(self):
+        returned_df = job.add_worker_labels(self.codes_lf("999")).collect()
+
+        assert returned_df[f"{AWKClean.gender}_labels"].to_list() == ["999"]
+
+    def test_label_columns_are_categorical(self):
+        returned_schema = job.add_worker_labels(self.codes_lf("1")).collect_schema()
+
+        assert all(returned_schema[c] == pl.Categorical for c in self.label_columns)
