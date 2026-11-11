@@ -10,7 +10,12 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
+from utils.column_values.ascwds_labelled_vocab import (
+    CountryOfBirthGroupLabels,
+    NationalityGroupLabels,
+)
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
@@ -19,6 +24,20 @@ KEY_COLUMNS = [
     AWKClean.worker_id,
     AWKClean.ascwds_worker_import_date,
 ]
+
+NUMERIC_COLUMNS = [
+    column
+    for column in wUtils.WORKER_NUMERIC_COLUMNS
+    if column not in wUtils.PAY_AND_HOURS_COLUMNS
+]
+
+# Nationality and country of birth get a group column instead of a label column.
+LABELLED_COLUMNS = [
+    column
+    for column in wUtils.WORKER_CATEGORICAL_COLUMNS
+    if column not in (AWKClean.nationality, AWKClean.country_of_birth)
+]
+LABEL_COLUMNS = [f"{column}_{DLC.label}s" for column in LABELLED_COLUMNS]
 
 SOURCE_COLUMNS = [
     *KEY_COLUMNS,
@@ -29,8 +48,20 @@ SOURCE_COLUMNS = [
     HackCols.months_since_save_start,
     HackCols.months_since_save_end,
     HackCols.establishment_active,
-    *wUtils.WORKER_NUMERIC_COLUMNS,
+    HackCols.turnover_rate,
+    HackCols.headcount_reconciliation_gap,
+    HackCols.headcount_gap_within_tolerance,
+    HackCols.plausible_turnover,
+    HackCols.valid_for_analysis,
+    HackCols.hours,
+    HackCols.hourly_pay,
+    HackCols.nlw_hourly_rate,
+    HackCols.hourly_pay_minus_nlw,
+    HackCols.nationality_group,
+    HackCols.country_of_birth_group,
+    *NUMERIC_COLUMNS,
     *wUtils.WORKER_CATEGORICAL_COLUMNS,
+    *LABEL_COLUMNS,
 ]
 
 COMPARE_COLUMNS = [
@@ -86,6 +117,15 @@ def main(
     establishment_in_both_snapshots = pl.col(HackCols.establishment_in_both_snapshots)
     is_leaver = pl.col(HackCols.is_leaver)
     establishment_active = pl.col(HackCols.establishment_active)
+    establishment_month = [
+        AWKClean.establishment_id,
+        AWKClean.ascwds_worker_import_date,
+    ]
+    turnover_rate = pl.col(HackCols.turnover_rate)
+    gap = pl.col(HackCols.headcount_reconciliation_gap)
+    gap_within_tolerance = pl.col(HackCols.headcount_gap_within_tolerance)
+    plausible_turnover = pl.col(HackCols.plausible_turnover)
+    hourly_pay = pl.col(HackCols.hourly_pay)
 
     snapshot_months = (
         source_df.select(import_date.dt.truncate("1mo").unique()).to_series().to_list()
@@ -103,6 +143,25 @@ def main(
             <= wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE
         )
     ).fill_null(False)
+    valid_for_analysis_inputs = (
+        establishment_in_both_snapshots
+        & establishment_active
+        & plausible_turnover
+        & gap_within_tolerance
+    ).fill_null(False)
+    labels_match_codes = pl.all_horizontal(
+        pl.col(label).is_not_null().eq(pl.col(code).is_not_null())
+        for code, label in zip(LABELLED_COLUMNS, LABEL_COLUMNS)
+    )
+    group_matches_code = pl.all_horizontal(
+        pl.col(group)
+        .is_not_null()
+        .eq(pl.col(code).cast(pl.String).replace("", None).is_not_null())
+        for code, group in [
+            (AWKClean.nationality, HackCols.nationality_group),
+            (AWKClean.country_of_birth, HackCols.country_of_birth_group),
+        ]
+    )
     code_is_negative = (
         pl.col(wUtils.WORKER_CATEGORICAL_COLUMNS)
         .cast(pl.String)
@@ -165,11 +224,93 @@ def main(
             expr=establishment_active.ne_missing(True) | gaps_within_limit,
             brief="establishment_active is true only when both save gaps are within the limit",
         )
+        .col_vals_expr(
+            expr=turnover_rate.is_not_null().eq(
+                establishment_in_both_snapshots.eq_missing(True)
+            ),
+            brief="turnover_rate is populated exactly when establishment_in_both_snapshots is true",
+        )
+        .col_vals_between(
+            HackCols.turnover_rate,
+            0,
+            1,
+            na_pass=True,
+            brief="turnover_rate is between 0 and 1",
+        )
+        .col_vals_expr(
+            expr=turnover_rate.min()
+            .over(establishment_month)
+            .eq_missing(turnover_rate.max().over(establishment_month)),
+            brief="turnover_rate is the same on every row of an establishment-month",
+        )
+        .col_vals_expr(
+            expr=gap.is_not_null().eq(establishment_in_both_snapshots.eq_missing(True)),
+            brief="headcount_reconciliation_gap is populated exactly when establishment_in_both_snapshots is true",
+        )
+        .col_vals_expr(
+            expr=gap_within_tolerance.is_not_null().eq(gap.is_not_null()),
+            brief="headcount_gap_within_tolerance is populated exactly when the gap is populated",
+        )
+        .col_vals_expr(
+            expr=plausible_turnover.eq_missing(
+                pl.when(turnover_rate.is_not_null()).then(
+                    turnover_rate.is_between(0, 1, closed="none")
+                )
+            ),
+            brief="plausible_turnover is true exactly when turnover_rate is strictly between 0 and 1, null when it is null",
+        )
+        .col_vals_not_null(
+            HackCols.valid_for_analysis, brief="valid_for_analysis has no nulls"
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.valid_for_analysis).eq(valid_for_analysis_inputs),
+            brief="valid_for_analysis is true exactly when its four input flags are all true",
+        )
         .col_vals_ge(
-            wUtils.WORKER_NUMERIC_COLUMNS,
+            [*NUMERIC_COLUMNS, HackCols.hourly_pay],
             0,
             na_pass=True,
-            brief="numeric raw columns are not negative",
+            brief="numeric raw columns and hourly_pay are not negative",
+        )
+        .col_vals_gt(HackCols.hours, 0, na_pass=True, brief="hours is null or above 0")
+        .col_vals_gt(
+            HackCols.nlw_hourly_rate,
+            0,
+            brief="nlw_hourly_rate is populated and above 0",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.hourly_pay_minus_nlw)
+            .is_not_null()
+            .eq(hourly_pay.is_not_null()),
+            brief="hourly_pay_minus_nlw is populated exactly when hourly_pay is populated",
+        )
+        .col_vals_expr(
+            expr=labels_match_codes,
+            brief="each label column is populated exactly when its code column is",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.nationality_group)
+            .cast(pl.String)
+            .is_in(
+                NationalityGroupLabels(HackCols.nationality_group).categorical_values
+            )
+            .fill_null(True),
+            brief="nationality_group is null or a known value",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.country_of_birth_group)
+            .cast(pl.String)
+            .is_in(
+                CountryOfBirthGroupLabels(
+                    HackCols.country_of_birth_group
+                ).categorical_values
+            )
+            .fill_null(True),
+            brief="country_of_birth_group is null or a known value",
+        )
+        .col_vals_expr(
+            expr=group_matches_code,
+            brief="each country group is populated exactly when its code is non-blank",
         )
         .col_vals_expr(
             expr=pl.all_horizontal(code_is_negative.not_()),

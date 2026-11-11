@@ -11,6 +11,10 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
+from utils.column_values.ascwds_labelled_vocab import (
+    CountryOfBirthGroupLabels,
+    NationalityGroupLabels,
+)
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
@@ -32,8 +36,20 @@ def build_source_df() -> pl.DataFrame:
             HackCols.months_since_save_start: [1, 1],
             HackCols.months_since_save_end: [1, None],
             HackCols.establishment_active: [True, None],
-            **{column: [1.0] * 2 for column in wUtils.WORKER_NUMERIC_COLUMNS},
+            HackCols.turnover_rate: [0.5, None],
+            HackCols.headcount_reconciliation_gap: [0, None],
+            HackCols.headcount_gap_within_tolerance: [True, None],
+            HackCols.plausible_turnover: [True, None],
+            HackCols.valid_for_analysis: [True, False],
+            HackCols.hours: [30.0, None],
+            HackCols.hourly_pay: [12.0, None],
+            HackCols.nlw_hourly_rate: [11.0, 11.0],
+            HackCols.hourly_pay_minus_nlw: [1.0, None],
+            HackCols.nationality_group: [NationalityGroupLabels.non_eea] * 2,
+            HackCols.country_of_birth_group: [CountryOfBirthGroupLabels.non_eea] * 2,
+            **{column: [1.0] * 2 for column in job.NUMERIC_COLUMNS},
             **{column: ["1"] * 2 for column in wUtils.WORKER_CATEGORICAL_COLUMNS},
+            **{column: ["label"] * 2 for column in job.LABEL_COLUMNS},
         },
         schema={
             AWKClean.establishment_id: CatColType.EstablishmentCatType,
@@ -46,8 +62,20 @@ def build_source_df() -> pl.DataFrame:
             HackCols.months_since_save_start: pl.Int32,
             HackCols.months_since_save_end: pl.Int32,
             HackCols.establishment_active: pl.Boolean,
-            **{column: pl.Float32 for column in wUtils.WORKER_NUMERIC_COLUMNS},
+            HackCols.turnover_rate: pl.Float32,
+            HackCols.headcount_reconciliation_gap: pl.Int32,
+            HackCols.headcount_gap_within_tolerance: pl.Boolean,
+            HackCols.plausible_turnover: pl.Boolean,
+            HackCols.valid_for_analysis: pl.Boolean,
+            HackCols.hours: pl.Float32,
+            HackCols.hourly_pay: pl.Float32,
+            HackCols.nlw_hourly_rate: pl.Float32,
+            HackCols.hourly_pay_minus_nlw: pl.Float32,
+            HackCols.nationality_group: pl.Categorical,
+            HackCols.country_of_birth_group: pl.Categorical,
+            **{column: pl.Float32 for column in job.NUMERIC_COLUMNS},
             **{column: pl.Categorical for column in wUtils.WORKER_CATEGORICAL_COLUMNS},
+            **{column: pl.Categorical for column in job.LABEL_COLUMNS},
         },
     )
 
@@ -136,6 +164,65 @@ class TestMain:
             item for item in report_json if item["assertion_type"] == "row_count_match"
         )
         assert row_count_step["values"]["count"] == 2
+
+
+class TestMainChecks:
+    @staticmethod
+    def run_main(source_df: pl.DataFrame) -> list[dict]:
+        with (
+            patch(f"{PATCH_PATH}.vl.write_reports") as mock_write_reports,
+            patch(f"{PATCH_PATH}.utils.scan_parquet") as mock_scan_parquet,
+            patch(f"{PATCH_PATH}.utils.read_parquet") as mock_read_parquet,
+        ):
+            mock_read_parquet.return_value = source_df
+            mock_scan_parquet.return_value = build_compare_lf()
+
+            job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        return json.loads(validation_arg.get_json_report())
+
+    def test_all_checks_pass_on_valid_data(self):
+        report = self.run_main(build_source_df())
+
+        failed = [item["brief"] for item in report if not item["all_passed"]]
+        assert failed == []
+
+    def test_source_columns_exclude_dropped_pay_and_hours_columns(self):
+        assert not set(wUtils.PAY_AND_HOURS_COLUMNS) & set(job.SOURCE_COLUMNS)
+
+    def test_fails_when_valid_for_analysis_true_with_a_false_input_flag(self):
+        source_df = build_source_df().with_columns(
+            pl.lit(False).alias(HackCols.headcount_gap_within_tolerance)
+        )
+
+        report = self.run_main(source_df)
+
+        failed = [item["brief"] for item in report if not item["all_passed"]]
+        assert any("valid_for_analysis is true exactly" in brief for brief in failed)
+
+    def test_fails_when_turnover_rate_above_one(self):
+        source_df = build_source_df().with_columns(
+            pl.when(pl.col(HackCols.turnover_rate).is_not_null())
+            .then(1.5)
+            .cast(pl.Float32)
+            .alias(HackCols.turnover_rate)
+        )
+
+        report = self.run_main(source_df)
+
+        failed = [item["brief"] for item in report if not item["all_passed"]]
+        assert "turnover_rate is between 0 and 1" in failed
+
+    def test_fails_when_label_missing_for_a_code(self):
+        source_df = build_source_df().with_columns(
+            pl.lit(None, dtype=pl.Categorical).alias(job.LABEL_COLUMNS[0])
+        )
+
+        report = self.run_main(source_df)
+
+        failed = [item["brief"] for item in report if not item["all_passed"]]
+        assert any("label column is populated exactly" in brief for brief in failed)
 
 
 class TestHasAtMostOneEndMonthPerStartMonth:

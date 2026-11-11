@@ -71,6 +71,14 @@ WORKER_NUMERIC_COLUMNS = [
     AWKClean.year_of_entry,
 ]
 
+# Replaced by `hours` and `hourly_pay`, so absent from the job output.
+PAY_AND_HOURS_COLUMNS = [
+    AWKClean.hourly_rate,
+    AWKClean.salary,
+    AWKClean.contracted_hours,
+    AWKClean.average_hours,
+]
+
 WORKER_DATE_COLUMNS = [
     AWKClean.created_date,
     AWKClean.start_date,
@@ -224,12 +232,7 @@ def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.coalesce(AWKClean.hourly_rate, annual_salary_to_hourly_pay).alias(
             HackCols.hourly_pay
         )
-    ).drop(
-        AWKClean.hourly_rate,
-        AWKClean.salary,
-        AWKClean.contracted_hours,
-        AWKClean.average_hours,
-    )
+    ).drop(PAY_AND_HOURS_COLUMNS)
 
 
 def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
