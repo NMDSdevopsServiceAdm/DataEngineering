@@ -170,7 +170,7 @@ class TestMain:
 
 class TestMainChecks:
     @staticmethod
-    def run_main(source_df: pl.DataFrame, **kwargs) -> list[dict]:
+    def run_main(source_df: pl.DataFrame) -> list[dict]:
         with (
             patch(f"{PATCH_PATH}.vl.write_reports") as mock_write_reports,
             patch(f"{PATCH_PATH}.utils.scan_parquet") as mock_scan_parquet,
@@ -179,7 +179,7 @@ class TestMainChecks:
             mock_read_parquet.return_value = source_df
             mock_scan_parquet.return_value = build_compare_lf()
 
-            job.main("bucket", "my/source/", "my/compare/", "my/reports/", **kwargs)
+            job.main("bucket", "my/source/", "my/compare/", "my/reports/")
 
         validation_arg = mock_write_reports.call_args[0][0]
         return json.loads(validation_arg.get_json_report())
@@ -228,15 +228,19 @@ class TestMainChecks:
         failed = [item["brief"] for item in report if not item["all_passed"]]
         assert any("headcount_gap_within_tolerance is true" in b for b in failed)
 
-    def test_passes_tolerance_check_when_gap_within_given_max_gap(self):
+    def test_passes_tolerance_check_when_flag_false_for_gap_above_max_gap(self):
         source_df = build_source_df().with_columns(
             pl.when(pl.col(HackCols.headcount_reconciliation_gap).is_not_null())
             .then(3)
             .cast(pl.Int32)
-            .alias(HackCols.headcount_reconciliation_gap)
+            .alias(HackCols.headcount_reconciliation_gap),
+            pl.when(pl.col(HackCols.headcount_gap_within_tolerance).is_not_null())
+            .then(False)
+            .alias(HackCols.headcount_gap_within_tolerance),
+            pl.col(HackCols.valid_for_analysis).and_(False),
         )
 
-        report = self.run_main(source_df, max_gap=3)
+        report = self.run_main(source_df)
 
         failed = [item["brief"] for item in report if not item["all_passed"]]
         assert failed == []

@@ -91,11 +91,7 @@ def has_at_most_one_end_month_per_start_month(df: pl.DataFrame) -> bool:
 
 
 def main(
-    bucket_name: str,
-    source_path: str,
-    compare_path: str,
-    reports_path: str,
-    max_gap: int = wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
+    bucket_name: str, source_path: str, compare_path: str, reports_path: str
 ) -> None:
     """Validates the flagged worker turnover data and writes the reports.
 
@@ -107,8 +103,6 @@ def main(
         compare_path (str): the cleaned ASC-WDS worker dataset path; its rows kept
             by `filter_worker_turnover_data` give the expected row count
         reports_path (str): the output path to write reports to
-        max_gap (int): largest absolute headcount reconciliation gap, in workers,
-            for the tolerance flag to be true; must match the job's `max_gap`
     """
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}", selected_columns=SOURCE_COLUMNS
@@ -259,8 +253,10 @@ def main(
             brief="headcount_reconciliation_gap is populated exactly when establishment_in_both_snapshots is true",
         )
         .col_vals_expr(
-            expr=gap_within_tolerance.eq_missing(gap.abs() <= max_gap),
-            brief=f"headcount_gap_within_tolerance is true exactly when the absolute gap is at most {max_gap}, null when the gap is null",
+            expr=gap_within_tolerance.eq_missing(
+                gap.abs() <= wUtils.DEFAULT_MAX_HEADCOUNT_GAP
+            ),
+            brief=f"headcount_gap_within_tolerance is true exactly when the absolute gap is at most {wUtils.DEFAULT_MAX_HEADCOUNT_GAP}, null when the gap is null",
         )
         .col_vals_expr(
             expr=plausible_turnover.eq_missing(
@@ -340,20 +336,8 @@ if __name__ == "__main__":
         ("--source_path", "The filepath of the dataset to validate"),
         ("--compare_path", "The filepath of the dataset to compare against"),
         ("--reports_path", "The filepath to output reports"),
-        (
-            "--max_gap",
-            "Largest absolute headcount reconciliation gap to count as within tolerance",
-            False,
-            wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
-        ),
     )
     print(f"Starting validation for {args.source_path}")
 
-    main(
-        args.bucket_name,
-        args.source_path,
-        args.compare_path,
-        args.reports_path,
-        int(args.max_gap),
-    )
+    main(args.bucket_name, args.source_path, args.compare_path, args.reports_path)
     print(f"Validation of {args.source_path} complete")
