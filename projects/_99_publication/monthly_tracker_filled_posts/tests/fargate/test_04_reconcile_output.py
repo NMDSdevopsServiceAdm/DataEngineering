@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import date
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
@@ -312,7 +313,8 @@ class TestMain:
 
         _run_main(mocks)  # does not raise
 
-    def test_raises_when_a_role_has_posts_in_the_public_output_only(self, mocks):
+    def test_raises_when_a_role_has_posts_against_a_zero_archive_total(self, mocks):
+        # 10 / 0 is inf, which is outside tolerance. Only 0 vs 0 is excused.
         _set_sources(
             mocks,
             [
@@ -860,49 +862,69 @@ def _role_totals(rows: list[tuple], value_column: str) -> pl.DataFrame:
     return pl.DataFrame(rows, schema, orient="row")
 
 
-def _raise_if_roles_differ(
-    public_posts: list[float], archive_posts: list[float]
-) -> None:
-    """Compares totals for roles named role_0, role_1 and so on in one period."""
-    roles = [f"role_{i}" for i in range(len(public_posts))]
+def _compare_posts(posts_by_role: dict[str, tuple[float, float]]) -> None:
+    """Compares one period's totals, given each role's (public, archive) posts."""
     job._raise_if_roles_differ(
         _role_totals(
-            [(IN_PERIOD, role, posts) for role, posts in zip(roles, public_posts)],
+            [(IN_PERIOD, role, public) for role, (public, _) in posts_by_role.items()],
             Pub.unfiltered_filled_posts,
         ),
         _role_totals(
-            [(IN_PERIOD, role, posts) for role, posts in zip(roles, archive_posts)],
+            [
+                (IN_PERIOD, role, archive)
+                for role, (_, archive) in posts_by_role.items()
+            ],
             IndCQC.estimate_filled_posts_by_job_role,
         ),
         run_number=2,
     )
 
 
+@dataclass
+class TotalsDifferCase:
+    id: str
+    public_posts: float
+    archive_posts: float
+
+    def as_pytest_param(self):
+        return pytest.param(self.public_posts, self.archive_posts, id=self.id)
+
+
+totals_differ_cases = [
+    TotalsDifferCase(
+        id="archive_total_is_nan", public_posts=1000.0, archive_posts=float("nan")
+    ),
+    TotalsDifferCase(
+        id="both_totals_are_nan", public_posts=float("nan"), archive_posts=float("nan")
+    ),
+    TotalsDifferCase(
+        id="just_over_tolerance", public_posts=1000.2, archive_posts=1000.0
+    ),
+]
+
+
 class TestRaiseIfRolesDiffer:
-    def test_raises_when_the_archive_total_is_nan(self):
+    @pytest.mark.parametrize(
+        "public_posts, archive_posts",
+        [c.as_pytest_param() for c in totals_differ_cases],
+    )
+    def test_raises_when_totals_differ(self, public_posts, archive_posts):
         with pytest.raises(job.ReconciliationMismatchError, match="differ"):
-            _raise_if_roles_differ([1000.0], [float("nan")])
-
-    def test_raises_when_both_totals_are_nan(self):
-        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
-            _raise_if_roles_differ([float("nan")], [float("nan")])
-
-    def test_raises_when_a_role_is_just_over_tolerance(self):
-        with pytest.raises(job.ReconciliationMismatchError, match="differ"):
-            _raise_if_roles_differ([1000.2], [1000.0])  # 0.02%
+            _compare_posts({"Care worker": (public_posts, archive_posts)})
 
     def test_passes_when_a_role_is_just_within_tolerance(self):
-        _raise_if_roles_differ([1000.09], [1000.0])  # 0.009%, does not raise
+        _compare_posts({"Care worker": (1000.09, 1000.0)})  # 0.009%, does not raise
 
     def test_names_the_largest_differences_first(self):
         # The archive differs more with each role, so the worst roles sort last
         # alphabetically.
         count = job.MAX_DIFFERENCES_REPORTED + 2
-        public_posts = [1000.0] * count
-        archive_posts = [1000.0 + 10 * (i + 1) for i in range(count)]
+        posts_by_role = {
+            f"role_{i}": (1000.0, 1000.0 + 10 * (i + 1)) for i in range(count)
+        }
 
         with pytest.raises(job.ReconciliationMismatchError) as error:
-            _raise_if_roles_differ(public_posts, archive_posts)
+            _compare_posts(posts_by_role)
 
         assert f"role_{count - 1}" in str(error.value)
         assert "role_0" not in str(error.value)

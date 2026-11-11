@@ -360,12 +360,15 @@ def main(
         run_number (int): the run to reconcile
 
     Raises:
-        ReconciliationMismatchError: if any period, or period and job role,
-            differs by more than RECONCILIATION_RELATIVE_TOLERANCE, a public
-            period is missing from the archive, a job role is in only one
-            source, the assessment has no national rows or a period's job role
-            rows lack its "All job roles" row, or the data download workbook is
-            missing or differs from the prepared tables
+        ReconciliationMismatchError: if
+            - a period, or period and job role, differs by more than
+              RECONCILIATION_RELATIVE_TOLERANCE
+            - a public period is missing from the archive
+            - a job role is in only one source
+            - the assessment has no national rows, or a period's job role rows
+              lack its "All job roles" row
+            - the data download workbook is missing or differs from the
+              prepared tables
     """
     assessment_run_source, archive_run_source = merge_utils.resolve_run_sources(
         [assessment_source, promoted_archive_source], run_number
