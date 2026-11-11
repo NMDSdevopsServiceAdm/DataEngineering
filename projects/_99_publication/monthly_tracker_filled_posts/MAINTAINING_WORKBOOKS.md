@@ -17,7 +17,7 @@ For the template file rules (what to scrub, binary diffs, the image rebuild) see
 | Writer | `fargate/utils/assessment_workbook_utils.py` | `fargate/utils/output_workbook_utils.py`, `fargate/utils/output_workbook_pages.py` |
 | Wording in code | `fargate/utils/assessment_sheet_text.py` | `fargate/utils/output_workbook_text.py` |
 
-Both S3 folders are in the datasets bucket and expire files after 60 days (`terraform/pipeline/s3.tf`). Both are excluded from the publication Glue crawler.
+Both S3 folders are in the datasets bucket and are excluded from the publication Glue crawler. Assessment workbooks expire after 60 days (`terraform/pipeline/s3.tf`).
 
 ## Who changes what
 

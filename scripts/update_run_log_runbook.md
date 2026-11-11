@@ -112,7 +112,7 @@ Rules:
 - The run, commit, tag and tag message from `cut_release_tag.sh plan`, then, after you answer `y`, the result of the cut (see "Cutting the release tag").
 - If you answered `y` at step 10, the execution's ARN and `Started.`. In the Step Functions console the new execution of `<workspace>-Publication-Output` has the input `{"run_number": <n>}`.
 
-`Publication-Output` also builds the public data download workbook, `monthly_tracker_data_download_<archive_date>_<run_number>.xlsx`, in `s3://<bucket>/domain=99_publication/dataset=monthly_tracker_filled_posts_03_output_workbook/`, and the reconciliation step reads it back. The workbook's Frontpage logo is read from `s3://<workspace>-pipeline-resources/publication/logo/skills_for_care_logo.png`; if that is missing the step function fails. Files are removed after about 60 days.
+`Publication-Output` also builds the public data download workbook, `monthly_tracker_data_download_<archive_date>_<run_number>.xlsx`, in `s3://<bucket>/domain=99_publication/dataset=monthly_tracker_filled_posts_03_output_workbook/`, and the reconciliation step reads it back. The workbook's Frontpage logo is read from `s3://<workspace>-pipeline-resources/publication/logo/skills_for_care_logo.png`; if that is missing the step function fails.
 
 `Publication-Output` builds the public data from the run's prepared data, which `Publication-Assessment` stores per run. `Publication-Assessment` starts itself when the estimates pipeline succeeds in `main`; on a branch it must be started by hand with `{"run_number": <n>}`. The script does not check that the run was prepared.
 
