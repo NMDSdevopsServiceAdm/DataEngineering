@@ -845,17 +845,14 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     )
 
 
-def add_prev_run_filled_posts_columns(
+def add_prev_run_pct_change_columns(
     assessment_summary_lf: pl.LazyFrame,
     prev_assessment_lf: pl.LazyFrame | None,
 ) -> pl.LazyFrame:
     """
-    Adds the previous run's filled posts, April % change and short-term SFC
-    cumulative % change, matched on import date, job role, region and service
-    type, plus comparisons with the current run.
-
-    Filled posts % change is (current - previous) / previous, null when previous
-    is 0. The % change comparisons are current minus previous.
+    Adds the previous run's April % change and short-term SFC cumulative % change,
+    matched on import date, job role, region and service type, plus comparisons
+    with the current run (current minus previous).
 
     Unmatched rows are null, as are columns the previous run lacks (all of them
     when there is no previous run). Previous keys are cast to the current dtypes
@@ -867,11 +864,10 @@ def add_prev_run_filled_posts_columns(
             data, or None when there is no earlier run.
 
     Returns:
-        pl.LazyFrame: assessment_summary_lf with the `_prev_run`,
-            `pct_change_vs_prev_run` and `_comparison` columns added.
+        pl.LazyFrame: assessment_summary_lf with the `_prev_run` and `_comparison`
+            columns added.
     """
     prev_run_columns = {
-        Pub.unfiltered_filled_posts: Pub.unfiltered_filled_posts_prev_run,
         Pub.unfiltered_filled_posts_april_pct_change: (
             Pub.unfiltered_filled_posts_april_pct_change_prev_run
         ),
@@ -925,17 +921,9 @@ def add_prev_run_filled_posts_columns(
         ]
     )
 
-    current_posts = pl.col(Pub.unfiltered_filled_posts).cast(pl.Float64)
-    prev_posts = pl.col(Pub.unfiltered_filled_posts_prev_run).cast(pl.Float64)
     return assessment_summary_lf.with_columns(
-        pl.when(prev_posts == 0)
-        .then(None)
-        .otherwise((current_posts - prev_posts) / prev_posts)
-        .alias(Pub.unfiltered_filled_posts_pct_change_vs_prev_run),
-        *[
-            (pl.col(column) - pl.col(prev_run_columns[column])).alias(comparison)
-            for column, comparison in comparison_columns.items()
-        ],
+        (pl.col(column) - pl.col(prev_run_columns[column])).alias(comparison)
+        for column, comparison in comparison_columns.items()
     )
 
 
