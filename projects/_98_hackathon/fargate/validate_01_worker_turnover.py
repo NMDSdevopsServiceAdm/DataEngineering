@@ -308,8 +308,19 @@ def main(
             expr=pl.all_horizontal(code_is_negative.not_()),
             brief="code raw columns contain no negative codes",
         )
-        .interrogate()
     )
+
+    # One step per column so a report names the column holding an unknown code.
+    for column, vocabulary in wUtils.LABEL_VOCABULARIES.items():
+        validation = validation.col_vals_expr(
+            expr=pl.col(column)
+            .cast(pl.String)
+            .is_in(list(vocabulary.code_to_label()))
+            .fill_null(True),
+            brief=f"{column} is null or a known code",
+        )
+
+    validation = validation.interrogate()
     vl.write_reports(validation, bucket_name, reports_path)
 
 
