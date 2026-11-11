@@ -17,8 +17,10 @@ def main(
     flagged_destination: str,
     n_months: int = DEFAULT_MAX_MONTHS_SINCE_SAVE,
 ) -> None:
-    """Filters worker data, adds main service type, flags leavers and active
-    establishments, and adds raw worker columns.
+    """Creates the worker-level dataset for the turnover hackathon.
+
+    Combines ASC-WDS worker data with workplace information, adds the leaver flags
+    and workplace turnover measures needed to analyse and model worker turnover.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
@@ -61,11 +63,18 @@ def main(
     filtered_lf = wUtils.add_establishment_active_flag(
         filtered_lf, save_dates_lf, n_months
     )
+    filtered_lf = wUtils.add_turnover_rate(filtered_lf)
+    filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf)
 
     raw_worker_lf = utils.scan_parquet(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
+    filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
+    filtered_lf = wUtils.add_worker_labels(filtered_lf)
+    filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
+    filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.country_of_birth)
+    filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
 
     utils.sink_to_parquet(filtered_lf, output_path=flagged_destination)
 

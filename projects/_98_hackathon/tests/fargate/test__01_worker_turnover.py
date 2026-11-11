@@ -12,7 +12,13 @@ class TestMain:
     FLAGGED_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
+    @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
+    @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
+    @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
+    @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_main_service_type")
@@ -27,7 +33,13 @@ class TestMain:
         add_main_service_type_mock: Mock,
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
+        add_turnover_rate_mock: Mock,
+        add_valid_for_analysis_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        combine_pay_and_hours_mock: Mock,
+        add_nlw_and_pay_difference_mock: Mock,
+        add_worker_labels_mock: Mock,
+        add_country_code_group_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
@@ -91,16 +103,44 @@ class TestMain:
             get_latest_save_date_per_establishment_mock.return_value,
             job.DEFAULT_MAX_MONTHS_SINCE_SAVE,
         )
+        add_turnover_rate_mock.assert_called_once_with(
+            add_establishment_active_flag_mock.return_value
+        )
+        add_valid_for_analysis_flag_mock.assert_called_once_with(
+            add_turnover_rate_mock.return_value
+        )
         add_raw_worker_columns_mock.assert_called_once_with(
-            add_establishment_active_flag_mock.return_value, raw_worker_lf_mock
+            add_valid_for_analysis_flag_mock.return_value, raw_worker_lf_mock
+        )
+        combine_pay_and_hours_mock.assert_called_once_with(
+            add_raw_worker_columns_mock.return_value
+        )
+        add_worker_labels_mock.assert_called_once_with(
+            combine_pay_and_hours_mock.return_value
+        )
+        assert add_country_code_group_mock.call_args_list == [
+            call(add_worker_labels_mock.return_value, job.AWKClean.nationality),
+            call(
+                add_country_code_group_mock.return_value,
+                job.AWKClean.country_of_birth,
+            ),
+        ]
+        add_nlw_and_pay_difference_mock.assert_called_once_with(
+            add_country_code_group_mock.return_value
         )
         sink_to_parquet_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value,
+            add_nlw_and_pay_difference_mock.return_value,
             output_path=self.FLAGGED_DESTINATION,
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
+    @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
+    @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
+    @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
+    @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
+    @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_is_leaver_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_main_service_type")
@@ -115,7 +155,13 @@ class TestMain:
         add_main_service_type_mock: Mock,
         add_is_leaver_flag_mock: Mock,
         add_establishment_active_flag_mock: Mock,
+        add_turnover_rate_mock: Mock,
+        add_valid_for_analysis_flag_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        combine_pay_and_hours_mock: Mock,
+        add_nlw_and_pay_difference_mock: Mock,
+        add_worker_labels_mock: Mock,
+        add_country_code_group_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
