@@ -56,6 +56,8 @@ After a run has been assessed, record that we are satisfied it is accurate. Seve
 
 Do this when you have reviewed the run's assessment data and are satisfied with it. The assessment data's `archive_date` and `run_number` partitions show which run you assessed.
 
+Each run's assessment workbook is `monthly_tracking_summary_<archive_date>_<run_number>.xlsx` in `s3://<bucket>/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment_workbook/`. `Publication-Assessment` builds it, so it exists once that has finished for the run. Files are removed after about 60 days. To change the workbook, see `projects/_99_publication/monthly_tracker_filled_posts/MAINTAINING_WORKBOOKS.md`.
+
 ### Steps
 1. From the repo root, in Git Bash, run `bash scripts/update_run_log.sh`.
 2. Enter the AWS profile and the bucket.
@@ -109,6 +111,8 @@ Rules:
 - The promotion step's own output (see "Promoting a run"), ending `Promoted run <n> (archived <date>) to s3://<workspace>-archive-promoted/.`.
 - The run, commit, tag and tag message from `cut_release_tag.sh plan`, then, after you answer `y`, the result of the cut (see "Cutting the release tag").
 - If you answered `y` at step 10, the execution's ARN and `Started.`. In the Step Functions console the new execution of `<workspace>-Publication-Output` has the input `{"run_number": <n>}`.
+
+`Publication-Output` also builds the public data download workbook, `monthly_tracker_data_download_<archive_date>_<run_number>.xlsx`, in `s3://<bucket>/domain=99_publication/dataset=monthly_tracker_filled_posts_03_output_workbook/`, and the reconciliation step reads it back. The workbook's Frontpage logo is read from `s3://<workspace>-pipeline-resources/publication/logo/skills_for_care_logo.png`; if that is missing the step function fails. Files are removed after about 60 days.
 
 `Publication-Output` builds the public data from the run's prepared data, which `Publication-Assessment` stores per run. `Publication-Assessment` starts itself when the estimates pipeline succeeds in `main`; on a branch it must be started by hand with `{"run_number": <n>}`. The script does not check that the run was prepared.
 
