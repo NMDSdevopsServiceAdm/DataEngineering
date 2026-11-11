@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
 
 ### Changed
+- Changed the `pytest-pattern` skill and STYLEGUIDE.md so tests for functions that only add columns use one expected rows list and drop the new columns to get the input.
 - Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.
 - Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
 

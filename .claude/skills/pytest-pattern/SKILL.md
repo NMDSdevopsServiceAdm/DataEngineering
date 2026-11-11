@@ -80,6 +80,23 @@ Store rows/schemas in `*_test_file_data.py` / `*_test_file_schemas.py`, at the n
 
 File naming: `test_<module>.py`, mirroring the module under test.
 
+### When expected only adds columns to the input
+
+If the function leaves existing rows and column values unchanged and only adds columns, don't write separate input data. Store one `expected_rows` list and the output schema, then drop the new columns to get the input:
+
+```python
+expected_lf = pl.LazyFrame(
+    case.expected_rows, schema=Schemas.turnover_rate_schema, orient="row"
+)
+input_lf = expected_lf.drop(HackCols.turnover_rate)
+
+returned_lf = job.add_turnover_rate(input_lf)
+
+pl_testing.assert_frame_equal(returned_lf, expected_lf)
+```
+
+If rows are filtered or reordered, or existing values change, keep separate input and expected data.
+
 ## Running tests locally
 
 Use `uv run pytest <path>` — see CLAUDE.md's "Environment & workflow" section for what's in scope locally vs CI/CD.
