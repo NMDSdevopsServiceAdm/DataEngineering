@@ -90,7 +90,7 @@ def mocks():
             date=stack.enter_context(patch(f"{PATCH_PATH}.date")),
             add_previous_columns=_patch_publication_utils(
                 stack,
-                "add_prev_run_filled_posts_columns",
+                "add_prev_run_pct_change_columns",
                 side_effect=lambda lazy_df, previous_lf: lazy_df,
             ),
             has_consistent_service=_patch_publication_utils(
