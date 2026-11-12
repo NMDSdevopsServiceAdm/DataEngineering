@@ -70,6 +70,13 @@ class CombinePayAndHoursCase:
 
 
 @dataclass
+class ImputeWorkerColumnsCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class AddNlwAndPayDifferenceCase:
     id: str
     expected_rows: list[tuple[Any, ...]]
@@ -411,6 +418,53 @@ class WorkerTurnoverData:
             id="nothing_given",
             input_rows=[("1", None, None, None, None)],
             expected_rows=[("1", None, None)],
+        ),
+    ]
+
+    # Rows: (establishment_id, worker_id, import_date, hours).
+    impute_worker_columns_cases = [
+        ImputeWorkerColumnsCase(
+            id="fills_null_from_earlier_value",
+            input_rows=[("e1", "w1", START, 10.0), ("e1", "w1", MID, None)],
+            expected_rows=[("e1", "w1", START, 10.0), ("e1", "w1", MID, 10.0)],
+        ),
+        ImputeWorkerColumnsCase(
+            id="fills_leading_null_from_later_value",
+            input_rows=[("e1", "w1", START, None), ("e1", "w1", MID, 20.0)],
+            expected_rows=[("e1", "w1", START, 20.0), ("e1", "w1", MID, 20.0)],
+        ),
+        ImputeWorkerColumnsCase(
+            id="prefers_earlier_value_over_later_value",
+            input_rows=[
+                ("e1", "w1", START, 10.0),
+                ("e1", "w1", MID, None),
+                ("e1", "w1", END, 30.0),
+            ],
+            expected_rows=[
+                ("e1", "w1", START, 10.0),
+                ("e1", "w1", MID, 10.0),
+                ("e1", "w1", END, 30.0),
+            ],
+        ),
+        ImputeWorkerColumnsCase(
+            id="orders_by_import_date_not_row_order",
+            input_rows=[("e1", "w1", MID, None), ("e1", "w1", START, 10.0)],
+            expected_rows=[("e1", "w1", MID, 10.0), ("e1", "w1", START, 10.0)],
+        ),
+        ImputeWorkerColumnsCase(
+            id="keeps_null_when_never_known",
+            input_rows=[("e1", "w1", START, None), ("e1", "w1", MID, None)],
+            expected_rows=[("e1", "w1", START, None), ("e1", "w1", MID, None)],
+        ),
+        ImputeWorkerColumnsCase(
+            id="does_not_fill_across_workers",
+            input_rows=[("e1", "w1", START, 10.0), ("e1", "w2", START, None)],
+            expected_rows=[("e1", "w1", START, 10.0), ("e1", "w2", START, None)],
+        ),
+        ImputeWorkerColumnsCase(
+            id="does_not_fill_across_establishments",
+            input_rows=[("e1", "w1", START, 10.0), ("e2", "w1", MID, None)],
+            expected_rows=[("e1", "w1", START, 10.0), ("e2", "w1", MID, None)],
         ),
     ]
 

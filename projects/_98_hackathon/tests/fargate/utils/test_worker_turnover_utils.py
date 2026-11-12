@@ -655,3 +655,24 @@ class TestAddWorkerLabels:
         returned_schema = job.add_worker_labels(self.codes_lf("1")).collect_schema()
 
         assert all(returned_schema[c] == pl.Categorical for c in self.label_columns)
+
+
+class TestImputeWorkerColumns:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.impute_worker_columns_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows, schema=Schemas.impute_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.impute_schema, orient="row"
+        )
+
+        returned_lf = job.impute_worker_columns(input_lf, [HackCols.hours])
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_imputes_expected_columns(self):
+        assert job.IMPUTE_COLUMNS == Schemas.impute_columns

@@ -89,6 +89,24 @@ RAW_WORKER_SCHEMA = {
     ]
 }
 
+IMPUTE_COLUMNS = [
+    f"{AWKClean.gender}_labels",
+    f"{AWKClean.ethnicity}_labels",
+    f"{AWKClean.disabled}_labels",
+    HackCols.nationality_group,
+    HackCols.country_of_birth_group,
+    AWKClean.year_of_entry,
+    HackCols.hours,
+    f"{AWKClean.zero_hours}_labels",
+    f"{AWKClean.source_of_recruitment}_labels",
+    AWKClean.start_date,
+    AWKClean.start_age,
+    AWKClean.start_in_sector,
+    f"{AWKClean.social_care_qual_held}_labels",
+    f"{AWKClean.level_social_care_qualification_held}_labels",
+    f"{AWKClean.care_certificate_status}_labels",
+]
+
 
 def add_raw_worker_columns(
     worker_lf: pl.LazyFrame, raw_worker_lf: pl.LazyFrame
@@ -429,6 +447,34 @@ def add_country_code_group(worker_lf: pl.LazyFrame, code_column: str) -> pl.Lazy
         .otherwise(pl.lit(non_eea_label))
         .cast(pl.Categorical)
         .alias(group_column)
+    )
+
+
+def impute_worker_columns(worker_lf: pl.LazyFrame, columns: list[str]) -> pl.LazyFrame:
+    """Fills null worker attributes from the same worker's other import dates.
+
+    Per worker and establishment, ordered by `ascwds_worker_import_date`, a null
+    takes the nearest earlier value, or the nearest later one when no earlier
+    value exists. Values are overwritten in place; a worker with no value on any
+    import date stays null. Fills one `.over()` window, so the frame is not
+    collected or joined.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the establishment ID, worker
+            ID, `ascwds_worker_import_date` and the columns to fill.
+        columns (list[str]): columns to fill.
+
+    Returns:
+        pl.LazyFrame: The input rows with the filled columns.
+    """
+    return worker_lf.with_columns(
+        pl.col(columns)
+        .forward_fill()
+        .backward_fill()
+        .over(
+            [AWKClean.worker_id, AWKClean.establishment_id],
+            order_by=AWKClean.ascwds_worker_import_date,
+        )
     )
 
 
