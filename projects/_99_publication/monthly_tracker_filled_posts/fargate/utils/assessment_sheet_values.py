@@ -15,6 +15,7 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
     publication_utils,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.assessment_sheet_text import (
+    ANNUAL_LABEL,
     TermFromDates,
     comp_prev_rows,
     period_months,
@@ -117,10 +118,11 @@ def value_columns(sheets: Iterable[cell_map.SheetMap]) -> list[str]:
     """
     return list(
         dict.fromkeys(
-            r.source_column
+            column
             for sheet in sheets
             for r in sheet.input_ranges
-            if r.source_column not in (None, cell_map.PERIOD_COL, Pub.period_label_long)
+            for column in (r.source_column, r.monthly_source_column)
+            if column not in (None, cell_map.PERIOD_COL, Pub.period_label_long)
         )
     )
 
@@ -150,6 +152,7 @@ def _table_cells(
     date_keys: tuple[str, ...],
     value_keys: tuple[str, ...],
     service_types: tuple[str, ...] = tuple(SERVICE_TYPE_ORDER),
+    monthly_from_row: int | None = None,
 ) -> dict[str, object]:
     """Cells for one table: period dates, service type values and % changes.
 
@@ -165,6 +168,10 @@ def _table_cells(
             values, read from each range's source column.
         service_types (tuple[str, ...]): service types the value ranges spread
             across, in column order.
+        monthly_from_row (int | None): index of the first April-or-later row of
+            `period_df`. From there a range with a `monthly_source_column` reads
+            that column instead of its `source_column`. None reads `source_column`
+            throughout.
 
     Returns:
         dict[str, object]: value by A1 cell.
@@ -194,13 +201,24 @@ def _table_cells(
             if input_range.number_format == "percent"
             else publication_utils.round_to_whole_number
         )
-        value_columns = [
-            f"{input_range.source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
-            for service_type in service_types
+        if monthly_from_row is None or input_range.monthly_source_column is None:
+            sources = [(input_range.source_column, period_df)]
+        else:
+            sources = [
+                (input_range.source_column, period_df.slice(0, monthly_from_row)),
+                (input_range.monthly_source_column, period_df.slice(monthly_from_row)),
+            ]
+        rows = [
+            row
+            for source_column, source_df in sources
+            for row in source_df.select(
+                round_values(column).alias(column)
+                for column in (
+                    f"{source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
+                    for service_type in service_types
+                )
+            ).rows()
         ]
-        rows = period_df.select(
-            round_values(column).alias(column) for column in value_columns
-        ).rows()
         # A % change range can start below the first date row.
         rows = rows[cell_range.min_row - dates_range.min_row :]
         cells |= block_cells(cell_range.coord.split(":")[0], rows)
@@ -246,6 +264,8 @@ def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, objec
 
     Each of the previous publication, current publication and difference blocks
     lists its rows in the order of `comp_prev_rows`, which the labels also follow.
+    The "Annual" (March) rows read each range's `source_column` and the "Monthly"
+    (April or later) rows read its `monthly_source_column`.
 
     Args:
         assessment_df (pl.DataFrame): output of `prepare_assessment_df`.
@@ -256,7 +276,9 @@ def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, objec
     months = period_months(
         assessment_df.get_column(IndCQC.cqc_location_import_date).to_list()
     )
-    row_indexes = [months.index(month) for month, _ in comp_prev_rows(months)]
+    prev_rows = comp_prev_rows(months)
+    row_indexes = [months.index(month) for month, _ in prev_rows]
+    annual_row_count = sum(label == ANNUAL_LABEL for _, label in prev_rows)
     period_df = assessment_df.select(pl.all().gather(row_indexes))
 
     cells = {}
@@ -266,6 +288,7 @@ def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, objec
             period_df,
             (f"{block}.dates",),
             (f"{block}.values",),
+            monthly_from_row=annual_row_count,
         )
     return cells
 
