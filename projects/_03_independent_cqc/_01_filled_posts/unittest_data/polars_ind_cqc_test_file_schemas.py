@@ -970,10 +970,13 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
         ]
     )
 
-    select_data_not_in_subset_schema = pl.Schema(
+    select_data_not_in_care_home_subset_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
-            ("other_col", pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
         ]
     )
 

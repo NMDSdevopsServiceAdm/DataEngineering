@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 from typing import cast
 
+import polars as pl
 import psutil
 import pytest
 from pyspark.sql import SparkSession
@@ -13,6 +14,8 @@ def pytest_sessionstart(session):
     """Hook to run before the session starts - set env vars here."""
     os.environ["SPARK_VERSION"] = "3.5"
     os.environ["CQC_API_RETRY_BUDGET_SECONDS"] = "60"
+    # Matches the in-memory engine the Fargate tasks run on (terraform/modules/fargate-task/ecs.tf).
+    pl.Config.set_engine_affinity("in-memory")
 
 
 @pytest.fixture(scope="session")

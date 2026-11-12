@@ -20,7 +20,8 @@ def mock_roles(monkeypatch):
         job,
         "create_job_role_lazyframe",
         lambda: pl.LazyFrame(
-            roles, {job.job_role_labels: CatColType.JobRoleCatType}, orient="row"
+            {job.job_role_labels: roles},
+            schema={job.job_role_labels: CatColType.JobRoleCatType},
         ),
     )
 
@@ -66,7 +67,8 @@ class TestJoinEstimatesToAscwds:
 class TestCreateJobRoleLazyFrame:
     def test_create_job_role_lazyframe_schema_rowcount_and_order(self):
         expected_lf = pl.LazyFrame(
-            roles, {job.job_role_labels: CatColType.JobRoleCatType}, orient="row"
+            {job.job_role_labels: roles},
+            schema={job.job_role_labels: CatColType.JobRoleCatType},
         )
         returned_lf = job.create_job_role_lazyframe()
 

@@ -7,7 +7,7 @@ description: Use before relying on .collect(engine="streaming") for a large or O
 
 `.collect(engine="streaming")` doesn't cover everything yet. Some operations silently fall back to the in-memory engine, which defeats the point on large data.
 
-## Known non-streaming operations (last checked 2026-07-14 against [pola-rs/polars#20947](https://github.com/pola-rs/polars/issues/20947))
+## Known non-streaming operations (last checked 2026-11-12 against [pola-rs/polars#20947](https://github.com/pola-rs/polars/issues/20947))
 
 - **`.over()` (window functions):** only `.over(mapping_strategy="group_to_rows")` streams. Plain `.over()` (→ group-by+join) and `.over(keys)` with sorted keys do not yet — see the `over-vs-join` skill before rewriting one of these to chase streaming support, since the rewrite is not automatically a memory win.
 - **Out-of-core (streams but must still fit in memory):** `group_by`, equi-joins, `sort`.

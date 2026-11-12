@@ -94,30 +94,43 @@ class FilterToCareHomesWithKnownBedsAndFilledPostsTests(unittest.TestCase):
         pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
 
 
-class SelectDataNotInSubsetTests(unittest.TestCase):
-    def test_function_returns_expected_values(self):
-        lf = pl.LazyFrame(
-            data=Data.select_data_not_in_subset_rows,
-            schema=Schemas.select_data_not_in_subset_schema,
-            orient="row",
-        )
-        subset_lf = pl.LazyFrame(
-            data=Data.subset_rows,
-            schema=Schemas.select_data_not_in_subset_schema,
+class TestWinsorizeWithNullColumns:
+    def test_returns_same_number_of_rows_when_care_homes_have_null_columns(self):
+        input_lf = pl.LazyFrame(
+            Data.ind_cqc_rows_with_null_ascwds_filled_posts,
+            Schemas.ind_cqc_schema,
             orient="row",
         )
 
-        returned_lf = job.select_data_not_in_subset(lf, subset_lf)
+        returned_lf = job.winsorize_care_home_filled_posts_per_bed_ratio_outliers(
+            input_lf
+        )
+
+        assert returned_lf.collect().height == input_lf.collect().height
+
+
+class TestSelectDataNotInCareHomeSubset:
+    def setup_method(self):
+        self.input_lf = pl.LazyFrame(
+            Data.select_data_not_in_care_home_subset_rows,
+            Schemas.select_data_not_in_care_home_subset_schema,
+            orient="row",
+        )
+        self.returned_lf = job.select_data_not_in_care_home_subset(self.input_lf)
+
+    def test_excludes_subset_rows_that_contain_nulls(self):
+        returned_ids = self.returned_lf.collect()[IndCQC.location_id].to_list()
+
+        assert "1" not in returned_ids
+
+    def test_keeps_non_subset_rows_that_contain_nulls(self):
         expected_lf = pl.LazyFrame(
-            data=Data.expected_select_data_not_in_subset_rows,
-            schema=Schemas.select_data_not_in_subset_schema,
+            Data.expected_select_data_not_in_care_home_subset_rows,
+            Schemas.select_data_not_in_care_home_subset_schema,
             orient="row",
         )
 
-        pl_testing.assert_frame_equal(
-            returned_lf,
-            expected_lf,
-        )
+        pl_testing.assert_frame_equal(self.returned_lf, expected_lf)
 
 
 class TestCalculateExpectedFilledPostsBasedOnNumberOfBeds:

@@ -1467,18 +1467,21 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
         ("09", "Y", 1, 1.0),
     ]
 
-    select_data_not_in_subset_rows = [
-        ("1-000000001", "data"),
-        ("1-000000002", "data"),
-        ("1-000000003", "data"),
-    ]
-    subset_rows = [
-        ("1-000000002", "data"),
+    ind_cqc_rows_with_null_ascwds_filled_posts = [
+        (*row[:6], None, *row[7:]) for row in unfiltered_ind_cqc_rows
     ]
 
-    expected_select_data_not_in_subset_rows = [
-        ("1-000000001", "data"),
-        ("1-000000003", "data"),
+    select_data_not_in_care_home_subset_rows = [
+        ("1", "Y", 1, 1.0, None),
+        ("2", "Y", 1, 1.0, 5.0),
+        ("3", "N", 1, 1.0, None),
+        ("4", "Y", None, 1.0, 5.0),
+        ("5", "Y", 1, None, None),
+    ]
+    expected_select_data_not_in_care_home_subset_rows = [
+        ("3", "N", 1, 1.0, None),
+        ("4", "Y", None, 1.0, 5.0),
+        ("5", "Y", 1, None, None),
     ]
 
     calculate_expected_filled_posts_rows = [

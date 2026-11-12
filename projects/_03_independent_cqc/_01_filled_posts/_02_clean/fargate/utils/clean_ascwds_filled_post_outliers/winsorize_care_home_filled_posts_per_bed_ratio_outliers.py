@@ -76,7 +76,7 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
         pl.LazyFrame: A polars LazyFrame with outlier values winsorized.
     """
     care_homes_lf = filter_lf_to_care_homes_with_known_beds_and_filled_posts(input_lf)
-    data_not_relevant_to_filter_lf = select_data_not_in_subset(input_lf, care_homes_lf)
+    data_not_relevant_to_filter_lf = select_data_not_in_care_home_subset(input_lf)
 
     care_homes_lf = calculate_expected_filled_posts_based_on_number_of_beds(
         care_homes_lf
@@ -127,38 +127,41 @@ def filter_lf_to_care_homes_with_known_beds_and_filled_posts(
         pl.LazyFrame: A LazyFrame filtered to care homes with known beds and known
             filled posts.
     """
-    lf = lf.filter(
+    return lf.filter(is_care_home_with_known_beds_and_filled_posts())
+
+
+def select_data_not_in_care_home_subset(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Selects rows outside the care homes with known beds and filled posts subset.
+
+    Rows are selected by the subset's filter condition, not by matching them
+    against the subset's rows, so nulls in any column cannot affect which rows
+    are selected. Rows where the condition is null are outside the subset.
+
+    Args:
+        lf (pl.LazyFrame): A polars LazyFrame of cleaned CQC locations.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame of the rows that
+            `filter_lf_to_care_homes_with_known_beds_and_filled_posts` removes.
+    """
+    return lf.filter(~is_care_home_with_known_beds_and_filled_posts().fill_null(False))
+
+
+def is_care_home_with_known_beds_and_filled_posts() -> pl.Expr:
+    """
+    Expression for care homes with one or more beds and one or more filled posts.
+
+    Returns:
+        pl.Expr: A boolean expression, null where a column it needs is null.
+    """
+    return (
         is_care_home()
         & pl.col(IndCQC.number_of_beds).is_not_null()
         & (pl.col(IndCQC.number_of_beds) > 0)
         & pl.col(IndCQC.ascwds_filled_posts_dedup_clean).is_not_null()
         & (pl.col(IndCQC.ascwds_filled_posts_dedup_clean) > 0.0)
     )
-
-    return lf
-
-
-def select_data_not_in_subset(
-    complete_lf: pl.LazyFrame, subset_lf: pl.LazyFrame
-) -> pl.LazyFrame:
-    """
-    Selects rows from the complete LazyFrame that are not present in the subset
-    LazyFrame.
-
-    Args:
-        complete_lf (pl.LazyFrame): The LazyFrame containing all available data.
-        subset_lf (pl.LazyFrame): The LazyFrame containing the subset of data to
-            exclude.
-
-    Returns:
-        pl.LazyFrame: A new LazyFrame containing only the rows from complete_lf
-            that are not in subset_lf.
-    """
-    output_lf = complete_lf.join(
-        subset_lf, on=complete_lf.collect_schema().names(), how="anti"
-    )
-
-    return output_lf
 
 
 def calculate_expected_filled_posts_based_on_number_of_beds(

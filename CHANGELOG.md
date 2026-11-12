@@ -17,10 +17,12 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.
 - Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
+- Updated polars (1.44.1 -> 2.1.0) and pointblank (0.26.0 -> 1.1.1). Fargate tasks and tests run polars on the in-memory engine, which polars 2 no longer uses by default.
 
 ### Improved
 
 ### Fixed
+- Winsorizing care home filled posts per bed ratio outliers no longer duplicates care home rows that have a null in any column.
 
 
 ## [v2026.10.0] - 09/11/2026
