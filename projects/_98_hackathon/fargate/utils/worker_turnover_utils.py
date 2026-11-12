@@ -451,21 +451,19 @@ def add_country_code_group(worker_lf: pl.LazyFrame, code_column: str) -> pl.Lazy
 
 
 def impute_worker_columns(worker_lf: pl.LazyFrame, columns: list[str]) -> pl.LazyFrame:
-    """Fills null worker attributes from the same worker's other import dates.
+    """Fills nulls in `columns` from the same worker's other import dates.
 
-    Per worker and establishment, ordered by `ascwds_worker_import_date`, a null
-    takes the nearest earlier value, or the nearest later one when no earlier
-    value exists. Values are overwritten in place; a worker with no value on any
-    import date stays null. Fills one `.over()` window, so the frame is not
-    collected or joined.
+    Per worker and establishment, ordered by `ascwds_worker_import_date`, forward
+    fills then backward fills. A worker with no value on any date stays null. A
+    single `.over()` keeps the frame lazy.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the establishment ID, worker
-            ID, `ascwds_worker_import_date` and the columns to fill.
+            ID, `ascwds_worker_import_date` and `columns`.
         columns (list[str]): columns to fill.
 
     Returns:
-        pl.LazyFrame: The input rows with the filled columns.
+        pl.LazyFrame: The input rows with `columns` filled.
     """
     return worker_lf.with_columns(
         pl.col(columns)
