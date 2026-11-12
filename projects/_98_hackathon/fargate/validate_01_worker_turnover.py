@@ -14,6 +14,7 @@ from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
     NationalityGroupLabels,
+    NotKnownWorkerCodes,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.categorical_column_values import PrimaryServiceType
@@ -322,6 +323,16 @@ def main(
             .is_in(list(vocabulary.code_to_label()))
             .fill_null(True),
             brief=f"{column} is null or a known code",
+        )
+
+    # No vocabulary covers these, so check the not known code was nulled.
+    for column, not_known_code in [
+        (AWKClean.nationality, NotKnownWorkerCodes.nationality),
+        (AWKClean.country_of_birth, NotKnownWorkerCodes.country_of_birth),
+    ]:
+        validation = validation.col_vals_expr(
+            expr=pl.col(column).cast(pl.String).ne_missing(not_known_code),
+            brief=f"{column} does not hold the not known code",
         )
 
     validation = validation.interrogate()
