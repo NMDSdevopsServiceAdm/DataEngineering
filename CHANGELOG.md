@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a guide to maintaining the Monthly Tracker workbooks, and documented where to find them.
 - Added the National Living Wage rate at each snapshot, and hourly pay minus it, to the Hackathon Worker Turnover job.
 - Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
 - Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, replacing the raw hourly rate, salary, contracted hours and average hours columns.

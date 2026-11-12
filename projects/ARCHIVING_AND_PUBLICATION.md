@@ -27,9 +27,11 @@ The assessment data is then built from the prepared run, with filters for extern
 The assessment columns are going to be benchmarked against external data, therefore we only want to include rows that have a value in the external data (all rows receive a filled posts estimate from our pipeline).
 The assessment data is aggregated into high level groupings by region, service and job role.
 The assessment data is partitioned on archive date and run number, so every assessed run is kept. Rebuilding a run replaces that run's partition only.
+The same step fills the assessment workbook from the assessment data and saves `monthly_tracking_summary_<archive_date>_<run_number>.xlsx` under `dataset=monthly_tracker_filled_posts_02_assessment_workbook/`, which the publication crawler excludes.
+Every run gets a workbook, so each candidate can be reviewed before it is approved. Assessment workbooks are removed after about two months.
 
 ### Assessment of readiness
-We look at the cumulative percentage change in filled posts per month over time.
+We look at the cumulative percentage change in filled posts per month over time, using the run's assessment workbook.
 We benchmark our trend against external data.
 We investigate and resolve irregularities until we are satisfied the outputs are accurate.
 Assessing a run and approving it are separate: assessing is the review, approving is our decision that the run is accurate.
@@ -46,6 +48,7 @@ Public data is only built for a selected run, so the step function fails without
 It also builds the data download workbook from that data and saves `monthly_tracker_data_download_<archive_date>_<run_number>.xlsx` under `dataset=monthly_tracker_filled_posts_03_output_workbook/`, which the publication crawler excludes.
 The workbook's Frontpage logo is read from `publication/logo/skills_for_care_logo.png` in the pipeline resources bucket; the job fails if it is missing or empty, so upload it before the first run.
 The reconciliation step reads the workbook back and checks its T0, T1 and T2 tables against the prepared values (with their `[s]` and `[x]` labels and rounding), as well as the archive totals.
+To change a workbook's layout or wording, see `projects/_99_publication/monthly_tracker_filled_posts/MAINTAINING_WORKBOOKS.md`.
 
 If a second estimates run finishes while `Publication-Assessment` is still running for the previous run, the assessment step may read the other run's prepared data.
 Start `Publication-Assessment` again with that run's `run_number` to build its assessment data.
