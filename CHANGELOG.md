@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Added previous run April and short-term cumulative percentage changes, and their differences from the current run, to the Monthly Tracker assessment.
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
 - Added nationality and country of birth groups (British or UK, EEA, Non-EEA) to the Hackathon Worker Turnover job output.
+- Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
 
 ### Changed
 - The assessment workbook's "Comp prev publication" sheet shows percentage changes instead of filled post counts.
@@ -66,6 +67,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Extended the Publication-Output reconciliation to compare filled posts for each period and job role, failing with the role and period named when a role differs or is in only one source.
 - Changed the Trello card drafting skill to ask open questions first, label cards by dependency tier, and start each description with /new-ticket.
 - Assessment percentage change columns are now Float64 to reduce rounding drift.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
