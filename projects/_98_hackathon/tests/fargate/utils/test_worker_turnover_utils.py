@@ -19,6 +19,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
+from utils.column_values.ascwds_labelled_vocab import NotKnownWorkerCodes
 
 
 class TestFilterWorkerTurnoverData:
@@ -392,9 +393,9 @@ class TestAddRawWorkerColumns:
     @pytest.mark.parametrize(
         "column, expected_type",
         [
-            pytest.param(AWKClean.gender, pl.Categorical, id="code_column"),
+            pytest.param(AWKClean.gender, pl.String, id="code_column"),
             pytest.param(
-                AWKClean.social_care_qual_held, pl.Categorical, id="social_care_qual"
+                AWKClean.social_care_qual_held, pl.String, id="social_care_qual"
             ),
             pytest.param(AWKClean.age, pl.Float32, id="numeric_column"),
             pytest.param(AWKClean.days_sick, pl.Float32, id="days_sick"),
@@ -434,32 +435,6 @@ class TestAddRawWorkerColumns:
         returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
 
         assert returned_df[column].to_list() == [expected_number]
-
-    @pytest.mark.parametrize("raw_value", ["-1", "-8", "-2.5"])
-    @pytest.mark.parametrize("column", job.WORKER_NUMERIC_COLUMNS)
-    def test_returns_null_for_negative_numeric_value(self, column, raw_value):
-        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105", **{column: raw_value}))
-
-        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
-
-        assert returned_df[column].to_list() == [None]
-
-    @pytest.mark.parametrize("raw_value", ["-1", "-8"])
-    @pytest.mark.parametrize("column", job.WORKER_CATEGORICAL_COLUMNS)
-    def test_returns_null_for_negative_code_value(self, column, raw_value):
-        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105", **{column: raw_value}))
-
-        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
-
-        assert returned_df[column].to_list() == [None]
-
-    @pytest.mark.parametrize("column", job.WORKER_CATEGORICAL_COLUMNS)
-    def test_keeps_non_negative_code_value(self, column):
-        raw_lf = raw_worker_lf(raw_worker_row("1", "20210105", **{column: "1"}))
-
-        returned_df = job.add_raw_worker_columns(self.flagged_lf, raw_lf).collect()
-
-        assert returned_df[column].to_list() == ["1"]
 
     def test_returns_null_for_unparseable_numeric_value(self):
         raw_lf = raw_worker_lf(
@@ -514,6 +489,123 @@ class TestAddRawWorkerColumns:
         returned_df = job.add_raw_worker_columns(flagged_lf, raw_lf).collect()
 
         assert returned_df.height == 2
+
+
+class TestNullNotKnownCodes:
+    not_known_codes = {
+        AWKClean.gender: NotKnownWorkerCodes.gender,
+        AWKClean.ethnicity: NotKnownWorkerCodes.ethnicity,
+        AWKClean.disabled: NotKnownWorkerCodes.disabled,
+        AWKClean.social_care_qual_held: NotKnownWorkerCodes.social_care_qual_held,
+        AWKClean.level_social_care_qualification_held: (
+            NotKnownWorkerCodes.level_social_care_qualification_held
+        ),
+        AWKClean.apprentice: NotKnownWorkerCodes.apprentice,
+        AWKClean.source_of_recruitment: NotKnownWorkerCodes.source_of_recruitment,
+        AWKClean.nationality: NotKnownWorkerCodes.nationality,
+        AWKClean.country_of_birth: NotKnownWorkerCodes.country_of_birth,
+    }
+
+    def codes_lf(self, **values: str | float | None) -> pl.LazyFrame:
+        schema = {
+            **{column: pl.String for column in job.WORKER_CATEGORICAL_COLUMNS},
+            **{column: pl.Float32 for column in job.WORKER_NUMERIC_COLUMNS},
+        }
+        return pl.LazyFrame({c: [values.get(c)] for c in schema}, schema=schema)
+
+    @pytest.mark.parametrize("code", ["-1", "-8"])
+    @pytest.mark.parametrize("column", job.WORKER_CATEGORICAL_COLUMNS)
+    def test_returns_null_for_negative_code(self, column, code):
+        returned_df = job.null_not_known_codes(
+            self.codes_lf(**{column: code})
+        ).collect()
+
+        assert returned_df[column].to_list() == [None]
+
+    @pytest.mark.parametrize("value", [-1.0, -8.0, -2.5])
+    @pytest.mark.parametrize("column", job.WORKER_NUMERIC_COLUMNS)
+    def test_returns_null_for_negative_number(self, column, value):
+        returned_df = job.null_not_known_codes(
+            self.codes_lf(**{column: value})
+        ).collect()
+
+        assert returned_df[column].to_list() == [None]
+
+    @pytest.mark.parametrize("column", job.WORKER_CATEGORICAL_COLUMNS)
+    def test_keeps_non_negative_code(self, column):
+        returned_df = job.null_not_known_codes(self.codes_lf(**{column: "1"})).collect()
+
+        assert returned_df[column].to_list() == ["1"]
+
+    @pytest.mark.parametrize("column", job.WORKER_NUMERIC_COLUMNS)
+    def test_keeps_zero_number(self, column):
+        returned_df = job.null_not_known_codes(self.codes_lf(**{column: 0.0})).collect()
+
+        assert returned_df[column].to_list() == [0.0]
+
+    @pytest.mark.parametrize("column, code", not_known_codes.items())
+    def test_returns_null_for_not_known_code(self, column, code):
+        returned_df = job.null_not_known_codes(
+            self.codes_lf(**{column: code})
+        ).collect()
+
+        assert returned_df[column].to_list() == [None]
+
+    @pytest.mark.parametrize(
+        "column, code",
+        [
+            pytest.param(AWKClean.gender, "4", id="gender_other"),
+            pytest.param(AWKClean.ethnicity, "98", id="ethnicity_other"),
+            pytest.param(AWKClean.disabled, "0", id="disabled_no"),
+            pytest.param(AWKClean.source_of_recruitment, "224", id="other_sources"),
+            pytest.param(AWKClean.care_certificate_status, "2", id="not_started"),
+            pytest.param(AWKClean.zero_hours, "1", id="zero_hours_yes"),
+        ],
+    )
+    def test_keeps_other_codes(self, column, code):
+        returned_df = job.null_not_known_codes(
+            self.codes_lf(**{column: code})
+        ).collect()
+
+        assert returned_df[column].to_list() == [code]
+
+    def test_keeps_nulls(self):
+        returned_df = job.null_not_known_codes(self.codes_lf()).collect()
+
+        assert returned_df.row(0) == (None,) * returned_df.width
+
+    def test_keeps_column_types(self):
+        input_lf = self.codes_lf()
+
+        returned_lf = job.null_not_known_codes(input_lf)
+
+        assert returned_lf.collect_schema() == input_lf.collect_schema()
+
+    def test_gives_null_label_after_labelling(self):
+        nulled_lf = job.null_not_known_codes(self.codes_lf(**{AWKClean.gender: "3"}))
+
+        returned_df = job.add_worker_labels(
+            nulled_lf.with_columns(pl.col(AWKClean.gender).cast(pl.Categorical))
+        ).collect()
+
+        assert returned_df[f"{AWKClean.gender}_labels"].to_list() == [None]
+
+    @pytest.mark.parametrize(
+        "code_column, group_column",
+        [
+            (AWKClean.nationality, HackCols.nationality_group),
+            (AWKClean.country_of_birth, HackCols.country_of_birth_group),
+        ],
+    )
+    def test_gives_null_group_after_grouping(self, code_column, group_column):
+        nulled_lf = job.null_not_known_codes(self.codes_lf(**{code_column: "999"}))
+
+        returned_df = job.add_country_code_group(
+            nulled_lf.with_columns(pl.col(code_column).cast(pl.Categorical)),
+            code_column,
+        ).collect()
+
+        assert returned_df[group_column].to_list() == [None]
 
 
 class TestAddWorkerLabels:

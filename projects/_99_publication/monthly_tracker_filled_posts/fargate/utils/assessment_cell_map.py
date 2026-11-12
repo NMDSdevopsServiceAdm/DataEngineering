@@ -44,12 +44,15 @@ class InputRange:
         cells (str): A1-style range.
         source_column (str | None): clean dataset column feeding the range;
             None where the writer derives or builds the value (dates, text,
-            % change) or no source column exists yet.
+            % change) or no source column exists yet. Feeds every row, or only
+            the March rows when `monthly_source_column` is set.
         note (str): what the range holds.
         number_format (str): key into `NUMBER_FORMATS` for the format every cell
             in the range must have in the template.
         key (str): identifier the writer uses to find the range, unique on its
             sheet; empty for ranges the writer does not look up.
+        monthly_source_column (str | None): clean dataset column feeding the
+            April-or-later rows, in ranges that mix source columns.
     """
 
     cells: str
@@ -57,6 +60,7 @@ class InputRange:
     note: str = ""
     number_format: str = "general"
     key: str = ""
+    monthly_source_column: str | None = None
 
 
 @dataclass(frozen=True)
@@ -292,10 +296,11 @@ COMP_PREV_PUBLICATION = SheetMap(
         ),
         InputRange(
             "D23:H59",
-            Pub.unfiltered_filled_posts_prev_run,
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run,
             note="previous publication figures",
             key="previous.values",
-            number_format="count",
+            number_format="percent",
+            monthly_source_column=Pub.unfiltered_short_sfc_cum_pct_change_prev_run,
         ),
         InputRange(COMP_PREV_LABEL_RANGES[1], note="current publication labels"),
         InputRange(
@@ -307,10 +312,11 @@ COMP_PREV_PUBLICATION = SheetMap(
         ),
         InputRange(
             "D64:H100",
-            Pub.unfiltered_filled_posts,
+            Pub.unfiltered_filled_posts_april_pct_change,
             note="current publication figures",
             key="current.values",
-            number_format="count",
+            number_format="percent",
+            monthly_source_column=Pub.unfiltered_short_sfc_cum_pct_change,
         ),
         InputRange(COMP_PREV_LABEL_RANGES[2], note="difference labels"),
         InputRange(
@@ -322,10 +328,11 @@ COMP_PREV_PUBLICATION = SheetMap(
         ),
         InputRange(
             "D106:H142",
-            Pub.unfiltered_filled_posts_pct_change_vs_prev_run,
+            Pub.unfiltered_filled_posts_april_pct_change_comparison,
             note="difference as percentage",
             key="difference.values",
             number_format="percent",
+            monthly_source_column=Pub.unfiltered_short_sfc_cum_pct_change_comparison,
         ),
     ),
     chart_count=0,

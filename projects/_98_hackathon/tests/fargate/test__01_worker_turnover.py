@@ -16,6 +16,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
+    @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
@@ -38,6 +39,7 @@ class TestMain:
         add_raw_worker_columns_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
+        null_not_known_codes_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
@@ -118,8 +120,12 @@ class TestMain:
         add_valid_for_analysis_flag_mock.assert_called_once_with(
             add_headcount_reconciliation_gap_mock.return_value
         )
-        combine_pay_and_hours_mock.assert_called_once_with(
+        null_not_known_codes_mock.assert_called_once_with(
             add_valid_for_analysis_flag_mock.return_value
+        )
+        null_not_known_codes_mock.return_value.with_columns.assert_called_once()
+        combine_pay_and_hours_mock.assert_called_once_with(
+            null_not_known_codes_mock.return_value.with_columns.return_value
         )
         add_worker_labels_mock.assert_called_once_with(
             combine_pay_and_hours_mock.return_value
@@ -144,6 +150,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
+    @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
@@ -166,6 +173,7 @@ class TestMain:
         add_raw_worker_columns_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
+        null_not_known_codes_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
