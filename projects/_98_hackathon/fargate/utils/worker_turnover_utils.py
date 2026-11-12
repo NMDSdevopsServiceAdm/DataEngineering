@@ -9,6 +9,11 @@ from polars_utils.cleaning_utils import (
 )
 from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
+from projects._98_hackathon.fargate.utils.nlw_rates import (
+    BAND_STARTS,
+    NLW_RATES,
+    build_nlw_lookup_rows,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -65,6 +70,7 @@ WORKER_NUMERIC_COLUMNS = [
 ]
 
 WORKER_DATE_COLUMNS = [
+    AWKClean.created_date,
     AWKClean.start_date,
     AWKClean.pay_change_date,
     AWKClean.pay_save_date,
@@ -256,6 +262,86 @@ def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         AWKClean.salary,
         AWKClean.contracted_hours,
         AWKClean.average_hours,
+    )
+
+
+def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds the National Living Wage in force and the hourly pay difference from it.
+
+    - `nlw_hourly_rate` is the rate in force the day before the import date, as
+      an import date is when data was received and covers the period before it
+      (a 1 April import still has the March rate).
+    - Apprentices (`apprentice_labels` is "Yes") get the apprentice rate whatever
+      their age; any other label, including null, is treated as not an apprentice.
+    - Other workers get the rate for their age band, or the oldest band if age is
+      null.
+    - `hourly_pay_minus_nlw` is `hourly_pay` minus `nlw_hourly_rate`, null when
+      `hourly_pay` is null.
+
+    The lookup has a row per rate date and band start (under 100 rows), joined on
+    exact keys so each worker matches one row and the frame stays lazy. Rates start
+    in April 2019; earlier import dates get a null rate.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
+            `apprentice_labels`, `age` and `hourly_pay`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `nlw_hourly_rate` and
+            `hourly_pay_minus_nlw` added.
+    """
+    lookup_lf = pl.LazyFrame(
+        build_nlw_lookup_rows(),
+        schema={
+            HackCols.nlw_effective_date: pl.Date,
+            HackCols.nlw_is_apprentice: pl.Boolean,
+            HackCols.nlw_band_start: pl.Int16,
+            HackCols.nlw_hourly_rate: pl.Float32,
+        },
+        orient="row",
+    )
+
+    rate_dates = sorted(NLW_RATES, reverse=True)
+    rate_lookup_date = pl.col(AWKClean.ascwds_worker_import_date).dt.offset_by("-1d")
+    # A chain of comparisons against the few rate dates avoids the sort an as-of
+    # join needs on the worker data.
+    nlw_effective_date = pl.coalesce(
+        *[
+            pl.when(rate_lookup_date >= rate_date).then(pl.lit(rate_date))
+            for rate_date in rate_dates
+        ]
+    )
+    apprentice_label = pl.col(f"{AWKClean.apprentice}_{DLC.label}s")
+    is_apprentice = (apprentice_label == APPRENTICE.label_cls.yes).fill_null(False)
+    age = pl.col(AWKClean.age)
+    # Highest band start at or below age; null age gets the oldest band.
+    age_band_start = pl.coalesce(
+        *[pl.when(age >= start).then(start) for start in BAND_STARTS],
+        BAND_STARTS[0],
+    )
+    nlw_band_start = pl.when(is_apprentice).then(0).otherwise(age_band_start)
+
+    worker_lf = worker_lf.with_columns(
+        nlw_effective_date.alias(HackCols.nlw_effective_date),
+        is_apprentice.alias(HackCols.nlw_is_apprentice),
+        nlw_band_start.cast(pl.Int16).alias(HackCols.nlw_band_start),
+    )
+    worker_lf = worker_lf.join(
+        lookup_lf,
+        on=[
+            HackCols.nlw_effective_date,
+            HackCols.nlw_is_apprentice,
+            HackCols.nlw_band_start,
+        ],
+        how="left",
+    )
+
+    return worker_lf.with_columns(
+        (pl.col(HackCols.hourly_pay) - pl.col(HackCols.nlw_hourly_rate)).alias(
+            HackCols.hourly_pay_minus_nlw
+        )
+    ).drop(
+        HackCols.nlw_effective_date, HackCols.nlw_is_apprentice, HackCols.nlw_band_start
     )
 
 
@@ -504,6 +590,97 @@ def add_turnover_rate(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
+def add_headcount_reconciliation_gap(
+    worker_lf: pl.LazyFrame, max_gap: int
+) -> pl.LazyFrame:
+    """Adds `headcount_reconciliation_gap` and `headcount_gap_within_tolerance`.
+
+    The gap per establishment and start month is start headcount + workers
+    created after the start import date - leavers - end headcount, with the end
+    snapshot 12 months later. Created workers are counted on end snapshot rows;
+    a null `created_date` is not counted. Zero means the stayer and leaver
+    labels reconcile. The gap and flag are null with no end snapshot. The flag
+    is true when the absolute gap is at most `max_gap`.
+
+    Aggregates on a narrow frame so one join reaches the worker rows. Expects
+    one import date per month.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `is_leaver` and `created_date`.
+        max_gap (int): Largest absolute gap, in workers, within tolerance.
+
+    Returns:
+        pl.LazyFrame: The input rows with `headcount_reconciliation_gap` (`Int32`)
+            and `headcount_gap_within_tolerance` added.
+    """
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    import_month = pl.col(HackCols.import_month)
+    keys = [AWKClean.establishment_id, HackCols.import_month]
+
+    snapshot_lf = worker_lf.select(
+        AWKClean.establishment_id,
+        import_date,
+        AWKClean.created_date,
+        HackCols.is_leaver,
+    ).with_columns(import_date.dt.truncate("1mo").alias(HackCols.import_month))
+
+    start_lf = snapshot_lf.group_by(keys).agg(
+        pl.len().cast(pl.Int32).alias(HackCols.start_headcount),
+        pl.col(HackCols.is_leaver).sum().cast(pl.Int32).alias(HackCols.leaver_count),
+    )
+
+    start_dates_lf = (
+        snapshot_lf.select(
+            import_month.dt.offset_by("12mo"),
+            import_date.alias(HackCols.start_import_date),
+        )
+        .unique()
+        .rename({HackCols.import_month: HackCols.end_month})
+    )
+
+    end_lf = (
+        snapshot_lf.join(
+            start_dates_lf, left_on=HackCols.import_month, right_on=HackCols.end_month
+        )
+        .group_by(keys)
+        .agg(
+            pl.len().cast(pl.Int32).alias(HackCols.end_headcount),
+            (pl.col(AWKClean.created_date) > pl.col(HackCols.start_import_date))
+            .sum()
+            .cast(pl.Int32)
+            .alias(HackCols.created_count),
+        )
+        .with_columns(import_month.dt.offset_by("-12mo"))
+    )
+
+    gap_lf = (
+        start_lf.join(end_lf, on=keys, how="left")
+        .with_columns(
+            (
+                pl.col(HackCols.start_headcount)
+                + pl.col(HackCols.created_count)
+                - pl.col(HackCols.leaver_count)
+                - pl.col(HackCols.end_headcount)
+            ).alias(HackCols.headcount_reconciliation_gap)
+        )
+        .select(
+            *keys,
+            HackCols.headcount_reconciliation_gap,
+            (pl.col(HackCols.headcount_reconciliation_gap).abs() <= max_gap).alias(
+                HackCols.headcount_gap_within_tolerance
+            ),
+        )
+    )
+
+    return (
+        worker_lf.with_columns(
+            import_date.dt.truncate("1mo").alias(HackCols.import_month)
+        )
+        .join(gap_lf, on=keys, how="left")
+        .drop(HackCols.import_month)
+    )
+
+
 def add_valid_for_analysis_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Adds `plausible_turnover` and `valid_for_analysis`.
 
@@ -513,12 +690,14 @@ def add_valid_for_analysis_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     It is true for any rate between them and null when the rate is null.
     `valid_for_analysis` is true only when `establishment_in_both_snapshots`,
-    `establishment_active` and `plausible_turnover` are all true, otherwise
-    false. Keeps every row.
+    `establishment_active`, `plausible_turnover` and
+    `headcount_gap_within_tolerance` are all true, otherwise false. Keeps every
+    row.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `turnover_rate`,
-            `establishment_in_both_snapshots` and `establishment_active`.
+            `establishment_in_both_snapshots`, `establishment_active` and
+            `headcount_gap_within_tolerance`.
 
     Returns:
         pl.LazyFrame: The input rows with `plausible_turnover` and
@@ -534,6 +713,7 @@ def add_valid_for_analysis_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
             pl.col(HackCols.establishment_in_both_snapshots)
             & pl.col(HackCols.establishment_active)
             & pl.col(HackCols.plausible_turnover)
+            & pl.col(HackCols.headcount_gap_within_tolerance)
         )
         .fill_null(False)
         .alias(HackCols.valid_for_analysis)

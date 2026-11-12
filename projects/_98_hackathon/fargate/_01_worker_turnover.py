@@ -10,6 +10,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 
 DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
+DEFAULT_MAX_HEADCOUNT_GAP = 0
 
 
 def main(
@@ -18,6 +19,7 @@ def main(
     raw_ascwds_worker_source: str,
     flagged_destination: str,
     n_months: int = DEFAULT_MAX_MONTHS_SINCE_SAVE,
+    max_gap: int = DEFAULT_MAX_HEADCOUNT_GAP,
 ) -> None:
     """Creates the worker-level dataset for the turnover hackathon.
 
@@ -32,6 +34,8 @@ def main(
         flagged_destination (str): destination for the flagged worker data
         n_months (int): most months since an establishment's latest save date for
             it to count as active
+        max_gap (int): largest absolute headcount reconciliation gap, in workers,
+            for an establishment-month to count as within tolerance
     """
     worker_lf = utils.scan_parquet(cleaned_ascwds_worker_source)
     workplace_lf = utils.scan_parquet(
@@ -66,12 +70,13 @@ def main(
         filtered_lf, save_dates_lf, n_months
     )
     filtered_lf = wUtils.add_turnover_rate(filtered_lf)
-    filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf)
 
     raw_worker_lf = utils.scan_parquet(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
+    filtered_lf = wUtils.add_headcount_reconciliation_gap(filtered_lf, max_gap)
+    filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf)
     filtered_lf = wUtils.null_not_known_codes(filtered_lf)
     filtered_lf = filtered_lf.with_columns(
         pl.col(wUtils.WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical)
@@ -80,6 +85,7 @@ def main(
     filtered_lf = wUtils.add_worker_labels(filtered_lf)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.country_of_birth)
+    filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
 
     utils.sink_to_parquet(filtered_lf, output_path=flagged_destination)
 
@@ -108,6 +114,12 @@ if __name__ == "__main__":
             False,
             DEFAULT_MAX_MONTHS_SINCE_SAVE,
         ),
+        (
+            "--max_gap",
+            "Largest absolute headcount reconciliation gap to count as within tolerance",
+            False,
+            DEFAULT_MAX_HEADCOUNT_GAP,
+        ),
     )
     main(
         cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
@@ -115,4 +127,5 @@ if __name__ == "__main__":
         raw_ascwds_worker_source=args.raw_ascwds_worker_source,
         flagged_destination=args.flagged_destination,
         n_months=int(args.n_months),
+        max_gap=int(args.max_gap),
     )

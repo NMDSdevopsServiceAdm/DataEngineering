@@ -16,6 +16,8 @@ from utils.column_values.ascwds_labelled_vocab import MainServiceID
 
 START = date(2021, 1, 5)
 END = date(2022, 1, 5)  # 12 months after START
+MID = date(2021, 6, 1)  # between START and END
+BEFORE_START = date(2020, 6, 1)
 
 
 def raw_worker_row(
@@ -64,6 +66,12 @@ class AddMainServiceTypeCase:
 class CombinePayAndHoursCase:
     id: str
     input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class AddNlwAndPayDifferenceCase:
+    id: str
     expected_rows: list[tuple[Any, ...]]
 
 
@@ -146,6 +154,12 @@ class AddTurnoverRateCase:
 
 
 @dataclass
+class AddHeadcountGapCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class AddValidForAnalysisFlagCase:
     id: str
     expected_rows: list[tuple[Any, ...]]
@@ -194,41 +208,143 @@ class WorkerTurnoverData:
         ),
     ]
 
+    # Rows: (establishment_id, worker_id, import_date, created_date, is_leaver,
+    # headcount_reconciliation_gap, headcount_gap_within_tolerance). Tolerance is 1.
+    add_headcount_reconciliation_gap_cases = [
+        AddHeadcountGapCase(
+            id="returns_zero_when_headcounts_reconcile",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "2", START, None, False, 0, True),
+                ("est_a", "3", START, None, True, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, None, None, None, None),
+                ("est_a", "4", END, MID, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_positive_gap_when_workers_missing_from_end",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 1, True),
+                ("est_a", "2", START, None, False, 1, True),
+                ("est_a", "1", END, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_negative_gap_when_unexplained_workers_at_end",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -1, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, BEFORE_START, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="flags_false_when_positive_gap_above_tolerance",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 2, False),
+                ("est_a", "2", START, None, False, 2, False),
+                ("est_a", "3", START, None, False, 2, False),
+                ("est_a", "1", END, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="flags_false_when_negative_gap_beyond_tolerance",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -2, False),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, BEFORE_START, None, None, None),
+                ("est_a", "3", END, BEFORE_START, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="does_not_count_worker_created_on_start_date",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -1, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, START, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="counts_worker_created_on_end_date",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, END, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="does_not_count_worker_with_null_created_date",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -1, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_null_when_establishment_not_in_end_snapshot",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_b", "1", START, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_null_when_no_end_snapshot",
+            expected_rows=[("est_a", "1", START, None, None, None, None)],
+        ),
+        AddHeadcountGapCase(
+            id="calculates_gap_separately_per_establishment",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_b", "1", START, None, False, 2, False),
+                ("est_b", "2", START, None, False, 2, False),
+                ("est_b", "3", START, None, False, 2, False),
+                ("est_b", "1", END, None, None, None, None),
+            ],
+        ),
+    ]
+
     # Rows: (establishment_id, worker_id, import_date,
-    # establishment_in_both_snapshots, establishment_active, turnover_rate,
-    # plausible_turnover, valid_for_analysis).
+    # establishment_in_both_snapshots, establishment_active,
+    # headcount_gap_within_tolerance, turnover_rate, plausible_turnover,
+    # valid_for_analysis).
     add_valid_for_analysis_flag_cases = [
         AddValidForAnalysisFlagCase(
             id="valid_when_all_components_true",
-            expected_rows=[("est_a", "1", START, True, True, 0.25, True, True)],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.25, True, True)],
         ),
         AddValidForAnalysisFlagCase(
             id="implausible_and_invalid_when_rate_is_zero",
-            expected_rows=[("est_a", "1", START, True, True, 0.0, False, False)],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.0, False, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="implausible_and_invalid_when_rate_is_one",
-            expected_rows=[("est_a", "1", START, True, True, 1.0, False, False)],
+            expected_rows=[("est_a", "1", START, True, True, True, 1.0, False, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="plausible_when_rate_just_above_zero",
-            expected_rows=[("est_a", "1", START, True, True, 0.125, True, True)],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.125, True, True)],
         ),
         AddValidForAnalysisFlagCase(
             id="plausible_when_rate_just_below_one",
-            expected_rows=[("est_a", "1", START, True, True, 0.875, True, True)],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.875, True, True)],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_establishment_inactive",
-            expected_rows=[("est_a", "1", START, True, False, 0.25, True, False)],
+            expected_rows=[("est_a", "1", START, True, False, True, 0.25, True, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_headcount_gap_outside_tolerance",
+            expected_rows=[("est_a", "1", START, True, True, False, 0.25, True, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_establishment_not_in_both_snapshots",
-            expected_rows=[("est_a", "1", START, False, None, None, None, False)],
+            expected_rows=[("est_a", "1", START, False, None, None, None, None, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_no_end_snapshot",
-            expected_rows=[("est_a", "1", START, None, None, None, None, False)],
+            expected_rows=[("est_a", "1", START, None, None, None, None, None, False)],
         ),
     ]
 
@@ -845,5 +961,86 @@ class WorkerTurnoverData:
                 ("est_a", "1", START, None, 1, 1, None),
                 ("est_b", "1", END, None, 1, None, None),
             ],
+        ),
+    ]
+
+    # Rows: (import_date, apprentice_labels, age, hourly_pay, nlw_hourly_rate,
+    # hourly_pay_minus_nlw); the input is these rows without the last two columns.
+    add_nlw_and_pay_difference_cases = [
+        AddNlwAndPayDifferenceCase(
+            id="import_on_1_april_uses_previous_rate",
+            expected_rows=[(date(2021, 4, 1), "No", 30.0, 10.0, 8.72, 1.28)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="import_after_1_april_uses_new_rate",
+            expected_rows=[(date(2021, 4, 2), "No", 30.0, 10.0, 8.91, 1.09)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="earliest_import_uses_april_2019_rate",
+            expected_rows=[(date(2020, 1, 1), "No", 30.0, 10.0, 8.21, 1.79)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_17_uses_under_18_rate_2019",
+            expected_rows=[(date(2020, 1, 1), "No", 17.0, 5.0, 4.35, 0.65)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_18_uses_18_to_20_rate_2019",
+            expected_rows=[(date(2020, 1, 1), "No", 18.0, 7.0, 6.15, 0.85)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_24_uses_21_to_24_rate_2019",
+            expected_rows=[(date(2020, 1, 1), "No", 24.0, 8.0, 7.70, 0.30)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_25_uses_oldest_rate_2019",
+            expected_rows=[(date(2020, 1, 1), "No", 25.0, 9.0, 8.21, 0.79)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_22_uses_21_to_22_rate_2021",
+            expected_rows=[(date(2021, 6, 1), "No", 22.0, 9.0, 8.36, 0.64)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_23_uses_oldest_rate_2021",
+            expected_rows=[(date(2021, 6, 1), "No", 23.0, 9.0, 8.91, 0.09)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_21_uses_oldest_rate_2024",
+            expected_rows=[(date(2024, 6, 1), "No", 21.0, 12.0, 11.44, 0.56)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_20_uses_18_to_20_rate_2024",
+            expected_rows=[(date(2024, 6, 1), "No", 20.0, 9.0, 8.60, 0.40)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="latest_rates_from_april_2026",
+            expected_rows=[(date(2026, 4, 2), "No", 30.0, 13.0, 12.71, 0.29)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="apprentice_uses_apprentice_rate_whatever_age",
+            expected_rows=[(date(2024, 6, 1), "Yes", 40.0, 7.0, 6.40, 0.60)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="apprentice_with_null_age_uses_apprentice_rate",
+            expected_rows=[(date(2024, 6, 1), "Yes", None, 7.0, 6.40, 0.60)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="apprentice_not_known_uses_age_band",
+            expected_rows=[(date(2024, 6, 1), "Not known", 19.0, 9.0, 8.60, 0.40)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="null_apprentice_uses_age_band",
+            expected_rows=[(date(2024, 6, 1), None, 19.0, 9.0, 8.60, 0.40)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="null_age_not_apprentice_uses_oldest_rate",
+            expected_rows=[(date(2025, 6, 1), "No", None, 13.0, 12.21, 0.79)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_over_lookup_maximum_uses_oldest_rate",
+            expected_rows=[(date(2025, 6, 1), "No", 150.0, 13.0, 12.21, 0.79)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="null_hourly_pay_gives_null_difference",
+            expected_rows=[(date(2025, 6, 1), "No", 30.0, None, 12.21, None)],
         ),
     ]

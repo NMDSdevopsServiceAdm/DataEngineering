@@ -223,7 +223,7 @@ def main(
         )[0]
         print(f"Comparing to previously published run: {prev_run_source}")
         prev_assessment_lf = utils.scan_parquet(prev_run_source)
-    assessment_summary_lf = publication_utils.add_prev_run_filled_posts_columns(
+    assessment_summary_lf = publication_utils.add_prev_run_pct_change_columns(
         assessment_summary_lf, prev_assessment_lf
     )
 

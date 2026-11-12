@@ -6,14 +6,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added the National Living Wage rate at each snapshot, and hourly pay minus it, to the Hackathon Worker Turnover job.
 - Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
 - Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, replacing the raw hourly rate, salary, contracted hours and average hours columns.
 - Added previous run April and short-term cumulative percentage changes, and their differences from the current run, to the Monthly Tracker assessment.
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
 - Added nationality and country of birth groups (British or UK, EEA, Non-EEA) to the Hackathon Worker Turnover job output.
+- Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
 
 ### Changed
 - Replaced negative (not known/recorded) values and the not known, not disclosed and unknown codes in the Hackathon Worker Turnover job's raw worker columns with null.
+- The assessment workbook's "Comp prev publication" sheet shows percentage changes instead of filled post counts.
+- Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.
 - Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
 
 ### Improved
@@ -64,6 +68,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Extended the Publication-Output reconciliation to compare filled posts for each period and job role, failing with the role and period named when a role differs or is in only one source.
 - Changed the Trello card drafting skill to ask open questions first, label cards by dependency tier, and start each description with /new-ticket.
 - Assessment percentage change columns are now Float64 to reduce rounding drift.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
