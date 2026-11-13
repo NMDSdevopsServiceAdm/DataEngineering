@@ -9,6 +9,7 @@ class TestMain:
     CLEANED_WORKER_SOURCE = "some/worker/source"
     CLEANED_WORKPLACE_SOURCE = "some/workplace/source"
     RAW_WORKER_SOURCE = "some/raw/worker/source"
+    STAGING_DESTINATION = "some/staging"
     TRAIN_DESTINATION = "some/train"
     HOLDOUT_DESTINATION = "some/holdout"
     TEST_DESTINATION = "some/test"
@@ -51,16 +52,19 @@ class TestMain:
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
+        staged_lf_mock = Mock()
         scan_parquet_mock.side_effect = [
             worker_lf_mock,
             workplace_lf_mock,
             raw_worker_lf_mock,
+            staged_lf_mock,
         ]
 
         job.main(
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
+            self.STAGING_DESTINATION,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -77,6 +81,7 @@ class TestMain:
                 ],
             ),
             call(self.RAW_WORKER_SOURCE, schema=job.wUtils.RAW_WORKER_SCHEMA),
+            call(self.STAGING_DESTINATION),
         ]
         filter_worker_turnover_data_mock.assert_called_once_with(worker_lf_mock)
         filtered_lf_mock = (
@@ -151,16 +156,19 @@ class TestMain:
         )
         assert sink_to_parquet_mock.call_args_list == [
             call(
-                add_split_column_mock.return_value.filter.return_value,
-                output_path=destination,
-            )
-            for destination in [
-                self.TRAIN_DESTINATION,
-                self.HOLDOUT_DESTINATION,
-                self.TEST_DESTINATION,
-            ]
+                add_split_column_mock.return_value,
+                output_path=self.STAGING_DESTINATION,
+            ),
+            *[
+                call(staged_lf_mock.filter.return_value, output_path=destination)
+                for destination in [
+                    self.TRAIN_DESTINATION,
+                    self.HOLDOUT_DESTINATION,
+                    self.TEST_DESTINATION,
+                ]
+            ],
         ]
-        assert add_split_column_mock.return_value.filter.call_count == 3
+        assert staged_lf_mock.filter.call_count == 3
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
@@ -201,6 +209,7 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
+            self.STAGING_DESTINATION,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -248,6 +257,7 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
+            self.STAGING_DESTINATION,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,

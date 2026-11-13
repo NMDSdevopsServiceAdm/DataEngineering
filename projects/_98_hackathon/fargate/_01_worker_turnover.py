@@ -18,6 +18,7 @@ def main(
     cleaned_ascwds_worker_source: str,
     cleaned_ascwds_workplace_source: str,
     raw_ascwds_worker_source: str,
+    staging_destination: str,
     train_destination: str,
     holdout_destination: str,
     test_destination: str,
@@ -34,6 +35,8 @@ def main(
         cleaned_ascwds_workplace_source (str): path to the cleaned ASC-WDS
             workplace data, used for main service
         raw_ascwds_worker_source (str): path to the raw ASC-WDS worker data
+        staging_destination (str): destination for the full data, written once and
+            read back to write each split
         train_destination (str): destination for the train split
         holdout_destination (str): destination for the holdout split
         test_destination (str): destination for the test split
@@ -94,13 +97,18 @@ def main(
 
     filtered_lf = wUtils.add_split_column(filtered_lf)
 
+    # Sunk once, then rescanned per split, so the plan above runs once rather than
+    # once per split sink.
+    utils.sink_to_parquet(filtered_lf, output_path=staging_destination)
+    staged_lf = utils.scan_parquet(staging_destination)
+
     split_destinations = {
         "train": train_destination,
         "holdout": holdout_destination,
         "test": test_destination,
     }
     for split, destination in split_destinations.items():
-        split_lf = filtered_lf.filter(pl.col(HackCols.split) == split)
+        split_lf = staged_lf.filter(pl.col(HackCols.split) == split)
         utils.sink_to_parquet(split_lf, output_path=destination)
 
 
@@ -117,6 +125,10 @@ if __name__ == "__main__":
         (
             "--raw_ascwds_worker_source",
             "Source s3 directory for raw ascwds worker data",
+        ),
+        (
+            "--staging_destination",
+            "Destination s3 directory for the full worker turnover data before splitting",
         ),
         (
             "--train_destination",
@@ -147,6 +159,7 @@ if __name__ == "__main__":
         cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
         cleaned_ascwds_workplace_source=args.cleaned_ascwds_workplace_source,
         raw_ascwds_worker_source=args.raw_ascwds_worker_source,
+        staging_destination=args.staging_destination,
         train_destination=args.train_destination,
         holdout_destination=args.holdout_destination,
         test_destination=args.test_destination,
