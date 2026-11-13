@@ -174,6 +174,41 @@ class TestAddValidForAnalysisFlag:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
+class TestAddSplitColumn:
+    @pytest.mark.parametrize(
+        "import_date, expected_split",
+        [
+            pytest.param(date(2019, 12, 1), "holdout", id="before_train_start"),
+            pytest.param(date(2020, 1, 1), "train", id="train_start"),
+            pytest.param(date(2023, 6, 1), "train", id="within_train"),
+            pytest.param(date(2024, 11, 1), "train", id="train_end"),
+            pytest.param(date(2024, 12, 1), "holdout", id="after_train_end"),
+            pytest.param(date(2025, 10, 1), "holdout", id="before_test"),
+            pytest.param(date(2025, 11, 1), "test", id="test_date"),
+            pytest.param(date(2025, 12, 1), "holdout", id="after_test"),
+            pytest.param(None, "holdout", id="null_date"),
+        ],
+    )
+    def test_returns_expected_split(self, import_date, expected_split):
+        input_lf = pl.LazyFrame(
+            {AWKClean.ascwds_worker_import_date: [import_date]},
+            schema={AWKClean.ascwds_worker_import_date: pl.Date},
+        )
+
+        returned_df = job.add_split_column(input_lf).collect()
+
+        assert returned_df[HackCols.split].to_list() == [expected_split]
+
+    def test_returns_categorical_split_column(self):
+        input_lf = pl.LazyFrame(
+            {AWKClean.ascwds_worker_import_date: [date(2020, 1, 1)]},
+        )
+
+        returned_lf = job.add_split_column(input_lf)
+
+        assert returned_lf.collect_schema()[HackCols.split] == pl.Categorical
+
+
 class TestAddMainServiceType:
     @pytest.mark.parametrize(
         "case",

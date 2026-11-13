@@ -39,6 +39,7 @@ SOURCE_COLUMNS = [
     AWKClean.employment_status_clean_labelled,
     AWKClean.main_job_role_clean_labelled,
     HackCols.main_service_type,
+    HackCols.split,
     HackCols.is_leaver,
     HackCols.turnover_rate,
     HackCols.valid_for_analysis,
@@ -60,18 +61,24 @@ COMPARE_COLUMNS = [
 
 
 def main(
-    bucket_name: str, source_path: str, compare_path: str, reports_path: str
+    bucket_name: str,
+    source_path: str,
+    compare_path: str,
+    reports_path: str,
+    split: str,
 ) -> None:
-    """Validates the flagged worker turnover data and writes the reports.
+    """Validates one split of the worker turnover data and writes the reports.
 
     Only the columns the checks need are read, as the dataset is large.
 
     Args:
         bucket_name (str): the bucket (name only) for the datasets and reports
-        source_path (str): the flagged worker turnover dataset path to validate
+        source_path (str): the worker turnover split dataset path to validate
         compare_path (str): the cleaned ASC-WDS worker dataset path; its rows kept
-            by `filter_worker_turnover_data` give the expected row count
+            by `filter_worker_turnover_data` and in the split give the expected row
+            count
         reports_path (str): the output path to write reports to
+        split (str): the split the source holds, "train" or "test"
     """
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}", selected_columns=SOURCE_COLUMNS
@@ -79,8 +86,17 @@ def main(
     compare_lf = utils.scan_parquet(
         f"s3://{bucket_name}/{compare_path}", selected_columns=COMPARE_COLUMNS
     )
+    compare_dates_df = (
+        wUtils.filter_worker_turnover_data(compare_lf)
+        .select(AWKClean.ascwds_worker_import_date)
+        .collect()
+    )
     expected_row_count = (
-        wUtils.filter_worker_turnover_data(compare_lf).select(pl.len()).collect().item()
+        wUtils.add_split_column(compare_dates_df.lazy())
+        .filter(pl.col(HackCols.split) == split)
+        .select(pl.len())
+        .collect()
+        .item()
     )
 
     establishment_month = [
@@ -119,6 +135,7 @@ def main(
             brief=f"import date is on or after {wUtils.EARLIEST_IMPORT_DATE}",
         )
         # Categorical checks
+        .col_vals_in_set(HackCols.split, [split], brief=f"split is {split}")
         .col_vals_in_set(
             AWKClean.employment_status_clean_labelled,
             [EmpStat.permanent, EmpStat.temporary],
@@ -211,8 +228,15 @@ if __name__ == "__main__":
         ("--source_path", "The filepath of the dataset to validate"),
         ("--compare_path", "The filepath of the dataset to compare against"),
         ("--reports_path", "The filepath to output reports"),
+        ("--split", "The split the dataset holds, train or test"),
     )
     print(f"Starting validation for {args.source_path}")
 
-    main(args.bucket_name, args.source_path, args.compare_path, args.reports_path)
+    main(
+        args.bucket_name,
+        args.source_path,
+        args.compare_path,
+        args.reports_path,
+        args.split,
+    )
     print(f"Validation of {args.source_path} complete")

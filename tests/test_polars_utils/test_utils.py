@@ -203,81 +203,86 @@ class TestWriteParquet(TestUtils):
         self.assertEqual(len(files), 1)
 
 
-class TestSinkParquet(TestUtils):
-    def test_sink_parquet_does_nothing_for_empty_lazyframe(self):
-        lazy_df: pl.LazyFrame = pl.DataFrame({}).lazy()
-        destination = self.temp_dir / "test.parquet"
+class TestSinkToParquet:
+    def test_does_nothing_for_empty_lazyframe(self, tmp_path, capsys):
+        destination = tmp_path / "test.parquet"
 
-        f = io.StringIO()
-        with redirect_stdout(f):
-            utils.sink_to_parquet(lazy_df, destination, None)
-        output = f.getvalue()
+        utils.sink_to_parquet(pl.LazyFrame({}), destination)
 
-        self.assertFalse(destination.exists())
-        self.assertTrue(
-            "The provided LazyFrame was empty. No data was written." in output
+        assert not destination.exists()
+        assert (
+            "The provided LazyFrame was empty. No data was written."
+            in capsys.readouterr().out
         )
 
-    def test_sink_parquet_writes_simple_lazyframe(self):
-        df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
-        lazy_df = df.lazy()
-        destination: str = str(self.temp_dir) + "/"
-        utils.sink_to_parquet(lazy_df, destination)
-        files = glob(os.path.join(str(destination), "*.parquet"))
-        self.assertEqual(len(files), 1)
+    def test_writes_simple_lazyframe(self, tmp_path):
+        lazy_df = pl.LazyFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
 
-    def test_sink_parquet_writes_with_overwrite(self):
-        df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
-        lazy_df = df.lazy()
-        destination = self.temp_dir / "test.parquet"
-        utils.sink_to_parquet(lazy_df, destination)
-        utils.sink_to_parquet(lazy_df, destination)
+        utils.sink_to_parquet(lazy_df, f"{tmp_path}/")
 
-        files = glob(os.path.join(self.temp_dir, "*.parquet"))
-        self.assertEqual(len(files), 1)
+        assert len(list(tmp_path.glob("*.parquet"))) == 1
 
-    def test_sink_parquet_with_partitioning(self):
-        df: pl.DataFrame = pl.DataFrame(
+    def test_overwrites_existing_file(self, tmp_path):
+        lazy_df = pl.LazyFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
+
+        utils.sink_to_parquet(lazy_df, f"{tmp_path}/")
+        utils.sink_to_parquet(lazy_df, f"{tmp_path}/")
+
+        assert len(list(tmp_path.glob("*.parquet"))) == 1
+
+    def test_partitions_by_columns(self, tmp_path):
+        lazy_df = pl.LazyFrame(
             {"a": [1, 2, 1, 2], "b": [4, 5, 6, 7], "part": ["x", "x", "y", "y"]}
         )
-        lazy_df = df.lazy()
-        destination = self.temp_dir / "partition_test"
-        utils.sink_to_parquet(
-            lazy_df,
-            destination,
-            partition_cols=["part"],
-        )
-        partitions = [d.name for d in destination.iterdir() if d.is_dir()]
-        self.assertTrue(set(partitions) == {"part=x", "part=y"})
 
-    def test_day_month_partition_casting(self):
+        utils.sink_to_parquet(lazy_df, tmp_path, partition_cols=["part"])
+
+        partitions = {d.name for d in tmp_path.iterdir() if d.is_dir()}
+        assert partitions == {"part=x", "part=y"}
+
+    def test_pads_day_and_month_partitions(self, tmp_path):
         lazy_df = pl.LazyFrame(
             {
                 "id": ["1-001", "1-002"],
-                "value": [1, 200],
                 "year": [2024, 2025],
                 "month": [4, 11],
                 "day": [15, 5],
             }
         )
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output_path = Path(tmpdir)
+        utils.sink_to_parquet(
+            lazy_df, tmp_path, partition_cols=["year", "month", "day"]
+        )
 
+        written_files = {
+            p.parent.relative_to(tmp_path).as_posix()
+            for p in tmp_path.rglob("*.parquet")
+        }
+        assert written_files == {
+            "year=2024/month=04/day=15",
+            "year=2025/month=11/day=05",
+        }
+
+    def test_lazy_writes_only_when_sinks_are_collected(self, tmp_path):
+        lazy_df = pl.LazyFrame({"a": [1, 2, 3], "part": ["x", "y", "y"]})
+        sinks = [
             utils.sink_to_parquet(
-                lazy_df,
-                output_path,
-                partition_cols=["year", "month", "day"],
+                lazy_df.filter(pl.col("part") == part),
+                f"{tmp_path / part}/",
+                lazy=True,
             )
+            for part in ["x", "y"]
+        ]
 
-            written_files = [str(p) for p in output_path.rglob("*.parquet")]
+        assert not list(tmp_path.rglob("*.parquet"))
 
-            expected_partition_1 = Path("year=2024", "month=04", "day=15")
-            expected_partition_2 = Path("year=2025", "month=11", "day=05")
+        pl.collect_all(sinks, engine="streaming")
 
-            self.assertEqual(len(written_files), 2)
-            self.assertTrue(any(str(expected_partition_1) in p for p in written_files))
-            self.assertTrue(any(str(expected_partition_2) in p for p in written_files))
+        row_counts = {
+            part: pl.read_parquet(tmp_path / part / "file.parquet").height
+            for part in ["x", "y"]
+        }
+        assert row_counts == {"x": 1, "y": 2}
 
 
 class TestGetArgs(TestUtils):
