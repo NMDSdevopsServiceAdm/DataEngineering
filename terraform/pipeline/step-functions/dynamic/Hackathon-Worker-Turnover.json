@@ -70,43 +70,75 @@
           ]
         }
       },
-      "Next": "Run hackathon crawler",
+      "Next": "Handle Error and Run Crawler",
       "Catch": [
         {
           "ErrorEquals": ["States.ALL"],
           "ResultPath": "$.error",
-          "Next": "Run hackathon crawler after failed validation"
+          "Next": "Handle Error and Run Crawler"
         }
       ]
     },
-    "Run hackathon crawler": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::states:startExecution.sync:2",
-      "Parameters": {
-        "StateMachineArn": "${run_crawler_state_machine_arn}",
-        "Input": {
-          "crawler_name": "${hackathon_crawler_name}",
-          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+    "Handle Error and Run Crawler": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
+        },
+        {
+          "StartAt": "Run hackathon crawler",
+          "States": {
+            "Run hackathon crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${run_crawler_state_machine_arn}",
+                "Input": {
+                  "crawler_name": "${hackathon_crawler_name}",
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
         }
-      },
+      ],
       "End": true
-    },
-    "Run hackathon crawler after failed validation": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::states:startExecution.sync:2",
-      "Parameters": {
-        "StateMachineArn": "${run_crawler_state_machine_arn}",
-        "Input": {
-          "crawler_name": "${hackathon_crawler_name}",
-          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-        }
-      },
-      "Next": "Validation failed"
-    },
-    "Validation failed": {
-      "Type": "Fail",
-      "Error": "ValidationFailed",
-      "Cause": "Worker turnover validation failed. Failing rows are in the validation reports."
     }
   }
 }
