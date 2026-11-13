@@ -139,11 +139,13 @@ class TestMain:
             "col_vals_not_null",
             "rows_distinct",
             "col_vals_ge",
+            "col_vals_gt",
+            "col_vals_between",
             "col_vals_in_set",
             "col_vals_expr",
             "specially",
         }
-        assert expected_assertions <= assertion_types_present
+        assert assertion_types_present == expected_assertions
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
@@ -168,24 +170,3 @@ class TestMain:
 
     def test_source_columns_exclude_dropped_pay_and_hours_columns(self):
         assert not set(wUtils.PAY_AND_HOURS_COLUMNS) & set(job.SOURCE_COLUMNS)
-
-
-class TestHasOneImportDatePerMonth:
-    @staticmethod
-    def build_df(import_dates: list[date]) -> pl.DataFrame:
-        return pl.DataFrame(
-            {AWKClean.ascwds_worker_import_date: import_dates},
-            schema={AWKClean.ascwds_worker_import_date: pl.Date},
-        )
-
-    def test_returns_true_when_one_import_date_per_month(self):
-        df = self.build_df(
-            [date(2024, 1, 1), date(2024, 1, 1), date(2024, 2, 1), date(2025, 1, 1)]
-        )
-
-        assert job.has_one_import_date_per_month(df) is True
-
-    def test_returns_false_when_two_import_dates_in_one_month(self):
-        df = self.build_df([date(2024, 1, 1), date(2024, 1, 15), date(2025, 1, 1)])
-
-        assert job.has_one_import_date_per_month(df) is False

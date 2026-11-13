@@ -35,70 +35,78 @@
           ]
         }
       },
-      "Next": "Crawl and validate worker turnover data"
+      "Next": "Validate worker turnover data"
     },
-    "Crawl and validate worker turnover data": {
-      "Type": "Parallel",
-      "Branches": [
-        {
-          "StartAt": "Run hackathon crawler",
-          "States": {
-            "Run hackathon crawler": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::states:startExecution.sync:2",
-              "Parameters": {
-                "StateMachineArn": "${run_crawler_state_machine_arn}",
-                "Input": {
-                  "crawler_name": "${hackathon_crawler_name}",
-                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                }
-              },
-              "End": true
-            }
+    "Validate worker turnover data": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "LaunchType": "FARGATE",
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${hackathon_task_arn}",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${hackathon_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
           }
         },
-        {
-          "StartAt": "Validate worker turnover data",
-          "States": {
-            "Validate worker turnover data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::ecs:runTask.sync",
-              "Parameters": {
-                "LaunchType": "FARGATE",
-                "Cluster": "${polars_cluster_arn}",
-                "TaskDefinition": "${hackathon_task_arn}",
-                "NetworkConfiguration": {
-                  "AwsvpcConfiguration": {
-                    "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${hackathon_security_group_id}"],
-                    "AssignPublicIp": "ENABLED"
-                  }
-                },
-                "Overrides": {
-                  "ContainerOverrides": [
-                    {
-                      "Name": "_98_hackathon-container",
-                      "Command": [
-                        "validate_01_worker_turnover.py",
-                        "--bucket_name",
-                        "${dataset_bucket_name}",
-                        "--source_path",
-                        "domain=98_hackathon/dataset=worker_turnover_01_flagged/",
-                        "--compare_path",
-                        "domain=01_ascwds/dataset=worker_cleaned/",
-                        "--reports_path",
-                        "domain=98_hackathon/dataset=worker_turnover_01_flagged_validation/"
-                      ]
-                    }
-                  ]
-                }
-              },
-              "End": true
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_98_hackathon-container",
+              "Command": [
+                "validate_01_worker_turnover.py",
+                "--bucket_name",
+                "${dataset_bucket_name}",
+                "--source_path",
+                "domain=98_hackathon/dataset=worker_turnover_01_flagged/",
+                "--compare_path",
+                "domain=01_ascwds/dataset=worker_cleaned/",
+                "--reports_path",
+                "domain=98_hackathon/dataset=worker_turnover_01_flagged_validation/"
+              ]
             }
-          }
+          ]
         }
-      ],
+      },
+      "Next": "Run hackathon crawler",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "Run hackathon crawler after failed validation"
+        }
+      ]
+    },
+    "Run hackathon crawler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "${run_crawler_state_machine_arn}",
+        "Input": {
+          "crawler_name": "${hackathon_crawler_name}",
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
       "End": true
+    },
+    "Run hackathon crawler after failed validation": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "${run_crawler_state_machine_arn}",
+        "Input": {
+          "crawler_name": "${hackathon_crawler_name}",
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
+      "Next": "Validation failed"
+    },
+    "Validation failed": {
+      "Type": "Fail",
+      "Error": "ValidationFailed",
+      "Cause": "Worker turnover validation failed. Failing rows are in the validation reports."
     }
   }
 }

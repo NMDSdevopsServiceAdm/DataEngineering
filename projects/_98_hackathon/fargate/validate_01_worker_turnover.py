@@ -3,6 +3,7 @@ import sys
 import pointblank as pb
 import polars as pl
 
+import projects._98_hackathon.fargate.utils.validation_utils as vUtils
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
 from polars_utils.validation import actions as vl
@@ -65,19 +66,6 @@ COMPARE_COLUMNS = [
     AWKClean.ascwds_worker_import_date,
     AWKClean.employment_status_clean_labelled,
 ]
-
-
-def has_one_import_date_per_month(df: pl.DataFrame) -> bool:
-    """Checks each calendar month has at most one import date.
-
-    Args:
-        df (pl.DataFrame): Worker turnover data with `ascwds_worker_import_date`.
-
-    Returns:
-        bool: True if no month has more than one distinct import date.
-    """
-    import_dates = df.get_column(AWKClean.ascwds_worker_import_date)
-    return import_dates.n_unique() == import_dates.dt.truncate("1mo").n_unique()
 
 
 def main(
@@ -168,6 +156,7 @@ def main(
             brief=True,
             actions=GLOBAL_ACTIONS,
         )
+        # Row and key checks
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
@@ -178,7 +167,7 @@ def main(
             brief="establishment, worker and import date are unique",
         )
         .specially(
-            has_one_import_date_per_month,
+            vUtils.has_one_import_date_per_month,
             brief="each month has at most one import date",
         )
         .col_vals_ge(
@@ -186,6 +175,7 @@ def main(
             wUtils.EARLIEST_IMPORT_DATE,
             brief=f"import date is on or after {wUtils.EARLIEST_IMPORT_DATE}",
         )
+        # Categorical checks
         .col_vals_in_set(
             AWKClean.employment_status_clean_labelled,
             [EmpStat.permanent, EmpStat.temporary],
@@ -201,6 +191,51 @@ def main(
             PrimaryServiceType(HackCols.main_service_type).categorical_values,
             brief="main_service_type is a known value",
         )
+        .col_vals_expr(
+            expr=pl.col(HackCols.nationality_group)
+            .cast(pl.String)
+            .is_in(
+                NationalityGroupLabels(HackCols.nationality_group).categorical_values
+            )
+            .fill_null(True),
+            brief="nationality_group is null or a known value",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.country_of_birth_group)
+            .cast(pl.String)
+            .is_in(
+                CountryOfBirthGroupLabels(
+                    HackCols.country_of_birth_group
+                ).categorical_values
+            )
+            .fill_null(True),
+            brief="country_of_birth_group is null or a known value",
+        )
+        .col_vals_expr(
+            expr=pl.all_horizontal(code_is_negative.not_()),
+            brief="code raw columns contain no negative codes",
+        )
+        # Numerical checks
+        .col_vals_between(
+            HackCols.turnover_rate,
+            0,
+            1,
+            na_pass=True,
+            brief="turnover_rate is between 0 and 1",
+        )
+        .col_vals_ge(
+            [*NUMERIC_COLUMNS, HackCols.hourly_pay],
+            0,
+            na_pass=True,
+            brief="numeric raw columns and hourly_pay are not negative",
+        )
+        .col_vals_gt(HackCols.hours, 0, na_pass=True, brief="hours is null or above 0")
+        .col_vals_gt(
+            HackCols.nlw_hourly_rate,
+            0,
+            brief="nlw_hourly_rate is populated and above 0",
+        )
+        # Cross-column checks
         .col_vals_expr(
             expr=is_leaver.is_not_null().eq(
                 establishment_in_both_snapshots.eq_missing(True)
@@ -224,13 +259,6 @@ def main(
                 establishment_in_both_snapshots.eq_missing(True)
             ),
             brief="turnover_rate is populated exactly when establishment_in_both_snapshots is true",
-        )
-        .col_vals_between(
-            HackCols.turnover_rate,
-            0,
-            1,
-            na_pass=True,
-            brief="turnover_rate is between 0 and 1",
         )
         .col_vals_expr(
             expr=turnover_rate.min()
@@ -263,18 +291,6 @@ def main(
             expr=pl.col(HackCols.valid_for_analysis).eq(valid_for_analysis_inputs),
             brief="valid_for_analysis is true exactly when its four input flags are all true",
         )
-        .col_vals_ge(
-            [*NUMERIC_COLUMNS, HackCols.hourly_pay],
-            0,
-            na_pass=True,
-            brief="numeric raw columns and hourly_pay are not negative",
-        )
-        .col_vals_gt(HackCols.hours, 0, na_pass=True, brief="hours is null or above 0")
-        .col_vals_gt(
-            HackCols.nlw_hourly_rate,
-            0,
-            brief="nlw_hourly_rate is populated and above 0",
-        )
         .col_vals_expr(
             expr=pl.col(HackCols.hourly_pay_minus_nlw)
             .is_not_null()
@@ -286,36 +302,12 @@ def main(
             brief="each label column is populated exactly when its code column is",
         )
         .col_vals_expr(
-            expr=pl.col(HackCols.nationality_group)
-            .cast(pl.String)
-            .is_in(
-                NationalityGroupLabels(HackCols.nationality_group).categorical_values
-            )
-            .fill_null(True),
-            brief="nationality_group is null or a known value",
-        )
-        .col_vals_expr(
-            expr=pl.col(HackCols.country_of_birth_group)
-            .cast(pl.String)
-            .is_in(
-                CountryOfBirthGroupLabels(
-                    HackCols.country_of_birth_group
-                ).categorical_values
-            )
-            .fill_null(True),
-            brief="country_of_birth_group is null or a known value",
-        )
-        .col_vals_expr(
             expr=group_matches_code,
             brief="each country group is populated exactly when its code is non-blank",
         )
-        .col_vals_expr(
-            expr=pl.all_horizontal(code_is_negative.not_()),
-            brief="code raw columns contain no negative codes",
-        )
     )
 
-    # One step per column so a report names the column holding an unknown code.
+    # Categorical checks, one step per column so a report names the column.
     for column, vocabulary in wUtils.LABEL_VOCABULARIES.items():
         validation = validation.col_vals_expr(
             expr=pl.col(column)
@@ -325,7 +317,7 @@ def main(
             brief=f"{column} is null or a known code",
         )
 
-    # No vocabulary covers these, so check the not known code was nulled.
+    # Nationality and country of birth have no vocabulary; the not known code is nulled.
     for column, not_known_code in [
         (AWKClean.nationality, NotKnownWorkerCodes.nationality),
         (AWKClean.country_of_birth, NotKnownWorkerCodes.country_of_birth),
