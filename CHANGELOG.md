@@ -25,6 +25,8 @@ All notable changes to this project will be documented in this file.
 
 ### Improved
 
+- Dropped unneeded columns from the hackathon worker turnover output at their last point of use, reducing output size and job memory.
+
 ### Fixed
 
 

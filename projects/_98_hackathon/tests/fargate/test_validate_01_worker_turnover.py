@@ -22,8 +22,8 @@ PATCH_PATH = "projects._98_hackathon.fargate.validate_01_worker_turnover"
 
 
 def build_source_df() -> pl.DataFrame:
-    """A worker who stays between two snapshots 12 months apart. The later
-    snapshot has no snapshot 12 months after it, so its flags are null."""
+    """Two snapshots of a worker 12 months apart. The later snapshot has no
+    snapshot 12 months after it, so its turnover rate is null."""
     return pl.DataFrame(
         data={
             AWKClean.establishment_id: ["100", "100"],
@@ -32,15 +32,7 @@ def build_source_df() -> pl.DataFrame:
             AWKClean.employment_status_clean_labelled: [EmpStat.permanent] * 2,
             AWKClean.main_job_role_clean_labelled: ["Care worker"] * 2,
             HackCols.main_service_type: [PrimaryServiceType.non_residential] * 2,
-            HackCols.establishment_in_both_snapshots: [True, None],
-            HackCols.is_leaver: [False, None],
-            HackCols.months_since_save_start: [1, 1],
-            HackCols.months_since_save_end: [1, None],
-            HackCols.establishment_active: [True, None],
             HackCols.turnover_rate: [0.5, None],
-            HackCols.headcount_reconciliation_gap: [0, None],
-            HackCols.headcount_gap_within_tolerance: [True, None],
-            HackCols.plausible_turnover: [True, None],
             HackCols.valid_for_analysis: [True, False],
             HackCols.hours: [30.0, None],
             HackCols.hourly_pay: [12.0, None],
@@ -49,8 +41,13 @@ def build_source_df() -> pl.DataFrame:
             HackCols.nationality_group: [NationalityGroupLabels.non_eea] * 2,
             HackCols.country_of_birth_group: [CountryOfBirthGroupLabels.non_eea] * 2,
             **{column: [1.0] * 2 for column in job.NUMERIC_COLUMNS},
-            **{column: ["1"] * 2 for column in wUtils.WORKER_CATEGORICAL_COLUMNS},
-            **{column: ["label"] * 2 for column in wUtils.LABEL_COLUMNS},
+            **{
+                label_column: [vocabulary.label_cls(label_column).categorical_values[0]]
+                * 2
+                for label_column, vocabulary in zip(
+                    wUtils.LABEL_COLUMNS, wUtils.LABEL_VOCABULARIES.values()
+                )
+            },
         },
         schema={
             AWKClean.establishment_id: CatColType.EstablishmentCatType,
@@ -59,15 +56,7 @@ def build_source_df() -> pl.DataFrame:
             AWKClean.employment_status_clean_labelled: CatColType.EmploymentStatusCatType,
             AWKClean.main_job_role_clean_labelled: pl.Categorical,
             HackCols.main_service_type: CatColType.PrimaryServiceEnumType,
-            HackCols.establishment_in_both_snapshots: pl.Boolean,
-            HackCols.is_leaver: pl.Boolean,
-            HackCols.months_since_save_start: pl.Int32,
-            HackCols.months_since_save_end: pl.Int32,
-            HackCols.establishment_active: pl.Boolean,
             HackCols.turnover_rate: pl.Float32,
-            HackCols.headcount_reconciliation_gap: pl.Int32,
-            HackCols.headcount_gap_within_tolerance: pl.Boolean,
-            HackCols.plausible_turnover: pl.Boolean,
             HackCols.valid_for_analysis: pl.Boolean,
             HackCols.hours: pl.Float32,
             HackCols.hourly_pay: pl.Float32,
@@ -76,7 +65,6 @@ def build_source_df() -> pl.DataFrame:
             HackCols.nationality_group: pl.Categorical,
             HackCols.country_of_birth_group: pl.Categorical,
             **{column: pl.Float32 for column in job.NUMERIC_COLUMNS},
-            **{column: pl.Categorical for column in wUtils.WORKER_CATEGORICAL_COLUMNS},
             **{column: pl.Categorical for column in wUtils.LABEL_COLUMNS},
         },
     )
@@ -168,5 +156,17 @@ class TestMain:
         )
         assert row_count_step["values"]["count"] == 2
 
-    def test_source_columns_exclude_dropped_pay_and_hours_columns(self):
-        assert not set(wUtils.PAY_AND_HOURS_COLUMNS) & set(job.SOURCE_COLUMNS)
+    def test_source_columns_exclude_columns_dropped_from_job_output(self):
+        dropped_columns = {
+            *wUtils.PAY_AND_HOURS_COLUMNS,
+            *wUtils.WORKER_CATEGORICAL_COLUMNS,
+            HackCols.establishment_in_both_snapshots,
+            HackCols.months_since_save_start,
+            HackCols.months_since_save_end,
+            HackCols.establishment_active,
+            HackCols.headcount_reconciliation_gap,
+            HackCols.headcount_gap_within_tolerance,
+            HackCols.plausible_turnover,
+        }
+
+        assert not dropped_columns & set(job.SOURCE_COLUMNS)
