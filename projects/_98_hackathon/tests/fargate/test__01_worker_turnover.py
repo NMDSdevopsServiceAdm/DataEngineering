@@ -9,9 +9,12 @@ class TestMain:
     CLEANED_WORKER_SOURCE = "some/worker/source"
     CLEANED_WORKPLACE_SOURCE = "some/workplace/source"
     RAW_WORKER_SOURCE = "some/raw/worker/source"
-    FLAGGED_DESTINATION = "some/destination"
+    TRAIN_DESTINATION = "some/train"
+    HOLDOUT_DESTINATION = "some/holdout"
+    TEST_DESTINATION = "some/test"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.add_split_column")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
@@ -44,6 +47,7 @@ class TestMain:
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
+        add_split_column_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
@@ -57,7 +61,9 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.FLAGGED_DESTINATION,
+            self.TRAIN_DESTINATION,
+            self.HOLDOUT_DESTINATION,
+            self.TEST_DESTINATION,
         )
 
         assert scan_parquet_mock.call_args_list == [
@@ -140,10 +146,21 @@ class TestMain:
         add_nlw_and_pay_difference_mock.assert_called_once_with(
             add_country_code_group_mock.return_value
         )
-        sink_to_parquet_mock.assert_called_once_with(
-            add_nlw_and_pay_difference_mock.return_value,
-            output_path=self.FLAGGED_DESTINATION,
+        add_split_column_mock.assert_called_once_with(
+            add_nlw_and_pay_difference_mock.return_value
         )
+        assert sink_to_parquet_mock.call_args_list == [
+            call(
+                add_split_column_mock.return_value.filter.return_value,
+                output_path=destination,
+            )
+            for destination in [
+                self.TRAIN_DESTINATION,
+                self.HOLDOUT_DESTINATION,
+                self.TEST_DESTINATION,
+            ]
+        ]
+        assert add_split_column_mock.return_value.filter.call_count == 3
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
@@ -184,7 +201,9 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.FLAGGED_DESTINATION,
+            self.TRAIN_DESTINATION,
+            self.HOLDOUT_DESTINATION,
+            self.TEST_DESTINATION,
             n_months=3,
         )
 
@@ -229,7 +248,9 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.FLAGGED_DESTINATION,
+            self.TRAIN_DESTINATION,
+            self.HOLDOUT_DESTINATION,
+            self.TEST_DESTINATION,
             max_gap=5,
         )
 
