@@ -103,7 +103,9 @@ class TestMain:
         add_main_service_type_mock.return_value.drop.assert_called_once_with(
             job.AWPClean.main_service_id_clean
         )
-        main_service_dropped_lf = add_main_service_type_mock.return_value.drop.return_value
+        main_service_dropped_lf = (
+            add_main_service_type_mock.return_value.drop.return_value
+        )
         main_service_dropped_lf.collect.assert_called_once_with()
         collected_lf = main_service_dropped_lf.collect.return_value.lazy.return_value
         get_latest_save_date_per_establishment_mock.assert_called_once_with(
