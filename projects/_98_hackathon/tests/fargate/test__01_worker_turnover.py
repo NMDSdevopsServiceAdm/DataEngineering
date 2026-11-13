@@ -12,6 +12,7 @@ class TestMain:
     FLAGGED_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
@@ -44,6 +45,7 @@ class TestMain:
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
+        impute_worker_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
@@ -137,8 +139,11 @@ class TestMain:
                 job.AWKClean.country_of_birth,
             ),
         ]
+        impute_worker_columns_mock.assert_called_once_with(
+            add_country_code_group_mock.return_value, job.wUtils.IMPUTE_COLUMNS
+        )
         add_nlw_and_pay_difference_mock.assert_called_once_with(
-            add_country_code_group_mock.return_value
+            impute_worker_columns_mock.return_value
         )
         sink_to_parquet_mock.assert_called_once_with(
             add_nlw_and_pay_difference_mock.return_value,

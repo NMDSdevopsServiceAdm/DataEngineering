@@ -118,6 +118,24 @@ RAW_WORKER_SCHEMA = {
     ]
 }
 
+IMPUTE_COLUMNS = [
+    f"{AWKClean.gender}_labels",
+    f"{AWKClean.ethnicity}_labels",
+    f"{AWKClean.disabled}_labels",
+    HackCols.nationality_group,
+    HackCols.country_of_birth_group,
+    AWKClean.year_of_entry,
+    HackCols.hours,
+    f"{AWKClean.zero_hours}_labels",
+    f"{AWKClean.source_of_recruitment}_labels",
+    AWKClean.start_date,
+    AWKClean.start_age,
+    AWKClean.start_in_sector,
+    f"{AWKClean.social_care_qual_held}_labels",
+    f"{AWKClean.level_social_care_qualification_held}_labels",
+    f"{AWKClean.care_certificate_status}_labels",
+]
+
 
 def add_raw_worker_columns(
     worker_lf: pl.LazyFrame, raw_worker_lf: pl.LazyFrame
@@ -443,6 +461,32 @@ def add_country_code_group(worker_lf: pl.LazyFrame, code_column: str) -> pl.Lazy
         .otherwise(pl.lit(non_eea_label))
         .cast(pl.Categorical)
         .alias(group_column)
+    )
+
+
+def impute_worker_columns(worker_lf: pl.LazyFrame, columns: list[str]) -> pl.LazyFrame:
+    """Fills nulls in `columns` from the same worker's other import dates.
+
+    Per worker and establishment, ordered by `ascwds_worker_import_date`, forward
+    fills then backward fills. A worker with no value on any date stays null. A
+    single `.over()` keeps the frame lazy.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the establishment ID, worker
+            ID, `ascwds_worker_import_date` and `columns`.
+        columns (list[str]): columns to fill.
+
+    Returns:
+        pl.LazyFrame: The input rows with `columns` filled.
+    """
+    return worker_lf.with_columns(
+        pl.col(columns)
+        .forward_fill()
+        .backward_fill()
+        .over(
+            [AWKClean.worker_id, AWKClean.establishment_id],
+            order_by=AWKClean.ascwds_worker_import_date,
+        )
     )
 
 
