@@ -28,8 +28,12 @@
                 "${dataset_bucket_uri}/domain=01_ascwds/dataset=workplace_cleaned/",
                 "--raw_ascwds_worker_source",
                 "${dataset_bucket_uri}/domain=01_ascwds/dataset=worker/",
-                "--flagged_destination",
-                "${dataset_bucket_uri}/domain=98_hackathon/dataset=worker_turnover_01_flagged/"
+                "--train_destination",
+                "${dataset_bucket_uri}/domain=98_hackathon/dataset=worker_turnover_train/",
+                "--holdout_destination",
+                "${dataset_bucket_uri}/domain=98_hackathon/dataset=worker_turnover_holdout/",
+                "--test_destination",
+                "${dataset_bucket_uri}/domain=98_hackathon/dataset=worker_turnover_test/"
               ]
             }
           ]
@@ -38,38 +42,93 @@
       "Next": "Validate worker turnover data"
     },
     "Validate worker turnover data": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::ecs:runTask.sync",
-      "Parameters": {
-        "LaunchType": "FARGATE",
-        "Cluster": "${polars_cluster_arn}",
-        "TaskDefinition": "${hackathon_task_arn}",
-        "NetworkConfiguration": {
-          "AwsvpcConfiguration": {
-            "Subnets": ${public_subnet_ids},
-            "SecurityGroups": ["${hackathon_security_group_id}"],
-            "AssignPublicIp": "ENABLED"
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Validate train data",
+          "States": {
+            "Validate train data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${hackathon_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${hackathon_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_98_hackathon-container",
+                      "Command": [
+                        "validate_01_worker_turnover.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=98_hackathon/dataset=worker_turnover_train/",
+                        "--compare_path",
+                        "domain=01_ascwds/dataset=worker_cleaned/",
+                        "--reports_path",
+                        "domain=98_hackathon/dataset=worker_turnover_train_validation/",
+                        "--split",
+                        "train"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
           }
         },
-        "Overrides": {
-          "ContainerOverrides": [
-            {
-              "Name": "_98_hackathon-container",
-              "Command": [
-                "validate_01_worker_turnover.py",
-                "--bucket_name",
-                "${dataset_bucket_name}",
-                "--source_path",
-                "domain=98_hackathon/dataset=worker_turnover_01_flagged/",
-                "--compare_path",
-                "domain=01_ascwds/dataset=worker_cleaned/",
-                "--reports_path",
-                "domain=98_hackathon/dataset=worker_turnover_01_flagged_validation/"
-              ]
+        {
+          "StartAt": "Validate test data",
+          "States": {
+            "Validate test data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${hackathon_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${hackathon_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_98_hackathon-container",
+                      "Command": [
+                        "validate_01_worker_turnover.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=98_hackathon/dataset=worker_turnover_test/",
+                        "--compare_path",
+                        "domain=01_ascwds/dataset=worker_cleaned/",
+                        "--reports_path",
+                        "domain=98_hackathon/dataset=worker_turnover_test_validation/",
+                        "--split",
+                        "test"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
             }
-          ]
+          }
         }
-      },
+      ],
       "Next": "Handle Error and Run Crawler",
       "Catch": [
         {
