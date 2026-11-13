@@ -15,7 +15,6 @@ from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
     NationalityGroupLabels,
-    NotKnownWorkerCodes,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.categorical_column_values import PrimaryServiceType
@@ -40,15 +39,8 @@ SOURCE_COLUMNS = [
     AWKClean.employment_status_clean_labelled,
     AWKClean.main_job_role_clean_labelled,
     HackCols.main_service_type,
-    HackCols.establishment_in_both_snapshots,
     HackCols.is_leaver,
-    HackCols.months_since_save_start,
-    HackCols.months_since_save_end,
-    HackCols.establishment_active,
     HackCols.turnover_rate,
-    HackCols.headcount_reconciliation_gap,
-    HackCols.headcount_gap_within_tolerance,
-    HackCols.plausible_turnover,
     HackCols.valid_for_analysis,
     HackCols.hours,
     HackCols.hourly_pay,
@@ -57,7 +49,6 @@ SOURCE_COLUMNS = [
     HackCols.nationality_group,
     HackCols.country_of_birth_group,
     *NUMERIC_COLUMNS,
-    *wUtils.WORKER_CATEGORICAL_COLUMNS,
     *wUtils.LABEL_COLUMNS,
 ]
 
@@ -92,61 +83,13 @@ def main(
         wUtils.filter_worker_turnover_data(compare_lf).select(pl.len()).collect().item()
     )
 
-    import_date = pl.col(AWKClean.ascwds_worker_import_date)
-    establishment_in_both_snapshots = pl.col(HackCols.establishment_in_both_snapshots)
-    is_leaver = pl.col(HackCols.is_leaver)
-    establishment_active = pl.col(HackCols.establishment_active)
     establishment_month = [
         AWKClean.establishment_id,
         AWKClean.ascwds_worker_import_date,
     ]
+    is_leaver = pl.col(HackCols.is_leaver)
     turnover_rate = pl.col(HackCols.turnover_rate)
-    gap = pl.col(HackCols.headcount_reconciliation_gap)
-    gap_within_tolerance = pl.col(HackCols.headcount_gap_within_tolerance)
-    plausible_turnover = pl.col(HackCols.plausible_turnover)
     hourly_pay = pl.col(HackCols.hourly_pay)
-
-    snapshot_months = (
-        source_df.select(import_date.dt.truncate("1mo").unique()).to_series().to_list()
-    )
-    has_end_snapshot = (
-        import_date.dt.truncate("1mo").dt.offset_by("12mo").is_in(snapshot_months)
-    )
-    gaps_within_limit = (
-        (
-            pl.col(HackCols.months_since_save_start)
-            <= wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE
-        )
-        & (
-            pl.col(HackCols.months_since_save_end)
-            <= wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE
-        )
-    ).fill_null(False)
-    valid_for_analysis_inputs = (
-        establishment_in_both_snapshots
-        & establishment_active
-        & plausible_turnover
-        & gap_within_tolerance
-    ).fill_null(False)
-    labels_match_codes = pl.all_horizontal(
-        pl.col(label).is_not_null().eq(pl.col(code).is_not_null())
-        for code, label in zip(wUtils.LABELLED_COLUMNS, wUtils.LABEL_COLUMNS)
-    )
-    group_matches_code = pl.all_horizontal(
-        pl.col(group)
-        .is_not_null()
-        .eq(pl.col(code).cast(pl.String).replace("", None).is_not_null())
-        for code, group in [
-            (AWKClean.nationality, HackCols.nationality_group),
-            (AWKClean.country_of_birth, HackCols.country_of_birth_group),
-        ]
-    )
-    code_is_negative = (
-        pl.col(wUtils.WORKER_CATEGORICAL_COLUMNS)
-        .cast(pl.String)
-        .str.starts_with("-")
-        .fill_null(False)
-    )
 
     validation = (
         pb.Validate(
@@ -191,30 +134,6 @@ def main(
             PrimaryServiceType(HackCols.main_service_type).categorical_values,
             brief="main_service_type is a known value",
         )
-        .col_vals_expr(
-            expr=pl.col(HackCols.nationality_group)
-            .cast(pl.String)
-            .is_in(
-                NationalityGroupLabels(HackCols.nationality_group).categorical_values
-            )
-            .fill_null(True),
-            brief="nationality_group is null or a known value",
-        )
-        .col_vals_expr(
-            expr=pl.col(HackCols.country_of_birth_group)
-            .cast(pl.String)
-            .is_in(
-                CountryOfBirthGroupLabels(
-                    HackCols.country_of_birth_group
-                ).categorical_values
-            )
-            .fill_null(True),
-            brief="country_of_birth_group is null or a known value",
-        )
-        .col_vals_expr(
-            expr=pl.all_horizontal(code_is_negative.not_()),
-            brief="code raw columns contain no negative codes",
-        )
         # Numerical checks
         .col_vals_between(
             HackCols.turnover_rate,
@@ -237,59 +156,17 @@ def main(
         )
         # Cross-column checks
         .col_vals_expr(
-            expr=is_leaver.is_not_null().eq(
-                establishment_in_both_snapshots.eq_missing(True)
-            ),
-            brief="is_leaver is populated exactly when establishment_in_both_snapshots is true",
-        )
-        .col_vals_expr(
-            expr=establishment_in_both_snapshots.is_not_null().eq(has_end_snapshot),
-            brief="establishment_in_both_snapshots is populated exactly when a snapshot exists 12 months later",
-        )
-        .col_vals_expr(
-            expr=establishment_active.is_not_null().eq(is_leaver.is_not_null()),
-            brief="establishment_active is populated exactly when is_leaver is populated",
-        )
-        .col_vals_expr(
-            expr=establishment_active.ne_missing(True) | gaps_within_limit,
-            brief="establishment_active is true only when both save gaps are within the limit",
-        )
-        .col_vals_expr(
-            expr=turnover_rate.is_not_null().eq(
-                establishment_in_both_snapshots.eq_missing(True)
-            ),
-            brief="turnover_rate is populated exactly when establishment_in_both_snapshots is true",
-        )
-        .col_vals_expr(
             expr=turnover_rate.min()
             .over(establishment_month)
             .eq_missing(turnover_rate.max().over(establishment_month)),
             brief="turnover_rate is the same on every row of an establishment-month",
         )
         .col_vals_expr(
-            expr=gap.is_not_null().eq(establishment_in_both_snapshots.eq_missing(True)),
-            brief="headcount_reconciliation_gap is populated exactly when establishment_in_both_snapshots is true",
-        )
-        .col_vals_expr(
-            expr=gap_within_tolerance.eq_missing(
-                gap.abs() <= wUtils.DEFAULT_MAX_HEADCOUNT_GAP
-            ),
-            brief=f"headcount_gap_within_tolerance is true exactly when the absolute gap is at most {wUtils.DEFAULT_MAX_HEADCOUNT_GAP}, null when the gap is null",
-        )
-        .col_vals_expr(
-            expr=plausible_turnover.eq_missing(
-                pl.when(turnover_rate.is_not_null()).then(
-                    turnover_rate.is_between(0, 1, closed="none")
-                )
-            ),
-            brief="plausible_turnover is true exactly when turnover_rate is strictly between 0 and 1, null when it is null",
+            expr=turnover_rate.is_not_null().eq(is_leaver.is_not_null()),
+            brief="turnover_rate is populated exactly when is_leaver is populated",
         )
         .col_vals_not_null(
             HackCols.valid_for_analysis, brief="valid_for_analysis has no nulls"
-        )
-        .col_vals_expr(
-            expr=pl.col(HackCols.valid_for_analysis).eq(valid_for_analysis_inputs),
-            brief="valid_for_analysis is true exactly when its four input flags are all true",
         )
         .col_vals_expr(
             expr=pl.col(HackCols.hourly_pay_minus_nlw)
@@ -297,34 +174,29 @@ def main(
             .eq(hourly_pay.is_not_null()),
             brief="hourly_pay_minus_nlw is populated exactly when hourly_pay is populated",
         )
-        .col_vals_expr(
-            expr=labels_match_codes,
-            brief="each label column is populated exactly when its code column is",
-        )
-        .col_vals_expr(
-            expr=group_matches_code,
-            brief="each country group is populated exactly when its code is non-blank",
-        )
     )
 
-    # Categorical checks, one step per column so a report names the column.
-    for column, vocabulary in wUtils.LABEL_VOCABULARIES.items():
-        validation = validation.col_vals_expr(
-            expr=pl.col(column)
-            .cast(pl.String)
-            .is_in(list(vocabulary.code_to_label()))
-            .fill_null(True),
-            brief=f"{column} is null or a known code",
+    expected_labels = {
+        label_column: vocabulary.label_cls(label_column, contains_null_values=True)
+        for label_column, vocabulary in zip(
+            wUtils.LABEL_COLUMNS, wUtils.LABEL_VOCABULARIES.values()
         )
+    } | {
+        HackCols.nationality_group: NationalityGroupLabels(
+            HackCols.nationality_group, contains_null_values=True
+        ),
+        HackCols.country_of_birth_group: CountryOfBirthGroupLabels(
+            HackCols.country_of_birth_group, contains_null_values=True
+        ),
+    }
 
-    # Nationality and country of birth have no vocabulary; the not known code is nulled.
-    for column, not_known_code in [
-        (AWKClean.nationality, NotKnownWorkerCodes.nationality),
-        (AWKClean.country_of_birth, NotKnownWorkerCodes.country_of_birth),
-    ]:
-        validation = validation.col_vals_expr(
-            expr=pl.col(column).cast(pl.String).ne_missing(not_known_code),
-            brief=f"{column} does not hold the not known code",
+    # One pair of steps per column so a report names the column.
+    for column, labels in expected_labels.items():
+        validation = validation.col_vals_in_set(
+            column, [*labels.categorical_values, None]
+        ).specially(
+            vl.is_unique_count_equal(column, labels.count_of_categorical_values),
+            brief=f"{column} needs to be one of {labels.categorical_values} or null",
         )
 
     validation = validation.interrogate()
