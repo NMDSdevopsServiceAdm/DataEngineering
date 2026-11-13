@@ -28,10 +28,11 @@ def build_source_df() -> pl.DataFrame:
         data={
             AWKClean.establishment_id: ["100", "100"],
             AWKClean.worker_id: ["1", "1"],
-            AWKClean.ascwds_worker_import_date: [date(2024, 1, 1), date(2025, 1, 1)],
+            AWKClean.ascwds_worker_import_date: [date(2023, 1, 1), date(2024, 1, 1)],
             AWKClean.employment_status_clean_labelled: [EmpStat.permanent] * 2,
             AWKClean.main_job_role_clean_labelled: ["Care worker"] * 2,
             HackCols.main_service_type: [PrimaryServiceType.non_residential] * 2,
+            HackCols.split: ["train"] * 2,
             HackCols.establishment_in_both_snapshots: [True, None],
             HackCols.is_leaver: [False, None],
             HackCols.months_since_save_start: [1, 1],
@@ -59,6 +60,7 @@ def build_source_df() -> pl.DataFrame:
             AWKClean.employment_status_clean_labelled: CatColType.EmploymentStatusCatType,
             AWKClean.main_job_role_clean_labelled: pl.Categorical,
             HackCols.main_service_type: CatColType.PrimaryServiceEnumType,
+            HackCols.split: pl.Categorical,
             HackCols.establishment_in_both_snapshots: pl.Boolean,
             HackCols.is_leaver: pl.Boolean,
             HackCols.months_since_save_start: pl.Int32,
@@ -89,9 +91,9 @@ def build_compare_lf() -> pl.LazyFrame:
         {
             AWKClean.location_id: ["1-001", "1-001", "1-001"],
             AWKClean.ascwds_worker_import_date: [
+                date(2023, 1, 1),
                 date(2024, 1, 1),
-                date(2025, 1, 1),
-                date(2024, 1, 1),
+                date(2023, 1, 1),
             ],
             AWKClean.employment_status_clean_labelled: [
                 EmpStat.permanent,
@@ -120,7 +122,7 @@ class TestMain:
         mock_read_parquet.return_value = build_source_df()
         mock_scan_parquet.return_value = build_compare_lf()
 
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/", "train")
 
         mock_read_parquet.assert_called_once_with(
             source="s3://bucket/my/source/", selected_columns=job.SOURCE_COLUMNS
@@ -159,7 +161,7 @@ class TestMain:
         mock_read_parquet.return_value = build_source_df()
         mock_scan_parquet.return_value = build_compare_lf()
 
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/", "train")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
@@ -167,6 +169,27 @@ class TestMain:
             item for item in report_json if item["assertion_type"] == "row_count_match"
         )
         assert row_count_step["values"]["count"] == 2
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_expected_row_count_only_counts_the_split(
+        self,
+        mock_read_parquet: Mock,
+        mock_scan_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.return_value = build_source_df()
+        mock_scan_parquet.return_value = build_compare_lf()
+
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/", "test")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        row_count_step = next(
+            item for item in report_json if item["assertion_type"] == "row_count_match"
+        )
+        assert row_count_step["values"]["count"] == 0
 
     def test_source_columns_exclude_dropped_pay_and_hours_columns(self):
         assert not set(wUtils.PAY_AND_HOURS_COLUMNS) & set(job.SOURCE_COLUMNS)

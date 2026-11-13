@@ -152,24 +152,28 @@ def sink_to_parquet(
     lazy_df: pl.LazyFrame,
     output_path: str | Path,
     partition_cols: list[str] | None = None,
-) -> None:
-    """
-    Sinks a Polars LazyFrame directly to Parquet using sink_parquet (fully lazy), with optional partitioning.
+    lazy: bool = False,
+) -> pl.LazyFrame | None:
+    """Sinks a LazyFrame to Parquet using the streaming engine, optionally partitioned.
 
     Args:
-        lazy_df (pl.LazyFrame): The Polars LazyFrame to write.
+        lazy_df (pl.LazyFrame): The LazyFrame to write.
         output_path (str | Path): Directory path to sink Parquet files.
         partition_cols (list[str] | None): Columns to partition by. Defaults to None.
+        lazy (bool): If True, nothing is written until the returned sink is run with
+            `pl.collect_all`, so sinks of one plan share a single run of it.
+            Defaults to False.
 
     Returns:
-        None: This function does not return any value.
+        pl.LazyFrame | None: The sink to run with `pl.collect_all` if `lazy` is
+            True, otherwise None.
 
     Raises:
         Exception: If writing the LazyFrame to Parquet fails, e.g., due to file system errors, invalid paths, or issues with the LazyFrame.
     """
     if lazy_df is None or len(lazy_df.collect_schema().names()) == 0:
         print("The provided LazyFrame was empty. No data was written.")
-        return
+        return None
 
     try:
         if partition_cols:
@@ -185,15 +189,15 @@ def sink_to_parquet(
                 include_key=False,
                 key=partition_cols,
             )
-            lazy_df.sink_parquet(path=path, mkdir=True, engine="streaming")
-            print(
-                f"LazyFrame sunk to Parquet at {output_path} partitioned by {partition_cols}"
-            )
         else:
-            lazy_df.sink_parquet(
-                f"{output_path}file.parquet", mkdir=True, engine="streaming"
-            )
-            print(f"LazyFrame sunk to Parquet at {output_path} without partitioning")
+            path = f"{output_path}file.parquet"
+
+        sink = lazy_df.sink_parquet(
+            path=path, mkdir=True, engine="streaming", lazy=lazy
+        )
+        if not lazy:
+            print(f"LazyFrame sunk to Parquet at {output_path}")
+        return sink
     except Exception as e:
         print(f"ERROR: Failed to sink LazyFrame to Parquet: {e}")
         raise

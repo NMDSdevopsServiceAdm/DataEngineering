@@ -1,5 +1,7 @@
 from unittest.mock import Mock, call, patch
 
+import polars as pl
+
 import projects._98_hackathon.fargate._01_worker_turnover as job
 
 PATCH_PATH = "projects._98_hackathon.fargate._01_worker_turnover"
@@ -9,12 +11,12 @@ class TestMain:
     CLEANED_WORKER_SOURCE = "some/worker/source"
     CLEANED_WORKPLACE_SOURCE = "some/workplace/source"
     RAW_WORKER_SOURCE = "some/raw/worker/source"
-    STAGING_DESTINATION = "some/staging"
     TRAIN_DESTINATION = "some/train"
     HOLDOUT_DESTINATION = "some/holdout"
     TEST_DESTINATION = "some/test"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_split_column")
     @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
@@ -51,22 +53,31 @@ class TestMain:
         add_country_code_group_mock: Mock,
         impute_worker_columns_mock: Mock,
         add_split_column_mock: Mock,
+        collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
-        staged_lf_mock = Mock()
         scan_parquet_mock.side_effect = [
             worker_lf_mock,
             workplace_lf_mock,
             raw_worker_lf_mock,
-            staged_lf_mock,
         ]
+        splits = ["train", "holdout", "test"]
+        destinations = [
+            self.TRAIN_DESTINATION,
+            self.HOLDOUT_DESTINATION,
+            self.TEST_DESTINATION,
+        ]
+        # One lazy frame per split, so each split's destination is checked.
+        split_lf_mocks = [Mock() for _ in splits]
+        add_split_column_mock.return_value.filter.side_effect = split_lf_mocks
+        sink_mocks = [Mock() for _ in splits]
+        sink_to_parquet_mock.side_effect = sink_mocks
 
         job.main(
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.STAGING_DESTINATION,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -83,7 +94,6 @@ class TestMain:
                 ],
             ),
             call(self.RAW_WORKER_SOURCE, schema=job.wUtils.RAW_WORKER_SCHEMA),
-            call(self.STAGING_DESTINATION),
         ]
         filter_worker_turnover_data_mock.assert_called_once_with(worker_lf_mock)
         filtered_lf_mock = (
@@ -159,23 +169,18 @@ class TestMain:
         add_split_column_mock.assert_called_once_with(
             add_nlw_and_pay_difference_mock.return_value
         )
+        filter_mock = add_split_column_mock.return_value.filter
+        assert filter_mock.call_count == len(splits)
+        for filter_call, split in zip(filter_mock.call_args_list, splits):
+            assert filter_call.args[0].meta.eq(pl.col(job.HackCols.split) == split)
         assert sink_to_parquet_mock.call_args_list == [
-            call(
-                add_split_column_mock.return_value,
-                output_path=self.STAGING_DESTINATION,
-            ),
-            *[
-                call(staged_lf_mock.filter.return_value, output_path=destination)
-                for destination in [
-                    self.TRAIN_DESTINATION,
-                    self.HOLDOUT_DESTINATION,
-                    self.TEST_DESTINATION,
-                ]
-            ],
+            call(split_lf_mock, output_path=destination, lazy=True)
+            for split_lf_mock, destination in zip(split_lf_mocks, destinations)
         ]
-        assert staged_lf_mock.filter.call_count == 3
+        collect_all_mock.assert_called_once_with(sink_mocks, engine="streaming")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
@@ -208,13 +213,13 @@ class TestMain:
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
+        collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.STAGING_DESTINATION,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -228,6 +233,7 @@ class TestMain:
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
@@ -256,13 +262,13 @@ class TestMain:
         combine_pay_and_hours_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
+        collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.STAGING_DESTINATION,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
