@@ -107,7 +107,7 @@ class TestMain:
         add_establishment_active_flag_mock.assert_called_once_with(
             add_is_leaver_flag_mock.return_value,
             get_latest_save_date_per_establishment_mock.return_value,
-            job.DEFAULT_MAX_MONTHS_SINCE_SAVE,
+            job.wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
         )
         add_turnover_rate_mock.assert_called_once_with(
             add_establishment_active_flag_mock.return_value
@@ -117,7 +117,7 @@ class TestMain:
         )
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
             add_raw_worker_columns_mock.return_value,
-            job.DEFAULT_MAX_HEADCOUNT_GAP,
+            job.wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
         )
         add_valid_for_analysis_flag_mock.assert_called_once_with(
             add_headcount_reconciliation_gap_mock.return_value

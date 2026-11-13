@@ -9,17 +9,14 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
-DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
-DEFAULT_MAX_HEADCOUNT_GAP = 0
-
 
 def main(
     cleaned_ascwds_worker_source: str,
     cleaned_ascwds_workplace_source: str,
     raw_ascwds_worker_source: str,
     flagged_destination: str,
-    n_months: int = DEFAULT_MAX_MONTHS_SINCE_SAVE,
-    max_gap: int = DEFAULT_MAX_HEADCOUNT_GAP,
+    n_months: int = wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
+    max_gap: int = wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
 ) -> None:
     """Creates the worker-level dataset for the turnover hackathon.
 
@@ -113,13 +110,13 @@ if __name__ == "__main__":
             "--n_months",
             "Most months since an establishment's latest save date to count as active",
             False,
-            DEFAULT_MAX_MONTHS_SINCE_SAVE,
+            wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
         ),
         (
             "--max_gap",
             "Largest absolute headcount reconciliation gap to count as within tolerance",
             False,
-            DEFAULT_MAX_HEADCOUNT_GAP,
+            wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
         ),
     )
     main(
