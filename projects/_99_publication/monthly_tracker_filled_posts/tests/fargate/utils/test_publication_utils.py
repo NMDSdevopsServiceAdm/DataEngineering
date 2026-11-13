@@ -731,7 +731,7 @@ class TestCalcPercChangeCumulativeFromGivenPeriodOnwards:
             for case in Data.calc_perc_change_cumulative_from_given_period_onwards_test_cases
         ],
     )
-    def test_returns_cumulative_percentage_change_from_the_first_period_in_the_window(
+    def test_returns_null_baseline_and_cumulative_change_against_it_afterwards(
         self, case
     ):
         expected_schema = pl.Schema(

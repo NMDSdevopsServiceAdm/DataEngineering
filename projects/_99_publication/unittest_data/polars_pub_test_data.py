@@ -1080,13 +1080,13 @@ _CARE_WORKER_SOUTH_WEST_NON_RES = (
 
 calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
     CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
-        id="change_is_measured_against_the_first_period_in_the_window",
+        id="baseline_is_null_and_later_periods_are_measured_against_it",
         column_name=Pub.filtered_long_ct_total_employed,
         from_date=date(2025, 4, 1),
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
         column_alias=Pub.filtered_long_ct_cum_pct_change,
         expected_data=[
-            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
             (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 400.0, None, 3.0),
         ],
@@ -1099,8 +1099,19 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
         column_alias=Pub.filtered_long_ct_cum_pct_change,
         expected_data=[
             (date(2024, 4, 1), *_NURSE_LONDON_CARE_HOME, 50.0, None, None),
-            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
+        ],
+    ),
+    CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
+        id="baseline_is_null_when_the_group_starts_after_from_date",
+        column_name=Pub.filtered_long_ct_total_employed,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.filtered_long_ct_cum_pct_change,
+        expected_data=[
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 150.0, None, 0.5),
         ],
     ),
     CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
@@ -1133,7 +1144,7 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
         column_alias=Pub.filtered_long_ct_cum_pct_change,
         expected_data=[
-            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 0.0, None, -1.0),
         ],
     ),
@@ -1146,7 +1157,7 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
         column_alias=Pub.filtered_long_ct_cum_pct_change,
         expected_data=[
-            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
             (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
         ],
     ),
@@ -1162,8 +1173,8 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
         expected_data=[
             (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
             (date(2027, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 25.0, None, -0.5),
-            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, 0.0),
-            (date(2026, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 50.0, None, 0.0),
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+            (date(2026, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 50.0, None, None),
         ],
     ),
     CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
@@ -1173,7 +1184,7 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
         group_columns=PERC_CHANGE_GROUP_COLUMNS,
         column_alias=Pub.filtered_medium_ct_cum_pct_change,
         expected_data=[
-            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 40.0, 0.0),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 40.0, None),
             (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, None, 60.0, 0.5),
         ],
     ),
