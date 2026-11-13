@@ -39,6 +39,7 @@ SOURCE_COLUMNS = [
     AWKClean.employment_status_clean_labelled,
     AWKClean.main_job_role_clean_labelled,
     HackCols.main_service_type,
+    HackCols.is_leaver,
     HackCols.turnover_rate,
     HackCols.valid_for_analysis,
     HackCols.hours,
@@ -86,6 +87,7 @@ def main(
         AWKClean.establishment_id,
         AWKClean.ascwds_worker_import_date,
     ]
+    is_leaver = pl.col(HackCols.is_leaver)
     turnover_rate = pl.col(HackCols.turnover_rate)
     hourly_pay = pl.col(HackCols.hourly_pay)
 
@@ -158,6 +160,10 @@ def main(
             .over(establishment_month)
             .eq_missing(turnover_rate.max().over(establishment_month)),
             brief="turnover_rate is the same on every row of an establishment-month",
+        )
+        .col_vals_expr(
+            expr=turnover_rate.is_not_null().eq(is_leaver.is_not_null()),
+            brief="turnover_rate is populated exactly when is_leaver is populated",
         )
         .col_vals_not_null(
             HackCols.valid_for_analysis, brief="valid_for_analysis has no nulls"
