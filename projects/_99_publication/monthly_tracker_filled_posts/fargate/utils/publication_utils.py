@@ -812,7 +812,7 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     Cumulative percentage change in column_name within each group, as a net
     change fraction against the group's first in-window value (the
     baseline): (current - baseline) / baseline. The baseline period itself
-    is null.
+    is null, so it is published as [x] rather than a 0.0% change.
 
     Restricted to periods on or after from_date: earlier periods are null,
     since a term's window never borrows a baseline from before its own

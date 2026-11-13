@@ -1104,6 +1104,31 @@ calc_perc_change_cumulative_from_given_period_onwards_test_cases = [
         ],
     ),
     CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
+        id="a_null_value_after_the_baseline_stays_null",
+        column_name=Pub.filtered_long_ct_total_employed,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.filtered_long_ct_cum_pct_change,
+        expected_data=[
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, None, None, None),
+            (date(2027, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
+        ],
+    ),
+    CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
+        id="each_group_has_its_own_null_baseline",
+        column_name=Pub.filtered_long_ct_total_employed,
+        from_date=date(2025, 4, 1),
+        group_columns=PERC_CHANGE_GROUP_COLUMNS,
+        column_alias=Pub.filtered_long_ct_cum_pct_change,
+        expected_data=[
+            (date(2025, 4, 1), *_NURSE_LONDON_CARE_HOME, 100.0, None, None),
+            (date(2026, 4, 1), *_NURSE_LONDON_CARE_HOME, 200.0, None, 1.0),
+            (date(2026, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 50.0, None, None),
+            (date(2027, 4, 1), *_CARE_WORKER_SOUTH_WEST_NON_RES, 75.0, None, 0.5),
+        ],
+    ),
+    CalcPercChangeCumulativeFromGivenPeriodOnwardsTestCase(
         id="baseline_is_null_when_the_group_starts_after_from_date",
         column_name=Pub.filtered_long_ct_total_employed,
         from_date=date(2025, 4, 1),
