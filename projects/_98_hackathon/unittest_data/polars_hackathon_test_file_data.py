@@ -424,12 +424,12 @@ class WorkerTurnoverData:
     # Rows: (establishment_id, worker_id, import_date, hours).
     impute_worker_columns_cases = [
         ImputeWorkerColumnsCase(
-            id="fills_null_from_earlier_value",
+            id="forward_fills_null_from_earlier_value",
             input_rows=[("e1", "w1", START, 10.0), ("e1", "w1", MID, None)],
             expected_rows=[("e1", "w1", START, 10.0), ("e1", "w1", MID, 10.0)],
         ),
         ImputeWorkerColumnsCase(
-            id="fills_leading_null_from_later_value",
+            id="backward_fills_leading_null_from_later_value",
             input_rows=[("e1", "w1", START, None), ("e1", "w1", MID, 20.0)],
             expected_rows=[("e1", "w1", START, 20.0), ("e1", "w1", MID, 20.0)],
         ),
