@@ -42,6 +42,10 @@ from utils.column_values.ascwds_labelled_vocab import (
 )
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
+DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
+DEFAULT_MAX_HEADCOUNT_GAP = 0
+EARLIEST_IMPORT_DATE = date(2020, 1, 1)
+
 WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.gender,
     AWKClean.ethnicity,
@@ -56,6 +60,23 @@ WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.source_of_recruitment,
 ]
 
+# Nationality and country of birth get a group column instead of a label column.
+LABEL_VOCABULARIES = {
+    AWKClean.gender: GENDER,
+    AWKClean.ethnicity: ETHNICITY,
+    AWKClean.disabled: DISABLED,
+    AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD,
+    AWKClean.level_social_care_qualification_held: (
+        LEVEL_SOCIAL_CARE_QUALIFICATION_HELD
+    ),
+    AWKClean.care_certificate_status: CARE_CERTIFICATE_STATUS,
+    AWKClean.apprentice: APPRENTICE,
+    AWKClean.zero_hours: ZERO_HOURS,
+    AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT,
+}
+LABELLED_COLUMNS = list(LABEL_VOCABULARIES)
+LABEL_COLUMNS = [f"{column}_{DLC.label}s" for column in LABELLED_COLUMNS]
+
 WORKER_NUMERIC_COLUMNS = [
     AWKClean.age,
     AWKClean.hourly_rate,
@@ -67,6 +88,14 @@ WORKER_NUMERIC_COLUMNS = [
     AWKClean.days_sick,
     AWKClean.start_in_sector,
     AWKClean.year_of_entry,
+]
+
+# Replaced by `hours` and `hourly_pay`, so absent from the job output.
+PAY_AND_HOURS_COLUMNS = [
+    AWKClean.hourly_rate,
+    AWKClean.salary,
+    AWKClean.contracted_hours,
+    AWKClean.average_hours,
 ]
 
 WORKER_DATE_COLUMNS = [
@@ -88,6 +117,24 @@ RAW_WORKER_SCHEMA = {
         *WORKER_DATE_COLUMNS,
     ]
 }
+
+IMPUTE_COLUMNS = [
+    f"{AWKClean.gender}_labels",
+    f"{AWKClean.ethnicity}_labels",
+    f"{AWKClean.disabled}_labels",
+    HackCols.nationality_group,
+    HackCols.country_of_birth_group,
+    AWKClean.year_of_entry,
+    HackCols.hours,
+    f"{AWKClean.zero_hours}_labels",
+    f"{AWKClean.source_of_recruitment}_labels",
+    AWKClean.start_date,
+    AWKClean.start_age,
+    AWKClean.start_in_sector,
+    f"{AWKClean.social_care_qual_held}_labels",
+    f"{AWKClean.level_social_care_qualification_held}_labels",
+    f"{AWKClean.care_certificate_status}_labels",
+]
 
 
 def add_raw_worker_columns(
@@ -194,17 +241,8 @@ def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: The input with a `_labels` column for each coded column.
     """
     code_to_label = {
-        AWKClean.gender: GENDER.code_to_label(),
-        AWKClean.ethnicity: ETHNICITY.code_to_label(),
-        AWKClean.disabled: DISABLED.code_to_label(),
-        AWKClean.social_care_qual_held: SOCIAL_CARE_QUAL_HELD.code_to_label(),
-        AWKClean.level_social_care_qualification_held: (
-            LEVEL_SOCIAL_CARE_QUALIFICATION_HELD.code_to_label()
-        ),
-        AWKClean.care_certificate_status: CARE_CERTIFICATE_STATUS.code_to_label(),
-        AWKClean.apprentice: APPRENTICE.code_to_label(),
-        AWKClean.zero_hours: ZERO_HOURS.code_to_label(),
-        AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT.code_to_label(),
+        column: vocabulary.code_to_label()
+        for column, vocabulary in LABEL_VOCABULARIES.items()
     }
 
     worker_lf = apply_categorical_labels(
@@ -214,8 +252,7 @@ def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         add_as_new_column=True,
     )
 
-    label_columns = [f"{column}_{DLC.label}s" for column in code_to_label]
-    return worker_lf.with_columns(pl.col(label_columns).cast(pl.Categorical))
+    return worker_lf.with_columns(pl.col(LABEL_COLUMNS).cast(pl.Categorical))
 
 
 def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -257,12 +294,7 @@ def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.coalesce(AWKClean.hourly_rate, annual_salary_to_hourly_pay).alias(
             HackCols.hourly_pay
         )
-    ).drop(
-        AWKClean.hourly_rate,
-        AWKClean.salary,
-        AWKClean.contracted_hours,
-        AWKClean.average_hours,
-    )
+    ).drop(PAY_AND_HOURS_COLUMNS)
 
 
 def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -432,6 +464,32 @@ def add_country_code_group(worker_lf: pl.LazyFrame, code_column: str) -> pl.Lazy
     )
 
 
+def impute_worker_columns(worker_lf: pl.LazyFrame, columns: list[str]) -> pl.LazyFrame:
+    """Fills nulls in `columns` from the same worker's other import dates.
+
+    Per worker and establishment, ordered by `ascwds_worker_import_date`, forward
+    fills then backward fills. A worker with no value on any date stays null. A
+    single `.over()` keeps the frame lazy.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the establishment ID, worker
+            ID, `ascwds_worker_import_date` and `columns`.
+        columns (list[str]): columns to fill.
+
+    Returns:
+        pl.LazyFrame: The input rows with `columns` filled.
+    """
+    return worker_lf.with_columns(
+        pl.col(columns)
+        .forward_fill()
+        .backward_fill()
+        .over(
+            [AWKClean.worker_id, AWKClean.establishment_id],
+            order_by=AWKClean.ascwds_worker_import_date,
+        )
+    )
+
+
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Filters worker data to the rows kept for turnover analysis.
 
@@ -449,10 +507,8 @@ def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The filtered worker data with all input columns.
     """
-    start_date = date(2020, 1, 1)
-
     return worker_lf.filter(
-        pl.col(AWKClean.ascwds_worker_import_date) >= start_date,
+        pl.col(AWKClean.ascwds_worker_import_date) >= EARLIEST_IMPORT_DATE,
         pl.col(AWKClean.location_id).is_not_null(),
         pl.col(AWKClean.employment_status_clean_labelled).is_in(
             [EmpStat.permanent, EmpStat.temporary]

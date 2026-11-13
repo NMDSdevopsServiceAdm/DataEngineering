@@ -41,18 +41,109 @@
           ]
         }
       },
-      "Next": "Run hackathon crawler"
+      "Next": "Validate worker turnover data"
     },
-    "Run hackathon crawler": {
+    "Validate worker turnover data": {
       "Type": "Task",
-      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
       "Parameters": {
-        "StateMachineArn": "${run_crawler_state_machine_arn}",
-        "Input": {
-          "crawler_name": "${hackathon_crawler_name}",
-          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        "LaunchType": "FARGATE",
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${hackathon_task_arn}",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${hackathon_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_98_hackathon-container",
+              "Command": [
+                "validate_01_worker_turnover.py",
+                "--bucket_name",
+                "${dataset_bucket_name}",
+                "--source_path",
+                "domain=98_hackathon/dataset=worker_turnover_staging/",
+                "--compare_path",
+                "domain=01_ascwds/dataset=worker_cleaned/",
+                "--reports_path",
+                "domain=98_hackathon/dataset=worker_turnover_staging_validation/"
+              ]
+            }
+          ]
         }
       },
+      "Next": "Handle Error and Run Crawler",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "Handle Error and Run Crawler"
+        }
+      ]
+    },
+    "Handle Error and Run Crawler": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
+        },
+        {
+          "StartAt": "Run hackathon crawler",
+          "States": {
+            "Run hackathon crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${run_crawler_state_machine_arn}",
+                "Input": {
+                  "crawler_name": "${hackathon_crawler_name}",
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
       "End": true
     }
   }

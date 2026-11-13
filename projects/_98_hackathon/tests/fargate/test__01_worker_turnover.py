@@ -16,6 +16,7 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.add_split_column")
+    @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
@@ -48,6 +49,7 @@ class TestMain:
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
+        impute_worker_columns_mock: Mock,
         add_split_column_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -116,7 +118,7 @@ class TestMain:
         add_establishment_active_flag_mock.assert_called_once_with(
             add_is_leaver_flag_mock.return_value,
             get_latest_save_date_per_establishment_mock.return_value,
-            job.DEFAULT_MAX_MONTHS_SINCE_SAVE,
+            job.wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
         )
         add_turnover_rate_mock.assert_called_once_with(
             add_establishment_active_flag_mock.return_value
@@ -126,7 +128,7 @@ class TestMain:
         )
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
             add_raw_worker_columns_mock.return_value,
-            job.DEFAULT_MAX_HEADCOUNT_GAP,
+            job.wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
         )
         add_valid_for_analysis_flag_mock.assert_called_once_with(
             add_headcount_reconciliation_gap_mock.return_value
@@ -148,8 +150,11 @@ class TestMain:
                 job.AWKClean.country_of_birth,
             ),
         ]
+        impute_worker_columns_mock.assert_called_once_with(
+            add_country_code_group_mock.return_value, job.wUtils.IMPUTE_COLUMNS
+        )
         add_nlw_and_pay_difference_mock.assert_called_once_with(
-            add_country_code_group_mock.return_value
+            impute_worker_columns_mock.return_value
         )
         add_split_column_mock.assert_called_once_with(
             add_nlw_and_pay_difference_mock.return_value

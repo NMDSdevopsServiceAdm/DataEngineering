@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, which now writes each split to its own S3 location.
+- Added a validation job for the Hackathon Worker Turnover output.
 - Added the National Living Wage rate at each snapshot, and hourly pay minus it, to the Hackathon Worker Turnover job.
 - Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
 - Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, replacing the raw hourly rate, salary, contracted hours and average hours columns.
@@ -16,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
 
 ### Changed
+- Filled null worker attributes in the Hackathon Worker Turnover job from the same worker's other import dates.
 - Updated the `pytest-pattern` skill and STYLEGUIDE.md so tests for functions that only add columns derive the input by dropping the new columns from the expected data.
 - Replaced negative (not known/recorded) values and the not known, not disclosed and unknown codes in the Hackathon Worker Turnover job's raw worker columns with null.
 - The assessment workbook's "Comp prev publication" sheet shows percentage changes instead of filled post counts.
