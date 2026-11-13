@@ -812,7 +812,7 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     Cumulative percentage change in column_name within each group, as a net
     change fraction against the group's first in-window value (the
     baseline): (current - baseline) / baseline. The baseline period itself
-    is 0.0.
+    is null, so it is published as [x] rather than a 0.0% change.
 
     Restricted to periods on or after from_date: earlier periods are null,
     since a term's window never borrows a baseline from before its own
@@ -836,8 +836,9 @@ def calc_perc_change_cumulative_from_given_period_onwards(
         .otherwise(None)
     )
     baseline_value = in_window_value.filter(in_window_value.is_not_null()).first()
+    is_baseline_period = in_window_value.is_not_null().cum_sum() == 1
     return (
-        pl.when(baseline_value == 0)
+        pl.when((baseline_value == 0) | is_baseline_period)
         .then(None)
         .otherwise((in_window_value - baseline_value) / baseline_value)
         .over(group_columns, order_by=IndCQC.cqc_location_import_date)
