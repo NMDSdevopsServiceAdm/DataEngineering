@@ -9,8 +9,6 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 WORKER_KEY_COLUMNS = [AWKClean.establishment_id, AWKClean.worker_id]
-PREDICTION_COLUMNS = WORKER_KEY_COLUMNS + [HackCols.predicted_probability]
-EXAMPLE_COUNT = 5
 # Placeholder bucket: replace with the bucket holding the test dataset in the
 # hackathon AWS account.
 DEFAULT_ANSWERS_SOURCE = (
@@ -33,17 +31,20 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
         ValueError: If the predictions fail any check, with the number of rows
             affected and, for workers, the first few examples.
     """
-    missing_columns = [c for c in PREDICTION_COLUMNS if c not in predictions_df.columns]
+    prediction_columns = WORKER_KEY_COLUMNS + [HackCols.predicted_probability]
+    example_count = 5
+
+    missing_columns = [c for c in prediction_columns if c not in predictions_df.columns]
     if missing_columns:
         raise ValueError(f"Predictions are missing required columns: {missing_columns}")
 
     unexpected_columns = [
-        c for c in predictions_df.columns if c not in PREDICTION_COLUMNS
+        c for c in predictions_df.columns if c not in prediction_columns
     ]
     if unexpected_columns:
         raise ValueError(
             f"Predictions have unexpected columns: {unexpected_columns}. "
-            f"Expected exactly {PREDICTION_COLUMNS}"
+            f"Expected exactly {prediction_columns}"
         )
 
     predicted_keys_df = predictions_df.select(
@@ -78,7 +79,7 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
     if duplicated_df.height:
         raise ValueError(
             f"Predictions have {duplicated_df.height} duplicated workers, "
-            f"e.g. {duplicated_df.head(EXAMPLE_COUNT).rows()}"
+            f"e.g. {duplicated_df.head(example_count).rows()}"
         )
 
     missing_df = answer_keys_df.join(
@@ -87,7 +88,7 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
     if missing_df.height:
         raise ValueError(
             f"Predictions are missing {missing_df.height} test workers, "
-            f"e.g. {missing_df.head(EXAMPLE_COUNT).rows()}"
+            f"e.g. {missing_df.head(example_count).rows()}"
         )
 
     unknown_df = predicted_keys_df.join(
@@ -96,13 +97,13 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
     if unknown_df.height:
         raise ValueError(
             f"Predictions have {unknown_df.height} workers not in the test set, "
-            f"e.g. {unknown_df.head(EXAMPLE_COUNT).rows()}"
+            f"e.g. {unknown_df.head(example_count).rows()}"
         )
 
 
 def calculate_scores(
     predictions_df: pl.DataFrame, answers_df: pl.DataFrame
-) -> dict[str, float]:
+) -> dict[str, float | int]:
     """Calculates worker-level and workplace-level scores.
 
     Scores workers with `valid_for_analysis` true and a known `is_leaver`.
@@ -118,7 +119,7 @@ def calculate_scores(
             `valid_for_analysis`.
 
     Returns:
-        dict[str, float]: `worker_auc`, `worker_brier`, `workplace_mae`,
+        dict[str, float | int]: `worker_auc`, `worker_brier`, `workplace_mae`,
             `n_workers` and `n_workplaces` (scored workers and establishments).
 
     Raises:
@@ -145,11 +146,11 @@ def calculate_scores(
             "Scoring needs both leavers and stayers among the scored workers"
         )
 
-    workplace_df = scored_df.group_by(AWKClean.establishment_id).agg(
-        (probability.sum() / pl.len()).alias("predicted_rate"),
-        is_leaver.mean().alias("observed_rate"),
+    predicted_rate = probability.sum() / pl.len()
+    observed_rate = is_leaver.mean()
+    workplace_error_df = scored_df.group_by(AWKClean.establishment_id).agg(
+        (predicted_rate - observed_rate).abs()
     )
-    workplace_error = (pl.col("predicted_rate") - pl.col("observed_rate")).abs()
 
     return {
         "worker_auc": float(
@@ -164,34 +165,34 @@ def calculate_scores(
                 scored_df.get_column(HackCols.predicted_probability),
             )
         ),
-        "workplace_mae": workplace_df.select(workplace_error.mean()).item(),
+        "workplace_mae": workplace_error_df.to_series(1).mean(),
         "n_workers": scored_df.height,
-        "n_workplaces": workplace_df.height,
+        "n_workplaces": workplace_error_df.height,
     }
 
 
 def score_predictions(
     predictions: pd.DataFrame | pl.DataFrame | pl.LazyFrame,
     answers_source: str = DEFAULT_ANSWERS_SOURCE,
-) -> dict[str, float]:
+) -> dict[str, float | int]:
     """Scores predicted leaving probabilities against the held-back test answers.
 
     Reads the answers itself, so callers never open them. Reads only the worker
     key, `is_leaver` and `valid_for_analysis` columns: one row per test worker,
     collected for scoring.
 
-    Example:
-        scores = score_predictions(predictions_df)
-
     Args:
         predictions (pd.DataFrame | pl.DataFrame | pl.LazyFrame): One row per test
-            worker with exactly `establishment_id`, `worker_id` and
+            worker with exactly `establishmentid`, `workerid` and
             `predicted_probability` (between 0 and 1).
         answers_source (str): S3 path of the test dataset with the answers.
 
     Returns:
-        dict[str, float]: `worker_auc`, `worker_brier`, `workplace_mae`,
+        dict[str, float | int]: `worker_auc`, `worker_brier`, `workplace_mae`,
             `n_workers` and `n_workplaces`.
+
+    Example:
+        scores = score_predictions(predictions_df)
     """
     if isinstance(predictions, pd.DataFrame):
         predictions_df = pl.from_pandas(predictions)

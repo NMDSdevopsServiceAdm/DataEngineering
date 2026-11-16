@@ -71,6 +71,10 @@ class TestCalculateScores:
             pl.DataFrame(answer_rows, schema=Schemas.answers_schema, orient="row"),
         )
 
+    @staticmethod
+    def get_case(case_id: str):
+        return next(c for c in Data.calculate_scores_cases if c.id == case_id)
+
     @pytest.mark.parametrize(
         "case",
         [pytest.param(case, id=case.id) for case in Data.calculate_scores_cases],
@@ -86,15 +90,13 @@ class TestCalculateScores:
             assert returned_scores[name] == pytest.approx(expected_value)
 
     def test_is_unchanged_by_row_order(self):
-        case = Data.calculate_scores_cases[5]
+        case = self.get_case("workplace_mae_averages_error_across_workplaces")
         predictions_df, answers_df = self.build_frames(
             case.answer_rows, case.prediction_rows
         )
 
         returned_scores = job.calculate_scores(predictions_df, answers_df)
-        shuffled_scores = job.calculate_scores(
-            predictions_df.reverse(), answers_df.reverse()
-        )
+        shuffled_scores = job.calculate_scores(predictions_df.reverse(), answers_df)
 
         assert shuffled_scores == pytest.approx(returned_scores)
 
@@ -107,7 +109,7 @@ class TestCalculateScores:
             job.calculate_scores(predictions_df, answers_df)
 
     def test_returns_expected_keys_and_counts(self):
-        case = Data.calculate_scores_cases[0]
+        case = self.get_case("auc_is_1_when_leavers_ranked_above_stayers")
         predictions_df, answers_df = self.build_frames(
             case.answer_rows, case.prediction_rows
         )
@@ -154,6 +156,16 @@ class TestScorePredictions:
                 HackCols.valid_for_analysis,
             ],
         )
+
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_raises_when_predictions_are_invalid(self, scan_parquet_mock: Mock):
+        scan_parquet_mock.return_value = self.build_answers_lf()
+        predictions_df = pl.DataFrame(
+            self.prediction_rows[:3], schema=Schemas.predictions_schema, orient="row"
+        )
+
+        with pytest.raises(ValueError, match="missing 1 test workers"):
+            job.score_predictions(predictions_df)
 
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_accepts_pandas_dataframe(self, scan_parquet_mock: Mock):

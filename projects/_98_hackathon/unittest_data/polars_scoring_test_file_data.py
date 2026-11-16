@@ -129,6 +129,12 @@ class ScoringData:
             ],
             expected_scores={"worker_auc": 1.0, "n_workers": 2, "n_workplaces": 1},
         ),
+        CalculateScoresCase(
+            id="scores_same_worker_id_in_two_establishments_separately",
+            answer_rows=[("1-001", "w1", True, True), ("1-002", "w1", False, True)],
+            prediction_rows=[("1-001", "w1", 0.9), ("1-002", "w1", 0.1)],
+            expected_scores={"worker_auc": 1.0, "n_workers": 2, "n_workplaces": 2},
+        ),
     ]
 
     check_predictions_error_cases = [
