@@ -32,3 +32,4 @@ class HackathonColumns:
     plausible_turnover: str = "plausible_turnover"
     valid_for_analysis: str = "valid_for_analysis"
     split: str = "split"
+    predicted_probability: str = "predicted_probability"

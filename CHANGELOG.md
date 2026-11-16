@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a shared scoring function for the hackathon that checks students' predicted probabilities of leaving and returns worker-level (AUC, Brier score) and workplace-level (mean absolute error of predicted against observed leave rate) scores against the held-back test answers.
 - Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, with each split written separately and the train and test splits validated.
 - Added a validation job for the Hackathon Worker Turnover output.
 - Added the National Living Wage rate at each snapshot, and hourly pay minus it, to the Hackathon Worker Turnover job.
