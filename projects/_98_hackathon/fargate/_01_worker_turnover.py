@@ -8,6 +8,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 
 def main(
@@ -45,7 +46,11 @@ def main(
     )
 
     filtered_lf = wUtils.filter_worker_turnover_data(worker_lf).drop(
-        AWKClean.location_id
+        AWKClean.location_id,
+        AWKClean.main_job_role_id,
+        AWKClean.main_job_role_clean,
+        AWKClean.employment_status,
+        AWKClean.employment_status_clean,
     )
     filtered_lf = filtered_lf.join(
         workplace_lf,
@@ -53,7 +58,9 @@ def main(
         right_on=[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
         how="left",
     )
-    filtered_lf = wUtils.add_main_service_type(filtered_lf)
+    filtered_lf = wUtils.add_main_service_type(filtered_lf).drop(
+        AWPClean.main_service_id_clean
+    )
 
     # The later steps use this frame several times. Collect once, so each use does
     # not re-scan and re-filter the cleaned data.
@@ -73,7 +80,15 @@ def main(
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
     filtered_lf = wUtils.add_headcount_reconciliation_gap(filtered_lf, max_gap)
-    filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf)
+    filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf).drop(
+        HackCols.establishment_in_both_snapshots,
+        HackCols.months_since_save_start,
+        HackCols.months_since_save_end,
+        HackCols.establishment_active,
+        HackCols.headcount_reconciliation_gap,
+        HackCols.headcount_gap_within_tolerance,
+        HackCols.plausible_turnover,
+    )
     filtered_lf = wUtils.null_not_known_codes(filtered_lf)
     filtered_lf = filtered_lf.with_columns(
         pl.col(wUtils.WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical)
@@ -81,7 +96,9 @@ def main(
     filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
     filtered_lf = wUtils.add_worker_labels(filtered_lf)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
-    filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.country_of_birth)
+    filtered_lf = wUtils.add_country_code_group(
+        filtered_lf, AWKClean.country_of_birth
+    ).drop(wUtils.WORKER_CATEGORICAL_COLUMNS)
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
 

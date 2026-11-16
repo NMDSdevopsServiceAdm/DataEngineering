@@ -79,7 +79,11 @@ class TestMain:
             filter_worker_turnover_data_mock.return_value.drop.return_value
         )
         filter_worker_turnover_data_mock.return_value.drop.assert_called_once_with(
-            job.AWKClean.location_id
+            job.AWKClean.location_id,
+            job.AWKClean.main_job_role_id,
+            job.AWKClean.main_job_role_clean,
+            job.AWKClean.employment_status,
+            job.AWKClean.employment_status_clean,
         )
         filtered_lf_mock.join.assert_called_once_with(
             workplace_lf_mock,
@@ -96,10 +100,14 @@ class TestMain:
         add_main_service_type_mock.assert_called_once_with(
             filtered_lf_mock.join.return_value
         )
-        add_main_service_type_mock.return_value.collect.assert_called_once_with()
-        collected_lf = (
-            add_main_service_type_mock.return_value.collect.return_value.lazy.return_value
+        add_main_service_type_mock.return_value.drop.assert_called_once_with(
+            job.AWPClean.main_service_id_clean
         )
+        main_service_dropped_lf = (
+            add_main_service_type_mock.return_value.drop.return_value
+        )
+        main_service_dropped_lf.collect.assert_called_once_with()
+        collected_lf = main_service_dropped_lf.collect.return_value.lazy.return_value
         get_latest_save_date_per_establishment_mock.assert_called_once_with(
             worker_lf_mock, collected_lf
         )
@@ -122,8 +130,17 @@ class TestMain:
         add_valid_for_analysis_flag_mock.assert_called_once_with(
             add_headcount_reconciliation_gap_mock.return_value
         )
+        add_valid_for_analysis_flag_mock.return_value.drop.assert_called_once_with(
+            job.HackCols.establishment_in_both_snapshots,
+            job.HackCols.months_since_save_start,
+            job.HackCols.months_since_save_end,
+            job.HackCols.establishment_active,
+            job.HackCols.headcount_reconciliation_gap,
+            job.HackCols.headcount_gap_within_tolerance,
+            job.HackCols.plausible_turnover,
+        )
         null_not_known_codes_mock.assert_called_once_with(
-            add_valid_for_analysis_flag_mock.return_value
+            add_valid_for_analysis_flag_mock.return_value.drop.return_value
         )
         null_not_known_codes_mock.return_value.with_columns.assert_called_once()
         combine_pay_and_hours_mock.assert_called_once_with(
@@ -139,8 +156,12 @@ class TestMain:
                 job.AWKClean.country_of_birth,
             ),
         ]
+        add_country_code_group_mock.return_value.drop.assert_called_once_with(
+            job.wUtils.WORKER_CATEGORICAL_COLUMNS
+        )
         impute_worker_columns_mock.assert_called_once_with(
-            add_country_code_group_mock.return_value, job.wUtils.IMPUTE_COLUMNS
+            add_country_code_group_mock.return_value.drop.return_value,
+            job.wUtils.IMPUTE_COLUMNS,
         )
         add_nlw_and_pay_difference_mock.assert_called_once_with(
             impute_worker_columns_mock.return_value
