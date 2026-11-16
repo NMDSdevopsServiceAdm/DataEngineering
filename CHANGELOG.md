@@ -8,6 +8,19 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added a guide to maintaining the Monthly Tracker workbooks, and documented where to find them.
 - Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, with each split written separately and the train and test splits validated.
+
+### Changed
+
+
+### Improved
+- Dropped unneeded columns from the hackathon worker turnover output at their last use.
+
+### Fixed
+
+
+## [v2026.10.1] - 16/11/2026
+
+### Added
 - Added a validation job for the Hackathon Worker Turnover output.
 - Added the National Living Wage rate at each snapshot, and hourly pay minus it, to the Hackathon Worker Turnover job.
 - Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
@@ -24,13 +37,6 @@ All notable changes to this project will be documented in this file.
 - The assessment workbook's "Comp prev publication" sheet shows percentage changes instead of filled post counts.
 - Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.
 - Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
-
-### Improved
-
-- Dropped unneeded columns from the hackathon worker turnover output at their last use.
-
-### Fixed
-
 
 ## [v2026.10.0] - 09/11/2026
 
