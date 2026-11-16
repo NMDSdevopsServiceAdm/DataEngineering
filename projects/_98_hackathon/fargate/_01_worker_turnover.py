@@ -15,7 +15,9 @@ def main(
     cleaned_ascwds_worker_source: str,
     cleaned_ascwds_workplace_source: str,
     raw_ascwds_worker_source: str,
-    flagged_destination: str,
+    train_destination: str,
+    holdout_destination: str,
+    test_destination: str,
     n_months: int = wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
     max_gap: int = wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
 ) -> None:
@@ -29,7 +31,9 @@ def main(
         cleaned_ascwds_workplace_source (str): path to the cleaned ASC-WDS
             workplace data, used for main service
         raw_ascwds_worker_source (str): path to the raw ASC-WDS worker data
-        flagged_destination (str): destination for the flagged worker data
+        train_destination (str): destination for the train split
+        holdout_destination (str): destination for the holdout split
+        test_destination (str): destination for the test split
         n_months (int): most months since an establishment's latest save date for
             it to count as active
         max_gap (int): largest absolute headcount reconciliation gap, in workers,
@@ -102,7 +106,24 @@ def main(
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
 
-    utils.sink_to_parquet(filtered_lf, output_path=flagged_destination)
+    filtered_lf = wUtils.add_split_column(filtered_lf)
+
+    split_destinations = {
+        "train": train_destination,
+        "holdout": holdout_destination,
+        "test": test_destination,
+    }
+    # Lazy sinks collected together share one run of the plan above, rather than
+    # re-running it per split.
+    split_sinks = [
+        utils.sink_to_parquet(
+            filtered_lf.filter(pl.col(HackCols.split) == split),
+            output_path=destination,
+            lazy=True,
+        )
+        for split, destination in split_destinations.items()
+    ]
+    pl.collect_all(split_sinks, engine="streaming")
 
 
 if __name__ == "__main__":
@@ -120,8 +141,16 @@ if __name__ == "__main__":
             "Source s3 directory for raw ascwds worker data",
         ),
         (
-            "--flagged_destination",
-            "Destination s3 directory for the filtered worker turnover data",
+            "--train_destination",
+            "Destination s3 directory for the train split",
+        ),
+        (
+            "--holdout_destination",
+            "Destination s3 directory for the holdout split",
+        ),
+        (
+            "--test_destination",
+            "Destination s3 directory for the test split",
         ),
         (
             "--n_months",
@@ -140,7 +169,9 @@ if __name__ == "__main__":
         cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
         cleaned_ascwds_workplace_source=args.cleaned_ascwds_workplace_source,
         raw_ascwds_worker_source=args.raw_ascwds_worker_source,
-        flagged_destination=args.flagged_destination,
+        train_destination=args.train_destination,
+        holdout_destination=args.holdout_destination,
+        test_destination=args.test_destination,
         n_months=int(args.n_months),
         max_gap=int(args.max_gap),
     )

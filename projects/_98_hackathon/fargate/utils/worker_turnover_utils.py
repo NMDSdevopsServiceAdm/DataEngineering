@@ -776,6 +776,33 @@ def add_valid_for_analysis_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
+def add_split_column(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds a categorical `split` column from `ascwds_worker_import_date`.
+
+    Values:
+    - "train" for 1 January 2020 to 1 November 2024 inclusive.
+    - "test" for 1 November 2025.
+    - "holdout" for any other date, including null.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`.
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus `split`.
+    """
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+
+    return worker_lf.with_columns(
+        pl.when(import_date.is_between(date(2020, 1, 1), date(2024, 11, 1)))
+        .then(pl.lit("train"))
+        .when(import_date == date(2025, 11, 1))
+        .then(pl.lit("test"))
+        .otherwise(pl.lit("holdout"))
+        .cast(pl.Categorical)
+        .alias(HackCols.split)
+    )
+
+
 def add_main_service_type(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Adds `main_service_type`, a three-way recode of the main service label.
 
