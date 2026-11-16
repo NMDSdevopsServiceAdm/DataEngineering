@@ -27,6 +27,33 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    impute_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.hours, pl.Float32()),
+        ]
+    )
+
+    impute_columns = [
+        f"{AWKClean.gender}_labels",
+        f"{AWKClean.ethnicity}_labels",
+        f"{AWKClean.disabled}_labels",
+        HackCols.nationality_group,
+        HackCols.country_of_birth_group,
+        AWKClean.year_of_entry,
+        HackCols.hours,
+        f"{AWKClean.zero_hours}_labels",
+        f"{AWKClean.source_of_recruitment}_labels",
+        AWKClean.start_date,
+        AWKClean.start_age,
+        AWKClean.start_in_sector,
+        f"{AWKClean.social_care_qual_held}_labels",
+        f"{AWKClean.level_social_care_qualification_held}_labels",
+        f"{AWKClean.care_certificate_status}_labels",
+    ]
+
     is_leaver_input_schema = pl.Schema(
         [
             (AWKClean.establishment_id, CatColType.EstablishmentCatType),

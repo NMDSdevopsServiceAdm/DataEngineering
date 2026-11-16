@@ -3,6 +3,7 @@ from dataclasses import dataclass, fields
 import pytest
 
 from utils.column_values.ascwds_labelled_vocab import (
+    NotKnownWorkerCodes,
     APPRENTICE,
     CARE_CERTIFICATE_STATUS,
     DISABLED,
@@ -260,60 +261,70 @@ worker_paired_vocabs = {
     "source_of_recruitment": SOURCE_OF_RECRUITMENT,
 }
 
+not_known_worker_code_params = [
+    pytest.param("gender", "3", id="gender"),
+    pytest.param("ethnicity", "99", id="ethnicity"),
+    pytest.param("disabled", "2", id="disabled"),
+    pytest.param("social_care_qual_held", "3", id="qual_held"),
+    pytest.param("level_social_care_qualification_held", "10", id="qual_level"),
+    pytest.param("apprentice", "3", id="apprentice"),
+    pytest.param("source_of_recruitment", "225", id="recruitment"),
+]
+
+not_known_ungrouped_code_params = [
+    pytest.param("nationality", "999", id="nationality"),
+    pytest.param("country_of_birth", "999", id="country_of_birth"),
+]
+
 worker_code_to_label_test_cases = [
     WorkerCodeToLabelTestCase(
         id="gender",
         code_to_label=GENDER.code_to_label(),
-        expected_code_count=4,
+        expected_code_count=3,
         expected_pairs={
             "1": "Male",
             "2": "Female",
-            "3": "Unknown",
             "4": "Other",
         },
     ),
     WorkerCodeToLabelTestCase(
         id="ethnicity",
         code_to_label=ETHNICITY.code_to_label(),
-        expected_code_count=19,
+        expected_code_count=18,
         expected_pairs={
             "31": "English / Welsh / Scottish / Northern Irish / British",
             "38": "Any Other Mixed / multiple ethnic background",
             "46": "Any other Black / African / Caribbean background",
             "98": "Any other ethnic group",
-            "99": "Not known",
         },
     ),
     WorkerCodeToLabelTestCase(
         id="disabled",
         code_to_label=DISABLED.code_to_label(),
-        expected_code_count=3,
+        expected_code_count=2,
         expected_pairs={
             "0": "No",
             "1": "Yes",
-            "2": "Not disclosed",
         },
     ),
     WorkerCodeToLabelTestCase(
         id="social_care_qual_held",
         code_to_label=SOCIAL_CARE_QUAL_HELD.code_to_label(),
-        expected_code_count=3,
+        expected_code_count=2,
         expected_pairs={
             "1": "Yes",
             "2": "No",
-            "3": "Not known",
         },
     ),
     WorkerCodeToLabelTestCase(
         id="level_social_care_qualification_held",
         code_to_label=LEVEL_SOCIAL_CARE_QUALIFICATION_HELD.code_to_label(),
-        expected_code_count=10,
+        expected_code_count=9,
         expected_pairs={
             "0": "Entry",
             "1": "Level 1",
             "7": "Level 7",
             "8": "Level 8 or above",
-            "10": "Not known",
         },
     ),
     WorkerCodeToLabelTestCase(
@@ -329,11 +340,10 @@ worker_code_to_label_test_cases = [
     WorkerCodeToLabelTestCase(
         id="apprentice",
         code_to_label=APPRENTICE.code_to_label(),
-        expected_code_count=3,
+        expected_code_count=2,
         expected_pairs={
             "1": "Yes",
             "2": "No",
-            "3": "Not known",
         },
     ),
     WorkerCodeToLabelTestCase(
@@ -348,11 +358,10 @@ worker_code_to_label_test_cases = [
     WorkerCodeToLabelTestCase(
         id="source_of_recruitment",
         code_to_label=SOURCE_OF_RECRUITMENT.code_to_label(),
-        expected_code_count=11,
+        expected_code_count=10,
         expected_pairs={
             "210": "Adult care sector: local authority",
             "217": "Internal promotion or transfer or career development",
-            "225": "Not known",
             "226": "Children’s/young people’s social care",
             "227": "First role after education",
         },
@@ -392,3 +401,14 @@ class TestWorkerCodeToLabel:
     )
     def test_unlabelled_codes_is_empty(self, vocab):
         assert vocab.unlabelled_codes() == {}
+
+    @pytest.mark.parametrize(
+        "column, expected_code",
+        [*not_known_worker_code_params, *not_known_ungrouped_code_params],
+    )
+    def test_not_known_worker_codes_has_expected_code(self, column, expected_code):
+        assert getattr(NotKnownWorkerCodes, column) == expected_code
+
+    @pytest.mark.parametrize("column, not_known_code", not_known_worker_code_params)
+    def test_not_known_worker_code_has_no_label(self, column, not_known_code):
+        assert not_known_code not in worker_paired_vocabs[column].code_to_label()

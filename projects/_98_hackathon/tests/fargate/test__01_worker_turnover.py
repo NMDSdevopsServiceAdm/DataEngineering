@@ -12,10 +12,12 @@ class TestMain:
     FLAGGED_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
+    @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
@@ -38,10 +40,12 @@ class TestMain:
         add_raw_worker_columns_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
+        null_not_known_codes_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
+        impute_worker_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
@@ -75,7 +79,11 @@ class TestMain:
             filter_worker_turnover_data_mock.return_value.drop.return_value
         )
         filter_worker_turnover_data_mock.return_value.drop.assert_called_once_with(
-            job.AWKClean.location_id
+            job.AWKClean.location_id,
+            job.AWKClean.main_job_role_id,
+            job.AWKClean.main_job_role_clean,
+            job.AWKClean.employment_status,
+            job.AWKClean.employment_status_clean,
         )
         filtered_lf_mock.join.assert_called_once_with(
             workplace_lf_mock,
@@ -92,10 +100,14 @@ class TestMain:
         add_main_service_type_mock.assert_called_once_with(
             filtered_lf_mock.join.return_value
         )
-        add_main_service_type_mock.return_value.collect.assert_called_once_with()
-        collected_lf = (
-            add_main_service_type_mock.return_value.collect.return_value.lazy.return_value
+        add_main_service_type_mock.return_value.drop.assert_called_once_with(
+            job.AWPClean.main_service_id_clean
         )
+        main_service_dropped_lf = (
+            add_main_service_type_mock.return_value.drop.return_value
+        )
+        main_service_dropped_lf.collect.assert_called_once_with()
+        collected_lf = main_service_dropped_lf.collect.return_value.lazy.return_value
         get_latest_save_date_per_establishment_mock.assert_called_once_with(
             worker_lf_mock, collected_lf
         )
@@ -103,7 +115,7 @@ class TestMain:
         add_establishment_active_flag_mock.assert_called_once_with(
             add_is_leaver_flag_mock.return_value,
             get_latest_save_date_per_establishment_mock.return_value,
-            job.DEFAULT_MAX_MONTHS_SINCE_SAVE,
+            job.wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
         )
         add_turnover_rate_mock.assert_called_once_with(
             add_establishment_active_flag_mock.return_value
@@ -113,13 +125,26 @@ class TestMain:
         )
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
             add_raw_worker_columns_mock.return_value,
-            job.DEFAULT_MAX_HEADCOUNT_GAP,
+            job.wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
         )
         add_valid_for_analysis_flag_mock.assert_called_once_with(
             add_headcount_reconciliation_gap_mock.return_value
         )
+        add_valid_for_analysis_flag_mock.return_value.drop.assert_called_once_with(
+            job.HackCols.establishment_in_both_snapshots,
+            job.HackCols.months_since_save_start,
+            job.HackCols.months_since_save_end,
+            job.HackCols.establishment_active,
+            job.HackCols.headcount_reconciliation_gap,
+            job.HackCols.headcount_gap_within_tolerance,
+            job.HackCols.plausible_turnover,
+        )
+        null_not_known_codes_mock.assert_called_once_with(
+            add_valid_for_analysis_flag_mock.return_value.drop.return_value
+        )
+        null_not_known_codes_mock.return_value.with_columns.assert_called_once()
         combine_pay_and_hours_mock.assert_called_once_with(
-            add_valid_for_analysis_flag_mock.return_value
+            null_not_known_codes_mock.return_value.with_columns.return_value
         )
         add_worker_labels_mock.assert_called_once_with(
             combine_pay_and_hours_mock.return_value
@@ -131,8 +156,15 @@ class TestMain:
                 job.AWKClean.country_of_birth,
             ),
         ]
+        add_country_code_group_mock.return_value.drop.assert_called_once_with(
+            job.wUtils.WORKER_CATEGORICAL_COLUMNS
+        )
+        impute_worker_columns_mock.assert_called_once_with(
+            add_country_code_group_mock.return_value.drop.return_value,
+            job.wUtils.IMPUTE_COLUMNS,
+        )
         add_nlw_and_pay_difference_mock.assert_called_once_with(
-            add_country_code_group_mock.return_value
+            impute_worker_columns_mock.return_value
         )
         sink_to_parquet_mock.assert_called_once_with(
             add_nlw_and_pay_difference_mock.return_value,
@@ -144,6 +176,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
+    @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
@@ -166,6 +199,7 @@ class TestMain:
         add_raw_worker_columns_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
+        null_not_known_codes_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,

@@ -37,10 +37,6 @@ class PublicationColumns:
     unfiltered_short_locationid_count_cum_pct_change: str = (
         "unfiltered_short_locationid_count_cum_pct_change"
     )
-    unfiltered_filled_posts_prev_run: str = "unfiltered_filled_posts_prev_run"
-    unfiltered_filled_posts_pct_change_vs_prev_run: str = (
-        "unfiltered_filled_posts_pct_change_vs_prev_run"
-    )
     unfiltered_filled_posts_april_pct_change: str = (
         "unfiltered_filled_posts_april_pct_change"
     )

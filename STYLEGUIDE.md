@@ -208,6 +208,7 @@ class TestMain:
 | Used by **multiple** jobs/datasets in a project   | `projects/<project>/unittest_data/*.py`                 |
 | Used by **multiple projects**                     | `tests/test_polars_utils_data.py` / `tests/test_polars_utils_schemas.py` |
 
+- When a function keeps every row and existing value and only adds columns, store one list of expected rows and the output schema, and drop the new columns to get the input. If rows are filtered or existing values change, keep separate input and expected data.
 
 
 ## Code reviews

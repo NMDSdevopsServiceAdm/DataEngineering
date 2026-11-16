@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added a guide to maintaining the Monthly Tracker workbooks, and documented where to find them.
+- Added a validation job for the Hackathon Worker Turnover output.
 - Added the National Living Wage rate at each snapshot, and hourly pay minus it, to the Hackathon Worker Turnover job.
 - Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
 - Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, replacing the raw hourly rate, salary, contracted hours and average hours columns.
@@ -16,10 +17,16 @@ All notable changes to this project will be documented in this file.
 - Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
 
 ### Changed
+- Filled null worker attributes in the Hackathon Worker Turnover job from the same worker's other import dates.
+- Updated the `pytest-pattern` skill and STYLEGUIDE.md so tests for functions that only add columns derive the input by dropping the new columns from the expected data.
+- Replaced negative (not known/recorded) values and the not known, not disclosed and unknown codes in the Hackathon Worker Turnover job's raw worker columns with null.
+- The assessment workbook's "Comp prev publication" sheet shows percentage changes instead of filled post counts.
 - Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.
 - Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
 
 ### Improved
+
+- Dropped unneeded columns from the hackathon worker turnover output at their last use.
 
 ### Fixed
 
@@ -67,6 +74,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Extended the Publication-Output reconciliation to compare filled posts for each period and job role, failing with the role and period named when a role differs or is in only one source.
 - Changed the Trello card drafting skill to ask open questions first, label cards by dependency tier, and start each description with /new-ticket.
 - Assessment percentage change columns are now Float64 to reduce rounding drift.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
