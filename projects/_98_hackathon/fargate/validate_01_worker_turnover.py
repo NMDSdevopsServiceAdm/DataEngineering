@@ -46,6 +46,8 @@ SOURCE_COLUMNS = [
     HackCols.hourly_pay,
     HackCols.nlw_hourly_rate,
     HackCols.hourly_pay_minus_nlw,
+    HackCols.age_imputed,
+    HackCols.age_source,
     HackCols.nationality_group,
     HackCols.country_of_birth_group,
     *NUMERIC_COLUMNS,

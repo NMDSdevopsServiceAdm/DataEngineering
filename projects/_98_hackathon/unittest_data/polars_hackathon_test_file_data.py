@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
+import pytest
+
 from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
     WORKER_CATEGORICAL_COLUMNS,
     WORKER_NUMERIC_COLUMNS,
@@ -10,6 +12,7 @@ from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import MainServiceID
@@ -1097,4 +1100,117 @@ class WorkerTurnoverData:
             id="null_hourly_pay_gives_null_difference",
             expected_rows=[(date(2025, 6, 1), "No", 30.0, None, 12.21, None)],
         ),
+    ]
+
+    # Rows: (worker_id, establishment_id, import_date, age, age_imputed,
+    # age_source); the input is these rows without the last two columns.
+    impute_age_observed_rows = [
+        ("1", "A", date(2025, 1, 1), 30.0, 30.0, AgeSource.observed),
+    ]
+    impute_age_no_age_rows = [
+        ("1", "A", date(2025, 1, 1), None, None, None),
+        ("1", "A", date(2025, 2, 1), None, None, None),
+    ]
+    # Assumed birth month is June (first observed age).
+    impute_age_steps_up_rows = [
+        ("1", "A", date(2024, 6, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 7, 1), None, 30.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 5, 1), None, 30.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 6, 1), None, 31.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2026, 6, 1), None, 32.0, AgeSource.assumed_birth_month),
+    ]
+    impute_age_steps_down_rows = [
+        ("1", "A", date(2015, 5, 1), None, 24.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2015, 6, 1), None, 25.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2024, 6, 1), None, 34.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 5, 1), None, 34.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 6, 1), 35.0, 35.0, AgeSource.observed),
+    ]
+    # 30 in January then 31 in February: the birthday month is February.
+    impute_age_pinned_rows = [
+        ("1", "A", date(2023, 12, 1), None, 30.0, AgeSource.pinned_birth_month),
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 2, 1), 31.0, 31.0, AgeSource.observed),
+        ("1", "A", date(2025, 1, 1), None, 31.0, AgeSource.pinned_birth_month),
+        ("1", "A", date(2025, 2, 1), None, 32.0, AgeSource.pinned_birth_month),
+    ]
+    # 30 in January, 31 in March with no adjacent-month change: assumed January.
+    impute_age_gapped_change_cases = [
+        pytest.param(
+            [
+                (
+                    "1",
+                    "A",
+                    date(2023, 12, 1),
+                    None,
+                    29.0,
+                    AgeSource.assumed_birth_month,
+                ),
+                ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+                ("1", "A", date(2024, 3, 1), 31.0, 31.0, AgeSource.observed),
+            ],
+            id="month_between_missing",
+        ),
+        pytest.param(
+            [
+                (
+                    "1",
+                    "A",
+                    date(2023, 12, 1),
+                    None,
+                    29.0,
+                    AgeSource.assumed_birth_month,
+                ),
+                ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+                ("1", "A", date(2024, 2, 1), None, 30.0, AgeSource.assumed_birth_month),
+                ("1", "A", date(2024, 3, 1), 31.0, 31.0, AgeSource.observed),
+            ],
+            id="month_between_null",
+        ),
+    ]
+    # Second observed age is 30 + change; only +1 would pin February.
+    impute_age_not_pinned_cases = [
+        pytest.param(
+            [
+                (
+                    "1",
+                    "A",
+                    date(2023, 12, 1),
+                    None,
+                    29.0,
+                    AgeSource.assumed_birth_month,
+                ),
+                ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+                (
+                    "1",
+                    "A",
+                    date(2024, 2, 1),
+                    30.0 + change,
+                    30.0 + change,
+                    AgeSource.observed,
+                ),
+            ],
+            id=f"change_{change:+.0f}",
+        )
+        for change in [-1, 2, 0]
+    ]
+    # Pins on February (30 to 31) and again on March (31 to 32).
+    impute_age_several_pins_rows = [
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 2, 1), 31.0, 31.0, AgeSource.observed),
+        ("1", "A", date(2024, 3, 1), 32.0, 32.0, AgeSource.observed),
+        ("1", "A", date(2025, 2, 1), None, 32.0, AgeSource.pinned_birth_month),
+    ]
+    # The observed 35 in June disagrees with the January birth month.
+    impute_age_disagreeing_rows = [
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 6, 1), 35.0, 35.0, AgeSource.observed),
+        ("1", "A", date(2025, 1, 1), None, 31.0, AgeSource.assumed_birth_month),
+    ]
+    impute_age_independent_rows = [
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2025, 1, 1), None, 31.0, AgeSource.assumed_birth_month),
+        ("1", "B", date(2024, 6, 1), 50.0, 50.0, AgeSource.observed),
+        ("1", "B", date(2023, 12, 1), None, 49.0, AgeSource.assumed_birth_month),
+        ("2", "A", date(2024, 1, 1), None, None, None),
     ]
