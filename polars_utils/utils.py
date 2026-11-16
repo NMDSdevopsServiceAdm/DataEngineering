@@ -189,14 +189,16 @@ def sink_to_parquet(
                 include_key=False,
                 key=partition_cols,
             )
+            message = f"LazyFrame sunk to Parquet at {output_path} partitioned by {partition_cols}"
         else:
             path = f"{output_path}file.parquet"
+            message = f"LazyFrame sunk to Parquet at {output_path} without partitioning"
 
         sink = lazy_df.sink_parquet(
             path=path, mkdir=True, engine="streaming", lazy=lazy
         )
         if not lazy:
-            print(f"LazyFrame sunk to Parquet at {output_path}")
+            print(message)
         return sink
     except Exception as e:
         print(f"ERROR: Failed to sink LazyFrame to Parquet: {e}")
