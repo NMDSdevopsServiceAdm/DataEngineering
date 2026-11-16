@@ -48,6 +48,19 @@ class TestCheckPredictions:
 
         assert job.check_predictions(predictions_df, self.answers_df) is None
 
+    def test_raises_when_answers_have_duplicated_workers(self):
+        answers_df = pl.DataFrame(
+            CHECK_ANSWER_ROWS + [("1-001", "w1", False, True)],
+            schema=Schemas.answers_schema,
+            orient="row",
+        )
+        predictions_df = pl.DataFrame(
+            VALID_PREDICTION_ROWS, schema=Schemas.predictions_schema, orient="row"
+        )
+
+        with pytest.raises(ValueError, match="Test answers have 1 duplicated workers"):
+            job.check_predictions(predictions_df, answers_df)
+
     @pytest.mark.parametrize(
         "case",
         [pytest.param(case, id=case.id) for case in Data.check_predictions_error_cases],

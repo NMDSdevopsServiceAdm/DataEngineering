@@ -25,11 +25,13 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
 
     Args:
         predictions_df (pl.DataFrame): Predictions, one row per worker.
-        answers_df (pl.DataFrame): Every test worker, with the worker key columns.
+        answers_df (pl.DataFrame): Every test worker, one row each, with the
+            worker key columns.
 
     Raises:
-        ValueError: If the predictions fail any check, with the number of rows
-            affected and, for workers, the first few examples.
+        ValueError: If the predictions fail any check, or the answers have
+            duplicated workers, with the number of rows affected and, for
+            workers, the first few examples.
     """
     prediction_columns = WORKER_KEY_COLUMNS + [HackCols.predicted_probability]
     example_count = 5
@@ -51,6 +53,15 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
         pl.col(WORKER_KEY_COLUMNS).cast(pl.String)
     )
     answer_keys_df = answers_df.select(pl.col(WORKER_KEY_COLUMNS).cast(pl.String))
+
+    duplicated_answers_count = (
+        answer_keys_df.filter(answer_keys_df.is_duplicated()).unique().height
+    )
+    if duplicated_answers_count:
+        raise ValueError(
+            f"Test answers have {duplicated_answers_count} duplicated workers, "
+            "so scores would be distorted. Report this to the organisers"
+        )
     probability = pl.col(HackCols.predicted_probability).cast(pl.Float64)
 
     null_key_count = predicted_keys_df.filter(
