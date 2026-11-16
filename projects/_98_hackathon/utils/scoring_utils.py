@@ -106,11 +106,10 @@ def calculate_scores(
     """Calculates worker-level and workplace-level scores.
 
     Scores workers with `valid_for_analysis` true and a known `is_leaver`.
-    Worker scores are AUC and Brier score (calibration). The workplace score is
-    the mean, over establishments, of the absolute difference between the
-    predicted leave rate (summed probabilities divided by scored headcount) and
-    the observed leave rate. Works on frames of one row per worker, small enough
-    to hold in memory.
+    Worker scores are AUC and Brier score. The workplace score is the mean, over
+    establishments, of the absolute difference between predicted leave rate
+    (summed probabilities / scored headcount) and observed leave rate. Frames
+    are one row per worker, so small enough for memory.
 
     Args:
         predictions_df (pl.DataFrame): Checked predictions, one row per test
@@ -178,8 +177,8 @@ def score_predictions(
     """Scores predicted leaving probabilities against the held-back test answers.
 
     Reads the answers itself, so callers never open them. Reads only the worker
-    key, `is_leaver` and `valid_for_analysis` columns, as the test split is one
-    row per worker and the whole selection is needed in memory for scoring.
+    key, `is_leaver` and `valid_for_analysis` columns: one row per test worker,
+    collected for scoring.
 
     Example:
         scores = score_predictions(predictions_df)
