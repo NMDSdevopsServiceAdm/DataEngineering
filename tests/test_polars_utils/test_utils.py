@@ -263,6 +263,14 @@ class TestSinkToParquet:
             "year=2025/month=11/day=05",
         }
 
+    def test_writes_immediately_and_returns_none_by_default(self, tmp_path):
+        lazy_df = pl.LazyFrame({"a": [1, 2, 3]})
+
+        returned = utils.sink_to_parquet(lazy_df, f"{tmp_path}/")
+
+        assert returned is None
+        assert pl.read_parquet(tmp_path / "file.parquet").height == 3
+
     def test_lazy_writes_only_when_sinks_are_collected(self, tmp_path):
         lazy_df = pl.LazyFrame({"a": [1, 2, 3], "part": ["x", "y", "y"]})
         sinks = [
