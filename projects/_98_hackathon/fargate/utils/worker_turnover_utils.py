@@ -377,6 +377,60 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
+def add_valid_pay_difference_flag(
+    worker_lf: pl.LazyFrame,
+    upper_percentile: float = 0.99,
+    min_group_size: int = 100,
+) -> pl.LazyFrame:
+    """Adds `valid_hourly_pay_minus_nlw`, flagging implausible pay differences.
+
+    The flag is:
+    - true when `hourly_pay_minus_nlw` is 0 or more and at most the percentile.
+    - false when it is negative or above the percentile.
+    - null when it is null.
+
+    The percentile is `upper_percentile` of the non-negative differences for the
+    worker's import year and job role. A group with fewer than `min_group_size`
+    non-negative differences, or a null job role, uses the import year's
+    percentile instead. Keeps every row.
+
+    The percentiles use `.over()`, which the streaming engine does not cover, so
+    that part of the plan runs in memory.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
+            `mainjrid_clean_labels` and `hourly_pay_minus_nlw`.
+        upper_percentile (float): Quantile above which a difference is an outlier.
+        min_group_size (int): Smallest group that uses its own percentile.
+
+    Returns:
+        pl.LazyFrame: The input rows with `valid_hourly_pay_minus_nlw` added.
+    """
+    difference = pl.col(HackCols.hourly_pay_minus_nlw)
+    import_year = pl.col(AWKClean.ascwds_worker_import_date).dt.year()
+    job_role = pl.col(AWKClean.main_job_role_clean_labelled)
+    # Negative differences become null so they do not set the percentile.
+    non_negative_difference = pl.when(difference >= 0).then(difference)
+    year_percentile = non_negative_difference.quantile(upper_percentile).over(
+        import_year
+    )
+    group_percentile = non_negative_difference.quantile(upper_percentile).over(
+        import_year, job_role
+    )
+    group_size = non_negative_difference.count().over(import_year, job_role)
+    percentile = (
+        pl.when(job_role.is_not_null() & (group_size >= min_group_size))
+        .then(group_percentile)
+        .otherwise(year_percentile)
+    )
+
+    return worker_lf.with_columns(
+        ((difference >= 0) & (difference <= percentile)).alias(
+            HackCols.valid_hourly_pay_minus_nlw
+        )
+    )
+
+
 def add_country_code_group(worker_lf: pl.LazyFrame, code_column: str) -> pl.LazyFrame:
     """Adds a categorical group column from an ISO 3166-1 numeric country code.
 

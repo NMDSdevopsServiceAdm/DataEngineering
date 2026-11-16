@@ -47,6 +47,7 @@ SOURCE_COLUMNS = [
     HackCols.hourly_pay,
     HackCols.nlw_hourly_rate,
     HackCols.hourly_pay_minus_nlw,
+    HackCols.valid_hourly_pay_minus_nlw,
     HackCols.nationality_group,
     HackCols.country_of_birth_group,
     *NUMERIC_COLUMNS,
@@ -106,6 +107,8 @@ def main(
     is_leaver = pl.col(HackCols.is_leaver)
     turnover_rate = pl.col(HackCols.turnover_rate)
     hourly_pay = pl.col(HackCols.hourly_pay)
+    pay_difference = pl.col(HackCols.hourly_pay_minus_nlw)
+    pay_difference_valid = pl.col(HackCols.valid_hourly_pay_minus_nlw)
 
     validation = (
         pb.Validate(
@@ -190,6 +193,14 @@ def main(
             .is_not_null()
             .eq(hourly_pay.is_not_null()),
             brief="hourly_pay_minus_nlw is populated exactly when hourly_pay is populated",
+        )
+        .col_vals_expr(
+            expr=pay_difference_valid.is_null().eq(pay_difference.is_null()),
+            brief="valid_hourly_pay_minus_nlw is null exactly when hourly_pay_minus_nlw is null",
+        )
+        .col_vals_expr(
+            expr=((pay_difference < 0) & pay_difference_valid).fill_null(False).not_(),
+            brief="valid_hourly_pay_minus_nlw is false whenever hourly_pay_minus_nlw is negative",
         )
     )
 

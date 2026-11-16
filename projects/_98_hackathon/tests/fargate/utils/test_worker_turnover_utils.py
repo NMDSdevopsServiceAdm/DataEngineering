@@ -337,6 +337,46 @@ class TestAddNlwAndPayDifference:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestAddValidPayDifferenceFlag:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.add_valid_pay_difference_flag_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.valid_pay_difference_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(HackCols.valid_hourly_pay_minus_nlw)
+
+        returned_lf = job.add_valid_pay_difference_flag(
+            input_lf, case.upper_percentile, case.min_group_size
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_keeps_every_row_and_existing_columns(self):
+        full_lf = pl.LazyFrame(
+            [
+                (date(2025, 6, 1), "Care worker", -1.0, False),
+                (date(2025, 6, 1), "Care worker", None, None),
+                (date(2025, 6, 1), None, 5.0, True),
+            ],
+            schema=Schemas.valid_pay_difference_schema,
+            orient="row",
+        )
+        input_lf = full_lf.drop(HackCols.valid_hourly_pay_minus_nlw)
+
+        returned_lf = job.add_valid_pay_difference_flag(input_lf)
+
+        pl_testing.assert_frame_equal(
+            returned_lf.drop(HackCols.valid_hourly_pay_minus_nlw), input_lf
+        )
+        assert returned_lf.collect_schema().names() == full_lf.collect_schema().names()
+
+
 def raw_worker_lf(*rows: dict) -> pl.LazyFrame:
     """Returns raw worker rows as a LazyFrame with all-string columns."""
     return pl.LazyFrame(list(rows), schema={column: pl.String for column in rows[0]})

@@ -16,6 +16,7 @@ class HackathonColumns:
     hourly_pay: str = "hourly_pay"
     nlw_hourly_rate: str = "nlw_hourly_rate"
     hourly_pay_minus_nlw: str = "hourly_pay_minus_nlw"
+    valid_hourly_pay_minus_nlw: str = "valid_hourly_pay_minus_nlw"
     nlw_effective_date: str = "nlw_effective_date"
     nlw_is_apprentice: str = "nlw_is_apprentice"
     nlw_band_start: str = "nlw_band_start"

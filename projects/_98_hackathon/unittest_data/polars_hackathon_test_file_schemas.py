@@ -116,6 +116,15 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    valid_pay_difference_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.main_job_role_clean_labelled, pl.Categorical()),
+            (HackCols.hourly_pay_minus_nlw, pl.Float32()),
+            (HackCols.valid_hourly_pay_minus_nlw, pl.Boolean()),
+        ]
+    )
+
     latest_save_date_input_schema = pl.Schema(
         [
             (AWKClean.establishment_id, CatColType.EstablishmentCatType),
