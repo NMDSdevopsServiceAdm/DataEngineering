@@ -11,7 +11,7 @@
 - Always stop the notebook after use
 
 ## Notebook templates
-Templates for common ad-hoc tasks (compare outputs, compare before/after a filter, score rolling-average durations) are in `notebooks/sagemaker/`; see `.claude/skills/sagemaker/SKILL.md`. `sagemaker_setup.ipynb` clones or updates the repo on the instance and copies the latest templates to `~/SageMaker/templates/`; run it at the start of each piece of work.
+Templates for common ad-hoc tasks (compare outputs, compare before/after a filter, score rolling-average durations, show model metrics across training runs) are in `notebooks/sagemaker/`; see `.claude/skills/sagemaker/SKILL.md`. `sagemaker_setup.ipynb` clones or updates the repo on the instance and copies the latest templates to `~/SageMaker/templates/`; run it at the start of each piece of work.
 
 To compare rolling average variants for a categorical (employment status, gender and so on), use the experiment folder on the instance (`~/SageMaker/Categorical/rolling_average/`, README there; not in this repo). Unlike the templates it imports this repo, so run `sagemaker_setup.ipynb` first.
 

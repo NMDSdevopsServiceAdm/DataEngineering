@@ -3,6 +3,7 @@ import json
 import re
 from pathlib import Path
 
+import polars as pl
 import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -164,17 +165,63 @@ def field_values(dataclass: type) -> set[str]:
     return {field.default for field in dataclasses.fields(dataclass)}
 
 
-def run_parameters_cell(name: str) -> dict:
-    """Runs a template's parameters cell and returns the names it defines."""
-    cell = next(
-        cell
-        for cell in load_cells(name)
-        if cell["cell_type"] == "code"
-        and "parameters" in cell["metadata"].get("tags", [])
-    )
-    namespace: dict = {}
-    exec("".join(cell["source"]), namespace)
+def run_cells(name: str, markers: tuple[str, ...] = (), namespace=None) -> dict:
+    """Runs a template's parameters cell and the code cells containing a marker, in order."""
+    namespace = {} if namespace is None else namespace
+    for cell in load_cells(name):
+        source = "".join(cell["source"])
+        if cell["cell_type"] == "code" and (
+            "parameters" in cell["metadata"].get("tags", [])
+            or any(marker in source for marker in markers)
+        ):
+            exec(source, namespace)
     return namespace
+
+
+ROW_SCORES = {
+    ModelEvaluationColumns.number_of_rows,
+    ModelEvaluationColumns.bias,
+    ModelEvaluationColumns.weighted_absolute_percentage_error,
+    IndCQC.r2,
+    IndCQC.rmse,
+    IndCQC.proportion_of_model_predictions_within_ten,
+    IndCQC.proportion_of_model_predictions_within_twenty_five,
+}
+METADATA_SCALE_SCORES = {
+    IndCQC.r2,
+    IndCQC.rmse,
+    IndCQC.proportion_of_model_predictions_within_ten,
+    IndCQC.proportion_of_model_predictions_within_twenty_five,
+}
+EMITTED_SCORES = {
+    (ModelEvaluationLabels.row_level_posts, ModelEvaluationLabels.pooled): ROW_SCORES,
+    (ModelEvaluationLabels.headline_group_totals, ModelEvaluationLabels.pooled): {
+        IndCQC.r2,
+        ModelEvaluationColumns.weighted_absolute_percentage_error,
+        ModelEvaluationColumns.number_of_groups,
+    },
+    (ModelEvaluationLabels.coverage, ModelEvaluationLabels.pooled): {
+        ModelEvaluationColumns.known_rows_scored,
+        ModelEvaluationColumns.known_rows,
+        ModelEvaluationColumns.coverage,
+    },
+    (ModelEvaluationLabels.jumpiness, ModelEvaluationLabels.pooled): {
+        ModelEvaluationColumns.mean_period_to_period_change,
+        ModelEvaluationColumns.locations,
+        ModelEvaluationColumns.rows,
+    },
+    (
+        ModelEvaluationLabels.row_level_metadata_scale,
+        ModelEvaluationLabels.pooled,
+    ): METADATA_SCALE_SCORES,
+    (ModelEvaluationLabels.fit_diagnostics, ModelEvaluationLabels.all_rows): {
+        ModelEvaluationColumns.n_iter,
+        ModelEvaluationColumns.max_iter,
+        ModelEvaluationColumns.hit_max_iter,
+        ModelEvaluationColumns.zero_coefficients,
+        ModelEvaluationColumns.number_of_features,
+    },
+}
 
 
 class TestModelMetricsHistoryMatchesTraining:
@@ -182,22 +229,29 @@ class TestModelMetricsHistoryMatchesTraining:
 
     @pytest.fixture
     def parameters(self) -> dict:
-        return run_parameters_cell("model_metrics_history")
+        return run_cells("model_metrics_history")
 
-    def test_key_metrics_match_training_output(self, parameters):
-        levels = field_values(ModelEvaluationLabels)
-        folds = {ModelEvaluationLabels.pooled, ModelEvaluationLabels.all_rows}
-        metrics = field_values(ModelEvaluationColumns) | {
-            IndCQC.r2,
-            IndCQC.rmse,
-            IndCQC.proportion_of_model_predictions_within_ten,
-            IndCQC.proportion_of_model_predictions_within_twenty_five,
-        }
+    def test_key_metrics_are_scores_training_writes(self, parameters):
+        unknown = [
+            name
+            for name, level, metric, fold, _ in parameters["KEY_METRICS"]
+            if metric not in EMITTED_SCORES.get((level, fold), set())
+        ]
 
-        for name, level, metric, fold, _ in parameters["KEY_METRICS"]:
-            assert level in levels, f"{name}: unknown level {level}"
-            assert metric in metrics, f"{name}: unknown metric {metric}"
-            assert fold in folds, f"{name}: unknown fold {fold}"
+        assert not unknown, f"Tracked scores training does not write: {unknown}"
+
+    def test_metric_lists_only_name_tracked_scores(self, parameters):
+        tracked = {name for name, *_ in parameters["KEY_METRICS"]}
+        listed = (
+            set(parameters["ABSOLUTE_VALUE_METRICS"])
+            | set(parameters["ABSOLUTE_CHANGE_METRICS"])
+            | set(parameters["FLAG_METRICS"])
+        )
+
+        assert not listed - tracked, f"Not in KEY_METRICS: {listed - tracked}"
+
+    def test_metadata_metrics_are_scores_training_writes(self, parameters):
+        assert set(parameters["METADATA_METRICS"]) == METADATA_SCALE_SCORES
 
     def test_labels_and_columns_match_training_output(self, parameters):
         expected = {
@@ -210,6 +264,131 @@ class TestModelMetricsHistoryMatchesTraining:
             "FOLD": ModelEvaluationColumns.fold,
             "METRIC": ModelEvaluationColumns.metric,
             "VALUE": ModelEvaluationColumns.value,
+            "R2": IndCQC.r2,
+            "RMSE": IndCQC.rmse,
+            "WAPE": ModelEvaluationColumns.weighted_absolute_percentage_error,
         }
 
         assert {key: parameters[key] for key in expected} == expected
+
+
+CHECK_COLUMNS = ["model", "version", "run_number", "name", "higher_is_better", "value"]
+
+
+def run_checks(name: str, higher_is_better: bool, values: list[float | None]) -> list:
+    """Runs the notebook's change checks on one score's values, oldest run first."""
+    cv_metrics_df = pl.DataFrame(
+        [
+            ("m", "1.0.0", run, name, higher_is_better, v)
+            for run, v in enumerate(values)
+        ],
+        schema=CHECK_COLUMNS,
+        orient="row",
+    )
+    namespace = run_cells(
+        "model_metrics_history",
+        ("checks_df =",),
+        {"pl": pl, "cv_metrics_df": cv_metrics_df},
+    )
+    return namespace["checks_df"].sort("run_number").to_dicts()
+
+
+class TestModelMetricsHistoryChecks:
+    """The notebook's change checks flag a worse score, and only that."""
+
+    @pytest.mark.parametrize(
+        "higher_is_better, values",
+        [
+            pytest.param(True, [0.8, 0.7], id="drop_in_higher_is_better_score"),
+            pytest.param(False, [10.0, 12.0], id="rise_in_lower_is_better_score"),
+        ],
+    )
+    def test_flags_a_step_in_the_wrong_direction(self, higher_is_better, values):
+        last = run_checks("score", higher_is_better, values)[-1]
+
+        assert last["step_breach"] is True
+        assert last["step_adverse"] > 0
+
+    @pytest.mark.parametrize(
+        "higher_is_better, values",
+        [
+            pytest.param(True, [0.7, 0.8], id="rise_in_higher_is_better_score"),
+            pytest.param(False, [12.0, 10.0], id="drop_in_lower_is_better_score"),
+            pytest.param(True, [0.8, 0.79], id="change_within_tolerance"),
+        ],
+    )
+    def test_does_not_flag_other_steps(self, higher_is_better, values):
+        last = run_checks("score", higher_is_better, values)[-1]
+
+        assert last["step_breach"] is False
+
+    def test_first_run_has_no_step_check(self):
+        first = run_checks("score", True, [0.8, 0.7])[0]
+
+        assert first["step_adverse"] is None
+        assert not first["step_breach"]
+
+    def test_does_not_flag_a_change_from_zero(self):
+        last = run_checks("score", False, [0.0, 0.0])[-1]
+
+        assert last["step_adverse"] is None
+        assert not last["step_breach"]
+
+    def test_absolute_change_scores_use_the_absolute_tolerance(self):
+        small, large = (
+            run_checks("jumpiness", False, [0.05, rise])[-1] for rise in (0.056, 0.07)
+        )
+
+        assert small["step_breach"] is False
+        assert large["step_breach"] is True
+
+    def test_baseline_starts_after_enough_earlier_runs(self):
+        rows = run_checks("score", True, [0.8] * 5 + [0.5])
+
+        assert [row["drift_adverse"] is None for row in rows] == [True] * 5 + [False]
+        assert rows[-1]["drift_breach"] is True
+
+    def test_a_missing_score_leaves_the_next_step_check_empty(self):
+        rows = run_checks("score", True, [0.8, None, 0.5])
+
+        assert rows[2]["step_adverse"] is None
+
+
+class TestModelMetricsHistoryTrend:
+    """The notebook's text trend and version order."""
+
+    @pytest.fixture
+    def namespace(self) -> dict:
+        return run_cells("model_metrics_history", ("def summarise_trend",), {"pl": pl})
+
+    @staticmethod
+    def trend(namespace: dict, values: list[float | None]) -> str:
+        scores_df = pl.DataFrame(
+            {
+                "model": "m",
+                "version": "1.0.0",
+                "name": "score",
+                "run_number": range(len(values)),
+                "value": values,
+            },
+            schema_overrides={"value": pl.Float64},
+        )
+        return namespace["summarise_trend"](scores_df)["trend"].item()
+
+    def test_draws_each_run_from_the_lowest_block_to_the_highest(self, namespace):
+        assert self.trend(namespace, [0.0, 0.5, 1.0]) == "▁▅█"
+
+    def test_a_score_that_never_changes_draws_the_lowest_block(self, namespace):
+        assert self.trend(namespace, [0.5, 0.5]) == "▁▁"
+
+    def test_ignores_missing_and_non_finite_scores(self, namespace):
+        values = [0.0, None, float("nan"), float("inf"), 1.0]
+
+        assert self.trend(namespace, values) == "▁█"
+
+    def test_sorts_versions_as_numbers(self, namespace):
+        versions_df = pl.DataFrame({"version": ["10.0.0", "7.0.1", "7.0.10"]})
+
+        sorted_df = versions_df.sort(namespace["VERSION_ORDER"])
+
+        assert sorted_df["version"].to_list() == ["7.0.1", "7.0.10", "10.0.0"]
