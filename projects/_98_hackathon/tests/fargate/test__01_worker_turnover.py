@@ -20,6 +20,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.add_split_column")
     @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
+    @patch(f"{PATCH_PATH}.wUtils.check_start_dates_after_imputation")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
@@ -56,6 +57,7 @@ class TestMain:
         combine_pay_and_hours_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
+        check_start_dates_after_imputation_mock: Mock,
         add_country_code_group_mock: Mock,
         impute_worker_columns_mock: Mock,
         add_split_column_mock: Mock,
@@ -153,14 +155,11 @@ class TestMain:
         fix_start_date_typos_mock.assert_called_once_with(
             add_raw_worker_columns_mock.return_value
         )
-        # The rule runs before imputation and again on the imputed dates.
-        assert add_plausible_start_date_flag_mock.call_args_list == [
-            call(fix_start_date_typos_mock.return_value),
-            call(impute_worker_columns_mock.return_value),
-        ]
-        assert (
-            null_implausible_start_dates_mock.call_args_list
-            == [call(add_plausible_start_date_flag_mock.return_value)] * 2
+        add_plausible_start_date_flag_mock.assert_called_once_with(
+            fix_start_date_typos_mock.return_value
+        )
+        null_implausible_start_dates_mock.assert_called_once_with(
+            add_plausible_start_date_flag_mock.return_value
         )
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
             null_implausible_start_dates_mock.return_value,
@@ -177,7 +176,6 @@ class TestMain:
             job.HackCols.headcount_reconciliation_gap,
             job.HackCols.headcount_gap_within_tolerance,
             job.HackCols.plausible_turnover,
-            job.HackCols.plausible_start_date,
         )
         null_not_known_codes_mock.assert_called_once_with(
             add_valid_for_analysis_flag_mock.return_value.drop.return_value
@@ -203,11 +201,11 @@ class TestMain:
             add_country_code_group_mock.return_value.drop.return_value,
             job.wUtils.IMPUTE_COLUMNS,
         )
-        null_implausible_start_dates_mock.return_value.drop.assert_called_once_with(
-            job.HackCols.plausible_start_date
+        check_start_dates_after_imputation_mock.assert_called_once_with(
+            impute_worker_columns_mock.return_value
         )
         add_nlw_and_pay_difference_mock.assert_called_once_with(
-            null_implausible_start_dates_mock.return_value.drop.return_value
+            check_start_dates_after_imputation_mock.return_value
         )
         add_split_column_mock.assert_called_once_with(
             add_nlw_and_pay_difference_mock.return_value
@@ -225,6 +223,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
+    @patch(f"{PATCH_PATH}.wUtils.check_start_dates_after_imputation")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
@@ -261,6 +260,7 @@ class TestMain:
         combine_pay_and_hours_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
+        check_start_dates_after_imputation_mock: Mock,
         add_country_code_group_mock: Mock,
         collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -284,6 +284,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
+    @patch(f"{PATCH_PATH}.wUtils.check_start_dates_after_imputation")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
@@ -316,6 +317,7 @@ class TestMain:
         add_valid_for_analysis_flag_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_worker_labels_mock: Mock,
+        check_start_dates_after_imputation_mock: Mock,
         add_country_code_group_mock: Mock,
         collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,

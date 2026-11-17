@@ -95,7 +95,6 @@ def main(
         HackCols.headcount_reconciliation_gap,
         HackCols.headcount_gap_within_tolerance,
         HackCols.plausible_turnover,
-        HackCols.plausible_start_date,
     )
     filtered_lf = wUtils.null_not_known_codes(filtered_lf)
     filtered_lf = filtered_lf.with_columns(
@@ -108,12 +107,7 @@ def main(
         filtered_lf, AWKClean.country_of_birth
     ).drop(wUtils.WORKER_CATEGORICAL_COLUMNS)
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
-    # Imputation copies start dates between a worker's import dates, so the
-    # plausibility rule runs again on the filled dates.
-    filtered_lf = wUtils.add_plausible_start_date_flag(filtered_lf)
-    filtered_lf = wUtils.null_implausible_start_dates(filtered_lf).drop(
-        HackCols.plausible_start_date
-    )
+    filtered_lf = wUtils.check_start_dates_after_imputation(filtered_lf)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
 
     filtered_lf = wUtils.add_split_column(filtered_lf)

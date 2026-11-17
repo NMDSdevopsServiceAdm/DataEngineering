@@ -588,6 +588,31 @@ class TestNullImplausibleStartDates:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestCheckStartDatesAfterImputation:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.check_start_dates_after_imputation_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows,
+            schema=Schemas.check_start_dates_input_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows,
+            schema=Schemas.check_start_dates_output_schema,
+            orient="row",
+        )
+
+        returned_lf = job.check_start_dates_after_imputation(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestNullNotKnownCodes:
     not_known_codes = {
         AWKClean.gender: NotKnownWorkerCodes.gender,

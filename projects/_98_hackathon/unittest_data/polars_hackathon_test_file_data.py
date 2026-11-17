@@ -193,6 +193,13 @@ class NullImplausibleStartDatesCase:
 
 
 @dataclass
+class CheckStartDatesAfterImputationCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class WorkerTurnoverData:
     # Rows: (establishment_id, worker_id, import_date,
     # establishment_in_both_snapshots, is_leaver, turnover_rate).
@@ -336,69 +343,42 @@ class WorkerTurnoverData:
     # establishment_in_both_snapshots, establishment_active,
     # headcount_gap_within_tolerance, turnover_rate, plausible_turnover,
     # valid_for_analysis).
-    # Rows: (establishment_id, worker_id, import_date, establishment_in_both_snapshots,
-    # establishment_active, headcount_gap_within_tolerance, plausible_start_date,
-    # turnover_rate, plausible_turnover, valid_for_analysis).
     add_valid_for_analysis_flag_cases = [
         AddValidForAnalysisFlagCase(
             id="valid_when_all_components_true",
-            expected_rows=[
-                ("est_a", "1", START, True, True, True, True, 0.25, True, True)
-            ],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.25, True, True)],
         ),
         AddValidForAnalysisFlagCase(
             id="implausible_and_invalid_when_rate_is_zero",
-            expected_rows=[
-                ("est_a", "1", START, True, True, True, True, 0.0, False, False)
-            ],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.0, False, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="implausible_and_invalid_when_rate_is_one",
-            expected_rows=[
-                ("est_a", "1", START, True, True, True, True, 1.0, False, False)
-            ],
+            expected_rows=[("est_a", "1", START, True, True, True, 1.0, False, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="plausible_when_rate_just_above_zero",
-            expected_rows=[
-                ("est_a", "1", START, True, True, True, True, 0.125, True, True)
-            ],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.125, True, True)],
         ),
         AddValidForAnalysisFlagCase(
             id="plausible_when_rate_just_below_one",
-            expected_rows=[
-                ("est_a", "1", START, True, True, True, True, 0.875, True, True)
-            ],
+            expected_rows=[("est_a", "1", START, True, True, True, 0.875, True, True)],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_establishment_inactive",
-            expected_rows=[
-                ("est_a", "1", START, True, False, True, True, 0.25, True, False)
-            ],
+            expected_rows=[("est_a", "1", START, True, False, True, 0.25, True, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_headcount_gap_outside_tolerance",
-            expected_rows=[
-                ("est_a", "1", START, True, True, False, True, 0.25, True, False)
-            ],
-        ),
-        AddValidForAnalysisFlagCase(
-            id="invalid_when_start_date_is_implausible",
-            expected_rows=[
-                ("est_a", "1", START, True, True, True, False, 0.25, True, False)
-            ],
+            expected_rows=[("est_a", "1", START, True, True, False, 0.25, True, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_establishment_not_in_both_snapshots",
-            expected_rows=[
-                ("est_a", "1", START, False, None, None, True, None, None, False)
-            ],
+            expected_rows=[("est_a", "1", START, False, None, None, None, None, False)],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_no_end_snapshot",
-            expected_rows=[
-                ("est_a", "1", START, None, None, None, True, None, None, False)
-            ],
+            expected_rows=[("est_a", "1", START, None, None, None, None, None, False)],
         ),
     ]
 
@@ -515,6 +495,46 @@ class WorkerTurnoverData:
             id="keeps_null_start_date_null",
             input_rows=[(None, True)],
             expected_rows=[(None, True)],
+        ),
+    ]
+
+    # Input rows: (import_date, start_date, age, plausible_start_date before
+    # imputation, valid_for_analysis). Expected rows drop plausible_start_date.
+    check_start_dates_after_imputation_cases = [
+        CheckStartDatesAfterImputationCase(
+            id="stays_valid_when_start_date_is_plausible",
+            input_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, True, True)],
+            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, True)],
+        ),
+        CheckStartDatesAfterImputationCase(
+            id="stays_valid_when_start_date_was_never_present",
+            input_rows=[(date(2024, 6, 1), None, 40.0, True, True)],
+            expected_rows=[(date(2024, 6, 1), None, 40.0, True)],
+        ),
+        CheckStartDatesAfterImputationCase(
+            id="valid_when_implausible_date_was_refilled_with_plausible_date",
+            input_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, False, True)],
+            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, True)],
+        ),
+        CheckStartDatesAfterImputationCase(
+            id="invalid_when_implausible_date_was_not_refilled",
+            input_rows=[(date(2024, 6, 1), None, 40.0, False, True)],
+            expected_rows=[(date(2024, 6, 1), None, 40.0, False)],
+        ),
+        CheckStartDatesAfterImputationCase(
+            id="nulls_and_invalidates_when_imputed_date_is_date_of_birth",
+            input_rows=[(date(2024, 6, 1), date(1983, 12, 1), 40.0, True, True)],
+            expected_rows=[(date(2024, 6, 1), None, 40.0, False)],
+        ),
+        CheckStartDatesAfterImputationCase(
+            id="nulls_and_invalidates_when_imputed_date_is_after_import_date",
+            input_rows=[(date(2024, 6, 1), date(2024, 7, 1), 30.0, True, True)],
+            expected_rows=[(date(2024, 6, 1), None, 30.0, False)],
+        ),
+        CheckStartDatesAfterImputationCase(
+            id="stays_invalid_when_row_was_already_invalid",
+            input_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, True, False)],
+            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, False)],
         ),
     ]
 

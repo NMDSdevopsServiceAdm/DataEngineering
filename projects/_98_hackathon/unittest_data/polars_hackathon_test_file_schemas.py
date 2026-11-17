@@ -181,7 +181,6 @@ class WorkerTurnoverSchemas:
             (HackCols.establishment_in_both_snapshots, pl.Boolean()),
             (HackCols.establishment_active, pl.Boolean()),
             (HackCols.headcount_gap_within_tolerance, pl.Boolean()),
-            (HackCols.plausible_start_date, pl.Boolean()),
             (HackCols.turnover_rate, pl.Float32()),
             (HackCols.plausible_turnover, pl.Boolean()),
             (HackCols.valid_for_analysis, pl.Boolean()),
@@ -208,6 +207,25 @@ class WorkerTurnoverSchemas:
         [
             (AWKClean.start_date, pl.Date()),
             (HackCols.plausible_start_date, pl.Boolean()),
+        ]
+    )
+
+    check_start_dates_input_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.start_date, pl.Date()),
+            (AWKClean.age, pl.Float32()),
+            (HackCols.plausible_start_date, pl.Boolean()),
+            (HackCols.valid_for_analysis, pl.Boolean()),
+        ]
+    )
+
+    check_start_dates_output_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.start_date, pl.Date()),
+            (AWKClean.age, pl.Float32()),
+            (HackCols.valid_for_analysis, pl.Boolean()),
         ]
     )
 
