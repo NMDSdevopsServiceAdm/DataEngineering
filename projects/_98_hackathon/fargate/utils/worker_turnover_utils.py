@@ -20,6 +20,9 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
@@ -184,6 +187,46 @@ def add_raw_worker_columns(
     )
 
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
+
+
+def add_coverage_geography(
+    worker_lf: pl.LazyFrame, coverage_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """Adds `current_cssr` and `current_region` from the merged coverage data.
+
+    Left joins on establishment ID and import date. Coverage rows are cut to the
+    establishments in ASC-WDS and de-duplicated on the keys first, so an
+    establishment matched to several locations cannot add rows to `worker_lf`.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with establishment ID and
+            `ascwds_worker_import_date`.
+        coverage_lf (pl.LazyFrame): Merged coverage data with the ASC-WDS
+            establishment ID, workplace import date, `current_cssr` and
+            `current_region`.
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus the two geography
+            columns, `Categorical`.
+    """
+    keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
+    geography_columns = [CQCLClean.current_cssr, CQCLClean.current_region]
+
+    coverage_lf = (
+        coverage_lf.select(
+            pl.col(AWPClean.establishment_id).cast(
+                CategoricalColumnTypes.EstablishmentCatType
+            ),
+            pl.col(AWPClean.ascwds_workplace_import_date).alias(
+                AWKClean.ascwds_worker_import_date
+            ),
+            pl.col(geography_columns).cast(pl.Categorical),
+        )
+        .drop_nulls(subset=keys)
+        .unique(subset=keys)
+    )
+
+    return worker_lf.join(coverage_lf, on=keys, how="left")
 
 
 def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:

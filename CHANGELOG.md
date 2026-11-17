@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added CSSR and region from the merged coverage data to the Hackathon Worker Turnover job output.
 - Added a guide to maintaining the Monthly Tracker workbooks, and documented where to find them.
 - Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, with each split written separately and the train and test splits validated.
 - Added a validation job for the Hackathon Worker Turnover output.

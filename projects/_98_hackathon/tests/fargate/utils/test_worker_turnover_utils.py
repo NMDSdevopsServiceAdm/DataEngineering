@@ -18,6 +18,12 @@ from projects._98_hackathon.unittest_data.polars_hackathon_test_file_schemas imp
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import NotKnownWorkerCodes
 
@@ -524,6 +530,72 @@ class TestAddRawWorkerColumns:
         returned_df = job.add_raw_worker_columns(flagged_lf, raw_lf).collect()
 
         assert returned_df.height == 2
+
+
+class TestAddCoverageGeography:
+    worker_lf = pl.LazyFrame(
+        [("1-001", "1", date(2021, 1, 5))],
+        schema=Schemas.raw_worker_join_input_schema,
+        orient="row",
+    )
+
+    def coverage_lf(self, *rows: tuple) -> pl.LazyFrame:
+        return pl.LazyFrame(
+            list(rows),
+            schema={
+                AWPClean.establishment_id: pl.String,
+                AWPClean.ascwds_workplace_import_date: pl.Date,
+                CQCLClean.current_cssr: pl.String,
+                CQCLClean.current_region: pl.String,
+            },
+            orient="row",
+        )
+
+    def test_adds_categorical_geography_columns_after_input_columns(self):
+        coverage_lf = self.coverage_lf(("1-001", date(2021, 1, 5), "Leeds", "North"))
+
+        returned_lf = job.add_coverage_geography(self.worker_lf, coverage_lf)
+
+        returned_schema = returned_lf.collect_schema()
+        assert returned_schema.names() == [
+            *Schemas.raw_worker_join_input_schema.names(),
+            CQCLClean.current_cssr,
+            CQCLClean.current_region,
+        ]
+        assert returned_schema[CQCLClean.current_cssr] == pl.Categorical
+        assert returned_schema[CQCLClean.current_region] == pl.Categorical
+
+    def test_returns_geography_for_matching_establishment_and_import_date(self):
+        coverage_lf = self.coverage_lf(("1-001", date(2021, 1, 5), "Leeds", "North"))
+
+        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
+
+        assert returned_df.row(0)[-2:] == ("Leeds", "North")
+
+    def test_returns_one_row_when_establishment_has_several_coverage_rows(self):
+        coverage_lf = self.coverage_lf(
+            ("1-001", date(2021, 1, 5), "Leeds", "North"),
+            ("1-001", date(2021, 1, 5), "Leeds", "North"),
+        )
+
+        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
+
+        assert returned_df.height == 1
+
+    def test_returns_null_geography_when_coverage_row_has_no_establishment(self):
+        coverage_lf = self.coverage_lf((None, date(2021, 1, 5), "Leeds", "North"))
+
+        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
+
+        assert returned_df.height == 1
+        assert returned_df.row(0)[-2:] == (None, None)
+
+    def test_returns_null_geography_when_import_date_does_not_match(self):
+        coverage_lf = self.coverage_lf(("1-001", date(2022, 1, 5), "Leeds", "North"))
+
+        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
+
+        assert returned_df.row(0)[-2:] == (None, None)
 
 
 class TestNullNotKnownCodes:

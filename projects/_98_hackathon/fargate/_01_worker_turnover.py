@@ -8,6 +8,9 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 
@@ -15,6 +18,7 @@ def main(
     cleaned_ascwds_worker_source: str,
     cleaned_ascwds_workplace_source: str,
     raw_ascwds_worker_source: str,
+    merged_coverage_source: str,
     train_destination: str,
     holdout_destination: str,
     test_destination: str,
@@ -31,6 +35,8 @@ def main(
         cleaned_ascwds_workplace_source (str): path to the cleaned ASC-WDS
             workplace data, used for main service
         raw_ascwds_worker_source (str): path to the raw ASC-WDS worker data
+        merged_coverage_source (str): path to the merged coverage data, used for
+            CSSR and region
         train_destination (str): destination for the train split
         holdout_destination (str): destination for the holdout split
         test_destination (str): destination for the test split
@@ -83,6 +89,17 @@ def main(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
+
+    coverage_lf = utils.scan_parquet(
+        merged_coverage_source,
+        selected_columns=[
+            AWPClean.establishment_id,
+            AWPClean.ascwds_workplace_import_date,
+            CQCLClean.current_cssr,
+            CQCLClean.current_region,
+        ],
+    )
+    filtered_lf = wUtils.add_coverage_geography(filtered_lf, coverage_lf)
     filtered_lf = wUtils.add_headcount_reconciliation_gap(filtered_lf, max_gap)
     filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf).drop(
         HackCols.establishment_in_both_snapshots,
@@ -141,6 +158,10 @@ if __name__ == "__main__":
             "Source s3 directory for raw ascwds worker data",
         ),
         (
+            "--merged_coverage_source",
+            "Source s3 directory for merged coverage data",
+        ),
+        (
             "--train_destination",
             "Destination s3 directory for the train split",
         ),
@@ -169,6 +190,7 @@ if __name__ == "__main__":
         cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
         cleaned_ascwds_workplace_source=args.cleaned_ascwds_workplace_source,
         raw_ascwds_worker_source=args.raw_ascwds_worker_source,
+        merged_coverage_source=args.merged_coverage_source,
         train_destination=args.train_destination,
         holdout_destination=args.holdout_destination,
         test_destination=args.test_destination,

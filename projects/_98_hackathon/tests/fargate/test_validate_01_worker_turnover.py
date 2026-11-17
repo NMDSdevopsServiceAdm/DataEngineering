@@ -10,13 +10,20 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
     NationalityGroupLabels,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
-from utils.column_values.categorical_column_values import PrimaryServiceType
+from utils.column_values.categorical_column_values import (
+    CurrentCSSR,
+    PrimaryServiceType,
+    Region,
+)
 
 PATCH_PATH = "projects._98_hackathon.fargate.validate_01_worker_turnover"
 
@@ -42,6 +49,8 @@ def build_source_df() -> pl.DataFrame:
             HackCols.hourly_pay_minus_nlw: [1.0, None],
             HackCols.nationality_group: [NationalityGroupLabels.non_eea] * 2,
             HackCols.country_of_birth_group: [CountryOfBirthGroupLabels.non_eea] * 2,
+            CQCLClean.current_cssr: [CurrentCSSR.barnet] * 2,
+            CQCLClean.current_region: [Region.london] * 2,
             **{column: [1.0] * 2 for column in job.NUMERIC_COLUMNS},
             **{
                 label_column: [vocabulary.label_cls(label_column).categorical_values[0]]
@@ -68,6 +77,8 @@ def build_source_df() -> pl.DataFrame:
             HackCols.hourly_pay_minus_nlw: pl.Float32,
             HackCols.nationality_group: pl.Categorical,
             HackCols.country_of_birth_group: pl.Categorical,
+            CQCLClean.current_cssr: pl.Categorical,
+            CQCLClean.current_region: pl.Categorical,
             **{column: pl.Float32 for column in job.NUMERIC_COLUMNS},
             **{column: pl.Categorical for column in wUtils.LABEL_COLUMNS},
         },
