@@ -299,11 +299,10 @@ def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def null_inconsistent_ages(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Nulls observed ages that disagree with the rest of the worker's ages.
+    """Nulls ages implying a birth year 3 or more years from the worker's median.
 
     The implied birth year is the import year minus age: constant for a
-    consistent worker, within a year of birthday timing. An age 3 or more years
-    from the worker's median implied birth year is nulled. A worker with half or
+    consistent worker, within a year of birthday timing. A worker with half or
     more of their ages that far out has no clear majority, so keeps all of them.
 
     Uses `.over()`, which the streaming engine does not cover, so the sink may
@@ -324,9 +323,7 @@ def null_inconsistent_ages(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     is_far_from_median = (
         birth_year - birth_year.median().over(worker)
     ).abs() >= min_birth_year_deviation
-    has_clear_majority = is_far_from_median.sum().over(worker) * 2 < age.count().over(
-        worker
-    )
+    has_clear_majority = is_far_from_median.mean().over(worker) < 0.5
 
     return worker_lf.with_columns(
         pl.when(is_far_from_median & has_clear_majority)

@@ -1242,7 +1242,7 @@ class WorkerTurnoverData:
             ],
         ),
         NullInconsistentAgesCase(
-            id="nulls_the_shorter_run_of_implausible_ages_before_a_reset",
+            id="nulls_minority_group_of_far_ages",
             input_rows=[
                 ("1", "A", date(2023, 1, 1), 100.0),
                 ("1", "A", date(2023, 2, 1), 100.0),
@@ -1321,22 +1321,35 @@ class WorkerTurnoverData:
             ],
         ),
         NullInconsistentAgesCase(
-            id="keeps_null_ages_and_does_not_mix_workers_or_establishments",
+            id="keeps_null_ages_and_ignores_them_in_the_majority_count",
+            input_rows=[
+                ("1", "A", date(2023, 1, 1), 30.0),
+                ("1", "A", date(2023, 2, 1), 75.0),
+                ("1", "A", date(2023, 3, 1), None),
+                ("1", "A", date(2023, 4, 1), None),
+            ],
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 30.0),
+                ("1", "A", date(2023, 2, 1), 75.0),
+                ("1", "A", date(2023, 3, 1), None),
+                ("1", "A", date(2023, 4, 1), None),
+            ],
+        ),
+        NullInconsistentAgesCase(
+            id="does_not_mix_workers_or_establishments",
             input_rows=[
                 ("1", "A", date(2022, 6, 1), 30.0),
-                ("1", "A", date(2023, 6, 1), None),
                 ("1", "A", date(2024, 1, 1), 75.0),
                 ("1", "A", date(2024, 6, 1), 32.0),
                 ("1", "B", date(2024, 1, 1), 75.0),
-                ("2", "A", date(2024, 1, 1), None),
+                ("2", "A", date(2024, 1, 1), 75.0),
             ],
             expected_rows=[
                 ("1", "A", date(2022, 6, 1), 30.0),
-                ("1", "A", date(2023, 6, 1), None),
                 ("1", "A", date(2024, 1, 1), None),
                 ("1", "A", date(2024, 6, 1), 32.0),
                 ("1", "B", date(2024, 1, 1), 75.0),
-                ("2", "A", date(2024, 1, 1), None),
+                ("2", "A", date(2024, 1, 1), 75.0),
             ],
         ),
     ]

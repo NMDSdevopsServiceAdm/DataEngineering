@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
 - Added nationality and country of birth groups (British or UK, EEA, Non-EEA) to the Hackathon Worker Turnover job output.
 - Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
-- Added a step to the Hackathon Worker Turnover job that nulls observed ages 3 or more years from the worker's median implied birth year, before ages are imputed.
+- Added a step to the Hackathon Worker Turnover job that nulls ages 3 or more years from the worker's median implied birth year before imputing.
 
 ### Changed
 - Filled null worker attributes in the Hackathon Worker Turnover job from the same worker's other import dates.
