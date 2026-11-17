@@ -3,8 +3,10 @@ from datetime import date
 from unittest.mock import Mock, patch
 
 import polars as pl
+import pytest
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate.validate_02_assessment as job
+import projects._99_publication.unittest_data.polars_pub_test_data as Data
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import (
@@ -33,6 +35,25 @@ def _assessment_df(rows: int = 1) -> pl.DataFrame:
             IndCQC.primary_service_type: ["a"] * rows,
             **{column: [1.0] * rows for column in job.METRIC_COLUMNS},
         }
+    )
+
+
+def _job_group_filled_posts_df(rows: list[tuple]) -> pl.DataFrame:
+    """The assessment columns the job group sum check reads, from the rows of a
+    JobGroupFilledPostsTestCase."""
+    return pl.DataFrame(
+        rows,
+        schema=[
+            IndCQC.cqc_location_import_date,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+            IndCQC.main_job_role_clean_labelled,
+            Pub.unfiltered_filled_posts,
+            Pub.filtered_long_sfc_filled_posts,
+            Pub.filtered_medium_sfc_filled_posts,
+            Pub.filtered_short_sfc_filled_posts,
+        ],
+        orient="row",
     )
 
 
@@ -169,80 +190,57 @@ class TestMain:
         )
         assert job_role_in_set_step["all_passed"]
 
+    @pytest.mark.parametrize(
+        "case",
+        # The passing and failing basic cases; the unit tests below cover the rest.
+        [
+            case.as_pytest_param()
+            for case in Data.job_group_filled_posts_match_all_job_roles_test_cases[:2]
+        ],
+    )
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.count_expected_assessment_rows")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     @patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources")
-    def test_main_checks_job_group_filled_posts_sum_to_all_job_roles(
+    def test_main_passes_job_group_sum_check_only_when_filled_posts_match(
         self,
         resolve_run_sources_mock: Mock,
         read_parquet_mock: Mock,
         count_expected_rows_mock: Mock,
         write_reports_mock: Mock,
+        case,
     ):
         resolve_run_sources_mock.return_value = [PREP_RUN, ASSESSMENT_RUN]
-        read_parquet_mock.return_value = _assessment_df()
-        count_expected_rows_mock.return_value = 1
+        read_parquet_mock.return_value = _assessment_df(len(case.rows)).with_columns(
+            *_job_group_filled_posts_df(case.rows).get_columns()
+        )
+        count_expected_rows_mock.return_value = len(case.rows)
 
         job.main(BUCKET_NAME, PREP_SOURCE, ASSESSMENT_SOURCE, REPORTS_PATH)
 
         validation_arg = write_reports_mock.call_args[0][0]
-        specially_briefs = [
-            item["brief"]
+        sum_check_step = next(
+            item
             for item in json.loads(validation_arg.get_json_report())
-            if item["assertion_type"] == "specially"
-        ]
-        assert any("job group" in brief for brief in specially_briefs)
+            if item["assertion_type"] == "specially" and "job group" in item["brief"]
+        )
+        assert sum_check_step["all_passed"] == case.expected
 
 
 class TestJobGroupFilledPostsMatchAllJobRoles:
-    @staticmethod
-    def _assessment_rows(rows: list[tuple[str, float]]) -> pl.DataFrame:
-        return pl.DataFrame(
-            {
-                IndCQC.cqc_location_import_date: [date(2026, 4, 1)] * len(rows),
-                IndCQC.main_job_role_clean_labelled: [label for label, _ in rows],
-                IndCQC.current_region: ["London"] * len(rows),
-                IndCQC.primary_service_type: ["Care home"] * len(rows),
-                **{
-                    column: [filled_posts for _, filled_posts in rows]
-                    for column in job.FILLED_POSTS_COLUMNS
-                },
-            }
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.job_group_filled_posts_match_all_job_roles_test_cases
+        ],
+    )
+    def test_returns_whether_job_group_filled_posts_match_all_job_roles(self, case):
+        assessment_df = _job_group_filled_posts_df(case.rows)
+
+        assert job.job_group_filled_posts_match_all_job_roles(assessment_df) is (
+            case.expected
         )
-
-    def test_returns_true_when_job_group_filled_posts_sum_to_all_job_roles(self):
-        # Job role rows are ignored: only job groups and "All job roles" are compared.
-        assessment_df = self._assessment_rows(
-            [
-                ("Care worker", 99.0),
-                (PublishedJobGroupLabels.direct_care, 10.0),
-                (PublishedJobGroupLabels.managers, 20.0),
-                (PublishedJobGroupLabels.all_job_roles, 30.0),
-            ]
-        )
-
-        assert job.job_group_filled_posts_match_all_job_roles(assessment_df) is True
-
-    def test_returns_false_when_job_group_filled_posts_differ_from_all_job_roles(
-        self,
-    ):
-        assessment_df = self._assessment_rows(
-            [
-                (PublishedJobGroupLabels.direct_care, 10.0),
-                (PublishedJobGroupLabels.managers, 20.0),
-                (PublishedJobGroupLabels.all_job_roles, 31.0),
-            ]
-        )
-
-        assert job.job_group_filled_posts_match_all_job_roles(assessment_df) is False
-
-    def test_returns_false_when_all_job_roles_row_has_no_job_group_rows(self):
-        assessment_df = self._assessment_rows(
-            [(PublishedJobGroupLabels.all_job_roles, 30.0)]
-        )
-
-        assert job.job_group_filled_posts_match_all_job_roles(assessment_df) is False
 
 
 class TestCountExpectedAssessmentRows:

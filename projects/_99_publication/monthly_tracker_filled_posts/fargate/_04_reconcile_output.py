@@ -10,7 +10,6 @@ from polars_utils import utils
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     merge_utils,
     output_workbook_utils,
-    publication_utils,
     run_log_utils,
     workbook_helpers,
 )
@@ -22,6 +21,9 @@ from utils.column_values.categorical_column_values import (
     PublishedJobGroupLabels,
     PublishedMainService,
     PublishedRegion,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
 
 # The totals agree to ~1e-7 (Float32 rounding), so this leaves ~1000x headroom.
@@ -395,7 +397,7 @@ def main(
         )
     # Job groups are rollups with no archive row to compare with.
     is_job_group = pl.col(IndCQC.main_job_role_clean_labelled).is_in(
-        publication_utils.JOB_GROUP_LABELS
+        CatValues.main_job_group_labels_column_values.categorical_values
     )
     public_by_role = public_by_role.filter(~is_all_job_roles & ~is_job_group)
     public_periods = public_by_period[IndCQC.cqc_location_import_date]

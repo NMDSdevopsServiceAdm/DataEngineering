@@ -6,6 +6,7 @@ import pytest
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.publication_utils as job
 import projects._99_publication.unittest_data.polars_pub_test_data as Data
+from polars_utils.column_types import CategoricalColumnTypes
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import (
@@ -539,52 +540,6 @@ class TestAddRowsForPublicationGroups:
         assert england_total_row.select(
             Pub.unfiltered_filled_posts, Pub.unfiltered_locationid_count
         ).row(0) == (30.0, 1)
-
-    def test_adds_job_group_rows_without_assessment_columns(self):
-        input_lf = pl.LazyFrame(
-            [
-                (
-                    "1-101",
-                    date(2025, 4, 1),
-                    "Care worker",
-                    PublishedJobGroupLabels.direct_care,
-                    "London",
-                    "Care home with nursing",
-                    20.0,
-                    5.0,
-                    *[True] * 9,
-                ),
-                (
-                    "1-101",
-                    date(2025, 4, 1),
-                    "Senior care worker",
-                    PublishedJobGroupLabels.direct_care,
-                    "London",
-                    "Care home with nursing",
-                    30.0,
-                    5.0,
-                    *[True] * 9,
-                ),
-            ],
-            self.input_schema,
-            orient="row",
-        )
-        publication_summary_lf = job.aggregate_to_publication_rows(
-            input_lf, include_assessment=False
-        )
-
-        returned_lf = job.add_rows_for_publication_groups(
-            input_lf, publication_summary_lf, include_assessment=False
-        )
-
-        assert returned_lf.collect_schema().names() == [
-            IndCQC.cqc_location_import_date,
-            IndCQC.main_job_role_clean_labelled,
-            IndCQC.current_region,
-            IndCQC.primary_service_type,
-            Pub.unfiltered_filled_posts,
-            Pub.unfiltered_locationid_count,
-        ]
         england_direct_care_row = returned_lf.filter(
             (pl.col(IndCQC.current_region) == PublishedRegion.england)
             & (
@@ -598,37 +553,17 @@ class TestAddRowsForPublicationGroups:
         ).collect()
         assert england_direct_care_row.select(
             Pub.unfiltered_filled_posts, Pub.unfiltered_locationid_count
-        ).row(0) == (50.0, 1)
+        ).row(0) == (20.0, 1)
 
-    def test_leaves_job_role_and_all_job_roles_rows_unchanged(self):
-        input_lf = pl.LazyFrame(
-            [
-                (
-                    "1-101",
-                    date(2025, 4, 1),
-                    "Registered nurse",
-                    PublishedJobGroupLabels.regulated_professions,
-                    "London",
-                    PrimaryServiceType.care_home_with_nursing,
-                    10.0,
-                    5.0,
-                    *[True] * 9,
-                ),
-                (
-                    "1-101",
-                    date(2025, 4, 1),
-                    "Care worker",
-                    PublishedJobGroupLabels.direct_care,
-                    "London",
-                    PrimaryServiceType.care_home_with_nursing,
-                    20.0,
-                    5.0,
-                    *[True] * 9,
-                ),
-            ],
-            self.input_schema,
-            orient="row",
-        )
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.add_rows_for_publication_groups_test_cases
+        ],
+    )
+    def test_leaves_job_role_rows_unchanged(self, case):
+        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
         publication_summary_lf = job.aggregate_to_publication_rows(input_lf)
         key_columns = [
             IndCQC.cqc_location_import_date,
@@ -650,22 +585,16 @@ class TestAddRowsForPublicationGroups:
         pl_testing.assert_frame_equal(
             returned_job_role_lf, expected_job_role_lf, check_row_order=False
         )
-        all_job_roles_row = returned_lf.filter(
-            (
-                pl.col(IndCQC.main_job_role_clean_labelled)
-                == PublishedJobGroupLabels.all_job_roles
-            )
-            & (pl.col(IndCQC.current_region) == "London")
-            & (
-                pl.col(IndCQC.primary_service_type).cast(pl.String)
-                == PrimaryServiceType.care_home_with_nursing
-            )
-        ).collect()
-        assert all_job_roles_row.select(
-            Pub.unfiltered_filled_posts, Pub.unfiltered_locationid_count
-        ).row(0) == (30.0, 1)
 
-    def test_omits_job_group_rows_for_groups_absent_from_data(self):
+    def test_job_group_rows_take_the_job_role_column_dtype(self):
+        # Job role and job group are separate categorical types in production.
+        input_schema = pl.Schema(
+            {
+                **self.input_schema,
+                IndCQC.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleCatType,
+                IndCQC.main_job_group_labelled: CategoricalColumnTypes.JobGroupCatType,
+            }
+        )
         input_lf = pl.LazyFrame(
             [
                 (
@@ -680,7 +609,7 @@ class TestAddRowsForPublicationGroups:
                     *[True] * 9,
                 ),
             ],
-            self.input_schema,
+            input_schema,
             orient="row",
         )
         publication_summary_lf = job.aggregate_to_publication_rows(input_lf)
@@ -689,19 +618,15 @@ class TestAddRowsForPublicationGroups:
             input_lf, publication_summary_lf
         )
 
-        returned_labels = (
-            returned_lf.select(IndCQC.main_job_role_clean_labelled)
-            .unique()
-            .collect()[IndCQC.main_job_role_clean_labelled]
-            .to_list()
+        assert (
+            returned_lf.collect_schema()[IndCQC.main_job_role_clean_labelled]
+            == CategoricalColumnTypes.JobRoleCatType
         )
-        assert sorted(returned_labels) == sorted(
-            [
-                "Care worker",
-                PublishedJobGroupLabels.direct_care,
-                PublishedJobGroupLabels.all_job_roles,
-            ]
-        )
+        direct_care_rows = returned_lf.filter(
+            pl.col(IndCQC.main_job_role_clean_labelled).cast(pl.String)
+            == PublishedJobGroupLabels.direct_care
+        ).collect()
+        assert direct_care_rows.height > 0
 
 
 class TestAddPrevRunPctChangeColumns:

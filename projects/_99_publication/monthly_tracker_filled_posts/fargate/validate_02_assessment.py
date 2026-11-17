@@ -80,15 +80,6 @@ FILTERED_AND_TOTAL_COLUMNS = [
     (Pub.filtered_short_ct_total_employed, Pub.unfiltered_long_ct_total_employed),
 ]
 
-# Only filled posts add up across job groups. Location counts and capacity tracker
-# totals do not, as a location can employ roles in more than one job group.
-FILLED_POSTS_COLUMNS = [
-    Pub.unfiltered_filled_posts,
-    Pub.filtered_long_sfc_filled_posts,
-    Pub.filtered_medium_sfc_filled_posts,
-    Pub.filtered_short_sfc_filled_posts,
-]
-
 # The rollup labels, including the job groups, are included, so a missing rollup
 # fails the distinct value count.
 CATEGORICAL_COLUMNS = [
@@ -96,7 +87,7 @@ CATEGORICAL_COLUMNS = [
         IndCQC.main_job_role_clean_labelled,
         [
             *CatValues.main_job_role_labels_column_values.categorical_values,
-            *publication_utils.JOB_GROUP_LABELS,
+            *CatValues.main_job_group_labels_column_values.categorical_values,
             PublishedJobGroupLabels.all_job_roles,
         ],
     ),
@@ -169,8 +160,11 @@ def job_group_filled_posts_match_all_job_roles(assessment_df: pl.DataFrame) -> b
     Checks job group filled posts sum to the "All job roles" filled posts.
 
     Compared per import date, region and service type; a combination with only
-    one of the two fails. The tolerance absorbs Float32 summation order
-    differences.
+    one of the two fails. Only filled posts are compared, as location counts and
+    capacity tracker totals do not add up across job groups (a location can
+    employ roles in more than one). Differences up to 0.01% of the "All job
+    roles" value pass (the value is floored at 1 post, so zero totals still
+    compare), absorbing Float32 summation order differences.
 
     Args:
         assessment_df (pl.DataFrame): the assessment data, with the job group and
@@ -178,8 +172,14 @@ def job_group_filled_posts_match_all_job_roles(assessment_df: pl.DataFrame) -> b
 
     Returns:
         bool: True if every combination's job group filled posts match its "All
-        job roles" filled posts, otherwise False
+            job roles" filled posts, otherwise False
     """
+    filled_posts_columns = [
+        Pub.unfiltered_filled_posts,
+        Pub.filtered_long_sfc_filled_posts,
+        Pub.filtered_medium_sfc_filled_posts,
+        Pub.filtered_short_sfc_filled_posts,
+    ]
     group_keys = [
         IndCQC.cqc_location_import_date,
         IndCQC.current_region,
@@ -188,26 +188,30 @@ def job_group_filled_posts_match_all_job_roles(assessment_df: pl.DataFrame) -> b
     job_role_label = pl.col(IndCQC.main_job_role_clean_labelled).cast(pl.String)
 
     job_group_totals = (
-        assessment_df.filter(job_role_label.is_in(publication_utils.JOB_GROUP_LABELS))
+        assessment_df.filter(
+            job_role_label.is_in(
+                CatValues.main_job_group_labels_column_values.categorical_values
+            )
+        )
         .group_by(group_keys)
-        .agg([pl.col(column).sum() for column in FILLED_POSTS_COLUMNS])
+        .agg([pl.col(column).sum() for column in filled_posts_columns])
     )
     all_job_roles = assessment_df.filter(
         job_role_label == PublishedJobGroupLabels.all_job_roles
-    ).select(group_keys + FILLED_POSTS_COLUMNS)
+    ).select(group_keys + filled_posts_columns)
 
     compared = job_group_totals.join(
         all_job_roles, on=group_keys, how="full", coalesce=True, suffix="_all"
     )
-    tolerance = FILTERED_TOTAL_TOLERANCE - 1
+    relative_tolerance = FILTERED_TOTAL_TOLERANCE - 1
     mismatches = [
         pl.col(column).is_null()
         | pl.col(f"{column}_all").is_null()
         | (
             (pl.col(column) - pl.col(f"{column}_all")).abs()
-            > tolerance * pl.max_horizontal(pl.col(f"{column}_all").abs(), 1.0)
+            > relative_tolerance * pl.max_horizontal(pl.col(f"{column}_all").abs(), 1.0)
         )
-        for column in FILLED_POSTS_COLUMNS
+        for column in filled_posts_columns
     ]
 
     return not compared.select(pl.any_horizontal(mismatches).any()).item()

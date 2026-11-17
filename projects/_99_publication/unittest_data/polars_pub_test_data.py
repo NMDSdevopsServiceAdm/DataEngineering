@@ -1298,6 +1298,36 @@ add_rows_for_publication_groups_test_cases = [
             ),
         ],
     ),
+    AddRowsForPublicationGroupsTestCase(
+        # Job groups with no job roles in the data get no rows.
+        id="omits_job_group_rows_for_groups_absent_from_data",
+        input_data=[
+            (
+                "8-001",
+                date(2025, 4, 1),
+                "Care worker",
+                _DIRECT_CARE,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                20.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        # 3 job role labels (1 job role, 1 job group and "All job roles") x 2
+        # regions (incl. England) x 3 service types (incl. both rollups) = 18
+        # rows; a row for any other job group would raise the count.
+        expected_row_count=18,
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                _DIRECT_CARE,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(20.0, 1, 5.0),
+            ),
+        ],
+    ),
 ]
 
 
@@ -1971,5 +2001,134 @@ download_workbook_publication_data = [
         None,
         None,
         None,
+    ),
+]
+
+
+@dataclass
+class JobGroupFilledPostsTestCase:
+    id: str
+    rows: list[Any]
+    expected: bool
+
+    def as_pytest_param(self) -> pytest.param:
+        return pytest.param(self, id=self.id)
+
+
+def _filled_posts_row(
+    job_role: str,
+    filled_posts: float,
+    region: str = "London",
+    filtered_medium_filled_posts: float | None = None,
+) -> tuple:
+    """A row of the assessment data's four filled posts columns for one period and
+    service type; every column holds filled_posts unless the medium filtered one is
+    given."""
+    if filtered_medium_filled_posts is None:
+        filtered_medium_filled_posts = filled_posts
+    return (
+        date(2026, 4, 1),
+        region,
+        "Care home",
+        job_role,
+        filled_posts,
+        filled_posts,
+        filtered_medium_filled_posts,
+        filled_posts,
+    )
+
+
+_MANAGERS = PublishedJobGroupLabels.managers
+_ALL_JOB_ROLES = PublishedJobGroupLabels.all_job_roles
+
+job_group_filled_posts_match_all_job_roles_test_cases = [
+    JobGroupFilledPostsTestCase(
+        # Job role rows are not compared, only job groups and "All job roles".
+        id="passes_when_job_groups_sum_to_all_job_roles_whatever_the_job_role_rows",
+        rows=[
+            _filled_posts_row("Care worker", 99.0),
+            _filled_posts_row(_DIRECT_CARE, 10.0),
+            _filled_posts_row(_MANAGERS, 20.0),
+            _filled_posts_row(_ALL_JOB_ROLES, 30.0),
+        ],
+        expected=True,
+    ),
+    JobGroupFilledPostsTestCase(
+        id="fails_when_job_groups_differ_from_all_job_roles",
+        rows=[
+            _filled_posts_row(_DIRECT_CARE, 10.0),
+            _filled_posts_row(_MANAGERS, 20.0),
+            _filled_posts_row(_ALL_JOB_ROLES, 31.0),
+        ],
+        expected=False,
+    ),
+    JobGroupFilledPostsTestCase(
+        # Only the filtered medium column differs, so every other column matches.
+        id="fails_when_only_one_filtered_column_differs",
+        rows=[
+            _filled_posts_row(_DIRECT_CARE, 10.0),
+            _filled_posts_row(_MANAGERS, 20.0),
+            _filled_posts_row(_ALL_JOB_ROLES, 30.0, filtered_medium_filled_posts=31.0),
+        ],
+        expected=False,
+    ),
+    JobGroupFilledPostsTestCase(
+        # 0.002 is 0.0067% of 30.
+        id="passes_when_the_difference_is_within_tolerance",
+        rows=[
+            _filled_posts_row(_DIRECT_CARE, 10.0),
+            _filled_posts_row(_MANAGERS, 20.0),
+            _filled_posts_row(_ALL_JOB_ROLES, 30.002),
+        ],
+        expected=True,
+    ),
+    JobGroupFilledPostsTestCase(
+        # 0.004 is 0.013% of 30.
+        id="fails_when_the_difference_is_just_over_tolerance",
+        rows=[
+            _filled_posts_row(_DIRECT_CARE, 10.0),
+            _filled_posts_row(_MANAGERS, 20.0),
+            _filled_posts_row(_ALL_JOB_ROLES, 30.004),
+        ],
+        expected=False,
+    ),
+    JobGroupFilledPostsTestCase(
+        id="fails_when_all_job_roles_has_no_job_group_rows",
+        rows=[_filled_posts_row(_ALL_JOB_ROLES, 30.0)],
+        expected=False,
+    ),
+    JobGroupFilledPostsTestCase(
+        id="fails_when_job_groups_have_no_all_job_roles_row",
+        rows=[
+            _filled_posts_row(_DIRECT_CARE, 10.0),
+            _filled_posts_row(_MANAGERS, 20.0),
+        ],
+        expected=False,
+    ),
+    JobGroupFilledPostsTestCase(
+        # London's groups sum to 30 against 40 and South West's to 40 against 30, so
+        # the totals match overall but not within either region.
+        id="fails_when_differences_cancel_out_across_regions",
+        rows=[
+            _filled_posts_row(_DIRECT_CARE, 10.0),
+            _filled_posts_row(_MANAGERS, 20.0),
+            _filled_posts_row(_ALL_JOB_ROLES, 40.0),
+            _filled_posts_row(_DIRECT_CARE, 15.0, region="South West"),
+            _filled_posts_row(_MANAGERS, 25.0, region="South West"),
+            _filled_posts_row(_ALL_JOB_ROLES, 30.0, region="South West"),
+        ],
+        expected=False,
+    ),
+    JobGroupFilledPostsTestCase(
+        id="passes_when_every_region_matches",
+        rows=[
+            _filled_posts_row(_DIRECT_CARE, 10.0),
+            _filled_posts_row(_MANAGERS, 20.0),
+            _filled_posts_row(_ALL_JOB_ROLES, 30.0),
+            _filled_posts_row(_DIRECT_CARE, 15.0, region="South West"),
+            _filled_posts_row(_MANAGERS, 25.0, region="South West"),
+            _filled_posts_row(_ALL_JOB_ROLES, 40.0, region="South West"),
+        ],
+        expected=True,
     ),
 ]

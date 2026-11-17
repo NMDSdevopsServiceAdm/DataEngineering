@@ -50,14 +50,6 @@ DOWNLOAD_TABLE_SORT_KEYS: list[pl.Expr] = [
     ),
 ]
 
-# The job groups the job roles roll up into.
-JOB_GROUP_LABELS: list[str] = [
-    PublishedJobGroupLabels.direct_care,
-    PublishedJobGroupLabels.managers,
-    PublishedJobGroupLabels.regulated_professions,
-    PublishedJobGroupLabels.other,
-]
-
 # The summed columns of the publication summary, and the extra ones added for
 # the assessment (see aggregate_to_publication_rows).
 _PUBLICATION_METRIC_COLUMNS: list[str] = [
@@ -651,17 +643,15 @@ def add_rows_for_publication_groups(
     Adds job group, "All job roles", "All CQC care homes", "All CQC locations"
     and "England" rollup rows for the Tableau/Excel filter dropdowns.
 
-    Built recursively - job role, then service type, then region - so
-    England has a row for every job role/service type combination,
-    including the other rollups. Job group rows share the job role column,
-    so they cascade like job roles.
+    Built recursively - job role (with job groups in the same column), then
+    service type, then region - so England has a row for every job
+    role/service type combination, including the other rollups.
 
     "All job roles" and job group rows are rebuilt from prepared_lf via
-    aggregate_to_publication_rows, with job role dropped or replaced by job
-    group in the group keys, since summing per-job-role counts would
-    double-count a location (one row per job role it employs).
-    Region and service type are single-valued per location, so those
-    rollups re-sum the aggregated columns.
+    aggregate_to_publication_rows, since summing per-job-role counts would
+    double-count a location (one row per job role it employs). Region and
+    service type are single-valued per location, so those rollups re-sum
+    the aggregated columns.
 
     primary_service_type is a closed Enum in production, so it is cast to
     Categorical here before the new labels are written into it. The shared
