@@ -2,10 +2,19 @@ import dataclasses
 import json
 import re
 from pathlib import Path
+from unittest.mock import patch
 
+import numpy as np
 import polars as pl
 import pytest
+from sklearn.linear_model import LinearRegression
 
+from projects._03_independent_cqc._01_filled_posts._04_model.utils import (
+    metrics_utils,
+    model_utils,
+    versioning,
+)
+from projects._03_independent_cqc.utils import model_evaluation_utils as evaluation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     ModelEvaluationColumns,
@@ -166,62 +175,65 @@ def field_values(dataclass: type) -> set[str]:
 
 
 def run_cells(name: str, markers: tuple[str, ...] = (), namespace=None) -> dict:
-    """Runs a template's parameters cell and the code cells containing a marker, in order."""
+    """Runs a template's parameters cell and the code cells with a line starting with a marker."""
     namespace = {} if namespace is None else namespace
     for cell in load_cells(name):
-        source = "".join(cell["source"])
+        lines = "".join(cell["source"]).splitlines()
         if cell["cell_type"] == "code" and (
             "parameters" in cell["metadata"].get("tags", [])
-            or any(marker in source for marker in markers)
+            or any(line.startswith(marker) for line in lines for marker in markers)
         ):
-            exec(source, namespace)
+            exec("".join(cell["source"]), namespace)
     return namespace
 
 
-ROW_SCORES = {
-    ModelEvaluationColumns.number_of_rows,
-    ModelEvaluationColumns.bias,
-    ModelEvaluationColumns.weighted_absolute_percentage_error,
-    IndCQC.r2,
-    IndCQC.rmse,
-    IndCQC.proportion_of_model_predictions_within_ten,
-    IndCQC.proportion_of_model_predictions_within_twenty_five,
-}
-METADATA_SCALE_SCORES = {
-    IndCQC.r2,
-    IndCQC.rmse,
-    IndCQC.proportion_of_model_predictions_within_ten,
-    IndCQC.proportion_of_model_predictions_within_twenty_five,
-}
-EMITTED_SCORES = {
-    (ModelEvaluationLabels.row_level_posts, ModelEvaluationLabels.pooled): ROW_SCORES,
-    (ModelEvaluationLabels.headline_group_totals, ModelEvaluationLabels.pooled): {
-        IndCQC.r2,
-        ModelEvaluationColumns.weighted_absolute_percentage_error,
-        ModelEvaluationColumns.number_of_groups,
-    },
-    (ModelEvaluationLabels.coverage, ModelEvaluationLabels.pooled): {
-        ModelEvaluationColumns.known_rows_scored,
-        ModelEvaluationColumns.known_rows,
-        ModelEvaluationColumns.coverage,
-    },
-    (ModelEvaluationLabels.jumpiness, ModelEvaluationLabels.pooled): {
-        ModelEvaluationColumns.mean_period_to_period_change,
-        ModelEvaluationColumns.locations,
-        ModelEvaluationColumns.rows,
-    },
-    (
-        ModelEvaluationLabels.row_level_metadata_scale,
-        ModelEvaluationLabels.pooled,
-    ): METADATA_SCALE_SCORES,
-    (ModelEvaluationLabels.fit_diagnostics, ModelEvaluationLabels.all_rows): {
-        ModelEvaluationColumns.n_iter,
-        ModelEvaluationColumns.max_iter,
-        ModelEvaluationColumns.hit_max_iter,
-        ModelEvaluationColumns.zero_coefficients,
-        ModelEvaluationColumns.number_of_features,
-    },
-}
+@pytest.fixture(scope="module")
+def training_scores() -> dict[tuple[str, str], set[str]]:
+    """
+    The scores training writes, by (level, fold), for the levels the notebook can track.
+
+    Row-level, group-total, metadata-scale and fit scores come from running the training
+    functions on tiny data. Coverage, jumpiness and the group count are added by
+    `metrics_utils` from evaluation column names, so those come from the same names.
+    """
+    lf = pl.LazyFrame({"predicted": [1.0, 2.0, 4.0], "known": [1.0, 3.0, 3.0]})
+    row_scores = evaluation.score_rows(lf, "predicted", "known").collect().columns
+    group_scores = (
+        evaluation.score_group_totals(lf, "predicted", "known").collect().columns
+    )
+    metadata_scale_scores = model_utils.calculate_metrics(
+        np.array([1.0, 2.0, 3.0]), np.array([1.0, 2.5, 2.0]), "model"
+    ).keys()
+    fit_df, _ = metrics_utils.describe_fit(
+        "model",
+        LinearRegression().fit([[1.0], [2.0], [3.0]], [1.0, 2.0, 4.0]),
+        ["feature"],
+    )
+
+    pooled, all_rows = ModelEvaluationLabels.pooled, ModelEvaluationLabels.all_rows
+    return {
+        (ModelEvaluationLabels.row_level_posts, pooled): set(row_scores),
+        (ModelEvaluationLabels.headline_group_totals, pooled): {
+            *group_scores,
+            ModelEvaluationColumns.number_of_groups,
+        },
+        (ModelEvaluationLabels.coverage, pooled): {
+            ModelEvaluationColumns.known_rows_scored,
+            ModelEvaluationColumns.known_rows,
+            ModelEvaluationColumns.coverage,
+        },
+        (ModelEvaluationLabels.jumpiness, pooled): {
+            ModelEvaluationColumns.mean_period_to_period_change,
+            ModelEvaluationColumns.locations,
+            ModelEvaluationColumns.rows,
+        },
+        (ModelEvaluationLabels.row_level_metadata_scale, pooled): set(
+            metadata_scale_scores
+        ),
+        (ModelEvaluationLabels.fit_diagnostics, all_rows): set(
+            fit_df[ModelEvaluationColumns.metric]
+        ),
+    }
 
 
 class TestModelMetricsHistoryMatchesTraining:
@@ -231,11 +243,11 @@ class TestModelMetricsHistoryMatchesTraining:
     def parameters(self) -> dict:
         return run_cells("model_metrics_history")
 
-    def test_key_metrics_are_scores_training_writes(self, parameters):
+    def test_key_metrics_are_scores_training_writes(self, parameters, training_scores):
         unknown = [
             name
             for name, level, metric, fold, _ in parameters["KEY_METRICS"]
-            if metric not in EMITTED_SCORES.get((level, fold), set())
+            if metric not in training_scores.get((level, fold), set())
         ]
 
         assert not unknown, f"Tracked scores training does not write: {unknown}"
@@ -250,8 +262,15 @@ class TestModelMetricsHistoryMatchesTraining:
 
         assert not listed - tracked, f"Not in KEY_METRICS: {listed - tracked}"
 
-    def test_metadata_metrics_are_scores_training_writes(self, parameters):
-        assert set(parameters["METADATA_METRICS"]) == METADATA_SCALE_SCORES
+    def test_metadata_metrics_are_scores_training_writes(
+        self, parameters, training_scores
+    ):
+        metadata_scale = (
+            ModelEvaluationLabels.row_level_metadata_scale,
+            ModelEvaluationLabels.pooled,
+        )
+
+        assert set(parameters["METADATA_METRICS"]) == training_scores[metadata_scale]
 
     def test_labels_and_columns_match_training_output(self, parameters):
         expected = {
@@ -271,6 +290,17 @@ class TestModelMetricsHistoryMatchesTraining:
 
         assert {key: parameters[key] for key in expected} == expected
 
+    def test_run_file_names_match_what_training_saves(self, parameters):
+        s3_root = "s3://bucket/models/model_A/1.0.0/"
+
+        with patch.object(versioning.boto3, "client") as client:
+            versioning.save_metrics(s3_root, 1, pl.DataFrame({"a": [1]}), {})
+            versioning.save_model_and_metadata(s3_root, 1, LinearRegression(), {})
+
+        saved = {call.kwargs["Key"] for call in client().put_object.call_args_list}
+        assert f"models/model_A/1.0.0/1/{parameters['METADATA_FILE']}" in saved
+        assert f"models/model_A/1.0.0/1/{parameters['METRICS_FILE']}" in saved
+
 
 CHECK_COLUMNS = ["model", "version", "run_number", "name", "higher_is_better", "value"]
 
@@ -287,7 +317,7 @@ def run_checks(name: str, higher_is_better: bool, values: list[float | None]) ->
     )
     namespace = run_cells(
         "model_metrics_history",
-        ("checks_df =",),
+        ("checks_df = ",),
         {"pl": pl, "cv_metrics_df": cv_metrics_df},
     )
     return namespace["checks_df"].sort("run_number").to_dicts()
@@ -295,6 +325,10 @@ def run_checks(name: str, higher_is_better: bool, values: list[float | None]) ->
 
 class TestModelMetricsHistoryChecks:
     """The notebook's change checks flag a worse score, and only that."""
+
+    @pytest.fixture
+    def parameters(self) -> dict:
+        return run_cells("model_metrics_history")
 
     @pytest.mark.parametrize(
         "higher_is_better, values",
@@ -328,24 +362,48 @@ class TestModelMetricsHistoryChecks:
         assert first["step_adverse"] is None
         assert not first["step_breach"]
 
-    def test_does_not_flag_a_change_from_zero(self):
-        last = run_checks("score", False, [0.0, 0.0])[-1]
+    @pytest.mark.parametrize(
+        "values",
+        [
+            pytest.param([0.0, 0.0], id="zero_to_zero"),
+            pytest.param([0.0, 0.5], id="zero_to_a_rise"),
+        ],
+    )
+    def test_does_not_flag_a_change_from_zero(self, values):
+        last = run_checks("score", False, values)[-1]
 
         assert last["step_adverse"] is None
         assert not last["step_breach"]
 
-    def test_absolute_change_scores_use_the_absolute_tolerance(self):
+    def test_absolute_change_scores_use_the_absolute_step_tolerance(self, parameters):
+        tolerance = parameters["ABSOLUTE_STEP_TOLERANCE"]
+
         small, large = (
-            run_checks("jumpiness", False, [0.05, rise])[-1] for rise in (0.056, 0.07)
+            run_checks("jumpiness", False, [0.05, 0.05 + rise])[-1]
+            for rise in (tolerance / 2, tolerance * 2)
         )
 
         assert small["step_breach"] is False
         assert large["step_breach"] is True
 
-    def test_baseline_starts_after_enough_earlier_runs(self):
-        rows = run_checks("score", True, [0.8] * 5 + [0.5])
+    def test_absolute_change_scores_use_the_absolute_drift_tolerance(self, parameters):
+        tolerance = parameters["ABSOLUTE_DRIFT_TOLERANCE"]
+        runs = parameters["BASELINE_RUNS"]
 
-        assert [row["drift_adverse"] is None for row in rows] == [True] * 5 + [False]
+        small, large = (
+            run_checks("jumpiness", False, [0.05] * runs + [0.05 + rise])[-1]
+            for rise in (tolerance / 2, tolerance * 2)
+        )
+
+        assert small["drift_breach"] is False
+        assert large["drift_breach"] is True
+
+    def test_baseline_starts_after_enough_earlier_runs(self, parameters):
+        runs = parameters["BASELINE_RUNS"]
+
+        rows = run_checks("score", True, [0.8] * runs + [0.5])
+
+        assert [row["drift_adverse"] is None for row in rows] == [True] * runs + [False]
         assert rows[-1]["drift_breach"] is True
 
     def test_a_missing_score_leaves_the_next_step_check_empty(self):
@@ -359,16 +417,19 @@ class TestModelMetricsHistoryTrend:
 
     @pytest.fixture
     def namespace(self) -> dict:
-        return run_cells("model_metrics_history", ("def summarise_trend",), {"pl": pl})
+        with pl.Config():  # the setup cell changes table display settings
+            yield run_cells(
+                "model_metrics_history", ("def summarise_trend",), {"pl": pl}
+            )
 
     @staticmethod
-    def trend(namespace: dict, values: list[float | None]) -> str:
+    def trend(namespace: dict, values: list[float | None], runs=None) -> str:
         scores_df = pl.DataFrame(
             {
                 "model": "m",
                 "version": "1.0.0",
                 "name": "score",
-                "run_number": range(len(values)),
+                "run_number": runs or range(len(values)),
                 "value": values,
             },
             schema_overrides={"value": pl.Float64},
@@ -377,6 +438,9 @@ class TestModelMetricsHistoryTrend:
 
     def test_draws_each_run_from_the_lowest_block_to_the_highest(self, namespace):
         assert self.trend(namespace, [0.0, 0.5, 1.0]) == "▁▅█"
+
+    def test_draws_the_oldest_run_first_whatever_the_row_order(self, namespace):
+        assert self.trend(namespace, [1.0, 0.0, 0.5], runs=[3, 1, 2]) == ("▁▅█")
 
     def test_a_score_that_never_changes_draws_the_lowest_block(self, namespace):
         assert self.trend(namespace, [0.5, 0.5]) == "▁▁"
