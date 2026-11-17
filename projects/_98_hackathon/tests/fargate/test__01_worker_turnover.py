@@ -26,6 +26,9 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.null_implausible_start_dates")
+    @patch(f"{PATCH_PATH}.wUtils.add_plausible_start_date_flag")
+    @patch(f"{PATCH_PATH}.wUtils.fix_start_date_typos")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -44,6 +47,9 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        fix_start_date_typos_mock: Mock,
+        add_plausible_start_date_flag_mock: Mock,
+        null_implausible_start_dates_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
@@ -144,8 +150,17 @@ class TestMain:
         add_raw_worker_columns_mock.assert_called_once_with(
             add_turnover_rate_mock.return_value, raw_worker_lf_mock
         )
+        fix_start_date_typos_mock.assert_called_once_with(
+            add_raw_worker_columns_mock.return_value
+        )
+        add_plausible_start_date_flag_mock.assert_called_once_with(
+            fix_start_date_typos_mock.return_value
+        )
+        null_implausible_start_dates_mock.assert_called_once_with(
+            add_plausible_start_date_flag_mock.return_value
+        )
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value,
+            null_implausible_start_dates_mock.return_value,
             job.wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
         )
         add_valid_for_analysis_flag_mock.assert_called_once_with(
@@ -159,6 +174,7 @@ class TestMain:
             job.HackCols.headcount_reconciliation_gap,
             job.HackCols.headcount_gap_within_tolerance,
             job.HackCols.plausible_turnover,
+            job.HackCols.plausible_start_date,
         )
         null_not_known_codes_mock.assert_called_once_with(
             add_valid_for_analysis_flag_mock.return_value.drop.return_value
@@ -209,6 +225,9 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.null_implausible_start_dates")
+    @patch(f"{PATCH_PATH}.wUtils.add_plausible_start_date_flag")
+    @patch(f"{PATCH_PATH}.wUtils.fix_start_date_typos")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -227,6 +246,9 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        fix_start_date_typos_mock: Mock,
+        add_plausible_start_date_flag_mock: Mock,
+        null_implausible_start_dates_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
@@ -260,6 +282,9 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.null_implausible_start_dates")
+    @patch(f"{PATCH_PATH}.wUtils.add_plausible_start_date_flag")
+    @patch(f"{PATCH_PATH}.wUtils.fix_start_date_typos")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -278,6 +303,9 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        fix_start_date_typos_mock: Mock,
+        add_plausible_start_date_flag_mock: Mock,
+        null_implausible_start_dates_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         combine_pay_and_hours_mock: Mock,
@@ -297,5 +325,5 @@ class TestMain:
         )
 
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value, 5
+            null_implausible_start_dates_mock.return_value, 5
         )
