@@ -924,8 +924,59 @@ class AddRowsForPublicationGroupsTestCase:
 
 _CARE_HOME_WITH_NURSING = PrimaryServiceType.care_home_with_nursing
 _NON_RESIDENTIAL = PrimaryServiceType.non_residential
+_DIRECT_CARE = PublishedJobGroupLabels.direct_care
+_REGULATED_PROFESSIONS = PublishedJobGroupLabels.regulated_professions
 
 add_rows_for_publication_groups_test_cases = [
+    AddRowsForPublicationGroupsTestCase(
+        # One location in the same job group in two import dates must give one
+        # job group row per import date, not one row overall.
+        id="adds_one_row_per_job_group_per_import_date_region_and_service_type",
+        input_data=[
+            (
+                "4-001",
+                date(2025, 4, 1),
+                "Care worker",
+                _DIRECT_CARE,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "4-001",
+                date(2026, 4, 1),
+                "Care worker",
+                _DIRECT_CARE,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                12.0,
+                6.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        # 3 job role labels (1 job role, 1 job group and "All job roles") x 2
+        # import dates x 2 regions (incl. England) x 3 service types (incl.
+        # both rollups) = 36 rows; only the job group rows are spelled out.
+        expected_row_count=36,
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                _DIRECT_CARE,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2026, 4, 1),
+                _DIRECT_CARE,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(12.0, 1, 6.0),
+            ),
+        ],
+    ),
     AddRowsForPublicationGroupsTestCase(
         # A multi-job-role location counts once for "All job roles", not per role.
         id="all_job_roles_row_counts_a_multi_job_role_location_once_not_per_role",
@@ -934,6 +985,7 @@ add_rows_for_publication_groups_test_cases = [
                 "1-001",
                 date(2025, 4, 1),
                 "Registered nurse",
+                _REGULATED_PROFESSIONS,
                 "London",
                 _CARE_HOME_WITH_NURSING,
                 10.0,
@@ -944,6 +996,7 @@ add_rows_for_publication_groups_test_cases = [
                 "1-001",
                 date(2025, 4, 1),
                 "Care worker",
+                _DIRECT_CARE,
                 "London",
                 _CARE_HOME_WITH_NURSING,
                 20.0,
@@ -951,10 +1004,11 @@ add_rows_for_publication_groups_test_cases = [
                 *_ALL_TRUE_FILTERS,
             ),
         ],
-        # 3 job roles (incl. rollup) x 2 regions (incl. England) x 3 service
-        # types (incl. both rollups) = 18 rows; only the row that proves the
-        # count doesn't double is worth spelling out.
-        expected_row_count=18,
+        # 5 job role labels (2 job roles, 2 job groups and "All job roles") x
+        # 2 regions (incl. England) x 3 service types (incl. both rollups) =
+        # 30 rows; only the row that proves the count doesn't double is worth
+        # spelling out.
+        expected_row_count=30,
         expected_data=[
             (
                 date(2025, 4, 1),
@@ -973,6 +1027,7 @@ add_rows_for_publication_groups_test_cases = [
                 "2-001",
                 date(2025, 4, 1),
                 "Registered nurse",
+                _REGULATED_PROFESSIONS,
                 "London",
                 _CARE_HOME_WITH_NURSING,
                 10.0,
@@ -983,6 +1038,7 @@ add_rows_for_publication_groups_test_cases = [
                 "2-002",
                 date(2025, 4, 1),
                 "Registered nurse",
+                _REGULATED_PROFESSIONS,
                 "London",
                 _NON_RESIDENTIAL,
                 15.0,
@@ -990,10 +1046,11 @@ add_rows_for_publication_groups_test_cases = [
                 *_ALL_TRUE_FILTERS,
             ),
         ],
-        # 2 job roles (incl. rollup) x 2 regions (incl. England) x 4 service
-        # types (both real, plus both rollups) = 16 rows; only the pair that
-        # proves the inclusion/exclusion split is worth spelling out.
-        expected_row_count=16,
+        # 3 job role labels (1 job role, 1 job group and "All job roles") x 2
+        # regions (incl. England) x 4 service types (both real, plus both
+        # rollups) = 24 rows; only the pair that proves the inclusion/exclusion
+        # split is worth spelling out.
+        expected_row_count=24,
         expected_data=[
             (
                 date(2025, 4, 1),
@@ -1019,6 +1076,7 @@ add_rows_for_publication_groups_test_cases = [
                 "3-001",
                 date(2025, 4, 1),
                 "Registered nurse",
+                _REGULATED_PROFESSIONS,
                 "London",
                 _CARE_HOME_WITH_NURSING,
                 10.0,
@@ -1029,6 +1087,7 @@ add_rows_for_publication_groups_test_cases = [
                 "3-002",
                 date(2025, 4, 1),
                 "Registered nurse",
+                _REGULATED_PROFESSIONS,
                 "South West",
                 _CARE_HOME_WITH_NURSING,
                 12.0,
@@ -1036,11 +1095,12 @@ add_rows_for_publication_groups_test_cases = [
                 *_ALL_TRUE_FILTERS,
             ),
         ],
-        # 2 job roles (incl. rollup) x 3 regions (incl. England) x 3 service
-        # types (incl. both rollups) = 18 rows; only the England row that
-        # proves the two real regions are summed once each is worth
-        # spelling out: 22/2/11 = London (10/1/5) + South West (12/1/6).
-        expected_row_count=18,
+        # 3 job role labels (1 job role, 1 job group and "All job roles") x 3
+        # regions (incl. England) x 3 service types (incl. both rollups) = 27
+        # rows; only the England row that proves the two real regions are
+        # summed once each is worth spelling out: 22/2/11 = London (10/1/5) +
+        # South West (12/1/6).
+        expected_row_count=27,
         expected_data=[
             (
                 date(2025, 4, 1),
@@ -1048,6 +1108,193 @@ add_rows_for_publication_groups_test_cases = [
                 PublishedRegion.england,
                 _CARE_HOME_WITH_NURSING,
                 *_all_terms_metrics(22.0, 2, 11.0),
+            ),
+        ],
+    ),
+    AddRowsForPublicationGroupsTestCase(
+        # Each job group row is labelled with the job group's own value, not
+        # the job role it came from.
+        id="job_group_rows_use_existing_job_group_labels",
+        input_data=[
+            (
+                "5-001",
+                date(2025, 4, 1),
+                "Care worker",
+                PublishedJobGroupLabels.direct_care,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "5-001",
+                date(2025, 4, 1),
+                "Senior management",
+                PublishedJobGroupLabels.managers,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                20.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "5-001",
+                date(2025, 4, 1),
+                "Registered nurse",
+                PublishedJobGroupLabels.regulated_professions,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                30.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "5-001",
+                date(2025, 4, 1),
+                "Admin staff",
+                PublishedJobGroupLabels.other,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                40.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        # 9 job role labels (4 job roles, 4 job groups and "All job roles") x
+        # 2 regions (incl. England) x 3 service types (incl. both rollups) =
+        # 54 rows; only the four job group rows are spelled out.
+        expected_row_count=54,
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                PublishedJobGroupLabels.direct_care,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                PublishedJobGroupLabels.managers,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(20.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                PublishedJobGroupLabels.regulated_professions,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(30.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                PublishedJobGroupLabels.other,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(40.0, 1, 5.0),
+            ),
+        ],
+    ),
+    AddRowsForPublicationGroupsTestCase(
+        # A location employing two roles in the same job group counts once for
+        # that job group, with its CT total counted once and filled posts
+        # summed across both roles.
+        id="counts_location_once_when_it_has_several_roles_in_same_group",
+        input_data=[
+            (
+                "6-001",
+                date(2025, 4, 1),
+                "Care worker",
+                _DIRECT_CARE,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                20.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "6-001",
+                date(2025, 4, 1),
+                "Senior care worker",
+                _DIRECT_CARE,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                30.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        # 4 job role labels (2 job roles, 1 job group and "All job roles") x 2
+        # regions (incl. England) x 3 service types (incl. both rollups) = 24
+        # rows; only the job group row proving the count doesn't double is
+        # spelled out.
+        expected_row_count=24,
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                _DIRECT_CARE,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                *_all_terms_metrics(50.0, 1, 5.0),
+            ),
+        ],
+    ),
+    AddRowsForPublicationGroupsTestCase(
+        # Job group rows get the same service type and region rollups as job
+        # roles: "All CQC locations", "All CQC care homes" and "England".
+        id="job_group_rows_cascade_to_all_locations_all_care_homes_and_england",
+        input_data=[
+            (
+                "7-001",
+                date(2025, 4, 1),
+                "Care worker",
+                _DIRECT_CARE,
+                "London",
+                _CARE_HOME_WITH_NURSING,
+                10.0,
+                5.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+            (
+                "7-002",
+                date(2025, 4, 1),
+                "Care worker",
+                _DIRECT_CARE,
+                "South West",
+                _NON_RESIDENTIAL,
+                15.0,
+                6.0,
+                *_ALL_TRUE_FILTERS,
+            ),
+        ],
+        # Per job role label (1 job role, 1 job group and "All job roles"):
+        # London x (care home with nursing, all locations, all care homes) = 3,
+        # South West x (non-residential, all locations) = 2 (no care homes),
+        # England x (both real, plus both rollups) = 4, so 9 rows x 3 labels =
+        # 27 rows; only the job group rollup rows are spelled out.
+        expected_row_count=27,
+        expected_data=[
+            (
+                date(2025, 4, 1),
+                _DIRECT_CARE,
+                "London",
+                PublishedMainService.all_care_homes,
+                *_all_terms_metrics(10.0, 1, 5.0),
+            ),
+            (
+                date(2025, 4, 1),
+                _DIRECT_CARE,
+                PublishedRegion.england,
+                PublishedMainService.all_locations,
+                *_all_terms_metrics(25.0, 2, 11.0),
+            ),
+            (
+                date(2025, 4, 1),
+                _DIRECT_CARE,
+                PublishedRegion.england,
+                PublishedMainService.all_care_homes,
+                *_all_terms_metrics(10.0, 1, 5.0),
             ),
         ],
     ),

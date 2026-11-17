@@ -409,6 +409,7 @@ class TestAddRowsForPublicationGroups:
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.main_job_group_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, _primary_service_type_enum),
             (
@@ -486,6 +487,7 @@ class TestAddRowsForPublicationGroups:
                     "1-101",
                     date(2025, 4, 1),
                     "Registered nurse",
+                    PublishedJobGroupLabels.regulated_professions,
                     "London",
                     "Care home with nursing",
                     10.0,
@@ -496,6 +498,7 @@ class TestAddRowsForPublicationGroups:
                     "1-101",
                     date(2025, 4, 1),
                     "Care worker",
+                    PublishedJobGroupLabels.direct_care,
                     "London",
                     "Care home with nursing",
                     20.0,
@@ -536,6 +539,169 @@ class TestAddRowsForPublicationGroups:
         assert england_total_row.select(
             Pub.unfiltered_filled_posts, Pub.unfiltered_locationid_count
         ).row(0) == (30.0, 1)
+
+    def test_adds_job_group_rows_without_assessment_columns(self):
+        input_lf = pl.LazyFrame(
+            [
+                (
+                    "1-101",
+                    date(2025, 4, 1),
+                    "Care worker",
+                    PublishedJobGroupLabels.direct_care,
+                    "London",
+                    "Care home with nursing",
+                    20.0,
+                    5.0,
+                    *[True] * 9,
+                ),
+                (
+                    "1-101",
+                    date(2025, 4, 1),
+                    "Senior care worker",
+                    PublishedJobGroupLabels.direct_care,
+                    "London",
+                    "Care home with nursing",
+                    30.0,
+                    5.0,
+                    *[True] * 9,
+                ),
+            ],
+            self.input_schema,
+            orient="row",
+        )
+        publication_summary_lf = job.aggregate_to_publication_rows(
+            input_lf, include_assessment=False
+        )
+
+        returned_lf = job.add_rows_for_publication_groups(
+            input_lf, publication_summary_lf, include_assessment=False
+        )
+
+        assert returned_lf.collect_schema().names() == [
+            IndCQC.cqc_location_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+            Pub.unfiltered_filled_posts,
+            Pub.unfiltered_locationid_count,
+        ]
+        england_direct_care_row = returned_lf.filter(
+            (pl.col(IndCQC.current_region) == PublishedRegion.england)
+            & (
+                pl.col(IndCQC.main_job_role_clean_labelled)
+                == PublishedJobGroupLabels.direct_care
+            )
+            & (
+                pl.col(IndCQC.primary_service_type).cast(pl.String)
+                == PublishedMainService.all_locations
+            )
+        ).collect()
+        assert england_direct_care_row.select(
+            Pub.unfiltered_filled_posts, Pub.unfiltered_locationid_count
+        ).row(0) == (50.0, 1)
+
+    def test_leaves_job_role_and_all_job_roles_rows_unchanged(self):
+        input_lf = pl.LazyFrame(
+            [
+                (
+                    "1-101",
+                    date(2025, 4, 1),
+                    "Registered nurse",
+                    PublishedJobGroupLabels.regulated_professions,
+                    "London",
+                    PrimaryServiceType.care_home_with_nursing,
+                    10.0,
+                    5.0,
+                    *[True] * 9,
+                ),
+                (
+                    "1-101",
+                    date(2025, 4, 1),
+                    "Care worker",
+                    PublishedJobGroupLabels.direct_care,
+                    "London",
+                    PrimaryServiceType.care_home_with_nursing,
+                    20.0,
+                    5.0,
+                    *[True] * 9,
+                ),
+            ],
+            self.input_schema,
+            orient="row",
+        )
+        publication_summary_lf = job.aggregate_to_publication_rows(input_lf)
+        key_columns = [
+            IndCQC.cqc_location_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+        ]
+        expected_job_role_lf = publication_summary_lf.with_columns(
+            pl.col(IndCQC.primary_service_type).cast(pl.Categorical)
+        )
+
+        returned_lf = job.add_rows_for_publication_groups(
+            input_lf, publication_summary_lf
+        )
+
+        returned_job_role_lf = returned_lf.join(
+            expected_job_role_lf.select(key_columns), on=key_columns, how="semi"
+        )
+        pl_testing.assert_frame_equal(
+            returned_job_role_lf, expected_job_role_lf, check_row_order=False
+        )
+        all_job_roles_row = returned_lf.filter(
+            (
+                pl.col(IndCQC.main_job_role_clean_labelled)
+                == PublishedJobGroupLabels.all_job_roles
+            )
+            & (pl.col(IndCQC.current_region) == "London")
+            & (
+                pl.col(IndCQC.primary_service_type).cast(pl.String)
+                == PrimaryServiceType.care_home_with_nursing
+            )
+        ).collect()
+        assert all_job_roles_row.select(
+            Pub.unfiltered_filled_posts, Pub.unfiltered_locationid_count
+        ).row(0) == (30.0, 1)
+
+    def test_omits_job_group_rows_for_groups_absent_from_data(self):
+        input_lf = pl.LazyFrame(
+            [
+                (
+                    "1-101",
+                    date(2025, 4, 1),
+                    "Care worker",
+                    PublishedJobGroupLabels.direct_care,
+                    "London",
+                    PrimaryServiceType.care_home_with_nursing,
+                    20.0,
+                    5.0,
+                    *[True] * 9,
+                ),
+            ],
+            self.input_schema,
+            orient="row",
+        )
+        publication_summary_lf = job.aggregate_to_publication_rows(input_lf)
+
+        returned_lf = job.add_rows_for_publication_groups(
+            input_lf, publication_summary_lf
+        )
+
+        returned_labels = (
+            returned_lf.select(IndCQC.main_job_role_clean_labelled)
+            .unique()
+            .collect()[IndCQC.main_job_role_clean_labelled]
+            .to_list()
+        )
+        assert sorted(returned_labels) == sorted(
+            [
+                "Care worker",
+                PublishedJobGroupLabels.direct_care,
+                PublishedJobGroupLabels.all_job_roles,
+            ]
+        )
 
 
 class TestAddPrevRunPctChangeColumns:

@@ -13,11 +13,13 @@ All notable changes to this project will be documented in this file.
 - Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
 - Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, replacing the raw hourly rate, salary, contracted hours and average hours columns.
 - Added previous run April and short-term cumulative percentage changes, and their differences from the current run, to the Monthly Tracker assessment.
+- Added job group (Direct care, Managers, Regulated professions and Other) rollup rows to the Monthly Tracker assessment data, with the same service type and region rollups as job roles, and validation that job group filled posts sum to the "All job roles" filled posts.
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
 - Added nationality and country of birth groups (British or UK, EEA, Non-EEA) to the Hackathon Worker Turnover job output.
 - Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
 
 ### Changed
+- The Monthly Tracker reconciliation ignores the new job group rows in the assessment data when comparing job roles with the promoted archive.
 - Filled null worker attributes in the Hackathon Worker Turnover job from the same worker's other import dates.
 - Updated the `pytest-pattern` skill and STYLEGUIDE.md so tests for functions that only add columns derive the input by dropping the new columns from the expected data.
 - Replaced negative (not known/recorded) values and the not known, not disclosed and unknown codes in the Hackathon Worker Turnover job's raw worker columns with null.

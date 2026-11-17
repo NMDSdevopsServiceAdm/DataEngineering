@@ -50,6 +50,14 @@ DOWNLOAD_TABLE_SORT_KEYS: list[pl.Expr] = [
     ),
 ]
 
+# The job groups that add_rows_for_publication_groups rolls job roles up into.
+JOB_GROUP_LABELS: list[str] = [
+    PublishedJobGroupLabels.direct_care,
+    PublishedJobGroupLabels.managers,
+    PublishedJobGroupLabels.regulated_professions,
+    PublishedJobGroupLabels.other,
+]
+
 # The summed columns of the publication summary, and the extra ones added for
 # the assessment (see aggregate_to_publication_rows).
 _PUBLICATION_METRIC_COLUMNS: list[str] = [
@@ -640,16 +648,20 @@ def add_rows_for_publication_groups(
     include_assessment: bool = True,
 ) -> pl.LazyFrame:
     """
-    Adds "All job roles", "All CQC care homes", "All CQC locations" and
-    "England" rollup rows for the Tableau/Excel filter dropdowns.
+    Adds job group, "All job roles", "All CQC care homes", "All CQC locations"
+    and "England" rollup rows for the Tableau/Excel filter dropdowns.
 
     Built recursively - job role, then service type, then region - so
     England has a row for every job role/service type combination,
-    including the other rollups.
+    including the other rollups. Job group rows (Direct care, Managers,
+    Regulated professions and Other) sit in the job role column alongside
+    the job roles and "All job roles", so they cascade through the service
+    type and region rollups the same way.
 
-    Job role is rebuilt from prepared_lf via aggregate_to_publication_rows
-    with job role dropped from the group keys, since summing per-job-role
-    counts would double-count a location (one row per job role it employs).
+    "All job roles" and job group rows are rebuilt from prepared_lf via
+    aggregate_to_publication_rows, with job role replaced by job group (or
+    dropped) in the group keys, since summing per-job-role counts would
+    double-count a location (one row per job role it employs).
     Region and service type are single-valued per location, so those
     rollups re-sum the aggregated columns.
 
@@ -664,7 +676,8 @@ def add_rows_for_publication_groups(
 
     Args:
         prepared_lf (pl.LazyFrame): location-level data, as passed into
-            aggregate_to_publication_rows.
+            aggregate_to_publication_rows. It must also hold the job group
+            column.
         publication_summary_lf (pl.LazyFrame): output of
             aggregate_to_publication_rows on prepared_lf.
         include_assessment (bool): whether publication_summary_lf has the
@@ -672,8 +685,8 @@ def add_rows_for_publication_groups(
 
     Returns:
         pl.LazyFrame: publication_summary_lf with rollup rows added for
-            "All job roles", "All CQC care homes", "All CQC locations" and
-            "England".
+            each job group, "All job roles", "All CQC care homes", "All CQC
+            locations" and "England".
     """
     publication_summary_lf = publication_summary_lf.with_columns(
         pl.col(IndCQC.primary_service_type).cast(pl.Categorical)
@@ -703,8 +716,28 @@ def add_rows_for_publication_groups(
         )
         .select(column_order)
     )
+    job_group_lf = (
+        aggregate_to_publication_rows(
+            prepared_lf,
+            group_keys=[
+                IndCQC.cqc_location_import_date,
+                IndCQC.main_job_group_labelled,
+                IndCQC.current_region,
+                IndCQC.primary_service_type,
+            ],
+            include_assessment=include_assessment,
+        )
+        .with_columns(
+            pl.col(IndCQC.main_job_group_labelled)
+            .cast(pl.String)
+            .cast(column_schema[IndCQC.main_job_role_clean_labelled])
+            .alias(IndCQC.main_job_role_clean_labelled),
+            pl.col(IndCQC.primary_service_type).cast(pl.Categorical),
+        )
+        .select(column_order)
+    )
     job_role_enlarged_lf = pl.concat(
-        [publication_summary_lf, all_job_roles_lf], how="vertical"
+        [publication_summary_lf, all_job_roles_lf, job_group_lf], how="vertical"
     )
     job_role_enlarged_lf = job_role_enlarged_lf.collect(engine="streaming").lazy()
 
