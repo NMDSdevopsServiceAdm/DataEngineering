@@ -12,14 +12,6 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
-KEY_COLUMNS = [
-    AWKClean.establishment_id,
-    AWKClean.worker_id,
-    AWKClean.ascwds_worker_import_date,
-]
-
-TEST_SPLIT = "test"
-
 
 def main(
     bucket_name: str,
@@ -29,8 +21,7 @@ def main(
 ) -> None:
     """Validates the student version of the test split and writes the reports.
 
-    Every column of the student data is read, as the checks include that the
-    hidden columns are absent. The student data is a small split of the dataset.
+    Reads every column, as a check is that the hidden columns are absent.
 
     Args:
         bucket_name (str): the bucket (name only) for the datasets and reports
@@ -39,6 +30,13 @@ def main(
             count is the expected row count
         reports_path (str): the output path to write reports to
     """
+    key_columns = [
+        AWKClean.establishment_id,
+        AWKClean.worker_id,
+        AWKClean.ascwds_worker_import_date,
+    ]
+    test_split = "test"
+
     source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
     expected_row_count = (
         utils.scan_parquet(
@@ -61,12 +59,12 @@ def main(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows (same as the test split)",
         )
-        .col_vals_not_null(KEY_COLUMNS, brief="key columns have no nulls")
+        .col_vals_not_null(key_columns, brief="key columns have no nulls")
         .rows_distinct(
-            KEY_COLUMNS,
+            key_columns,
             brief="establishment, worker and import date are unique",
         )
-        .col_vals_in_set(HackCols.split, [TEST_SPLIT], brief=f"split is {TEST_SPLIT}")
+        .col_vals_in_set(HackCols.split, [test_split], brief=f"split is {test_split}")
         .specially(
             vUtils.has_no_hidden_columns,
             brief="student data has no is_leaver or turnover_rate column",

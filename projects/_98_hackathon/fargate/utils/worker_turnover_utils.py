@@ -807,17 +807,13 @@ def add_split_column(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def make_student_test_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Drops the answer columns so the test split can be given to students.
-
-    Drops `is_leaver` and `turnover_rate`. Every row and every other column is
-    kept, including `valid_for_analysis`.
+    """Drops `is_leaver` and `turnover_rate`, keeping every row and other column.
 
     Args:
-        worker_lf (pl.LazyFrame): Test split worker data with `is_leaver` and
-            `turnover_rate`.
+        worker_lf (pl.LazyFrame): Test split worker data.
 
     Returns:
-        pl.LazyFrame: The input rows without `is_leaver` and `turnover_rate`.
+        pl.LazyFrame: The test split without the hidden columns.
     """
     return worker_lf.drop(STUDENT_HIDDEN_COLUMNS)
 

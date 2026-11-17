@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added a student version of the Hackathon Worker Turnover test split, without `is_leaver` or `turnover_rate`, with its own validation job.
+- Added a student version of the Hackathon Worker Turnover test split, without `is_leaver` or `turnover_rate`, and its validation.
 - Added a guide to maintaining the Monthly Tracker workbooks, and documented where to find them.
 - Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, with each split written separately and the train and test splits validated.
 - Added a validation job for the Hackathon Worker Turnover output.

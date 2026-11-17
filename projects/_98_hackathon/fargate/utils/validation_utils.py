@@ -9,13 +9,13 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 
 
 def has_no_hidden_columns(df: pl.DataFrame) -> bool:
-    """Checks the student data has none of the columns hidden from students.
+    """Checks `is_leaver` and `turnover_rate` are both absent.
 
     Args:
-        df (pl.DataFrame): Student version of the worker turnover test split.
+        df (pl.DataFrame): Student version of the test split.
 
     Returns:
-        bool: True if `is_leaver` and `turnover_rate` are both absent.
+        bool: True if neither hidden column is present.
     """
     return not set(STUDENT_HIDDEN_COLUMNS) & set(df.columns)
 

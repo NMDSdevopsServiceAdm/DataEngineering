@@ -35,8 +35,8 @@ def main(
         train_destination (str): destination for the train split
         holdout_destination (str): destination for the holdout split
         test_destination (str): destination for the test split
-        student_destination (str): destination for the student version of the test
-            split, which has no `is_leaver` or `turnover_rate`
+        student_destination (str): destination for the test split without
+            `is_leaver` and `turnover_rate`
         n_months (int): most months since an establishment's latest save date for
             it to count as active
         max_gap (int): largest absolute headcount reconciliation gap, in workers,
@@ -120,19 +120,19 @@ def main(
         split: filtered_lf.filter(pl.col(HackCols.split) == split)
         for split in split_destinations
     }
-    sink_lfs = [
-        (split_lfs[split], destination)
-        for split, destination in split_destinations.items()
-    ]
-    sink_lfs.append(
-        (wUtils.make_student_test_data(split_lfs["test"]), student_destination)
-    )
     # Lazy sinks collected together share one run of the plan above, rather than
     # re-running it per split.
     sinks = [
-        utils.sink_to_parquet(lf, output_path=destination, lazy=True)
-        for lf, destination in sink_lfs
+        utils.sink_to_parquet(split_lfs[split], output_path=destination, lazy=True)
+        for split, destination in split_destinations.items()
     ]
+    sinks.append(
+        utils.sink_to_parquet(
+            wUtils.make_student_test_data(split_lfs["test"]),
+            output_path=student_destination,
+            lazy=True,
+        )
+    )
     pl.collect_all(sinks, engine="streaming")
 
 
