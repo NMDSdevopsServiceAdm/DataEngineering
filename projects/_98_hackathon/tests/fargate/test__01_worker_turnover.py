@@ -114,8 +114,9 @@ class TestMain:
             job.AWKClean.employment_status,
             job.AWKClean.employment_status_clean,
         )
+        workplace_lf_mock.with_columns.assert_called_once()
         filtered_lf_mock.join.assert_called_once_with(
-            workplace_lf_mock,
+            workplace_lf_mock.with_columns.return_value,
             left_on=[
                 job.AWKClean.establishment_id,
                 job.AWKClean.ascwds_worker_import_date,

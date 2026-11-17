@@ -51,7 +51,7 @@ def main(
             AWPClean.main_service_id_clean,
             AWPClean.organisation_id,
         ],
-    )
+    ).with_columns(pl.col(AWPClean.organisation_id).cast(pl.Categorical))
 
     filtered_lf = wUtils.filter_worker_turnover_data(worker_lf).drop(
         AWKClean.location_id,
@@ -106,11 +106,7 @@ def main(
     filtered_lf = wUtils.null_not_known_codes(filtered_lf)
     filtered_lf = filtered_lf.with_columns(
         pl.col(
-            [
-                *wUtils.WORKER_CATEGORICAL_COLUMNS,
-                *wUtils.WORKPLACE_CODE_COLUMNS,
-                AWPClean.organisation_id,
-            ]
+            [*wUtils.WORKER_CATEGORICAL_COLUMNS, *wUtils.WORKPLACE_CODE_COLUMNS]
         ).cast(pl.Categorical)
     )
     filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
