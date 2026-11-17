@@ -384,18 +384,12 @@ def add_valid_pay_difference_flag(
 ) -> pl.LazyFrame:
     """Adds `valid_hourly_pay_minus_nlw`, flagging implausible pay differences.
 
-    The flag is:
-    - true when `hourly_pay_minus_nlw` is 0 or more and at most the percentile.
-    - false when it is negative or above the percentile.
-    - null when it is null.
+    True from 0 up to the percentile, false when negative or above it, null when
+    null. The percentile is `upper_percentile` of the non-negative differences per
+    import year and job role. A group under `min_group_size`, or with a null job
+    role, uses the import year's percentile. Keeps every row.
 
-    The percentile is `upper_percentile` of the non-negative differences for the
-    worker's import year and job role. A group with fewer than `min_group_size`
-    non-negative differences, or a null job role, uses the import year's
-    percentile instead. Keeps every row.
-
-    The percentiles use `.over()`, which the streaming engine does not cover, so
-    that part of the plan runs in memory.
+    `.over()` is not covered by the streaming engine, so it runs in memory.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
