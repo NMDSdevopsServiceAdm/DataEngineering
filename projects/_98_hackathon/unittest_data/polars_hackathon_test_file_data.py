@@ -173,6 +173,26 @@ class AddValidForAnalysisFlagCase:
 
 
 @dataclass
+class FixStartDateTyposCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class AddPlausibleStartDateFlagCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class NullImplausibleStartDatesCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class WorkerTurnoverData:
     # Rows: (establishment_id, worker_id, import_date,
     # establishment_in_both_snapshots, is_leaver, turnover_rate).
@@ -316,42 +336,185 @@ class WorkerTurnoverData:
     # establishment_in_both_snapshots, establishment_active,
     # headcount_gap_within_tolerance, turnover_rate, plausible_turnover,
     # valid_for_analysis).
+    # Rows: (establishment_id, worker_id, import_date, establishment_in_both_snapshots,
+    # establishment_active, headcount_gap_within_tolerance, plausible_start_date,
+    # turnover_rate, plausible_turnover, valid_for_analysis).
     add_valid_for_analysis_flag_cases = [
         AddValidForAnalysisFlagCase(
             id="valid_when_all_components_true",
-            expected_rows=[("est_a", "1", START, True, True, True, 0.25, True, True)],
+            expected_rows=[
+                ("est_a", "1", START, True, True, True, True, 0.25, True, True)
+            ],
         ),
         AddValidForAnalysisFlagCase(
             id="implausible_and_invalid_when_rate_is_zero",
-            expected_rows=[("est_a", "1", START, True, True, True, 0.0, False, False)],
+            expected_rows=[
+                ("est_a", "1", START, True, True, True, True, 0.0, False, False)
+            ],
         ),
         AddValidForAnalysisFlagCase(
             id="implausible_and_invalid_when_rate_is_one",
-            expected_rows=[("est_a", "1", START, True, True, True, 1.0, False, False)],
+            expected_rows=[
+                ("est_a", "1", START, True, True, True, True, 1.0, False, False)
+            ],
         ),
         AddValidForAnalysisFlagCase(
             id="plausible_when_rate_just_above_zero",
-            expected_rows=[("est_a", "1", START, True, True, True, 0.125, True, True)],
+            expected_rows=[
+                ("est_a", "1", START, True, True, True, True, 0.125, True, True)
+            ],
         ),
         AddValidForAnalysisFlagCase(
             id="plausible_when_rate_just_below_one",
-            expected_rows=[("est_a", "1", START, True, True, True, 0.875, True, True)],
+            expected_rows=[
+                ("est_a", "1", START, True, True, True, True, 0.875, True, True)
+            ],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_establishment_inactive",
-            expected_rows=[("est_a", "1", START, True, False, True, 0.25, True, False)],
+            expected_rows=[
+                ("est_a", "1", START, True, False, True, True, 0.25, True, False)
+            ],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_headcount_gap_outside_tolerance",
-            expected_rows=[("est_a", "1", START, True, True, False, 0.25, True, False)],
+            expected_rows=[
+                ("est_a", "1", START, True, True, False, True, 0.25, True, False)
+            ],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_start_date_is_implausible",
+            expected_rows=[
+                ("est_a", "1", START, True, True, True, False, 0.25, True, False)
+            ],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_establishment_not_in_both_snapshots",
-            expected_rows=[("est_a", "1", START, False, None, None, None, None, False)],
+            expected_rows=[
+                ("est_a", "1", START, False, None, None, True, None, None, False)
+            ],
         ),
         AddValidForAnalysisFlagCase(
             id="invalid_when_no_end_snapshot",
-            expected_rows=[("est_a", "1", START, None, None, None, None, None, False)],
+            expected_rows=[
+                ("est_a", "1", START, None, None, None, True, None, None, False)
+            ],
+        ),
+    ]
+
+    # Rows: (import_date, start_date).
+    fix_start_date_typos_cases = [
+        FixStartDateTyposCase(
+            id="expands_year_00yy_to_20yy",
+            input_rows=[(date(2024, 6, 1), date(15, 4, 1))],
+            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1))],
+        ),
+        FixStartDateTyposCase(
+            id="expands_year_0001_to_2001",
+            input_rows=[(date(2024, 6, 1), date(1, 9, 16))],
+            expected_rows=[(date(2024, 6, 1), date(2001, 9, 16))],
+        ),
+        FixStartDateTyposCase(
+            id="expands_19yy_to_20yy_when_result_is_not_after_import_date",
+            input_rows=[(date(2024, 6, 1), date(1913, 4, 16))],
+            expected_rows=[(date(2024, 6, 1), date(2013, 4, 16))],
+        ),
+        FixStartDateTyposCase(
+            id="keeps_19yy_when_expansion_is_after_import_date",
+            input_rows=[(date(2024, 6, 1), date(1929, 10, 17))],
+            expected_rows=[(date(2024, 6, 1), date(1929, 10, 17))],
+        ),
+        FixStartDateTyposCase(
+            id="nulls_placeholder_date_1_jan_1900",
+            input_rows=[(date(2024, 6, 1), date(1900, 1, 1))],
+            expected_rows=[(date(2024, 6, 1), None)],
+        ),
+        FixStartDateTyposCase(
+            id="does_not_fix_year_0219",
+            input_rows=[(date(2024, 6, 1), date(219, 12, 2))],
+            expected_rows=[(date(2024, 6, 1), date(219, 12, 2))],
+        ),
+        FixStartDateTyposCase(
+            id="does_not_change_plausible_start_date",
+            input_rows=[
+                (date(2024, 6, 1), date(2015, 4, 1)),
+                (date(2024, 6, 1), date(1990, 3, 5)),
+            ],
+            expected_rows=[
+                (date(2024, 6, 1), date(2015, 4, 1)),
+                (date(2024, 6, 1), date(1990, 3, 5)),
+            ],
+        ),
+        FixStartDateTyposCase(
+            id="keeps_null_start_date_null",
+            input_rows=[(date(2024, 6, 1), None)],
+            expected_rows=[(date(2024, 6, 1), None)],
+        ),
+    ]
+
+    # Rows: (import_date, start_date, age, plausible_start_date).
+    add_plausible_start_date_flag_cases = [
+        AddPlausibleStartDateFlagCase(
+            id="plausible_when_start_date_is_null",
+            expected_rows=[(date(2024, 6, 1), None, 30.0, True)],
+        ),
+        # Age 36 at import and exactly 20 years since start is a start age of 16.
+        AddPlausibleStartDateFlagCase(
+            id="plausible_when_start_age_is_exactly_16",
+            expected_rows=[(date(2024, 6, 1), date(2004, 6, 1), 36.0, True)],
+        ),
+        AddPlausibleStartDateFlagCase(
+            id="implausible_when_start_age_is_just_under_16",
+            expected_rows=[(date(2024, 6, 1), date(2004, 5, 31), 36.0, False)],
+        ),
+        # About 40.5 years since start for a worker aged 40: the date of birth.
+        AddPlausibleStartDateFlagCase(
+            id="implausible_when_start_date_is_date_of_birth",
+            expected_rows=[(date(2024, 6, 1), date(1983, 12, 1), 40.0, False)],
+        ),
+        AddPlausibleStartDateFlagCase(
+            id="implausible_when_start_date_is_before_birth",
+            expected_rows=[(date(2024, 6, 1), date(1960, 1, 1), 30.0, False)],
+        ),
+        AddPlausibleStartDateFlagCase(
+            id="implausible_when_start_date_is_after_import_date",
+            expected_rows=[(date(2024, 6, 1), date(2024, 7, 1), 30.0, False)],
+        ),
+        # Negative ages are not-known codes. Read as an age, -1 would fail the rule.
+        AddPlausibleStartDateFlagCase(
+            id="treats_negative_age_code_as_unknown",
+            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), -1.0, True)],
+        ),
+        AddPlausibleStartDateFlagCase(
+            id="plausible_when_age_unknown_and_tenure_under_70_years",
+            expected_rows=[(date(2024, 6, 1), date(1960, 1, 1), None, True)],
+        ),
+        AddPlausibleStartDateFlagCase(
+            id="plausible_when_age_unknown_and_tenure_exactly_70_years",
+            expected_rows=[(date(2024, 6, 1), date(1954, 6, 1), None, True)],
+        ),
+        AddPlausibleStartDateFlagCase(
+            id="implausible_when_age_unknown_and_tenure_over_70_years",
+            expected_rows=[(date(2024, 6, 1), date(1954, 5, 31), None, False)],
+        ),
+    ]
+
+    # Rows: (start_date, plausible_start_date).
+    null_implausible_start_dates_cases = [
+        NullImplausibleStartDatesCase(
+            id="nulls_start_date_when_flag_is_false",
+            input_rows=[(date(2015, 4, 1), False)],
+            expected_rows=[(None, False)],
+        ),
+        NullImplausibleStartDatesCase(
+            id="keeps_start_date_when_flag_is_true",
+            input_rows=[(date(2015, 4, 1), True)],
+            expected_rows=[(date(2015, 4, 1), True)],
+        ),
+        NullImplausibleStartDatesCase(
+            id="keeps_null_start_date_null",
+            input_rows=[(None, True)],
+            expected_rows=[(None, True)],
         ),
     ]
 

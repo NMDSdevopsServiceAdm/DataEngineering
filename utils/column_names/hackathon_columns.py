@@ -30,5 +30,6 @@ class HackathonColumns:
     headcount_reconciliation_gap: str = "headcount_reconciliation_gap"
     headcount_gap_within_tolerance: str = "headcount_gap_within_tolerance"
     plausible_turnover: str = "plausible_turnover"
+    plausible_start_date: str = "plausible_start_date"
     valid_for_analysis: str = "valid_for_analysis"
     split: str = "split"

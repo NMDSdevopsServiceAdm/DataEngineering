@@ -1,8 +1,10 @@
 import json
+from dataclasses import dataclass
 from datetime import date
 from unittest.mock import Mock, patch
 
 import polars as pl
+import pytest
 
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 import projects._98_hackathon.fargate.validate_01_worker_turnover as job
@@ -21,9 +23,12 @@ from utils.column_values.categorical_column_values import PrimaryServiceType
 PATCH_PATH = "projects._98_hackathon.fargate.validate_01_worker_turnover"
 
 
-def build_source_df() -> pl.DataFrame:
+def build_source_df(
+    start_dates: list[date | None] | None = None, ages: list[float | None] | None = None
+) -> pl.DataFrame:
     """Two snapshots of a worker 12 months apart. The later snapshot has no
-    snapshot 12 months after it, so its turnover rate is null."""
+    snapshot 12 months after it, so its turnover rate is null. Start dates default
+    to null and ages to 1."""
     return pl.DataFrame(
         data={
             AWKClean.establishment_id: ["100", "100"],
@@ -43,6 +48,8 @@ def build_source_df() -> pl.DataFrame:
             HackCols.nationality_group: [NationalityGroupLabels.non_eea] * 2,
             HackCols.country_of_birth_group: [CountryOfBirthGroupLabels.non_eea] * 2,
             **{column: [1.0] * 2 for column in job.NUMERIC_COLUMNS},
+            AWKClean.age: ages or [1.0] * 2,
+            AWKClean.start_date: start_dates or [None] * 2,
             **{
                 label_column: [vocabulary.label_cls(label_column).categorical_values[0]]
                 * 2
@@ -69,6 +76,7 @@ def build_source_df() -> pl.DataFrame:
             HackCols.nationality_group: pl.Categorical,
             HackCols.country_of_birth_group: pl.Categorical,
             **{column: pl.Float32 for column in job.NUMERIC_COLUMNS},
+            AWKClean.start_date: pl.Date,
             **{column: pl.Categorical for column in wUtils.LABEL_COLUMNS},
         },
     )
@@ -97,6 +105,49 @@ def build_compare_lf() -> pl.LazyFrame:
             AWKClean.employment_status_clean_labelled: CatColType.EmploymentStatusCatType,
         },
     )
+
+
+AFTER_IMPORT_BRIEF = "start date is on or before the import date"
+START_AGE_BRIEF = "start date implies a start age of 16 or over where age is known"
+TENURE_BRIEF = "start date is within 70 years of the import date where age is unknown"
+START_DATE_BRIEFS = {AFTER_IMPORT_BRIEF, START_AGE_BRIEF, TENURE_BRIEF}
+
+
+@dataclass
+class StartDateCheckCase:
+    id: str
+    start_dates: list[date | None]
+    ages: list[float | None]
+    failed_briefs: set[str]
+
+
+# The source rows are imported on 2023-01-01 and 2024-01-01.
+START_DATE_CHECK_CASES = [
+    StartDateCheckCase(
+        id="fails_when_start_date_is_after_import_date",
+        start_dates=[date(2023, 6, 1), None],
+        ages=[30.0, 31.0],
+        failed_briefs={AFTER_IMPORT_BRIEF},
+    ),
+    StartDateCheckCase(
+        id="fails_when_start_date_implies_start_age_under_16",
+        start_dates=[date(2013, 1, 1), None],
+        ages=[20.0, 21.0],
+        failed_briefs={START_AGE_BRIEF},
+    ),
+    StartDateCheckCase(
+        id="fails_when_age_unknown_and_start_date_over_70_years_before_import",
+        start_dates=[date(1940, 1, 1), None],
+        ages=[None, None],
+        failed_briefs={TENURE_BRIEF},
+    ),
+    StartDateCheckCase(
+        id="passes_when_start_date_is_null",
+        start_dates=[None, None],
+        ages=[1.0, 1.0],
+        failed_briefs=set(),
+    ),
+]
 
 
 class TestMain:
@@ -181,6 +232,38 @@ class TestMain:
         )
         assert row_count_step["values"]["count"] == 0
 
+    @pytest.mark.parametrize(
+        "case", [pytest.param(case, id=case.id) for case in START_DATE_CHECK_CASES]
+    )
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_start_date_checks_fail_only_for_implausible_start_dates(
+        self,
+        mock_read_parquet: Mock,
+        mock_scan_parquet: Mock,
+        mock_write_reports: Mock,
+        case: StartDateCheckCase,
+    ):
+        mock_read_parquet.return_value = build_source_df(case.start_dates, case.ages)
+        mock_scan_parquet.return_value = build_compare_lf()
+
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/", "train")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        briefs_in_report = {item["brief"] for item in report_json}
+        failed_briefs = {
+            item["brief"]
+            for item in report_json
+            if item["brief"] in START_DATE_BRIEFS and item["n_failed"] > 0
+        }
+        assert START_DATE_BRIEFS <= briefs_in_report
+        assert failed_briefs == case.failed_briefs
+
+    def test_source_columns_include_start_date(self):
+        assert AWKClean.start_date in job.SOURCE_COLUMNS
+
     def test_source_columns_exclude_columns_dropped_from_job_output(self):
         dropped_columns = {
             *wUtils.PAY_AND_HOURS_COLUMNS,
@@ -192,6 +275,7 @@ class TestMain:
             HackCols.headcount_reconciliation_gap,
             HackCols.headcount_gap_within_tolerance,
             HackCols.plausible_turnover,
+            HackCols.plausible_start_date,
         }
 
         assert not dropped_columns & set(job.SOURCE_COLUMNS)

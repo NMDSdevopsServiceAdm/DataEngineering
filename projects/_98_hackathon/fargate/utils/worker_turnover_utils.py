@@ -45,6 +45,8 @@ from utils.column_values.categorical_column_values import PrimaryServiceType
 DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
 DEFAULT_MAX_HEADCOUNT_GAP = 0
 EARLIEST_IMPORT_DATE = date(2020, 1, 1)
+MIN_START_AGE = 16
+MAX_YEARS_SINCE_START_WITHOUT_AGE = 70
 
 WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.gender,
@@ -184,6 +186,96 @@ def add_raw_worker_columns(
     )
 
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
+
+
+def fix_start_date_typos(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Fixes start dates with a mistyped century.
+
+    - 1 January 1900, a placeholder, becomes null.
+    - A year from 0001 to 0099 becomes the same year in the 2000s (`0015` is 2015).
+    - A year from 1900 to 1999 becomes the same year in the 2000s (`1913` is 2013),
+      unless that is after `ascwds_worker_import_date`, when it is left as it is.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `start_date` and
+            `ascwds_worker_import_date`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `start_date` fixed.
+    """
+    placeholder_start_date = date(1900, 1, 1)
+    start_date = pl.col(AWKClean.start_date)
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    start_year = start_date.dt.year()
+    next_century = start_date.dt.offset_by("100y")
+
+    return worker_lf.with_columns(
+        pl.when(start_date == placeholder_start_date)
+        .then(None)
+        .when(start_year < 100)
+        .then(start_date.dt.offset_by("2000y"))
+        .when(start_year.is_between(1900, 1999) & (next_century <= import_date))
+        .then(next_century)
+        .otherwise(start_date)
+        .alias(AWKClean.start_date)
+    )
+
+
+def add_plausible_start_date_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `plausible_start_date`.
+
+    True when `start_date` is null. Otherwise false when `start_date` is after
+    `ascwds_worker_import_date`. Otherwise, when `age` is above 0, true if the
+    worker was at least `MIN_START_AGE` at `start_date` (`age` minus years since
+    `start_date`). Without a known age (null or not above 0), true if `start_date` is
+    no more than `MAX_YEARS_SINCE_START_WITHOUT_AGE` years before
+    `ascwds_worker_import_date`.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `start_date`,
+            `ascwds_worker_import_date` and `age`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `plausible_start_date` added.
+    """
+    start_date = pl.col(AWKClean.start_date)
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    age = pl.col(AWKClean.age)
+    years_since_start = (import_date - start_date).dt.total_days() / 365.25
+
+    return worker_lf.with_columns(
+        pl.when(start_date.is_null())
+        .then(True)
+        .when(start_date > import_date)
+        .then(False)
+        .when(age > 0)
+        .then(age - years_since_start >= MIN_START_AGE)
+        .otherwise(
+            start_date
+            >= import_date.dt.offset_by(f"-{MAX_YEARS_SINCE_START_WITHOUT_AGE}y")
+        )
+        .alias(HackCols.plausible_start_date)
+    )
+
+
+def null_implausible_start_dates(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Nulls `start_date` where `plausible_start_date` is false.
+
+    Run before imputation so an implausible date is not spread to a worker's other
+    import dates, and the worker's plausible dates can fill it instead.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `start_date` and
+            `plausible_start_date`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `start_date` nulled where implausible.
+    """
+    return worker_lf.with_columns(
+        pl.when(pl.col(HackCols.plausible_start_date))
+        .then(pl.col(AWKClean.start_date))
+        .alias(AWKClean.start_date)
+    )
 
 
 def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -746,14 +838,14 @@ def add_valid_for_analysis_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     It is true for any rate between them and null when the rate is null.
     `valid_for_analysis` is true only when `establishment_in_both_snapshots`,
-    `establishment_active`, `plausible_turnover` and
+    `establishment_active`, `plausible_turnover`, `plausible_start_date` and
     `headcount_gap_within_tolerance` are all true, otherwise false. Keeps every
     row.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `turnover_rate`,
-            `establishment_in_both_snapshots`, `establishment_active` and
-            `headcount_gap_within_tolerance`.
+            `establishment_in_both_snapshots`, `establishment_active`,
+            `plausible_start_date` and `headcount_gap_within_tolerance`.
 
     Returns:
         pl.LazyFrame: The input rows with `plausible_turnover` and
@@ -769,6 +861,7 @@ def add_valid_for_analysis_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
             pl.col(HackCols.establishment_in_both_snapshots)
             & pl.col(HackCols.establishment_active)
             & pl.col(HackCols.plausible_turnover)
+            & pl.col(HackCols.plausible_start_date)
             & pl.col(HackCols.headcount_gap_within_tolerance)
         )
         .fill_null(False)

@@ -83,6 +83,9 @@ def main(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
+    filtered_lf = wUtils.fix_start_date_typos(filtered_lf)
+    filtered_lf = wUtils.add_plausible_start_date_flag(filtered_lf)
+    filtered_lf = wUtils.null_implausible_start_dates(filtered_lf)
     filtered_lf = wUtils.add_headcount_reconciliation_gap(filtered_lf, max_gap)
     filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf).drop(
         HackCols.establishment_in_both_snapshots,
@@ -92,6 +95,7 @@ def main(
         HackCols.headcount_reconciliation_gap,
         HackCols.headcount_gap_within_tolerance,
         HackCols.plausible_turnover,
+        HackCols.plausible_start_date,
     )
     filtered_lf = wUtils.null_not_known_codes(filtered_lf)
     filtered_lf = filtered_lf.with_columns(

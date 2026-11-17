@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
 - Dropped unneeded columns from the hackathon worker turnover output at their last use.
 
 ### Fixed
+- Fixed implausible start dates in the Hackathon Worker Turnover job: mistyped centuries are corrected, and start dates that are after the import date or imply starting under age 16 (often a date of birth) are set to null before imputation and not valid for analysis.
 
 
 ## [v2026.10.0] - 09/11/2026

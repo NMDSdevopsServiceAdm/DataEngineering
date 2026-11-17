@@ -526,6 +526,68 @@ class TestAddRawWorkerColumns:
         assert returned_df.height == 2
 
 
+class TestFixStartDateTypos:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.fix_start_date_typos_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows, schema=Schemas.fix_start_date_typos_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.fix_start_date_typos_schema, orient="row"
+        )
+
+        returned_lf = job.fix_start_date_typos(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestAddPlausibleStartDateFlag:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.add_plausible_start_date_flag_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.plausible_start_date_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(HackCols.plausible_start_date)
+
+        returned_lf = job.add_plausible_start_date_flag(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
+class TestNullImplausibleStartDates:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.null_implausible_start_dates_cases
+        ],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows,
+            schema=Schemas.null_implausible_start_dates_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows,
+            schema=Schemas.null_implausible_start_dates_schema,
+            orient="row",
+        )
+
+        returned_lf = job.null_implausible_start_dates(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestNullNotKnownCodes:
     not_known_codes = {
         AWKClean.gender: NotKnownWorkerCodes.gender,
