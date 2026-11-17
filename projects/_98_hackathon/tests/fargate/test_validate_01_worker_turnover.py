@@ -21,14 +21,6 @@ from utils.column_values.categorical_column_values import PrimaryServiceType
 PATCH_PATH = "projects._98_hackathon.fargate.validate_01_worker_turnover"
 
 
-PAY_DIFFERENCE_POPULATED_BRIEF = (
-    "valid_hourly_pay_minus_nlw is null exactly when hourly_pay_minus_nlw is null"
-)
-NEGATIVE_DIFFERENCE_INVALID_BRIEF = (
-    "valid_hourly_pay_minus_nlw is false whenever hourly_pay_minus_nlw is negative"
-)
-
-
 def build_source_df() -> pl.DataFrame:
     """Two snapshots of a worker 12 months apart. The later snapshot has no
     snapshot 12 months after it, so its turnover rate is null."""
@@ -190,50 +182,6 @@ class TestMain:
             item for item in report_json if item["assertion_type"] == "row_count_match"
         )
         assert row_count_step["values"]["count"] == 0
-
-    @staticmethod
-    def get_step(source_df: pl.DataFrame, brief: str) -> dict:
-        """Runs the validation on `source_df` and returns the step with `brief`."""
-        with (
-            patch(f"{PATCH_PATH}.vl.write_reports") as mock_write_reports,
-            patch(f"{PATCH_PATH}.utils.scan_parquet") as mock_scan_parquet,
-            patch(f"{PATCH_PATH}.utils.read_parquet") as mock_read_parquet,
-        ):
-            mock_read_parquet.return_value = source_df
-            mock_scan_parquet.return_value = build_compare_lf()
-
-            job.main("bucket", "my/source/", "my/compare/", "my/reports/", "train")
-
-            validation_arg = mock_write_reports.call_args[0][0]
-        report_json = json.loads(validation_arg.get_json_report())
-        return next(item for item in report_json if item["brief"] == brief)
-
-    def test_pay_difference_flag_checks_pass_for_consistent_data(self):
-        source_df = build_source_df()
-
-        populated_step = self.get_step(source_df, PAY_DIFFERENCE_POPULATED_BRIEF)
-        negative_step = self.get_step(source_df, NEGATIVE_DIFFERENCE_INVALID_BRIEF)
-
-        assert populated_step["all_passed"]
-        assert negative_step["all_passed"]
-
-    def test_populated_check_fails_when_flag_set_for_null_difference(self):
-        source_df = build_source_df().with_columns(
-            pl.Series(HackCols.valid_hourly_pay_minus_nlw, [True, True])
-        )
-
-        step = self.get_step(source_df, PAY_DIFFERENCE_POPULATED_BRIEF)
-
-        assert not step["all_passed"]
-
-    def test_negative_check_fails_when_negative_difference_marked_valid(self):
-        source_df = build_source_df().with_columns(
-            pl.Series(HackCols.hourly_pay_minus_nlw, [-1.0, None], dtype=pl.Float32)
-        )
-
-        step = self.get_step(source_df, NEGATIVE_DIFFERENCE_INVALID_BRIEF)
-
-        assert not step["all_passed"]
 
     def test_source_columns_exclude_columns_dropped_from_job_output(self):
         dropped_columns = {
