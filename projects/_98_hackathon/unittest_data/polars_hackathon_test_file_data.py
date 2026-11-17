@@ -86,6 +86,13 @@ class AddNlwAndPayDifferenceCase:
 
 
 @dataclass
+class NullInconsistentAgesCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class AddCodeGroupCase:
     id: str
     code_column: str
@@ -1213,4 +1220,123 @@ class WorkerTurnoverData:
         ("1", "B", date(2024, 6, 1), 50.0, 50.0, AgeSource.observed),
         ("1", "B", date(2023, 12, 1), None, 49.0, AgeSource.assumed_birth_month),
         ("2", "A", date(2024, 1, 1), None, None, None),
+    ]
+
+    # Rows: (worker_id, establishment_id, import_date, age). The implied birth
+    # year is the import year minus age; ages 3 or more years from the worker's
+    # median are nulled, unless half or more of the worker's ages are.
+    null_inconsistent_ages_cases = [
+        NullInconsistentAgesCase(
+            id="nulls_age_far_from_the_workers_other_ages",
+            input_rows=[
+                ("1", "A", date(2022, 6, 1), 30.0),
+                ("1", "A", date(2023, 6, 1), 31.0),
+                ("1", "A", date(2024, 1, 1), 75.0),
+                ("1", "A", date(2024, 6, 1), 32.0),
+            ],
+            expected_rows=[
+                ("1", "A", date(2022, 6, 1), 30.0),
+                ("1", "A", date(2023, 6, 1), 31.0),
+                ("1", "A", date(2024, 1, 1), None),
+                ("1", "A", date(2024, 6, 1), 32.0),
+            ],
+        ),
+        NullInconsistentAgesCase(
+            id="nulls_the_shorter_run_of_implausible_ages_before_a_reset",
+            input_rows=[
+                ("1", "A", date(2023, 1, 1), 100.0),
+                ("1", "A", date(2023, 2, 1), 100.0),
+                ("1", "A", date(2023, 3, 1), 101.0),
+                ("1", "A", date(2023, 4, 1), 20.0),
+                ("1", "A", date(2023, 5, 1), 20.0),
+                ("1", "A", date(2023, 6, 1), 20.0),
+                ("1", "A", date(2023, 7, 1), 21.0),
+                ("1", "A", date(2023, 8, 1), 21.0),
+            ],
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), None),
+                ("1", "A", date(2023, 2, 1), None),
+                ("1", "A", date(2023, 3, 1), None),
+                ("1", "A", date(2023, 4, 1), 20.0),
+                ("1", "A", date(2023, 5, 1), 20.0),
+                ("1", "A", date(2023, 6, 1), 20.0),
+                ("1", "A", date(2023, 7, 1), 21.0),
+                ("1", "A", date(2023, 8, 1), 21.0),
+            ],
+        ),
+        NullInconsistentAgesCase(
+            id="keeps_age_two_years_from_median",
+            input_rows=[
+                ("1", "A", date(2022, 1, 1), 30.0),
+                ("1", "A", date(2023, 1, 1), 31.0),
+                ("1", "A", date(2024, 1, 1), 32.0),
+                ("1", "A", date(2025, 1, 1), 31.0),
+            ],
+            expected_rows=[
+                ("1", "A", date(2022, 1, 1), 30.0),
+                ("1", "A", date(2023, 1, 1), 31.0),
+                ("1", "A", date(2024, 1, 1), 32.0),
+                ("1", "A", date(2025, 1, 1), 31.0),
+            ],
+        ),
+        NullInconsistentAgesCase(
+            id="nulls_age_three_years_from_median",
+            input_rows=[
+                ("1", "A", date(2022, 1, 1), 30.0),
+                ("1", "A", date(2023, 1, 1), 31.0),
+                ("1", "A", date(2024, 1, 1), 32.0),
+                ("1", "A", date(2025, 1, 1), 30.0),
+            ],
+            expected_rows=[
+                ("1", "A", date(2022, 1, 1), 30.0),
+                ("1", "A", date(2023, 1, 1), 31.0),
+                ("1", "A", date(2024, 1, 1), 32.0),
+                ("1", "A", date(2025, 1, 1), None),
+            ],
+        ),
+        NullInconsistentAgesCase(
+            id="keeps_both_ages_when_there_are_two_that_disagree",
+            input_rows=[
+                ("1", "A", date(2023, 1, 1), 100.0),
+                ("1", "A", date(2023, 2, 1), 20.0),
+            ],
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 100.0),
+                ("1", "A", date(2023, 2, 1), 20.0),
+            ],
+        ),
+        NullInconsistentAgesCase(
+            id="keeps_all_ages_when_half_disagree_with_the_other_half",
+            input_rows=[
+                ("1", "A", date(2023, 1, 1), 100.0),
+                ("1", "A", date(2023, 2, 1), 100.0),
+                ("1", "A", date(2023, 3, 1), 20.0),
+                ("1", "A", date(2023, 4, 1), 20.0),
+            ],
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 100.0),
+                ("1", "A", date(2023, 2, 1), 100.0),
+                ("1", "A", date(2023, 3, 1), 20.0),
+                ("1", "A", date(2023, 4, 1), 20.0),
+            ],
+        ),
+        NullInconsistentAgesCase(
+            id="keeps_null_ages_and_does_not_mix_workers_or_establishments",
+            input_rows=[
+                ("1", "A", date(2022, 6, 1), 30.0),
+                ("1", "A", date(2023, 6, 1), None),
+                ("1", "A", date(2024, 1, 1), 75.0),
+                ("1", "A", date(2024, 6, 1), 32.0),
+                ("1", "B", date(2024, 1, 1), 75.0),
+                ("2", "A", date(2024, 1, 1), None),
+            ],
+            expected_rows=[
+                ("1", "A", date(2022, 6, 1), 30.0),
+                ("1", "A", date(2023, 6, 1), None),
+                ("1", "A", date(2024, 1, 1), None),
+                ("1", "A", date(2024, 6, 1), 32.0),
+                ("1", "B", date(2024, 1, 1), 75.0),
+                ("2", "A", date(2024, 1, 1), None),
+            ],
+        ),
     ]

@@ -298,6 +298,44 @@ def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     ).drop(PAY_AND_HOURS_COLUMNS)
 
 
+def null_inconsistent_ages(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Nulls observed ages that disagree with the rest of the worker's ages.
+
+    The implied birth year is the import year minus age: constant for a
+    consistent worker, within a year of birthday timing. An age 3 or more years
+    from the worker's median implied birth year is nulled. A worker with half or
+    more of their ages that far out has no clear majority, so keeps all of them.
+
+    Uses `.over()`, which the streaming engine does not cover, so the sink may
+    fall back to the in-memory engine.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the establishment ID, worker ID,
+            `ascwds_worker_import_date` and `age` (`Float32`).
+
+    Returns:
+        pl.LazyFrame: The input rows with inconsistent ages set to null.
+    """
+    min_birth_year_deviation = 3
+    worker = [AWKClean.worker_id, AWKClean.establishment_id]
+
+    age = pl.col(AWKClean.age)
+    birth_year = pl.col(AWKClean.ascwds_worker_import_date).dt.year() - age
+    is_far_from_median = (
+        birth_year - birth_year.median().over(worker)
+    ).abs() >= min_birth_year_deviation
+    has_clear_majority = is_far_from_median.sum().over(worker) * 2 < age.count().over(
+        worker
+    )
+
+    return worker_lf.with_columns(
+        pl.when(is_far_from_median & has_clear_majority)
+        .then(None)
+        .otherwise(age)
+        .alias(AWKClean.age)
+    )
+
+
 def impute_age(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Adds `age_imputed` and `age_source`, filling null ages from a birth month.
 

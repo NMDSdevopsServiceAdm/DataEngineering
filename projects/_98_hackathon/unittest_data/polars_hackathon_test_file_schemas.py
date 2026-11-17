@@ -99,6 +99,15 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    null_inconsistent_ages_schema = pl.Schema(
+        [
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.establishment_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.age, pl.Float32()),
+        ]
+    )
+
     impute_age_schema = pl.Schema(
         [
             (AWKClean.worker_id, pl.String()),
