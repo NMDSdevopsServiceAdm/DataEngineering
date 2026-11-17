@@ -210,11 +210,11 @@ def add_raw_worker_columns(
 def add_raw_workplace_columns(
     worker_lf: pl.LazyFrame, raw_workplace_lf: pl.LazyFrame
 ) -> pl.LazyFrame:
-    """Adds the raw workplace code columns from the worker's own snapshot.
+    """Adds the raw workplace code columns from the worker's snapshot.
 
-    Left joins on establishment ID and import date. Raw rows are cut to the keys
-    in `worker_lf` by a semi join so the full raw history is never joined. Codes
-    stay strings. Relies on unique establishment and import date keys.
+    Left joins on establishment ID and import date. A semi join first cuts the raw
+    rows to the keys in `worker_lf`, so the full raw history is never joined. Relies
+    on unique establishment and import date keys.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with establishment ID and

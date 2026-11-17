@@ -524,7 +524,7 @@ class ZeroHoursLabels(ColumnValues):
 
 @dataclass
 class EnhancedBenefitID(ColumnValues):
-    """The valid values of the care worker enhanced sick pay and pension columns in ASCWDS workplace data (not known is -1)"""
+    """Valid codes of the care worker enhanced sick pay and pension columns (not known is -1)"""
 
     yes: str = "1"
     no: str = "2"
@@ -532,7 +532,7 @@ class EnhancedBenefitID(ColumnValues):
 
 @dataclass
 class EnhancedBenefitLabels(ColumnValues):
-    """The valid labels of the care worker enhanced sick pay and pension columns in ASCWDS workplace data"""
+    """Valid labels of the care worker enhanced sick pay and pension columns"""
 
     yes: str = "Yes"
     no: str = "No"
@@ -540,7 +540,7 @@ class EnhancedBenefitLabels(ColumnValues):
 
 @dataclass
 class TrainFlagID(ColumnValues):
-    """The possible values of the training flag column in ASCWDS worker data"""
+    """Codes of the training flag column"""
 
     no: str = "0"
     yes: str = "1"
@@ -548,7 +548,7 @@ class TrainFlagID(ColumnValues):
 
 @dataclass
 class TrainFlagLabels(ColumnValues):
-    """The possible labels of the training flag column in ASCWDS worker data"""
+    """Labels of the training flag column"""
 
     no: str = "No"
     yes: str = "Yes"
