@@ -341,16 +341,16 @@ def impute_age(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Per worker and establishment, ordered by `ascwds_worker_import_date`:
     - Observed ages are kept (`observed`).
-    - The birth month is the month of the first adjacent-month change of exactly
-      +1 in observed age (`pinned_birth_month`); the earliest change wins. With no
-      such change it is the calendar month of the first observed age
-      (`assumed_birth_month`).
-    - A null age is the first observed age, plus the birthdays passed between the
-      first observed month and the null's month (negative before it).
+    - The birth month is the month the age first goes up by 1 between two
+      consecutive months (`pinned_birth_month`). With no such rise it is the month
+      of the first observed age (`assumed_birth_month`).
+    - A null age is the first observed age, plus 1 for each birthday after it or
+      minus 1 for each birthday before it. For example, 35 in Jun 2025 gives 36 in
+      Jun 2026 and 25 in Jun 2015.
     - A worker with no observed age stays null, with a null `age_source`.
 
-    Months are counted as `year * 12 + month`. Uses `.over()`, which the streaming
-    engine does not cover, so the sink may fall back to the in-memory engine.
+    Uses `.over()`, which the streaming engine does not cover, so the sink may
+    fall back to the in-memory engine.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the establishment ID, worker ID,
@@ -370,8 +370,8 @@ def impute_age(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     worker_lf = worker_lf.with_columns(
         (
-            (age == age.shift(1).over(worker, order_by=order_by) + 1)
-            & (month - month.shift(1).over(worker, order_by=order_by) == 1)
+            (age.diff().over(worker, order_by=order_by) == 1)
+            & (month.diff().over(worker, order_by=order_by) == 1)
         ).alias(is_pinned_change)
     )
 

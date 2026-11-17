@@ -11,6 +11,7 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
@@ -173,6 +174,12 @@ def main(
             0,
             brief="nlw_hourly_rate is populated and above 0",
         )
+        .col_vals_ge(
+            HackCols.age_imputed,
+            0,
+            na_pass=True,
+            brief="age_imputed is null or not negative",
+        )
         # Cross-column checks
         .col_vals_expr(
             expr=turnover_rate.min()
@@ -192,6 +199,22 @@ def main(
             .is_not_null()
             .eq(hourly_pay.is_not_null()),
             brief="hourly_pay_minus_nlw is populated exactly when hourly_pay is populated",
+        )
+        .col_vals_in_set(
+            HackCols.age_source,
+            [
+                AgeSource.observed,
+                AgeSource.pinned_birth_month,
+                AgeSource.assumed_birth_month,
+                None,
+            ],
+            brief="age_source is a known value or null",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.age_imputed)
+            .is_not_null()
+            .eq(pl.col(HackCols.age_source).is_not_null()),
+            brief="age_imputed is populated exactly when age_source is populated",
         )
     )
 
