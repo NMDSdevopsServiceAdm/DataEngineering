@@ -20,17 +20,22 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     APPRENTICE,
     CARE_CERTIFICATE_STATUS,
     DISABLED,
+    ENHANCED_BENEFIT,
     ETHNICITY,
     GENDER,
     LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
     SOCIAL_CARE_QUAL_HELD,
     SOURCE_OF_RECRUITMENT,
+    TRAIN_FLAG,
     ZERO_HOURS,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
@@ -58,6 +63,12 @@ WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.apprentice,
     AWKClean.zero_hours,
     AWKClean.source_of_recruitment,
+    AWKClean.training_ain_flag,
+]
+
+WORKPLACE_CODE_COLUMNS = [
+    AWPClean.care_worker_enhanced_sick_pay,
+    AWPClean.care_worker_enhanced_pension,
 ]
 
 # Nationality and country of birth get a group column instead of a label column.
@@ -73,9 +84,63 @@ LABEL_VOCABULARIES = {
     AWKClean.apprentice: APPRENTICE,
     AWKClean.zero_hours: ZERO_HOURS,
     AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT,
+    AWKClean.training_ain_flag: TRAIN_FLAG,
+    AWPClean.care_worker_enhanced_sick_pay: ENHANCED_BENEFIT,
+    AWPClean.care_worker_enhanced_pension: ENHANCED_BENEFIT,
 }
 LABELLED_COLUMNS = list(LABEL_VOCABULARIES)
 LABEL_COLUMNS = [f"{column}_{DLC.label}s" for column in LABELLED_COLUMNS]
+
+# Group label column -> (code column, {code: group}). Codes with no group are null.
+GROUP_LABEL_RECODES = {
+    HackCols.ethnicity_group_labels: (
+        AWKClean.ethnicity,
+        {
+            **dict.fromkeys(["31", "32", "33", "34"], "White"),
+            **dict.fromkeys(["35", "36", "37", "38"], "Mixed/multiple ethnic groups"),
+            **dict.fromkeys(["39", "40", "41", "42", "43"], "Asian/Asian British"),
+            **dict.fromkeys(
+                ["44", "45", "46"], "Black/African/Caribbean/Black British"
+            ),
+            **dict.fromkeys(["47", "98"], "Other ethnic group"),
+        },
+    ),
+    HackCols.scerec_group_labels: (
+        AWKClean.source_of_recruitment,
+        {
+            **dict.fromkeys(["211", "217"], "Independent sector"),
+            "210": "Local authority",
+            **dict.fromkeys(["221", "222", "223"], "Agency"),
+            "214": "Health sector",
+            **dict.fromkeys(
+                ["212", "213", "215", "216", "218", "219", "220", "224", "226", "227"],
+                "Other",
+            ),
+        },
+    ),
+    HackCols.scerec_wo_group_labels: (
+        AWKClean.source_of_recruitment,
+        {
+            **dict.fromkeys(["210", "211", "217", "221", "222", "223"], "Within asc"),
+            **dict.fromkeys(
+                [
+                    "212",
+                    "213",
+                    "214",
+                    "215",
+                    "216",
+                    "218",
+                    "219",
+                    "220",
+                    "224",
+                    "226",
+                    "227",
+                ],
+                "Outside asc",
+            ),
+        },
+    ),
+}
 
 WORKER_NUMERIC_COLUMNS = [
     AWKClean.age,
@@ -118,6 +183,15 @@ RAW_WORKER_SCHEMA = {
     ]
 }
 
+RAW_WORKPLACE_SCHEMA = {
+    column: pl.String
+    for column in [
+        AWPClean.establishment_id,
+        AWPClean.import_date,
+        *WORKPLACE_CODE_COLUMNS,
+    ]
+}
+
 IMPUTE_COLUMNS = [
     f"{AWKClean.gender}_labels",
     f"{AWKClean.ethnicity}_labels",
@@ -134,6 +208,7 @@ IMPUTE_COLUMNS = [
     f"{AWKClean.social_care_qual_held}_labels",
     f"{AWKClean.level_social_care_qualification_held}_labels",
     f"{AWKClean.care_certificate_status}_labels",
+    f"{AWKClean.training_ain_flag}_labels",
 ]
 
 
@@ -186,6 +261,80 @@ def add_raw_worker_columns(
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
 
 
+def add_raw_workplace_columns(
+    worker_lf: pl.LazyFrame, raw_workplace_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """Adds the raw workplace code columns from the worker's own snapshot.
+
+    Left joins on establishment ID and import date. Raw rows are cut to the keys
+    in `worker_lf` by a semi join so the full raw history is never joined. Codes
+    stay strings. Relies on unique establishment and import date keys.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with establishment ID and
+            `ascwds_worker_import_date`.
+        raw_workplace_lf (pl.LazyFrame): Raw ASC-WDS workplace data, all strings.
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus `WORKPLACE_CODE_COLUMNS`.
+    """
+    keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
+
+    raw_workplace_lf = column_to_date(
+        raw_workplace_lf.select(RAW_WORKPLACE_SCHEMA.keys()),
+        AWPClean.import_date,
+        AWKClean.ascwds_worker_import_date,
+    ).drop(AWPClean.import_date)
+
+    raw_workplace_lf = raw_workplace_lf.with_columns(
+        pl.col(AWPClean.establishment_id).cast(
+            CategoricalColumnTypes.EstablishmentCatType
+        )
+    ).join(worker_lf.select(keys), on=keys, how="semi")
+
+    return worker_lf.join(raw_workplace_lf, on=keys, how="left")
+
+
+def add_coverage_geography(
+    worker_lf: pl.LazyFrame, coverage_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """Adds `current_cssr` and `current_region` from the merged coverage data.
+
+    Left joins on establishment ID and import date. Coverage rows are cut to the
+    establishments in ASC-WDS and de-duplicated on the keys first, so an
+    establishment matched to several locations cannot add rows to `worker_lf`.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with establishment ID and
+            `ascwds_worker_import_date`.
+        coverage_lf (pl.LazyFrame): Merged coverage data with the ASC-WDS
+            establishment ID, workplace import date, `current_cssr` and
+            `current_region`.
+
+    Returns:
+        pl.LazyFrame: The input rows with all columns plus the two geography
+            columns, `Categorical`.
+    """
+    keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
+    geography_columns = [CQCLClean.current_cssr, CQCLClean.current_region]
+
+    coverage_lf = (
+        coverage_lf.select(
+            pl.col(AWPClean.establishment_id).cast(
+                CategoricalColumnTypes.EstablishmentCatType
+            ),
+            pl.col(AWPClean.ascwds_workplace_import_date).alias(
+                AWKClean.ascwds_worker_import_date
+            ),
+            pl.col(geography_columns).cast(pl.Categorical),
+        )
+        .drop_nulls(subset=keys)
+        .unique(subset=keys)
+    )
+
+    return worker_lf.join(coverage_lf, on=keys, how="left")
+
+
 def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Nulls not known, not recorded, not disclosed and unknown values.
 
@@ -194,8 +343,8 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     - The positive not known codes of each column, from `NotKnownWorkerCodes`.
 
     Args:
-        worker_lf (pl.LazyFrame): Worker data with the raw worker columns, codes
-            as strings and numbers `Float32`.
+        worker_lf (pl.LazyFrame): Worker data with the raw worker and workplace
+            columns, codes as strings and numbers `Float32`.
 
     Returns:
         pl.LazyFrame: The input rows with those values set to null.
@@ -215,7 +364,7 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     }
 
     code_expressions = []
-    for column in WORKER_CATEGORICAL_COLUMNS:
+    for column in [*WORKER_CATEGORICAL_COLUMNS, *WORKPLACE_CODE_COLUMNS]:
         code = pl.col(column)
         keep = ~code.str.starts_with("-")
         if column in column_not_known_code:
@@ -230,15 +379,18 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds a categorical `<column>_labels` column beside each coded worker column.
+    """Adds categorical label columns for the coded worker columns.
 
-    Codes with no label keep their raw code in the label column. Null codes stay null.
+    - A `<column>_labels` column beside each coded column. Codes with no label
+      keep their raw code; null codes stay null.
+    - The `GROUP_LABEL_RECODES` group label columns (ethnicity and source of
+      recruitment groups). Codes with no group, and null codes, give null.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw coded worker columns.
 
     Returns:
-        pl.LazyFrame: The input with a `_labels` column for each coded column.
+        pl.LazyFrame: The input with the label and group label columns added.
     """
     code_to_label = {
         column: vocabulary.code_to_label()
@@ -252,7 +404,18 @@ def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         add_as_new_column=True,
     )
 
-    return worker_lf.with_columns(pl.col(LABEL_COLUMNS).cast(pl.Categorical))
+    group_label_exprs = [
+        pl.col(code_column)
+        .cast(pl.String)
+        .replace_strict(mapping, default=None, return_dtype=pl.String)
+        .cast(pl.Categorical)
+        .alias(group_column)
+        for group_column, (code_column, mapping) in GROUP_LABEL_RECODES.items()
+    ]
+
+    return worker_lf.with_columns(
+        pl.col(LABEL_COLUMNS).cast(pl.Categorical), *group_label_exprs
+    )
 
 
 def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -374,6 +537,81 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         )
     ).drop(
         HackCols.nlw_effective_date, HackCols.nlw_is_apprentice, HackCols.nlw_band_start
+    )
+
+
+def add_years_in_role_and_sector(
+    worker_lf: pl.LazyFrame, save_dates_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """Adds years in role and years in the sector at the establishment's latest save date.
+
+    - `years_in_role` is the days from `start_date` to the latest save date,
+      divided by 365.25.
+    - `years_in_sector` is the latest save date's year minus `start_in_sector`
+      (a year).
+
+    Both are null when the start value or the save date is null, and can be
+    negative. The save dates are one small row per establishment and snapshot, so
+    the join adds no rows.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `start_date`, `start_in_sector`
+            and the establishment ID and `ascwds_worker_import_date` keys.
+        save_dates_lf (pl.LazyFrame): Latest save date per establishment and
+            snapshot import date, from `get_latest_save_date_per_establishment`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `years_in_role` and `years_in_sector`
+            (`Float32`) added.
+    """
+    keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
+    save_date = pl.col(HackCols.latest_save_date)
+
+    return (
+        worker_lf.join(save_dates_lf, on=keys, how="left")
+        .with_columns(
+            ((save_date - pl.col(AWKClean.start_date)).dt.total_days() / 365.25)
+            .cast(pl.Float32)
+            .alias(HackCols.years_in_role),
+            (save_date.dt.year() - pl.col(AWKClean.start_in_sector))
+            .cast(pl.Float32)
+            .alias(HackCols.years_in_sector),
+        )
+        .drop(HackCols.latest_save_date)
+    )
+
+
+def add_hourly_pay_diff_to_la_median(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `hourly_pay_diff_to_la_median`: `hourly_pay` minus the local median.
+
+    The median `hourly_pay` is taken per import date, `current_cssr` and main job
+    role. The difference is null when `hourly_pay`, `current_cssr` or the job role
+    is null. Uses `.over()`, which the streaming engine does not cover, so the sink
+    may fall back to the in-memory engine.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
+            `current_cssr`, `main_job_role_clean_labelled` and `hourly_pay`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `hourly_pay_diff_to_la_median`
+            (`Float32`) added.
+    """
+    group_columns = [
+        AWKClean.ascwds_worker_import_date,
+        CQCLClean.current_cssr,
+        AWKClean.main_job_role_clean_labelled,
+    ]
+    median_pay = pl.col(HackCols.hourly_pay).median().over(group_columns)
+
+    return worker_lf.with_columns(
+        pl.when(
+            pl.col(CQCLClean.current_cssr).is_not_null()
+            & pl.col(AWKClean.main_job_role_clean_labelled).is_not_null()
+        )
+        .then(pl.col(HackCols.hourly_pay) - median_pay)
+        .cast(pl.Float32)
+        .alias(HackCols.hourly_pay_diff_to_la_median)
     )
 
 

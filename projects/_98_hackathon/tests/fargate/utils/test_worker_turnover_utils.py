@@ -18,6 +18,12 @@ from projects._98_hackathon.unittest_data.polars_hackathon_test_file_schemas imp
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import NotKnownWorkerCodes
 
@@ -362,7 +368,7 @@ class TestAddRawWorkerColumns:
             *job.WORKER_NUMERIC_COLUMNS,
             *job.WORKER_DATE_COLUMNS,
         ]
-        assert len(returned_names) - len(input_names) == 25
+        assert len(returned_names) - len(input_names) == 26
 
     def test_excludes_highest_qualification_level(self):
         raw_lf = raw_worker_lf(raw_worker_row("1", "20210105"))
@@ -526,6 +532,283 @@ class TestAddRawWorkerColumns:
         assert returned_df.height == 2
 
 
+def workplace_rows_lf(*rows: tuple[str, str, str | None, str | None]) -> pl.LazyFrame:
+    """Returns raw workplace rows of establishment, import date, sick pay, pension."""
+    return pl.LazyFrame(list(rows), schema=job.RAW_WORKPLACE_SCHEMA, orient="row")
+
+
+class TestAddRawWorkplaceColumns:
+    worker_lf = pl.LazyFrame(
+        [("1-001", "1", date(2021, 1, 5))],
+        schema=Schemas.raw_worker_join_input_schema,
+        orient="row",
+    )
+
+    def test_adds_workplace_code_columns_after_input_columns(self):
+        raw_lf = workplace_rows_lf(("1-001", "20210105", "1", "2"))
+
+        returned_lf = job.add_raw_workplace_columns(self.worker_lf, raw_lf)
+
+        assert returned_lf.collect_schema().names() == [
+            *Schemas.raw_worker_join_input_schema.names(),
+            *job.WORKPLACE_CODE_COLUMNS,
+        ]
+
+    def test_returns_raw_codes_for_matching_establishment_and_import_date(self):
+        raw_lf = workplace_rows_lf(("1-001", "20210105", "1", "2"))
+
+        returned_df = job.add_raw_workplace_columns(self.worker_lf, raw_lf).collect()
+
+        assert returned_df.row(0)[-2:] == ("1", "2")
+
+    @pytest.mark.parametrize(
+        "raw_row",
+        [
+            pytest.param(("1-002", "20210105", "1", "2"), id="other_establishment"),
+            pytest.param(("1-001", "20220105", "1", "2"), id="other_import_date"),
+        ],
+    )
+    def test_returns_null_codes_when_keys_do_not_match(self, raw_row):
+        returned_df = job.add_raw_workplace_columns(
+            self.worker_lf, workplace_rows_lf(raw_row)
+        ).collect()
+
+        assert returned_df.height == 1
+        assert returned_df.row(0)[-2:] == (None, None)
+
+
+class TestAddCoverageGeography:
+    worker_lf = pl.LazyFrame(
+        [("1-001", "1", date(2021, 1, 5))],
+        schema=Schemas.raw_worker_join_input_schema,
+        orient="row",
+    )
+
+    def coverage_lf(self, *rows: tuple) -> pl.LazyFrame:
+        return pl.LazyFrame(
+            list(rows),
+            schema={
+                AWPClean.establishment_id: pl.String,
+                AWPClean.ascwds_workplace_import_date: pl.Date,
+                CQCLClean.current_cssr: pl.String,
+                CQCLClean.current_region: pl.String,
+            },
+            orient="row",
+        )
+
+    def test_adds_categorical_geography_columns_after_input_columns(self):
+        coverage_lf = self.coverage_lf(("1-001", date(2021, 1, 5), "Leeds", "North"))
+
+        returned_lf = job.add_coverage_geography(self.worker_lf, coverage_lf)
+
+        returned_schema = returned_lf.collect_schema()
+        assert returned_schema.names() == [
+            *Schemas.raw_worker_join_input_schema.names(),
+            CQCLClean.current_cssr,
+            CQCLClean.current_region,
+        ]
+        assert returned_schema[CQCLClean.current_cssr] == pl.Categorical
+        assert returned_schema[CQCLClean.current_region] == pl.Categorical
+
+    def test_returns_geography_for_matching_establishment_and_import_date(self):
+        coverage_lf = self.coverage_lf(("1-001", date(2021, 1, 5), "Leeds", "North"))
+
+        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
+
+        assert returned_df.row(0)[-2:] == ("Leeds", "North")
+
+    def test_returns_one_row_when_establishment_has_several_coverage_rows(self):
+        coverage_lf = self.coverage_lf(
+            ("1-001", date(2021, 1, 5), "Leeds", "North"),
+            ("1-001", date(2021, 1, 5), "Leeds", "North"),
+        )
+
+        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
+
+        assert returned_df.height == 1
+
+    def test_returns_null_geography_when_coverage_row_has_no_establishment(self):
+        coverage_lf = self.coverage_lf((None, date(2021, 1, 5), "Leeds", "North"))
+
+        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
+
+        assert returned_df.height == 1
+        assert returned_df.row(0)[-2:] == (None, None)
+
+    def test_returns_null_geography_when_import_date_does_not_match(self):
+        coverage_lf = self.coverage_lf(("1-001", date(2022, 1, 5), "Leeds", "North"))
+
+        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
+
+        assert returned_df.row(0)[-2:] == (None, None)
+
+
+class TestAddYearsInRoleAndSector:
+    keys = {
+        AWKClean.establishment_id: ["1-001"],
+        AWKClean.ascwds_worker_import_date: [date(2021, 1, 5)],
+    }
+    save_dates_lf = pl.LazyFrame(
+        {**keys, HackCols.latest_save_date: [date(2022, 1, 1)]},
+        schema_overrides={HackCols.latest_save_date: pl.Date},
+    )
+
+    def worker_lf(self, start_date, start_in_sector) -> pl.LazyFrame:
+        return pl.LazyFrame(
+            {
+                **self.keys,
+                AWKClean.start_date: [start_date],
+                AWKClean.start_in_sector: [start_in_sector],
+            },
+            schema_overrides={
+                AWKClean.start_date: pl.Date,
+                AWKClean.start_in_sector: pl.Float32,
+            },
+        )
+
+    def test_returns_years_in_role_as_days_over_365_25(self):
+        returned_df = job.add_years_in_role_and_sector(
+            self.worker_lf(date(2020, 1, 1), 2015.0),
+            self.save_dates_lf,
+        ).collect()
+
+        assert returned_df[HackCols.years_in_role].to_list() == pytest.approx(
+            [731 / 365.25]
+        )
+
+    def test_returns_years_in_sector_as_save_year_minus_start_year(self):
+        returned_df = job.add_years_in_role_and_sector(
+            self.worker_lf(date(2020, 1, 1), 2015.0), self.save_dates_lf
+        ).collect()
+
+        assert returned_df[HackCols.years_in_sector].to_list() == [7.0]
+
+    def test_returns_float32_year_columns_and_drops_save_date(self):
+        returned_schema = job.add_years_in_role_and_sector(
+            self.worker_lf(date(2020, 1, 1), 2015.0), self.save_dates_lf
+        ).collect_schema()
+
+        assert returned_schema.names() == [
+            *self.keys,
+            AWKClean.start_date,
+            AWKClean.start_in_sector,
+            HackCols.years_in_role,
+            HackCols.years_in_sector,
+        ]
+        assert returned_schema[HackCols.years_in_role] == pl.Float32
+        assert returned_schema[HackCols.years_in_sector] == pl.Float32
+
+    def test_returns_null_years_when_start_values_are_null(self):
+        returned_df = job.add_years_in_role_and_sector(
+            self.worker_lf(None, None), self.save_dates_lf
+        ).collect()
+
+        assert returned_df.select(HackCols.years_in_role, HackCols.years_in_sector).row(
+            0
+        ) == (None, None)
+
+    def test_returns_null_years_when_establishment_has_no_save_date(self):
+        no_save_date_lf = self.save_dates_lf.with_columns(
+            pl.lit(None, dtype=pl.Date).alias(HackCols.latest_save_date)
+        )
+
+        returned_df = job.add_years_in_role_and_sector(
+            self.worker_lf(date(2020, 1, 1), 2015.0), no_save_date_lf
+        ).collect()
+
+        assert returned_df.select(HackCols.years_in_role, HackCols.years_in_sector).row(
+            0
+        ) == (None, None)
+
+
+class TestAddHourlyPayDiffToLaMedian:
+    import_date = date(2021, 1, 5)
+
+    def worker_lf(self, *rows: tuple) -> pl.LazyFrame:
+        """Rows of import date, current cssr, job role, hourly pay."""
+        return pl.LazyFrame(
+            list(rows),
+            schema={
+                AWKClean.ascwds_worker_import_date: pl.Date,
+                CQCLClean.current_cssr: pl.Categorical,
+                AWKClean.main_job_role_clean_labelled: pl.Categorical,
+                HackCols.hourly_pay: pl.Float32,
+            },
+            orient="row",
+        )
+
+    def test_subtracts_median_of_import_date_cssr_and_role_group(self):
+        input_lf = self.worker_lf(
+            (self.import_date, "Leeds", "care_worker", 10.0),
+            (self.import_date, "Leeds", "care_worker", 12.0),
+            (self.import_date, "Leeds", "care_worker", 20.0),
+        )
+
+        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+
+        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
+            -2.0,
+            0.0,
+            8.0,
+        ]
+
+    def test_medians_are_separate_per_cssr_role_and_import_date(self):
+        input_lf = self.worker_lf(
+            (self.import_date, "Leeds", "care_worker", 10.0),
+            (self.import_date, "York", "care_worker", 14.0),
+            (self.import_date, "Leeds", "senior_care_worker", 16.0),
+            (date(2021, 2, 5), "Leeds", "care_worker", 18.0),
+        )
+
+        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+
+        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
+
+    def test_median_ignores_null_hourly_pay_and_diff_is_null_for_null_pay(self):
+        input_lf = self.worker_lf(
+            (self.import_date, "Leeds", "care_worker", 10.0),
+            (self.import_date, "Leeds", "care_worker", None),
+            (self.import_date, "Leeds", "care_worker", 14.0),
+        )
+
+        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+
+        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
+            -2.0,
+            None,
+            2.0,
+        ]
+
+    @pytest.mark.parametrize(
+        "cssr, role",
+        [
+            pytest.param(None, "care_worker", id="null_cssr"),
+            pytest.param("Leeds", None, id="null_role"),
+        ],
+    )
+    def test_returns_null_diff_when_cssr_or_role_is_null(self, cssr, role):
+        input_lf = self.worker_lf((self.import_date, cssr, role, 10.0))
+
+        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+
+        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [None]
+
+    def test_returns_float32_diff_column_after_input_columns(self):
+        input_lf = self.worker_lf((self.import_date, "Leeds", "care_worker", 10.0))
+
+        returned_schema = job.add_hourly_pay_diff_to_la_median(
+            input_lf
+        ).collect_schema()
+
+        assert returned_schema.names()[-1] == HackCols.hourly_pay_diff_to_la_median
+        assert returned_schema[HackCols.hourly_pay_diff_to_la_median] == pl.Float32
+
+
 class TestNullNotKnownCodes:
     not_known_codes = {
         AWKClean.gender: NotKnownWorkerCodes.gender,
@@ -544,12 +827,15 @@ class TestNullNotKnownCodes:
     def codes_lf(self, **values: str | float | None) -> pl.LazyFrame:
         schema = {
             **{column: pl.String for column in job.WORKER_CATEGORICAL_COLUMNS},
+            **{column: pl.String for column in job.WORKPLACE_CODE_COLUMNS},
             **{column: pl.Float32 for column in job.WORKER_NUMERIC_COLUMNS},
         }
         return pl.LazyFrame({c: [values.get(c)] for c in schema}, schema=schema)
 
     @pytest.mark.parametrize("code", ["-1", "-8"])
-    @pytest.mark.parametrize("column", job.WORKER_CATEGORICAL_COLUMNS)
+    @pytest.mark.parametrize(
+        "column", [*job.WORKER_CATEGORICAL_COLUMNS, *job.WORKPLACE_CODE_COLUMNS]
+    )
     def test_returns_null_for_negative_code(self, column, code):
         returned_df = job.null_not_known_codes(
             self.codes_lf(**{column: code})
@@ -595,6 +881,9 @@ class TestNullNotKnownCodes:
             pytest.param(AWKClean.source_of_recruitment, "224", id="other_sources"),
             pytest.param(AWKClean.care_certificate_status, "2", id="not_started"),
             pytest.param(AWKClean.zero_hours, "1", id="zero_hours_yes"),
+            pytest.param(AWKClean.training_ain_flag, "0", id="trainflag_no"),
+            pytest.param(AWPClean.care_worker_enhanced_sick_pay, "2", id="sick_pay_no"),
+            pytest.param(AWPClean.care_worker_enhanced_pension, "1", id="pension_yes"),
         ],
     )
     def test_keeps_other_codes(self, column, code):
@@ -654,6 +943,9 @@ class TestAddWorkerLabels:
         AWKClean.apprentice,
         AWKClean.zero_hours,
         AWKClean.source_of_recruitment,
+        AWKClean.training_ain_flag,
+        AWPClean.care_worker_enhanced_sick_pay,
+        AWPClean.care_worker_enhanced_pension,
     ]
     label_columns = [f"{column}_labels" for column in coded_columns]
 
@@ -666,10 +958,9 @@ class TestAddWorkerLabels:
     def test_adds_a_label_column_beside_each_coded_column(self):
         returned_lf = job.add_worker_labels(self.codes_lf("1"))
 
-        assert returned_lf.collect_schema().names() == [
-            *self.coded_columns,
-            *self.label_columns,
-        ]
+        assert returned_lf.collect_schema().names()[
+            : len(self.coded_columns) + len(self.label_columns)
+        ] == [*self.coded_columns, *self.label_columns]
 
     def test_returns_label_for_mapped_code(self):
         returned_df = job.add_worker_labels(self.codes_lf("1")).collect()
@@ -679,7 +970,128 @@ class TestAddWorkerLabels:
     def test_returns_null_label_for_null_code(self):
         returned_df = job.add_worker_labels(self.codes_lf(None)).collect()
 
-        assert returned_df.select(self.label_columns).row(0) == (None,) * 9
+        assert returned_df.select(self.label_columns).row(0) == (None,) * len(
+            self.label_columns
+        )
+
+    @pytest.mark.parametrize(
+        "column, code, label",
+        [
+            pytest.param(AWKClean.training_ain_flag, "0", "No", id="trainflag_no"),
+            pytest.param(AWKClean.training_ain_flag, "1", "Yes", id="trainflag_yes"),
+            pytest.param(
+                AWPClean.care_worker_enhanced_sick_pay, "1", "Yes", id="sick_pay_yes"
+            ),
+            pytest.param(
+                AWPClean.care_worker_enhanced_sick_pay, "2", "No", id="sick_pay_no"
+            ),
+            pytest.param(
+                AWPClean.care_worker_enhanced_pension, "1", "Yes", id="pension_yes"
+            ),
+            pytest.param(
+                AWPClean.care_worker_enhanced_pension, "2", "No", id="pension_no"
+            ),
+        ],
+    )
+    def test_returns_label_for_benefit_and_training_codes(self, column, code, label):
+        returned_df = job.add_worker_labels(self.codes_lf(code)).collect()
+
+        assert returned_df[f"{column}_labels"].to_list() == [label]
+
+    def recode(self, ethnicity: str | None = None, scerec: str | None = None):
+        codes = {column: None for column in self.coded_columns}
+        codes[AWKClean.ethnicity] = ethnicity
+        codes[AWKClean.source_of_recruitment] = scerec
+        input_lf = pl.LazyFrame(
+            {column: [code] for column, code in codes.items()},
+            schema={column: pl.Categorical for column in self.coded_columns},
+        )
+        return job.add_worker_labels(input_lf).collect()
+
+    @pytest.mark.parametrize(
+        "code, label",
+        [
+            *[(code, "White") for code in ["31", "32", "33", "34"]],
+            *[
+                (code, "Mixed/multiple ethnic groups")
+                for code in ["35", "36", "37", "38"]
+            ],
+            *[(code, "Asian/Asian British") for code in ["39", "40", "41", "42", "43"]],
+            *[
+                (code, "Black/African/Caribbean/Black British")
+                for code in ["44", "45", "46"]
+            ],
+            *[(code, "Other ethnic group") for code in ["47", "98"]],
+            ("99", None),
+            ("1", None),
+        ],
+    )
+    def test_recodes_ethnicity_to_group_label(self, code, label):
+        returned_df = self.recode(ethnicity=code)
+
+        assert returned_df[HackCols.ethnicity_group_labels].to_list() == [label]
+
+    @pytest.mark.parametrize(
+        "code, group, within_or_outside",
+        [
+            ("210", "Local authority", "Within asc"),
+            ("211", "Independent sector", "Within asc"),
+            ("217", "Independent sector", "Within asc"),
+            ("221", "Agency", "Within asc"),
+            ("222", "Agency", "Within asc"),
+            ("223", "Agency", "Within asc"),
+            ("214", "Health sector", "Outside asc"),
+            *[
+                (code, "Other", "Outside asc")
+                for code in [
+                    "212",
+                    "213",
+                    "215",
+                    "216",
+                    "218",
+                    "219",
+                    "220",
+                    "224",
+                    "226",
+                    "227",
+                ]
+            ],
+            ("225", None, None),
+        ],
+    )
+    def test_recodes_source_of_recruitment_to_group_labels(
+        self, code, group, within_or_outside
+    ):
+        returned_df = self.recode(scerec=code)
+
+        assert returned_df[HackCols.scerec_group_labels].to_list() == [group]
+        assert returned_df[HackCols.scerec_wo_group_labels].to_list() == [
+            within_or_outside
+        ]
+
+    def test_adds_categorical_group_label_columns_after_label_columns(self):
+        returned_lf = job.add_worker_labels(self.codes_lf("31"))
+
+        returned_schema = returned_lf.collect_schema()
+        assert returned_schema.names() == [
+            *self.coded_columns,
+            *self.label_columns,
+            HackCols.ethnicity_group_labels,
+            HackCols.scerec_group_labels,
+            HackCols.scerec_wo_group_labels,
+        ]
+        assert returned_schema[HackCols.ethnicity_group_labels] == pl.Categorical
+        assert returned_schema[HackCols.scerec_group_labels] == pl.Categorical
+        assert returned_schema[HackCols.scerec_wo_group_labels] == pl.Categorical
+
+    def test_returns_null_group_labels_for_null_codes(self):
+        returned_df = self.recode()
+
+        assert returned_df.select(
+            HackCols.ethnicity_group_labels,
+            HackCols.scerec_group_labels,
+            HackCols.scerec_wo_group_labels,
+        ).row(0) == (None, None, None)
 
     def test_keeps_raw_code_as_label_for_unmapped_code(self):
         returned_df = job.add_worker_labels(self.codes_lf("999")).collect()
