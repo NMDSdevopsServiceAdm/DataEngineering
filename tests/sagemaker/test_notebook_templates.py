@@ -1,8 +1,15 @@
+import dataclasses
 import json
 import re
 from pathlib import Path
 
 import pytest
+
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ModelEvaluationColumns,
+    ModelEvaluationLabels,
+)
 
 REPO_ROOT = Path(__file__).parents[2]
 SKILL_DIR = REPO_ROOT / ".claude" / "skills" / "sagemaker"
@@ -12,6 +19,7 @@ EXPECTED_TEMPLATES = [
     "compare_outputs",
     "compare_before_after_filter",
     "interpolation_durations",
+    "model_metrics_history",
     "sagemaker_setup",
 ]
 TEMPLATE_CASES = [
@@ -149,3 +157,59 @@ class TestSkillMd:
         listed = set(TEMPLATE_LINK.findall(SKILL_MD.read_text(encoding="utf-8")))
 
         assert listed == template_files
+
+
+def field_values(dataclass: type) -> set[str]:
+    """Returns the default string value of every field of a column-name dataclass."""
+    return {field.default for field in dataclasses.fields(dataclass)}
+
+
+def run_parameters_cell(name: str) -> dict:
+    """Runs a template's parameters cell and returns the names it defines."""
+    cell = next(
+        cell
+        for cell in load_cells(name)
+        if cell["cell_type"] == "code"
+        and "parameters" in cell["metadata"].get("tags", [])
+    )
+    namespace: dict = {}
+    exec("".join(cell["source"]), namespace)
+    return namespace
+
+
+class TestModelMetricsHistoryMatchesTraining:
+    """The notebook can't import the repo, so check its names against training output."""
+
+    @pytest.fixture
+    def parameters(self) -> dict:
+        return run_parameters_cell("model_metrics_history")
+
+    def test_key_metrics_match_training_output(self, parameters):
+        levels = field_values(ModelEvaluationLabels)
+        folds = {ModelEvaluationLabels.pooled, ModelEvaluationLabels.all_rows}
+        metrics = field_values(ModelEvaluationColumns) | {
+            IndCQC.r2,
+            IndCQC.rmse,
+            IndCQC.proportion_of_model_predictions_within_ten,
+            IndCQC.proportion_of_model_predictions_within_twenty_five,
+        }
+
+        for name, level, metric, fold, _ in parameters["KEY_METRICS"]:
+            assert level in levels, f"{name}: unknown level {level}"
+            assert metric in metrics, f"{name}: unknown metric {metric}"
+            assert fold in folds, f"{name}: unknown fold {fold}"
+
+    def test_labels_and_columns_match_training_output(self, parameters):
+        expected = {
+            "POOLED": ModelEvaluationLabels.pooled,
+            "ALL_GROUPS": ModelEvaluationLabels.all_groups,
+            "ALL_ROWS": ModelEvaluationLabels.all_rows,
+            "MODEL": ModelEvaluationColumns.model,
+            "LEVEL": ModelEvaluationColumns.level,
+            "GROUP": ModelEvaluationColumns.group,
+            "FOLD": ModelEvaluationColumns.fold,
+            "METRIC": ModelEvaluationColumns.metric,
+            "VALUE": ModelEvaluationColumns.value,
+        }
+
+        assert {key: parameters[key] for key in expected} == expected
