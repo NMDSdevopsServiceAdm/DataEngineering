@@ -1,8 +1,23 @@
 import polars as pl
 
+from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
+    STUDENT_HIDDEN_COLUMNS,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+
+
+def has_no_hidden_columns(df: pl.DataFrame) -> bool:
+    """Checks the student data has none of the columns hidden from students.
+
+    Args:
+        df (pl.DataFrame): Student version of the worker turnover test split.
+
+    Returns:
+        bool: True if `is_leaver` and `turnover_rate` are both absent.
+    """
+    return not set(STUDENT_HIDDEN_COLUMNS) & set(df.columns)
 
 
 def has_one_import_date_per_month(df: pl.DataFrame) -> bool:

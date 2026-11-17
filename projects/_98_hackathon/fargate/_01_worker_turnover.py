@@ -18,6 +18,7 @@ def main(
     train_destination: str,
     holdout_destination: str,
     test_destination: str,
+    student_destination: str,
     n_months: int = wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
     max_gap: int = wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
 ) -> None:
@@ -34,6 +35,8 @@ def main(
         train_destination (str): destination for the train split
         holdout_destination (str): destination for the holdout split
         test_destination (str): destination for the test split
+        student_destination (str): destination for the student version of the test
+            split, which has no `is_leaver` or `turnover_rate`
         n_months (int): most months since an establishment's latest save date for
             it to count as active
         max_gap (int): largest absolute headcount reconciliation gap, in workers,
@@ -113,17 +116,24 @@ def main(
         "holdout": holdout_destination,
         "test": test_destination,
     }
-    # Lazy sinks collected together share one run of the plan above, rather than
-    # re-running it per split.
-    split_sinks = [
-        utils.sink_to_parquet(
-            filtered_lf.filter(pl.col(HackCols.split) == split),
-            output_path=destination,
-            lazy=True,
-        )
+    split_lfs = {
+        split: filtered_lf.filter(pl.col(HackCols.split) == split)
+        for split in split_destinations
+    }
+    sink_lfs = [
+        (split_lfs[split], destination)
         for split, destination in split_destinations.items()
     ]
-    pl.collect_all(split_sinks, engine="streaming")
+    sink_lfs.append(
+        (wUtils.make_student_test_data(split_lfs["test"]), student_destination)
+    )
+    # Lazy sinks collected together share one run of the plan above, rather than
+    # re-running it per split.
+    sinks = [
+        utils.sink_to_parquet(lf, output_path=destination, lazy=True)
+        for lf, destination in sink_lfs
+    ]
+    pl.collect_all(sinks, engine="streaming")
 
 
 if __name__ == "__main__":
@@ -153,6 +163,10 @@ if __name__ == "__main__":
             "Destination s3 directory for the test split",
         ),
         (
+            "--student_destination",
+            "Destination s3 directory for the student version of the test split",
+        ),
+        (
             "--n_months",
             "Most months since an establishment's latest save date to count as active",
             False,
@@ -172,6 +186,7 @@ if __name__ == "__main__":
         train_destination=args.train_destination,
         holdout_destination=args.holdout_destination,
         test_destination=args.test_destination,
+        student_destination=args.student_destination,
         n_months=int(args.n_months),
         max_gap=int(args.max_gap),
     )

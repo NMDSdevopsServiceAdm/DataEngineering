@@ -14,9 +14,11 @@ class TestMain:
     TRAIN_DESTINATION = "some/train"
     HOLDOUT_DESTINATION = "some/holdout"
     TEST_DESTINATION = "some/test"
+    STUDENT_DESTINATION = "some/student"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.collect_all")
+    @patch(f"{PATCH_PATH}.wUtils.make_student_test_data")
     @patch(f"{PATCH_PATH}.wUtils.add_split_column")
     @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
@@ -53,6 +55,7 @@ class TestMain:
         add_country_code_group_mock: Mock,
         impute_worker_columns_mock: Mock,
         add_split_column_mock: Mock,
+        make_student_test_data_mock: Mock,
         collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -71,7 +74,8 @@ class TestMain:
         # One lazy frame per split, so each split's destination is checked.
         split_lf_mocks = [Mock() for _ in splits]
         add_split_column_mock.return_value.filter.side_effect = split_lf_mocks
-        sink_mocks = [Mock() for _ in splits]
+        # The student sink comes after the three split sinks.
+        sink_mocks = [Mock() for _ in range(len(splits) + 1)]
         sink_to_parquet_mock.side_effect = sink_mocks
 
         job.main(
@@ -81,6 +85,7 @@ class TestMain:
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
+            self.STUDENT_DESTINATION,
         )
 
         assert scan_parquet_mock.call_args_list == [
@@ -194,9 +199,17 @@ class TestMain:
         assert filter_mock.call_count == len(splits)
         for filter_call, split in zip(filter_mock.call_args_list, splits):
             assert filter_call.args[0].meta.eq(pl.col(job.HackCols.split) == split)
+        make_student_test_data_mock.assert_called_once_with(split_lf_mocks[-1])
         assert sink_to_parquet_mock.call_args_list == [
-            call(split_lf_mock, output_path=destination, lazy=True)
-            for split_lf_mock, destination in zip(split_lf_mocks, destinations)
+            *[
+                call(split_lf_mock, output_path=destination, lazy=True)
+                for split_lf_mock, destination in zip(split_lf_mocks, destinations)
+            ],
+            call(
+                make_student_test_data_mock.return_value,
+                output_path=self.STUDENT_DESTINATION,
+                lazy=True,
+            ),
         ]
         collect_all_mock.assert_called_once_with(sink_mocks, engine="streaming")
 
@@ -244,6 +257,7 @@ class TestMain:
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
+            self.STUDENT_DESTINATION,
             n_months=3,
         )
 
@@ -293,6 +307,7 @@ class TestMain:
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
+            self.STUDENT_DESTINATION,
             max_gap=5,
         )
 

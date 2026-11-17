@@ -150,6 +150,28 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    student_input_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, pl.String()),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.is_leaver, pl.Boolean()),
+            (HackCols.turnover_rate, pl.Float32()),
+            (HackCols.valid_for_analysis, pl.Boolean()),
+            (HackCols.hourly_pay, pl.Float32()),
+        ]
+    )
+
+    student_output_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, pl.String()),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.valid_for_analysis, pl.Boolean()),
+            (HackCols.hourly_pay, pl.Float32()),
+        ]
+    )
+
     turnover_rate_schema = pl.Schema(
         [
             (AWKClean.establishment_id, CatColType.EstablishmentCatType),
