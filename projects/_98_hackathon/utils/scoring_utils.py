@@ -62,7 +62,8 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
             f"Test answers have {duplicated_answers_count} duplicated workers, "
             "so scores would be distorted. Report this to the organisers"
         )
-    probability = pl.col(HackCols.predicted_probability).cast(pl.Float64)
+
+    probability = pl.col(HackCols.predicted_probability).cast(pl.Float64, strict=False)
 
     null_key_count = predicted_keys_df.filter(
         pl.any_horizontal(pl.all().is_null())
@@ -75,7 +76,8 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
     ).height
     if invalid_probability_count:
         raise ValueError(
-            f"Predictions have {invalid_probability_count} null or NaN probabilities"
+            f"Predictions have {invalid_probability_count} null, NaN or non-numeric "
+            "probabilities"
         )
 
     out_of_range_count = predictions_df.filter(
@@ -118,10 +120,12 @@ def calculate_scores(
     """Calculates worker-level and workplace-level scores.
 
     Scores workers with `valid_for_analysis` true and a known `is_leaver`.
-    Worker scores are AUC and Brier score. The workplace score is the mean, over
-    establishments, of the absolute difference between predicted leave rate
-    (summed probabilities / scored headcount) and observed leave rate. Frames
-    are one row per worker, so small enough for memory.
+    Worker scores are AUC and Brier score, over all scored workers. The workplace
+    score is the mean, over establishments with at least 10 scored workers, of
+    the absolute difference between predicted leave rate (summed probabilities /
+    scored headcount) and observed leave rate. Smaller workplaces are left out
+    as their observed rates are mostly noise. Frames are one row per worker, so
+    small enough for memory.
 
     Args:
         predictions_df (pl.DataFrame): Checked predictions, one row per test
@@ -131,12 +135,15 @@ def calculate_scores(
 
     Returns:
         dict[str, float | int]: `worker_auc`, `worker_brier`, `workplace_mae`,
-            `n_workers` and `n_workplaces` (scored workers and establishments).
+            `n_workers` (scored workers) and `n_workplaces` (establishments
+            included in `workplace_mae`).
 
     Raises:
         ValueError: If the scored workers are not both leavers and stayers, as
-            AUC is undefined.
+            AUC is undefined, or no establishment has at least 10 scored workers.
     """
+    min_workplace_workers = 10
+
     probability = pl.col(HackCols.predicted_probability)
     is_leaver = pl.col(HackCols.is_leaver)
 
@@ -159,9 +166,18 @@ def calculate_scores(
 
     predicted_rate = probability.sum() / pl.len()
     observed_rate = is_leaver.mean()
-    workplace_error_df = scored_df.group_by(AWKClean.establishment_id).agg(
-        (predicted_rate - observed_rate).abs()
+    workplace_error_df = (
+        scored_df.filter(
+            pl.len().over(AWKClean.establishment_id) >= min_workplace_workers
+        )
+        .group_by(AWKClean.establishment_id)
+        .agg((predicted_rate - observed_rate).abs())
     )
+    if workplace_error_df.is_empty():
+        raise ValueError(
+            f"Scoring needs a workplace with at least {min_workplace_workers} "
+            "scored workers"
+        )
 
     return {
         "worker_auc": float(
@@ -176,7 +192,9 @@ def calculate_scores(
                 scored_df.get_column(HackCols.predicted_probability),
             )
         ),
-        "workplace_mae": workplace_error_df.to_series(1).mean(),
+        "workplace_mae": workplace_error_df.select(
+            pl.exclude(AWKClean.establishment_id).mean()
+        ).item(),
         "n_workers": scored_df.height,
         "n_workplaces": workplace_error_df.height,
     }
@@ -200,7 +218,8 @@ def score_predictions(
 
     Returns:
         dict[str, float | int]: `worker_auc`, `worker_brier`, `workplace_mae`,
-            `n_workers` and `n_workplaces`.
+            `n_workers` (scored workers) and `n_workplaces` (establishments
+            with at least 10 scored workers, used in `workplace_mae`).
 
     Example:
         scores = score_predictions(predictions_df)

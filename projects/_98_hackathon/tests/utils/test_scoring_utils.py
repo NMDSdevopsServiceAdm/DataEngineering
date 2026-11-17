@@ -7,11 +7,12 @@ import pytest
 import projects._98_hackathon.utils.scoring_utils as job
 from projects._98_hackathon.unittest_data.polars_scoring_test_file_data import (
     CHECK_ANSWER_ROWS,
-    FOUR_WORKER_ANSWER_ROWS,
     ONE_CLASS_ANSWER_ROWS,
     ONE_CLASS_PREDICTION_ROWS,
+    ONE_WORKPLACE_ANSWER_ROWS,
+    ONE_WORKPLACE_PREDICTION_ROWS,
     VALID_PREDICTION_ROWS,
-    four_worker_predictions,
+    build_workplace,
 )
 from projects._98_hackathon.unittest_data.polars_scoring_test_file_data import (
     ScoringData as Data,
@@ -121,6 +122,15 @@ class TestCalculateScores:
         with pytest.raises(ValueError, match="both leavers and stayers"):
             job.calculate_scores(predictions_df, answers_df)
 
+    def test_raises_when_no_workplace_has_10_scored_workers(self):
+        answer_rows, prediction_rows = build_workplace(
+            "1-001", 0.9, 0.1, n_leavers=5, n_stayers=4
+        )
+        predictions_df, answers_df = self.build_frames(answer_rows, prediction_rows)
+
+        with pytest.raises(ValueError, match="at least 10 scored workers"):
+            job.calculate_scores(predictions_df, answers_df)
+
     def test_returns_expected_keys_and_counts(self):
         case = self.get_case("auc_is_1_when_leavers_ranked_above_stayers")
         predictions_df, answers_df = self.build_frames(
@@ -136,17 +146,17 @@ class TestCalculateScores:
             "n_workers",
             "n_workplaces",
         }
-        assert returned_scores["n_workers"] == 4
+        assert returned_scores["n_workers"] == 10
         assert returned_scores["n_workplaces"] == 1
 
 
 class TestScorePredictions:
-    prediction_rows = four_worker_predictions(0.9, 0.1, 0.8, 0.2)
+    prediction_rows = ONE_WORKPLACE_PREDICTION_ROWS
 
     @staticmethod
     def build_answers_lf() -> pl.LazyFrame:
         return pl.LazyFrame(
-            FOUR_WORKER_ANSWER_ROWS, schema=Schemas.answers_schema, orient="row"
+            ONE_WORKPLACE_ANSWER_ROWS, schema=Schemas.answers_schema, orient="row"
         )
 
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
@@ -174,7 +184,7 @@ class TestScorePredictions:
     def test_raises_when_predictions_are_invalid(self, scan_parquet_mock: Mock):
         scan_parquet_mock.return_value = self.build_answers_lf()
         predictions_df = pl.DataFrame(
-            self.prediction_rows[:3], schema=Schemas.predictions_schema, orient="row"
+            self.prediction_rows[:-1], schema=Schemas.predictions_schema, orient="row"
         )
 
         with pytest.raises(ValueError, match="missing 1 test workers"):
@@ -215,9 +225,9 @@ class TestScorePredictions:
         assert returned_scores == pytest.approx(
             {
                 "worker_auc": 1.0,
-                "worker_brier": 0.025,  # (0.1 ** 2 + 0.1 ** 2 + 0.2 ** 2 + 0.2 ** 2) / 4
-                "workplace_mae": 0.0,  # predicted 2.0 / 4 against observed 0.5
-                "n_workers": 4,
+                "worker_brier": 0.01,  # every worker is 0.1 from their outcome
+                "workplace_mae": 0.0,  # predicted 5 / 10 against observed 0.5
+                "n_workers": 10,
                 "n_workplaces": 1,
             }
         )

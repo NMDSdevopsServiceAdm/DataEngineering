@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added a shared hackathon scoring function that checks students' predictions and returns worker-level (AUC, Brier score) and workplace-level (mean absolute error of leave rate) scores against the held-back test answers.
+- Added a shared hackathon scoring function that checks students' predictions and returns worker-level (AUC, Brier score) and workplace-level (mean absolute error of leave rate, for workplaces with at least 10 scored workers) scores against the held-back test answers.
 - Added a guide to maintaining the Monthly Tracker workbooks, and documented where to find them.
 - Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, with each split written separately and the train and test splits validated.
 - Added a validation job for the Hackathon Worker Turnover output.

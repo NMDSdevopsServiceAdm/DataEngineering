@@ -27,6 +27,14 @@ class ScoringSchemas:
         ]
     )
 
+    predictions_with_text_probability_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, pl.String()),
+            (AWKClean.worker_id, pl.String()),
+            (HackCols.predicted_probability, pl.String()),
+        ]
+    )
+
     predictions_without_probability_schema = pl.Schema(
         [
             (AWKClean.establishment_id, pl.String()),

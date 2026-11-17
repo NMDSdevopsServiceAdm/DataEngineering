@@ -32,9 +32,9 @@ If the predictions are invalid, `score_predictions` raises a `ValueError` saying
 | --- | --- | --- |
 | `worker_auc` | Higher (0.5 is chance, 1 is perfect) | How well you rank leavers above stayers |
 | `worker_brier` | Lower (0 is perfect) | How well calibrated your probabilities are |
-| `workplace_mae` | Lower (0 is perfect) | How far each establishment's predicted leave rate is from its observed rate, averaged equally across establishments |
+| `workplace_mae` | Lower (0 is perfect) | How far each establishment's predicted leave rate is from its observed rate, averaged equally across establishments with at least 10 scored workers |
 
-`n_workers` and `n_workplaces` are the numbers of workers and establishments scored. Only workers valid for analysis with a known outcome are scored, but you still need predictions for every test worker.
+`n_workers` is the number of workers scored and `n_workplaces` the number of establishments used in `workplace_mae`. Only workers valid for analysis with a known outcome are scored, but you still need predictions for every test worker. Establishments with fewer than 10 scored workers are left out of `workplace_mae` because their observed leave rates are mostly noise, but their workers still count towards `worker_auc` and `worker_brier`.
 
 The workplace leave rate is your summed probabilities divided by headcount, so calibrated probabilities matter as much as ranking.
 
@@ -45,7 +45,7 @@ The workplace leave rate is your summed probabilities divided by headcount, so c
 | `Predictions are missing required columns` | Rename or add the three columns above |
 | `Predictions have unexpected columns` | Drop everything except the three columns |
 | `Predictions have N null worker keys` | Fill or drop rows with a missing id |
-| `Predictions have N null or NaN probabilities` | Fill or fix them |
+| `Predictions have N null, NaN or non-numeric probabilities` | Fill or fix them |
 | `Predictions have N probabilities outside 0 to 1` | Clip or rescale to probabilities |
 | `Predictions have N duplicated workers` | Keep one row per worker |
 | `Predictions are missing N test workers` | Predict for every test worker |
