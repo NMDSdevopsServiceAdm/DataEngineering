@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Shared libraries
 COPY projects/_98_hackathon/fargate/utils /app/projects/_98_hackathon/fargate/utils
+COPY projects/_01_ingest/cqc_api/fargate/utils/postcode_matcher.py /app/projects/_01_ingest/cqc_api/fargate/utils/postcode_matcher.py
 COPY polars_utils /app/polars_utils
 COPY utils/file_utils.py /app/utils/file_utils.py
 COPY utils/column_names /app/utils/column_names/

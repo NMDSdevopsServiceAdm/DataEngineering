@@ -9,6 +9,7 @@ from polars_utils.cleaning_utils import (
 )
 from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
+from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
 from projects._98_hackathon.fargate.utils.nlw_rates import (
     BAND_STARTS,
     NLW_RATES,
@@ -189,44 +190,70 @@ def add_raw_worker_columns(
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
 
 
-def add_coverage_geography(
-    worker_lf: pl.LazyFrame, coverage_lf: pl.LazyFrame
+def add_geography_from_postcode(
+    worker_lf: pl.LazyFrame,
+    workplace_lf: pl.LazyFrame,
+    ons_lf: pl.LazyFrame,
+    manual_postcode_corrections_source: str,
 ) -> pl.LazyFrame:
-    """Adds `current_cssr` and `current_region` from the merged coverage data.
+    """Adds `current_cssr` and `current_region` by matching workplace postcodes to ONS.
 
-    Left joins on establishment ID and import date. Coverage rows are cut to the
-    establishments in ASC-WDS and de-duplicated on the keys first, so an
-    establishment matched to several locations cannot add rows to `worker_lf`.
+    Workplace rows are cut to the establishment and import date keys in `worker_lf`
+    before matching, so only needed postcodes are matched. The workplace columns are
+    renamed to the CQC location names `run_postcode_matching` expects, which raises
+    if any postcode is left unmatched. Its match keeps one row per workplace row, so
+    the left join adds no rows.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with establishment ID and
             `ascwds_worker_import_date`.
-        coverage_lf (pl.LazyFrame): Merged coverage data with the ASC-WDS
-            establishment ID, workplace import date, `current_cssr` and
-            `current_region`.
+        workplace_lf (pl.LazyFrame): Cleaned ASC-WDS workplace data with
+            establishment ID, import date, postcode, location ID, name and address.
+        ons_lf (pl.LazyFrame): Cleaned ONS postcode directory with the columns
+            `run_postcode_matching` needs.
+        manual_postcode_corrections_source (str): S3 URI of the manual postcode
+            corrections csv.
 
     Returns:
-        pl.LazyFrame: The input rows with all columns plus the two geography
-            columns, `Categorical`.
+        pl.LazyFrame: The input rows with all columns plus `current_cssr` and
+            `current_region` (`Categorical`).
     """
     keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
     geography_columns = [CQCLClean.current_cssr, CQCLClean.current_region]
 
-    coverage_lf = (
-        coverage_lf.select(
-            pl.col(AWPClean.establishment_id).cast(
-                CategoricalColumnTypes.EstablishmentCatType
-            ),
-            pl.col(AWPClean.ascwds_workplace_import_date).alias(
-                AWKClean.ascwds_worker_import_date
-            ),
-            pl.col(geography_columns).cast(pl.Categorical),
-        )
-        .drop_nulls(subset=keys)
-        .unique(subset=keys)
+    locations_lf = workplace_lf.select(
+        pl.col(AWPClean.establishment_id).cast(
+            CategoricalColumnTypes.EstablishmentCatType
+        ),
+        pl.col(AWPClean.ascwds_workplace_import_date).alias(
+            CQCLClean.cqc_location_import_date
+        ),
+        pl.col(AWPClean.postcode).alias(CQCLClean.postal_code),
+        pl.col(AWPClean.location_id).alias(CQCLClean.location_id),
+        pl.col(AWPClean.establishment_name).alias(CQCLClean.name),
+        pl.col(AWPClean.address).alias(CQCLClean.postal_address_line1),
+    ).join(
+        worker_lf.select(keys),
+        left_on=[AWPClean.establishment_id, CQCLClean.cqc_location_import_date],
+        right_on=keys,
+        how="semi",
     )
 
-    return worker_lf.join(coverage_lf, on=keys, how="left")
+    matched_lf = pmUtils.run_postcode_matching(
+        locations_lf, ons_lf, manual_postcode_corrections_source
+    )
+
+    geography_lf = matched_lf.select(
+        pl.col(AWPClean.establishment_id).cast(
+            CategoricalColumnTypes.EstablishmentCatType
+        ),
+        pl.col(CQCLClean.cqc_location_import_date).alias(
+            AWKClean.ascwds_worker_import_date
+        ),
+        pl.col(geography_columns).cast(pl.Categorical),
+    )
+
+    return worker_lf.join(geography_lf, on=keys, how="left")
 
 
 def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:

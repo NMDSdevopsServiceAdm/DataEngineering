@@ -1,4 +1,5 @@
 from datetime import date
+from unittest.mock import patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -532,70 +533,101 @@ class TestAddRawWorkerColumns:
         assert returned_df.height == 2
 
 
-class TestAddCoverageGeography:
+@patch(f"{job.__name__}.pmUtils.run_postcode_matching")
+class TestAddGeographyFromPostcode:
     worker_lf = pl.LazyFrame(
         [("1-001", "1", date(2021, 1, 5))],
         schema=Schemas.raw_worker_join_input_schema,
         orient="row",
     )
+    workplace_lf = pl.LazyFrame(
+        [("1-001", date(2021, 1, 5), "LS1 1AA", "1-LOC", "Workplace", "1 Street")],
+        schema={
+            AWPClean.establishment_id: pl.String,
+            AWPClean.ascwds_workplace_import_date: pl.Date,
+            AWPClean.postcode: pl.String,
+            AWPClean.location_id: pl.String,
+            AWPClean.establishment_name: pl.String,
+            AWPClean.address: pl.String,
+        },
+        orient="row",
+    )
+    matched_lf = pl.LazyFrame(
+        [("1-001", date(2021, 1, 5), "Leeds", "North")],
+        schema={
+            AWPClean.establishment_id: pl.Categorical,
+            CQCLClean.cqc_location_import_date: pl.Date,
+            CQCLClean.current_cssr: pl.String,
+            CQCLClean.current_region: pl.String,
+        },
+        orient="row",
+    )
 
-    def coverage_lf(self, *rows: tuple) -> pl.LazyFrame:
-        return pl.LazyFrame(
-            list(rows),
-            schema={
-                AWPClean.establishment_id: pl.String,
-                AWPClean.ascwds_workplace_import_date: pl.Date,
-                CQCLClean.current_cssr: pl.String,
-                CQCLClean.current_region: pl.String,
-            },
-            orient="row",
-        )
+    def test_returns_matched_cssr_and_region(self, run_postcode_matching_mock):
+        run_postcode_matching_mock.return_value = self.matched_lf
 
-    def test_adds_categorical_geography_columns_after_input_columns(self):
-        coverage_lf = self.coverage_lf(("1-001", date(2021, 1, 5), "Leeds", "North"))
-
-        returned_lf = job.add_coverage_geography(self.worker_lf, coverage_lf)
-
-        returned_schema = returned_lf.collect_schema()
-        assert returned_schema.names() == [
-            *Schemas.raw_worker_join_input_schema.names(),
-            CQCLClean.current_cssr,
-            CQCLClean.current_region,
-        ]
-        assert returned_schema[CQCLClean.current_cssr] == pl.Categorical
-        assert returned_schema[CQCLClean.current_region] == pl.Categorical
-
-    def test_returns_geography_for_matching_establishment_and_import_date(self):
-        coverage_lf = self.coverage_lf(("1-001", date(2021, 1, 5), "Leeds", "North"))
-
-        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
+        returned_df = job.add_geography_from_postcode(
+            self.worker_lf, self.workplace_lf, pl.LazyFrame(), "corrections.csv"
+        ).collect()
 
         assert returned_df.row(0)[-2:] == ("Leeds", "North")
 
-    def test_returns_one_row_when_establishment_has_several_coverage_rows(self):
-        coverage_lf = self.coverage_lf(
-            ("1-001", date(2021, 1, 5), "Leeds", "North"),
-            ("1-001", date(2021, 1, 5), "Leeds", "North"),
+    def test_returns_geography_columns_as_categorical(self, run_postcode_matching_mock):
+        run_postcode_matching_mock.return_value = self.matched_lf
+
+        returned_schema = job.add_geography_from_postcode(
+            self.worker_lf, self.workplace_lf, pl.LazyFrame(), "corrections.csv"
+        ).collect_schema()
+
+        assert returned_schema[CQCLClean.current_cssr] == pl.Categorical
+        assert returned_schema[CQCLClean.current_region] == pl.Categorical
+
+    def test_returns_null_geography_when_workplace_is_not_matched(
+        self, run_postcode_matching_mock
+    ):
+        run_postcode_matching_mock.return_value = self.matched_lf.clear()
+
+        returned_df = job.add_geography_from_postcode(
+            self.worker_lf, self.workplace_lf, pl.LazyFrame(), "corrections.csv"
+        ).collect()
+
+        assert returned_df.row(0)[-2:] == (None, None)
+
+    def test_matches_workplace_columns_renamed_to_cqc_names(
+        self, run_postcode_matching_mock
+    ):
+        run_postcode_matching_mock.return_value = self.matched_lf
+        ons_lf = pl.LazyFrame()
+
+        job.add_geography_from_postcode(
+            self.worker_lf, self.workplace_lf, ons_lf, "corrections.csv"
+        ).collect()
+
+        locations_lf = run_postcode_matching_mock.call_args.args[0]
+        assert locations_lf.collect().columns == [
+            AWPClean.establishment_id,
+            CQCLClean.cqc_location_import_date,
+            CQCLClean.postal_code,
+            CQCLClean.location_id,
+            CQCLClean.name,
+            CQCLClean.postal_address_line1,
+        ]
+        assert run_postcode_matching_mock.call_args.args[1] is ons_lf
+        assert run_postcode_matching_mock.call_args.args[2] == "corrections.csv"
+
+    def test_matches_only_workplaces_in_worker_data(self, run_postcode_matching_mock):
+        run_postcode_matching_mock.return_value = self.matched_lf
+        other_workplace_lf = self.workplace_lf.with_columns(
+            pl.lit("1-002").alias(AWPClean.establishment_id)
         )
+        workplace_lf = pl.concat([self.workplace_lf, other_workplace_lf])
 
-        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
+        job.add_geography_from_postcode(
+            self.worker_lf, workplace_lf, pl.LazyFrame(), "corrections.csv"
+        ).collect()
 
-        assert returned_df.height == 1
-
-    def test_returns_null_geography_when_coverage_row_has_no_establishment(self):
-        coverage_lf = self.coverage_lf((None, date(2021, 1, 5), "Leeds", "North"))
-
-        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
-
-        assert returned_df.height == 1
-        assert returned_df.row(0)[-2:] == (None, None)
-
-    def test_returns_null_geography_when_import_date_does_not_match(self):
-        coverage_lf = self.coverage_lf(("1-001", date(2022, 1, 5), "Leeds", "North"))
-
-        returned_df = job.add_coverage_geography(self.worker_lf, coverage_lf).collect()
-
-        assert returned_df.row(0)[-2:] == (None, None)
+        locations_lf = run_postcode_matching_mock.call_args.args[0]
+        assert locations_lf.collect()[AWPClean.establishment_id].to_list() == ["1-001"]
 
 
 class TestNullNotKnownCodes:

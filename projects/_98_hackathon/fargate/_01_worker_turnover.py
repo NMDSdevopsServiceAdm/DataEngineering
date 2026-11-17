@@ -8,8 +8,8 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
@@ -18,7 +18,8 @@ def main(
     cleaned_ascwds_worker_source: str,
     cleaned_ascwds_workplace_source: str,
     raw_ascwds_worker_source: str,
-    merged_coverage_source: str,
+    ons_postcode_directory_source: str,
+    manual_postcode_corrections_source: str,
     train_destination: str,
     holdout_destination: str,
     test_destination: str,
@@ -33,10 +34,12 @@ def main(
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
         cleaned_ascwds_workplace_source (str): path to the cleaned ASC-WDS
-            workplace data, used for main service
+            workplace data, used for main service and postcode
         raw_ascwds_worker_source (str): path to the raw ASC-WDS worker data
-        merged_coverage_source (str): path to the merged coverage data, used for
-            CSSR and region
+        ons_postcode_directory_source (str): path to the cleaned ONS postcode
+            directory, used with the workplace postcode for CSSR and region
+        manual_postcode_corrections_source (str): S3 URI of the manual postcode
+            corrections csv
         train_destination (str): destination for the train split
         holdout_destination (str): destination for the holdout split
         test_destination (str): destination for the test split
@@ -90,16 +93,36 @@ def main(
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
 
-    coverage_lf = utils.scan_parquet(
-        merged_coverage_source,
+    # A separate scan keeps the postcode, name and address columns off the worker rows.
+    geography_workplace_lf = utils.scan_parquet(
+        cleaned_ascwds_workplace_source,
         selected_columns=[
             AWPClean.establishment_id,
             AWPClean.ascwds_workplace_import_date,
-            CQCLClean.current_cssr,
-            CQCLClean.current_region,
+            AWPClean.postcode,
+            AWPClean.location_id,
+            AWPClean.establishment_name,
+            AWPClean.address,
         ],
     )
-    filtered_lf = wUtils.add_coverage_geography(filtered_lf, coverage_lf)
+    ons_lf = utils.scan_parquet(
+        ons_postcode_directory_source,
+        selected_columns=[
+            ONSClean.postcode,
+            ONSClean.contemporary_ons_import_date,
+            ONSClean.contemporary_cssr,
+            ONSClean.contemporary_sub_icb,
+            ONSClean.current_cssr,
+            ONSClean.current_sub_icb,
+            ONSClean.current_region,
+        ],
+    )
+    filtered_lf = wUtils.add_geography_from_postcode(
+        filtered_lf,
+        geography_workplace_lf,
+        ons_lf,
+        manual_postcode_corrections_source,
+    )
     filtered_lf = wUtils.add_headcount_reconciliation_gap(filtered_lf, max_gap)
     filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf).drop(
         HackCols.establishment_in_both_snapshots,
@@ -158,8 +181,12 @@ if __name__ == "__main__":
             "Source s3 directory for raw ascwds worker data",
         ),
         (
-            "--merged_coverage_source",
-            "Source s3 directory for merged coverage data",
+            "--ons_postcode_directory_source",
+            "Source s3 directory for cleaned ONS postcode directory data",
+        ),
+        (
+            "--manual_postcode_corrections_source",
+            "S3 URI of the manual postcode corrections csv",
         ),
         (
             "--train_destination",
@@ -190,7 +217,8 @@ if __name__ == "__main__":
         cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
         cleaned_ascwds_workplace_source=args.cleaned_ascwds_workplace_source,
         raw_ascwds_worker_source=args.raw_ascwds_worker_source,
-        merged_coverage_source=args.merged_coverage_source,
+        ons_postcode_directory_source=args.ons_postcode_directory_source,
+        manual_postcode_corrections_source=args.manual_postcode_corrections_source,
         train_destination=args.train_destination,
         holdout_destination=args.holdout_destination,
         test_destination=args.test_destination,

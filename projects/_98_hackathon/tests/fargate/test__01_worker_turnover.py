@@ -11,7 +11,8 @@ class TestMain:
     CLEANED_WORKER_SOURCE = "some/worker/source"
     CLEANED_WORKPLACE_SOURCE = "some/workplace/source"
     RAW_WORKER_SOURCE = "some/raw/worker/source"
-    MERGED_COVERAGE_SOURCE = "some/merged/coverage/source"
+    ONS_POSTCODE_DIRECTORY_SOURCE = "some/ons/source"
+    MANUAL_POSTCODE_CORRECTIONS_SOURCE = "some/corrections.csv"
     TRAIN_DESTINATION = "some/train"
     HOLDOUT_DESTINATION = "some/holdout"
     TEST_DESTINATION = "some/test"
@@ -27,7 +28,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
-    @patch(f"{PATCH_PATH}.wUtils.add_coverage_geography")
+    @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -46,7 +47,7 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
-        add_coverage_geography_mock: Mock,
+        add_geography_from_postcode_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
@@ -60,12 +61,13 @@ class TestMain:
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
-        coverage_lf_mock = Mock()
+        geography_workplace_lf_mock, ons_lf_mock = Mock(), Mock()
         scan_parquet_mock.side_effect = [
             worker_lf_mock,
             workplace_lf_mock,
             raw_worker_lf_mock,
-            coverage_lf_mock,
+            geography_workplace_lf_mock,
+            ons_lf_mock,
         ]
         splits = ["train", "holdout", "test"]
         destinations = [
@@ -83,7 +85,8 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.MERGED_COVERAGE_SOURCE,
+            self.ONS_POSTCODE_DIRECTORY_SOURCE,
+            self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -101,12 +104,26 @@ class TestMain:
             ),
             call(self.RAW_WORKER_SOURCE, schema=job.wUtils.RAW_WORKER_SCHEMA),
             call(
-                self.MERGED_COVERAGE_SOURCE,
+                self.CLEANED_WORKPLACE_SOURCE,
                 selected_columns=[
                     job.AWPClean.establishment_id,
                     job.AWPClean.ascwds_workplace_import_date,
-                    job.CQCLClean.current_cssr,
-                    job.CQCLClean.current_region,
+                    job.AWPClean.postcode,
+                    job.AWPClean.location_id,
+                    job.AWPClean.establishment_name,
+                    job.AWPClean.address,
+                ],
+            ),
+            call(
+                self.ONS_POSTCODE_DIRECTORY_SOURCE,
+                selected_columns=[
+                    job.ONSClean.postcode,
+                    job.ONSClean.contemporary_ons_import_date,
+                    job.ONSClean.contemporary_cssr,
+                    job.ONSClean.contemporary_sub_icb,
+                    job.ONSClean.current_cssr,
+                    job.ONSClean.current_sub_icb,
+                    job.ONSClean.current_region,
                 ],
             ),
         ]
@@ -159,11 +176,14 @@ class TestMain:
         add_raw_worker_columns_mock.assert_called_once_with(
             add_turnover_rate_mock.return_value, raw_worker_lf_mock
         )
-        add_coverage_geography_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value, coverage_lf_mock
+        add_geography_from_postcode_mock.assert_called_once_with(
+            add_raw_worker_columns_mock.return_value,
+            geography_workplace_lf_mock,
+            ons_lf_mock,
+            self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
         )
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
-            add_coverage_geography_mock.return_value,
+            add_geography_from_postcode_mock.return_value,
             job.wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
         )
         add_valid_for_analysis_flag_mock.assert_called_once_with(
@@ -227,7 +247,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
-    @patch(f"{PATCH_PATH}.wUtils.add_coverage_geography")
+    @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -246,7 +266,7 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
-        add_coverage_geography_mock: Mock,
+        add_geography_from_postcode_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
@@ -261,7 +281,8 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.MERGED_COVERAGE_SOURCE,
+            self.ONS_POSTCODE_DIRECTORY_SOURCE,
+            self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -281,7 +302,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
-    @patch(f"{PATCH_PATH}.wUtils.add_coverage_geography")
+    @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -300,7 +321,7 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
-        add_coverage_geography_mock: Mock,
+        add_geography_from_postcode_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         combine_pay_and_hours_mock: Mock,
@@ -313,7 +334,8 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.MERGED_COVERAGE_SOURCE,
+            self.ONS_POSTCODE_DIRECTORY_SOURCE,
+            self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -321,5 +343,5 @@ class TestMain:
         )
 
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
-            add_coverage_geography_mock.return_value, 5
+            add_geography_from_postcode_mock.return_value, 5
         )
