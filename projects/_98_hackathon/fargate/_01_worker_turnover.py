@@ -15,6 +15,7 @@ def main(
     cleaned_ascwds_worker_source: str,
     cleaned_ascwds_workplace_source: str,
     raw_ascwds_worker_source: str,
+    raw_ascwds_workplace_source: str,
     train_destination: str,
     holdout_destination: str,
     test_destination: str,
@@ -29,8 +30,10 @@ def main(
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
         cleaned_ascwds_workplace_source (str): path to the cleaned ASC-WDS
-            workplace data, used for main service
+            workplace data, used for main service and organisation ID
         raw_ascwds_worker_source (str): path to the raw ASC-WDS worker data
+        raw_ascwds_workplace_source (str): path to the raw ASC-WDS workplace data,
+            used for enhanced sick pay and pension
         train_destination (str): destination for the train split
         holdout_destination (str): destination for the holdout split
         test_destination (str): destination for the test split
@@ -46,6 +49,7 @@ def main(
             AWPClean.establishment_id,
             AWPClean.ascwds_workplace_import_date,
             AWPClean.main_service_id_clean,
+            AWPClean.organisation_id,
         ],
     )
 
@@ -83,6 +87,12 @@ def main(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
+
+    raw_workplace_lf = utils.scan_parquet(
+        raw_ascwds_workplace_source, schema=wUtils.RAW_WORKPLACE_SCHEMA
+    )
+    filtered_lf = wUtils.add_raw_workplace_columns(filtered_lf, raw_workplace_lf)
+
     filtered_lf = wUtils.add_headcount_reconciliation_gap(filtered_lf, max_gap)
     filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf).drop(
         HackCols.establishment_in_both_snapshots,
@@ -95,14 +105,20 @@ def main(
     )
     filtered_lf = wUtils.null_not_known_codes(filtered_lf)
     filtered_lf = filtered_lf.with_columns(
-        pl.col(wUtils.WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical)
+        pl.col(
+            [
+                *wUtils.WORKER_CATEGORICAL_COLUMNS,
+                *wUtils.WORKPLACE_CODE_COLUMNS,
+                AWPClean.organisation_id,
+            ]
+        ).cast(pl.Categorical)
     )
     filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
     filtered_lf = wUtils.add_worker_labels(filtered_lf)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
     filtered_lf = wUtils.add_country_code_group(
         filtered_lf, AWKClean.country_of_birth
-    ).drop(wUtils.WORKER_CATEGORICAL_COLUMNS)
+    ).drop(wUtils.WORKER_CATEGORICAL_COLUMNS, wUtils.WORKPLACE_CODE_COLUMNS)
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
 
@@ -141,6 +157,10 @@ if __name__ == "__main__":
             "Source s3 directory for raw ascwds worker data",
         ),
         (
+            "--raw_ascwds_workplace_source",
+            "Source s3 directory for raw ascwds workplace data",
+        ),
+        (
             "--train_destination",
             "Destination s3 directory for the train split",
         ),
@@ -169,6 +189,7 @@ if __name__ == "__main__":
         cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
         cleaned_ascwds_workplace_source=args.cleaned_ascwds_workplace_source,
         raw_ascwds_worker_source=args.raw_ascwds_worker_source,
+        raw_ascwds_workplace_source=args.raw_ascwds_workplace_source,
         train_destination=args.train_destination,
         holdout_destination=args.holdout_destination,
         test_destination=args.test_destination,

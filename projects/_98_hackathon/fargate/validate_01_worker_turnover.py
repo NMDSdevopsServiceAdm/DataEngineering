@@ -11,6 +11,9 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
@@ -38,6 +41,7 @@ SOURCE_COLUMNS = [
     *KEY_COLUMNS,
     AWKClean.employment_status_clean_labelled,
     AWKClean.main_job_role_clean_labelled,
+    AWPClean.organisation_id,
     HackCols.main_service_type,
     HackCols.split,
     HackCols.is_leaver,
@@ -121,6 +125,9 @@ def main(
             brief=f"Expects {expected_row_count} rows",
         )
         .col_vals_not_null(KEY_COLUMNS, brief="key columns have no nulls")
+        .col_vals_not_null(
+            AWPClean.organisation_id, brief="organisation_id has no nulls"
+        )
         .rows_distinct(
             KEY_COLUMNS,
             brief="establishment, worker and import date are unique",
