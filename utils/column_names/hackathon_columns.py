@@ -33,6 +33,7 @@ class HackathonColumns:
     headcount_gap_within_tolerance: str = "headcount_gap_within_tolerance"
     plausible_turnover: str = "plausible_turnover"
     valid_for_analysis: str = "valid_for_analysis"
+    split: str = "split"
 
 
 @dataclass
