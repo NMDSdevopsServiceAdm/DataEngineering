@@ -14,8 +14,7 @@ PATCH_PATH = "projects._98_hackathon.fargate.validate_02_worker_turnover_student
 
 
 def build_student_df() -> pl.DataFrame:
-    """Two rows of the student version of the test split: no is_leaver or
-    turnover_rate."""
+    """Two rows of the student test split, without is_leaver and turnover_rate."""
     return pl.DataFrame(
         {
             AWKClean.establishment_id: ["100", "100"],
@@ -100,3 +99,24 @@ class TestMain:
             item for item in report_json if item["assertion_type"] == "row_count_match"
         )
         assert row_count_step["values"]["count"] == 5
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_fails_when_student_data_has_a_hidden_column(
+        self,
+        mock_read_parquet: Mock,
+        mock_scan_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        student_df = build_student_df().with_columns(
+            pl.lit(True).alias(HackCols.is_leaver)
+        )
+        run_main(mock_read_parquet, mock_scan_parquet, student_df, build_test_lf())
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        hidden_columns_step = next(
+            item for item in report_json if item["assertion_type"] == "specially"
+        )
+        assert hidden_columns_step["all_passed"] is False

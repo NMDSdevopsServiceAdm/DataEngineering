@@ -120,20 +120,18 @@ def main(
         split: filtered_lf.filter(pl.col(HackCols.split) == split)
         for split in split_destinations
     }
-    # Lazy sinks collected together share one run of the plan above, rather than
-    # re-running it per split.
-    sinks = [
+    split_sinks = [
         utils.sink_to_parquet(split_lfs[split], output_path=destination, lazy=True)
         for split, destination in split_destinations.items()
     ]
-    sinks.append(
-        utils.sink_to_parquet(
-            wUtils.make_student_test_data(split_lfs["test"]),
-            output_path=student_destination,
-            lazy=True,
-        )
+    student_sink = utils.sink_to_parquet(
+        wUtils.make_student_test_data(split_lfs["test"]),
+        output_path=student_destination,
+        lazy=True,
     )
-    pl.collect_all(sinks, engine="streaming")
+    # Lazy sinks collected together share one run of the plan above, rather than
+    # re-running it per sink.
+    pl.collect_all([*split_sinks, student_sink], engine="streaming")
 
 
 if __name__ == "__main__":

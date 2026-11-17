@@ -8,6 +8,13 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 )
 
 
+KEY_COLUMNS = [
+    AWKClean.establishment_id,
+    AWKClean.worker_id,
+    AWKClean.ascwds_worker_import_date,
+]
+
+
 def has_no_hidden_columns(df: pl.DataFrame) -> bool:
     """Checks `is_leaver` and `turnover_rate` are both absent.
 

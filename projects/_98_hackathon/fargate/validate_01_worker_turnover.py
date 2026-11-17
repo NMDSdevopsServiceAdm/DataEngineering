@@ -22,12 +22,6 @@ from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerCleanedCategoricalValues as CatValues,
 )
 
-KEY_COLUMNS = [
-    AWKClean.establishment_id,
-    AWKClean.worker_id,
-    AWKClean.ascwds_worker_import_date,
-]
-
 NUMERIC_COLUMNS = [
     column
     for column in wUtils.WORKER_NUMERIC_COLUMNS
@@ -35,7 +29,7 @@ NUMERIC_COLUMNS = [
 ]
 
 SOURCE_COLUMNS = [
-    *KEY_COLUMNS,
+    *vUtils.KEY_COLUMNS,
     AWKClean.employment_status_clean_labelled,
     AWKClean.main_job_role_clean_labelled,
     HackCols.main_service_type,
@@ -120,9 +114,9 @@ def main(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
         )
-        .col_vals_not_null(KEY_COLUMNS, brief="key columns have no nulls")
+        .col_vals_not_null(vUtils.KEY_COLUMNS, brief="key columns have no nulls")
         .rows_distinct(
-            KEY_COLUMNS,
+            vUtils.KEY_COLUMNS,
             brief="establishment, worker and import date are unique",
         )
         .specially(

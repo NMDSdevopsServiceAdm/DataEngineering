@@ -7,9 +7,6 @@ import projects._98_hackathon.fargate.utils.validation_utils as vUtils
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
-    AscwdsWorkerCleanedColumns as AWKClean,
-)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 
@@ -30,11 +27,6 @@ def main(
             count is the expected row count
         reports_path (str): the output path to write reports to
     """
-    key_columns = [
-        AWKClean.establishment_id,
-        AWKClean.worker_id,
-        AWKClean.ascwds_worker_import_date,
-    ]
     test_split = "test"
 
     source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
@@ -59,9 +51,9 @@ def main(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows (same as the test split)",
         )
-        .col_vals_not_null(key_columns, brief="key columns have no nulls")
+        .col_vals_not_null(vUtils.KEY_COLUMNS, brief="key columns have no nulls")
         .rows_distinct(
-            key_columns,
+            vUtils.KEY_COLUMNS,
             brief="establishment, worker and import date are unique",
         )
         .col_vals_in_set(HackCols.split, [test_split], brief=f"split is {test_split}")
