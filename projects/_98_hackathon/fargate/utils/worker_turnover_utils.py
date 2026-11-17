@@ -209,6 +209,9 @@ IMPUTE_COLUMNS = [
     f"{AWKClean.level_social_care_qualification_held}_labels",
     f"{AWKClean.care_certificate_status}_labels",
     f"{AWKClean.training_ain_flag}_labels",
+    HackCols.ethnicity_group_labels,
+    HackCols.scerec_group_labels,
+    HackCols.scerec_wo_group_labels,
 ]
 
 
