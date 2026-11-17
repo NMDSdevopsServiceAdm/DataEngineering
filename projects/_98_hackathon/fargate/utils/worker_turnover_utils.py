@@ -391,6 +391,9 @@ def add_valid_pay_difference_flag(
 
     `.over()` is not covered by the streaming engine, so it runs in memory.
 
+    This is a simple filter for the hackathon and needs further work before use in
+    the full pipeline.
+
     Args:
         worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
             `mainjrid_clean_labels` and `hourly_pay_minus_nlw`.
