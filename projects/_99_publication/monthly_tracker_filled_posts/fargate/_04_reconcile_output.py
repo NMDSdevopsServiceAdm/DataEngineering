@@ -393,8 +393,7 @@ def main(
         raise ReconciliationMismatchError(
             f"Run {run_number}: no national 'All job roles' rows in the assessment data"
         )
-    # Job groups are rollups of the job roles, like "All job roles", so they have
-    # no archive row to compare with.
+    # Job groups are rollups with no archive row to compare with.
     is_job_group = pl.col(IndCQC.main_job_role_clean_labelled).is_in(
         publication_utils.JOB_GROUP_LABELS
     )

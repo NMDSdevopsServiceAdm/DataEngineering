@@ -166,12 +166,11 @@ PREP_COLUMNS = [
 
 def job_group_filled_posts_match_all_job_roles(assessment_df: pl.DataFrame) -> bool:
     """
-    Checks the job group filled posts add up to the "All job roles" filled posts.
+    Checks job group filled posts sum to the "All job roles" filled posts.
 
-    Job groups split the job roles between them, so for each import date, region
-    and service type the filled posts of the job group rows should sum to the
-    "All job roles" row. A combination with only one of the two fails. The
-    tolerance absorbs Float32 summation order differences.
+    Compared per import date, region and service type; a combination with only
+    one of the two fails. The tolerance absorbs Float32 summation order
+    differences.
 
     Args:
         assessment_df (pl.DataFrame): the assessment data, with the job group and

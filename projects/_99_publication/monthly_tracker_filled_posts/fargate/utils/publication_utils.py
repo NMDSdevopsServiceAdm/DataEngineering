@@ -50,7 +50,7 @@ DOWNLOAD_TABLE_SORT_KEYS: list[pl.Expr] = [
     ),
 ]
 
-# The job groups that add_rows_for_publication_groups rolls job roles up into.
+# The job groups the job roles roll up into.
 JOB_GROUP_LABELS: list[str] = [
     PublishedJobGroupLabels.direct_care,
     PublishedJobGroupLabels.managers,
@@ -653,14 +653,12 @@ def add_rows_for_publication_groups(
 
     Built recursively - job role, then service type, then region - so
     England has a row for every job role/service type combination,
-    including the other rollups. Job group rows (Direct care, Managers,
-    Regulated professions and Other) sit in the job role column alongside
-    the job roles and "All job roles", so they cascade through the service
-    type and region rollups the same way.
+    including the other rollups. Job group rows share the job role column,
+    so they cascade like job roles.
 
     "All job roles" and job group rows are rebuilt from prepared_lf via
-    aggregate_to_publication_rows, with job role replaced by job group (or
-    dropped) in the group keys, since summing per-job-role counts would
+    aggregate_to_publication_rows, with job role dropped or replaced by job
+    group in the group keys, since summing per-job-role counts would
     double-count a location (one row per job role it employs).
     Region and service type are single-valued per location, so those
     rollups re-sum the aggregated columns.
@@ -676,8 +674,7 @@ def add_rows_for_publication_groups(
 
     Args:
         prepared_lf (pl.LazyFrame): location-level data, as passed into
-            aggregate_to_publication_rows. It must also hold the job group
-            column.
+            aggregate_to_publication_rows, with the job group column.
         publication_summary_lf (pl.LazyFrame): output of
             aggregate_to_publication_rows on prepared_lf.
         include_assessment (bool): whether publication_summary_lf has the
