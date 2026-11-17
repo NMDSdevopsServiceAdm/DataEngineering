@@ -153,11 +153,14 @@ class TestMain:
         fix_start_date_typos_mock.assert_called_once_with(
             add_raw_worker_columns_mock.return_value
         )
-        add_plausible_start_date_flag_mock.assert_called_once_with(
-            fix_start_date_typos_mock.return_value
-        )
-        null_implausible_start_dates_mock.assert_called_once_with(
-            add_plausible_start_date_flag_mock.return_value
+        # The rule runs before imputation and again on the imputed dates.
+        assert add_plausible_start_date_flag_mock.call_args_list == [
+            call(fix_start_date_typos_mock.return_value),
+            call(impute_worker_columns_mock.return_value),
+        ]
+        assert (
+            null_implausible_start_dates_mock.call_args_list
+            == [call(add_plausible_start_date_flag_mock.return_value)] * 2
         )
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
             null_implausible_start_dates_mock.return_value,
@@ -200,8 +203,11 @@ class TestMain:
             add_country_code_group_mock.return_value.drop.return_value,
             job.wUtils.IMPUTE_COLUMNS,
         )
+        null_implausible_start_dates_mock.return_value.drop.assert_called_once_with(
+            job.HackCols.plausible_start_date
+        )
         add_nlw_and_pay_difference_mock.assert_called_once_with(
-            impute_worker_columns_mock.return_value
+            null_implausible_start_dates_mock.return_value.drop.return_value
         )
         add_split_column_mock.assert_called_once_with(
             add_nlw_and_pay_difference_mock.return_value
