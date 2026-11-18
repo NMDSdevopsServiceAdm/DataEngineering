@@ -183,6 +183,18 @@ def main(
             na_pass=True,
             brief="age_imputed is null or not negative",
         )
+        .col_vals_ge(
+            HackCols.years_in_role,
+            0,
+            na_pass=True,
+            brief="years_in_role is null or not negative",
+        )
+        .col_vals_ge(
+            HackCols.years_in_sector,
+            0,
+            na_pass=True,
+            brief="years_in_sector is null or not negative",
+        )
         # Cross-column checks
         .col_vals_expr(
             expr=turnover_rate.min()

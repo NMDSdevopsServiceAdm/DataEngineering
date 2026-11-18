@@ -641,6 +641,45 @@ class TestAddYearsInRoleAndSector:
 
         assert returned_df[HackCols.years_in_sector].to_list() == [7.0]
 
+    def test_returns_null_years_in_role_when_start_date_is_after_save_date(self):
+        worker_lf = self.worker_lf.with_columns(
+            pl.lit(date(2022, 1, 2)).alias(AWKClean.start_date)
+        )
+
+        returned_df = job.add_years_in_role_and_sector(
+            worker_lf, self.save_dates_lf
+        ).collect()
+
+        assert returned_df[HackCols.years_in_role].to_list() == [None]
+        assert returned_df[HackCols.years_in_sector].to_list() == [7.0]
+
+    def test_returns_null_years_in_sector_when_start_year_is_after_save_year(self):
+        worker_lf = self.worker_lf.with_columns(
+            pl.lit(2023.0, dtype=pl.Float32).alias(AWKClean.start_in_sector)
+        )
+
+        returned_df = job.add_years_in_role_and_sector(
+            worker_lf, self.save_dates_lf
+        ).collect()
+
+        assert returned_df[HackCols.years_in_sector].to_list() == [None]
+        assert returned_df[HackCols.years_in_role].to_list() == pytest.approx(
+            [731 / 365.25]
+        )
+
+    def test_returns_zero_years_when_start_is_on_save_date_and_year(self):
+        worker_lf = self.worker_lf.with_columns(
+            pl.lit(date(2022, 1, 1)).alias(AWKClean.start_date),
+            pl.lit(2022.0, dtype=pl.Float32).alias(AWKClean.start_in_sector),
+        )
+
+        returned_df = job.add_years_in_role_and_sector(
+            worker_lf, self.save_dates_lf
+        ).collect()
+
+        assert returned_df[HackCols.years_in_role].to_list() == [0.0]
+        assert returned_df[HackCols.years_in_sector].to_list() == [0.0]
+
     def test_returns_float32_year_columns_and_drops_save_date(self):
         returned_schema = job.add_years_in_role_and_sector(
             self.worker_lf, self.save_dates_lf

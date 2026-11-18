@@ -499,16 +499,16 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 def add_years_in_role_and_sector(
     worker_lf: pl.LazyFrame, save_dates_lf: pl.LazyFrame
 ) -> pl.LazyFrame:
-    """Adds years in role and years in the sector at the establishment's latest save date.
+    """Adds years in role and years in sector at the latest save date.
 
     - `years_in_role` is the days from `start_date` to the latest save date,
       divided by 365.25.
-    - `years_in_sector` is the latest save date's year minus `start_in_sector`
-      (a year).
+    - `years_in_sector` is the latest save date's year minus `start_in_sector`,
+      which is a year.
 
-    Both are null when the start value or the save date is null, and can be
-    negative. The save dates are one small row per establishment and snapshot, so
-    the join adds no rows.
+    Each is null when its start value or the save date is null, or when the start
+    is after the save date (or its year). The save dates are one small row per
+    establishment and snapshot, so the join adds no rows.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `start_date`, `start_in_sector`
@@ -522,14 +522,18 @@ def add_years_in_role_and_sector(
     """
     keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
     save_date = pl.col(HackCols.latest_save_date)
+    start_date = pl.col(AWKClean.start_date)
+    start_year = pl.col(AWKClean.start_in_sector)
 
     return (
         worker_lf.join(save_dates_lf, on=keys, how="left")
         .with_columns(
-            ((save_date - pl.col(AWKClean.start_date)).dt.total_days() / 365.25)
+            pl.when(start_date <= save_date)
+            .then((save_date - start_date).dt.total_days() / 365.25)
             .cast(pl.Float32)
             .alias(HackCols.years_in_role),
-            (save_date.dt.year() - pl.col(AWKClean.start_in_sector))
+            pl.when(start_year <= save_date.dt.year())
+            .then(save_date.dt.year() - start_year)
             .cast(pl.Float32)
             .alias(HackCols.years_in_sector),
         )
