@@ -23,7 +23,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
-    @patch(f"{PATCH_PATH}.cUtils.remove_unchanged_values_using_change_date")
+    @patch(f"{PATCH_PATH}.cUtils.keep_value_if_changed_expr")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
@@ -50,7 +50,7 @@ class TestMain:
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
         combine_pay_and_hours_mock: Mock,
-        remove_unchanged_values_using_change_date_mock: Mock,
+        keep_value_if_changed_expr_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
@@ -178,34 +178,24 @@ class TestMain:
             ],
             "date_column": job.AWKClean.ascwds_worker_import_date,
         }
-        assert remove_unchanged_values_using_change_date_mock.call_args_list == [
+        assert keep_value_if_changed_expr_mock.call_args_list == [
             call(
-                combine_pay_and_hours_mock.return_value,
-                columns_to_clean=[job.HackCols.hourly_pay],
+                job.HackCols.hourly_pay,
                 change_date_column=job.AWKClean.pay_change_date,
                 **timeline_kwargs,
             ),
             call(
-                remove_unchanged_values_using_change_date_mock.return_value,
-                columns_to_clean=[job.AWKClean.days_sick],
+                job.AWKClean.days_sick,
                 change_date_column=job.AWKClean.days_sick_change_date,
                 **timeline_kwargs,
             ),
         ]
-        deduplicated_lf_mock = (
-            remove_unchanged_values_using_change_date_mock.return_value
-        )
-        deduplicated_lf_mock.drop.assert_called_once_with(
-            [job.HackCols.hourly_pay, job.AWKClean.days_sick]
-        )
-        deduplicated_lf_mock.drop.return_value.rename.assert_called_once_with(
-            {
-                f"{job.HackCols.hourly_pay}_deduplicated": job.HackCols.hourly_pay,
-                f"{job.AWKClean.days_sick}_deduplicated": job.AWKClean.days_sick,
-            }
+        combine_pay_and_hours_mock.return_value.with_columns.assert_called_once_with(
+            keep_value_if_changed_expr_mock.return_value,
+            keep_value_if_changed_expr_mock.return_value,
         )
         add_worker_labels_mock.assert_called_once_with(
-            deduplicated_lf_mock.drop.return_value.rename.return_value
+            combine_pay_and_hours_mock.return_value.with_columns.return_value
         )
         assert add_country_code_group_mock.call_args_list == [
             call(add_worker_labels_mock.return_value, job.AWKClean.nationality),

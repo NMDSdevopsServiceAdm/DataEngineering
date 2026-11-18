@@ -341,34 +341,29 @@ def remove_repeated_values_over_time(
     return lf.with_columns(dedup_exprs)
 
 
-def remove_unchanged_values_using_change_date(
-    lf: pl.LazyFrame,
-    columns_to_clean: list[str],
+def keep_value_if_changed_expr(
+    column: str,
     change_date_column: str,
     partition_by_columns: str | list[str],
     date_column: str,
-) -> pl.LazyFrame:
+) -> pl.Expr:
     """
-    Replaces values with null unless their change date is new since the previous row.
+    Keeps a value when previous date < change date <= this date, otherwise null.
 
-    Within each partition_by_columns group, ordered by date_column, a value is
-    kept when change_date_column is after the previous row's date_column and on or
-    before this row's. A first row has no previous date, so the window is the
-    month before its date_column. A null change date is not a change. Each
-    deduplicated column is added as "<original>_deduplicated"; the originals are
-    kept unchanged.
+    Dates are date_column values: the previous one is the prior row's within each
+    partition_by_columns group, ordered by date_column. A first row has no
+    previous date, so its window starts one month before its date_column. A null
+    change date is not a change. The result is named after column.
 
     Args:
-        lf (pl.LazyFrame): The LazyFrame to clean.
-        columns_to_clean (list[str]): Columns whose value the change date describes.
-        change_date_column (str): Date the columns_to_clean values last changed.
+        column (str): Column whose value the change date describes.
+        change_date_column (str): Date the column's value last changed.
         partition_by_columns (str | list[str]): Column(s) identifying each entity's
             timeline.
         date_column (str): Column to order rows by within each partition.
 
     Returns:
-        pl.LazyFrame: The input LazyFrame with one new "<original>_deduplicated"
-            column per column in columns_to_clean.
+        pl.Expr: The column's value where it changed, otherwise null.
     """
     partition_by_columns_list = (
         partition_by_columns
@@ -385,13 +380,12 @@ def remove_unchanged_values_using_change_date(
         )
     )
     window_start = pl.coalesce(previous_date, pl.col(date_column).dt.offset_by("-1mo"))
-    changed = (pl.col(change_date_column) > window_start) & (
-        pl.col(change_date_column) <= pl.col(date_column)
-    )
 
-    return lf.with_columns(
-        pl.when(changed)
-        .then(pl.col(columns_to_clean))
+    return (
+        pl.when(
+            (pl.col(change_date_column) > window_start)
+            & (pl.col(change_date_column) <= pl.col(date_column))
+        )
+        .then(pl.col(column))
         .otherwise(None)
-        .name.suffix("_deduplicated")
     )

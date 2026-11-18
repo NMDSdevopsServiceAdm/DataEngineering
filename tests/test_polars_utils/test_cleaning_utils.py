@@ -252,13 +252,29 @@ class TestRemoveRepeatedValuesOverTime:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
-class TestRemoveUnchangedValuesUsingChangeDate:
+class TestKeepValueIfChangedExpr:
     SCHEMA = {
         "worker_id": pl.String,
         "import_date": pl.Date,
         "change_date": pl.Date,
         "value": pl.Int64,
     }
+
+    @staticmethod
+    def keep_value_if_changed(rows, schema, partition_by_columns="worker_id"):
+        return (
+            pl.LazyFrame(rows, schema, orient="row")
+            .select(
+                job.keep_value_if_changed_expr(
+                    "value",
+                    change_date_column="change_date",
+                    partition_by_columns=partition_by_columns,
+                    date_column="import_date",
+                )
+            )
+            .collect()["value"]
+            .to_list()
+        )
 
     @pytest.mark.parametrize(
         "rows, expected_values",
@@ -313,61 +329,39 @@ class TestRemoveUnchangedValuesUsingChangeDate:
                 [None],
                 id="nulls_value_when_change_date_is_null",
             ),
+            pytest.param(
+                [("w1", date(2023, 1, 1), date(2022, 12, 20), None)],
+                [None],
+                id="keeps_null_value_when_change_date_is_valid",
+            ),
+            pytest.param(
+                [("w1", date(2023, 1, 1), date(2023, 1, 15), 10)],
+                [None],
+                id="nulls_value_when_change_date_is_after_the_import_date",
+            ),
+            pytest.param(
+                [
+                    ("w1", date(2023, 2, 1), date(2022, 12, 20), 10),
+                    ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+                ],
+                [None, 10],
+                id="orders_rows_by_import_date_whatever_their_input_order",
+            ),
         ],
     )
     def test_returns_expected_values(self, rows, expected_values):
-        test_lf = pl.LazyFrame(rows, self.SCHEMA, orient="row")
-
-        returned_lf = job.remove_unchanged_values_using_change_date(
-            test_lf,
-            columns_to_clean=["value"],
-            change_date_column="change_date",
-            partition_by_columns="worker_id",
-            date_column="import_date",
-        )
-
-        assert returned_lf.collect()["value_deduplicated"].to_list() == expected_values
-
-    def test_keeps_original_columns_unchanged(self):
-        test_lf = pl.LazyFrame(
-            [
-                ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
-                ("w1", date(2023, 2, 1), date(2022, 12, 20), 10),
-            ],
-            self.SCHEMA,
-            orient="row",
-        )
-
-        returned_lf = job.remove_unchanged_values_using_change_date(
-            test_lf,
-            columns_to_clean=["value"],
-            change_date_column="change_date",
-            partition_by_columns="worker_id",
-            date_column="import_date",
-        )
-
-        assert returned_lf.collect()["value"].to_list() == [10, 10]
+        assert self.keep_value_if_changed(rows, self.SCHEMA) == expected_values
 
     def test_compares_import_dates_within_each_partition(self):
-        test_lf = pl.LazyFrame(
-            [
-                ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
-                ("w1", date(2023, 3, 1), date(2023, 2, 10), 11),
-                ("w2", date(2023, 2, 1), date(2023, 1, 20), 20),
-            ],
-            self.SCHEMA,
-            orient="row",
-        )
+        rows = [
+            ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+            ("w1", date(2023, 3, 1), date(2023, 2, 10), 11),
+            ("w2", date(2023, 2, 1), date(2023, 1, 20), 20),
+        ]
 
-        returned_lf = job.remove_unchanged_values_using_change_date(
-            test_lf,
-            columns_to_clean=["value"],
-            change_date_column="change_date",
-            partition_by_columns=["worker_id"],
-            date_column="import_date",
-        )
+        returned_values = self.keep_value_if_changed(rows, self.SCHEMA, ["worker_id"])
 
-        assert returned_lf.collect()["value_deduplicated"].to_list() == [10, 11, 20]
+        assert returned_values == [10, 11, 20]
 
 
 class ColumnToDateTests(unittest.TestCase):

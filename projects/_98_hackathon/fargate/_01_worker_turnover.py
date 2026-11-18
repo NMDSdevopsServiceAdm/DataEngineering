@@ -101,23 +101,21 @@ def main(
     filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
     # ASC-WDS repeats these values until changed. Keep a value only on the import
     # date that first shows its change.
-    filtered_lf = cUtils.remove_unchanged_values_using_change_date(
-        filtered_lf,
-        columns_to_clean=[HackCols.hourly_pay],
-        change_date_column=AWKClean.pay_change_date,
-        partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
-        date_column=AWKClean.ascwds_worker_import_date,
-    )
-    filtered_lf = cUtils.remove_unchanged_values_using_change_date(
-        filtered_lf,
-        columns_to_clean=[AWKClean.days_sick],
-        change_date_column=AWKClean.days_sick_change_date,
-        partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
-        date_column=AWKClean.ascwds_worker_import_date,
-    )
-    time_varying_columns = [HackCols.hourly_pay, AWKClean.days_sick]
-    filtered_lf = filtered_lf.drop(time_varying_columns).rename(
-        {f"{column}_deduplicated": column for column in time_varying_columns}
+    worker_timeline = {
+        "partition_by_columns": [AWKClean.worker_id, AWKClean.establishment_id],
+        "date_column": AWKClean.ascwds_worker_import_date,
+    }
+    filtered_lf = filtered_lf.with_columns(
+        cUtils.keep_value_if_changed_expr(
+            HackCols.hourly_pay,
+            change_date_column=AWKClean.pay_change_date,
+            **worker_timeline,
+        ),
+        cUtils.keep_value_if_changed_expr(
+            AWKClean.days_sick,
+            change_date_column=AWKClean.days_sick_change_date,
+            **worker_timeline,
+        ),
     )
     filtered_lf = wUtils.add_worker_labels(filtered_lf)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
