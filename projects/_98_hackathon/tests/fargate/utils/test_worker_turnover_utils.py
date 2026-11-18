@@ -16,6 +16,7 @@ from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import
 from projects._98_hackathon.unittest_data.polars_hackathon_test_file_schemas import (
     WorkerTurnoverSchemas as Schemas,
 )
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -24,6 +25,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import NotKnownWorkerCodes
@@ -541,10 +545,21 @@ class TestAddGeographyFromPostcode:
         orient="row",
     )
     workplace_lf = pl.LazyFrame(
-        [("1-001", date(2021, 1, 5), "LS1 1AA", "1-LOC", "Workplace", "1 Street")],
+        [
+            (
+                "1-001",
+                date(2021, 1, 5),
+                "53",
+                "LS1 1AA",
+                "1-LOC",
+                "Workplace",
+                "1 Street",
+            )
+        ],
         schema={
-            AWPClean.establishment_id: pl.String,
+            AWPClean.establishment_id: CatColType.EstablishmentCatType,
             AWPClean.ascwds_workplace_import_date: pl.Date,
+            AWPClean.main_service_id_clean: pl.String,
             AWPClean.postcode: pl.String,
             AWPClean.location_id: pl.String,
             AWPClean.establishment_name: pl.String,
@@ -553,45 +568,44 @@ class TestAddGeographyFromPostcode:
         orient="row",
     )
     matched_lf = pl.LazyFrame(
-        [("1-001", date(2021, 1, 5), "Leeds", "North")],
+        [("1-001", date(2021, 1, 5), "53", "Leeds", "North")],
         schema={
-            AWPClean.establishment_id: pl.Categorical,
+            AWPClean.establishment_id: CatColType.EstablishmentCatType,
             CQCLClean.cqc_location_import_date: pl.Date,
-            CQCLClean.current_cssr: pl.String,
-            CQCLClean.current_region: pl.String,
+            AWPClean.main_service_id_clean: pl.String,
+            ONSClean.current_cssr: pl.String,
+            ONSClean.current_region: pl.String,
         },
         orient="row",
     )
 
-    def test_returns_matched_cssr_and_region(self, run_postcode_matching_mock):
+    def test_returns_workplace_keys_main_service_and_matched_geography(
+        self, run_postcode_matching_mock
+    ):
         run_postcode_matching_mock.return_value = self.matched_lf
 
         returned_df = job.add_geography_from_postcode(
-            self.worker_lf, self.workplace_lf, pl.LazyFrame(), "corrections.csv"
+            self.workplace_lf, self.worker_lf, pl.LazyFrame(), "corrections.csv"
         ).collect()
 
-        assert returned_df.row(0)[-2:] == ("Leeds", "North")
+        assert returned_df.columns == [
+            AWPClean.establishment_id,
+            AWPClean.ascwds_workplace_import_date,
+            AWPClean.main_service_id_clean,
+            ONSClean.current_cssr,
+            ONSClean.current_region,
+        ]
+        assert returned_df.row(0) == ("1-001", date(2021, 1, 5), "53", "Leeds", "North")
 
     def test_returns_geography_columns_as_categorical(self, run_postcode_matching_mock):
         run_postcode_matching_mock.return_value = self.matched_lf
 
         returned_schema = job.add_geography_from_postcode(
-            self.worker_lf, self.workplace_lf, pl.LazyFrame(), "corrections.csv"
+            self.workplace_lf, self.worker_lf, pl.LazyFrame(), "corrections.csv"
         ).collect_schema()
 
-        assert returned_schema[CQCLClean.current_cssr] == pl.Categorical
-        assert returned_schema[CQCLClean.current_region] == pl.Categorical
-
-    def test_returns_null_geography_when_workplace_is_not_matched(
-        self, run_postcode_matching_mock
-    ):
-        run_postcode_matching_mock.return_value = self.matched_lf.clear()
-
-        returned_df = job.add_geography_from_postcode(
-            self.worker_lf, self.workplace_lf, pl.LazyFrame(), "corrections.csv"
-        ).collect()
-
-        assert returned_df.row(0)[-2:] == (None, None)
+        assert returned_schema[ONSClean.current_cssr] == pl.Categorical
+        assert returned_schema[ONSClean.current_region] == pl.Categorical
 
     def test_matches_workplace_columns_renamed_to_cqc_names(
         self, run_postcode_matching_mock
@@ -600,13 +614,14 @@ class TestAddGeographyFromPostcode:
         ons_lf = pl.LazyFrame()
 
         job.add_geography_from_postcode(
-            self.worker_lf, self.workplace_lf, ons_lf, "corrections.csv"
+            self.workplace_lf, self.worker_lf, ons_lf, "corrections.csv"
         ).collect()
 
         locations_lf = run_postcode_matching_mock.call_args.args[0]
         assert locations_lf.collect().columns == [
             AWPClean.establishment_id,
             CQCLClean.cqc_location_import_date,
+            AWPClean.main_service_id_clean,
             CQCLClean.postal_code,
             CQCLClean.location_id,
             CQCLClean.name,
@@ -618,12 +633,14 @@ class TestAddGeographyFromPostcode:
     def test_matches_only_workplaces_in_worker_data(self, run_postcode_matching_mock):
         run_postcode_matching_mock.return_value = self.matched_lf
         other_workplace_lf = self.workplace_lf.with_columns(
-            pl.lit("1-002").alias(AWPClean.establishment_id)
+            pl.lit("1-002")
+            .cast(CatColType.EstablishmentCatType)
+            .alias(AWPClean.establishment_id)
         )
         workplace_lf = pl.concat([self.workplace_lf, other_workplace_lf])
 
         job.add_geography_from_postcode(
-            self.worker_lf, workplace_lf, pl.LazyFrame(), "corrections.csv"
+            workplace_lf, self.worker_lf, pl.LazyFrame(), "corrections.csv"
         ).collect()
 
         locations_lf = run_postcode_matching_mock.call_args.args[0]

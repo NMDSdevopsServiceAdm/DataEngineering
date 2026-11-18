@@ -11,8 +11,8 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
@@ -56,8 +56,8 @@ SOURCE_COLUMNS = [
     HackCols.hourly_pay_minus_nlw,
     HackCols.nationality_group,
     HackCols.country_of_birth_group,
-    CQCLClean.current_cssr,
-    CQCLClean.current_region,
+    ONSClean.current_cssr,
+    ONSClean.current_region,
     *NUMERIC_COLUMNS,
     *wUtils.LABEL_COLUMNS,
 ]
@@ -115,8 +115,8 @@ def main(
     is_leaver = pl.col(HackCols.is_leaver)
     turnover_rate = pl.col(HackCols.turnover_rate)
     hourly_pay = pl.col(HackCols.hourly_pay)
-    current_cssr_values = CurrentCSSR(CQCLClean.current_cssr).categorical_values
-    current_region_values = Region(CQCLClean.current_region).categorical_values
+    current_cssr_values = CurrentCSSR(ONSClean.current_cssr).categorical_values
+    current_region_values = Region(ONSClean.current_region).categorical_values
 
     validation = (
         pb.Validate(
@@ -163,12 +163,12 @@ def main(
             brief="main_service_type is a known value",
         )
         .col_vals_in_set(
-            CQCLClean.current_cssr,
+            ONSClean.current_cssr,
             current_cssr_values,
             brief="current_cssr is a known value",
         )
         .col_vals_in_set(
-            CQCLClean.current_region,
+            ONSClean.current_region,
             current_region_values,
             brief="current_region is a known value",
         )

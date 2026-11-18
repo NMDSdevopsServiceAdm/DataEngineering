@@ -60,14 +60,13 @@ class TestMain:
         collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
-        geography_workplace_lf_mock, ons_lf_mock = Mock(), Mock()
+        worker_lf_mock, workplace_lf_mock, ons_lf_mock = Mock(), Mock(), Mock()
+        raw_worker_lf_mock = Mock()
         scan_parquet_mock.side_effect = [
             worker_lf_mock,
             workplace_lf_mock,
-            raw_worker_lf_mock,
-            geography_workplace_lf_mock,
             ons_lf_mock,
+            raw_worker_lf_mock,
         ]
         splits = ["train", "holdout", "test"]
         destinations = [
@@ -100,14 +99,6 @@ class TestMain:
                     job.AWPClean.establishment_id,
                     job.AWPClean.ascwds_workplace_import_date,
                     job.AWPClean.main_service_id_clean,
-                ],
-            ),
-            call(self.RAW_WORKER_SOURCE, schema=job.wUtils.RAW_WORKER_SCHEMA),
-            call(
-                self.CLEANED_WORKPLACE_SOURCE,
-                selected_columns=[
-                    job.AWPClean.establishment_id,
-                    job.AWPClean.ascwds_workplace_import_date,
                     job.AWPClean.postcode,
                     job.AWPClean.location_id,
                     job.AWPClean.establishment_name,
@@ -126,6 +117,7 @@ class TestMain:
                     job.ONSClean.current_region,
                 ],
             ),
+            call(self.RAW_WORKER_SOURCE, schema=job.wUtils.RAW_WORKER_SCHEMA),
         ]
         filter_worker_turnover_data_mock.assert_called_once_with(worker_lf_mock)
         filtered_lf_mock = (
@@ -138,8 +130,14 @@ class TestMain:
             job.AWKClean.employment_status,
             job.AWKClean.employment_status_clean,
         )
-        filtered_lf_mock.join.assert_called_once_with(
+        add_geography_from_postcode_mock.assert_called_once_with(
             workplace_lf_mock,
+            filtered_lf_mock,
+            ons_lf_mock,
+            self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
+        )
+        filtered_lf_mock.join.assert_called_once_with(
+            add_geography_from_postcode_mock.return_value,
             left_on=[
                 job.AWKClean.establishment_id,
                 job.AWKClean.ascwds_worker_import_date,
@@ -176,14 +174,8 @@ class TestMain:
         add_raw_worker_columns_mock.assert_called_once_with(
             add_turnover_rate_mock.return_value, raw_worker_lf_mock
         )
-        add_geography_from_postcode_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value,
-            geography_workplace_lf_mock,
-            ons_lf_mock,
-            self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
-        )
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
-            add_geography_from_postcode_mock.return_value,
+            add_raw_worker_columns_mock.return_value,
             job.wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
         )
         add_valid_for_analysis_flag_mock.assert_called_once_with(
@@ -343,5 +335,5 @@ class TestMain:
         )
 
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
-            add_geography_from_postcode_mock.return_value, 5
+            add_raw_worker_columns_mock.return_value, 5
         )

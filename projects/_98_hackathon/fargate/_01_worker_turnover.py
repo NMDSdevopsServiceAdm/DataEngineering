@@ -55,6 +55,22 @@ def main(
             AWPClean.establishment_id,
             AWPClean.ascwds_workplace_import_date,
             AWPClean.main_service_id_clean,
+            AWPClean.postcode,
+            AWPClean.location_id,
+            AWPClean.establishment_name,
+            AWPClean.address,
+        ],
+    )
+    ons_lf = utils.scan_parquet(
+        ons_postcode_directory_source,
+        selected_columns=[
+            ONSClean.postcode,
+            ONSClean.contemporary_ons_import_date,
+            ONSClean.contemporary_cssr,
+            ONSClean.contemporary_sub_icb,
+            ONSClean.current_cssr,
+            ONSClean.current_sub_icb,
+            ONSClean.current_region,
         ],
     )
 
@@ -64,6 +80,12 @@ def main(
         AWKClean.main_job_role_clean,
         AWKClean.employment_status,
         AWKClean.employment_status_clean,
+    )
+    workplace_lf = wUtils.add_geography_from_postcode(
+        workplace_lf,
+        filtered_lf,
+        ons_lf,
+        manual_postcode_corrections_source,
     )
     filtered_lf = filtered_lf.join(
         workplace_lf,
@@ -93,36 +115,6 @@ def main(
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
 
-    # A separate scan keeps the postcode, name and address columns off the worker rows.
-    geography_workplace_lf = utils.scan_parquet(
-        cleaned_ascwds_workplace_source,
-        selected_columns=[
-            AWPClean.establishment_id,
-            AWPClean.ascwds_workplace_import_date,
-            AWPClean.postcode,
-            AWPClean.location_id,
-            AWPClean.establishment_name,
-            AWPClean.address,
-        ],
-    )
-    ons_lf = utils.scan_parquet(
-        ons_postcode_directory_source,
-        selected_columns=[
-            ONSClean.postcode,
-            ONSClean.contemporary_ons_import_date,
-            ONSClean.contemporary_cssr,
-            ONSClean.contemporary_sub_icb,
-            ONSClean.current_cssr,
-            ONSClean.current_sub_icb,
-            ONSClean.current_region,
-        ],
-    )
-    filtered_lf = wUtils.add_geography_from_postcode(
-        filtered_lf,
-        geography_workplace_lf,
-        ons_lf,
-        manual_postcode_corrections_source,
-    )
     filtered_lf = wUtils.add_headcount_reconciliation_gap(filtered_lf, max_gap)
     filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf).drop(
         HackCols.establishment_in_both_snapshots,
