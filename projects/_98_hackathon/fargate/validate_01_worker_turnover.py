@@ -21,7 +21,7 @@ from utils.column_values.ascwds_labelled_vocab import (
     NationalityGroupLabels,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
-from utils.column_values.ascwds_labelled_vocab import TrainFlagLabels
+from utils.column_values.ascwds_labelled_vocab import TrainingFlagLabels
 from utils.column_values.categorical_column_values import PrimaryServiceType
 from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerCleanedCategoricalValues as CatValues,
@@ -114,8 +114,7 @@ def main(
     is_leaver = pl.col(HackCols.is_leaver)
     turnover_rate = pl.col(HackCols.turnover_rate)
     hourly_pay = pl.col(HackCols.hourly_pay)
-    # trainflag labels can only be Yes or No
-    trainflag_labels = f"{AWKClean.training_flag}_labels"
+    training_flag_labels = f"{AWKClean.training_flag}_labels"
 
     validation = (
         pb.Validate(
@@ -240,7 +239,9 @@ def main(
         HackCols.country_of_birth_group: CountryOfBirthGroupLabels(
             HackCols.country_of_birth_group, contains_null_values=True
         ),
-        trainflag_labels: TrainFlagLabels(trainflag_labels, contains_null_values=False),
+        training_flag_labels: TrainingFlagLabels(
+            training_flag_labels, contains_null_values=False
+        ),
     }
 
     # One set of steps per column so a report names the column.

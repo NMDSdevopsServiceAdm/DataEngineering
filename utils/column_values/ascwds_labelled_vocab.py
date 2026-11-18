@@ -531,7 +531,7 @@ class TrainFlagID(ColumnValues):
 
 
 @dataclass
-class TrainFlagLabels(ColumnValues):
+class TrainingFlagLabels(ColumnValues):
     """Labels of the training flag column"""
 
     no: str = "No"
@@ -683,7 +683,7 @@ CARE_CERTIFICATE_STATUS = PairedVocab(
 APPRENTICE = PairedVocab(ApprenticeID, ApprenticeLabels)
 ZERO_HOURS = PairedVocab(ZeroHoursID, ZeroHoursLabels)
 SOURCE_OF_RECRUITMENT = PairedVocab(SourceOfRecruitmentID, SourceOfRecruitmentLabels)
-TRAIN_FLAG = PairedVocab(TrainFlagID, TrainFlagLabels)
+TRAIN_FLAG = PairedVocab(TrainFlagID, TrainingFlagLabels)
 
 ESTABLISHMENT_TYPE_CODE_TO_LABEL: dict[str, str] = {
     "0": EstablishmentType.not_known,
