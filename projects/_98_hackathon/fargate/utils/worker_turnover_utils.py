@@ -377,6 +377,47 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
+def add_years_in_role_and_sector(
+    worker_lf: pl.LazyFrame, save_dates_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """Adds years in role and years in the sector at the establishment's latest save date.
+
+    - `years_in_role` is the days from `start_date` to the latest save date,
+      divided by 365.25.
+    - `years_in_sector` is the latest save date's year minus `start_in_sector`
+      (a year).
+
+    Both are null when the start value or the save date is null, and can be
+    negative. The save dates are one small row per establishment and snapshot, so
+    the join adds no rows.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `start_date`, `start_in_sector`
+            and the establishment ID and `ascwds_worker_import_date` keys.
+        save_dates_lf (pl.LazyFrame): Latest save date per establishment and
+            snapshot import date, from `get_latest_save_date_per_establishment`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `years_in_role` and `years_in_sector`
+            (`Float32`) added.
+    """
+    keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
+    save_date = pl.col(HackCols.latest_save_date)
+
+    return (
+        worker_lf.join(save_dates_lf, on=keys, how="left")
+        .with_columns(
+            ((save_date - pl.col(AWKClean.start_date)).dt.total_days() / 365.25)
+            .cast(pl.Float32)
+            .alias(HackCols.years_in_role),
+            (save_date.dt.year() - pl.col(AWKClean.start_in_sector))
+            .cast(pl.Float32)
+            .alias(HackCols.years_in_sector),
+        )
+        .drop(HackCols.latest_save_date)
+    )
+
+
 def add_country_code_group(worker_lf: pl.LazyFrame, code_column: str) -> pl.LazyFrame:
     """Adds a categorical group column from an ISO 3166-1 numeric country code.
 

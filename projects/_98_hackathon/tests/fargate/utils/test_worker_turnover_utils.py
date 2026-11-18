@@ -526,6 +526,88 @@ class TestAddRawWorkerColumns:
         assert returned_df.height == 2
 
 
+class TestAddYearsInRoleAndSector:
+    keys = {
+        AWKClean.establishment_id: ["1-001"],
+        AWKClean.ascwds_worker_import_date: [date(2021, 1, 5)],
+    }
+    save_dates_lf = pl.LazyFrame(
+        {**keys, HackCols.latest_save_date: [date(2022, 1, 1)]},
+        schema_overrides={HackCols.latest_save_date: pl.Date},
+    )
+
+    worker_lf = pl.LazyFrame(
+        {
+            **keys,
+            AWKClean.start_date: [date(2020, 1, 1)],
+            AWKClean.start_in_sector: [2015.0],
+        },
+        schema_overrides={
+            AWKClean.start_date: pl.Date,
+            AWKClean.start_in_sector: pl.Float32,
+        },
+    )
+
+    def test_returns_years_in_role_as_days_over_365_25(self):
+        returned_df = job.add_years_in_role_and_sector(
+            self.worker_lf,
+            self.save_dates_lf,
+        ).collect()
+
+        assert returned_df[HackCols.years_in_role].to_list() == pytest.approx(
+            [731 / 365.25]
+        )
+
+    def test_returns_years_in_sector_as_save_year_minus_start_year(self):
+        returned_df = job.add_years_in_role_and_sector(
+            self.worker_lf, self.save_dates_lf
+        ).collect()
+
+        assert returned_df[HackCols.years_in_sector].to_list() == [7.0]
+
+    def test_returns_float32_year_columns_and_drops_save_date(self):
+        returned_schema = job.add_years_in_role_and_sector(
+            self.worker_lf, self.save_dates_lf
+        ).collect_schema()
+
+        assert returned_schema.names() == [
+            *self.keys,
+            AWKClean.start_date,
+            AWKClean.start_in_sector,
+            HackCols.years_in_role,
+            HackCols.years_in_sector,
+        ]
+        assert returned_schema[HackCols.years_in_role] == pl.Float32
+        assert returned_schema[HackCols.years_in_sector] == pl.Float32
+
+    def test_returns_null_years_when_start_values_are_null(self):
+        worker_lf = self.worker_lf.with_columns(
+            pl.lit(None, dtype=pl.Date).alias(AWKClean.start_date),
+            pl.lit(None, dtype=pl.Float32).alias(AWKClean.start_in_sector),
+        )
+
+        returned_df = job.add_years_in_role_and_sector(
+            worker_lf, self.save_dates_lf
+        ).collect()
+
+        assert returned_df.select(HackCols.years_in_role, HackCols.years_in_sector).row(
+            0
+        ) == (None, None)
+
+    def test_returns_null_years_when_establishment_has_no_save_date(self):
+        no_save_date_lf = self.save_dates_lf.with_columns(
+            pl.lit(None, dtype=pl.Date).alias(HackCols.latest_save_date)
+        )
+
+        returned_df = job.add_years_in_role_and_sector(
+            self.worker_lf, no_save_date_lf
+        ).collect()
+
+        assert returned_df.select(HackCols.years_in_role, HackCols.years_in_sector).row(
+            0
+        ) == (None, None)
+
+
 class TestNullNotKnownCodes:
     not_known_codes = {
         AWKClean.gender: NotKnownWorkerCodes.gender,

@@ -21,6 +21,8 @@ class HackathonColumns:
     nlw_band_start: str = "nlw_band_start"
     nationality_group: str = "nationality_group"
     country_of_birth_group: str = "country_of_birth_group"
+    years_in_role: str = "years_in_role"
+    years_in_sector: str = "years_in_sector"
     turnover_rate: str = "turnover_rate"
     start_import_date: str = "start_import_date"
     start_headcount: str = "start_headcount"

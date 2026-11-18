@@ -42,6 +42,9 @@ def build_source_df() -> pl.DataFrame:
             HackCols.hourly_pay_minus_nlw: [1.0, None],
             HackCols.nationality_group: [NationalityGroupLabels.non_eea] * 2,
             HackCols.country_of_birth_group: [CountryOfBirthGroupLabels.non_eea] * 2,
+            HackCols.years_in_role: [3.0, 4.0],
+            HackCols.years_in_sector: [5.0, 6.0],
+            AWKClean.start_date: [date(2020, 1, 1), date(2020, 1, 1)],
             **{column: [1.0] * 2 for column in job.NUMERIC_COLUMNS},
             **{
                 label_column: [vocabulary.label_cls(label_column).categorical_values[0]]
@@ -68,6 +71,9 @@ def build_source_df() -> pl.DataFrame:
             HackCols.hourly_pay_minus_nlw: pl.Float32,
             HackCols.nationality_group: pl.Categorical,
             HackCols.country_of_birth_group: pl.Categorical,
+            HackCols.years_in_role: pl.Float32,
+            HackCols.years_in_sector: pl.Float32,
+            AWKClean.start_date: pl.Date,
             **{column: pl.Float32 for column in job.NUMERIC_COLUMNS},
             **{column: pl.Categorical for column in wUtils.LABEL_COLUMNS},
         },
@@ -180,6 +186,57 @@ class TestMain:
             item for item in report_json if item["assertion_type"] == "row_count_match"
         )
         assert row_count_step["values"]["count"] == 0
+
+    @staticmethod
+    def run_years_checks(source_df: pl.DataFrame) -> dict[str, bool]:
+        """Runs the validation and returns whether each years check passed."""
+        with (
+            patch(f"{PATCH_PATH}.vl.write_reports") as mock_write_reports,
+            patch(f"{PATCH_PATH}.utils.scan_parquet") as mock_scan_parquet,
+            patch(f"{PATCH_PATH}.utils.read_parquet") as mock_read_parquet,
+        ):
+            mock_read_parquet.return_value = source_df
+            mock_scan_parquet.return_value = build_compare_lf()
+
+            job.main("bucket", "my/source/", "my/compare/", "my/reports/", "train")
+
+            validation_arg = mock_write_reports.call_args[0][0]
+            report_json = json.loads(validation_arg.get_json_report())
+        return {
+            item["brief"]: item["all_passed"]
+            for item in report_json
+            if item["brief"].startswith("years_in_")
+        }
+
+    def test_years_checks_pass_when_years_have_start_values(self):
+        results = self.run_years_checks(build_source_df())
+
+        assert results == {
+            "years_in_role is only populated where start_date is populated": True,
+            "years_in_sector is only populated where start_in_sector is populated": True,
+        }
+
+    def test_years_in_role_check_fails_when_populated_without_start_date(self):
+        source_df = build_source_df().with_columns(
+            pl.lit(None, dtype=pl.Date).alias(AWKClean.start_date)
+        )
+
+        results = self.run_years_checks(source_df)
+
+        assert not results[
+            "years_in_role is only populated where start_date is populated"
+        ]
+
+    def test_years_in_sector_check_fails_when_populated_without_start_year(self):
+        source_df = build_source_df().with_columns(
+            pl.lit(None, dtype=pl.Float32).alias(AWKClean.start_in_sector)
+        )
+
+        results = self.run_years_checks(source_df)
+
+        assert not results[
+            "years_in_sector is only populated where start_in_sector is populated"
+        ]
 
     def test_source_columns_exclude_columns_dropped_from_job_output(self):
         dropped_columns = {

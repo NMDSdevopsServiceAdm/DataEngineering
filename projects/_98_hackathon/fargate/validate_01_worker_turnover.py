@@ -49,6 +49,9 @@ SOURCE_COLUMNS = [
     HackCols.hourly_pay_minus_nlw,
     HackCols.nationality_group,
     HackCols.country_of_birth_group,
+    HackCols.years_in_role,
+    HackCols.years_in_sector,
+    AWKClean.start_date,
     *NUMERIC_COLUMNS,
     *wUtils.LABEL_COLUMNS,
 ]
@@ -190,6 +193,16 @@ def main(
             .is_not_null()
             .eq(hourly_pay.is_not_null()),
             brief="hourly_pay_minus_nlw is populated exactly when hourly_pay is populated",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.years_in_role).is_null()
+            | pl.col(AWKClean.start_date).is_not_null(),
+            brief="years_in_role is only populated where start_date is populated",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.years_in_sector).is_null()
+            | pl.col(AWKClean.start_in_sector).is_not_null(),
+            brief="years_in_sector is only populated where start_in_sector is populated",
         )
     )
 
