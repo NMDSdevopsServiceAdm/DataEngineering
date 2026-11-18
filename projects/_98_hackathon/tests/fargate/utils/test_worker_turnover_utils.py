@@ -337,6 +337,82 @@ class TestAddNlwAndPayDifference:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestCleanAge:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.clean_age_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.clean_age_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(HackCols.age_clean)
+
+        returned_lf = job.clean_age(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestImputeAge:
+    @staticmethod
+    def assert_imputes(rows: list[tuple]) -> None:
+        expected_lf = pl.LazyFrame(rows, schema=Schemas.impute_age_schema, orient="row")
+        input_lf = expected_lf.drop(HackCols.age_imputed, HackCols.age_source)
+
+        returned_lf = job.impute_age(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_impute_age_keeps_observed_age_and_marks_source_observed(self):
+        self.assert_imputes(Data.impute_age_observed_rows)
+
+    def test_impute_age_leaves_worker_with_no_age_null(self):
+        self.assert_imputes(Data.impute_age_no_age_rows)
+
+    def test_impute_age_steps_up_each_year_from_first_observed_month(self):
+        self.assert_imputes(Data.impute_age_steps_up_rows)
+
+    def test_impute_age_steps_down_a_year_for_each_year_before_first_observation(
+        self,
+    ):
+        self.assert_imputes(Data.impute_age_steps_down_rows)
+
+    def test_impute_age_pins_birth_month_from_adjacent_plus_one_change(self):
+        self.assert_imputes(Data.impute_age_pinned_rows)
+
+    @pytest.mark.parametrize("rows", Data.impute_age_gapped_change_cases)
+    def test_impute_age_does_not_pin_when_age_change_spans_a_gap(self, rows):
+        self.assert_imputes(rows)
+
+    @pytest.mark.parametrize("rows", Data.impute_age_not_pinned_cases)
+    def test_impute_age_ignores_decreases_and_jumps_when_pinning(self, rows):
+        self.assert_imputes(rows)
+
+    def test_impute_age_uses_first_pinned_change_when_there_are_several(self):
+        self.assert_imputes(Data.impute_age_several_pins_rows)
+
+    def test_impute_age_keeps_observed_age_that_disagrees_with_birth_month(self):
+        self.assert_imputes(Data.impute_age_disagreeing_rows)
+
+    def test_impute_age_does_not_mix_workers_or_establishments(self):
+        self.assert_imputes(Data.impute_age_independent_rows)
+
+    def test_impute_age_gives_same_result_for_unsorted_input(self):
+        self.assert_imputes(Data.impute_age_steps_up_rows[::-1])
+
+    def test_impute_age_returns_expected_types(self):
+        returned_schema = job.impute_age(
+            pl.LazyFrame(
+                Data.impute_age_observed_rows,
+                schema=Schemas.impute_age_schema,
+                orient="row",
+            ).drop(HackCols.age_imputed, HackCols.age_source)
+        ).collect_schema()
+
+        assert returned_schema[HackCols.age_imputed] == pl.Float32
+        assert returned_schema[HackCols.age_source] == pl.Categorical
+
+
 def raw_worker_lf(*rows: dict) -> pl.LazyFrame:
     """Returns raw worker rows as a LazyFrame with all-string columns."""
     return pl.LazyFrame(list(rows), schema={column: pl.String for column in rows[0]})
