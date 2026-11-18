@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `remove_unchanged_values_using_change_date` to `cleaning_utils`, which adds a `_deduplicated` column keeping a value only on the import date that first shows its change date. The Hackathon Worker Turnover job uses it for `hourly_pay` and `days_sick`, and no longer includes `pay_save_date`.
 - Added age imputation to the Hackathon Worker Turnover job, with the source of each age.
 - Added a guide to maintaining the Monthly Tracker workbooks, and documented where to find them.
 - Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, with each split written separately and the train and test splits validated.
@@ -19,7 +20,6 @@ All notable changes to this project will be documented in this file.
 - Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
 
 ### Changed
-- Hackathon Worker Turnover job shows `hourly_pay` and `days_sick` only on the import date that first shows their change date, and no longer includes `pay_save_date`.
 - Filled null worker attributes in the Hackathon Worker Turnover job from the same worker's other import dates.
 - Updated the `pytest-pattern` skill and STYLEGUIDE.md so tests for functions that only add columns derive the input by dropping the new columns from the expected data.
 - Replaced negative (not known/recorded) values and the not known, not disclosed and unknown codes in the Hackathon Worker Turnover job's raw worker columns with null.

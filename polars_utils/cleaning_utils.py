@@ -349,7 +349,7 @@ def remove_unchanged_values_using_change_date(
     date_column: str,
 ) -> pl.LazyFrame:
     """
-    Replaces values with null unless their change date falls since the previous row.
+    Replaces values with null unless their change date is new since the previous row.
 
     Within each partition_by_columns group, ordered by date_column, a value is
     kept when change_date_column is after the previous row's date_column and on or
