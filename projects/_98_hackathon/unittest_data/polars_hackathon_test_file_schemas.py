@@ -99,12 +99,22 @@ class WorkerTurnoverSchemas:
         ]
     )
 
-    impute_age_schema = pl.Schema(
+    clean_age_schema = pl.Schema(
         [
             (AWKClean.worker_id, pl.String()),
             (AWKClean.establishment_id, pl.String()),
             (AWKClean.ascwds_worker_import_date, pl.Date()),
             (AWKClean.age, pl.Float32()),
+            (HackCols.age_clean, pl.Float32()),
+        ]
+    )
+
+    impute_age_schema = pl.Schema(
+        [
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.establishment_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.age_clean, pl.Float32()),
             (HackCols.age_imputed, pl.Float32()),
             (HackCols.age_source, pl.Categorical()),
         ]

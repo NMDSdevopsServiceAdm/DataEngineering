@@ -19,6 +19,7 @@ class HackathonColumns:
     nlw_effective_date: str = "nlw_effective_date"
     nlw_is_apprentice: str = "nlw_is_apprentice"
     nlw_band_start: str = "nlw_band_start"
+    age_clean: str = "age_clean"
     age_imputed: str = "age_imputed"
     age_source: str = "age_source"
     nationality_group: str = "nationality_group"
