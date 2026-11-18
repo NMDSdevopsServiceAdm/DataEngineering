@@ -316,6 +316,41 @@ class TestCombinePayAndHours:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestRemoveRepeatedTimeVaryingValues:
+    def test_nulls_values_repeated_from_previous_import_date(self):
+        schema = {
+            AWKClean.worker_id: pl.String,
+            AWKClean.establishment_id: pl.String,
+            AWKClean.ascwds_worker_import_date: pl.Date,
+            HackCols.hourly_pay: pl.Float32,
+            AWKClean.days_sick: pl.Float32,
+        }
+        input_lf = pl.LazyFrame(
+            [
+                ("w1", "e1", date(2024, 1, 1), 10.0, 2.0),
+                ("w1", "e1", date(2024, 2, 1), 10.0, 3.0),
+                ("w1", "e1", date(2024, 3, 1), 11.0, 3.0),
+            ],
+            schema=schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            [
+                ("w1", "e1", date(2024, 1, 1), 10.0, 2.0),
+                ("w1", "e1", date(2024, 2, 1), None, 3.0),
+                ("w1", "e1", date(2024, 3, 1), 11.0, None),
+            ],
+            schema=schema,
+            orient="row",
+        )
+
+        returned_lf = job.remove_repeated_time_varying_values(input_lf)
+
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_column_order=False
+        )
+
+
 class TestAddNlwAndPayDifference:
     @pytest.mark.parametrize(
         "case",

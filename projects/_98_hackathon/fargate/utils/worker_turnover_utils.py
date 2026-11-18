@@ -6,6 +6,7 @@ from polars_utils.cleaning_utils import (
     apply_categorical_labels,
     build_labels_lf,
     column_to_date,
+    remove_repeated_values_over_time,
 )
 from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
@@ -296,6 +297,33 @@ def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
             HackCols.hourly_pay
         )
     ).drop(PAY_AND_HOURS_COLUMNS)
+
+
+def remove_repeated_time_varying_values(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Nulls `hourly_pay` and `days_sick` where unchanged from the worker's previous row.
+
+    ASC-WDS repeats these values until they change. Rows are compared per worker
+    and establishment, ordered by `ascwds_worker_import_date`. A blank previous
+    value counts as a change.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `hourly_pay` and `days_sick`.
+
+    Returns:
+        pl.LazyFrame: The input rows with repeated values in those columns
+            replaced by null.
+    """
+    columns = [HackCols.hourly_pay, AWKClean.days_sick]
+    return (
+        remove_repeated_values_over_time(
+            worker_lf,
+            columns_to_clean=columns,
+            partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
+            date_column=AWKClean.ascwds_worker_import_date,
+        )
+        .drop(columns)
+        .rename({f"{column}_deduplicated": column for column in columns})
+    )
 
 
 def impute_age(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
