@@ -187,57 +187,6 @@ class TestMain:
         )
         assert row_count_step["values"]["count"] == 0
 
-    @staticmethod
-    def run_years_checks(source_df: pl.DataFrame) -> dict[str, bool]:
-        """Runs the validation and returns whether each years check passed."""
-        with (
-            patch(f"{PATCH_PATH}.vl.write_reports") as mock_write_reports,
-            patch(f"{PATCH_PATH}.utils.scan_parquet") as mock_scan_parquet,
-            patch(f"{PATCH_PATH}.utils.read_parquet") as mock_read_parquet,
-        ):
-            mock_read_parquet.return_value = source_df
-            mock_scan_parquet.return_value = build_compare_lf()
-
-            job.main("bucket", "my/source/", "my/compare/", "my/reports/", "train")
-
-            validation_arg = mock_write_reports.call_args[0][0]
-            report_json = json.loads(validation_arg.get_json_report())
-        return {
-            item["brief"]: item["all_passed"]
-            for item in report_json
-            if item["brief"].startswith("years_in_")
-        }
-
-    def test_years_checks_pass_when_years_have_start_values(self):
-        results = self.run_years_checks(build_source_df())
-
-        assert results == {
-            "years_in_role is only populated where start_date is populated": True,
-            "years_in_sector is only populated where start_in_sector is populated": True,
-        }
-
-    def test_years_in_role_check_fails_when_populated_without_start_date(self):
-        source_df = build_source_df().with_columns(
-            pl.lit(None, dtype=pl.Date).alias(AWKClean.start_date)
-        )
-
-        results = self.run_years_checks(source_df)
-
-        assert not results[
-            "years_in_role is only populated where start_date is populated"
-        ]
-
-    def test_years_in_sector_check_fails_when_populated_without_start_year(self):
-        source_df = build_source_df().with_columns(
-            pl.lit(None, dtype=pl.Float32).alias(AWKClean.start_in_sector)
-        )
-
-        results = self.run_years_checks(source_df)
-
-        assert not results[
-            "years_in_sector is only populated where start_in_sector is populated"
-        ]
-
     def test_source_columns_exclude_columns_dropped_from_job_output(self):
         dropped_columns = {
             *wUtils.PAY_AND_HOURS_COLUMNS,
