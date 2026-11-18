@@ -1,5 +1,7 @@
 from unittest.mock import Mock, call, patch
 
+import polars as pl
+
 import projects._98_hackathon.fargate._01_worker_turnover as job
 
 PATCH_PATH = "projects._98_hackathon.fargate._01_worker_turnover"
@@ -9,9 +11,13 @@ class TestMain:
     CLEANED_WORKER_SOURCE = "some/worker/source"
     CLEANED_WORKPLACE_SOURCE = "some/workplace/source"
     RAW_WORKER_SOURCE = "some/raw/worker/source"
-    FLAGGED_DESTINATION = "some/destination"
+    TRAIN_DESTINATION = "some/train"
+    HOLDOUT_DESTINATION = "some/holdout"
+    TEST_DESTINATION = "some/test"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.pl.collect_all")
+    @patch(f"{PATCH_PATH}.wUtils.add_split_column")
     @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
@@ -46,6 +52,8 @@ class TestMain:
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
         impute_worker_columns_mock: Mock,
+        add_split_column_mock: Mock,
+        collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
@@ -54,12 +62,25 @@ class TestMain:
             workplace_lf_mock,
             raw_worker_lf_mock,
         ]
+        splits = ["train", "holdout", "test"]
+        destinations = [
+            self.TRAIN_DESTINATION,
+            self.HOLDOUT_DESTINATION,
+            self.TEST_DESTINATION,
+        ]
+        # One lazy frame per split, so each split's destination is checked.
+        split_lf_mocks = [Mock() for _ in splits]
+        add_split_column_mock.return_value.filter.side_effect = split_lf_mocks
+        sink_mocks = [Mock() for _ in splits]
+        sink_to_parquet_mock.side_effect = sink_mocks
 
         job.main(
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.FLAGGED_DESTINATION,
+            self.TRAIN_DESTINATION,
+            self.HOLDOUT_DESTINATION,
+            self.TEST_DESTINATION,
         )
 
         assert scan_parquet_mock.call_args_list == [
@@ -79,7 +100,11 @@ class TestMain:
             filter_worker_turnover_data_mock.return_value.drop.return_value
         )
         filter_worker_turnover_data_mock.return_value.drop.assert_called_once_with(
-            job.AWKClean.location_id
+            job.AWKClean.location_id,
+            job.AWKClean.main_job_role_id,
+            job.AWKClean.main_job_role_clean,
+            job.AWKClean.employment_status,
+            job.AWKClean.employment_status_clean,
         )
         filtered_lf_mock.join.assert_called_once_with(
             workplace_lf_mock,
@@ -96,10 +121,14 @@ class TestMain:
         add_main_service_type_mock.assert_called_once_with(
             filtered_lf_mock.join.return_value
         )
-        add_main_service_type_mock.return_value.collect.assert_called_once_with()
-        collected_lf = (
-            add_main_service_type_mock.return_value.collect.return_value.lazy.return_value
+        add_main_service_type_mock.return_value.drop.assert_called_once_with(
+            job.AWPClean.main_service_id_clean
         )
+        main_service_dropped_lf = (
+            add_main_service_type_mock.return_value.drop.return_value
+        )
+        main_service_dropped_lf.collect.assert_called_once_with()
+        collected_lf = main_service_dropped_lf.collect.return_value.lazy.return_value
         get_latest_save_date_per_establishment_mock.assert_called_once_with(
             worker_lf_mock, collected_lf
         )
@@ -122,8 +151,17 @@ class TestMain:
         add_valid_for_analysis_flag_mock.assert_called_once_with(
             add_headcount_reconciliation_gap_mock.return_value
         )
+        add_valid_for_analysis_flag_mock.return_value.drop.assert_called_once_with(
+            job.HackCols.establishment_in_both_snapshots,
+            job.HackCols.months_since_save_start,
+            job.HackCols.months_since_save_end,
+            job.HackCols.establishment_active,
+            job.HackCols.headcount_reconciliation_gap,
+            job.HackCols.headcount_gap_within_tolerance,
+            job.HackCols.plausible_turnover,
+        )
         null_not_known_codes_mock.assert_called_once_with(
-            add_valid_for_analysis_flag_mock.return_value
+            add_valid_for_analysis_flag_mock.return_value.drop.return_value
         )
         null_not_known_codes_mock.return_value.with_columns.assert_called_once()
         combine_pay_and_hours_mock.assert_called_once_with(
@@ -139,18 +177,31 @@ class TestMain:
                 job.AWKClean.country_of_birth,
             ),
         ]
+        add_country_code_group_mock.return_value.drop.assert_called_once_with(
+            job.wUtils.WORKER_CATEGORICAL_COLUMNS
+        )
         impute_worker_columns_mock.assert_called_once_with(
-            add_country_code_group_mock.return_value, job.wUtils.IMPUTE_COLUMNS
+            add_country_code_group_mock.return_value.drop.return_value,
+            job.wUtils.IMPUTE_COLUMNS,
         )
         add_nlw_and_pay_difference_mock.assert_called_once_with(
             impute_worker_columns_mock.return_value
         )
-        sink_to_parquet_mock.assert_called_once_with(
-            add_nlw_and_pay_difference_mock.return_value,
-            output_path=self.FLAGGED_DESTINATION,
+        add_split_column_mock.assert_called_once_with(
+            add_nlw_and_pay_difference_mock.return_value
         )
+        filter_mock = add_split_column_mock.return_value.filter
+        assert filter_mock.call_count == len(splits)
+        for filter_call, split in zip(filter_mock.call_args_list, splits):
+            assert filter_call.args[0].meta.eq(pl.col(job.HackCols.split) == split)
+        assert sink_to_parquet_mock.call_args_list == [
+            call(split_lf_mock, output_path=destination, lazy=True)
+            for split_lf_mock, destination in zip(split_lf_mocks, destinations)
+        ]
+        collect_all_mock.assert_called_once_with(sink_mocks, engine="streaming")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
@@ -183,13 +234,16 @@ class TestMain:
         add_nlw_and_pay_difference_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
+        collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.FLAGGED_DESTINATION,
+            self.TRAIN_DESTINATION,
+            self.HOLDOUT_DESTINATION,
+            self.TEST_DESTINATION,
             n_months=3,
         )
 
@@ -200,6 +254,7 @@ class TestMain:
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
@@ -228,13 +283,16 @@ class TestMain:
         combine_pay_and_hours_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
+        collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.FLAGGED_DESTINATION,
+            self.TRAIN_DESTINATION,
+            self.HOLDOUT_DESTINATION,
+            self.TEST_DESTINATION,
             max_gap=5,
         )
 
