@@ -10,6 +10,7 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
@@ -47,6 +48,8 @@ def build_source_df() -> pl.DataFrame:
             HackCols.hourly_pay: [12.0, None],
             HackCols.nlw_hourly_rate: [11.0, 11.0],
             HackCols.hourly_pay_minus_nlw: [1.0, None],
+            HackCols.age_imputed: [30.0, 31.0],
+            HackCols.age_source: [AgeSource.observed, AgeSource.assumed_birth_month],
             HackCols.nationality_group: [NationalityGroupLabels.non_eea] * 2,
             HackCols.country_of_birth_group: [CountryOfBirthGroupLabels.non_eea] * 2,
             ONSClean.current_cssr: [CurrentCSSR.barnet] * 2,
@@ -75,6 +78,8 @@ def build_source_df() -> pl.DataFrame:
             HackCols.hourly_pay: pl.Float32,
             HackCols.nlw_hourly_rate: pl.Float32,
             HackCols.hourly_pay_minus_nlw: pl.Float32,
+            HackCols.age_imputed: pl.Float32,
+            HackCols.age_source: pl.Categorical,
             HackCols.nationality_group: pl.Categorical,
             HackCols.country_of_birth_group: pl.Categorical,
             ONSClean.current_cssr: pl.Categorical,

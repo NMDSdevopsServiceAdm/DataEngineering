@@ -20,6 +20,8 @@ class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_split_column")
+    @patch(f"{PATCH_PATH}.wUtils.impute_age")
+    @patch(f"{PATCH_PATH}.wUtils.clean_age")
     @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
@@ -56,6 +58,8 @@ class TestMain:
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
         impute_worker_columns_mock: Mock,
+        clean_age_mock: Mock,
+        impute_age_mock: Mock,
         add_split_column_mock: Mock,
         collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -214,8 +218,10 @@ class TestMain:
             add_country_code_group_mock.return_value.drop.return_value,
             job.wUtils.IMPUTE_COLUMNS,
         )
+        clean_age_mock.assert_called_once_with(impute_worker_columns_mock.return_value)
+        impute_age_mock.assert_called_once_with(clean_age_mock.return_value)
         add_nlw_and_pay_difference_mock.assert_called_once_with(
-            impute_worker_columns_mock.return_value
+            impute_age_mock.return_value
         )
         add_split_column_mock.assert_called_once_with(
             add_nlw_and_pay_difference_mock.return_value
