@@ -354,8 +354,9 @@ def remove_unchanged_values_using_change_date(
     Within each partition_by_columns group, ordered by date_column, a value is
     kept when change_date_column is after the previous row's date_column and on or
     before this row's. A first row has no previous date, so the window is the
-    month before its date_column. A null change date is not a change. Columns are
-    replaced in place.
+    month before its date_column. A null change date is not a change. Each
+    deduplicated column is added as "<original>_deduplicated"; the originals are
+    kept unchanged.
 
     Args:
         lf (pl.LazyFrame): The LazyFrame to clean.
@@ -366,8 +367,8 @@ def remove_unchanged_values_using_change_date(
         date_column (str): Column to order rows by within each partition.
 
     Returns:
-        pl.LazyFrame: The input LazyFrame with unchanged values in columns_to_clean
-            replaced by null.
+        pl.LazyFrame: The input LazyFrame with one new "<original>_deduplicated"
+            column per column in columns_to_clean.
     """
     partition_by_columns_list = (
         partition_by_columns
@@ -389,5 +390,8 @@ def remove_unchanged_values_using_change_date(
     )
 
     return lf.with_columns(
-        pl.when(changed).then(pl.col(columns_to_clean)).otherwise(None)
+        pl.when(changed)
+        .then(pl.col(columns_to_clean))
+        .otherwise(None)
+        .name.suffix("_deduplicated")
     )

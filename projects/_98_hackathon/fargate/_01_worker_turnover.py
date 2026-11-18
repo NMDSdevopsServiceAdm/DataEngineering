@@ -115,6 +115,10 @@ def main(
         partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
         date_column=AWKClean.ascwds_worker_import_date,
     )
+    time_varying_columns = [HackCols.hourly_pay, AWKClean.days_sick]
+    filtered_lf = filtered_lf.drop(time_varying_columns).rename(
+        {f"{column}_deduplicated": column for column in time_varying_columns}
+    )
     filtered_lf = wUtils.add_worker_labels(filtered_lf)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
     filtered_lf = wUtils.add_country_code_group(

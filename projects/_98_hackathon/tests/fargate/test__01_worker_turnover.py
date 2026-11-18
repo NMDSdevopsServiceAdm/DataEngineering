@@ -192,8 +192,20 @@ class TestMain:
                 **timeline_kwargs,
             ),
         ]
-        add_worker_labels_mock.assert_called_once_with(
+        deduplicated_lf_mock = (
             remove_unchanged_values_using_change_date_mock.return_value
+        )
+        deduplicated_lf_mock.drop.assert_called_once_with(
+            [job.HackCols.hourly_pay, job.AWKClean.days_sick]
+        )
+        deduplicated_lf_mock.drop.return_value.rename.assert_called_once_with(
+            {
+                f"{job.HackCols.hourly_pay}_deduplicated": job.HackCols.hourly_pay,
+                f"{job.AWKClean.days_sick}_deduplicated": job.AWKClean.days_sick,
+            }
+        )
+        add_worker_labels_mock.assert_called_once_with(
+            deduplicated_lf_mock.drop.return_value.rename.return_value
         )
         assert add_country_code_group_mock.call_args_list == [
             call(add_worker_labels_mock.return_value, job.AWKClean.nationality),

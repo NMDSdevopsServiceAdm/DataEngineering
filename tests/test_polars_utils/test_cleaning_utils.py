@@ -326,7 +326,27 @@ class TestRemoveUnchangedValuesUsingChangeDate:
             date_column="import_date",
         )
 
-        assert returned_lf.collect()["value"].to_list() == expected_values
+        assert returned_lf.collect()["value_deduplicated"].to_list() == expected_values
+
+    def test_keeps_original_columns_unchanged(self):
+        test_lf = pl.LazyFrame(
+            [
+                ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+                ("w1", date(2023, 2, 1), date(2022, 12, 20), 10),
+            ],
+            self.SCHEMA,
+            orient="row",
+        )
+
+        returned_lf = job.remove_unchanged_values_using_change_date(
+            test_lf,
+            columns_to_clean=["value"],
+            change_date_column="change_date",
+            partition_by_columns="worker_id",
+            date_column="import_date",
+        )
+
+        assert returned_lf.collect()["value"].to_list() == [10, 10]
 
     def test_compares_import_dates_within_each_partition(self):
         test_lf = pl.LazyFrame(
@@ -347,7 +367,7 @@ class TestRemoveUnchangedValuesUsingChangeDate:
             date_column="import_date",
         )
 
-        assert returned_lf.collect()["value"].to_list() == [10, 11, 20]
+        assert returned_lf.collect()["value_deduplicated"].to_list() == [10, 11, 20]
 
 
 class ColumnToDateTests(unittest.TestCase):
