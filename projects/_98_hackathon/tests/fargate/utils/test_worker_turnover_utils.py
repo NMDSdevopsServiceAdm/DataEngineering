@@ -337,6 +337,22 @@ class TestAddNlwAndPayDifference:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestCleanAge:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.clean_age_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.clean_age_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(HackCols.age_clean)
+
+        returned_lf = job.clean_age(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestImputeAge:
     @staticmethod
     def assert_imputes(rows: list[tuple]) -> None:

@@ -86,6 +86,12 @@ class AddNlwAndPayDifferenceCase:
 
 
 @dataclass
+class CleanAgeCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class AddCodeGroupCase:
     id: str
     code_column: str
@@ -1213,4 +1219,110 @@ class WorkerTurnoverData:
         ("1", "B", date(2024, 6, 1), 50.0, 50.0, AgeSource.observed),
         ("1", "B", date(2023, 12, 1), None, 49.0, AgeSource.assumed_birth_month),
         ("2", "A", date(2024, 1, 1), None, None, None),
+    ]
+
+    # Rows: (worker_id, establishment_id, import_date, age, age_clean); the input
+    # is these rows without the last column. Ages of 80 or more are nulled. Then
+    # ages implying a birth year 3 or more years from the worker's median (import
+    # year minus age) are nulled, unless half or more of the worker's ages are.
+    clean_age_cases = [
+        CleanAgeCase(
+            id="keeps_age_below_cap_and_nulls_age_at_cap",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 79.0, 79.0),
+                ("1", "A", date(2023, 2, 1), 80.0, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_ages_at_or_above_cap_when_they_are_the_workers_only_ages",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 95.0, None),
+                ("1", "A", date(2023, 2, 1), 96.0, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="applies_cap_before_median_rule",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 100.0, None),
+                ("1", "A", date(2023, 2, 1), 100.0, None),
+                ("1", "A", date(2023, 3, 1), 100.0, None),
+                ("1", "A", date(2023, 4, 1), 63.0, 63.0),
+                ("1", "A", date(2023, 5, 1), 63.0, 63.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_age_far_from_the_workers_other_ages",
+            expected_rows=[
+                ("1", "A", date(2022, 6, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 6, 1), 31.0, 31.0),
+                ("1", "A", date(2024, 1, 1), 75.0, None),
+                ("1", "A", date(2024, 6, 1), 32.0, 32.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_minority_group_of_far_ages",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 62.0, None),
+                ("1", "A", date(2023, 2, 1), 62.0, None),
+                ("1", "A", date(2023, 3, 1), 63.0, None),
+                ("1", "A", date(2023, 4, 1), 20.0, 20.0),
+                ("1", "A", date(2023, 5, 1), 20.0, 20.0),
+                ("1", "A", date(2023, 6, 1), 20.0, 20.0),
+                ("1", "A", date(2023, 7, 1), 21.0, 21.0),
+                ("1", "A", date(2023, 8, 1), 21.0, 21.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_age_two_years_from_median",
+            expected_rows=[
+                ("1", "A", date(2022, 1, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 1, 1), 31.0, 31.0),
+                ("1", "A", date(2024, 1, 1), 32.0, 32.0),
+                ("1", "A", date(2025, 1, 1), 31.0, 31.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_age_three_years_from_median",
+            expected_rows=[
+                ("1", "A", date(2022, 1, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 1, 1), 31.0, 31.0),
+                ("1", "A", date(2024, 1, 1), 32.0, 32.0),
+                ("1", "A", date(2025, 1, 1), 30.0, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_both_ages_when_there_are_two_that_disagree",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 70.0, 70.0),
+                ("1", "A", date(2023, 2, 1), 30.0, 30.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_all_ages_when_half_disagree_with_the_other_half",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 70.0, 70.0),
+                ("1", "A", date(2023, 2, 1), 70.0, 70.0),
+                ("1", "A", date(2023, 3, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 4, 1), 30.0, 30.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_null_ages_and_ignores_them_in_the_majority_count",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 2, 1), 75.0, 75.0),
+                ("1", "A", date(2023, 3, 1), None, None),
+                ("1", "A", date(2023, 4, 1), None, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="does_not_mix_workers_or_establishments",
+            expected_rows=[
+                ("1", "A", date(2022, 6, 1), 30.0, 30.0),
+                ("1", "A", date(2024, 1, 1), 75.0, None),
+                ("1", "A", date(2024, 6, 1), 32.0, 32.0),
+                ("1", "B", date(2024, 1, 1), 75.0, 75.0),
+                ("2", "A", date(2024, 1, 1), 75.0, 75.0),
+            ],
+        ),
     ]
