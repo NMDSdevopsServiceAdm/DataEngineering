@@ -365,19 +365,10 @@ def keep_value_if_changed_expr(
     Returns:
         pl.Expr: The column's value where it changed, otherwise null.
     """
-    partition_by_columns_list = (
-        partition_by_columns
-        if isinstance(partition_by_columns, list)
-        else [partition_by_columns]
-    )
-
     previous_date = (
         pl.col(import_date_column)
         .shift(1)
-        .over(
-            partition_by=partition_by_columns,
-            order_by=[*partition_by_columns_list, import_date_column],
-        )
+        .over(partition_by=partition_by_columns, order_by=import_date_column)
     )
     window_start = pl.coalesce(
         previous_date, pl.col(import_date_column).dt.offset_by("-1mo")
