@@ -269,7 +269,7 @@ class TestKeepValueIfChangedExpr:
                     "value",
                     change_date_column="change_date",
                     partition_by_columns=partition_by_columns,
-                    date_column="import_date",
+                    import_date_column="import_date",
                 )
             )
             .collect()["value"]

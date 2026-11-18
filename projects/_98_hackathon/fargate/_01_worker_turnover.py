@@ -103,7 +103,7 @@ def main(
     # date that first shows its change.
     worker_timeline = {
         "partition_by_columns": [AWKClean.worker_id, AWKClean.establishment_id],
-        "date_column": AWKClean.ascwds_worker_import_date,
+        "import_date_column": AWKClean.ascwds_worker_import_date,
     }
     filtered_lf = filtered_lf.with_columns(
         cUtils.keep_value_if_changed_expr(

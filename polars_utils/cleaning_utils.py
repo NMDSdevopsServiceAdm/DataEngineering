@@ -345,14 +345,14 @@ def keep_value_if_changed_expr(
     column: str,
     change_date_column: str,
     partition_by_columns: str | list[str],
-    date_column: str,
+    import_date_column: str,
 ) -> pl.Expr:
     """
     Keeps a value when previous date < change date <= this date, otherwise null.
 
-    Dates are date_column values: the previous one is the prior row's within each
-    partition_by_columns group, ordered by date_column. A first row has no
-    previous date, so its window starts one month before its date_column. A null
+    The previous date is the prior row's import date within each
+    partition_by_columns group, ordered by import_date_column. A first row has no
+    previous date, so its window starts one month before its import date. A null
     change date is not a change. The result is named after column.
 
     Args:
@@ -360,7 +360,7 @@ def keep_value_if_changed_expr(
         change_date_column (str): Date the column's value last changed.
         partition_by_columns (str | list[str]): Column(s) identifying each entity's
             timeline.
-        date_column (str): Column to order rows by within each partition.
+        import_date_column (str): Column to order rows by within each partition.
 
     Returns:
         pl.Expr: The column's value where it changed, otherwise null.
@@ -372,19 +372,21 @@ def keep_value_if_changed_expr(
     )
 
     previous_date = (
-        pl.col(date_column)
+        pl.col(import_date_column)
         .shift(1)
         .over(
             partition_by=partition_by_columns,
-            order_by=[*partition_by_columns_list, date_column],
+            order_by=[*partition_by_columns_list, import_date_column],
         )
     )
-    window_start = pl.coalesce(previous_date, pl.col(date_column).dt.offset_by("-1mo"))
+    window_start = pl.coalesce(
+        previous_date, pl.col(import_date_column).dt.offset_by("-1mo")
+    )
 
     return (
         pl.when(
             (pl.col(change_date_column) > window_start)
-            & (pl.col(change_date_column) <= pl.col(date_column))
+            & (pl.col(change_date_column) <= pl.col(import_date_column))
         )
         .then(pl.col(column))
         .otherwise(None)

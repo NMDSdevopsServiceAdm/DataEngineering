@@ -176,7 +176,7 @@ class TestMain:
                 job.AWKClean.worker_id,
                 job.AWKClean.establishment_id,
             ],
-            "date_column": job.AWKClean.ascwds_worker_import_date,
+            "import_date_column": job.AWKClean.ascwds_worker_import_date,
         }
         assert keep_value_if_changed_expr_mock.call_args_list == [
             call(
