@@ -182,7 +182,7 @@ class TestMain:
         )
         deduplicated_lf_mock = remove_repeated_values_over_time_mock.return_value
         deduplicated_lf_mock.drop.assert_called_once_with(
-            job.HackCols.hourly_pay, job.AWKClean.days_sick
+            [job.HackCols.hourly_pay, job.AWKClean.days_sick]
         )
         deduplicated_lf_mock.drop.return_value.rename.assert_called_once_with(
             {
