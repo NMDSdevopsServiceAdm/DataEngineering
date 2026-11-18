@@ -309,9 +309,10 @@ def impute_age(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     - The birth month is the month the age first goes up by 1 between two
       consecutive months (`pinned_birth_month`). With no such rise it is the month
       of the first observed age (`assumed_birth_month`).
-    - A null age is the first observed age, plus 1 for each birthday after it or
-      minus 1 for each birthday before it. For example, 35 in Jun 2025 gives 36 in
-      Jun 2026 and 25 in Jun 2015.
+    - A null age is filled by starting from the worker's first observed age. Add 1
+      for each birthday between that observation and the null's month, or take
+      away 1 for each birthday if the null's month is earlier. For example, 35 in
+      Jun 2025 gives 36 in Jun 2026 and 25 in Jun 2015.
     - A worker with no observed age stays null, with a null `age_source`.
 
     Uses `.over()`, which the streaming engine does not cover, so the sink may
