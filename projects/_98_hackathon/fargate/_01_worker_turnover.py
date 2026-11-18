@@ -99,8 +99,6 @@ def main(
         pl.col(wUtils.WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical)
     )
     filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
-    # ASC-WDS repeats these values until changed. Keep a value only on the import
-    # date that first shows its change.
     filtered_lf = filtered_lf.with_columns(
         cUtils.keep_value_if_changed_expr(
             HackCols.hourly_pay,
