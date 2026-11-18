@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
 
 ### Changed
+- Hackathon Worker Turnover job now shows `hourly_pay` and `days_sick` only where they differ from the worker's previous import date.
 - Filled null worker attributes in the Hackathon Worker Turnover job from the same worker's other import dates.
 - Updated the `pytest-pattern` skill and STYLEGUIDE.md so tests for functions that only add columns derive the input by dropping the new columns from the expected data.
 - Replaced negative (not known/recorded) values and the not known, not disclosed and unknown codes in the Hackathon Worker Turnover job's raw worker columns with null.
