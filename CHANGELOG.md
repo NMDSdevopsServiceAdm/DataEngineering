@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `keep_value_if_changed_expr` to `cleaning_utils`, an expression that keeps a value only on the import date that first shows its change date. The Hackathon Worker Turnover job uses it for `hourly_pay` and `days_sick`, and no longer includes `pay_save_date`.
 - Added age imputation to the Hackathon Worker Turnover job, with the source of each age.
 - Added a guide to maintaining the Monthly Tracker workbooks, and documented where to find them.
 - Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, with each split written separately and the train and test splits validated.
