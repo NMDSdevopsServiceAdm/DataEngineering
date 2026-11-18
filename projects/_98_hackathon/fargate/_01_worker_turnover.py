@@ -101,20 +101,18 @@ def main(
     filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
     # ASC-WDS repeats these values until changed. Keep a value only on the import
     # date that first shows its change.
-    worker_timeline = {
-        "partition_by_columns": [AWKClean.worker_id, AWKClean.establishment_id],
-        "import_date_column": AWKClean.ascwds_worker_import_date,
-    }
     filtered_lf = filtered_lf.with_columns(
         cUtils.keep_value_if_changed_expr(
             HackCols.hourly_pay,
             change_date_column=AWKClean.pay_change_date,
-            **worker_timeline,
+            partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
+            import_date_column=AWKClean.ascwds_worker_import_date,
         ),
         cUtils.keep_value_if_changed_expr(
             AWKClean.days_sick,
             change_date_column=AWKClean.days_sick_change_date,
-            **worker_timeline,
+            partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
+            import_date_column=AWKClean.ascwds_worker_import_date,
         ),
     )
     filtered_lf = wUtils.add_worker_labels(filtered_lf)

@@ -285,7 +285,7 @@ class TestKeepValueIfChangedExpr:
                     ("w1", date(2023, 2, 1), date(2023, 1, 10), 11),
                 ],
                 [None, 11],
-                id="keeps_value_when_change_date_is_after_previous_import_date",
+                id="keeps_new_change",
             ),
             pytest.param(
                 [
@@ -293,7 +293,7 @@ class TestKeepValueIfChangedExpr:
                     ("w1", date(2023, 2, 1), date(2022, 12, 20), 10),
                 ],
                 [10, None],
-                id="nulls_value_when_change_date_is_unchanged",
+                id="nulls_unchanged_change_date",
             ),
             pytest.param(
                 [
@@ -301,7 +301,7 @@ class TestKeepValueIfChangedExpr:
                     ("w1", date(2023, 2, 1), date(2023, 2, 1), 11),
                 ],
                 [10, 11],
-                id="keeps_value_when_change_date_is_the_import_date",
+                id="keeps_change_on_import_date",
             ),
             pytest.param(
                 [
@@ -309,7 +309,7 @@ class TestKeepValueIfChangedExpr:
                     ("w1", date(2023, 2, 1), date(2023, 1, 1), 10),
                 ],
                 [10, None],
-                id="nulls_value_when_change_date_is_the_previous_import_date",
+                id="nulls_change_on_previous_import_date",
             ),
             pytest.param(
                 [
@@ -317,27 +317,27 @@ class TestKeepValueIfChangedExpr:
                     ("w1", date(2023, 5, 1), date(2023, 3, 15), 11),
                 ],
                 [10, 11],
-                id="keeps_value_when_change_is_between_non_consecutive_import_dates",
+                id="keeps_change_across_gap",
             ),
             pytest.param(
                 [("w1", date(2023, 1, 1), date(2022, 12, 1), 10)],
                 [None],
-                id="nulls_first_value_when_change_date_is_a_month_or_more_before",
+                id="nulls_first_row_old_change",
             ),
             pytest.param(
                 [("w1", date(2023, 1, 1), None, 10)],
                 [None],
-                id="nulls_value_when_change_date_is_null",
+                id="nulls_null_change_date",
             ),
             pytest.param(
                 [("w1", date(2023, 1, 1), date(2022, 12, 20), None)],
                 [None],
-                id="keeps_null_value_when_change_date_is_valid",
+                id="keeps_null_value",
             ),
             pytest.param(
                 [("w1", date(2023, 1, 1), date(2023, 1, 15), 10)],
                 [None],
-                id="nulls_value_when_change_date_is_after_the_import_date",
+                id="nulls_future_change_date",
             ),
             pytest.param(
                 [
@@ -345,7 +345,7 @@ class TestKeepValueIfChangedExpr:
                     ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
                 ],
                 [None, 10],
-                id="orders_rows_by_import_date_whatever_their_input_order",
+                id="sorts_rows_by_import_date",
             ),
         ],
     )
