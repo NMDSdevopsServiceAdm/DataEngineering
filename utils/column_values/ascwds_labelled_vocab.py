@@ -523,22 +523,6 @@ class ZeroHoursLabels(ColumnValues):
 
 
 @dataclass
-class EnhancedBenefitID(ColumnValues):
-    """Valid codes of the care worker enhanced sick pay and pension columns (not known is -1)"""
-
-    yes: str = "1"
-    no: str = "2"
-
-
-@dataclass
-class EnhancedBenefitLabels(ColumnValues):
-    """Valid labels of the care worker enhanced sick pay and pension columns"""
-
-    yes: str = "Yes"
-    no: str = "No"
-
-
-@dataclass
 class TrainFlagID(ColumnValues):
     """Codes of the training flag column"""
 
@@ -699,7 +683,6 @@ CARE_CERTIFICATE_STATUS = PairedVocab(
 APPRENTICE = PairedVocab(ApprenticeID, ApprenticeLabels)
 ZERO_HOURS = PairedVocab(ZeroHoursID, ZeroHoursLabels)
 SOURCE_OF_RECRUITMENT = PairedVocab(SourceOfRecruitmentID, SourceOfRecruitmentLabels)
-ENHANCED_BENEFIT = PairedVocab(EnhancedBenefitID, EnhancedBenefitLabels)
 TRAIN_FLAG = PairedVocab(TrainFlagID, TrainFlagLabels)
 
 ESTABLISHMENT_TYPE_CODE_TO_LABEL: dict[str, str] = {

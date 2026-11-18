@@ -112,7 +112,7 @@ def main(
     turnover_rate = pl.col(HackCols.turnover_rate)
     hourly_pay = pl.col(HackCols.hourly_pay)
     # trainflag labels can only be Yes or No
-    trainflag_labels = f"{AWKClean.training_ain_flag}_labels"
+    trainflag_labels = f"{AWKClean.training_flag}_labels"
 
     validation = (
         pb.Validate(
@@ -160,13 +160,6 @@ def main(
             HackCols.main_service_type,
             PrimaryServiceType(HackCols.main_service_type).categorical_values,
             brief="main_service_type is a known value",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                trainflag_labels,
-                TrainFlagLabels(trainflag_labels).count_of_categorical_values,
-            ),
-            brief=f"{trainflag_labels} is only Yes or No",
         )
         # Numerical checks
         .col_vals_between(
@@ -222,6 +215,7 @@ def main(
         HackCols.country_of_birth_group: CountryOfBirthGroupLabels(
             HackCols.country_of_birth_group, contains_null_values=True
         ),
+        trainflag_labels: TrainFlagLabels(trainflag_labels, contains_null_values=False),
     }
 
     # One set of steps per column so a report names the column.
@@ -229,11 +223,10 @@ def main(
         validation = validation.col_vals_in_set(
             column, [*labels.categorical_values, None]
         )
-        if column != trainflag_labels:
-            validation = validation.specially(
-                vl.is_unique_count_equal(column, labels.count_of_categorical_values),
-                brief=f"{column} needs to be one of {labels.categorical_values} or null",
-            )
+        validation = validation.specially(
+            vl.is_unique_count_equal(column, labels.count_of_categorical_values),
+            brief=f"{column} needs to be one of {labels.categorical_values} or null",
+        )
 
     validation = validation.interrogate()
     vl.write_reports(validation, bucket_name, reports_path)

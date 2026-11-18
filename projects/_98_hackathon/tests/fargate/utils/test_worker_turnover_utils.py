@@ -18,9 +18,6 @@ from projects._98_hackathon.unittest_data.polars_hackathon_test_file_schemas imp
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import NotKnownWorkerCodes
 
@@ -529,51 +526,6 @@ class TestAddRawWorkerColumns:
         assert returned_df.height == 2
 
 
-def workplace_rows_lf(*rows: tuple[str, str, str | None, str | None]) -> pl.LazyFrame:
-    """Returns raw workplace rows of establishment, import date, sick pay, pension."""
-    return pl.LazyFrame(list(rows), schema=job.RAW_WORKPLACE_SCHEMA, orient="row")
-
-
-class TestAddRawWorkplaceColumns:
-    worker_lf = pl.LazyFrame(
-        [("1-001", "1", date(2021, 1, 5))],
-        schema=Schemas.raw_worker_join_input_schema,
-        orient="row",
-    )
-
-    def test_adds_workplace_code_columns_after_input_columns(self):
-        raw_lf = workplace_rows_lf(("1-001", "20210105", "1", "2"))
-
-        returned_lf = job.add_raw_workplace_columns(self.worker_lf, raw_lf)
-
-        assert returned_lf.collect_schema().names() == [
-            *Schemas.raw_worker_join_input_schema.names(),
-            *job.WORKPLACE_CODE_COLUMNS,
-        ]
-
-    def test_returns_raw_codes_for_matching_establishment_and_import_date(self):
-        raw_lf = workplace_rows_lf(("1-001", "20210105", "1", "2"))
-
-        returned_df = job.add_raw_workplace_columns(self.worker_lf, raw_lf).collect()
-
-        assert returned_df.row(0)[-2:] == ("1", "2")
-
-    @pytest.mark.parametrize(
-        "raw_row",
-        [
-            pytest.param(("1-002", "20210105", "1", "2"), id="other_establishment"),
-            pytest.param(("1-001", "20220105", "1", "2"), id="other_import_date"),
-        ],
-    )
-    def test_returns_null_codes_when_keys_do_not_match(self, raw_row):
-        returned_df = job.add_raw_workplace_columns(
-            self.worker_lf, workplace_rows_lf(raw_row)
-        ).collect()
-
-        assert returned_df.height == 1
-        assert returned_df.row(0)[-2:] == (None, None)
-
-
 class TestNullNotKnownCodes:
     not_known_codes = {
         AWKClean.gender: NotKnownWorkerCodes.gender,
@@ -592,15 +544,12 @@ class TestNullNotKnownCodes:
     def codes_lf(self, **values: str | float | None) -> pl.LazyFrame:
         schema = {
             **{column: pl.String for column in job.WORKER_CATEGORICAL_COLUMNS},
-            **{column: pl.String for column in job.WORKPLACE_CODE_COLUMNS},
             **{column: pl.Float32 for column in job.WORKER_NUMERIC_COLUMNS},
         }
         return pl.LazyFrame({c: [values.get(c)] for c in schema}, schema=schema)
 
     @pytest.mark.parametrize("code", ["-1", "-8"])
-    @pytest.mark.parametrize(
-        "column", [*job.WORKER_CATEGORICAL_COLUMNS, *job.WORKPLACE_CODE_COLUMNS]
-    )
+    @pytest.mark.parametrize("column", job.WORKER_CATEGORICAL_COLUMNS)
     def test_returns_null_for_negative_code(self, column, code):
         returned_df = job.null_not_known_codes(
             self.codes_lf(**{column: code})
@@ -646,9 +595,7 @@ class TestNullNotKnownCodes:
             pytest.param(AWKClean.source_of_recruitment, "224", id="other_sources"),
             pytest.param(AWKClean.care_certificate_status, "2", id="not_started"),
             pytest.param(AWKClean.zero_hours, "1", id="zero_hours_yes"),
-            pytest.param(AWKClean.training_ain_flag, "0", id="trainflag_no"),
-            pytest.param(AWPClean.care_worker_enhanced_sick_pay, "2", id="sick_pay_no"),
-            pytest.param(AWPClean.care_worker_enhanced_pension, "1", id="pension_yes"),
+            pytest.param(AWKClean.training_flag, "0", id="trainflag_no"),
         ],
     )
     def test_keeps_other_codes(self, column, code):
@@ -708,9 +655,7 @@ class TestAddWorkerLabels:
         AWKClean.apprentice,
         AWKClean.zero_hours,
         AWKClean.source_of_recruitment,
-        AWKClean.training_ain_flag,
-        AWPClean.care_worker_enhanced_sick_pay,
-        AWPClean.care_worker_enhanced_pension,
+        AWKClean.training_flag,
     ]
     label_columns = [f"{column}_labels" for column in coded_columns]
 
@@ -743,23 +688,11 @@ class TestAddWorkerLabels:
     @pytest.mark.parametrize(
         "column, code, label",
         [
-            pytest.param(AWKClean.training_ain_flag, "0", "No", id="trainflag_no"),
-            pytest.param(AWKClean.training_ain_flag, "1", "Yes", id="trainflag_yes"),
-            pytest.param(
-                AWPClean.care_worker_enhanced_sick_pay, "1", "Yes", id="sick_pay_yes"
-            ),
-            pytest.param(
-                AWPClean.care_worker_enhanced_sick_pay, "2", "No", id="sick_pay_no"
-            ),
-            pytest.param(
-                AWPClean.care_worker_enhanced_pension, "1", "Yes", id="pension_yes"
-            ),
-            pytest.param(
-                AWPClean.care_worker_enhanced_pension, "2", "No", id="pension_no"
-            ),
+            pytest.param(AWKClean.training_flag, "0", "No", id="trainflag_no"),
+            pytest.param(AWKClean.training_flag, "1", "Yes", id="trainflag_yes"),
         ],
     )
-    def test_returns_label_for_benefit_and_training_codes(self, column, code, label):
+    def test_returns_label_for_training_flag_code(self, column, code, label):
         returned_df = job.add_worker_labels(self.codes_lf(code)).collect()
 
         assert returned_df[f"{column}_labels"].to_list() == [label]

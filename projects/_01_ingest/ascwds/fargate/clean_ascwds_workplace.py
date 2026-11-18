@@ -157,6 +157,9 @@ def main(
 
     # Cast to Categorical/Enum here so it's saved in the output parquet file.
     lf = lf.with_columns(
+        pl.col(AWPClean.organisation_id).cast(
+            CategoricalColumnTypes.OrganisationIdCatType
+        ),
         pl.col(AWPClean.establishment_id).cast(
             CategoricalColumnTypes.EstablishmentCatType
         ),

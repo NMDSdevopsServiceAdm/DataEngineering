@@ -26,7 +26,6 @@ from utils.column_values.ascwds_labelled_vocab import (
     APPRENTICE,
     CARE_CERTIFICATE_STATUS,
     DISABLED,
-    ENHANCED_BENEFIT,
     ETHNICITY,
     GENDER,
     LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
@@ -60,12 +59,7 @@ WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.apprentice,
     AWKClean.zero_hours,
     AWKClean.source_of_recruitment,
-    AWKClean.training_ain_flag,
-]
-
-WORKPLACE_CODE_COLUMNS = [
-    AWPClean.care_worker_enhanced_sick_pay,
-    AWPClean.care_worker_enhanced_pension,
+    AWKClean.training_flag,
 ]
 
 # Nationality and country of birth get a group column instead of a label column.
@@ -81,9 +75,7 @@ LABEL_VOCABULARIES = {
     AWKClean.apprentice: APPRENTICE,
     AWKClean.zero_hours: ZERO_HOURS,
     AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT,
-    AWKClean.training_ain_flag: TRAIN_FLAG,
-    AWPClean.care_worker_enhanced_sick_pay: ENHANCED_BENEFIT,
-    AWPClean.care_worker_enhanced_pension: ENHANCED_BENEFIT,
+    AWKClean.training_flag: TRAIN_FLAG,
 }
 LABELLED_COLUMNS = list(LABEL_VOCABULARIES)
 LABEL_COLUMNS = [f"{column}_{DLC.label}s" for column in LABELLED_COLUMNS]
@@ -129,15 +121,6 @@ RAW_WORKER_SCHEMA = {
     ]
 }
 
-RAW_WORKPLACE_SCHEMA = {
-    column: pl.String
-    for column in [
-        AWPClean.establishment_id,
-        AWPClean.import_date,
-        *WORKPLACE_CODE_COLUMNS,
-    ]
-}
-
 IMPUTE_COLUMNS = [
     f"{AWKClean.gender}_labels",
     f"{AWKClean.ethnicity}_labels",
@@ -154,7 +137,7 @@ IMPUTE_COLUMNS = [
     f"{AWKClean.social_care_qual_held}_labels",
     f"{AWKClean.level_social_care_qualification_held}_labels",
     f"{AWKClean.care_certificate_status}_labels",
-    f"{AWKClean.training_ain_flag}_labels",
+    f"{AWKClean.training_flag}_labels",
 ]
 
 
@@ -207,40 +190,6 @@ def add_raw_worker_columns(
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
 
 
-def add_raw_workplace_columns(
-    worker_lf: pl.LazyFrame, raw_workplace_lf: pl.LazyFrame
-) -> pl.LazyFrame:
-    """Adds the raw workplace code columns from the worker's snapshot.
-
-    Left joins on establishment ID and import date. A semi join first cuts the raw
-    rows to the keys in `worker_lf`, so the full raw history is never joined. Relies
-    on unique establishment and import date keys.
-
-    Args:
-        worker_lf (pl.LazyFrame): Worker data with establishment ID and
-            `ascwds_worker_import_date`.
-        raw_workplace_lf (pl.LazyFrame): Raw ASC-WDS workplace data, all strings.
-
-    Returns:
-        pl.LazyFrame: The input rows with all columns plus `WORKPLACE_CODE_COLUMNS`.
-    """
-    keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
-
-    raw_workplace_lf = column_to_date(
-        raw_workplace_lf.select(RAW_WORKPLACE_SCHEMA.keys()),
-        AWPClean.import_date,
-        AWKClean.ascwds_worker_import_date,
-    ).drop(AWPClean.import_date)
-
-    raw_workplace_lf = raw_workplace_lf.with_columns(
-        pl.col(AWPClean.establishment_id).cast(
-            CategoricalColumnTypes.EstablishmentCatType
-        )
-    ).join(worker_lf.select(keys), on=keys, how="semi")
-
-    return worker_lf.join(raw_workplace_lf, on=keys, how="left")
-
-
 def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Nulls not known, not recorded, not disclosed and unknown values.
 
@@ -249,8 +198,8 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     - The positive not known codes of each column, from `NotKnownWorkerCodes`.
 
     Args:
-        worker_lf (pl.LazyFrame): Worker data with the raw worker and workplace
-            columns, codes as strings and numbers `Float32`.
+        worker_lf (pl.LazyFrame): Worker data with the raw worker columns, codes
+            as strings and numbers `Float32`.
 
     Returns:
         pl.LazyFrame: The input rows with those values set to null.
@@ -270,7 +219,7 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     }
 
     code_expressions = []
-    for column in [*WORKER_CATEGORICAL_COLUMNS, *WORKPLACE_CODE_COLUMNS]:
+    for column in WORKER_CATEGORICAL_COLUMNS:
         code = pl.col(column)
         keep = ~code.str.starts_with("-")
         if column in column_not_known_code:

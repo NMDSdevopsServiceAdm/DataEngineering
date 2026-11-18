@@ -190,7 +190,6 @@ class TestMain:
         dropped_columns = {
             *wUtils.PAY_AND_HOURS_COLUMNS,
             *wUtils.WORKER_CATEGORICAL_COLUMNS,
-            *wUtils.WORKPLACE_CODE_COLUMNS,
             HackCols.establishment_in_both_snapshots,
             HackCols.months_since_save_start,
             HackCols.months_since_save_end,

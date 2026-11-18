@@ -11,7 +11,6 @@ class TestMain:
     CLEANED_WORKER_SOURCE = "some/worker/source"
     CLEANED_WORKPLACE_SOURCE = "some/workplace/source"
     RAW_WORKER_SOURCE = "some/raw/worker/source"
-    RAW_WORKPLACE_SOURCE = "some/raw/workplace/source"
     TRAIN_DESTINATION = "some/train"
     HOLDOUT_DESTINATION = "some/holdout"
     TEST_DESTINATION = "some/test"
@@ -27,7 +26,6 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
-    @patch(f"{PATCH_PATH}.wUtils.add_raw_workplace_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -46,7 +44,6 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
-        add_raw_workplace_columns_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
@@ -60,12 +57,10 @@ class TestMain:
         sink_to_parquet_mock: Mock,
     ):
         worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
-        raw_workplace_lf_mock = Mock()
         scan_parquet_mock.side_effect = [
             worker_lf_mock,
             workplace_lf_mock,
             raw_worker_lf_mock,
-            raw_workplace_lf_mock,
         ]
         splits = ["train", "holdout", "test"]
         destinations = [
@@ -83,7 +78,6 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.RAW_WORKPLACE_SOURCE,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -101,7 +95,6 @@ class TestMain:
                 ],
             ),
             call(self.RAW_WORKER_SOURCE, schema=job.wUtils.RAW_WORKER_SCHEMA),
-            call(self.RAW_WORKPLACE_SOURCE, schema=job.wUtils.RAW_WORKPLACE_SCHEMA),
         ]
         filter_worker_turnover_data_mock.assert_called_once_with(worker_lf_mock)
         filtered_lf_mock = (
@@ -114,9 +107,8 @@ class TestMain:
             job.AWKClean.employment_status,
             job.AWKClean.employment_status_clean,
         )
-        workplace_lf_mock.with_columns.assert_called_once()
         filtered_lf_mock.join.assert_called_once_with(
-            workplace_lf_mock.with_columns.return_value,
+            workplace_lf_mock,
             left_on=[
                 job.AWKClean.establishment_id,
                 job.AWKClean.ascwds_worker_import_date,
@@ -153,11 +145,8 @@ class TestMain:
         add_raw_worker_columns_mock.assert_called_once_with(
             add_turnover_rate_mock.return_value, raw_worker_lf_mock
         )
-        add_raw_workplace_columns_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value, raw_workplace_lf_mock
-        )
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
-            add_raw_workplace_columns_mock.return_value,
+            add_raw_worker_columns_mock.return_value,
             job.wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
         )
         add_valid_for_analysis_flag_mock.assert_called_once_with(
@@ -190,7 +179,7 @@ class TestMain:
             ),
         ]
         add_country_code_group_mock.return_value.drop.assert_called_once_with(
-            job.wUtils.WORKER_CATEGORICAL_COLUMNS, job.wUtils.WORKPLACE_CODE_COLUMNS
+            job.wUtils.WORKER_CATEGORICAL_COLUMNS
         )
         impute_worker_columns_mock.assert_called_once_with(
             add_country_code_group_mock.return_value.drop.return_value,
@@ -221,7 +210,6 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
-    @patch(f"{PATCH_PATH}.wUtils.add_raw_workplace_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -240,7 +228,6 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
-        add_raw_workplace_columns_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
@@ -255,7 +242,6 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.RAW_WORKPLACE_SOURCE,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -275,7 +261,6 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
-    @patch(f"{PATCH_PATH}.wUtils.add_raw_workplace_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -294,7 +279,6 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
-        add_raw_workplace_columns_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         combine_pay_and_hours_mock: Mock,
@@ -307,7 +291,6 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
-            self.RAW_WORKPLACE_SOURCE,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -315,5 +298,5 @@ class TestMain:
         )
 
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
-            add_raw_workplace_columns_mock.return_value, 5
+            add_raw_worker_columns_mock.return_value, 5
         )
