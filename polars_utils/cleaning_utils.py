@@ -339,3 +339,55 @@ def remove_repeated_values_over_time(
         )
 
     return lf.with_columns(dedup_exprs)
+
+
+def remove_unchanged_values_using_change_date(
+    lf: pl.LazyFrame,
+    columns_to_clean: list[str],
+    change_date_column: str,
+    partition_by_columns: str | list[str],
+    date_column: str,
+) -> pl.LazyFrame:
+    """
+    Replaces values with null unless their change date falls since the previous row.
+
+    Within each partition_by_columns group, ordered by date_column, a value is
+    kept when change_date_column is after the previous row's date_column and on or
+    before this row's. A first row has no previous date, so the window is the
+    month before its date_column. A null change date is not a change. Columns are
+    replaced in place.
+
+    Args:
+        lf (pl.LazyFrame): The LazyFrame to clean.
+        columns_to_clean (list[str]): Columns whose value the change date describes.
+        change_date_column (str): Date the columns_to_clean values last changed.
+        partition_by_columns (str | list[str]): Column(s) identifying each entity's
+            timeline.
+        date_column (str): Column to order rows by within each partition.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with unchanged values in columns_to_clean
+            replaced by null.
+    """
+    partition_by_columns_list = (
+        partition_by_columns
+        if isinstance(partition_by_columns, list)
+        else [partition_by_columns]
+    )
+
+    previous_date = (
+        pl.col(date_column)
+        .shift(1)
+        .over(
+            partition_by=partition_by_columns,
+            order_by=[*partition_by_columns_list, date_column],
+        )
+    )
+    window_start = pl.coalesce(previous_date, pl.col(date_column).dt.offset_by("-1mo"))
+    changed = (pl.col(change_date_column) > window_start) & (
+        pl.col(change_date_column) <= pl.col(date_column)
+    )
+
+    return lf.with_columns(
+        pl.when(changed).then(pl.col(columns_to_clean)).otherwise(None)
+    )

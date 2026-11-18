@@ -103,7 +103,7 @@ WORKER_DATE_COLUMNS = [
     AWKClean.created_date,
     AWKClean.start_date,
     AWKClean.pay_change_date,
-    AWKClean.pay_save_date,
+    AWKClean.days_sick_change_date,
 ]
 
 # Explicit, because a scan infers columns from the oldest file, which lacks newer ones.

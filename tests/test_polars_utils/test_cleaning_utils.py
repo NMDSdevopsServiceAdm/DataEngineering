@@ -252,6 +252,104 @@ class TestRemoveRepeatedValuesOverTime:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
+class TestRemoveUnchangedValuesUsingChangeDate:
+    SCHEMA = {
+        "worker_id": pl.String,
+        "import_date": pl.Date,
+        "change_date": pl.Date,
+        "value": pl.Int64,
+    }
+
+    @pytest.mark.parametrize(
+        "rows, expected_values",
+        [
+            pytest.param(
+                [
+                    ("w1", date(2023, 1, 1), date(2022, 6, 15), 10),
+                    ("w1", date(2023, 2, 1), date(2023, 1, 10), 11),
+                ],
+                [None, 11],
+                id="keeps_value_when_change_date_is_after_previous_import_date",
+            ),
+            pytest.param(
+                [
+                    ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+                    ("w1", date(2023, 2, 1), date(2022, 12, 20), 10),
+                ],
+                [10, None],
+                id="nulls_value_when_change_date_is_unchanged",
+            ),
+            pytest.param(
+                [
+                    ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+                    ("w1", date(2023, 2, 1), date(2023, 2, 1), 11),
+                ],
+                [10, 11],
+                id="keeps_value_when_change_date_is_the_import_date",
+            ),
+            pytest.param(
+                [
+                    ("w1", date(2023, 1, 1), date(2023, 1, 1), 10),
+                    ("w1", date(2023, 2, 1), date(2023, 1, 1), 10),
+                ],
+                [10, None],
+                id="nulls_value_when_change_date_is_the_previous_import_date",
+            ),
+            pytest.param(
+                [
+                    ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+                    ("w1", date(2023, 5, 1), date(2023, 3, 15), 11),
+                ],
+                [10, 11],
+                id="keeps_value_when_change_is_between_non_consecutive_import_dates",
+            ),
+            pytest.param(
+                [("w1", date(2023, 1, 1), date(2022, 12, 1), 10)],
+                [None],
+                id="nulls_first_value_when_change_date_is_a_month_or_more_before",
+            ),
+            pytest.param(
+                [("w1", date(2023, 1, 1), None, 10)],
+                [None],
+                id="nulls_value_when_change_date_is_null",
+            ),
+        ],
+    )
+    def test_returns_expected_values(self, rows, expected_values):
+        test_lf = pl.LazyFrame(rows, self.SCHEMA, orient="row")
+
+        returned_lf = job.remove_unchanged_values_using_change_date(
+            test_lf,
+            columns_to_clean=["value"],
+            change_date_column="change_date",
+            partition_by_columns="worker_id",
+            date_column="import_date",
+        )
+
+        assert returned_lf.collect()["value"].to_list() == expected_values
+
+    def test_compares_import_dates_within_each_partition(self):
+        test_lf = pl.LazyFrame(
+            [
+                ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+                ("w1", date(2023, 3, 1), date(2023, 2, 10), 11),
+                ("w2", date(2023, 2, 1), date(2023, 1, 20), 20),
+            ],
+            self.SCHEMA,
+            orient="row",
+        )
+
+        returned_lf = job.remove_unchanged_values_using_change_date(
+            test_lf,
+            columns_to_clean=["value"],
+            change_date_column="change_date",
+            partition_by_columns=["worker_id"],
+            date_column="import_date",
+        )
+
+        assert returned_lf.collect()["value"].to_list() == [10, 11, 20]
+
+
 class ColumnToDateTests(unittest.TestCase):
     def test_converts_date_string_without_hyphens_to_date(self):
         lf = pl.LazyFrame(
