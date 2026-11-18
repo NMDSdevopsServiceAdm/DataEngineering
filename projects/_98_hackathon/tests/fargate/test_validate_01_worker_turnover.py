@@ -53,6 +53,10 @@ def build_source_df() -> pl.DataFrame:
                     wUtils.LABEL_COLUMNS, wUtils.LABEL_VOCABULARIES.values()
                 )
             },
+            **{
+                group_column: [sorted(set(mapping.values()))[0]] * 2
+                for group_column, (_, mapping) in wUtils.GROUP_LABEL_RECODES.items()
+            },
         },
         schema={
             AWKClean.establishment_id: CatColType.EstablishmentCatType,
@@ -75,6 +79,7 @@ def build_source_df() -> pl.DataFrame:
             HackCols.country_of_birth_group: pl.Categorical,
             **{column: pl.Float32 for column in job.NUMERIC_COLUMNS},
             **{column: pl.Categorical for column in wUtils.LABEL_COLUMNS},
+            **{column: pl.Categorical for column in wUtils.GROUP_LABEL_RECODES},
         },
     )
 

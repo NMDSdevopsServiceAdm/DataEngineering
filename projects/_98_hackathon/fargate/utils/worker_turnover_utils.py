@@ -37,9 +37,13 @@ from utils.column_values.ascwds_labelled_vocab import (
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
+    EthnicityGroupLabels,
+    EthnicityID,
     MainServiceID,
     NationalityGroupLabels,
     NotKnownWorkerCodes,
+    SourceOfRecruitmentID,
+    SourceOfRecruitmentWithinOutsideAscLabels,
 )
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
@@ -77,6 +81,80 @@ LABEL_VOCABULARIES = {
 }
 LABELLED_COLUMNS = list(LABEL_VOCABULARIES)
 LABEL_COLUMNS = [f"{column}_{DLC.label}s" for column in LABELLED_COLUMNS]
+
+# Group label column -> (code column, {code: group}). Codes with no group are null.
+GROUP_LABEL_RECODES = {
+    HackCols.ethnicity_group_labels: (
+        AWKClean.ethnicity,
+        {
+            **dict.fromkeys(
+                [
+                    EthnicityID.english_welsh_scottish_northern_irish_british,
+                    EthnicityID.irish,
+                    EthnicityID.gypsy_or_irish_traveller,
+                    EthnicityID.other_white,
+                ],
+                EthnicityGroupLabels.white,
+            ),
+            **dict.fromkeys(
+                [
+                    EthnicityID.white_and_black_caribbean,
+                    EthnicityID.white_and_black_african,
+                    EthnicityID.white_and_asian,
+                    EthnicityID.other_mixed,
+                ],
+                EthnicityGroupLabels.mixed,
+            ),
+            **dict.fromkeys(
+                [
+                    EthnicityID.indian,
+                    EthnicityID.pakistani,
+                    EthnicityID.bangladeshi,
+                    EthnicityID.chinese,
+                    EthnicityID.other_asian,
+                ],
+                EthnicityGroupLabels.asian,
+            ),
+            **dict.fromkeys(
+                [
+                    EthnicityID.african,
+                    EthnicityID.caribbean,
+                    EthnicityID.other_black_african_caribbean,
+                ],
+                EthnicityGroupLabels.black,
+            ),
+            **dict.fromkeys(
+                [EthnicityID.arab, EthnicityID.other_ethnic_group],
+                EthnicityGroupLabels.other,
+            ),
+        },
+    ),
+    HackCols.scerec_wo_group_labels: (
+        AWKClean.source_of_recruitment,
+        {
+            **dict.fromkeys(
+                [
+                    SourceOfRecruitmentID.adult_care_local_authority,
+                    SourceOfRecruitmentID.adult_care_private_or_voluntary,
+                    SourceOfRecruitmentID.internal_promotion,
+                    SourceOfRecruitmentID.agency,
+                ],
+                SourceOfRecruitmentWithinOutsideAscLabels.within_asc,
+            ),
+            **dict.fromkeys(
+                [
+                    SourceOfRecruitmentID.health_sector,
+                    SourceOfRecruitmentID.other_sector,
+                    SourceOfRecruitmentID.not_previously_employed,
+                    SourceOfRecruitmentID.other_sources,
+                    SourceOfRecruitmentID.childrens_social_care,
+                    SourceOfRecruitmentID.first_role_after_education,
+                ],
+                SourceOfRecruitmentWithinOutsideAscLabels.outside_asc,
+            ),
+        },
+    ),
+}
 
 WORKER_NUMERIC_COLUMNS = [
     AWKClean.age,
@@ -135,6 +213,8 @@ IMPUTE_COLUMNS = [
     f"{AWKClean.social_care_qual_held}_labels",
     f"{AWKClean.level_social_care_qualification_held}_labels",
     f"{AWKClean.care_certificate_status}_labels",
+    HackCols.ethnicity_group_labels,
+    HackCols.scerec_wo_group_labels,
 ]
 
 
@@ -231,15 +311,18 @@ def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds a categorical `<column>_labels` column beside each coded worker column.
+    """Adds categorical label columns for the coded worker columns.
 
-    Codes with no label keep their raw code in the label column. Null codes stay null.
+    - A `<column>_labels` column beside each coded column. Codes with no label
+      keep their raw code; null codes stay null.
+    - The `GROUP_LABEL_RECODES` group label columns (ethnicity and source of
+      recruitment groups). Codes with no group, and null codes, give null.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the raw coded worker columns.
 
     Returns:
-        pl.LazyFrame: The input with a `_labels` column for each coded column.
+        pl.LazyFrame: The input with the label and group label columns added.
     """
     code_to_label = {
         column: vocabulary.code_to_label()
@@ -253,7 +336,18 @@ def add_worker_labels(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         add_as_new_column=True,
     )
 
-    return worker_lf.with_columns(pl.col(LABEL_COLUMNS).cast(pl.Categorical))
+    group_label_exprs = [
+        pl.col(code_column)
+        .cast(pl.String)
+        .replace_strict(mapping, default=None, return_dtype=pl.String)
+        .cast(pl.Categorical)
+        .alias(group_column)
+        for group_column, (code_column, mapping) in GROUP_LABEL_RECODES.items()
+    ]
+
+    return worker_lf.with_columns(
+        pl.col(LABEL_COLUMNS).cast(pl.Categorical), *group_label_exprs
+    )
 
 
 def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
