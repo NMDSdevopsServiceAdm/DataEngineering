@@ -298,12 +298,14 @@ def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     ).drop(PAY_AND_HOURS_COLUMNS)
 
 
-def null_inconsistent_ages(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Nulls ages implying a birth year 3 or more years from the worker's median.
+def clean_age(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `age_clean`: `age` with implausible and inconsistent ages nulled.
 
-    The implied birth year is the import year minus age: constant for a
-    consistent worker, within a year of birthday timing. A worker with half or
-    more of their ages that far out has no clear majority, so keeps all of them.
+    - Ages of 80 or more are nulled: starting a new job at 80+ is not credible, and
+      a genuine older worker's ages are re-imputed from their younger ages.
+    - Of the rest, ages implying a birth year (import year minus age) 3 or more
+      years from the worker's median are nulled. A worker with half or more of
+      their ages that far out has no clear majority, so keeps all of them.
 
     Uses `.over()`, which the streaming engine does not cover, so the sink may
     fall back to the in-memory engine.
@@ -313,13 +315,20 @@ def null_inconsistent_ages(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
             `ascwds_worker_import_date` and `age` (`Float32`).
 
     Returns:
-        pl.LazyFrame: The input rows with inconsistent ages set to null.
+        pl.LazyFrame: The input rows with `age_clean` (`Float32`) added.
     """
+    age_cap = 80
     min_birth_year_deviation = 3
     worker = [AWKClean.worker_id, AWKClean.establishment_id]
 
-    age = pl.col(AWKClean.age)
-    birth_year = pl.col(AWKClean.ascwds_worker_import_date).dt.year() - age
+    worker_lf = worker_lf.with_columns(
+        pl.when(pl.col(AWKClean.age) < age_cap)
+        .then(pl.col(AWKClean.age))
+        .alias(HackCols.age_clean)
+    )
+
+    age_clean = pl.col(HackCols.age_clean)
+    birth_year = pl.col(AWKClean.ascwds_worker_import_date).dt.year() - age_clean
     is_far_from_median = (
         birth_year - birth_year.median().over(worker)
     ).abs() >= min_birth_year_deviation
@@ -328,8 +337,8 @@ def null_inconsistent_ages(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     return worker_lf.with_columns(
         pl.when(is_far_from_median & has_clear_majority)
         .then(None)
-        .otherwise(age)
-        .alias(AWKClean.age)
+        .otherwise(age_clean)
+        .alias(HackCols.age_clean)
     )
 
 
@@ -340,7 +349,7 @@ def impute_age(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     imputed ages can be up to a year out: analyse banded ages, not exact ones.
 
     Per worker and establishment, ordered by `ascwds_worker_import_date`:
-    - Observed ages are kept (`observed`).
+    - Observed (`age_clean`) ages are kept (`observed`).
     - The birth month is the month the age first goes up by 1 between two
       consecutive months (`pinned_birth_month`). With no such rise it is the month
       of the first observed age (`assumed_birth_month`).
@@ -354,7 +363,7 @@ def impute_age(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with the establishment ID, worker ID,
-            `ascwds_worker_import_date` and `age` (`Float32`).
+            `ascwds_worker_import_date` and `age_clean` (`Float32`).
 
     Returns:
         pl.LazyFrame: The input rows with `age_imputed` (`Float32`) and `age_source`
@@ -364,7 +373,7 @@ def impute_age(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     order_by = AWKClean.ascwds_worker_import_date
     is_pinned_change = "is_pinned_change"
 
-    age = pl.col(AWKClean.age)
+    age = pl.col(HackCols.age_clean)
     import_date = pl.col(AWKClean.ascwds_worker_import_date)
     month = import_date.dt.year() * 12 + import_date.dt.month()
 

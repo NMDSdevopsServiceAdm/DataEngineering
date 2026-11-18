@@ -104,7 +104,7 @@ def main(
         filtered_lf, AWKClean.country_of_birth
     ).drop(wUtils.WORKER_CATEGORICAL_COLUMNS)
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
-    filtered_lf = wUtils.null_inconsistent_ages(filtered_lf)
+    filtered_lf = wUtils.clean_age(filtered_lf)
     filtered_lf = wUtils.impute_age(filtered_lf)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
 

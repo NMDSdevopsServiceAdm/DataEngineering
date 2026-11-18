@@ -337,24 +337,18 @@ class TestAddNlwAndPayDifference:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestNullInconsistentAges:
+class TestCleanAge:
     @pytest.mark.parametrize(
         "case",
-        [pytest.param(case, id=case.id) for case in Data.null_inconsistent_ages_cases],
+        [pytest.param(case, id=case.id) for case in Data.clean_age_cases],
     )
     def test_returns_expected_rows(self, case):
-        input_lf = pl.LazyFrame(
-            case.input_rows,
-            schema=Schemas.null_inconsistent_ages_schema,
-            orient="row",
-        )
         expected_lf = pl.LazyFrame(
-            case.expected_rows,
-            schema=Schemas.null_inconsistent_ages_schema,
-            orient="row",
+            case.expected_rows, schema=Schemas.clean_age_schema, orient="row"
         )
+        input_lf = expected_lf.drop(HackCols.age_clean)
 
-        returned_lf = job.null_inconsistent_ages(input_lf)
+        returned_lf = job.clean_age(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
