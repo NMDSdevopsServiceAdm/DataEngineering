@@ -626,6 +626,7 @@ class TestAddGeographyFromPostcode:
                 "1-001",
                 date(2021, 1, 5),
                 "53",
+                "1-ORG",
                 "LS1 1AA",
                 "1-LOC",
                 "Workplace",
@@ -636,6 +637,7 @@ class TestAddGeographyFromPostcode:
             AWPClean.establishment_id: CatColType.EstablishmentCatType,
             AWPClean.ascwds_workplace_import_date: pl.Date,
             AWPClean.main_service_id_clean: pl.String,
+            AWPClean.organisation_id: pl.String,
             AWPClean.postcode: pl.String,
             AWPClean.location_id: pl.String,
             AWPClean.establishment_name: pl.String,
@@ -644,18 +646,19 @@ class TestAddGeographyFromPostcode:
         orient="row",
     )
     matched_lf = pl.LazyFrame(
-        [("1-001", date(2021, 1, 5), "53", "Leeds", "North")],
+        [("1-001", date(2021, 1, 5), "53", "1-ORG", "Leeds", "North")],
         schema={
             AWPClean.establishment_id: CatColType.EstablishmentCatType,
             CQCLClean.cqc_location_import_date: pl.Date,
             AWPClean.main_service_id_clean: pl.String,
+            AWPClean.organisation_id: pl.String,
             ONSClean.current_cssr: pl.String,
             ONSClean.current_region: pl.String,
         },
         orient="row",
     )
 
-    def test_returns_workplace_keys_main_service_and_matched_geography(
+    def test_returns_workplace_keys_main_service_organisation_and_matched_geography(
         self, run_postcode_matching_mock
     ):
         run_postcode_matching_mock.return_value = self.matched_lf
@@ -668,10 +671,18 @@ class TestAddGeographyFromPostcode:
             AWPClean.establishment_id,
             AWPClean.ascwds_workplace_import_date,
             AWPClean.main_service_id_clean,
+            AWPClean.organisation_id,
             ONSClean.current_cssr,
             ONSClean.current_region,
         ]
-        assert returned_df.row(0) == ("1-001", date(2021, 1, 5), "53", "Leeds", "North")
+        assert returned_df.row(0) == (
+            "1-001",
+            date(2021, 1, 5),
+            "53",
+            "1-ORG",
+            "Leeds",
+            "North",
+        )
 
     def test_returns_geography_columns_as_categorical(self, run_postcode_matching_mock):
         run_postcode_matching_mock.return_value = self.matched_lf
@@ -698,6 +709,7 @@ class TestAddGeographyFromPostcode:
             AWPClean.establishment_id,
             CQCLClean.cqc_location_import_date,
             AWPClean.main_service_id_clean,
+            AWPClean.organisation_id,
             CQCLClean.postal_code,
             CQCLClean.location_id,
             CQCLClean.name,
