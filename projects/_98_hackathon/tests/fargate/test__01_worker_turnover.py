@@ -20,6 +20,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_split_column")
+    @patch(f"{PATCH_PATH}.wUtils.add_hourly_pay_diff_to_cssr_median")
     @patch(f"{PATCH_PATH}.wUtils.impute_age")
     @patch(f"{PATCH_PATH}.wUtils.clean_age")
     @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
@@ -60,6 +61,7 @@ class TestMain:
         impute_worker_columns_mock: Mock,
         clean_age_mock: Mock,
         impute_age_mock: Mock,
+        add_hourly_pay_diff_to_cssr_median_mock: Mock,
         add_split_column_mock: Mock,
         collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -224,8 +226,11 @@ class TestMain:
         add_nlw_and_pay_difference_mock.assert_called_once_with(
             impute_age_mock.return_value
         )
-        add_split_column_mock.assert_called_once_with(
+        add_hourly_pay_diff_to_cssr_median_mock.assert_called_once_with(
             add_nlw_and_pay_difference_mock.return_value
+        )
+        add_split_column_mock.assert_called_once_with(
+            add_hourly_pay_diff_to_cssr_median_mock.return_value
         )
         filter_mock = add_split_column_mock.return_value.filter
         assert filter_mock.call_count == len(splits)
