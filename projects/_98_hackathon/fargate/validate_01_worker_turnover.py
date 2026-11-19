@@ -66,6 +66,9 @@ SOURCE_COLUMNS = [
     HackCols.country_of_birth_group,
     ONSClean.current_cssr,
     ONSClean.current_region,
+    HackCols.years_in_role,
+    HackCols.years_in_sector,
+    AWKClean.start_date,
     *NUMERIC_COLUMNS,
     *wUtils.LABEL_COLUMNS,
 ]
@@ -210,6 +213,18 @@ def main(
             na_pass=True,
             brief="age_imputed is null or not negative",
         )
+        .col_vals_ge(
+            HackCols.years_in_role,
+            0,
+            na_pass=True,
+            brief="years_in_role is null or not negative",
+        )
+        .col_vals_ge(
+            HackCols.years_in_sector,
+            0,
+            na_pass=True,
+            brief="years_in_sector is null or not negative",
+        )
         # Cross-column checks
         .col_vals_expr(
             expr=turnover_rate.min()
@@ -229,6 +244,16 @@ def main(
             .is_not_null()
             .eq(hourly_pay.is_not_null()),
             brief="hourly_pay_minus_nlw is populated exactly when hourly_pay is populated",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.years_in_role).is_null()
+            | pl.col(AWKClean.start_date).is_not_null(),
+            brief="years_in_role is only populated where start_date is populated",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.years_in_sector).is_null()
+            | pl.col(AWKClean.start_in_sector).is_not_null(),
+            brief="years_in_sector is only populated where start_in_sector is populated",
         )
         .col_vals_in_set(
             HackCols.age_source,

@@ -58,6 +58,9 @@ def build_source_df() -> pl.DataFrame:
             HackCols.country_of_birth_group: [CountryOfBirthGroupLabels.non_eea] * 2,
             ONSClean.current_cssr: [CurrentCSSR.barnet] * 2,
             ONSClean.current_region: [Region.london] * 2,
+            HackCols.years_in_role: [3.0, 4.0],
+            HackCols.years_in_sector: [5.0, 6.0],
+            AWKClean.start_date: [date(2020, 1, 1), date(2020, 1, 1)],
             **{column: [1.0] * 2 for column in job.NUMERIC_COLUMNS},
             **{
                 label_column: [vocabulary.label_cls(label_column).categorical_values[0]]
@@ -89,6 +92,9 @@ def build_source_df() -> pl.DataFrame:
             HackCols.country_of_birth_group: pl.Categorical,
             ONSClean.current_cssr: pl.Categorical,
             ONSClean.current_region: pl.Categorical,
+            HackCols.years_in_role: pl.Float32,
+            HackCols.years_in_sector: pl.Float32,
+            AWKClean.start_date: pl.Date,
             **{column: pl.Float32 for column in job.NUMERIC_COLUMNS},
             **{column: pl.Categorical for column in wUtils.LABEL_COLUMNS},
         },
