@@ -238,9 +238,7 @@ class TestMain:
         test_lf_mock.select.assert_called_once_with(
             *job.vUtils.KEY_COLUMNS, *job.wUtils.STUDENT_HIDDEN_COLUMNS
         )
-        test_lf_mock.drop.assert_called_once_with(
-            job.wUtils.STUDENT_HIDDEN_COLUMNS
-        )
+        test_lf_mock.drop.assert_called_once_with(job.wUtils.STUDENT_HIDDEN_COLUMNS)
         sunk_lf_mocks = [
             *split_lf_mocks[:-1],
             test_lf_mock.select.return_value,

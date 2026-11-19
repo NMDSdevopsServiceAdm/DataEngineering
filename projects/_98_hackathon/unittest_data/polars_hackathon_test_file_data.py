@@ -364,7 +364,6 @@ class WorkerTurnoverData:
         ),
     ]
 
-
     add_country_code_group_cases = [
         *build_code_group_cases(
             code_column=AWKClean.nationality,
