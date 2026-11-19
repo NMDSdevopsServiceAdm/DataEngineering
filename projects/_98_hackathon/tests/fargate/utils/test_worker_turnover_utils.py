@@ -647,18 +647,46 @@ class TestAddHourlyPayDiffToLaMedian:
     def test_medians_are_separate_per_cssr_role_and_import_date(self):
         input_lf = self.worker_lf(
             (self.import_date, "Leeds", "care_worker", 10.0),
-            (self.import_date, "York", "care_worker", 14.0),
+            (self.import_date, "Leeds", "care_worker", 14.0),
+            (self.import_date, "York", "care_worker", 20.0),
+            (self.import_date, "York", "care_worker", 30.0),
             (self.import_date, "Leeds", "senior_care_worker", 16.0),
-            (date(2021, 2, 5), "Leeds", "care_worker", 18.0),
+            (self.import_date, "Leeds", "senior_care_worker", 18.0),
+            (date(2021, 2, 5), "Leeds", "care_worker", 40.0),
+            (date(2021, 2, 5), "Leeds", "care_worker", 46.0),
         )
 
         returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
 
         assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
-            0.0,
-            0.0,
-            0.0,
-            0.0,
+            -2.0,
+            2.0,
+            -5.0,
+            5.0,
+            -1.0,
+            1.0,
+            -3.0,
+            3.0,
+        ]
+
+    def test_returns_zero_diff_for_single_row_group(self):
+        input_lf = self.worker_lf((self.import_date, "Leeds", "care_worker", 10.0))
+
+        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+
+        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [0.0]
+
+    def test_returns_null_diff_when_every_pay_in_group_is_null(self):
+        input_lf = self.worker_lf(
+            (self.import_date, "Leeds", "care_worker", None),
+            (self.import_date, "Leeds", "care_worker", None),
+        )
+
+        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+
+        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
+            None,
+            None,
         ]
 
     def test_median_ignores_null_hourly_pay_and_diff_is_null_for_null_pay(self):
