@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a student version of the Hackathon Worker Turnover test split, without `is_leaver` or `turnover_rate`, and its validation.
 - Added organisation ID and training flag (with labels) to the Hackathon Worker Turnover output.
 - Added CSSR and region, matched from the workplace postcode to the ONS postcode directory, to the Hackathon Worker Turnover job output.
 - Added age imputation to the Hackathon Worker Turnover job, with the source of each age.

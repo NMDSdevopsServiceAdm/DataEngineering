@@ -11,20 +11,22 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.hackathon_columns import AgeSource
-from utils.column_names.cleaned_data_files.ons_cleaned import (
-    OnsCleanedColumns as ONSClean,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
+from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
-    NationalityGroupLabels,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
-from utils.column_values.ascwds_labelled_vocab import TrainingFlagLabels
+from utils.column_values.ascwds_labelled_vocab import (
+    NationalityGroupLabels,
+    TrainingFlagLabels,
+)
 from utils.column_values.categorical_column_values import (
     CurrentCSSR,
     PrimaryServiceType,
@@ -34,12 +36,6 @@ from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerCleanedCategoricalValues as CatValues,
 )
 
-KEY_COLUMNS = [
-    AWKClean.establishment_id,
-    AWKClean.worker_id,
-    AWKClean.ascwds_worker_import_date,
-]
-
 NUMERIC_COLUMNS = [
     column
     for column in wUtils.WORKER_NUMERIC_COLUMNS
@@ -47,7 +43,7 @@ NUMERIC_COLUMNS = [
 ]
 
 SOURCE_COLUMNS = [
-    *KEY_COLUMNS,
+    *vUtils.KEY_COLUMNS,
     AWKClean.employment_status_clean_labelled,
     AWKClean.main_job_role_clean_labelled,
     AWPClean.organisation_id,
@@ -140,12 +136,12 @@ def main(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
         )
-        .col_vals_not_null(KEY_COLUMNS, brief="key columns have no nulls")
+        .col_vals_not_null(vUtils.KEY_COLUMNS, brief="key columns have no nulls")
         .col_vals_not_null(
             AWPClean.organisation_id, brief="organisation_id has no nulls"
         )
         .rows_distinct(
-            KEY_COLUMNS,
+            vUtils.KEY_COLUMNS,
             brief="establishment, worker and import date are unique",
         )
         .specially(

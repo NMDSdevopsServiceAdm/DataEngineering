@@ -182,6 +182,13 @@ class AddValidForAnalysisFlagCase:
 
 
 @dataclass
+class MakeStudentTestDataCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class WorkerTurnoverData:
     # Rows: (establishment_id, worker_id, import_date,
     # establishment_in_both_snapshots, is_leaver, turnover_rate).
@@ -361,6 +368,35 @@ class WorkerTurnoverData:
         AddValidForAnalysisFlagCase(
             id="invalid_when_no_end_snapshot",
             expected_rows=[("est_a", "1", START, None, None, None, None, None, False)],
+        ),
+    ]
+
+    # Input rows: (establishment_id, worker_id, import_date, is_leaver, turnover_rate,
+    # valid_for_analysis, hourly_pay). Expected rows drop is_leaver and turnover_rate.
+    make_student_test_data_cases = [
+        MakeStudentTestDataCase(
+            id="drops_is_leaver_and_turnover_rate_keeping_other_columns",
+            input_rows=[
+                ("est_a", "1", START, True, 0.5, True, 12.5),
+                ("est_a", "2", START, False, 0.5, False, None),
+                ("est_b", "1", MID, False, 0.0, True, 9.0),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, True, 12.5),
+                ("est_a", "2", START, False, None),
+                ("est_b", "1", MID, True, 9.0),
+            ],
+        ),
+        MakeStudentTestDataCase(
+            id="keeps_all_rows_including_null_is_leaver",
+            input_rows=[
+                ("est_a", "1", START, None, None, False, 12.5),
+                ("est_a", "2", START, True, 0.5, True, 12.5),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 12.5),
+                ("est_a", "2", START, True, 12.5),
+            ],
         ),
     ]
 

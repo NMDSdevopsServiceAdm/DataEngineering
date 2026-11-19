@@ -220,6 +220,24 @@ class TestAddSplitColumn:
         assert returned_lf.collect_schema()[HackCols.split] == pl.Categorical
 
 
+class TestMakeStudentTestData:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.make_student_test_data_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        input_lf = pl.LazyFrame(
+            case.input_rows, schema=Schemas.student_input_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_rows, schema=Schemas.student_output_schema, orient="row"
+        )
+
+        returned_lf = job.make_student_test_data(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestAddMainServiceType:
     @pytest.mark.parametrize(
         "case",

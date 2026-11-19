@@ -37,7 +37,9 @@
                 "--holdout_destination",
                 "${dataset_bucket_uri}/domain=98_hackathon/dataset=worker_turnover_holdout/",
                 "--test_destination",
-                "${dataset_bucket_uri}/domain=98_hackathon/dataset=worker_turnover_test/"
+                "${dataset_bucket_uri}/domain=98_hackathon/dataset=worker_turnover_test/",
+                "--student_destination",
+                "${dataset_bucket_uri}/domain=98_hackathon/dataset=worker_turnover_student/"
               ]
             }
           ]
@@ -123,6 +125,46 @@
                         "domain=98_hackathon/dataset=worker_turnover_test_validation/",
                         "--split",
                         "test"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Validate student data",
+          "States": {
+            "Validate student data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "LaunchType": "FARGATE",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${hackathon_task_arn}",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${hackathon_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_98_hackathon-container",
+                      "Command": [
+                        "validate_02_worker_turnover_student.py",
+                        "--bucket_name",
+                        "${dataset_bucket_name}",
+                        "--source_path",
+                        "domain=98_hackathon/dataset=worker_turnover_student/",
+                        "--test_path",
+                        "domain=98_hackathon/dataset=worker_turnover_test/",
+                        "--reports_path",
+                        "domain=98_hackathon/dataset=worker_turnover_student_validation/"
                       ]
                     }
                   ]
