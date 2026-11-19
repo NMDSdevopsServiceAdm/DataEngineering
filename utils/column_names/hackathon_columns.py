@@ -20,6 +20,9 @@ class HackathonColumns:
     nlw_effective_date: str = "nlw_effective_date"
     nlw_is_apprentice: str = "nlw_is_apprentice"
     nlw_band_start: str = "nlw_band_start"
+    age_clean: str = "age_clean"
+    age_imputed: str = "age_imputed"
+    age_source: str = "age_source"
     nationality_group: str = "nationality_group"
     country_of_birth_group: str = "country_of_birth_group"
     turnover_rate: str = "turnover_rate"
@@ -33,3 +36,11 @@ class HackathonColumns:
     plausible_turnover: str = "plausible_turnover"
     valid_for_analysis: str = "valid_for_analysis"
     split: str = "split"
+    predicted_probability: str = "predicted_probability"
+
+
+@dataclass
+class AgeSource:
+    observed: str = "observed"
+    pinned_birth_month: str = "pinned_birth_month"
+    assumed_birth_month: str = "assumed_birth_month"
