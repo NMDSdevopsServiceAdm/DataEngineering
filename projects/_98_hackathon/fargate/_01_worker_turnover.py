@@ -1,5 +1,6 @@
 import polars as pl
 
+import projects._98_hackathon.fargate.utils.validation_utils as vUtils
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
@@ -43,7 +44,8 @@ def main(
             corrections csv
         train_destination (str): destination for the train split
         holdout_destination (str): destination for the holdout split
-        test_destination (str): destination for the test split
+        test_destination (str): destination for the test split's key columns,
+            `is_leaver` and `turnover_rate`
         student_destination (str): destination for the test split without
             `is_leaver` and `turnover_rate`
         n_months (int): most months since an establishment's latest save date for
@@ -146,27 +148,34 @@ def main(
 
     filtered_lf = wUtils.add_split_column(filtered_lf)
 
-    split_destinations = {
-        "train": train_destination,
-        "holdout": holdout_destination,
-        "test": test_destination,
-    }
     split_lfs = {
         split: filtered_lf.filter(pl.col(HackCols.split) == split)
-        for split in split_destinations
+        for split in ("train", "holdout", "test")
+    }
+    train_holdout_destinations = {
+        "train": train_destination,
+        "holdout": holdout_destination,
     }
     split_sinks = [
         utils.sink_to_parquet(split_lfs[split], output_path=destination, lazy=True)
-        for split, destination in split_destinations.items()
+        for split, destination in train_holdout_destinations.items()
     ]
+    # The test split keeps `is_leaver` and `turnover_rate` until the sinks: the
+    # test destination holds only them and the key columns, and the student
+    # destination holds every other column.
+    test_sink = utils.sink_to_parquet(
+        split_lfs["test"].select(*vUtils.KEY_COLUMNS, *wUtils.STUDENT_HIDDEN_COLUMNS),
+        output_path=test_destination,
+        lazy=True,
+    )
     student_sink = utils.sink_to_parquet(
-        wUtils.make_student_test_data(split_lfs["test"]),
+        split_lfs["test"].drop(wUtils.STUDENT_HIDDEN_COLUMNS),
         output_path=student_destination,
         lazy=True,
     )
     # Lazy sinks collected together share one run of the plan above, rather than
     # re-running it per sink.
-    pl.collect_all([*split_sinks, student_sink], engine="streaming")
+    pl.collect_all([*split_sinks, test_sink, student_sink], engine="streaming")
 
 
 if __name__ == "__main__":

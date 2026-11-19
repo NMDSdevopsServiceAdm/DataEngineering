@@ -20,7 +20,6 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.collect_all")
-    @patch(f"{PATCH_PATH}.wUtils.make_student_test_data")
     @patch(f"{PATCH_PATH}.wUtils.add_split_column")
     @patch(f"{PATCH_PATH}.wUtils.impute_age")
     @patch(f"{PATCH_PATH}.wUtils.clean_age")
@@ -63,7 +62,6 @@ class TestMain:
         clean_age_mock: Mock,
         impute_age_mock: Mock,
         add_split_column_mock: Mock,
-        make_student_test_data_mock: Mock,
         collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -236,14 +234,24 @@ class TestMain:
         assert filter_mock.call_count == len(splits)
         for filter_call, split in zip(filter_mock.call_args_list, splits):
             assert filter_call.args[0].meta.eq(pl.col(job.HackCols.split) == split)
-        make_student_test_data_mock.assert_called_once_with(split_lf_mocks[-1])
+        test_lf_mock = split_lf_mocks[-1]
+        test_lf_mock.select.assert_called_once_with(
+            *job.vUtils.KEY_COLUMNS, *job.wUtils.STUDENT_HIDDEN_COLUMNS
+        )
+        test_lf_mock.drop.assert_called_once_with(
+            job.wUtils.STUDENT_HIDDEN_COLUMNS
+        )
+        sunk_lf_mocks = [
+            *split_lf_mocks[:-1],
+            test_lf_mock.select.return_value,
+        ]
         assert sink_to_parquet_mock.call_args_list == [
             *[
-                call(split_lf_mock, output_path=destination, lazy=True)
-                for split_lf_mock, destination in zip(split_lf_mocks, destinations)
+                call(sunk_lf_mock, output_path=destination, lazy=True)
+                for sunk_lf_mock, destination in zip(sunk_lf_mocks, destinations)
             ],
             call(
-                make_student_test_data_mock.return_value,
+                test_lf_mock.drop.return_value,
                 output_path=self.STUDENT_DESTINATION,
                 lazy=True,
             ),
