@@ -9,6 +9,7 @@ from polars_utils.cleaning_utils import (
 )
 from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
+from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
 from projects._98_hackathon.fargate.utils.nlw_rates import (
     BAND_STARTS,
     NLW_RATES,
@@ -20,8 +21,14 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import AgeSource
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     APPRENTICE,
@@ -189,6 +196,68 @@ def add_raw_worker_columns(
     )
 
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
+
+
+def add_geography_from_postcode(
+    workplace_lf: pl.LazyFrame,
+    worker_lf: pl.LazyFrame,
+    ons_lf: pl.LazyFrame,
+    manual_postcode_corrections_source: str,
+) -> pl.LazyFrame:
+    """Matches workplace postcodes to ONS for `current_cssr` and `current_region`.
+
+    Workplace rows are cut to the establishment and import date keys in `worker_lf`
+    before matching, so only needed postcodes are matched. The workplace columns are
+    renamed to the CQC location names `run_postcode_matching` expects, which raises
+    if any postcode is left unmatched.
+
+    Args:
+        workplace_lf (pl.LazyFrame): Cleaned ASC-WDS workplace data with
+            establishment ID, import date, main service ID, postcode, location ID,
+            name and address.
+        worker_lf (pl.LazyFrame): Worker data with establishment ID and
+            `ascwds_worker_import_date`.
+        ons_lf (pl.LazyFrame): Cleaned ONS postcode directory with the columns
+            `run_postcode_matching` needs.
+        manual_postcode_corrections_source (str): S3 URI of the manual postcode
+            corrections csv.
+
+    Returns:
+        pl.LazyFrame: Establishment ID, import date, main service ID,
+            `current_cssr` and `current_region` (`Categorical`) for the matched
+            workplace rows.
+    """
+    keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
+
+    locations_lf = workplace_lf.select(
+        AWPClean.establishment_id,
+        pl.col(AWPClean.ascwds_workplace_import_date).alias(
+            CQCLClean.cqc_location_import_date
+        ),
+        AWPClean.main_service_id_clean,
+        pl.col(AWPClean.postcode).alias(CQCLClean.postal_code),
+        pl.col(AWPClean.location_id).alias(CQCLClean.location_id),
+        pl.col(AWPClean.establishment_name).alias(CQCLClean.name),
+        pl.col(AWPClean.address).alias(CQCLClean.postal_address_line1),
+    ).join(
+        worker_lf.select(keys),
+        left_on=[AWPClean.establishment_id, CQCLClean.cqc_location_import_date],
+        right_on=keys,
+        how="semi",
+    )
+
+    matched_lf = pmUtils.run_postcode_matching(
+        locations_lf, ons_lf, manual_postcode_corrections_source
+    )
+
+    return matched_lf.select(
+        AWPClean.establishment_id,
+        pl.col(CQCLClean.cqc_location_import_date).alias(
+            AWPClean.ascwds_workplace_import_date
+        ),
+        AWPClean.main_service_id_clean,
+        pl.col([ONSClean.current_cssr, ONSClean.current_region]).cast(pl.Categorical),
+    )
 
 
 def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
