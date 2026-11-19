@@ -622,7 +622,7 @@ class TestAddHourlyPayDiffToLaMedian:
             list(rows),
             schema={
                 AWKClean.ascwds_worker_import_date: pl.Date,
-                CQCLClean.current_cssr: pl.Categorical,
+                ONSClean.current_cssr: pl.Categorical,
                 AWKClean.main_job_role_clean_labelled: pl.Categorical,
                 HackCols.hourly_pay: pl.Float32,
             },
@@ -636,9 +636,9 @@ class TestAddHourlyPayDiffToLaMedian:
             (self.import_date, "Leeds", "care_worker", 20.0),
         )
 
-        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+        returned_df = job.add_hourly_pay_diff_to_cssr_median(input_lf).collect()
 
-        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
+        assert returned_df[HackCols.hourly_pay_diff_to_cssr_median].to_list() == [
             -2.0,
             0.0,
             8.0,
@@ -656,9 +656,9 @@ class TestAddHourlyPayDiffToLaMedian:
             (date(2021, 2, 5), "Leeds", "care_worker", 46.0),
         )
 
-        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+        returned_df = job.add_hourly_pay_diff_to_cssr_median(input_lf).collect()
 
-        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
+        assert returned_df[HackCols.hourly_pay_diff_to_cssr_median].to_list() == [
             -2.0,
             2.0,
             -5.0,
@@ -672,9 +672,9 @@ class TestAddHourlyPayDiffToLaMedian:
     def test_returns_zero_diff_for_single_row_group(self):
         input_lf = self.worker_lf((self.import_date, "Leeds", "care_worker", 10.0))
 
-        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+        returned_df = job.add_hourly_pay_diff_to_cssr_median(input_lf).collect()
 
-        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [0.0]
+        assert returned_df[HackCols.hourly_pay_diff_to_cssr_median].to_list() == [0.0]
 
     def test_returns_null_diff_when_every_pay_in_group_is_null(self):
         input_lf = self.worker_lf(
@@ -682,9 +682,9 @@ class TestAddHourlyPayDiffToLaMedian:
             (self.import_date, "Leeds", "care_worker", None),
         )
 
-        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+        returned_df = job.add_hourly_pay_diff_to_cssr_median(input_lf).collect()
 
-        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
+        assert returned_df[HackCols.hourly_pay_diff_to_cssr_median].to_list() == [
             None,
             None,
         ]
@@ -696,9 +696,9 @@ class TestAddHourlyPayDiffToLaMedian:
             (self.import_date, "Leeds", "care_worker", 14.0),
         )
 
-        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+        returned_df = job.add_hourly_pay_diff_to_cssr_median(input_lf).collect()
 
-        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
+        assert returned_df[HackCols.hourly_pay_diff_to_cssr_median].to_list() == [
             -2.0,
             None,
             2.0,
@@ -714,19 +714,19 @@ class TestAddHourlyPayDiffToLaMedian:
     def test_returns_null_diff_when_cssr_or_role_is_null(self, cssr, role):
         input_lf = self.worker_lf((self.import_date, cssr, role, 10.0))
 
-        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+        returned_df = job.add_hourly_pay_diff_to_cssr_median(input_lf).collect()
 
-        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [None]
+        assert returned_df[HackCols.hourly_pay_diff_to_cssr_median].to_list() == [None]
 
     def test_returns_float32_diff_column_after_input_columns(self):
         input_lf = self.worker_lf((self.import_date, "Leeds", "care_worker", 10.0))
 
-        returned_schema = job.add_hourly_pay_diff_to_la_median(
+        returned_schema = job.add_hourly_pay_diff_to_cssr_median(
             input_lf
         ).collect_schema()
 
-        assert returned_schema.names()[-1] == HackCols.hourly_pay_diff_to_la_median
-        assert returned_schema[HackCols.hourly_pay_diff_to_la_median] == pl.Float32
+        assert returned_schema.names()[-1] == HackCols.hourly_pay_diff_to_cssr_median
+        assert returned_schema[HackCols.hourly_pay_diff_to_cssr_median] == pl.Float32
 
 
 @patch(f"{job.__name__}.pmUtils.run_postcode_matching")
