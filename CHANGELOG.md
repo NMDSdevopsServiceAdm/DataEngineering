@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added CSSR and region, matched from the workplace postcode to the ONS postcode directory, to the Hackathon Worker Turnover job output.
 - Added age imputation to the Hackathon Worker Turnover job, with the source of each age.
+- Added ethnicity and within/outside adult social care source of recruitment group labels, imputed, to the Hackathon Worker Turnover job output and its validation.
 - Added a guide to maintaining the Monthly Tracker workbooks, and documented where to find them.
 - Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, with each split written separately and the train and test splits validated.
 - Added a validation job for the Hackathon Worker Turnover output.

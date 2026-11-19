@@ -593,6 +593,25 @@ class CountryOfBirthGroupLabels(ColumnValues):
     uk: str = "UK"
 
 
+@dataclass
+class EthnicityGroupLabels(ColumnValues):
+    """The possible values of the grouped ethnicity column"""
+
+    white: str = "White"
+    mixed: str = "Mixed/multiple ethnic groups"
+    asian: str = "Asian/Asian British"
+    black: str = "Black/African/Caribbean/Black British"
+    other: str = "Other ethnic group"
+
+
+@dataclass
+class SourceOfRecruitmentWithinOutsideAscLabels(ColumnValues):
+    """The possible values of the within or outside adult social care source of recruitment column"""
+
+    within_asc: str = "Within asc"
+    outside_asc: str = "Outside asc"
+
+
 @dataclass(frozen=True)
 class PairedVocab:
     """Links a code `ColumnValues` class to its label `ColumnValues` class by field name."""
