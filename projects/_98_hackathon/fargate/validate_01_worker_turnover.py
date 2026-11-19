@@ -12,13 +12,20 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.hackathon_columns import AgeSource
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
     NationalityGroupLabels,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
-from utils.column_values.categorical_column_values import PrimaryServiceType
+from utils.column_values.categorical_column_values import (
+    CurrentCSSR,
+    PrimaryServiceType,
+    Region,
+)
 from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerCleanedCategoricalValues as CatValues,
 )
@@ -52,6 +59,8 @@ SOURCE_COLUMNS = [
     HackCols.age_source,
     HackCols.nationality_group,
     HackCols.country_of_birth_group,
+    ONSClean.current_cssr,
+    ONSClean.current_region,
     *NUMERIC_COLUMNS,
     *wUtils.LABEL_COLUMNS,
 ]
@@ -109,6 +118,8 @@ def main(
     is_leaver = pl.col(HackCols.is_leaver)
     turnover_rate = pl.col(HackCols.turnover_rate)
     hourly_pay = pl.col(HackCols.hourly_pay)
+    current_cssr_values = CurrentCSSR(ONSClean.current_cssr).categorical_values
+    current_region_values = Region(ONSClean.current_region).categorical_values
 
     validation = (
         pb.Validate(
@@ -153,6 +164,16 @@ def main(
             HackCols.main_service_type,
             PrimaryServiceType(HackCols.main_service_type).categorical_values,
             brief="main_service_type is a known value",
+        )
+        .col_vals_in_set(
+            ONSClean.current_cssr,
+            current_cssr_values,
+            brief="current_cssr is a known value",
+        )
+        .col_vals_in_set(
+            ONSClean.current_region,
+            current_region_values,
+            brief="current_region is a known value",
         )
         # Numerical checks
         .col_vals_between(
