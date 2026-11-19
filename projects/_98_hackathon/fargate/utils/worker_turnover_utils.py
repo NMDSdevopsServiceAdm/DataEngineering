@@ -9,6 +9,7 @@ from polars_utils.cleaning_utils import (
 )
 from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
+from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
 from projects._98_hackathon.fargate.utils.nlw_rates import (
     BAND_STARTS,
     NLW_RATES,
@@ -20,7 +21,14 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
+from utils.column_names.hackathon_columns import AgeSource
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     APPRENTICE,
@@ -31,6 +39,7 @@ from utils.column_values.ascwds_labelled_vocab import (
     LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
     SOCIAL_CARE_QUAL_HELD,
     SOURCE_OF_RECRUITMENT,
+    TRAIN_FLAG,
     ZERO_HOURS,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
@@ -58,6 +67,7 @@ WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.apprentice,
     AWKClean.zero_hours,
     AWKClean.source_of_recruitment,
+    AWKClean.training_flag,
 ]
 
 # Nationality and country of birth get a group column instead of a label column.
@@ -73,6 +83,7 @@ LABEL_VOCABULARIES = {
     AWKClean.apprentice: APPRENTICE,
     AWKClean.zero_hours: ZERO_HOURS,
     AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT,
+    AWKClean.training_flag: TRAIN_FLAG,
 }
 LABELLED_COLUMNS = list(LABEL_VOCABULARIES)
 LABEL_COLUMNS = [f"{column}_{DLC.label}s" for column in LABELLED_COLUMNS]
@@ -134,6 +145,7 @@ IMPUTE_COLUMNS = [
     f"{AWKClean.social_care_qual_held}_labels",
     f"{AWKClean.level_social_care_qualification_held}_labels",
     f"{AWKClean.care_certificate_status}_labels",
+    f"{AWKClean.training_flag}_labels",
 ]
 
 
@@ -184,6 +196,70 @@ def add_raw_worker_columns(
     )
 
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
+
+
+def add_geography_from_postcode(
+    workplace_lf: pl.LazyFrame,
+    worker_lf: pl.LazyFrame,
+    ons_lf: pl.LazyFrame,
+    manual_postcode_corrections_source: str,
+) -> pl.LazyFrame:
+    """Matches workplace postcodes to ONS for `current_cssr` and `current_region`.
+
+    Workplace rows are cut to the establishment and import date keys in `worker_lf`
+    before matching, so only needed postcodes are matched. The workplace columns are
+    renamed to the CQC location names `run_postcode_matching` expects, which raises
+    if any postcode is left unmatched.
+
+    Args:
+        workplace_lf (pl.LazyFrame): Cleaned ASC-WDS workplace data with
+            establishment ID, import date, main service ID, organisation ID,
+            postcode, location ID, name and address.
+        worker_lf (pl.LazyFrame): Worker data with establishment ID and
+            `ascwds_worker_import_date`.
+        ons_lf (pl.LazyFrame): Cleaned ONS postcode directory with the columns
+            `run_postcode_matching` needs.
+        manual_postcode_corrections_source (str): S3 URI of the manual postcode
+            corrections csv.
+
+    Returns:
+        pl.LazyFrame: Establishment ID, import date, main service ID,
+            organisation ID, `current_cssr` and `current_region` (`Categorical`)
+            for the matched workplace rows.
+    """
+    keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
+
+    locations_lf = workplace_lf.select(
+        AWPClean.establishment_id,
+        pl.col(AWPClean.ascwds_workplace_import_date).alias(
+            CQCLClean.cqc_location_import_date
+        ),
+        AWPClean.main_service_id_clean,
+        AWPClean.organisation_id,
+        pl.col(AWPClean.postcode).alias(CQCLClean.postal_code),
+        pl.col(AWPClean.location_id).alias(CQCLClean.location_id),
+        pl.col(AWPClean.establishment_name).alias(CQCLClean.name),
+        pl.col(AWPClean.address).alias(CQCLClean.postal_address_line1),
+    ).join(
+        worker_lf.select(keys),
+        left_on=[AWPClean.establishment_id, CQCLClean.cqc_location_import_date],
+        right_on=keys,
+        how="semi",
+    )
+
+    matched_lf = pmUtils.run_postcode_matching(
+        locations_lf, ons_lf, manual_postcode_corrections_source
+    )
+
+    return matched_lf.select(
+        AWPClean.establishment_id,
+        pl.col(CQCLClean.cqc_location_import_date).alias(
+            AWPClean.ascwds_workplace_import_date
+        ),
+        AWPClean.main_service_id_clean,
+        AWPClean.organisation_id,
+        pl.col([ONSClean.current_cssr, ONSClean.current_region]).cast(pl.Categorical),
+    )
 
 
 def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -297,6 +373,124 @@ def combine_pay_and_hours(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     ).drop(PAY_AND_HOURS_COLUMNS)
 
 
+def clean_age(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `age_clean`: `age` with implausible and inconsistent ages nulled.
+
+    - Ages of 80 or more are nulled: starting a new job at 80+ is not credible, and
+      a genuine older worker's ages are re-imputed from their younger ages.
+    - Of the rest, ages implying a birth year (import year minus age) 3 or more
+      years from the worker's median are nulled. A worker with half or more of
+      their ages that far out has no clear majority, so keeps all of them.
+
+    Uses `.over()`, which the streaming engine does not cover, so the sink may
+    fall back to the in-memory engine.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the establishment ID, worker ID,
+            `ascwds_worker_import_date` and `age` (`Float32`).
+
+    Returns:
+        pl.LazyFrame: The input rows with `age_clean` (`Float32`) added.
+    """
+    age_cap = 80
+    min_birth_year_deviation = 3
+    worker = [AWKClean.worker_id, AWKClean.establishment_id]
+
+    worker_lf = worker_lf.with_columns(
+        pl.when(pl.col(AWKClean.age) < age_cap)
+        .then(pl.col(AWKClean.age))
+        .alias(HackCols.age_clean)
+    )
+
+    age_clean = pl.col(HackCols.age_clean)
+    birth_year = pl.col(AWKClean.ascwds_worker_import_date).dt.year() - age_clean
+    is_far_from_median = (
+        birth_year - birth_year.median().over(worker)
+    ).abs() >= min_birth_year_deviation
+    has_clear_majority = is_far_from_median.mean().over(worker) < 0.5
+
+    return worker_lf.with_columns(
+        pl.when(is_far_from_median & has_clear_majority)
+        .then(None)
+        .otherwise(age_clean)
+        .alias(HackCols.age_clean)
+    )
+
+
+def impute_age(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `age_imputed` and `age_source`, filling null ages from a birth month.
+
+    Age is a floor at the import date and the birth month is an assumption, so
+    imputed ages can be up to a year out: analyse banded ages, not exact ones.
+
+    Per worker and establishment, ordered by `ascwds_worker_import_date`:
+    - Observed (`age_clean`) ages are kept (`observed`).
+    - The birth month is the month the age first goes up by 1 between two
+      consecutive months (`pinned_birth_month`). With no such rise it is the month
+      of the first observed age (`assumed_birth_month`).
+    - A null age is filled by starting from the worker's first observed age. Add 1
+      for each birthday between that observation and the null's month, or take
+      away 1 for each birthday if the null's month is earlier. For example, 35 in
+      Jun 2025 gives 36 in Jun 2026 and 25 in Jun 2015.
+    - A worker with no observed age stays null, with a null `age_source`.
+
+    Uses `.over()`, which the streaming engine does not cover, so the sink may
+    fall back to the in-memory engine.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the establishment ID, worker ID,
+            `ascwds_worker_import_date` and `age_clean` (`Float32`).
+
+    Returns:
+        pl.LazyFrame: The input rows with `age_imputed` (`Float32`) and `age_source`
+            (`Categorical`) added.
+    """
+    worker = [AWKClean.worker_id, AWKClean.establishment_id]
+    order_by = AWKClean.ascwds_worker_import_date
+    is_pinned_change = "is_pinned_change"
+
+    age = pl.col(HackCols.age_clean)
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    month = import_date.dt.year() * 12 + import_date.dt.month()
+
+    worker_lf = worker_lf.with_columns(
+        (
+            (age.diff().over(worker, order_by=order_by) == 1)
+            & (month.diff().over(worker, order_by=order_by) == 1)
+        ).alias(is_pinned_change)
+    )
+
+    first_observed_age = age.drop_nulls().first().over(worker, order_by=order_by)
+    first_observed_month = (
+        month.filter(age.is_not_null()).first().over(worker, order_by=order_by)
+    )
+    pinned_month = (
+        month.filter(pl.col(is_pinned_change)).first().over(worker, order_by=order_by)
+    )
+    birth_month = pl.coalesce(pinned_month, first_observed_month)
+
+    age_from_birth_month = (
+        first_observed_age
+        + (month - birth_month) // 12
+        - (first_observed_month - birth_month) // 12
+    )
+
+    return worker_lf.with_columns(
+        pl.coalesce(age, age_from_birth_month)
+        .cast(pl.Float32)
+        .alias(HackCols.age_imputed),
+        pl.when(age.is_not_null())
+        .then(pl.lit(AgeSource.observed))
+        .when(first_observed_age.is_null())
+        .then(None)
+        .when(pinned_month.is_not_null())
+        .then(pl.lit(AgeSource.pinned_birth_month))
+        .otherwise(pl.lit(AgeSource.assumed_birth_month))
+        .cast(pl.Categorical)
+        .alias(HackCols.age_source),
+    ).drop(is_pinned_change)
+
+
 def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Adds the National Living Wage in force and the hourly pay difference from it.
 
@@ -316,7 +510,7 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
-            `apprentice_labels`, `age` and `hourly_pay`.
+            `apprentice_labels`, `age_imputed` and `hourly_pay`.
 
     Returns:
         pl.LazyFrame: The input rows with `nlw_hourly_rate` and
@@ -345,7 +539,7 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
     apprentice_label = pl.col(f"{AWKClean.apprentice}_{DLC.label}s")
     is_apprentice = (apprentice_label == APPRENTICE.label_cls.yes).fill_null(False)
-    age = pl.col(AWKClean.age)
+    age = pl.col(HackCols.age_imputed)
     # Highest band start at or below age; null age gets the oldest band.
     age_band_start = pl.coalesce(
         *[pl.when(age >= start).then(start) for start in BAND_STARTS],
