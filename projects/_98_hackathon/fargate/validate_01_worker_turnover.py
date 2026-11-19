@@ -47,6 +47,7 @@ SOURCE_COLUMNS = [
     HackCols.hourly_pay,
     HackCols.nlw_hourly_rate,
     HackCols.hourly_pay_minus_nlw,
+    HackCols.hourly_pay_diff_to_la_median,
     HackCols.nationality_group,
     HackCols.country_of_birth_group,
     *NUMERIC_COLUMNS,
@@ -190,6 +191,11 @@ def main(
             .is_not_null()
             .eq(hourly_pay.is_not_null()),
             brief="hourly_pay_minus_nlw is populated exactly when hourly_pay is populated",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.hourly_pay_diff_to_la_median).is_null()
+            | hourly_pay.is_not_null(),
+            brief="hourly_pay_diff_to_la_median is only populated when hourly_pay is populated",
         )
     )
 

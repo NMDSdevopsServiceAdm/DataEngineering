@@ -18,6 +18,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_split_column")
+    @patch(f"{PATCH_PATH}.wUtils.add_hourly_pay_diff_to_la_median")
     @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
@@ -52,6 +53,7 @@ class TestMain:
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
         impute_worker_columns_mock: Mock,
+        add_hourly_pay_diff_to_la_median_mock: Mock,
         add_split_column_mock: Mock,
         collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -187,8 +189,11 @@ class TestMain:
         add_nlw_and_pay_difference_mock.assert_called_once_with(
             impute_worker_columns_mock.return_value
         )
-        add_split_column_mock.assert_called_once_with(
+        add_hourly_pay_diff_to_la_median_mock.assert_called_once_with(
             add_nlw_and_pay_difference_mock.return_value
+        )
+        add_split_column_mock.assert_called_once_with(
+            add_hourly_pay_diff_to_la_median_mock.return_value
         )
         filter_mock = add_split_column_mock.return_value.filter
         assert filter_mock.call_count == len(splits)

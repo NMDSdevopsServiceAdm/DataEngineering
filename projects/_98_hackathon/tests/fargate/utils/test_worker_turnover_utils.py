@@ -18,6 +18,9 @@ from projects._98_hackathon.unittest_data.polars_hackathon_test_file_schemas imp
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import NotKnownWorkerCodes
 
@@ -524,6 +527,94 @@ class TestAddRawWorkerColumns:
         returned_df = job.add_raw_worker_columns(flagged_lf, raw_lf).collect()
 
         assert returned_df.height == 2
+
+
+class TestAddHourlyPayDiffToLaMedian:
+    import_date = date(2021, 1, 5)
+
+    def worker_lf(self, *rows: tuple) -> pl.LazyFrame:
+        """Rows of import date, current cssr, job role, hourly pay."""
+        return pl.LazyFrame(
+            list(rows),
+            schema={
+                AWKClean.ascwds_worker_import_date: pl.Date,
+                CQCLClean.current_cssr: pl.Categorical,
+                AWKClean.main_job_role_clean_labelled: pl.Categorical,
+                HackCols.hourly_pay: pl.Float32,
+            },
+            orient="row",
+        )
+
+    def test_subtracts_median_of_import_date_cssr_and_role_group(self):
+        input_lf = self.worker_lf(
+            (self.import_date, "Leeds", "care_worker", 10.0),
+            (self.import_date, "Leeds", "care_worker", 12.0),
+            (self.import_date, "Leeds", "care_worker", 20.0),
+        )
+
+        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+
+        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
+            -2.0,
+            0.0,
+            8.0,
+        ]
+
+    def test_medians_are_separate_per_cssr_role_and_import_date(self):
+        input_lf = self.worker_lf(
+            (self.import_date, "Leeds", "care_worker", 10.0),
+            (self.import_date, "York", "care_worker", 14.0),
+            (self.import_date, "Leeds", "senior_care_worker", 16.0),
+            (date(2021, 2, 5), "Leeds", "care_worker", 18.0),
+        )
+
+        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+
+        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
+
+    def test_median_ignores_null_hourly_pay_and_diff_is_null_for_null_pay(self):
+        input_lf = self.worker_lf(
+            (self.import_date, "Leeds", "care_worker", 10.0),
+            (self.import_date, "Leeds", "care_worker", None),
+            (self.import_date, "Leeds", "care_worker", 14.0),
+        )
+
+        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+
+        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [
+            -2.0,
+            None,
+            2.0,
+        ]
+
+    @pytest.mark.parametrize(
+        "cssr, role",
+        [
+            pytest.param(None, "care_worker", id="null_cssr"),
+            pytest.param("Leeds", None, id="null_role"),
+        ],
+    )
+    def test_returns_null_diff_when_cssr_or_role_is_null(self, cssr, role):
+        input_lf = self.worker_lf((self.import_date, cssr, role, 10.0))
+
+        returned_df = job.add_hourly_pay_diff_to_la_median(input_lf).collect()
+
+        assert returned_df[HackCols.hourly_pay_diff_to_la_median].to_list() == [None]
+
+    def test_returns_float32_diff_column_after_input_columns(self):
+        input_lf = self.worker_lf((self.import_date, "Leeds", "care_worker", 10.0))
+
+        returned_schema = job.add_hourly_pay_diff_to_la_median(
+            input_lf
+        ).collect_schema()
+
+        assert returned_schema.names()[-1] == HackCols.hourly_pay_diff_to_la_median
+        assert returned_schema[HackCols.hourly_pay_diff_to_la_median] == pl.Float32
 
 
 class TestNullNotKnownCodes:

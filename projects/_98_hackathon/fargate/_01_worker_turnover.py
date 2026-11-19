@@ -105,6 +105,7 @@ def main(
     ).drop(wUtils.WORKER_CATEGORICAL_COLUMNS)
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
+    filtered_lf = wUtils.add_hourly_pay_diff_to_la_median(filtered_lf)
 
     filtered_lf = wUtils.add_split_column(filtered_lf)
 
