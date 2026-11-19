@@ -14,6 +14,9 @@ from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
@@ -39,6 +42,7 @@ def build_source_df() -> pl.DataFrame:
             AWKClean.ascwds_worker_import_date: [date(2023, 1, 1), date(2024, 1, 1)],
             AWKClean.employment_status_clean_labelled: [EmpStat.permanent] * 2,
             AWKClean.main_job_role_clean_labelled: ["Care worker"] * 2,
+            AWPClean.organisation_id: ["1-ORG"] * 2,
             HackCols.main_service_type: [PrimaryServiceType.non_residential] * 2,
             HackCols.split: ["train"] * 2,
             HackCols.is_leaver: [False, None],
@@ -69,6 +73,7 @@ def build_source_df() -> pl.DataFrame:
             AWKClean.ascwds_worker_import_date: pl.Date,
             AWKClean.employment_status_clean_labelled: CatColType.EmploymentStatusCatType,
             AWKClean.main_job_role_clean_labelled: pl.Categorical,
+            AWPClean.organisation_id: pl.Categorical,
             HackCols.main_service_type: CatColType.PrimaryServiceEnumType,
             HackCols.split: pl.Categorical,
             HackCols.is_leaver: pl.Boolean,

@@ -103,6 +103,7 @@ class TestMain:
                     job.AWPClean.establishment_id,
                     job.AWPClean.ascwds_workplace_import_date,
                     job.AWPClean.main_service_id_clean,
+                    job.AWPClean.organisation_id,
                     job.AWPClean.postcode,
                     job.AWPClean.location_id,
                     job.AWPClean.establishment_name,

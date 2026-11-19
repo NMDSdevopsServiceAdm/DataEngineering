@@ -34,7 +34,7 @@ def main(
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
         cleaned_ascwds_workplace_source (str): path to the cleaned ASC-WDS
-            workplace data, used for main service and postcode
+            workplace data, used for main service, postcode and organisation ID
         raw_ascwds_worker_source (str): path to the raw ASC-WDS worker data
         ons_postcode_directory_source (str): path to the cleaned ONS postcode
             directory, used with the workplace postcode for CSSR and region
@@ -55,6 +55,7 @@ def main(
             AWPClean.establishment_id,
             AWPClean.ascwds_workplace_import_date,
             AWPClean.main_service_id_clean,
+            AWPClean.organisation_id,
             AWPClean.postcode,
             AWPClean.location_id,
             AWPClean.establishment_name,

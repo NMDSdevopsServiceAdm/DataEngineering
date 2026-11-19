@@ -39,6 +39,7 @@ from utils.column_values.ascwds_labelled_vocab import (
     LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
     SOCIAL_CARE_QUAL_HELD,
     SOURCE_OF_RECRUITMENT,
+    TRAIN_FLAG,
     ZERO_HOURS,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
@@ -66,6 +67,7 @@ WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.apprentice,
     AWKClean.zero_hours,
     AWKClean.source_of_recruitment,
+    AWKClean.training_flag,
 ]
 
 # Nationality and country of birth get a group column instead of a label column.
@@ -81,6 +83,7 @@ LABEL_VOCABULARIES = {
     AWKClean.apprentice: APPRENTICE,
     AWKClean.zero_hours: ZERO_HOURS,
     AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT,
+    AWKClean.training_flag: TRAIN_FLAG,
 }
 LABELLED_COLUMNS = list(LABEL_VOCABULARIES)
 LABEL_COLUMNS = [f"{column}_{DLC.label}s" for column in LABELLED_COLUMNS]
@@ -142,6 +145,7 @@ IMPUTE_COLUMNS = [
     f"{AWKClean.social_care_qual_held}_labels",
     f"{AWKClean.level_social_care_qualification_held}_labels",
     f"{AWKClean.care_certificate_status}_labels",
+    f"{AWKClean.training_flag}_labels",
 ]
 
 
@@ -209,8 +213,8 @@ def add_geography_from_postcode(
 
     Args:
         workplace_lf (pl.LazyFrame): Cleaned ASC-WDS workplace data with
-            establishment ID, import date, main service ID, postcode, location ID,
-            name and address.
+            establishment ID, import date, main service ID, organisation ID,
+            postcode, location ID, name and address.
         worker_lf (pl.LazyFrame): Worker data with establishment ID and
             `ascwds_worker_import_date`.
         ons_lf (pl.LazyFrame): Cleaned ONS postcode directory with the columns
@@ -220,8 +224,8 @@ def add_geography_from_postcode(
 
     Returns:
         pl.LazyFrame: Establishment ID, import date, main service ID,
-            `current_cssr` and `current_region` (`Categorical`) for the matched
-            workplace rows.
+            organisation ID, `current_cssr` and `current_region` (`Categorical`)
+            for the matched workplace rows.
     """
     keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
 
@@ -231,6 +235,7 @@ def add_geography_from_postcode(
             CQCLClean.cqc_location_import_date
         ),
         AWPClean.main_service_id_clean,
+        AWPClean.organisation_id,
         pl.col(AWPClean.postcode).alias(CQCLClean.postal_code),
         pl.col(AWPClean.location_id).alias(CQCLClean.location_id),
         pl.col(AWPClean.establishment_name).alias(CQCLClean.name),
@@ -252,6 +257,7 @@ def add_geography_from_postcode(
             AWPClean.ascwds_workplace_import_date
         ),
         AWPClean.main_service_id_clean,
+        AWPClean.organisation_id,
         pl.col([ONSClean.current_cssr, ONSClean.current_region]).cast(pl.Categorical),
     )
 

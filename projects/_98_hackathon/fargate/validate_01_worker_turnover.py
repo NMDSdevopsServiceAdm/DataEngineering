@@ -15,12 +15,16 @@ from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
     NationalityGroupLabels,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
+from utils.column_values.ascwds_labelled_vocab import TrainingFlagLabels
 from utils.column_values.categorical_column_values import (
     CurrentCSSR,
     PrimaryServiceType,
@@ -46,6 +50,7 @@ SOURCE_COLUMNS = [
     *KEY_COLUMNS,
     AWKClean.employment_status_clean_labelled,
     AWKClean.main_job_role_clean_labelled,
+    AWPClean.organisation_id,
     HackCols.main_service_type,
     HackCols.split,
     HackCols.is_leaver,
@@ -120,6 +125,7 @@ def main(
     hourly_pay = pl.col(HackCols.hourly_pay)
     current_cssr_values = CurrentCSSR(ONSClean.current_cssr).categorical_values
     current_region_values = Region(ONSClean.current_region).categorical_values
+    training_flag_labels = f"{AWKClean.training_flag}_labels"
 
     validation = (
         pb.Validate(
@@ -135,6 +141,9 @@ def main(
             brief=f"Expects {expected_row_count} rows",
         )
         .col_vals_not_null(KEY_COLUMNS, brief="key columns have no nulls")
+        .col_vals_not_null(
+            AWPClean.organisation_id, brief="organisation_id has no nulls"
+        )
         .rows_distinct(
             KEY_COLUMNS,
             brief="establishment, worker and import date are unique",
@@ -251,13 +260,17 @@ def main(
         HackCols.country_of_birth_group: CountryOfBirthGroupLabels(
             HackCols.country_of_birth_group, contains_null_values=True
         ),
+        training_flag_labels: TrainingFlagLabels(
+            training_flag_labels, contains_null_values=False
+        ),
     }
 
-    # One pair of steps per column so a report names the column.
+    # One set of steps per column so a report names the column.
     for column, labels in expected_labels.items():
         validation = validation.col_vals_in_set(
             column, [*labels.categorical_values, None]
-        ).specially(
+        )
+        validation = validation.specially(
             vl.is_unique_count_equal(column, labels.count_of_categorical_values),
             brief=f"{column} needs to be one of {labels.categorical_values} or null",
         )
