@@ -132,6 +132,9 @@ class CategoricalColumnTypes:
     OnsSubIcbCatType = pl.Categorical(
         pl.Categories("ons_sub_icb", namespace="filled_posts")
     )
+    OrganisationIdCatType = pl.Categorical(
+        pl.Categories("organisation_id", namespace="filled_posts")
+    )
     ParentPermissionCatType = pl.Categorical(
         pl.Categories("parent_permission", namespace="filled_posts")
     )
