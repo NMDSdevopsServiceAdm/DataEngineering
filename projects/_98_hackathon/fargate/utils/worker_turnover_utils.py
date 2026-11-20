@@ -571,7 +571,7 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def add_valid_pay_difference_flag(
+def add_hourly_pay_minus_nlw_clean(
     worker_lf: pl.LazyFrame,
     upper_percentile: float = 0.99,
 ) -> pl.LazyFrame:

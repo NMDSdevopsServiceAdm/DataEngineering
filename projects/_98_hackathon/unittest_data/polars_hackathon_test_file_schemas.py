@@ -138,7 +138,7 @@ class WorkerTurnoverSchemas:
         ]
     )
 
-    valid_pay_difference_schema = pl.Schema(
+    hourly_pay_minus_nlw_clean_schema = pl.Schema(
         [
             (AWKClean.ascwds_worker_import_date, pl.Date()),
             (AWKClean.main_job_role_clean_labelled, pl.Categorical()),

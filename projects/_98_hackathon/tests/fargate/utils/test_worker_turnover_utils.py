@@ -350,21 +350,21 @@ class TestAddNlwAndPayDifference:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestAddValidPayDifferenceFlag:
+class TestAddHourlyPayMinusNlwClean:
     @pytest.mark.parametrize(
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.add_valid_pay_difference_flag_cases
+            for case in Data.add_hourly_pay_minus_nlw_clean_cases
         ],
     )
     def test_returns_expected_rows(self, case):
         expected_lf = pl.LazyFrame(
-            case.expected_rows, schema=Schemas.valid_pay_difference_schema, orient="row"
+            case.expected_rows, schema=Schemas.hourly_pay_minus_nlw_clean_schema, orient="row"
         )
         input_lf = expected_lf.drop(HackCols.hourly_pay_minus_nlw_clean)
 
-        returned_lf = job.add_valid_pay_difference_flag(input_lf, case.upper_percentile)
+        returned_lf = job.add_hourly_pay_minus_nlw_clean(input_lf, case.upper_percentile)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 

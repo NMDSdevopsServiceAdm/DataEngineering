@@ -86,7 +86,7 @@ class AddNlwAndPayDifferenceCase:
 
 
 @dataclass
-class AddValidPayDifferenceFlagCase:
+class AddHourlyPayMinusNlwCleanCase:
     id: str
     expected_rows: list[tuple[Any, ...]]
     upper_percentile: float = 1.0
@@ -1118,33 +1118,33 @@ class WorkerTurnoverData:
     # Rows: (import_date, main_job_role_labels, hourly_pay_minus_nlw,
     # hourly_pay_minus_nlw_clean); the input is these rows without the last column.
     # The percentile is the largest difference unless a case sets `upper_percentile`.
-    add_valid_pay_difference_flag_cases = [
-        AddValidPayDifferenceFlagCase(
+    add_hourly_pay_minus_nlw_clean_cases = [
+        AddHourlyPayMinusNlwCleanCase(
             id="true_when_difference_is_zero",
             expected_rows=[(date(2025, 6, 1), "Care worker", 0.0, True)],
         ),
-        AddValidPayDifferenceFlagCase(
+        AddHourlyPayMinusNlwCleanCase(
             id="true_when_difference_is_positive_below_percentile",
             expected_rows=[
                 (date(2025, 6, 1), "Care worker", 1.0, True),
                 (date(2025, 6, 1), "Care worker", 2.0, True),
             ],
         ),
-        AddValidPayDifferenceFlagCase(
+        AddHourlyPayMinusNlwCleanCase(
             id="false_when_difference_is_negative",
             expected_rows=[
                 (date(2025, 6, 1), "Care worker", -1.0, False),
                 (date(2025, 6, 1), "Care worker", 1.0, True),
             ],
         ),
-        AddValidPayDifferenceFlagCase(
+        AddHourlyPayMinusNlwCleanCase(
             id="null_when_difference_is_null",
             expected_rows=[
                 (date(2025, 6, 1), "Care worker", None, None),
                 (date(2025, 6, 1), "Care worker", 1.0, True),
             ],
         ),
-        AddValidPayDifferenceFlagCase(
+        AddHourlyPayMinusNlwCleanCase(
             id="false_when_difference_above_role_percentile",
             upper_percentile=0.5,
             expected_rows=[
@@ -1153,7 +1153,7 @@ class WorkerTurnoverData:
                 (date(2025, 6, 1), "Care worker", 3.0, False),
             ],
         ),
-        AddValidPayDifferenceFlagCase(
+        AddHourlyPayMinusNlwCleanCase(
             id="true_when_difference_equals_role_percentile",
             upper_percentile=0.5,
             expected_rows=[
@@ -1162,7 +1162,7 @@ class WorkerTurnoverData:
                 (date(2025, 6, 1), "Care worker", 5.0, False),
             ],
         ),
-        AddValidPayDifferenceFlagCase(
+        AddHourlyPayMinusNlwCleanCase(
             id="percentile_calculated_separately_per_import_date",
             upper_percentile=0.5,
             expected_rows=[
@@ -1174,7 +1174,7 @@ class WorkerTurnoverData:
                 (date(2025, 6, 1), "Care worker", 30.0, False),
             ],
         ),
-        AddValidPayDifferenceFlagCase(
+        AddHourlyPayMinusNlwCleanCase(
             id="percentile_calculated_separately_per_job_role",
             upper_percentile=0.5,
             expected_rows=[
@@ -1186,7 +1186,7 @@ class WorkerTurnoverData:
                 (date(2025, 6, 1), "Registered nurse", 30.0, False),
             ],
         ),
-        AddValidPayDifferenceFlagCase(
+        AddHourlyPayMinusNlwCleanCase(
             id="null_differences_excluded_from_percentile",
             upper_percentile=0.5,
             expected_rows=[
@@ -1197,7 +1197,7 @@ class WorkerTurnoverData:
                 (date(2025, 6, 1), "Care worker", 3.0, False),
             ],
         ),
-        AddValidPayDifferenceFlagCase(
+        AddHourlyPayMinusNlwCleanCase(
             id="negative_differences_excluded_from_percentile",
             upper_percentile=0.5,
             expected_rows=[

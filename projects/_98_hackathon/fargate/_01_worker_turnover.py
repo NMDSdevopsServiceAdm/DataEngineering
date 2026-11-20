@@ -140,7 +140,7 @@ def main(
     filtered_lf = wUtils.clean_age(filtered_lf)
     filtered_lf = wUtils.impute_age(filtered_lf)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
-    filtered_lf = wUtils.add_valid_pay_difference_flag(filtered_lf)
+    filtered_lf = wUtils.add_hourly_pay_minus_nlw_clean(filtered_lf)
 
     filtered_lf = wUtils.add_split_column(filtered_lf)
 
