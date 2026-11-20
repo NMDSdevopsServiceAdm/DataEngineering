@@ -360,11 +360,15 @@ class TestAddHourlyPayMinusNlwClean:
     )
     def test_returns_expected_rows(self, case):
         expected_lf = pl.LazyFrame(
-            case.expected_rows, schema=Schemas.hourly_pay_minus_nlw_clean_schema, orient="row"
+            case.expected_rows,
+            schema=Schemas.hourly_pay_minus_nlw_clean_schema,
+            orient="row",
         )
         input_lf = expected_lf.drop(HackCols.hourly_pay_minus_nlw_clean)
 
-        returned_lf = job.add_hourly_pay_minus_nlw_clean(input_lf, case.upper_percentile)
+        returned_lf = job.add_hourly_pay_minus_nlw_clean(
+            input_lf, case.upper_percentile
+        )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
