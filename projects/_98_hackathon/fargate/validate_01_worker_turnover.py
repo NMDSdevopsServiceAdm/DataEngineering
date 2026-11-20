@@ -62,7 +62,7 @@ SOURCE_COLUMNS = [
     HackCols.hourly_pay,
     HackCols.nlw_hourly_rate,
     HackCols.hourly_pay_minus_nlw,
-    HackCols.valid_hourly_pay_minus_nlw,
+    HackCols.hourly_pay_minus_nlw_clean,
     HackCols.age_imputed,
     HackCols.age_source,
     HackCols.nationality_group,
@@ -127,7 +127,7 @@ def main(
     turnover_rate = pl.col(HackCols.turnover_rate)
     hourly_pay = pl.col(HackCols.hourly_pay)
     pay_difference = pl.col(HackCols.hourly_pay_minus_nlw)
-    pay_difference_valid = pl.col(HackCols.valid_hourly_pay_minus_nlw)
+    pay_difference_valid = pl.col(HackCols.hourly_pay_minus_nlw_clean)
     current_cssr_values = CurrentCSSR(ONSClean.current_cssr).categorical_values
     current_region_values = Region(ONSClean.current_region).categorical_values
     training_flag_labels = f"{AWKClean.training_flag}_labels"
@@ -237,11 +237,11 @@ def main(
         )
         .col_vals_expr(
             expr=pay_difference_valid.is_null().eq(pay_difference.is_null()),
-            brief="valid_hourly_pay_minus_nlw is null exactly when hourly_pay_minus_nlw is null",
+            brief="hourly_pay_minus_nlw_clean is null exactly when hourly_pay_minus_nlw is null",
         )
         .col_vals_expr(
             expr=((pay_difference < 0) & pay_difference_valid).fill_null(False).not_(),
-            brief="valid_hourly_pay_minus_nlw is false whenever hourly_pay_minus_nlw is negative",
+            brief="hourly_pay_minus_nlw_clean is false whenever hourly_pay_minus_nlw is negative",
         )
         .col_vals_in_set(
             HackCols.age_source,

@@ -574,14 +574,12 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 def add_valid_pay_difference_flag(
     worker_lf: pl.LazyFrame,
     upper_percentile: float = 0.99,
-    min_group_size: int = 100,
 ) -> pl.LazyFrame:
-    """Adds `valid_hourly_pay_minus_nlw`, flagging implausible pay differences.
+    """Adds `hourly_pay_minus_nlw_clean`, flagging implausible pay differences.
 
     True from 0 up to the percentile, false when negative or above it, null when
     null. The percentile is `upper_percentile` of the non-negative differences per
-    import year and job role. A group under `min_group_size`, or with a null job
-    role, uses the import year's percentile. Keeps every row.
+    import date and job role. Keeps every row.
 
     `.over()` is not covered by the streaming engine, so it runs in memory.
 
@@ -592,32 +590,24 @@ def add_valid_pay_difference_flag(
         worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
             `mainjrid_clean_labels` and `hourly_pay_minus_nlw`.
         upper_percentile (float): Quantile above which a difference is an outlier.
-        min_group_size (int): Smallest group that uses its own percentile.
 
     Returns:
-        pl.LazyFrame: The input rows with `valid_hourly_pay_minus_nlw` added.
+        pl.LazyFrame: The input rows with `hourly_pay_minus_nlw_clean` added.
     """
     difference = pl.col(HackCols.hourly_pay_minus_nlw)
-    import_year = pl.col(AWKClean.ascwds_worker_import_date).dt.year()
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
     job_role = pl.col(AWKClean.main_job_role_clean_labelled)
     # Negative differences become null so they do not set the percentile.
-    non_negative_difference = pl.when(difference >= 0).then(difference)
-    year_percentile = non_negative_difference.quantile(upper_percentile).over(
-        import_year
-    )
-    group_percentile = non_negative_difference.quantile(upper_percentile).over(
-        import_year, job_role
-    )
-    group_size = non_negative_difference.count().over(import_year, job_role)
     percentile = (
-        pl.when(job_role.is_not_null() & (group_size >= min_group_size))
-        .then(group_percentile)
-        .otherwise(year_percentile)
+        pl.when(difference >= 0)
+        .then(difference)
+        .quantile(upper_percentile)
+        .over(import_date, job_role)
     )
 
     return worker_lf.with_columns(
         ((difference >= 0) & (difference <= percentile)).alias(
-            HackCols.valid_hourly_pay_minus_nlw
+            HackCols.hourly_pay_minus_nlw_clean
         )
     )
 

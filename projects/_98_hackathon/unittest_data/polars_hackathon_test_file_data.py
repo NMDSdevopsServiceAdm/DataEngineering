@@ -90,7 +90,6 @@ class AddValidPayDifferenceFlagCase:
     id: str
     expected_rows: list[tuple[Any, ...]]
     upper_percentile: float = 1.0
-    min_group_size: int = 1
 
 
 @dataclass
@@ -1117,7 +1116,7 @@ class WorkerTurnoverData:
     ]
 
     # Rows: (import_date, main_job_role_labels, hourly_pay_minus_nlw,
-    # valid_hourly_pay_minus_nlw); the input is these rows without the last column.
+    # hourly_pay_minus_nlw_clean); the input is these rows without the last column.
     # The percentile is the largest difference unless a case sets `upper_percentile`.
     add_valid_pay_difference_flag_cases = [
         AddValidPayDifferenceFlagCase(
@@ -1146,7 +1145,7 @@ class WorkerTurnoverData:
             ],
         ),
         AddValidPayDifferenceFlagCase(
-            id="false_when_difference_above_year_role_percentile",
+            id="false_when_difference_above_role_percentile",
             upper_percentile=0.5,
             expected_rows=[
                 (date(2025, 6, 1), "Care worker", 1.0, True),
@@ -1155,7 +1154,7 @@ class WorkerTurnoverData:
             ],
         ),
         AddValidPayDifferenceFlagCase(
-            id="true_when_difference_equals_year_role_percentile",
+            id="true_when_difference_equals_role_percentile",
             upper_percentile=0.5,
             expected_rows=[
                 (date(2025, 6, 1), "Care worker", 2.0, True),
@@ -1164,7 +1163,7 @@ class WorkerTurnoverData:
             ],
         ),
         AddValidPayDifferenceFlagCase(
-            id="percentile_calculated_separately_per_import_year",
+            id="percentile_calculated_separately_per_import_date",
             upper_percentile=0.5,
             expected_rows=[
                 (date(2024, 6, 1), "Care worker", 1.0, True),
@@ -1208,44 +1207,6 @@ class WorkerTurnoverData:
                 (date(2025, 6, 1), "Care worker", 1.0, True),
                 (date(2025, 6, 1), "Care worker", 2.0, True),
                 (date(2025, 6, 1), "Care worker", 3.0, False),
-            ],
-        ),
-        # The year-wide percentile here is 3.0, the median of 1, 2, 3, 10 and 20.
-        AddValidPayDifferenceFlagCase(
-            id="group_below_min_size_uses_year_wide_percentile",
-            upper_percentile=0.5,
-            min_group_size=3,
-            expected_rows=[
-                (date(2025, 6, 1), "Care worker", 1.0, True),
-                (date(2025, 6, 1), "Care worker", 2.0, True),
-                (date(2025, 6, 1), "Care worker", 3.0, False),
-                (date(2025, 6, 1), "Software developer", 10.0, False),
-                (date(2025, 6, 1), "Software developer", 20.0, False),
-            ],
-        ),
-        AddValidPayDifferenceFlagCase(
-            id="group_at_min_size_uses_own_percentile",
-            upper_percentile=0.5,
-            min_group_size=3,
-            expected_rows=[
-                (date(2025, 6, 1), "Care worker", 1.0, True),
-                (date(2025, 6, 1), "Care worker", 2.0, True),
-                (date(2025, 6, 1), "Care worker", 3.0, False),
-                (date(2025, 6, 1), "Registered nurse", 10.0, True),
-                (date(2025, 6, 1), "Registered nurse", 20.0, True),
-                (date(2025, 6, 1), "Registered nurse", 30.0, False),
-            ],
-        ),
-        # The year-wide percentile here is 3.0, the median of 1, 2, 3, 10 and 20.
-        AddValidPayDifferenceFlagCase(
-            id="null_job_role_uses_year_wide_percentile",
-            upper_percentile=0.5,
-            expected_rows=[
-                (date(2025, 6, 1), "Care worker", 1.0, True),
-                (date(2025, 6, 1), "Care worker", 2.0, True),
-                (date(2025, 6, 1), "Care worker", 3.0, False),
-                (date(2025, 6, 1), None, 10.0, False),
-                (date(2025, 6, 1), None, 20.0, False),
             ],
         ),
     ]
