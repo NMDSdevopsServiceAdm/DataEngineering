@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
+import pytest
+
 from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
     WORKER_CATEGORICAL_COLUMNS,
     WORKER_NUMERIC_COLUMNS,
@@ -10,6 +12,7 @@ from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import MainServiceID
@@ -78,6 +81,12 @@ class ImputeWorkerColumnsCase:
 
 @dataclass
 class AddNlwAndPayDifferenceCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class CleanAgeCase:
     id: str
     expected_rows: list[tuple[Any, ...]]
 
@@ -1096,5 +1105,224 @@ class WorkerTurnoverData:
         AddNlwAndPayDifferenceCase(
             id="null_hourly_pay_gives_null_difference",
             expected_rows=[(date(2025, 6, 1), "No", 30.0, None, 12.21, None)],
+        ),
+    ]
+
+    # Rows: (worker_id, establishment_id, import_date, age, age_imputed,
+    # age_source); the input is these rows without the last two columns.
+    impute_age_observed_rows = [
+        ("1", "A", date(2025, 1, 1), 30.0, 30.0, AgeSource.observed),
+    ]
+    impute_age_no_age_rows = [
+        ("1", "A", date(2025, 1, 1), None, None, None),
+        ("1", "A", date(2025, 2, 1), None, None, None),
+    ]
+    # Assumed birth month is June (first observed age).
+    impute_age_steps_up_rows = [
+        ("1", "A", date(2024, 6, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 7, 1), None, 30.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 5, 1), None, 30.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 6, 1), None, 31.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2026, 6, 1), None, 32.0, AgeSource.assumed_birth_month),
+    ]
+    impute_age_steps_down_rows = [
+        ("1", "A", date(2015, 5, 1), None, 24.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2015, 6, 1), None, 25.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2024, 6, 1), None, 34.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 5, 1), None, 34.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 6, 1), 35.0, 35.0, AgeSource.observed),
+    ]
+    # 30 in January then 31 in February: the birthday month is February.
+    impute_age_pinned_rows = [
+        ("1", "A", date(2023, 12, 1), None, 30.0, AgeSource.pinned_birth_month),
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 2, 1), 31.0, 31.0, AgeSource.observed),
+        ("1", "A", date(2025, 1, 1), None, 31.0, AgeSource.pinned_birth_month),
+        ("1", "A", date(2025, 2, 1), None, 32.0, AgeSource.pinned_birth_month),
+    ]
+    # 30 in January, 31 in March with no adjacent-month change: assumed January.
+    impute_age_gapped_change_cases = [
+        pytest.param(
+            [
+                (
+                    "1",
+                    "A",
+                    date(2023, 12, 1),
+                    None,
+                    29.0,
+                    AgeSource.assumed_birth_month,
+                ),
+                ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+                ("1", "A", date(2024, 3, 1), 31.0, 31.0, AgeSource.observed),
+            ],
+            id="month_between_missing",
+        ),
+        pytest.param(
+            [
+                (
+                    "1",
+                    "A",
+                    date(2023, 12, 1),
+                    None,
+                    29.0,
+                    AgeSource.assumed_birth_month,
+                ),
+                ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+                ("1", "A", date(2024, 2, 1), None, 30.0, AgeSource.assumed_birth_month),
+                ("1", "A", date(2024, 3, 1), 31.0, 31.0, AgeSource.observed),
+            ],
+            id="month_between_null",
+        ),
+    ]
+    # Second observed age is 30 + change; only +1 would pin February.
+    impute_age_not_pinned_cases = [
+        pytest.param(
+            [
+                (
+                    "1",
+                    "A",
+                    date(2023, 12, 1),
+                    None,
+                    29.0,
+                    AgeSource.assumed_birth_month,
+                ),
+                ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+                (
+                    "1",
+                    "A",
+                    date(2024, 2, 1),
+                    30.0 + change,
+                    30.0 + change,
+                    AgeSource.observed,
+                ),
+            ],
+            id=f"change_{change:+.0f}",
+        )
+        for change in [-1, 2, 0]
+    ]
+    # Pins on February (30 to 31) and again on March (31 to 32).
+    impute_age_several_pins_rows = [
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 2, 1), 31.0, 31.0, AgeSource.observed),
+        ("1", "A", date(2024, 3, 1), 32.0, 32.0, AgeSource.observed),
+        ("1", "A", date(2025, 2, 1), None, 32.0, AgeSource.pinned_birth_month),
+    ]
+    # The observed 35 in June disagrees with the January birth month.
+    impute_age_disagreeing_rows = [
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 6, 1), 35.0, 35.0, AgeSource.observed),
+        ("1", "A", date(2025, 1, 1), None, 31.0, AgeSource.assumed_birth_month),
+    ]
+    impute_age_independent_rows = [
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2025, 1, 1), None, 31.0, AgeSource.assumed_birth_month),
+        ("1", "B", date(2024, 6, 1), 50.0, 50.0, AgeSource.observed),
+        ("1", "B", date(2023, 12, 1), None, 49.0, AgeSource.assumed_birth_month),
+        ("2", "A", date(2024, 1, 1), None, None, None),
+    ]
+
+    # Rows: (worker_id, establishment_id, import_date, age, age_clean); the input
+    # is these rows without the last column. Ages of 80 or more are nulled. Then
+    # ages implying a birth year 3 or more years from the worker's median (import
+    # year minus age) are nulled, unless half or more of the worker's ages are.
+    clean_age_cases = [
+        CleanAgeCase(
+            id="keeps_age_below_cap_and_nulls_age_at_cap",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 79.0, 79.0),
+                ("1", "A", date(2023, 2, 1), 80.0, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_ages_at_or_above_cap_when_they_are_the_workers_only_ages",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 95.0, None),
+                ("1", "A", date(2023, 2, 1), 96.0, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="applies_cap_before_median_rule",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 100.0, None),
+                ("1", "A", date(2023, 2, 1), 100.0, None),
+                ("1", "A", date(2023, 3, 1), 100.0, None),
+                ("1", "A", date(2023, 4, 1), 63.0, 63.0),
+                ("1", "A", date(2023, 5, 1), 63.0, 63.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_age_far_from_the_workers_other_ages",
+            expected_rows=[
+                ("1", "A", date(2022, 6, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 6, 1), 31.0, 31.0),
+                ("1", "A", date(2024, 1, 1), 75.0, None),
+                ("1", "A", date(2024, 6, 1), 32.0, 32.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_minority_group_of_far_ages",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 62.0, None),
+                ("1", "A", date(2023, 2, 1), 62.0, None),
+                ("1", "A", date(2023, 3, 1), 63.0, None),
+                ("1", "A", date(2023, 4, 1), 20.0, 20.0),
+                ("1", "A", date(2023, 5, 1), 20.0, 20.0),
+                ("1", "A", date(2023, 6, 1), 20.0, 20.0),
+                ("1", "A", date(2023, 7, 1), 21.0, 21.0),
+                ("1", "A", date(2023, 8, 1), 21.0, 21.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_age_two_years_from_median",
+            expected_rows=[
+                ("1", "A", date(2022, 1, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 1, 1), 31.0, 31.0),
+                ("1", "A", date(2024, 1, 1), 32.0, 32.0),
+                ("1", "A", date(2025, 1, 1), 31.0, 31.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_age_three_years_from_median",
+            expected_rows=[
+                ("1", "A", date(2022, 1, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 1, 1), 31.0, 31.0),
+                ("1", "A", date(2024, 1, 1), 32.0, 32.0),
+                ("1", "A", date(2025, 1, 1), 30.0, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_both_ages_when_there_are_two_that_disagree",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 70.0, 70.0),
+                ("1", "A", date(2023, 2, 1), 30.0, 30.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_all_ages_when_half_disagree_with_the_other_half",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 70.0, 70.0),
+                ("1", "A", date(2023, 2, 1), 70.0, 70.0),
+                ("1", "A", date(2023, 3, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 4, 1), 30.0, 30.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_null_ages_and_ignores_them_in_the_majority_count",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 2, 1), 75.0, 75.0),
+                ("1", "A", date(2023, 3, 1), None, None),
+                ("1", "A", date(2023, 4, 1), None, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="does_not_mix_workers_or_establishments",
+            expected_rows=[
+                ("1", "A", date(2022, 6, 1), 30.0, 30.0),
+                ("1", "A", date(2024, 1, 1), 75.0, None),
+                ("1", "A", date(2024, 6, 1), 32.0, 32.0),
+                ("1", "B", date(2024, 1, 1), 75.0, 75.0),
+                ("2", "A", date(2024, 1, 1), 75.0, 75.0),
+            ],
         ),
     ]
