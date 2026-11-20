@@ -575,9 +575,9 @@ def add_hourly_pay_minus_nlw_clean(
     worker_lf: pl.LazyFrame,
     upper_percentile: float = 0.99,
 ) -> pl.LazyFrame:
-    """Adds `hourly_pay_minus_nlw_clean`, flagging implausible pay differences.
+    """Adds `hourly_pay_minus_nlw_clean`, nulling implausible pay differences.
 
-    True from 0 up to the percentile, false when negative or above it, null when
+    The difference from 0 up to the percentile, null when negative, above it or
     null. The percentile is `upper_percentile` of the non-negative differences per
     import date and job role. Keeps every row.
 
@@ -606,9 +606,9 @@ def add_hourly_pay_minus_nlw_clean(
     )
 
     return worker_lf.with_columns(
-        ((difference >= 0) & (difference <= percentile)).alias(
-            HackCols.hourly_pay_minus_nlw_clean
-        )
+        pl.when((difference >= 0) & (difference <= percentile))
+        .then(difference)
+        .alias(HackCols.hourly_pay_minus_nlw_clean)
     )
 
 

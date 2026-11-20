@@ -127,7 +127,7 @@ def main(
     turnover_rate = pl.col(HackCols.turnover_rate)
     hourly_pay = pl.col(HackCols.hourly_pay)
     pay_difference = pl.col(HackCols.hourly_pay_minus_nlw)
-    pay_difference_valid = pl.col(HackCols.hourly_pay_minus_nlw_clean)
+    pay_difference_clean = pl.col(HackCols.hourly_pay_minus_nlw_clean)
     current_cssr_values = CurrentCSSR(ONSClean.current_cssr).categorical_values
     current_region_values = Region(ONSClean.current_region).categorical_values
     training_flag_labels = f"{AWKClean.training_flag}_labels"
@@ -236,12 +236,23 @@ def main(
             brief="hourly_pay_minus_nlw is populated exactly when hourly_pay is populated",
         )
         .col_vals_expr(
-            expr=pay_difference_valid.is_null().eq(pay_difference.is_null()),
-            brief="hourly_pay_minus_nlw_clean is null exactly when hourly_pay_minus_nlw is null",
+            expr=(pay_difference.is_null() & pay_difference_clean.is_not_null()).not_(),
+            brief="hourly_pay_minus_nlw_clean is null whenever hourly_pay_minus_nlw is null",
+        )
+        .col_vals_ge(
+            HackCols.hourly_pay_minus_nlw_clean,
+            0,
+            na_pass=True,
+            brief="hourly_pay_minus_nlw_clean is never negative",
         )
         .col_vals_expr(
-            expr=((pay_difference < 0) & pay_difference_valid).fill_null(False).not_(),
-            brief="hourly_pay_minus_nlw_clean is false whenever hourly_pay_minus_nlw is negative",
+            expr=(
+                pay_difference_clean.is_not_null()
+                & pay_difference_clean.ne(pay_difference)
+            )
+            .fill_null(False)
+            .not_(),
+            brief="hourly_pay_minus_nlw_clean equals hourly_pay_minus_nlw when populated",
         )
         .col_vals_in_set(
             HackCols.age_source,

@@ -1117,73 +1117,74 @@ class WorkerTurnoverData:
 
     # Rows: (import_date, main_job_role_labels, hourly_pay_minus_nlw,
     # hourly_pay_minus_nlw_clean); the input is these rows without the last column.
+    # The clean value is the difference when valid, otherwise null.
     # The percentile is the largest difference unless a case sets `upper_percentile`.
     add_hourly_pay_minus_nlw_clean_cases = [
         AddHourlyPayMinusNlwCleanCase(
-            id="true_when_difference_is_zero",
-            expected_rows=[(date(2025, 6, 1), "Care worker", 0.0, True)],
+            id="keeps_difference_when_zero",
+            expected_rows=[(date(2025, 6, 1), "Care worker", 0.0, 0.0)],
         ),
         AddHourlyPayMinusNlwCleanCase(
-            id="true_when_difference_is_positive_below_percentile",
+            id="keeps_difference_when_positive_below_percentile",
             expected_rows=[
-                (date(2025, 6, 1), "Care worker", 1.0, True),
-                (date(2025, 6, 1), "Care worker", 2.0, True),
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
             ],
         ),
         AddHourlyPayMinusNlwCleanCase(
-            id="false_when_difference_is_negative",
+            id="null_when_difference_is_negative",
             expected_rows=[
-                (date(2025, 6, 1), "Care worker", -1.0, False),
-                (date(2025, 6, 1), "Care worker", 1.0, True),
+                (date(2025, 6, 1), "Care worker", -1.0, None),
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
             ],
         ),
         AddHourlyPayMinusNlwCleanCase(
             id="null_when_difference_is_null",
             expected_rows=[
                 (date(2025, 6, 1), "Care worker", None, None),
-                (date(2025, 6, 1), "Care worker", 1.0, True),
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
             ],
         ),
         AddHourlyPayMinusNlwCleanCase(
-            id="false_when_difference_above_role_percentile",
+            id="null_when_difference_above_role_percentile",
             upper_percentile=0.5,
             expected_rows=[
-                (date(2025, 6, 1), "Care worker", 1.0, True),
-                (date(2025, 6, 1), "Care worker", 2.0, True),
-                (date(2025, 6, 1), "Care worker", 3.0, False),
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 3.0, None),
             ],
         ),
         AddHourlyPayMinusNlwCleanCase(
-            id="true_when_difference_equals_role_percentile",
+            id="keeps_difference_when_equal_to_role_percentile",
             upper_percentile=0.5,
             expected_rows=[
-                (date(2025, 6, 1), "Care worker", 2.0, True),
-                (date(2025, 6, 1), "Care worker", 2.0, True),
-                (date(2025, 6, 1), "Care worker", 5.0, False),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 5.0, None),
             ],
         ),
         AddHourlyPayMinusNlwCleanCase(
             id="percentile_calculated_separately_per_import_date",
             upper_percentile=0.5,
             expected_rows=[
-                (date(2024, 6, 1), "Care worker", 1.0, True),
-                (date(2024, 6, 1), "Care worker", 2.0, True),
-                (date(2024, 6, 1), "Care worker", 3.0, False),
-                (date(2025, 6, 1), "Care worker", 10.0, True),
-                (date(2025, 6, 1), "Care worker", 20.0, True),
-                (date(2025, 6, 1), "Care worker", 30.0, False),
+                (date(2024, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2024, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2024, 6, 1), "Care worker", 3.0, None),
+                (date(2025, 6, 1), "Care worker", 10.0, 10.0),
+                (date(2025, 6, 1), "Care worker", 20.0, 20.0),
+                (date(2025, 6, 1), "Care worker", 30.0, None),
             ],
         ),
         AddHourlyPayMinusNlwCleanCase(
             id="percentile_calculated_separately_per_job_role",
             upper_percentile=0.5,
             expected_rows=[
-                (date(2025, 6, 1), "Care worker", 1.0, True),
-                (date(2025, 6, 1), "Care worker", 2.0, True),
-                (date(2025, 6, 1), "Care worker", 3.0, False),
-                (date(2025, 6, 1), "Registered nurse", 10.0, True),
-                (date(2025, 6, 1), "Registered nurse", 20.0, True),
-                (date(2025, 6, 1), "Registered nurse", 30.0, False),
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 3.0, None),
+                (date(2025, 6, 1), "Registered nurse", 10.0, 10.0),
+                (date(2025, 6, 1), "Registered nurse", 20.0, 20.0),
+                (date(2025, 6, 1), "Registered nurse", 30.0, None),
             ],
         ),
         AddHourlyPayMinusNlwCleanCase(
@@ -1192,21 +1193,21 @@ class WorkerTurnoverData:
             expected_rows=[
                 (date(2025, 6, 1), "Care worker", None, None),
                 (date(2025, 6, 1), "Care worker", None, None),
-                (date(2025, 6, 1), "Care worker", 1.0, True),
-                (date(2025, 6, 1), "Care worker", 2.0, True),
-                (date(2025, 6, 1), "Care worker", 3.0, False),
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 3.0, None),
             ],
         ),
         AddHourlyPayMinusNlwCleanCase(
             id="negative_differences_excluded_from_percentile",
             upper_percentile=0.5,
             expected_rows=[
-                (date(2025, 6, 1), "Care worker", -10.0, False),
-                (date(2025, 6, 1), "Care worker", -10.0, False),
-                (date(2025, 6, 1), "Care worker", -10.0, False),
-                (date(2025, 6, 1), "Care worker", 1.0, True),
-                (date(2025, 6, 1), "Care worker", 2.0, True),
-                (date(2025, 6, 1), "Care worker", 3.0, False),
+                (date(2025, 6, 1), "Care worker", -10.0, None),
+                (date(2025, 6, 1), "Care worker", -10.0, None),
+                (date(2025, 6, 1), "Care worker", -10.0, None),
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 3.0, None),
             ],
         ),
     ]

@@ -143,7 +143,7 @@ class WorkerTurnoverSchemas:
             (AWKClean.ascwds_worker_import_date, pl.Date()),
             (AWKClean.main_job_role_clean_labelled, pl.Categorical()),
             (HackCols.hourly_pay_minus_nlw, pl.Float32()),
-            (HackCols.hourly_pay_minus_nlw_clean, pl.Boolean()),
+            (HackCols.hourly_pay_minus_nlw_clean, pl.Float32()),
         ]
     )
 

@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 - Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, with each split written separately and the train and test splits validated.
 - Added a validation job for the Hackathon Worker Turnover output.
 - Added the National Living Wage rate at each snapshot, and hourly pay minus it, to the Hackathon Worker Turnover job.
-- Added a `hourly_pay_minus_nlw_clean` flag to the Hackathon Worker Turnover job, false for pay below the National Living Wage or above the 99th percentile for its import date and job role.
+- Added `hourly_pay_minus_nlw_clean` to the Hackathon Worker Turnover job, the pay difference from the National Living Wage with negative values and values above the 99th percentile for its import date and job role set to null.
 - Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
 - Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, replacing the raw hourly rate, salary, contracted hours and average hours columns.
 - Added previous run April and short-term cumulative percentage changes, and their differences from the current run, to the Monthly Tracker assessment.
