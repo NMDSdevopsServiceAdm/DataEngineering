@@ -25,7 +25,9 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
+    @patch(f"{PATCH_PATH}.wUtils.add_hourly_pay_minus_nlw_clean")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
+    @patch(f"{PATCH_PATH}.cUtils.keep_value_if_changed_expr")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
@@ -54,7 +56,9 @@ class TestMain:
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
         combine_pay_and_hours_mock: Mock,
+        keep_value_if_changed_expr_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
+        add_hourly_pay_minus_nlw_clean_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
         impute_worker_columns_mock: Mock,
@@ -202,8 +206,31 @@ class TestMain:
         combine_pay_and_hours_mock.assert_called_once_with(
             null_not_known_codes_mock.return_value.with_columns.return_value
         )
+        timeline_kwargs = {
+            "partition_by_columns": [
+                job.AWKClean.worker_id,
+                job.AWKClean.establishment_id,
+            ],
+            "import_date_column": job.AWKClean.ascwds_worker_import_date,
+        }
+        assert keep_value_if_changed_expr_mock.call_args_list == [
+            call(
+                job.HackCols.hourly_pay,
+                change_date_column=job.AWKClean.pay_change_date,
+                **timeline_kwargs,
+            ),
+            call(
+                job.AWKClean.days_sick,
+                change_date_column=job.AWKClean.days_sick_change_date,
+                **timeline_kwargs,
+            ),
+        ]
+        combine_pay_and_hours_mock.return_value.with_columns.assert_called_once_with(
+            keep_value_if_changed_expr_mock.return_value,
+            keep_value_if_changed_expr_mock.return_value,
+        )
         add_worker_labels_mock.assert_called_once_with(
-            combine_pay_and_hours_mock.return_value
+            combine_pay_and_hours_mock.return_value.with_columns.return_value
         )
         assert add_country_code_group_mock.call_args_list == [
             call(add_worker_labels_mock.return_value, job.AWKClean.nationality),
@@ -224,8 +251,11 @@ class TestMain:
         add_nlw_and_pay_difference_mock.assert_called_once_with(
             impute_age_mock.return_value
         )
-        add_split_column_mock.assert_called_once_with(
+        add_hourly_pay_minus_nlw_clean_mock.assert_called_once_with(
             add_nlw_and_pay_difference_mock.return_value
+        )
+        add_split_column_mock.assert_called_once_with(
+            add_hourly_pay_minus_nlw_clean_mock.return_value
         )
         filter_mock = add_split_column_mock.return_value.filter
         assert filter_mock.call_count == len(splits)
@@ -241,6 +271,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
+    @patch(f"{PATCH_PATH}.wUtils.add_hourly_pay_minus_nlw_clean")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
@@ -271,6 +302,7 @@ class TestMain:
         null_not_known_codes_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
+        add_hourly_pay_minus_nlw_clean_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
         collect_all_mock: Mock,

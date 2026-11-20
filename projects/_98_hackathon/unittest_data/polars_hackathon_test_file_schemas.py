@@ -138,6 +138,15 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    hourly_pay_minus_nlw_clean_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.main_job_role_clean_labelled, pl.Categorical()),
+            (HackCols.hourly_pay_minus_nlw, pl.Float32()),
+            (HackCols.hourly_pay_minus_nlw_clean, pl.Float32()),
+        ]
+    )
+
     latest_save_date_input_schema = pl.Schema(
         [
             (AWKClean.establishment_id, CatColType.EstablishmentCatType),
