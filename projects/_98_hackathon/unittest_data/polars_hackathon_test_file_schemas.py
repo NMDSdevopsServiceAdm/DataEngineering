@@ -51,6 +51,7 @@ class WorkerTurnoverSchemas:
         f"{AWKClean.social_care_qual_held}_labels",
         f"{AWKClean.level_social_care_qualification_held}_labels",
         f"{AWKClean.care_certificate_status}_labels",
+        f"{AWKClean.training_flag}_labels",
     ]
 
     is_leaver_input_schema = pl.Schema(
@@ -98,11 +99,32 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    clean_age_schema = pl.Schema(
+        [
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.establishment_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.age, pl.Float32()),
+            (HackCols.age_clean, pl.Float32()),
+        ]
+    )
+
+    impute_age_schema = pl.Schema(
+        [
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.establishment_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.age_clean, pl.Float32()),
+            (HackCols.age_imputed, pl.Float32()),
+            (HackCols.age_source, pl.Categorical()),
+        ]
+    )
+
     nlw_input_schema = pl.Schema(
         [
             (AWKClean.ascwds_worker_import_date, pl.Date()),
             (f"{AWKClean.apprentice}_{DLC.label}s", pl.Categorical()),
-            (AWKClean.age, pl.Float32()),
+            (HackCols.age_imputed, pl.Float32()),
             (HackCols.hourly_pay, pl.Float32()),
         ]
     )
