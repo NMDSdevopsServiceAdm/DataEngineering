@@ -30,7 +30,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
-    @patch(f"{PATCH_PATH}.wUtils.start_date_is_plausible")
+    @patch(f"{PATCH_PATH}.wUtils.clean_start_date")
     @patch(f"{PATCH_PATH}.wUtils.fix_start_date_typos")
     @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
@@ -53,7 +53,7 @@ class TestMain:
         add_raw_worker_columns_mock: Mock,
         add_geography_from_postcode_mock: Mock,
         fix_start_date_typos_mock: Mock,
-        start_date_is_plausible_mock: Mock,
+        clean_start_date_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
@@ -88,7 +88,7 @@ class TestMain:
         sink_mocks = [Mock() for _ in splits]
         sink_to_parquet_mock.side_effect = sink_mocks
         plausible_after_typos_lf, plausible_after_imputation_lf = Mock(), Mock()
-        start_date_is_plausible_mock.side_effect = [
+        clean_start_date_mock.side_effect = [
             plausible_after_typos_lf,
             plausible_after_imputation_lf,
         ]
@@ -233,7 +233,7 @@ class TestMain:
         )
         clean_age_mock.assert_called_once_with(impute_worker_columns_mock.return_value)
         impute_age_mock.assert_called_once_with(clean_age_mock.return_value)
-        assert start_date_is_plausible_mock.call_args_list == [
+        assert clean_start_date_mock.call_args_list == [
             call(fix_start_date_typos_mock.return_value),
             call(impute_age_mock.return_value),
         ]
@@ -262,7 +262,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
-    @patch(f"{PATCH_PATH}.wUtils.start_date_is_plausible")
+    @patch(f"{PATCH_PATH}.wUtils.clean_start_date")
     @patch(f"{PATCH_PATH}.wUtils.fix_start_date_typos")
     @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
@@ -285,7 +285,7 @@ class TestMain:
         add_raw_worker_columns_mock: Mock,
         add_geography_from_postcode_mock: Mock,
         fix_start_date_typos_mock: Mock,
-        start_date_is_plausible_mock: Mock,
+        clean_start_date_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
@@ -321,7 +321,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
-    @patch(f"{PATCH_PATH}.wUtils.start_date_is_plausible")
+    @patch(f"{PATCH_PATH}.wUtils.clean_start_date")
     @patch(f"{PATCH_PATH}.wUtils.fix_start_date_typos")
     @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
@@ -344,7 +344,7 @@ class TestMain:
         add_raw_worker_columns_mock: Mock,
         add_geography_from_postcode_mock: Mock,
         fix_start_date_typos_mock: Mock,
-        start_date_is_plausible_mock: Mock,
+        clean_start_date_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         combine_pay_and_hours_mock: Mock,
@@ -366,5 +366,5 @@ class TestMain:
         )
 
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
-            start_date_is_plausible_mock.return_value, 5
+            clean_start_date_mock.return_value, 5
         )

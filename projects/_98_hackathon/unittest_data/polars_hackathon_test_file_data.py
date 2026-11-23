@@ -189,7 +189,7 @@ class FixStartDateTyposCase:
 
 
 @dataclass
-class StartDateIsPlausibleCase:
+class CleanStartDateCase:
     id: str
     input_rows: list[tuple[Any, ...]]
     expected_rows: list[tuple[Any, ...]]
@@ -429,56 +429,56 @@ class WorkerTurnoverData:
     ]
 
     # Rows: (import_date, start_date, age).
-    start_date_is_plausible_cases = [
-        StartDateIsPlausibleCase(
+    clean_start_date_cases = [
+        CleanStartDateCase(
             id="keeps_null_start_date_null",
             input_rows=[(date(2024, 6, 1), None, 30.0)],
             expected_rows=[(date(2024, 6, 1), None, 30.0)],
         ),
         # Age 36 at import and exactly 20 years since start is a start age of 16.
-        StartDateIsPlausibleCase(
+        CleanStartDateCase(
             id="keeps_start_date_when_start_age_is_exactly_16",
             input_rows=[(date(2024, 6, 1), date(2004, 6, 1), 36.0)],
             expected_rows=[(date(2024, 6, 1), date(2004, 6, 1), 36.0)],
         ),
-        StartDateIsPlausibleCase(
+        CleanStartDateCase(
             id="nulls_start_date_when_start_age_is_just_under_16",
             input_rows=[(date(2024, 6, 1), date(2004, 5, 31), 36.0)],
             expected_rows=[(date(2024, 6, 1), None, 36.0)],
         ),
         # About 40.5 years since start for a worker aged 40: the date of birth.
-        StartDateIsPlausibleCase(
+        CleanStartDateCase(
             id="nulls_start_date_when_it_is_date_of_birth",
             input_rows=[(date(2024, 6, 1), date(1983, 12, 1), 40.0)],
             expected_rows=[(date(2024, 6, 1), None, 40.0)],
         ),
-        StartDateIsPlausibleCase(
+        CleanStartDateCase(
             id="nulls_start_date_when_it_is_before_birth",
             input_rows=[(date(2024, 6, 1), date(1960, 1, 1), 30.0)],
             expected_rows=[(date(2024, 6, 1), None, 30.0)],
         ),
-        StartDateIsPlausibleCase(
+        CleanStartDateCase(
             id="nulls_start_date_when_it_is_after_import_date",
             input_rows=[(date(2024, 6, 1), date(2024, 7, 1), 30.0)],
             expected_rows=[(date(2024, 6, 1), None, 30.0)],
         ),
         # Negative ages are not-known codes. Read as an age, -1 would fail the rule.
-        StartDateIsPlausibleCase(
+        CleanStartDateCase(
             id="treats_negative_age_code_as_unknown",
             input_rows=[(date(2024, 6, 1), date(2015, 4, 1), -1.0)],
             expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), -1.0)],
         ),
-        StartDateIsPlausibleCase(
+        CleanStartDateCase(
             id="keeps_start_date_when_age_unknown_and_tenure_under_70_years",
             input_rows=[(date(2024, 6, 1), date(1960, 1, 1), None)],
             expected_rows=[(date(2024, 6, 1), date(1960, 1, 1), None)],
         ),
-        StartDateIsPlausibleCase(
+        CleanStartDateCase(
             id="keeps_start_date_when_age_unknown_and_tenure_exactly_70_years",
             input_rows=[(date(2024, 6, 1), date(1954, 6, 1), None)],
             expected_rows=[(date(2024, 6, 1), date(1954, 6, 1), None)],
         ),
-        StartDateIsPlausibleCase(
+        CleanStartDateCase(
             id="nulls_start_date_when_age_unknown_and_tenure_over_70_years",
             input_rows=[(date(2024, 6, 1), date(1954, 5, 31), None)],
             expected_rows=[(date(2024, 6, 1), None, None)],

@@ -116,7 +116,7 @@ def main(
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
     filtered_lf = wUtils.fix_start_date_typos(filtered_lf)
-    filtered_lf = wUtils.start_date_is_plausible(filtered_lf)
+    filtered_lf = wUtils.clean_start_date(filtered_lf)
     filtered_lf = wUtils.add_headcount_reconciliation_gap(filtered_lf, max_gap)
     filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf).drop(
         HackCols.establishment_in_both_snapshots,
@@ -140,7 +140,7 @@ def main(
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
     filtered_lf = wUtils.clean_age(filtered_lf)
     filtered_lf = wUtils.impute_age(filtered_lf)
-    filtered_lf = wUtils.start_date_is_plausible(filtered_lf)
+    filtered_lf = wUtils.clean_start_date(filtered_lf)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
 
     filtered_lf = wUtils.add_split_column(filtered_lf)

@@ -215,7 +215,7 @@ class WorkerTurnoverSchemas:
         ]
     )
 
-    start_date_is_plausible_schema = pl.Schema(
+    clean_start_date_schema = pl.Schema(
         [
             (AWKClean.ascwds_worker_import_date, pl.Date()),
             (AWKClean.start_date, pl.Date()),

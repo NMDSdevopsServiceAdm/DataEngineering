@@ -631,22 +631,22 @@ class TestFixStartDateTypos:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestStartDateIsPlausible:
+class TestCleanStartDate:
     @pytest.mark.parametrize(
         "case",
-        [pytest.param(case, id=case.id) for case in Data.start_date_is_plausible_cases],
+        [pytest.param(case, id=case.id) for case in Data.clean_start_date_cases],
     )
     def test_returns_expected_rows(self, case):
         input_lf = pl.LazyFrame(
-            case.input_rows, schema=Schemas.start_date_is_plausible_schema, orient="row"
+            case.input_rows, schema=Schemas.clean_start_date_schema, orient="row"
         )
         expected_lf = pl.LazyFrame(
             case.expected_rows,
-            schema=Schemas.start_date_is_plausible_schema,
+            schema=Schemas.clean_start_date_schema,
             orient="row",
         )
 
-        returned_lf = job.start_date_is_plausible(input_lf)
+        returned_lf = job.clean_start_date(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
