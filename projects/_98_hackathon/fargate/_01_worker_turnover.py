@@ -1,5 +1,6 @@
 import polars as pl
 
+import polars_utils.cleaning_utils as cUtils
 import projects._98_hackathon.fargate.utils.validation_utils as vUtils
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
@@ -136,6 +137,20 @@ def main(
         pl.col(wUtils.WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical)
     )
     filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
+    filtered_lf = filtered_lf.with_columns(
+        cUtils.keep_value_if_changed_expr(
+            HackCols.hourly_pay,
+            change_date_column=AWKClean.pay_change_date,
+            partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
+            import_date_column=AWKClean.ascwds_worker_import_date,
+        ),
+        cUtils.keep_value_if_changed_expr(
+            AWKClean.days_sick,
+            change_date_column=AWKClean.days_sick_change_date,
+            partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
+            import_date_column=AWKClean.ascwds_worker_import_date,
+        ),
+    )
     filtered_lf = wUtils.add_worker_labels(filtered_lf)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
     filtered_lf = wUtils.add_country_code_group(
@@ -144,7 +159,10 @@ def main(
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
     filtered_lf = wUtils.clean_age(filtered_lf)
     filtered_lf = wUtils.impute_age(filtered_lf)
+    filtered_lf = wUtils.add_years_in_role_and_sector(filtered_lf, save_dates_lf)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
+    filtered_lf = wUtils.add_hourly_pay_minus_nlw_clean(filtered_lf)
+    filtered_lf = wUtils.add_hourly_pay_diff_to_cssr_median(filtered_lf)
 
     filtered_lf = wUtils.add_split_column(filtered_lf)
 

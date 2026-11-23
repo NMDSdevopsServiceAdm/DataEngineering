@@ -53,6 +53,8 @@ class WorkerTurnoverSchemas:
         f"{AWKClean.level_social_care_qualification_held}_labels",
         f"{AWKClean.care_certificate_status}_labels",
         f"{AWKClean.training_flag}_labels",
+        HackCols.ethnicity_group_labels,
+        HackCols.scerec_wo_group_labels,
     ]
 
     is_leaver_input_schema = pl.Schema(
@@ -135,6 +137,15 @@ class WorkerTurnoverSchemas:
             *nlw_input_schema.items(),
             (HackCols.nlw_hourly_rate, pl.Float32()),
             (HackCols.hourly_pay_minus_nlw, pl.Float32()),
+        ]
+    )
+
+    hourly_pay_minus_nlw_clean_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.main_job_role_clean_labelled, pl.Categorical()),
+            (HackCols.hourly_pay_minus_nlw, pl.Float32()),
+            (HackCols.hourly_pay_minus_nlw_clean, pl.Float32()),
         ]
     )
 
