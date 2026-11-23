@@ -154,6 +154,7 @@ def main(
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
     filtered_lf = wUtils.clean_age(filtered_lf)
     filtered_lf = wUtils.impute_age(filtered_lf)
+    filtered_lf = wUtils.add_years_in_role_and_sector(filtered_lf, save_dates_lf)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
     filtered_lf = wUtils.add_hourly_pay_minus_nlw_clean(filtered_lf)
     filtered_lf = wUtils.add_hourly_pay_diff_to_cssr_median(filtered_lf)
