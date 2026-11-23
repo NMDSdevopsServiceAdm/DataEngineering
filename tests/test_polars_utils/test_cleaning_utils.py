@@ -252,6 +252,118 @@ class TestRemoveRepeatedValuesOverTime:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
+class TestKeepValueIfChangedExpr:
+    SCHEMA = {
+        "worker_id": pl.String,
+        "import_date": pl.Date,
+        "change_date": pl.Date,
+        "value": pl.Int64,
+    }
+
+    @staticmethod
+    def keep_value_if_changed(rows, schema, partition_by_columns="worker_id"):
+        return (
+            pl.LazyFrame(rows, schema, orient="row")
+            .select(
+                job.keep_value_if_changed_expr(
+                    "value",
+                    change_date_column="change_date",
+                    partition_by_columns=partition_by_columns,
+                    import_date_column="import_date",
+                )
+            )
+            .collect()["value"]
+            .to_list()
+        )
+
+    @pytest.mark.parametrize(
+        "rows, expected_values",
+        [
+            pytest.param(
+                [
+                    ("w1", date(2023, 1, 1), date(2022, 6, 15), 10),
+                    ("w1", date(2023, 2, 1), date(2023, 1, 10), 11),
+                ],
+                [None, 11],
+                id="keeps_new_change",
+            ),
+            pytest.param(
+                [
+                    ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+                    ("w1", date(2023, 2, 1), date(2022, 12, 20), 10),
+                ],
+                [10, None],
+                id="nulls_unchanged_change_date",
+            ),
+            pytest.param(
+                [
+                    ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+                    ("w1", date(2023, 2, 1), date(2023, 2, 1), 11),
+                ],
+                [10, 11],
+                id="keeps_change_on_import_date",
+            ),
+            pytest.param(
+                [
+                    ("w1", date(2023, 1, 1), date(2023, 1, 1), 10),
+                    ("w1", date(2023, 2, 1), date(2023, 1, 1), 10),
+                ],
+                [10, None],
+                id="nulls_change_on_previous_import_date",
+            ),
+            pytest.param(
+                [
+                    ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+                    ("w1", date(2023, 5, 1), date(2023, 3, 15), 11),
+                ],
+                [10, 11],
+                id="keeps_change_across_gap",
+            ),
+            pytest.param(
+                [("w1", date(2023, 1, 1), date(2022, 12, 1), 10)],
+                [None],
+                id="nulls_first_row_old_change",
+            ),
+            pytest.param(
+                [("w1", date(2023, 1, 1), None, 10)],
+                [None],
+                id="nulls_null_change_date",
+            ),
+            pytest.param(
+                [("w1", date(2023, 1, 1), date(2022, 12, 20), None)],
+                [None],
+                id="keeps_null_value",
+            ),
+            pytest.param(
+                [("w1", date(2023, 1, 1), date(2023, 1, 15), 10)],
+                [None],
+                id="nulls_future_change_date",
+            ),
+            pytest.param(
+                [
+                    ("w1", date(2023, 2, 1), date(2022, 12, 20), 10),
+                    ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+                ],
+                [None, 10],
+                id="sorts_rows_by_import_date",
+            ),
+        ],
+    )
+    def test_returns_expected_values(self, rows, expected_values):
+        assert self.keep_value_if_changed(rows, self.SCHEMA) == expected_values
+
+    def test_compares_import_dates_within_each_partition(self):
+        rows = [
+            ("w1", date(2023, 1, 1), date(2022, 12, 20), 10),
+            ("w1", date(2023, 3, 1), date(2023, 2, 10), 11),
+            ("w2", date(2023, 2, 1), date(2023, 1, 20), 20),
+        ]
+
+        returned_values = self.keep_value_if_changed(rows, self.SCHEMA, ["worker_id"])
+
+        assert returned_values == [10, 11, 20]
+
+
 class ColumnToDateTests(unittest.TestCase):
     def test_converts_date_string_without_hyphens_to_date(self):
         lf = pl.LazyFrame(

@@ -11,6 +11,8 @@ class TestMain:
     CLEANED_WORKER_SOURCE = "some/worker/source"
     CLEANED_WORKPLACE_SOURCE = "some/workplace/source"
     RAW_WORKER_SOURCE = "some/raw/worker/source"
+    ONS_POSTCODE_DIRECTORY_SOURCE = "some/ons/source"
+    MANUAL_POSTCODE_CORRECTIONS_SOURCE = "some/corrections.csv"
     TRAIN_DESTINATION = "some/train"
     HOLDOUT_DESTINATION = "some/holdout"
     TEST_DESTINATION = "some/test"
@@ -18,16 +20,21 @@ class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_split_column")
+    @patch(f"{PATCH_PATH}.wUtils.add_hourly_pay_diff_to_cssr_median")
+    @patch(f"{PATCH_PATH}.wUtils.add_years_in_role_and_sector")
     @patch(f"{PATCH_PATH}.wUtils.impute_age")
     @patch(f"{PATCH_PATH}.wUtils.clean_age")
     @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
+    @patch(f"{PATCH_PATH}.wUtils.add_hourly_pay_minus_nlw_clean")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
+    @patch(f"{PATCH_PATH}.cUtils.keep_value_if_changed_expr")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -46,24 +53,31 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        add_geography_from_postcode_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
         combine_pay_and_hours_mock: Mock,
+        keep_value_if_changed_expr_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
+        add_hourly_pay_minus_nlw_clean_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
         impute_worker_columns_mock: Mock,
         clean_age_mock: Mock,
         impute_age_mock: Mock,
+        add_years_in_role_and_sector_mock: Mock,
+        add_hourly_pay_diff_to_cssr_median_mock: Mock,
         add_split_column_mock: Mock,
         collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        worker_lf_mock, workplace_lf_mock, raw_worker_lf_mock = Mock(), Mock(), Mock()
+        worker_lf_mock, workplace_lf_mock, ons_lf_mock = Mock(), Mock(), Mock()
+        raw_worker_lf_mock = Mock()
         scan_parquet_mock.side_effect = [
             worker_lf_mock,
             workplace_lf_mock,
+            ons_lf_mock,
             raw_worker_lf_mock,
         ]
         splits = ["train", "holdout", "test"]
@@ -82,6 +96,8 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
+            self.ONS_POSTCODE_DIRECTORY_SOURCE,
+            self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -95,6 +111,23 @@ class TestMain:
                     job.AWPClean.establishment_id,
                     job.AWPClean.ascwds_workplace_import_date,
                     job.AWPClean.main_service_id_clean,
+                    job.AWPClean.organisation_id,
+                    job.AWPClean.postcode,
+                    job.AWPClean.location_id,
+                    job.AWPClean.establishment_name,
+                    job.AWPClean.address,
+                ],
+            ),
+            call(
+                self.ONS_POSTCODE_DIRECTORY_SOURCE,
+                selected_columns=[
+                    job.ONSClean.postcode,
+                    job.ONSClean.contemporary_ons_import_date,
+                    job.ONSClean.contemporary_cssr,
+                    job.ONSClean.contemporary_sub_icb,
+                    job.ONSClean.current_cssr,
+                    job.ONSClean.current_sub_icb,
+                    job.ONSClean.current_region,
                 ],
             ),
             call(self.RAW_WORKER_SOURCE, schema=job.wUtils.RAW_WORKER_SCHEMA),
@@ -110,8 +143,14 @@ class TestMain:
             job.AWKClean.employment_status,
             job.AWKClean.employment_status_clean,
         )
-        filtered_lf_mock.join.assert_called_once_with(
+        add_geography_from_postcode_mock.assert_called_once_with(
             workplace_lf_mock,
+            filtered_lf_mock,
+            ons_lf_mock,
+            self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
+        )
+        filtered_lf_mock.join.assert_called_once_with(
+            add_geography_from_postcode_mock.return_value,
             left_on=[
                 job.AWKClean.establishment_id,
                 job.AWKClean.ascwds_worker_import_date,
@@ -171,8 +210,31 @@ class TestMain:
         combine_pay_and_hours_mock.assert_called_once_with(
             null_not_known_codes_mock.return_value.with_columns.return_value
         )
+        timeline_kwargs = {
+            "partition_by_columns": [
+                job.AWKClean.worker_id,
+                job.AWKClean.establishment_id,
+            ],
+            "import_date_column": job.AWKClean.ascwds_worker_import_date,
+        }
+        assert keep_value_if_changed_expr_mock.call_args_list == [
+            call(
+                job.HackCols.hourly_pay,
+                change_date_column=job.AWKClean.pay_change_date,
+                **timeline_kwargs,
+            ),
+            call(
+                job.AWKClean.days_sick,
+                change_date_column=job.AWKClean.days_sick_change_date,
+                **timeline_kwargs,
+            ),
+        ]
+        combine_pay_and_hours_mock.return_value.with_columns.assert_called_once_with(
+            keep_value_if_changed_expr_mock.return_value,
+            keep_value_if_changed_expr_mock.return_value,
+        )
         add_worker_labels_mock.assert_called_once_with(
-            combine_pay_and_hours_mock.return_value
+            combine_pay_and_hours_mock.return_value.with_columns.return_value
         )
         assert add_country_code_group_mock.call_args_list == [
             call(add_worker_labels_mock.return_value, job.AWKClean.nationality),
@@ -190,11 +252,22 @@ class TestMain:
         )
         clean_age_mock.assert_called_once_with(impute_worker_columns_mock.return_value)
         impute_age_mock.assert_called_once_with(clean_age_mock.return_value)
+        add_years_in_role_and_sector_mock.assert_called_once_with(
+            impute_age_mock.return_value,
+            get_latest_save_date_per_establishment_mock.return_value,
+        )
         add_nlw_and_pay_difference_mock.assert_called_once_with(
-            impute_age_mock.return_value
+            add_years_in_role_and_sector_mock.return_value
+        )
+        add_hourly_pay_minus_nlw_clean_mock.assert_called_once_with(
+            add_nlw_and_pay_difference_mock.return_value
+        )
+
+        add_hourly_pay_diff_to_cssr_median_mock.assert_called_once_with(
+            add_hourly_pay_minus_nlw_clean_mock.return_value
         )
         add_split_column_mock.assert_called_once_with(
-            add_nlw_and_pay_difference_mock.return_value
+            add_hourly_pay_diff_to_cssr_median_mock.return_value
         )
         filter_mock = add_split_column_mock.return_value.filter
         assert filter_mock.call_count == len(splits)
@@ -210,11 +283,13 @@ class TestMain:
     @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
+    @patch(f"{PATCH_PATH}.wUtils.add_hourly_pay_minus_nlw_clean")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -233,11 +308,13 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        add_geography_from_postcode_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
+        add_hourly_pay_minus_nlw_clean_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
         collect_all_mock: Mock,
@@ -247,6 +324,8 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
+            self.ONS_POSTCODE_DIRECTORY_SOURCE,
+            self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
@@ -266,6 +345,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
     @patch(f"{PATCH_PATH}.wUtils.add_establishment_active_flag")
@@ -284,6 +364,7 @@ class TestMain:
         add_establishment_active_flag_mock: Mock,
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
+        add_geography_from_postcode_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         combine_pay_and_hours_mock: Mock,
@@ -296,6 +377,8 @@ class TestMain:
             self.CLEANED_WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
             self.RAW_WORKER_SOURCE,
+            self.ONS_POSTCODE_DIRECTORY_SOURCE,
+            self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,

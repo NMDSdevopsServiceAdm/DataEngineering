@@ -1,5 +1,6 @@
 import polars as pl
 
+import polars_utils.cleaning_utils as cUtils
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
@@ -8,6 +9,9 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 
@@ -15,6 +19,8 @@ def main(
     cleaned_ascwds_worker_source: str,
     cleaned_ascwds_workplace_source: str,
     raw_ascwds_worker_source: str,
+    ons_postcode_directory_source: str,
+    manual_postcode_corrections_source: str,
     train_destination: str,
     holdout_destination: str,
     test_destination: str,
@@ -29,8 +35,12 @@ def main(
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
         cleaned_ascwds_workplace_source (str): path to the cleaned ASC-WDS
-            workplace data, used for main service
+            workplace data, used for main service, postcode and organisation ID
         raw_ascwds_worker_source (str): path to the raw ASC-WDS worker data
+        ons_postcode_directory_source (str): path to the cleaned ONS postcode
+            directory, used with the workplace postcode for CSSR and region
+        manual_postcode_corrections_source (str): S3 URI of the manual postcode
+            corrections csv
         train_destination (str): destination for the train split
         holdout_destination (str): destination for the holdout split
         test_destination (str): destination for the test split
@@ -46,6 +56,23 @@ def main(
             AWPClean.establishment_id,
             AWPClean.ascwds_workplace_import_date,
             AWPClean.main_service_id_clean,
+            AWPClean.organisation_id,
+            AWPClean.postcode,
+            AWPClean.location_id,
+            AWPClean.establishment_name,
+            AWPClean.address,
+        ],
+    )
+    ons_lf = utils.scan_parquet(
+        ons_postcode_directory_source,
+        selected_columns=[
+            ONSClean.postcode,
+            ONSClean.contemporary_ons_import_date,
+            ONSClean.contemporary_cssr,
+            ONSClean.contemporary_sub_icb,
+            ONSClean.current_cssr,
+            ONSClean.current_sub_icb,
+            ONSClean.current_region,
         ],
     )
 
@@ -55,6 +82,12 @@ def main(
         AWKClean.main_job_role_clean,
         AWKClean.employment_status,
         AWKClean.employment_status_clean,
+    )
+    workplace_lf = wUtils.add_geography_from_postcode(
+        workplace_lf,
+        filtered_lf,
+        ons_lf,
+        manual_postcode_corrections_source,
     )
     filtered_lf = filtered_lf.join(
         workplace_lf,
@@ -83,6 +116,7 @@ def main(
         raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
+
     filtered_lf = wUtils.add_headcount_reconciliation_gap(filtered_lf, max_gap)
     filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf).drop(
         HackCols.establishment_in_both_snapshots,
@@ -98,6 +132,20 @@ def main(
         pl.col(wUtils.WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical)
     )
     filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
+    filtered_lf = filtered_lf.with_columns(
+        cUtils.keep_value_if_changed_expr(
+            HackCols.hourly_pay,
+            change_date_column=AWKClean.pay_change_date,
+            partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
+            import_date_column=AWKClean.ascwds_worker_import_date,
+        ),
+        cUtils.keep_value_if_changed_expr(
+            AWKClean.days_sick,
+            change_date_column=AWKClean.days_sick_change_date,
+            partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
+            import_date_column=AWKClean.ascwds_worker_import_date,
+        ),
+    )
     filtered_lf = wUtils.add_worker_labels(filtered_lf)
     filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
     filtered_lf = wUtils.add_country_code_group(
@@ -106,7 +154,10 @@ def main(
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
     filtered_lf = wUtils.clean_age(filtered_lf)
     filtered_lf = wUtils.impute_age(filtered_lf)
+    filtered_lf = wUtils.add_years_in_role_and_sector(filtered_lf, save_dates_lf)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
+    filtered_lf = wUtils.add_hourly_pay_minus_nlw_clean(filtered_lf)
+    filtered_lf = wUtils.add_hourly_pay_diff_to_cssr_median(filtered_lf)
 
     filtered_lf = wUtils.add_split_column(filtered_lf)
 
@@ -143,6 +194,14 @@ if __name__ == "__main__":
             "Source s3 directory for raw ascwds worker data",
         ),
         (
+            "--ons_postcode_directory_source",
+            "Source s3 directory for cleaned ONS postcode directory data",
+        ),
+        (
+            "--manual_postcode_corrections_source",
+            "S3 URI of the manual postcode corrections csv",
+        ),
+        (
             "--train_destination",
             "Destination s3 directory for the train split",
         ),
@@ -171,6 +230,8 @@ if __name__ == "__main__":
         cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
         cleaned_ascwds_workplace_source=args.cleaned_ascwds_workplace_source,
         raw_ascwds_worker_source=args.raw_ascwds_worker_source,
+        ons_postcode_directory_source=args.ons_postcode_directory_source,
+        manual_postcode_corrections_source=args.manual_postcode_corrections_source,
         train_destination=args.train_destination,
         holdout_destination=args.holdout_destination,
         test_destination=args.test_destination,

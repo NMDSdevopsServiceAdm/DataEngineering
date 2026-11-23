@@ -11,16 +11,29 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
     EthnicityGroupLabels,
-    NationalityGroupLabels,
     SourceOfRecruitmentWithinOutsideAscLabels,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
-from utils.column_values.categorical_column_values import PrimaryServiceType
+from utils.column_values.ascwds_labelled_vocab import (
+    NationalityGroupLabels,
+    TrainingFlagLabels,
+)
+from utils.column_values.categorical_column_values import (
+    CurrentCSSR,
+    PrimaryServiceType,
+    Region,
+)
 from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerCleanedCategoricalValues as CatValues,
 )
@@ -41,6 +54,7 @@ SOURCE_COLUMNS = [
     *KEY_COLUMNS,
     AWKClean.employment_status_clean_labelled,
     AWKClean.main_job_role_clean_labelled,
+    AWPClean.organisation_id,
     HackCols.main_service_type,
     HackCols.split,
     HackCols.is_leaver,
@@ -50,10 +64,17 @@ SOURCE_COLUMNS = [
     HackCols.hourly_pay,
     HackCols.nlw_hourly_rate,
     HackCols.hourly_pay_minus_nlw,
+    HackCols.hourly_pay_minus_nlw_clean,
+    HackCols.hourly_pay_diff_to_cssr_median,
     HackCols.age_imputed,
     HackCols.age_source,
     HackCols.nationality_group,
     HackCols.country_of_birth_group,
+    ONSClean.current_cssr,
+    ONSClean.current_region,
+    HackCols.years_in_role,
+    HackCols.years_in_sector,
+    AWKClean.start_date,
     *NUMERIC_COLUMNS,
     *wUtils.LABEL_COLUMNS,
     *wUtils.GROUP_LABEL_RECODES,
@@ -112,6 +133,11 @@ def main(
     is_leaver = pl.col(HackCols.is_leaver)
     turnover_rate = pl.col(HackCols.turnover_rate)
     hourly_pay = pl.col(HackCols.hourly_pay)
+    pay_difference = pl.col(HackCols.hourly_pay_minus_nlw)
+    pay_difference_clean = pl.col(HackCols.hourly_pay_minus_nlw_clean)
+    current_cssr_values = CurrentCSSR(ONSClean.current_cssr).categorical_values
+    current_region_values = Region(ONSClean.current_region).categorical_values
+    training_flag_labels = f"{AWKClean.training_flag}_labels"
 
     validation = (
         pb.Validate(
@@ -127,6 +153,9 @@ def main(
             brief=f"Expects {expected_row_count} rows",
         )
         .col_vals_not_null(KEY_COLUMNS, brief="key columns have no nulls")
+        .col_vals_not_null(
+            AWPClean.organisation_id, brief="organisation_id has no nulls"
+        )
         .rows_distinct(
             KEY_COLUMNS,
             brief="establishment, worker and import date are unique",
@@ -157,6 +186,16 @@ def main(
             PrimaryServiceType(HackCols.main_service_type).categorical_values,
             brief="main_service_type is a known value",
         )
+        .col_vals_in_set(
+            ONSClean.current_cssr,
+            current_cssr_values,
+            brief="current_cssr is a known value",
+        )
+        .col_vals_in_set(
+            ONSClean.current_region,
+            current_region_values,
+            brief="current_region is a known value",
+        )
         # Numerical checks
         .col_vals_between(
             HackCols.turnover_rate,
@@ -183,6 +222,18 @@ def main(
             na_pass=True,
             brief="age_imputed is null or not negative",
         )
+        .col_vals_ge(
+            HackCols.years_in_role,
+            0,
+            na_pass=True,
+            brief="years_in_role is null or not negative",
+        )
+        .col_vals_ge(
+            HackCols.years_in_sector,
+            0,
+            na_pass=True,
+            brief="years_in_sector is null or not negative",
+        )
         # Cross-column checks
         .col_vals_expr(
             expr=turnover_rate.min()
@@ -202,6 +253,40 @@ def main(
             .is_not_null()
             .eq(hourly_pay.is_not_null()),
             brief="hourly_pay_minus_nlw is populated exactly when hourly_pay is populated",
+        )
+        .col_vals_expr(
+            expr=(pay_difference.is_null() & pay_difference_clean.is_not_null()).not_(),
+            brief="hourly_pay_minus_nlw_clean is null whenever hourly_pay_minus_nlw is null",
+        )
+        .col_vals_ge(
+            HackCols.hourly_pay_minus_nlw_clean,
+            0,
+            na_pass=True,
+            brief="hourly_pay_minus_nlw_clean is never negative",
+        )
+        .col_vals_expr(
+            expr=(
+                pay_difference_clean.is_not_null()
+                & pay_difference_clean.ne(pay_difference)
+            )
+            .fill_null(False)
+            .not_(),
+            brief="hourly_pay_minus_nlw_clean equals hourly_pay_minus_nlw when populated",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.hourly_pay_diff_to_cssr_median).is_null()
+            | hourly_pay.is_not_null(),
+            brief="hourly_pay_diff_to_cssr_median is only populated when hourly_pay is populated",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.years_in_role).is_null()
+            | pl.col(AWKClean.start_date).is_not_null(),
+            brief="years_in_role is only populated where start_date is populated",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.years_in_sector).is_null()
+            | pl.col(AWKClean.start_in_sector).is_not_null(),
+            brief="years_in_sector is only populated where start_in_sector is populated",
         )
         .col_vals_in_set(
             HackCols.age_source,
@@ -233,6 +318,9 @@ def main(
         HackCols.country_of_birth_group: CountryOfBirthGroupLabels(
             HackCols.country_of_birth_group, contains_null_values=True
         ),
+        training_flag_labels: TrainingFlagLabels(
+            training_flag_labels, contains_null_values=False
+        ),
         HackCols.ethnicity_group_labels: EthnicityGroupLabels(
             HackCols.ethnicity_group_labels, contains_null_values=True
         ),
@@ -241,11 +329,12 @@ def main(
         ),
     }
 
-    # One pair of steps per column so a report names the column.
+    # One set of steps per column so a report names the column.
     for column, labels in expected_labels.items():
         validation = validation.col_vals_in_set(
             column, [*labels.categorical_values, None]
-        ).specially(
+        )
+        validation = validation.specially(
             vl.is_unique_count_equal(column, labels.count_of_categorical_values),
             brief=f"{column} needs to be one of {labels.categorical_values} or null",
         )

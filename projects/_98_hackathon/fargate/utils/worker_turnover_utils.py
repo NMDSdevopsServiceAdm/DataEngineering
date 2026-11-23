@@ -9,6 +9,7 @@ from polars_utils.cleaning_utils import (
 )
 from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
+from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
 from projects._98_hackathon.fargate.utils.nlw_rates import (
     BAND_STARTS,
     NLW_RATES,
@@ -20,8 +21,14 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import AgeSource
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     APPRENTICE,
@@ -32,6 +39,7 @@ from utils.column_values.ascwds_labelled_vocab import (
     LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
     SOCIAL_CARE_QUAL_HELD,
     SOURCE_OF_RECRUITMENT,
+    TRAIN_FLAG,
     ZERO_HOURS,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
@@ -63,6 +71,7 @@ WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.apprentice,
     AWKClean.zero_hours,
     AWKClean.source_of_recruitment,
+    AWKClean.training_flag,
 ]
 
 # Nationality and country of birth get a group column instead of a label column.
@@ -78,6 +87,7 @@ LABEL_VOCABULARIES = {
     AWKClean.apprentice: APPRENTICE,
     AWKClean.zero_hours: ZERO_HOURS,
     AWKClean.source_of_recruitment: SOURCE_OF_RECRUITMENT,
+    AWKClean.training_flag: TRAIN_FLAG,
 }
 LABELLED_COLUMNS = list(LABEL_VOCABULARIES)
 LABEL_COLUMNS = [f"{column}_{DLC.label}s" for column in LABELLED_COLUMNS]
@@ -181,7 +191,7 @@ WORKER_DATE_COLUMNS = [
     AWKClean.created_date,
     AWKClean.start_date,
     AWKClean.pay_change_date,
-    AWKClean.pay_save_date,
+    AWKClean.days_sick_change_date,
 ]
 
 # Explicit, because a scan infers columns from the oldest file, which lacks newer ones.
@@ -213,6 +223,7 @@ IMPUTE_COLUMNS = [
     f"{AWKClean.social_care_qual_held}_labels",
     f"{AWKClean.level_social_care_qualification_held}_labels",
     f"{AWKClean.care_certificate_status}_labels",
+    f"{AWKClean.training_flag}_labels",
     HackCols.ethnicity_group_labels,
     HackCols.scerec_wo_group_labels,
 ]
@@ -265,6 +276,70 @@ def add_raw_worker_columns(
     )
 
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
+
+
+def add_geography_from_postcode(
+    workplace_lf: pl.LazyFrame,
+    worker_lf: pl.LazyFrame,
+    ons_lf: pl.LazyFrame,
+    manual_postcode_corrections_source: str,
+) -> pl.LazyFrame:
+    """Matches workplace postcodes to ONS for `current_cssr` and `current_region`.
+
+    Workplace rows are cut to the establishment and import date keys in `worker_lf`
+    before matching, so only needed postcodes are matched. The workplace columns are
+    renamed to the CQC location names `run_postcode_matching` expects, which raises
+    if any postcode is left unmatched.
+
+    Args:
+        workplace_lf (pl.LazyFrame): Cleaned ASC-WDS workplace data with
+            establishment ID, import date, main service ID, organisation ID,
+            postcode, location ID, name and address.
+        worker_lf (pl.LazyFrame): Worker data with establishment ID and
+            `ascwds_worker_import_date`.
+        ons_lf (pl.LazyFrame): Cleaned ONS postcode directory with the columns
+            `run_postcode_matching` needs.
+        manual_postcode_corrections_source (str): S3 URI of the manual postcode
+            corrections csv.
+
+    Returns:
+        pl.LazyFrame: Establishment ID, import date, main service ID,
+            organisation ID, `current_cssr` and `current_region` (`Categorical`)
+            for the matched workplace rows.
+    """
+    keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
+
+    locations_lf = workplace_lf.select(
+        AWPClean.establishment_id,
+        pl.col(AWPClean.ascwds_workplace_import_date).alias(
+            CQCLClean.cqc_location_import_date
+        ),
+        AWPClean.main_service_id_clean,
+        AWPClean.organisation_id,
+        pl.col(AWPClean.postcode).alias(CQCLClean.postal_code),
+        pl.col(AWPClean.location_id).alias(CQCLClean.location_id),
+        pl.col(AWPClean.establishment_name).alias(CQCLClean.name),
+        pl.col(AWPClean.address).alias(CQCLClean.postal_address_line1),
+    ).join(
+        worker_lf.select(keys),
+        left_on=[AWPClean.establishment_id, CQCLClean.cqc_location_import_date],
+        right_on=keys,
+        how="semi",
+    )
+
+    matched_lf = pmUtils.run_postcode_matching(
+        locations_lf, ons_lf, manual_postcode_corrections_source
+    )
+
+    return matched_lf.select(
+        AWPClean.establishment_id,
+        pl.col(CQCLClean.cqc_location_import_date).alias(
+            AWPClean.ascwds_workplace_import_date
+        ),
+        AWPClean.main_service_id_clean,
+        AWPClean.organisation_id,
+        pl.col([ONSClean.current_cssr, ONSClean.current_region]).cast(pl.Categorical),
+    )
 
 
 def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -587,6 +662,126 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         )
     ).drop(
         HackCols.nlw_effective_date, HackCols.nlw_is_apprentice, HackCols.nlw_band_start
+    )
+
+
+def add_hourly_pay_minus_nlw_clean(
+    worker_lf: pl.LazyFrame,
+    upper_percentile: float = 0.99,
+) -> pl.LazyFrame:
+    """Adds `hourly_pay_minus_nlw_clean`, nulling implausible pay differences.
+
+    The difference from 0 up to the percentile, null when negative, above it or
+    null. The percentile is `upper_percentile` of the non-negative differences per
+    import date and job role. Keeps every row.
+
+    `.over()` is not covered by the streaming engine, so it runs in memory.
+
+    This is a simple filter for the hackathon and needs further work before use in
+    the full pipeline.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
+            `mainjrid_clean_labels` and `hourly_pay_minus_nlw`.
+        upper_percentile (float): Quantile above which a difference is an outlier.
+
+    Returns:
+        pl.LazyFrame: The input rows with `hourly_pay_minus_nlw_clean` added.
+    """
+    difference = pl.col(HackCols.hourly_pay_minus_nlw)
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    job_role = pl.col(AWKClean.main_job_role_clean_labelled)
+    # Negative differences become null so they do not set the percentile.
+    percentile = (
+        pl.when(difference >= 0)
+        .then(difference)
+        .quantile(upper_percentile)
+        .over(import_date, job_role)
+    )
+
+    return worker_lf.with_columns(
+        pl.when((difference >= 0) & (difference <= percentile))
+        .then(difference)
+        .alias(HackCols.hourly_pay_minus_nlw_clean)
+    )
+
+
+def add_hourly_pay_diff_to_cssr_median(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `hourly_pay_diff_to_cssr_median`: `hourly_pay` minus the local median.
+
+    The median `hourly_pay` is taken per import date, `current_cssr` and main job
+    role. The difference is null when `hourly_pay`, `current_cssr` or the job role
+    is null. Uses `.over()`, which the streaming engine does not cover, so the sink
+    may fall back to the in-memory engine.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
+            `current_cssr`, `main_job_role_clean_labelled` and `hourly_pay`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `hourly_pay_diff_to_cssr_median`
+            (`Float32`) added.
+    """
+    group_columns = [
+        AWKClean.ascwds_worker_import_date,
+        ONSClean.current_cssr,
+        AWKClean.main_job_role_clean_labelled,
+    ]
+    median_pay = pl.col(HackCols.hourly_pay).median().over(group_columns)
+
+    return worker_lf.with_columns(
+        pl.when(
+            pl.col(ONSClean.current_cssr).is_not_null()
+            & pl.col(AWKClean.main_job_role_clean_labelled).is_not_null()
+        )
+        .then(pl.col(HackCols.hourly_pay) - median_pay)
+        .cast(pl.Float32)
+        .alias(HackCols.hourly_pay_diff_to_cssr_median)
+    )
+
+
+def add_years_in_role_and_sector(
+    worker_lf: pl.LazyFrame, save_dates_lf: pl.LazyFrame
+) -> pl.LazyFrame:
+    """Adds years in role and years in sector at the latest save date.
+
+    - `years_in_role` is the days from `start_date` to the latest save date,
+      divided by 365.25.
+    - `years_in_sector` is the latest save date's year minus `start_in_sector`,
+      which is a year.
+
+    Each is null when its start value or the save date is null, or when the start
+    is after the save date (or its year). The save dates are one small row per
+    establishment and snapshot, so the join adds no rows.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `start_date`, `start_in_sector`
+            and the establishment ID and `ascwds_worker_import_date` keys.
+        save_dates_lf (pl.LazyFrame): Latest save date per establishment and
+            snapshot import date, from `get_latest_save_date_per_establishment`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `years_in_role` and `years_in_sector`
+            (`Float32`) added.
+    """
+    keys = [AWKClean.establishment_id, AWKClean.ascwds_worker_import_date]
+    save_date = pl.col(HackCols.latest_save_date)
+    start_date = pl.col(AWKClean.start_date)
+    start_year = pl.col(AWKClean.start_in_sector)
+
+    return (
+        worker_lf.join(save_dates_lf, on=keys, how="left")
+        .with_columns(
+            pl.when(start_date <= save_date)
+            .then((save_date - start_date).dt.total_days() / 365.25)
+            .cast(pl.Float32)
+            .alias(HackCols.years_in_role),
+            pl.when(start_year <= save_date.dt.year())
+            .then(save_date.dt.year() - start_year)
+            .cast(pl.Float32)
+            .alias(HackCols.years_in_sector),
+        )
+        .drop(HackCols.latest_save_date)
     )
 
 

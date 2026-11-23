@@ -523,6 +523,22 @@ class ZeroHoursLabels(ColumnValues):
 
 
 @dataclass
+class TrainFlagID(ColumnValues):
+    """Codes of the training flag column"""
+
+    no: str = "0"
+    yes: str = "1"
+
+
+@dataclass
+class TrainingFlagLabels(ColumnValues):
+    """Labels of the training flag column"""
+
+    no: str = "No"
+    yes: str = "Yes"
+
+
+@dataclass
 class SourceOfRecruitmentID(ColumnValues):
     """The valid values of the source of recruitment column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
 
@@ -686,6 +702,7 @@ CARE_CERTIFICATE_STATUS = PairedVocab(
 APPRENTICE = PairedVocab(ApprenticeID, ApprenticeLabels)
 ZERO_HOURS = PairedVocab(ZeroHoursID, ZeroHoursLabels)
 SOURCE_OF_RECRUITMENT = PairedVocab(SourceOfRecruitmentID, SourceOfRecruitmentLabels)
+TRAIN_FLAG = PairedVocab(TrainFlagID, TrainingFlagLabels)
 
 ESTABLISHMENT_TYPE_CODE_TO_LABEL: dict[str, str] = {
     "0": EstablishmentType.not_known,
