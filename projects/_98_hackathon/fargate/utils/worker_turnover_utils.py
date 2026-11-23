@@ -59,6 +59,9 @@ DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
 DEFAULT_MAX_HEADCOUNT_GAP = 0
 EARLIEST_IMPORT_DATE = date(2020, 1, 1)
 
+# The answers: written to the test destination, dropped from the student one.
+STUDENT_HIDDEN_COLUMNS = [HackCols.is_leaver, HackCols.turnover_rate]
+
 WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.gender,
     AWKClean.ethnicity,

@@ -63,7 +63,7 @@ def build_source_df() -> pl.DataFrame:
             HackCols.years_in_role: [3.0, 4.0],
             HackCols.years_in_sector: [5.0, 6.0],
             AWKClean.start_date: [date(2020, 1, 1), date(2020, 1, 1)],
-            **{column: [1.0] * 2 for column in job.NUMERIC_COLUMNS},
+            **{column: [1.0] * 2 for column in job.vUtils.NUMERIC_COLUMNS},
             **{
                 label_column: [vocabulary.label_cls(label_column).categorical_values[0]]
                 * 2
@@ -103,7 +103,7 @@ def build_source_df() -> pl.DataFrame:
             HackCols.years_in_role: pl.Float32,
             HackCols.years_in_sector: pl.Float32,
             AWKClean.start_date: pl.Date,
-            **{column: pl.Float32 for column in job.NUMERIC_COLUMNS},
+            **{column: pl.Float32 for column in job.vUtils.NUMERIC_COLUMNS},
             **{column: pl.Categorical for column in wUtils.LABEL_COLUMNS},
             **{column: pl.Categorical for column in wUtils.GROUP_LABEL_RECODES},
         },
@@ -154,7 +154,7 @@ class TestMain:
             source="s3://bucket/my/source/", selected_columns=job.SOURCE_COLUMNS
         )
         mock_scan_parquet.assert_called_once_with(
-            "s3://bucket/my/compare/", selected_columns=job.COMPARE_COLUMNS
+            "s3://bucket/my/compare/", selected_columns=job.vUtils.COMPARE_COLUMNS
         )
         mock_write_reports.assert_called_once()
 
@@ -166,9 +166,9 @@ class TestMain:
             "row_count_match",
             "col_vals_not_null",
             "rows_distinct",
+            "col_vals_between",
             "col_vals_ge",
             "col_vals_gt",
-            "col_vals_between",
             "col_vals_in_set",
             "col_vals_expr",
             "specially",
@@ -208,7 +208,7 @@ class TestMain:
         mock_read_parquet.return_value = build_source_df()
         mock_scan_parquet.return_value = build_compare_lf()
 
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/", "test")
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/", "holdout")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
