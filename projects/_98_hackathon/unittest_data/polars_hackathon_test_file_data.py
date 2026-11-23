@@ -493,20 +493,13 @@ class WorkerTurnoverData:
     # Rows: (establishment_id, worker_id, import_date, hourly_pay_minus_nlw_clean,
     # days_sick, hourly_pay_minus_nlw_clean_imputed, days_sick_imputed).
     # MID is 147 of the 365 days from START to END.
+    # fmt: off
     impute_pay_and_sickness_cases = [
         ImputePayAndSicknessCase(
             id="interpolates_between_known_values_by_import_date",
             expected_rows=[
                 ("e1", "w1", START, 10.0, 100.0, 10.0, 100.0),
-                (
-                    "e1",
-                    "w1",
-                    MID,
-                    None,
-                    None,
-                    10.0 + 20.0 * 147 / 365,
-                    100.0 + 200.0 * 147 / 365,
-                ),
+                ("e1", "w1", MID, None, None, 10.0 + 20.0 * 147 / 365, 100.0 + 200.0 * 147 / 365),
                 ("e1", "w1", END, 30.0, 300.0, 30.0, 300.0),
             ],
         ),
@@ -541,15 +534,7 @@ class WorkerTurnoverData:
         ImputePayAndSicknessCase(
             id="interpolates_by_import_date_not_row_order",
             expected_rows=[
-                (
-                    "e1",
-                    "w1",
-                    MID,
-                    None,
-                    None,
-                    10.0 + 20.0 * 147 / 365,
-                    100.0 + 200.0 * 147 / 365,
-                ),
+                ("e1", "w1", MID, None, None, 10.0 + 20.0 * 147 / 365, 100.0 + 200.0 * 147 / 365),
                 ("e1", "w1", END, 30.0, 300.0, 30.0, 300.0),
                 ("e1", "w1", START, 10.0, 100.0, 10.0, 100.0),
             ],
@@ -577,6 +562,7 @@ class WorkerTurnoverData:
             ],
         ),
     ]
+    # fmt: on
 
     add_main_service_type_cases = [
         AddMainServiceTypeCase(
