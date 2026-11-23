@@ -1,4 +1,5 @@
 from datetime import date
+from unittest.mock import patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -15,8 +16,18 @@ from projects._98_hackathon.unittest_data.polars_hackathon_test_file_data import
 from projects._98_hackathon.unittest_data.polars_hackathon_test_file_schemas import (
     WorkerTurnoverSchemas as Schemas,
 )
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
+)
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import NotKnownWorkerCodes
@@ -438,7 +449,7 @@ class TestAddRawWorkerColumns:
             *job.WORKER_NUMERIC_COLUMNS,
             *job.WORKER_DATE_COLUMNS,
         ]
-        assert len(returned_names) - len(input_names) == 25
+        assert len(returned_names) - len(input_names) == 26
 
     def test_excludes_highest_qualification_level(self):
         raw_lf = raw_worker_lf(raw_worker_row("1", "20210105"))
@@ -602,6 +613,128 @@ class TestAddRawWorkerColumns:
         assert returned_df.height == 2
 
 
+@patch(f"{job.__name__}.pmUtils.run_postcode_matching")
+class TestAddGeographyFromPostcode:
+    worker_lf = pl.LazyFrame(
+        [("1-001", "1", date(2021, 1, 5))],
+        schema=Schemas.raw_worker_join_input_schema,
+        orient="row",
+    )
+    workplace_lf = pl.LazyFrame(
+        [
+            (
+                "1-001",
+                date(2021, 1, 5),
+                "53",
+                "1-ORG",
+                "LS1 1AA",
+                "1-LOC",
+                "Workplace",
+                "1 Street",
+            )
+        ],
+        schema={
+            AWPClean.establishment_id: CatColType.EstablishmentCatType,
+            AWPClean.ascwds_workplace_import_date: pl.Date,
+            AWPClean.main_service_id_clean: pl.String,
+            AWPClean.organisation_id: pl.String,
+            AWPClean.postcode: pl.String,
+            AWPClean.location_id: pl.String,
+            AWPClean.establishment_name: pl.String,
+            AWPClean.address: pl.String,
+        },
+        orient="row",
+    )
+    matched_lf = pl.LazyFrame(
+        [("1-001", date(2021, 1, 5), "53", "1-ORG", "Leeds", "North")],
+        schema={
+            AWPClean.establishment_id: CatColType.EstablishmentCatType,
+            CQCLClean.cqc_location_import_date: pl.Date,
+            AWPClean.main_service_id_clean: pl.String,
+            AWPClean.organisation_id: pl.String,
+            ONSClean.current_cssr: pl.String,
+            ONSClean.current_region: pl.String,
+        },
+        orient="row",
+    )
+
+    def test_returns_workplace_keys_main_service_organisation_and_matched_geography(
+        self, run_postcode_matching_mock
+    ):
+        run_postcode_matching_mock.return_value = self.matched_lf
+
+        returned_df = job.add_geography_from_postcode(
+            self.workplace_lf, self.worker_lf, pl.LazyFrame(), "corrections.csv"
+        ).collect()
+
+        assert returned_df.columns == [
+            AWPClean.establishment_id,
+            AWPClean.ascwds_workplace_import_date,
+            AWPClean.main_service_id_clean,
+            AWPClean.organisation_id,
+            ONSClean.current_cssr,
+            ONSClean.current_region,
+        ]
+        assert returned_df.row(0) == (
+            "1-001",
+            date(2021, 1, 5),
+            "53",
+            "1-ORG",
+            "Leeds",
+            "North",
+        )
+
+    def test_returns_geography_columns_as_categorical(self, run_postcode_matching_mock):
+        run_postcode_matching_mock.return_value = self.matched_lf
+
+        returned_schema = job.add_geography_from_postcode(
+            self.workplace_lf, self.worker_lf, pl.LazyFrame(), "corrections.csv"
+        ).collect_schema()
+
+        assert returned_schema[ONSClean.current_cssr] == pl.Categorical
+        assert returned_schema[ONSClean.current_region] == pl.Categorical
+
+    def test_matches_workplace_columns_renamed_to_cqc_names(
+        self, run_postcode_matching_mock
+    ):
+        run_postcode_matching_mock.return_value = self.matched_lf
+        ons_lf = pl.LazyFrame()
+
+        job.add_geography_from_postcode(
+            self.workplace_lf, self.worker_lf, ons_lf, "corrections.csv"
+        ).collect()
+
+        locations_lf = run_postcode_matching_mock.call_args.args[0]
+        assert locations_lf.collect().columns == [
+            AWPClean.establishment_id,
+            CQCLClean.cqc_location_import_date,
+            AWPClean.main_service_id_clean,
+            AWPClean.organisation_id,
+            CQCLClean.postal_code,
+            CQCLClean.location_id,
+            CQCLClean.name,
+            CQCLClean.postal_address_line1,
+        ]
+        assert run_postcode_matching_mock.call_args.args[1] is ons_lf
+        assert run_postcode_matching_mock.call_args.args[2] == "corrections.csv"
+
+    def test_matches_only_workplaces_in_worker_data(self, run_postcode_matching_mock):
+        run_postcode_matching_mock.return_value = self.matched_lf
+        other_workplace_lf = self.workplace_lf.with_columns(
+            pl.lit("1-002")
+            .cast(CatColType.EstablishmentCatType)
+            .alias(AWPClean.establishment_id)
+        )
+        workplace_lf = pl.concat([self.workplace_lf, other_workplace_lf])
+
+        job.add_geography_from_postcode(
+            workplace_lf, self.worker_lf, pl.LazyFrame(), "corrections.csv"
+        ).collect()
+
+        locations_lf = run_postcode_matching_mock.call_args.args[0]
+        assert locations_lf.collect()[AWPClean.establishment_id].to_list() == ["1-001"]
+
+
 class TestNullNotKnownCodes:
     not_known_codes = {
         AWKClean.gender: NotKnownWorkerCodes.gender,
@@ -671,6 +804,7 @@ class TestNullNotKnownCodes:
             pytest.param(AWKClean.source_of_recruitment, "224", id="other_sources"),
             pytest.param(AWKClean.care_certificate_status, "2", id="not_started"),
             pytest.param(AWKClean.zero_hours, "1", id="zero_hours_yes"),
+            pytest.param(AWKClean.training_flag, "0", id="trainflag_no"),
         ],
     )
     def test_keeps_other_codes(self, column, code):
@@ -730,6 +864,7 @@ class TestAddWorkerLabels:
         AWKClean.apprentice,
         AWKClean.zero_hours,
         AWKClean.source_of_recruitment,
+        AWKClean.training_flag,
     ]
     label_columns = [f"{column}_labels" for column in coded_columns]
 
@@ -755,7 +890,21 @@ class TestAddWorkerLabels:
     def test_returns_null_label_for_null_code(self):
         returned_df = job.add_worker_labels(self.codes_lf(None)).collect()
 
-        assert returned_df.select(self.label_columns).row(0) == (None,) * 9
+        assert returned_df.select(self.label_columns).row(0) == (None,) * len(
+            self.label_columns
+        )
+
+    @pytest.mark.parametrize(
+        "column, code, label",
+        [
+            pytest.param(AWKClean.training_flag, "0", "No", id="trainflag_no"),
+            pytest.param(AWKClean.training_flag, "1", "Yes", id="trainflag_yes"),
+        ],
+    )
+    def test_returns_label_for_training_flag_code(self, column, code, label):
+        returned_df = job.add_worker_labels(self.codes_lf(code)).collect()
+
+        assert returned_df[f"{column}_labels"].to_list() == [label]
 
     def test_keeps_raw_code_as_label_for_unmapped_code(self):
         returned_df = job.add_worker_labels(self.codes_lf("999")).collect()
