@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added the hourly pay difference from the local median (per import date, CSSR and main job role) to the Hackathon Worker Turnover job output and its validation.
+- Added `keep_value_if_changed_expr` to `cleaning_utils`, an expression that keeps a value only on the import date that first shows its change date. The Hackathon Worker Turnover job uses it for `hourly_pay` and `days_sick`, and no longer includes `pay_save_date`.
 - Added a shared hackathon scoring function that checks students' predictions and returns worker-level (AUC, Brier score) and workplace-level (mean absolute error of leave rate, for workplaces with at least 10 scored workers) scores against the held-back test answers.
 - Added organisation ID and training flag (with labels) to the Hackathon Worker Turnover output.
 - Added CSSR and region, matched from the workplace postcode to the ONS postcode directory, to the Hackathon Worker Turnover job output.
