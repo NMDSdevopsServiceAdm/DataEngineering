@@ -113,7 +113,7 @@ WORKER_DATE_COLUMNS = [
     AWKClean.created_date,
     AWKClean.start_date,
     AWKClean.pay_change_date,
-    AWKClean.pay_save_date,
+    AWKClean.days_sick_change_date,
 ]
 
 # Explicit, because a scan infers columns from the oldest file, which lacks newer ones.
@@ -568,6 +568,81 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         )
     ).drop(
         HackCols.nlw_effective_date, HackCols.nlw_is_apprentice, HackCols.nlw_band_start
+    )
+
+
+def add_hourly_pay_minus_nlw_clean(
+    worker_lf: pl.LazyFrame,
+    upper_percentile: float = 0.99,
+) -> pl.LazyFrame:
+    """Adds `hourly_pay_minus_nlw_clean`, nulling implausible pay differences.
+
+    The difference from 0 up to the percentile, null when negative, above it or
+    null. The percentile is `upper_percentile` of the non-negative differences per
+    import date and job role. Keeps every row.
+
+    `.over()` is not covered by the streaming engine, so it runs in memory.
+
+    This is a simple filter for the hackathon and needs further work before use in
+    the full pipeline.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
+            `mainjrid_clean_labels` and `hourly_pay_minus_nlw`.
+        upper_percentile (float): Quantile above which a difference is an outlier.
+
+    Returns:
+        pl.LazyFrame: The input rows with `hourly_pay_minus_nlw_clean` added.
+    """
+    difference = pl.col(HackCols.hourly_pay_minus_nlw)
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    job_role = pl.col(AWKClean.main_job_role_clean_labelled)
+    # Negative differences become null so they do not set the percentile.
+    percentile = (
+        pl.when(difference >= 0)
+        .then(difference)
+        .quantile(upper_percentile)
+        .over(import_date, job_role)
+    )
+
+    return worker_lf.with_columns(
+        pl.when((difference >= 0) & (difference <= percentile))
+        .then(difference)
+        .alias(HackCols.hourly_pay_minus_nlw_clean)
+    )
+
+
+def add_hourly_pay_diff_to_cssr_median(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds `hourly_pay_diff_to_cssr_median`: `hourly_pay` minus the local median.
+
+    The median `hourly_pay` is taken per import date, `current_cssr` and main job
+    role. The difference is null when `hourly_pay`, `current_cssr` or the job role
+    is null. Uses `.over()`, which the streaming engine does not cover, so the sink
+    may fall back to the in-memory engine.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
+            `current_cssr`, `main_job_role_clean_labelled` and `hourly_pay`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `hourly_pay_diff_to_cssr_median`
+            (`Float32`) added.
+    """
+    group_columns = [
+        AWKClean.ascwds_worker_import_date,
+        ONSClean.current_cssr,
+        AWKClean.main_job_role_clean_labelled,
+    ]
+    median_pay = pl.col(HackCols.hourly_pay).median().over(group_columns)
+
+    return worker_lf.with_columns(
+        pl.when(
+            pl.col(ONSClean.current_cssr).is_not_null()
+            & pl.col(AWKClean.main_job_role_clean_labelled).is_not_null()
+        )
+        .then(pl.col(HackCols.hourly_pay) - median_pay)
+        .cast(pl.Float32)
+        .alias(HackCols.hourly_pay_diff_to_cssr_median)
     )
 
 

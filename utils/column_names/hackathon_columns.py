@@ -16,6 +16,8 @@ class HackathonColumns:
     hourly_pay: str = "hourly_pay"
     nlw_hourly_rate: str = "nlw_hourly_rate"
     hourly_pay_minus_nlw: str = "hourly_pay_minus_nlw"
+    hourly_pay_minus_nlw_clean: str = "hourly_pay_minus_nlw_clean"
+    hourly_pay_diff_to_cssr_median: str = "hourly_pay_diff_to_cssr_median"
     nlw_effective_date: str = "nlw_effective_date"
     nlw_is_apprentice: str = "nlw_is_apprentice"
     nlw_band_start: str = "nlw_band_start"
@@ -37,6 +39,7 @@ class HackathonColumns:
     plausible_turnover: str = "plausible_turnover"
     valid_for_analysis: str = "valid_for_analysis"
     split: str = "split"
+    predicted_probability: str = "predicted_probability"
 
 
 @dataclass
