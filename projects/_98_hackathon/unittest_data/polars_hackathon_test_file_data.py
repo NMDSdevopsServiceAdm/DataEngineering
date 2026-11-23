@@ -492,73 +492,78 @@ class WorkerTurnoverData:
 
     # Rows: (establishment_id, worker_id, import_date, hourly_pay_minus_nlw_clean,
     # days_sick, hourly_pay_minus_nlw_clean_imputed, days_sick_imputed).
-    # MID is 147 of the 365 days from START to END.
+    # MID is 4 of the 20 days from START to END, so date weighting gives a fifth of
+    # the way between the known values, not the halfway that row position would.
+    IMPUTE_START = date(2025, 1, 1)
+    IMPUTE_MID = date(2025, 1, 5)
+    IMPUTE_END = date(2025, 1, 21)
+
     # fmt: off
     impute_pay_and_sickness_cases = [
         ImputePayAndSicknessCase(
             id="interpolates_between_known_values_by_import_date",
             expected_rows=[
-                ("e1", "w1", START, 10.0, 100.0, 10.0, 100.0),
-                ("e1", "w1", MID, None, None, 10.0 + 20.0 * 147 / 365, 100.0 + 200.0 * 147 / 365),
-                ("e1", "w1", END, 30.0, 300.0, 30.0, 300.0),
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
+                ("e1", "w1", IMPUTE_MID, None, None, 14.0, 140.0),
+                ("e1", "w1", IMPUTE_END, 30.0, 300.0, 30.0, 300.0),
             ],
         ),
         ImputePayAndSicknessCase(
             id="forward_fills_after_last_known_value",
             expected_rows=[
-                ("e1", "w1", START, 10.0, 100.0, 10.0, 100.0),
-                ("e1", "w1", MID, None, None, 10.0, 100.0),
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
+                ("e1", "w1", IMPUTE_MID, None, None, 10.0, 100.0),
             ],
         ),
         ImputePayAndSicknessCase(
             id="backward_fills_before_first_known_value",
             expected_rows=[
-                ("e1", "w1", START, None, None, 20.0, 200.0),
-                ("e1", "w1", MID, 20.0, 200.0, 20.0, 200.0),
+                ("e1", "w1", IMPUTE_START, None, None, 20.0, 200.0),
+                ("e1", "w1", IMPUTE_MID, 20.0, 200.0, 20.0, 200.0),
             ],
         ),
         ImputePayAndSicknessCase(
             id="imputes_each_column_independently",
             expected_rows=[
-                ("e1", "w1", START, 10.0, None, 10.0, 200.0),
-                ("e1", "w1", MID, None, 200.0, 10.0, 200.0),
+                ("e1", "w1", IMPUTE_START, 10.0, None, 10.0, 200.0),
+                ("e1", "w1", IMPUTE_MID, None, 200.0, 10.0, 200.0),
             ],
         ),
         ImputePayAndSicknessCase(
             id="keeps_null_when_never_known",
             expected_rows=[
-                ("e1", "w1", START, None, None, None, None),
-                ("e1", "w1", MID, None, None, None, None),
+                ("e1", "w1", IMPUTE_START, None, None, None, None),
+                ("e1", "w1", IMPUTE_MID, None, None, None, None),
             ],
         ),
         ImputePayAndSicknessCase(
             id="interpolates_by_import_date_not_row_order",
             expected_rows=[
-                ("e1", "w1", MID, None, None, 10.0 + 20.0 * 147 / 365, 100.0 + 200.0 * 147 / 365),
-                ("e1", "w1", END, 30.0, 300.0, 30.0, 300.0),
-                ("e1", "w1", START, 10.0, 100.0, 10.0, 100.0),
+                ("e1", "w1", IMPUTE_MID, None, None, 14.0, 140.0),
+                ("e1", "w1", IMPUTE_END, 30.0, 300.0, 30.0, 300.0),
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
             ],
         ),
         ImputePayAndSicknessCase(
             id="forward_fills_latest_known_value_not_row_order",
             expected_rows=[
-                ("e1", "w1", END, None, None, 30.0, 300.0),
-                ("e1", "w1", START, 10.0, 100.0, 10.0, 100.0),
-                ("e1", "w1", MID, 30.0, 300.0, 30.0, 300.0),
+                ("e1", "w1", IMPUTE_END, None, None, 30.0, 300.0),
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
+                ("e1", "w1", IMPUTE_MID, 30.0, 300.0, 30.0, 300.0),
             ],
         ),
         ImputePayAndSicknessCase(
             id="does_not_impute_across_workers",
             expected_rows=[
-                ("e1", "w1", START, 10.0, 100.0, 10.0, 100.0),
-                ("e1", "w2", START, None, None, None, None),
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
+                ("e1", "w2", IMPUTE_START, None, None, None, None),
             ],
         ),
         ImputePayAndSicknessCase(
             id="does_not_impute_across_establishments",
             expected_rows=[
-                ("e1", "w1", START, 10.0, 100.0, 10.0, 100.0),
-                ("e2", "w1", MID, None, None, None, None),
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
+                ("e2", "w1", IMPUTE_MID, None, None, None, None),
             ],
         ),
     ]
