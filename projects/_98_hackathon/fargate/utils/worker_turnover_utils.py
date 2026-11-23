@@ -571,6 +571,47 @@ def add_nlw_and_pay_difference(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
+def add_hourly_pay_minus_nlw_clean(
+    worker_lf: pl.LazyFrame,
+    upper_percentile: float = 0.99,
+) -> pl.LazyFrame:
+    """Adds `hourly_pay_minus_nlw_clean`, nulling implausible pay differences.
+
+    The difference from 0 up to the percentile, null when negative, above it or
+    null. The percentile is `upper_percentile` of the non-negative differences per
+    import date and job role. Keeps every row.
+
+    `.over()` is not covered by the streaming engine, so it runs in memory.
+
+    This is a simple filter for the hackathon and needs further work before use in
+    the full pipeline.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
+            `mainjrid_clean_labels` and `hourly_pay_minus_nlw`.
+        upper_percentile (float): Quantile above which a difference is an outlier.
+
+    Returns:
+        pl.LazyFrame: The input rows with `hourly_pay_minus_nlw_clean` added.
+    """
+    difference = pl.col(HackCols.hourly_pay_minus_nlw)
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    job_role = pl.col(AWKClean.main_job_role_clean_labelled)
+    # Negative differences become null so they do not set the percentile.
+    percentile = (
+        pl.when(difference >= 0)
+        .then(difference)
+        .quantile(upper_percentile)
+        .over(import_date, job_role)
+    )
+
+    return worker_lf.with_columns(
+        pl.when((difference >= 0) & (difference <= percentile))
+        .then(difference)
+        .alias(HackCols.hourly_pay_minus_nlw_clean)
+    )
+
+
 def add_hourly_pay_diff_to_cssr_median(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Adds `hourly_pay_diff_to_cssr_median`: `hourly_pay` minus the local median.
 

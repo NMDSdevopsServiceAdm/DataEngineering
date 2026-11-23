@@ -10,19 +10,19 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.hackathon_columns import AgeSource
-from utils.column_names.cleaned_data_files.ons_cleaned import (
-    OnsCleanedColumns as ONSClean,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
+from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
-    NationalityGroupLabels,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
+from utils.column_values.ascwds_labelled_vocab import NationalityGroupLabels
 from utils.column_values.categorical_column_values import (
     CurrentCSSR,
     PrimaryServiceType,
@@ -52,6 +52,7 @@ def build_source_df() -> pl.DataFrame:
             HackCols.hourly_pay: [12.0, None],
             HackCols.nlw_hourly_rate: [11.0, 11.0],
             HackCols.hourly_pay_minus_nlw: [1.0, None],
+            HackCols.hourly_pay_minus_nlw_clean: [1.0, None],
             HackCols.hourly_pay_diff_to_cssr_median: [-1.0, None],
             HackCols.age_imputed: [30.0, 31.0],
             HackCols.age_source: [AgeSource.observed, AgeSource.assumed_birth_month],
@@ -84,6 +85,7 @@ def build_source_df() -> pl.DataFrame:
             HackCols.hourly_pay: pl.Float32,
             HackCols.nlw_hourly_rate: pl.Float32,
             HackCols.hourly_pay_minus_nlw: pl.Float32,
+            HackCols.hourly_pay_minus_nlw_clean: pl.Float32,
             HackCols.hourly_pay_diff_to_cssr_median: pl.Float32,
             HackCols.age_imputed: pl.Float32,
             HackCols.age_source: pl.Categorical,
