@@ -423,6 +423,29 @@ class TestMain:
 
         _run_main(mocks)  # does not raise
 
+    @pytest.mark.parametrize(
+        "job_group",
+        [
+            PublishedJobGroupLabels.direct_care,
+            PublishedJobGroupLabels.managers,
+            PublishedJobGroupLabels.regulated_professions,
+            PublishedJobGroupLabels.other,
+        ],
+    )
+    def test_excludes_job_group_rows_from_the_role_comparison(self, mocks, job_group):
+        # A job group is a rollup of job roles, so it is not a role missing from
+        # the archive.
+        _set_sources(
+            mocks,
+            [
+                *_national_rows(IN_PERIOD, 1000.0),
+                _assessment_row(IN_PERIOD, 1000.0, job_role=job_group),
+            ],
+            [_archive_row(IN_PERIOD, 1000.0, job_role="Registered nurse")],
+        )
+
+        _run_main(mocks)  # does not raise
+
     def test_limits_the_roles_named_in_the_error(self, mocks):
         # Alternating over and under so the national total still matches.
         roles = [f"role_{i}" for i in range(2 * job.MAX_DIFFERENCES_REPORTED)]

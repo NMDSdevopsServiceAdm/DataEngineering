@@ -22,6 +22,9 @@ from utils.column_values.categorical_column_values import (
     PublishedMainService,
     PublishedRegion,
 )
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
+)
 
 # The totals agree to ~1e-7 (Float32 rounding), so this leaves ~1000x headroom.
 RECONCILIATION_RELATIVE_TOLERANCE = 0.0001
@@ -345,8 +348,8 @@ def main(
     ignored. The public figures are the assessment's pre-rounding national rows
     (the public output only holds banded figures, and the assessment's other
     rows are overlapping rollups): "All job roles" for each period's total, and
-    one row per job role. The archive has no rollups, so its figures sum the
-    job-role rows.
+    one row per job role. The job group rows are rollups too, so they are
+    ignored. The archive has no rollups, so its figures sum the job-role rows.
 
     Args:
         assessment_source (str): S3 directory holding the assessed data of every
@@ -392,7 +395,11 @@ def main(
         raise ReconciliationMismatchError(
             f"Run {run_number}: no national 'All job roles' rows in the assessment data"
         )
-    public_by_role = public_by_role.filter(~is_all_job_roles)
+    # Job groups are rollups with no archive row to compare with.
+    is_job_group = pl.col(IndCQC.main_job_role_clean_labelled).is_in(
+        CatValues.main_job_group_labels_column_values.categorical_values
+    )
+    public_by_role = public_by_role.filter(~is_all_job_roles & ~is_job_group)
     public_periods = public_by_period[IndCQC.cqc_location_import_date]
     periods_without_total = set(public_by_role[IndCQC.cqc_location_import_date]) - set(
         public_periods
