@@ -275,7 +275,6 @@ class TestMain:
             HackCols.headcount_reconciliation_gap,
             HackCols.headcount_gap_within_tolerance,
             HackCols.plausible_turnover,
-            HackCols.plausible_start_date,
         }
 
         assert not dropped_columns & set(job.SOURCE_COLUMNS)

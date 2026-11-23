@@ -180,20 +180,7 @@ class FixStartDateTyposCase:
 
 
 @dataclass
-class AddPlausibleStartDateFlagCase:
-    id: str
-    expected_rows: list[tuple[Any, ...]]
-
-
-@dataclass
-class NullImplausibleStartDatesCase:
-    id: str
-    input_rows: list[tuple[Any, ...]]
-    expected_rows: list[tuple[Any, ...]]
-
-
-@dataclass
-class CheckStartDatesAfterImputationCase:
+class StartDateIsPlausibleCase:
     id: str
     input_rows: list[tuple[Any, ...]]
     expected_rows: list[tuple[Any, ...]]
@@ -432,109 +419,60 @@ class WorkerTurnoverData:
         ),
     ]
 
-    # Rows: (import_date, start_date, age, plausible_start_date).
-    add_plausible_start_date_flag_cases = [
-        AddPlausibleStartDateFlagCase(
-            id="plausible_when_start_date_is_null",
-            expected_rows=[(date(2024, 6, 1), None, 30.0, True)],
+    # Rows: (import_date, start_date, age).
+    start_date_is_plausible_cases = [
+        StartDateIsPlausibleCase(
+            id="keeps_null_start_date_null",
+            input_rows=[(date(2024, 6, 1), None, 30.0)],
+            expected_rows=[(date(2024, 6, 1), None, 30.0)],
         ),
         # Age 36 at import and exactly 20 years since start is a start age of 16.
-        AddPlausibleStartDateFlagCase(
-            id="plausible_when_start_age_is_exactly_16",
-            expected_rows=[(date(2024, 6, 1), date(2004, 6, 1), 36.0, True)],
+        StartDateIsPlausibleCase(
+            id="keeps_start_date_when_start_age_is_exactly_16",
+            input_rows=[(date(2024, 6, 1), date(2004, 6, 1), 36.0)],
+            expected_rows=[(date(2024, 6, 1), date(2004, 6, 1), 36.0)],
         ),
-        AddPlausibleStartDateFlagCase(
-            id="implausible_when_start_age_is_just_under_16",
-            expected_rows=[(date(2024, 6, 1), date(2004, 5, 31), 36.0, False)],
+        StartDateIsPlausibleCase(
+            id="nulls_start_date_when_start_age_is_just_under_16",
+            input_rows=[(date(2024, 6, 1), date(2004, 5, 31), 36.0)],
+            expected_rows=[(date(2024, 6, 1), None, 36.0)],
         ),
         # About 40.5 years since start for a worker aged 40: the date of birth.
-        AddPlausibleStartDateFlagCase(
-            id="implausible_when_start_date_is_date_of_birth",
-            expected_rows=[(date(2024, 6, 1), date(1983, 12, 1), 40.0, False)],
+        StartDateIsPlausibleCase(
+            id="nulls_start_date_when_it_is_date_of_birth",
+            input_rows=[(date(2024, 6, 1), date(1983, 12, 1), 40.0)],
+            expected_rows=[(date(2024, 6, 1), None, 40.0)],
         ),
-        AddPlausibleStartDateFlagCase(
-            id="implausible_when_start_date_is_before_birth",
-            expected_rows=[(date(2024, 6, 1), date(1960, 1, 1), 30.0, False)],
+        StartDateIsPlausibleCase(
+            id="nulls_start_date_when_it_is_before_birth",
+            input_rows=[(date(2024, 6, 1), date(1960, 1, 1), 30.0)],
+            expected_rows=[(date(2024, 6, 1), None, 30.0)],
         ),
-        AddPlausibleStartDateFlagCase(
-            id="implausible_when_start_date_is_after_import_date",
-            expected_rows=[(date(2024, 6, 1), date(2024, 7, 1), 30.0, False)],
+        StartDateIsPlausibleCase(
+            id="nulls_start_date_when_it_is_after_import_date",
+            input_rows=[(date(2024, 6, 1), date(2024, 7, 1), 30.0)],
+            expected_rows=[(date(2024, 6, 1), None, 30.0)],
         ),
         # Negative ages are not-known codes. Read as an age, -1 would fail the rule.
-        AddPlausibleStartDateFlagCase(
+        StartDateIsPlausibleCase(
             id="treats_negative_age_code_as_unknown",
-            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), -1.0, True)],
+            input_rows=[(date(2024, 6, 1), date(2015, 4, 1), -1.0)],
+            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), -1.0)],
         ),
-        AddPlausibleStartDateFlagCase(
-            id="plausible_when_age_unknown_and_tenure_under_70_years",
-            expected_rows=[(date(2024, 6, 1), date(1960, 1, 1), None, True)],
+        StartDateIsPlausibleCase(
+            id="keeps_start_date_when_age_unknown_and_tenure_under_70_years",
+            input_rows=[(date(2024, 6, 1), date(1960, 1, 1), None)],
+            expected_rows=[(date(2024, 6, 1), date(1960, 1, 1), None)],
         ),
-        AddPlausibleStartDateFlagCase(
-            id="plausible_when_age_unknown_and_tenure_exactly_70_years",
-            expected_rows=[(date(2024, 6, 1), date(1954, 6, 1), None, True)],
+        StartDateIsPlausibleCase(
+            id="keeps_start_date_when_age_unknown_and_tenure_exactly_70_years",
+            input_rows=[(date(2024, 6, 1), date(1954, 6, 1), None)],
+            expected_rows=[(date(2024, 6, 1), date(1954, 6, 1), None)],
         ),
-        AddPlausibleStartDateFlagCase(
-            id="implausible_when_age_unknown_and_tenure_over_70_years",
-            expected_rows=[(date(2024, 6, 1), date(1954, 5, 31), None, False)],
-        ),
-    ]
-
-    # Rows: (start_date, plausible_start_date).
-    null_implausible_start_dates_cases = [
-        NullImplausibleStartDatesCase(
-            id="nulls_start_date_when_flag_is_false",
-            input_rows=[(date(2015, 4, 1), False)],
-            expected_rows=[(None, False)],
-        ),
-        NullImplausibleStartDatesCase(
-            id="keeps_start_date_when_flag_is_true",
-            input_rows=[(date(2015, 4, 1), True)],
-            expected_rows=[(date(2015, 4, 1), True)],
-        ),
-        NullImplausibleStartDatesCase(
-            id="keeps_null_start_date_null",
-            input_rows=[(None, True)],
-            expected_rows=[(None, True)],
-        ),
-    ]
-
-    # Input rows: (import_date, start_date, age, plausible_start_date before
-    # imputation, valid_for_analysis). Expected rows drop plausible_start_date.
-    check_start_dates_after_imputation_cases = [
-        CheckStartDatesAfterImputationCase(
-            id="stays_valid_when_start_date_is_plausible",
-            input_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, True, True)],
-            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, True)],
-        ),
-        CheckStartDatesAfterImputationCase(
-            id="stays_valid_when_start_date_was_never_present",
-            input_rows=[(date(2024, 6, 1), None, 40.0, True, True)],
-            expected_rows=[(date(2024, 6, 1), None, 40.0, True)],
-        ),
-        CheckStartDatesAfterImputationCase(
-            id="valid_when_implausible_date_was_refilled_with_plausible_date",
-            input_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, False, True)],
-            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, True)],
-        ),
-        CheckStartDatesAfterImputationCase(
-            id="invalid_when_implausible_date_was_not_refilled",
-            input_rows=[(date(2024, 6, 1), None, 40.0, False, True)],
-            expected_rows=[(date(2024, 6, 1), None, 40.0, False)],
-        ),
-        CheckStartDatesAfterImputationCase(
-            id="nulls_and_invalidates_when_imputed_date_is_date_of_birth",
-            input_rows=[(date(2024, 6, 1), date(1983, 12, 1), 40.0, True, True)],
-            expected_rows=[(date(2024, 6, 1), None, 40.0, False)],
-        ),
-        CheckStartDatesAfterImputationCase(
-            id="nulls_and_invalidates_when_imputed_date_is_after_import_date",
-            input_rows=[(date(2024, 6, 1), date(2024, 7, 1), 30.0, True, True)],
-            expected_rows=[(date(2024, 6, 1), None, 30.0, False)],
-        ),
-        CheckStartDatesAfterImputationCase(
-            id="stays_invalid_when_row_was_already_invalid",
-            input_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, True, False)],
-            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), 40.0, False)],
+        StartDateIsPlausibleCase(
+            id="nulls_start_date_when_age_unknown_and_tenure_over_70_years",
+            input_rows=[(date(2024, 6, 1), date(1954, 5, 31), None)],
+            expected_rows=[(date(2024, 6, 1), None, None)],
         ),
     ]
 

@@ -84,8 +84,7 @@ def main(
     )
     filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
     filtered_lf = wUtils.fix_start_date_typos(filtered_lf)
-    filtered_lf = wUtils.add_plausible_start_date_flag(filtered_lf)
-    filtered_lf = wUtils.null_implausible_start_dates(filtered_lf)
+    filtered_lf = wUtils.start_date_is_plausible(filtered_lf)
     filtered_lf = wUtils.add_headcount_reconciliation_gap(filtered_lf, max_gap)
     filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf).drop(
         HackCols.establishment_in_both_snapshots,
@@ -107,7 +106,7 @@ def main(
         filtered_lf, AWKClean.country_of_birth
     ).drop(wUtils.WORKER_CATEGORICAL_COLUMNS)
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
-    filtered_lf = wUtils.check_start_dates_after_imputation(filtered_lf)
+    filtered_lf = wUtils.start_date_is_plausible(filtered_lf)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
 
     filtered_lf = wUtils.add_split_column(filtered_lf)

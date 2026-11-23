@@ -86,7 +86,6 @@ WORKER_NUMERIC_COLUMNS = [
     AWKClean.contracted_hours,
     AWKClean.average_hours,
     AWKClean.distance_to_work_in_miles,
-    AWKClean.start_age,
     AWKClean.days_sick,
     AWKClean.start_in_sector,
     AWKClean.year_of_entry,
@@ -131,7 +130,6 @@ IMPUTE_COLUMNS = [
     f"{AWKClean.zero_hours}_labels",
     f"{AWKClean.source_of_recruitment}_labels",
     AWKClean.start_date,
-    AWKClean.start_age,
     AWKClean.start_in_sector,
     f"{AWKClean.social_care_qual_held}_labels",
     f"{AWKClean.level_social_care_qualification_held}_labels",
@@ -221,29 +219,30 @@ def fix_start_date_typos(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def start_date_is_plausible() -> pl.Expr:
-    """Returns the expression for whether `start_date` is plausible.
+def start_date_is_plausible(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Nulls `start_date` where it is implausible.
 
-    True when `start_date` is null. Otherwise false when `start_date` is after
-    `ascwds_worker_import_date`. Otherwise, when `age` is above 0, true if the
-    worker was at least `MIN_START_AGE` at `start_date` (`age` minus years since
-    `start_date`). Without a known age (null or not above 0), true if `start_date` is
-    no more than `MAX_YEARS_SINCE_START_WITHOUT_AGE` years before
+    A null `start_date` stays null. Otherwise `start_date` is implausible when it is
+    after `ascwds_worker_import_date`. Otherwise, when `age` is above 0, it is
+    implausible if the worker was under `MIN_START_AGE` at `start_date` (`age` minus
+    years since `start_date`). Without a known age (null or not above 0), it is
+    implausible if it is more than `MAX_YEARS_SINCE_START_WITHOUT_AGE` years before
     `ascwds_worker_import_date`.
 
-    Returns:
-        pl.Expr: A boolean expression over `start_date`,
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `start_date`,
             `ascwds_worker_import_date` and `age`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `start_date` nulled where implausible.
     """
     start_date = pl.col(AWKClean.start_date)
     import_date = pl.col(AWKClean.ascwds_worker_import_date)
     age = pl.col(AWKClean.age)
     years_since_start = (import_date - start_date).dt.total_days() / 365.25
 
-    return (
-        pl.when(start_date.is_null())
-        .then(True)
-        .when(start_date > import_date)
+    plausible = (
+        pl.when(start_date > import_date)
         .then(False)
         .when(age > 0)
         .then(age - years_since_start >= MIN_START_AGE)
@@ -253,69 +252,9 @@ def start_date_is_plausible() -> pl.Expr:
         )
     )
 
-
-def add_plausible_start_date_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `plausible_start_date`, from `start_date_is_plausible`.
-
-    Args:
-        worker_lf (pl.LazyFrame): Worker data with `start_date`,
-            `ascwds_worker_import_date` and `age`.
-
-    Returns:
-        pl.LazyFrame: The input rows with `plausible_start_date` added.
-    """
     return worker_lf.with_columns(
-        start_date_is_plausible().alias(HackCols.plausible_start_date)
+        pl.when(plausible).then(start_date).alias(AWKClean.start_date)
     )
-
-
-def null_implausible_start_dates(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Nulls `start_date` where `plausible_start_date` is false.
-
-    Run before imputation so an implausible date is not spread to a worker's other
-    import dates, and the worker's plausible dates can fill it instead.
-
-    Args:
-        worker_lf (pl.LazyFrame): Worker data with `start_date` and
-            `plausible_start_date`.
-
-    Returns:
-        pl.LazyFrame: The input rows with `start_date` nulled where implausible.
-    """
-    return worker_lf.with_columns(
-        pl.when(pl.col(HackCols.plausible_start_date))
-        .then(pl.col(AWKClean.start_date))
-        .alias(AWKClean.start_date)
-    )
-
-
-def check_start_dates_after_imputation(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Applies the start date rule to imputed dates and updates `valid_for_analysis`.
-
-    Imputation copies start dates between a worker's import dates, so a copied date
-    can be implausible for its new row. Nulls `start_date` where
-    `start_date_is_plausible` is false. Sets `valid_for_analysis` false where the
-    date was implausible after imputation, or implausible before imputation
-    (`plausible_start_date` false) and still null. Drops `plausible_start_date`.
-
-    Args:
-        worker_lf (pl.LazyFrame): Worker data with `start_date`,
-            `ascwds_worker_import_date`, `age`, `valid_for_analysis` and
-            `plausible_start_date` from before imputation.
-
-    Returns:
-        pl.LazyFrame: The input rows without `plausible_start_date`.
-    """
-    start_date = pl.col(AWKClean.start_date)
-    plausible_now = start_date_is_plausible()
-    not_refilled = ~pl.col(HackCols.plausible_start_date) & start_date.is_null()
-
-    return worker_lf.with_columns(
-        (pl.col(HackCols.valid_for_analysis) & plausible_now & ~not_refilled).alias(
-            HackCols.valid_for_analysis
-        ),
-        pl.when(plausible_now).then(start_date).alias(AWKClean.start_date),
-    ).drop(HackCols.plausible_start_date)
 
 
 def null_not_known_codes(worker_lf: pl.LazyFrame) -> pl.LazyFrame:

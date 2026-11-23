@@ -362,7 +362,7 @@ class TestAddRawWorkerColumns:
             *job.WORKER_NUMERIC_COLUMNS,
             *job.WORKER_DATE_COLUMNS,
         ]
-        assert len(returned_names) - len(input_names) == 25
+        assert len(returned_names) - len(input_names) == 24
 
     def test_excludes_highest_qualification_level(self):
         raw_lf = raw_worker_lf(raw_worker_row("1", "20210105"))
@@ -544,71 +544,22 @@ class TestFixStartDateTypos:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestAddPlausibleStartDateFlag:
+class TestStartDateIsPlausible:
     @pytest.mark.parametrize(
         "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.add_plausible_start_date_flag_cases
-        ],
-    )
-    def test_returns_expected_rows(self, case):
-        expected_lf = pl.LazyFrame(
-            case.expected_rows, schema=Schemas.plausible_start_date_schema, orient="row"
-        )
-        input_lf = expected_lf.drop(HackCols.plausible_start_date)
-
-        returned_lf = job.add_plausible_start_date_flag(input_lf)
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
-
-
-class TestNullImplausibleStartDates:
-    @pytest.mark.parametrize(
-        "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.null_implausible_start_dates_cases
-        ],
+        [pytest.param(case, id=case.id) for case in Data.start_date_is_plausible_cases],
     )
     def test_returns_expected_rows(self, case):
         input_lf = pl.LazyFrame(
-            case.input_rows,
-            schema=Schemas.null_implausible_start_dates_schema,
-            orient="row",
+            case.input_rows, schema=Schemas.start_date_is_plausible_schema, orient="row"
         )
         expected_lf = pl.LazyFrame(
             case.expected_rows,
-            schema=Schemas.null_implausible_start_dates_schema,
+            schema=Schemas.start_date_is_plausible_schema,
             orient="row",
         )
 
-        returned_lf = job.null_implausible_start_dates(input_lf)
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
-class TestCheckStartDatesAfterImputation:
-    @pytest.mark.parametrize(
-        "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.check_start_dates_after_imputation_cases
-        ],
-    )
-    def test_returns_expected_rows(self, case):
-        input_lf = pl.LazyFrame(
-            case.input_rows,
-            schema=Schemas.check_start_dates_input_schema,
-            orient="row",
-        )
-        expected_lf = pl.LazyFrame(
-            case.expected_rows,
-            schema=Schemas.check_start_dates_output_schema,
-            orient="row",
-        )
-
-        returned_lf = job.check_start_dates_after_imputation(input_lf)
+        returned_lf = job.start_date_is_plausible(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 

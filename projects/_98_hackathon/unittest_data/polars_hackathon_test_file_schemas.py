@@ -47,7 +47,6 @@ class WorkerTurnoverSchemas:
         f"{AWKClean.zero_hours}_labels",
         f"{AWKClean.source_of_recruitment}_labels",
         AWKClean.start_date,
-        AWKClean.start_age,
         AWKClean.start_in_sector,
         f"{AWKClean.social_care_qual_held}_labels",
         f"{AWKClean.level_social_care_qualification_held}_labels",
@@ -194,38 +193,11 @@ class WorkerTurnoverSchemas:
         ]
     )
 
-    plausible_start_date_schema = pl.Schema(
+    start_date_is_plausible_schema = pl.Schema(
         [
             (AWKClean.ascwds_worker_import_date, pl.Date()),
             (AWKClean.start_date, pl.Date()),
             (AWKClean.age, pl.Float32()),
-            (HackCols.plausible_start_date, pl.Boolean()),
-        ]
-    )
-
-    null_implausible_start_dates_schema = pl.Schema(
-        [
-            (AWKClean.start_date, pl.Date()),
-            (HackCols.plausible_start_date, pl.Boolean()),
-        ]
-    )
-
-    check_start_dates_input_schema = pl.Schema(
-        [
-            (AWKClean.ascwds_worker_import_date, pl.Date()),
-            (AWKClean.start_date, pl.Date()),
-            (AWKClean.age, pl.Float32()),
-            (HackCols.plausible_start_date, pl.Boolean()),
-            (HackCols.valid_for_analysis, pl.Boolean()),
-        ]
-    )
-
-    check_start_dates_output_schema = pl.Schema(
-        [
-            (AWKClean.ascwds_worker_import_date, pl.Date()),
-            (AWKClean.start_date, pl.Date()),
-            (AWKClean.age, pl.Float32()),
-            (HackCols.valid_for_analysis, pl.Boolean()),
         ]
     )
 
