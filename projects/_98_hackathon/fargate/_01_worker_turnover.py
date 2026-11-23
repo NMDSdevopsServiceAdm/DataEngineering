@@ -1,6 +1,7 @@
 import polars as pl
 
 import polars_utils.cleaning_utils as cUtils
+import projects._98_hackathon.fargate.utils.validation_utils as vUtils
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
@@ -24,6 +25,7 @@ def main(
     train_destination: str,
     holdout_destination: str,
     test_destination: str,
+    student_destination: str,
     n_months: int = wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
     max_gap: int = wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
 ) -> None:
@@ -43,7 +45,10 @@ def main(
             corrections csv
         train_destination (str): destination for the train split
         holdout_destination (str): destination for the holdout split
-        test_destination (str): destination for the test split
+        test_destination (str): destination for the test split's key columns,
+            `is_leaver` and `turnover_rate`
+        student_destination (str): destination for the test split without
+            `is_leaver` and `turnover_rate`
         n_months (int): most months since an establishment's latest save date for
             it to count as active
         max_gap (int): largest absolute headcount reconciliation gap, in workers,
@@ -154,6 +159,7 @@ def main(
     filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
     filtered_lf = wUtils.clean_age(filtered_lf)
     filtered_lf = wUtils.impute_age(filtered_lf)
+    filtered_lf = wUtils.add_years_in_role_and_sector(filtered_lf, save_dates_lf)
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
     filtered_lf = wUtils.add_hourly_pay_minus_nlw_clean(filtered_lf)
     filtered_lf = wUtils.impute_pay_and_sickness(filtered_lf)
@@ -161,22 +167,34 @@ def main(
 
     filtered_lf = wUtils.add_split_column(filtered_lf)
 
-    split_destinations = {
+    split_lfs = {
+        split: filtered_lf.filter(pl.col(HackCols.split) == split)
+        for split in ("train", "holdout", "test")
+    }
+    train_holdout_destinations = {
         "train": train_destination,
         "holdout": holdout_destination,
-        "test": test_destination,
     }
-    # Lazy sinks collected together share one run of the plan above, rather than
-    # re-running it per split.
     split_sinks = [
-        utils.sink_to_parquet(
-            filtered_lf.filter(pl.col(HackCols.split) == split),
-            output_path=destination,
-            lazy=True,
-        )
-        for split, destination in split_destinations.items()
+        utils.sink_to_parquet(split_lfs[split], output_path=destination, lazy=True)
+        for split, destination in train_holdout_destinations.items()
     ]
-    pl.collect_all(split_sinks, engine="streaming")
+    # The test split keeps `is_leaver` and `turnover_rate` until the sinks: the
+    # test destination holds only them and the key columns, and the student
+    # destination holds every other column.
+    test_sink = utils.sink_to_parquet(
+        split_lfs["test"].select(*vUtils.KEY_COLUMNS, *wUtils.STUDENT_HIDDEN_COLUMNS),
+        output_path=test_destination,
+        lazy=True,
+    )
+    student_sink = utils.sink_to_parquet(
+        split_lfs["test"].drop(wUtils.STUDENT_HIDDEN_COLUMNS),
+        output_path=student_destination,
+        lazy=True,
+    )
+    # Lazy sinks collected together share one run of the plan above, rather than
+    # re-running it per sink.
+    pl.collect_all([*split_sinks, test_sink, student_sink], engine="streaming")
 
 
 if __name__ == "__main__":
@@ -214,6 +232,10 @@ if __name__ == "__main__":
             "Destination s3 directory for the test split",
         ),
         (
+            "--student_destination",
+            "Destination s3 directory for the student version of the test split",
+        ),
+        (
             "--n_months",
             "Most months since an establishment's latest save date to count as active",
             False,
@@ -235,6 +257,7 @@ if __name__ == "__main__":
         train_destination=args.train_destination,
         holdout_destination=args.holdout_destination,
         test_destination=args.test_destination,
+        student_destination=args.student_destination,
         n_months=int(args.n_months),
         max_gap=int(args.max_gap),
     )

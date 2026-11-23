@@ -21,6 +21,8 @@ from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
+    EthnicityGroupLabels,
+    SourceOfRecruitmentWithinOutsideAscLabels,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import (
@@ -70,8 +72,12 @@ SOURCE_COLUMNS = [
     HackCols.country_of_birth_group,
     ONSClean.current_cssr,
     ONSClean.current_region,
+    HackCols.years_in_role,
+    HackCols.years_in_sector,
+    AWKClean.start_date,
     *NUMERIC_COLUMNS,
     *wUtils.LABEL_COLUMNS,
+    *wUtils.GROUP_LABEL_RECODES,
 ]
 
 COMPARE_COLUMNS = [
@@ -88,7 +94,7 @@ def main(
     reports_path: str,
     split: str,
 ) -> None:
-    """Validates one split of the worker turnover data and writes the reports.
+    """Validates the train or holdout split of the worker turnover data.
 
     Only the columns the checks need are read, as the dataset is large.
 
@@ -99,26 +105,15 @@ def main(
             by `filter_worker_turnover_data` and in the split give the expected row
             count
         reports_path (str): the output path to write reports to
-        split (str): the split the source holds, "train" or "test"
+        split (str): the split the source holds, "train" or "holdout"
     """
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}", selected_columns=SOURCE_COLUMNS
     )
     compare_lf = utils.scan_parquet(
-        f"s3://{bucket_name}/{compare_path}", selected_columns=COMPARE_COLUMNS
+        f"s3://{bucket_name}/{compare_path}", selected_columns=vUtils.COMPARE_COLUMNS
     )
-    compare_dates_df = (
-        wUtils.filter_worker_turnover_data(compare_lf)
-        .select(AWKClean.ascwds_worker_import_date)
-        .collect()
-    )
-    expected_row_count = (
-        wUtils.add_split_column(compare_dates_df.lazy())
-        .filter(pl.col(HackCols.split) == split)
-        .select(pl.len())
-        .collect()
-        .item()
-    )
+    expected_row_count = vUtils.count_expected_rows(compare_lf, split)
 
     establishment_month = [
         AWKClean.establishment_id,
@@ -133,65 +128,16 @@ def main(
     current_region_values = Region(ONSClean.current_region).categorical_values
     training_flag_labels = f"{AWKClean.training_flag}_labels"
 
+    validation = pb.Validate(
+        data=source_df,
+        label=f"Validation of {source_path}",
+        thresholds=GLOBAL_THRESHOLDS,
+        brief=True,
+        actions=GLOBAL_ACTIONS,
+    )
+    validation = vUtils.add_worker_data_checks(validation, split, expected_row_count)
     validation = (
-        pb.Validate(
-            data=source_df,
-            label=f"Validation of {source_path}",
-            thresholds=GLOBAL_THRESHOLDS,
-            brief=True,
-            actions=GLOBAL_ACTIONS,
-        )
-        # Row and key checks
-        .row_count_match(
-            expected_row_count,
-            brief=f"Expects {expected_row_count} rows",
-        )
-        .col_vals_not_null(KEY_COLUMNS, brief="key columns have no nulls")
-        .col_vals_not_null(
-            AWPClean.organisation_id, brief="organisation_id has no nulls"
-        )
-        .rows_distinct(
-            KEY_COLUMNS,
-            brief="establishment, worker and import date are unique",
-        )
-        .specially(
-            vUtils.has_one_import_date_per_month,
-            brief="each month has at most one import date",
-        )
-        .col_vals_ge(
-            AWKClean.ascwds_worker_import_date,
-            wUtils.EARLIEST_IMPORT_DATE,
-            brief=f"import date is on or after {wUtils.EARLIEST_IMPORT_DATE}",
-        )
-        # Categorical checks
-        .col_vals_in_set(HackCols.split, [split], brief=f"split is {split}")
-        .col_vals_in_set(
-            AWKClean.employment_status_clean_labelled,
-            [EmpStat.permanent, EmpStat.temporary],
-            brief="employment status is permanent or temporary",
-        )
-        .col_vals_in_set(
-            AWKClean.main_job_role_clean_labelled,
-            CatValues.main_job_role_labels_column_values.categorical_values,
-            brief="main job role label is a known value",
-        )
-        .col_vals_in_set(
-            HackCols.main_service_type,
-            PrimaryServiceType(HackCols.main_service_type).categorical_values,
-            brief="main_service_type is a known value",
-        )
-        .col_vals_in_set(
-            ONSClean.current_cssr,
-            current_cssr_values,
-            brief="current_cssr is a known value",
-        )
-        .col_vals_in_set(
-            ONSClean.current_region,
-            current_region_values,
-            brief="current_region is a known value",
-        )
-        # Numerical checks
-        .col_vals_between(
+        validation.col_vals_between(
             HackCols.turnover_rate,
             0,
             1,
@@ -215,6 +161,18 @@ def main(
             0,
             na_pass=True,
             brief="age_imputed is null or not negative",
+        )
+        .col_vals_ge(
+            HackCols.years_in_role,
+            0,
+            na_pass=True,
+            brief="years_in_role is null or not negative",
+        )
+        .col_vals_ge(
+            HackCols.years_in_sector,
+            0,
+            na_pass=True,
+            brief="years_in_sector is null or not negative",
         )
         # Cross-column checks
         .col_vals_expr(
@@ -260,6 +218,16 @@ def main(
             | hourly_pay.is_not_null(),
             brief="hourly_pay_diff_to_cssr_median is only populated when hourly_pay is populated",
         )
+        .col_vals_expr(
+            expr=pl.col(HackCols.years_in_role).is_null()
+            | pl.col(AWKClean.start_date).is_not_null(),
+            brief="years_in_role is only populated where start_date is populated",
+        )
+        .col_vals_expr(
+            expr=pl.col(HackCols.years_in_sector).is_null()
+            | pl.col(AWKClean.start_in_sector).is_not_null(),
+            brief="years_in_sector is only populated where start_in_sector is populated",
+        )
         .col_vals_in_set(
             HackCols.age_source,
             [
@@ -293,6 +261,12 @@ def main(
         training_flag_labels: TrainingFlagLabels(
             training_flag_labels, contains_null_values=False
         ),
+        HackCols.ethnicity_group_labels: EthnicityGroupLabels(
+            HackCols.ethnicity_group_labels, contains_null_values=True
+        ),
+        HackCols.scerec_wo_group_labels: SourceOfRecruitmentWithinOutsideAscLabels(
+            HackCols.scerec_wo_group_labels, contains_null_values=True
+        ),
     }
 
     # One set of steps per column so a report names the column.
@@ -317,7 +291,7 @@ if __name__ == "__main__":
         ("--source_path", "The filepath of the dataset to validate"),
         ("--compare_path", "The filepath of the dataset to compare against"),
         ("--reports_path", "The filepath to output reports"),
-        ("--split", "The split the dataset holds, train or test"),
+        ("--split", "The split the dataset holds, train or holdout"),
     )
     print(f"Starting validation for {args.source_path}")
 

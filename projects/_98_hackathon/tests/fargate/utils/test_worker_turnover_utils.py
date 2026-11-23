@@ -32,7 +32,13 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
-from utils.column_values.ascwds_labelled_vocab import NotKnownWorkerCodes
+from utils.column_values.ascwds_labelled_vocab import (
+    EthnicityGroupLabels,
+    EthnicityID,
+    NotKnownWorkerCodes,
+    SourceOfRecruitmentID,
+    SourceOfRecruitmentWithinOutsideAscLabels,
+)
 
 
 class TestFilterWorkerTurnoverData:
@@ -872,6 +878,127 @@ class TestAddGeographyFromPostcode:
         assert locations_lf.collect()[AWPClean.establishment_id].to_list() == ["1-001"]
 
 
+class TestAddYearsInRoleAndSector:
+    keys = {
+        AWKClean.establishment_id: ["1-001"],
+        AWKClean.ascwds_worker_import_date: [date(2021, 1, 5)],
+    }
+    save_dates_lf = pl.LazyFrame(
+        {**keys, HackCols.latest_save_date: [date(2022, 1, 1)]},
+        schema_overrides={HackCols.latest_save_date: pl.Date},
+    )
+
+    worker_lf = pl.LazyFrame(
+        {
+            **keys,
+            AWKClean.start_date: [date(2020, 1, 1)],
+            AWKClean.start_in_sector: [2015.0],
+        },
+        schema_overrides={
+            AWKClean.start_date: pl.Date,
+            AWKClean.start_in_sector: pl.Float32,
+        },
+    )
+
+    def test_returns_years_in_role_as_days_over_365_25(self):
+        returned_df = job.add_years_in_role_and_sector(
+            self.worker_lf,
+            self.save_dates_lf,
+        ).collect()
+
+        assert returned_df[HackCols.years_in_role].to_list() == pytest.approx(
+            [731 / 365.25]
+        )
+
+    def test_returns_years_in_sector_as_save_year_minus_start_year(self):
+        returned_df = job.add_years_in_role_and_sector(
+            self.worker_lf, self.save_dates_lf
+        ).collect()
+
+        assert returned_df[HackCols.years_in_sector].to_list() == [7.0]
+
+    def test_returns_null_years_in_role_when_start_date_is_after_save_date(self):
+        worker_lf = self.worker_lf.with_columns(
+            pl.lit(date(2022, 1, 2)).alias(AWKClean.start_date)
+        )
+
+        returned_df = job.add_years_in_role_and_sector(
+            worker_lf, self.save_dates_lf
+        ).collect()
+
+        assert returned_df[HackCols.years_in_role].to_list() == [None]
+        assert returned_df[HackCols.years_in_sector].to_list() == [7.0]
+
+    def test_returns_null_years_in_sector_when_start_year_is_after_save_year(self):
+        worker_lf = self.worker_lf.with_columns(
+            pl.lit(2023.0, dtype=pl.Float32).alias(AWKClean.start_in_sector)
+        )
+
+        returned_df = job.add_years_in_role_and_sector(
+            worker_lf, self.save_dates_lf
+        ).collect()
+
+        assert returned_df[HackCols.years_in_sector].to_list() == [None]
+        assert returned_df[HackCols.years_in_role].to_list() == pytest.approx(
+            [731 / 365.25]
+        )
+
+    def test_returns_zero_years_when_start_is_on_save_date_and_year(self):
+        worker_lf = self.worker_lf.with_columns(
+            pl.lit(date(2022, 1, 1)).alias(AWKClean.start_date),
+            pl.lit(2022.0, dtype=pl.Float32).alias(AWKClean.start_in_sector),
+        )
+
+        returned_df = job.add_years_in_role_and_sector(
+            worker_lf, self.save_dates_lf
+        ).collect()
+
+        assert returned_df[HackCols.years_in_role].to_list() == [0.0]
+        assert returned_df[HackCols.years_in_sector].to_list() == [0.0]
+
+    def test_returns_float32_year_columns_and_drops_save_date(self):
+        returned_schema = job.add_years_in_role_and_sector(
+            self.worker_lf, self.save_dates_lf
+        ).collect_schema()
+
+        assert returned_schema.names() == [
+            *self.keys,
+            AWKClean.start_date,
+            AWKClean.start_in_sector,
+            HackCols.years_in_role,
+            HackCols.years_in_sector,
+        ]
+        assert returned_schema[HackCols.years_in_role] == pl.Float32
+        assert returned_schema[HackCols.years_in_sector] == pl.Float32
+
+    def test_returns_null_years_when_start_values_are_null(self):
+        worker_lf = self.worker_lf.with_columns(
+            pl.lit(None, dtype=pl.Date).alias(AWKClean.start_date),
+            pl.lit(None, dtype=pl.Float32).alias(AWKClean.start_in_sector),
+        )
+
+        returned_df = job.add_years_in_role_and_sector(
+            worker_lf, self.save_dates_lf
+        ).collect()
+
+        assert returned_df.select(HackCols.years_in_role, HackCols.years_in_sector).row(
+            0
+        ) == (None, None)
+
+    def test_returns_null_years_when_establishment_has_no_save_date(self):
+        no_save_date_lf = self.save_dates_lf.with_columns(
+            pl.lit(None, dtype=pl.Date).alias(HackCols.latest_save_date)
+        )
+
+        returned_df = job.add_years_in_role_and_sector(
+            self.worker_lf, no_save_date_lf
+        ).collect()
+
+        assert returned_df.select(HackCols.years_in_role, HackCols.years_in_sector).row(
+            0
+        ) == (None, None)
+
+
 class TestNullNotKnownCodes:
     not_known_codes = {
         AWKClean.gender: NotKnownWorkerCodes.gender,
@@ -1004,6 +1131,10 @@ class TestAddWorkerLabels:
         AWKClean.training_flag,
     ]
     label_columns = [f"{column}_labels" for column in coded_columns]
+    group_label_columns = [
+        HackCols.ethnicity_group_labels,
+        HackCols.scerec_wo_group_labels,
+    ]
 
     def codes_lf(self, code: str | None) -> pl.LazyFrame:
         return pl.LazyFrame(
@@ -1017,6 +1148,7 @@ class TestAddWorkerLabels:
         assert returned_lf.collect_schema().names() == [
             *self.coded_columns,
             *self.label_columns,
+            *self.group_label_columns,
         ]
 
     def test_returns_label_for_mapped_code(self):
@@ -1042,6 +1174,105 @@ class TestAddWorkerLabels:
         returned_df = job.add_worker_labels(self.codes_lf(code)).collect()
 
         assert returned_df[f"{column}_labels"].to_list() == [label]
+
+    def add_group_labels(self, expected_df: pl.DataFrame) -> pl.DataFrame:
+        """Runs `add_worker_labels` on `expected_df` less its group label columns.
+
+        Other coded columns are added as nulls. Returns the columns of `expected_df`.
+        """
+        input_df = expected_df.drop(self.group_label_columns, strict=False)
+        input_lf = input_df.lazy().with_columns(
+            pl.lit(None, dtype=pl.Categorical).alias(column)
+            for column in self.coded_columns
+            if column not in input_df.columns
+        )
+
+        return job.add_worker_labels(input_lf).select(expected_df.columns).collect()
+
+    def test_recodes_ethnicity_codes_to_group_labels(self):
+        white = EthnicityGroupLabels.white
+        mixed = EthnicityGroupLabels.mixed
+        asian = EthnicityGroupLabels.asian
+        black = EthnicityGroupLabels.black
+        other = EthnicityGroupLabels.other
+        expected_df = pl.DataFrame(
+            {
+                AWKClean.ethnicity: [
+                    EthnicityID.english_welsh_scottish_northern_irish_british,
+                    EthnicityID.irish,
+                    EthnicityID.gypsy_or_irish_traveller,
+                    EthnicityID.other_white,
+                    EthnicityID.white_and_black_caribbean,
+                    EthnicityID.white_and_black_african,
+                    EthnicityID.white_and_asian,
+                    EthnicityID.other_mixed,
+                    EthnicityID.indian,
+                    EthnicityID.pakistani,
+                    EthnicityID.bangladeshi,
+                    EthnicityID.chinese,
+                    EthnicityID.other_asian,
+                    EthnicityID.african,
+                    EthnicityID.caribbean,
+                    EthnicityID.other_black_african_caribbean,
+                    EthnicityID.arab,
+                    EthnicityID.other_ethnic_group,
+                    NotKnownWorkerCodes.ethnicity,
+                    None,
+                ],
+                HackCols.ethnicity_group_labels: [
+                    *[white] * 4,
+                    *[mixed] * 4,
+                    *[asian] * 5,
+                    *[black] * 3,
+                    *[other] * 2,
+                    None,
+                    None,
+                ],
+            },
+            schema={
+                AWKClean.ethnicity: pl.Categorical,
+                HackCols.ethnicity_group_labels: pl.Categorical,
+            },
+        )
+
+        returned_df = self.add_group_labels(expected_df)
+
+        pl_testing.assert_frame_equal(returned_df, expected_df, categorical_as_str=True)
+
+    def test_recodes_source_of_recruitment_codes_to_within_outside_asc_labels(self):
+        within_outside = SourceOfRecruitmentWithinOutsideAscLabels
+        expected_df = pl.DataFrame(
+            {
+                AWKClean.source_of_recruitment: [
+                    SourceOfRecruitmentID.adult_care_local_authority,
+                    SourceOfRecruitmentID.adult_care_private_or_voluntary,
+                    SourceOfRecruitmentID.internal_promotion,
+                    SourceOfRecruitmentID.agency,
+                    SourceOfRecruitmentID.health_sector,
+                    SourceOfRecruitmentID.other_sector,
+                    SourceOfRecruitmentID.not_previously_employed,
+                    SourceOfRecruitmentID.other_sources,
+                    SourceOfRecruitmentID.childrens_social_care,
+                    SourceOfRecruitmentID.first_role_after_education,
+                    NotKnownWorkerCodes.source_of_recruitment,
+                    None,
+                ],
+                HackCols.scerec_wo_group_labels: [
+                    *[within_outside.within_asc] * 4,
+                    *[within_outside.outside_asc] * 6,
+                    None,
+                    None,
+                ],
+            },
+            schema={
+                AWKClean.source_of_recruitment: pl.Categorical,
+                HackCols.scerec_wo_group_labels: pl.Categorical,
+            },
+        )
+
+        returned_df = self.add_group_labels(expected_df)
+
+        pl_testing.assert_frame_equal(returned_df, expected_df, categorical_as_str=True)
 
     def test_keeps_raw_code_as_label_for_unmapped_code(self):
         returned_df = job.add_worker_labels(self.codes_lf("999")).collect()
