@@ -373,6 +373,26 @@ class TestAddHourlyPayMinusNlwClean:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestImputePayAndSickness:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in Data.impute_pay_and_sickness_cases],
+    )
+    def test_returns_expected_rows(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_rows,
+            schema=Schemas.impute_pay_and_sickness_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(
+            HackCols.hourly_pay_minus_nlw_clean_imputed, HackCols.days_sick_imputed
+        )
+
+        returned_lf = job.impute_pay_and_sickness(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestCleanAge:
     @pytest.mark.parametrize(
         "case",
