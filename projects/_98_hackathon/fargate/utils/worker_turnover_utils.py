@@ -232,13 +232,11 @@ def fix_start_date_typos(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def start_date_is_plausible(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Nulls `start_date` where it is implausible.
+    """Nulls `start_date` where implausible.
 
-    A null `start_date` stays null. Otherwise `start_date` is implausible when it is
-    after `ascwds_worker_import_date`. Otherwise, when `age` is above 0, it is
-    implausible if the worker was under `MIN_START_AGE` at `start_date` (`age` minus
-    years since `start_date`). Without a known age (null or not above 0), it is
-    implausible if it is more than `MAX_YEARS_SINCE_START_WITHOUT_AGE` years before
+    Implausible means after `ascwds_worker_import_date`; or, when `age` is above 0,
+    under `MIN_START_AGE` at `start_date` (`age` minus years since `start_date`); or,
+    with no known age, more than `MAX_YEARS_SINCE_START_WITHOUT_AGE` years before
     `ascwds_worker_import_date`.
 
     Args:
