@@ -231,14 +231,14 @@ class TestMain:
             add_country_code_group_mock.return_value.drop.return_value,
             job.wUtils.IMPUTE_COLUMNS,
         )
+        clean_age_mock.assert_called_once_with(impute_worker_columns_mock.return_value)
+        impute_age_mock.assert_called_once_with(clean_age_mock.return_value)
         assert start_date_is_plausible_mock.call_args_list == [
             call(fix_start_date_typos_mock.return_value),
-            call(impute_worker_columns_mock.return_value),
+            call(impute_age_mock.return_value),
         ]
-        clean_age_mock.assert_called_once_with(plausible_after_imputation_lf)
-        impute_age_mock.assert_called_once_with(clean_age_mock.return_value)
         add_nlw_and_pay_difference_mock.assert_called_once_with(
-            impute_age_mock.return_value
+            plausible_after_imputation_lf
         )
         add_split_column_mock.assert_called_once_with(
             add_nlw_and_pay_difference_mock.return_value
