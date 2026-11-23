@@ -539,10 +539,27 @@ class WorkerTurnoverData:
             ],
         ),
         ImputePayAndSicknessCase(
-            id="orders_by_import_date_not_row_order",
+            id="interpolates_by_import_date_not_row_order",
             expected_rows=[
-                ("e1", "w1", MID, None, None, 10.0, 100.0),
+                (
+                    "e1",
+                    "w1",
+                    MID,
+                    None,
+                    None,
+                    10.0 + 20.0 * 147 / 365,
+                    100.0 + 200.0 * 147 / 365,
+                ),
+                ("e1", "w1", END, 30.0, 300.0, 30.0, 300.0),
                 ("e1", "w1", START, 10.0, 100.0, 10.0, 100.0),
+            ],
+        ),
+        ImputePayAndSicknessCase(
+            id="forward_fills_latest_known_value_not_row_order",
+            expected_rows=[
+                ("e1", "w1", END, None, None, 30.0, 300.0),
+                ("e1", "w1", START, 10.0, 100.0, 10.0, 100.0),
+                ("e1", "w1", MID, 30.0, 300.0, 30.0, 300.0),
             ],
         ),
         ImputePayAndSicknessCase(
