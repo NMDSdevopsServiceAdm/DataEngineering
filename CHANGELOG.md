@@ -6,14 +6,21 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a student destination to the Hackathon Worker Turnover job holding the test split without `is_leaver` or `turnover_rate`; the test split now holds only its key columns, `is_leaver` and `turnover_rate`. Each dataset has its own validation script.
+- Added years in role and years in sector, at the establishment's latest save date (null when the start is after it), to the Hackathon Worker Turnover job output.
+- Added the hourly pay difference from the local median (per import date, CSSR and main job role) to the Hackathon Worker Turnover job output and its validation.
+- Added `keep_value_if_changed_expr` to `cleaning_utils`, an expression that keeps a value only on the import date that first shows its change date. The Hackathon Worker Turnover job uses it for `hourly_pay` and `days_sick`, and no longer includes `pay_save_date`.
 - Added a shared hackathon scoring function that checks students' predictions and returns worker-level (AUC, Brier score) and workplace-level (mean absolute error of leave rate, for workplaces with at least 10 scored workers) scores against the held-back test answers.
 - Added organisation ID and training flag (with labels) to the Hackathon Worker Turnover output.
 - Added CSSR and region, matched from the workplace postcode to the ONS postcode directory, to the Hackathon Worker Turnover job output.
+- Added `keep_value_if_changed_expr` to `cleaning_utils`, an expression that keeps a value only on the import date that first shows its change date. The Hackathon Worker Turnover job uses it for `hourly_pay` and `days_sick`, and no longer includes `pay_save_date`.
 - Added age imputation to the Hackathon Worker Turnover job, with the source of each age.
+- Added ethnicity and within/outside adult social care source of recruitment group labels, imputed, to the Hackathon Worker Turnover job output and its validation.
 - Added a guide to maintaining the Monthly Tracker workbooks, and documented where to find them.
 - Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, with each split written separately and the train and test splits validated.
 - Added a validation job for the Hackathon Worker Turnover output.
 - Added the National Living Wage rate at each snapshot, and hourly pay minus it, to the Hackathon Worker Turnover job.
+- Added `hourly_pay_minus_nlw_clean` to the Hackathon Worker Turnover job, the pay difference from the National Living Wage with negative values and values above the 99th percentile for its import date and job role set to null.
 - Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
 - Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, replacing the raw hourly rate, salary, contracted hours and average hours columns.
 - Added previous run April and short-term cumulative percentage changes, and their differences from the current run, to the Monthly Tracker assessment.
