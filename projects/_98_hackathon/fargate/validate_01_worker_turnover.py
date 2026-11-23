@@ -21,6 +21,8 @@ from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import (
     CountryOfBirthGroupLabels,
+    EthnicityGroupLabels,
+    SourceOfRecruitmentWithinOutsideAscLabels,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import (
@@ -75,6 +77,7 @@ SOURCE_COLUMNS = [
     AWKClean.start_date,
     *NUMERIC_COLUMNS,
     *wUtils.LABEL_COLUMNS,
+    *wUtils.GROUP_LABEL_RECODES,
 ]
 
 COMPARE_COLUMNS = [
@@ -317,6 +320,12 @@ def main(
         ),
         training_flag_labels: TrainingFlagLabels(
             training_flag_labels, contains_null_values=False
+        ),
+        HackCols.ethnicity_group_labels: EthnicityGroupLabels(
+            HackCols.ethnicity_group_labels, contains_null_values=True
+        ),
+        HackCols.scerec_wo_group_labels: SourceOfRecruitmentWithinOutsideAscLabels(
+            HackCols.scerec_wo_group_labels, contains_null_values=True
         ),
     }
 

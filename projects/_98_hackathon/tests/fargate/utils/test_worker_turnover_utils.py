@@ -32,7 +32,13 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
-from utils.column_values.ascwds_labelled_vocab import NotKnownWorkerCodes
+from utils.column_values.ascwds_labelled_vocab import (
+    EthnicityGroupLabels,
+    EthnicityID,
+    NotKnownWorkerCodes,
+    SourceOfRecruitmentID,
+    SourceOfRecruitmentWithinOutsideAscLabels,
+)
 
 
 class TestFilterWorkerTurnoverData:
@@ -1105,6 +1111,10 @@ class TestAddWorkerLabels:
         AWKClean.training_flag,
     ]
     label_columns = [f"{column}_labels" for column in coded_columns]
+    group_label_columns = [
+        HackCols.ethnicity_group_labels,
+        HackCols.scerec_wo_group_labels,
+    ]
 
     def codes_lf(self, code: str | None) -> pl.LazyFrame:
         return pl.LazyFrame(
@@ -1118,6 +1128,7 @@ class TestAddWorkerLabels:
         assert returned_lf.collect_schema().names() == [
             *self.coded_columns,
             *self.label_columns,
+            *self.group_label_columns,
         ]
 
     def test_returns_label_for_mapped_code(self):
@@ -1143,6 +1154,105 @@ class TestAddWorkerLabels:
         returned_df = job.add_worker_labels(self.codes_lf(code)).collect()
 
         assert returned_df[f"{column}_labels"].to_list() == [label]
+
+    def add_group_labels(self, expected_df: pl.DataFrame) -> pl.DataFrame:
+        """Runs `add_worker_labels` on `expected_df` less its group label columns.
+
+        Other coded columns are added as nulls. Returns the columns of `expected_df`.
+        """
+        input_df = expected_df.drop(self.group_label_columns, strict=False)
+        input_lf = input_df.lazy().with_columns(
+            pl.lit(None, dtype=pl.Categorical).alias(column)
+            for column in self.coded_columns
+            if column not in input_df.columns
+        )
+
+        return job.add_worker_labels(input_lf).select(expected_df.columns).collect()
+
+    def test_recodes_ethnicity_codes_to_group_labels(self):
+        white = EthnicityGroupLabels.white
+        mixed = EthnicityGroupLabels.mixed
+        asian = EthnicityGroupLabels.asian
+        black = EthnicityGroupLabels.black
+        other = EthnicityGroupLabels.other
+        expected_df = pl.DataFrame(
+            {
+                AWKClean.ethnicity: [
+                    EthnicityID.english_welsh_scottish_northern_irish_british,
+                    EthnicityID.irish,
+                    EthnicityID.gypsy_or_irish_traveller,
+                    EthnicityID.other_white,
+                    EthnicityID.white_and_black_caribbean,
+                    EthnicityID.white_and_black_african,
+                    EthnicityID.white_and_asian,
+                    EthnicityID.other_mixed,
+                    EthnicityID.indian,
+                    EthnicityID.pakistani,
+                    EthnicityID.bangladeshi,
+                    EthnicityID.chinese,
+                    EthnicityID.other_asian,
+                    EthnicityID.african,
+                    EthnicityID.caribbean,
+                    EthnicityID.other_black_african_caribbean,
+                    EthnicityID.arab,
+                    EthnicityID.other_ethnic_group,
+                    NotKnownWorkerCodes.ethnicity,
+                    None,
+                ],
+                HackCols.ethnicity_group_labels: [
+                    *[white] * 4,
+                    *[mixed] * 4,
+                    *[asian] * 5,
+                    *[black] * 3,
+                    *[other] * 2,
+                    None,
+                    None,
+                ],
+            },
+            schema={
+                AWKClean.ethnicity: pl.Categorical,
+                HackCols.ethnicity_group_labels: pl.Categorical,
+            },
+        )
+
+        returned_df = self.add_group_labels(expected_df)
+
+        pl_testing.assert_frame_equal(returned_df, expected_df, categorical_as_str=True)
+
+    def test_recodes_source_of_recruitment_codes_to_within_outside_asc_labels(self):
+        within_outside = SourceOfRecruitmentWithinOutsideAscLabels
+        expected_df = pl.DataFrame(
+            {
+                AWKClean.source_of_recruitment: [
+                    SourceOfRecruitmentID.adult_care_local_authority,
+                    SourceOfRecruitmentID.adult_care_private_or_voluntary,
+                    SourceOfRecruitmentID.internal_promotion,
+                    SourceOfRecruitmentID.agency,
+                    SourceOfRecruitmentID.health_sector,
+                    SourceOfRecruitmentID.other_sector,
+                    SourceOfRecruitmentID.not_previously_employed,
+                    SourceOfRecruitmentID.other_sources,
+                    SourceOfRecruitmentID.childrens_social_care,
+                    SourceOfRecruitmentID.first_role_after_education,
+                    NotKnownWorkerCodes.source_of_recruitment,
+                    None,
+                ],
+                HackCols.scerec_wo_group_labels: [
+                    *[within_outside.within_asc] * 4,
+                    *[within_outside.outside_asc] * 6,
+                    None,
+                    None,
+                ],
+            },
+            schema={
+                AWKClean.source_of_recruitment: pl.Categorical,
+                HackCols.scerec_wo_group_labels: pl.Categorical,
+            },
+        )
+
+        returned_df = self.add_group_labels(expected_df)
+
+        pl_testing.assert_frame_equal(returned_df, expected_df, categorical_as_str=True)
 
     def test_keeps_raw_code_as_label_for_unmapped_code(self):
         returned_df = job.add_worker_labels(self.codes_lf("999")).collect()

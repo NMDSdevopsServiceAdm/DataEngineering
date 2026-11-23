@@ -28,6 +28,8 @@ class HackathonColumns:
     country_of_birth_group: str = "country_of_birth_group"
     years_in_role: str = "years_in_role"
     years_in_sector: str = "years_in_sector"
+    ethnicity_group_labels: str = "ethnicity_group_labels"
+    scerec_wo_group_labels: str = "scerec_wo_group_labels"
     turnover_rate: str = "turnover_rate"
     start_import_date: str = "start_import_date"
     start_headcount: str = "start_headcount"
