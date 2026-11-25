@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 
 import polars as pl
 import polars.testing as pl_testing
@@ -538,3 +539,127 @@ class TestAddLatestRatingFlagColumn:
         ]
 
         pl_testing.assert_frame_equal(*flagged_lfs)
+
+
+class TestCreateStandardRatingsDataset:
+    def test_keeps_only_standard_columns_in_order(self):
+        input_lf = pl.LazyFrame(
+            Data.create_standard_ratings_dataset_rows,
+            schema=Schemas.create_standard_ratings_dataset_schema,
+            orient="row",
+        )
+
+        returned_lf = job.create_standard_ratings_dataset(input_lf)
+
+        expected_lf = pl.LazyFrame(
+            Data.expected_create_standard_ratings_dataset_rows,
+            schema=Schemas.standard_ratings_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
+
+    def test_removes_duplicate_rows_left_after_dropping_columns(self):
+        input_lf = pl.LazyFrame(
+            Data.create_standard_ratings_dataset_duplicate_rows,
+            schema=Schemas.create_standard_ratings_dataset_schema,
+            orient="row",
+        )
+
+        returned_lf = job.create_standard_ratings_dataset(input_lf)
+
+        expected_lf = pl.LazyFrame(
+            Data.expected_create_standard_ratings_dataset_duplicate_rows,
+            schema=Schemas.standard_ratings_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
+
+    def test_removes_duplicate_rows_containing_nulls(self):
+        input_lf = pl.LazyFrame(
+            Data.create_standard_ratings_dataset_null_rows,
+            schema=Schemas.create_standard_ratings_dataset_schema,
+            orient="row",
+        )
+
+        returned_lf = job.create_standard_ratings_dataset(input_lf)
+
+        expected_lf = pl.LazyFrame(
+            Data.expected_create_standard_ratings_dataset_null_rows,
+            schema=Schemas.standard_ratings_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
+
+
+@dataclass
+class AddLocationIdHashTestCase:
+    id: str
+    rows: list[Any]
+    expected_rows: list[Any]
+    schema: pl.Schema = field(default_factory=lambda: Schemas.location_id_hash_schema)
+    expected_schema: pl.Schema = field(
+        default_factory=lambda: Schemas.expected_location_id_hash_schema
+    )
+
+    def as_pytest_param(self):
+        return pytest.param(
+            self.rows,
+            self.expected_rows,
+            self.schema,
+            self.expected_schema,
+            id=self.id,
+        )
+
+
+add_location_id_hash_cases = [
+    AddLocationIdHashTestCase(
+        id="hashes_short_location_id",
+        rows=Data.location_id_hash_short_rows,
+        expected_rows=Data.expected_location_id_hash_short_rows,
+    ),
+    AddLocationIdHashTestCase(
+        id="hashes_long_location_id",
+        rows=Data.location_id_hash_long_rows,
+        expected_rows=Data.expected_location_id_hash_long_rows,
+    ),
+    AddLocationIdHashTestCase(
+        id="gives_repeated_location_ids_the_same_hash",
+        rows=Data.location_id_hash_repeated_rows,
+        expected_rows=Data.expected_location_id_hash_repeated_rows,
+    ),
+    AddLocationIdHashTestCase(
+        id="keeps_other_columns_unchanged",
+        rows=Data.location_id_hash_other_column_rows,
+        expected_rows=Data.expected_location_id_hash_other_column_rows,
+        schema=Schemas.location_id_hash_other_column_schema,
+        expected_schema=Schemas.expected_location_id_hash_other_column_schema,
+    ),
+    AddLocationIdHashTestCase(
+        id="hashes_categorical_location_id",
+        rows=Data.location_id_hash_categorical_rows,
+        expected_rows=Data.expected_location_id_hash_categorical_rows,
+        schema=Schemas.location_id_hash_categorical_schema,
+        expected_schema=Schemas.expected_location_id_hash_categorical_schema,
+    ),
+    AddLocationIdHashTestCase(
+        id="returns_null_hash_when_location_id_is_null",
+        rows=Data.location_id_hash_null_rows,
+        expected_rows=Data.expected_location_id_hash_null_rows,
+    ),
+]
+
+
+class TestAddLocationIdHash:
+    @pytest.mark.parametrize(
+        "rows, expected_rows, schema, expected_schema",
+        [case.as_pytest_param() for case in add_location_id_hash_cases],
+    )
+    def test_adds_expected_location_id_hash(
+        self, rows, expected_rows, schema, expected_schema
+    ):
+        input_lf = pl.LazyFrame(rows, schema=schema, orient="row")
+
+        returned_lf = job.add_location_id_hash(input_lf)
+
+        expected_lf = pl.LazyFrame(expected_rows, schema=expected_schema, orient="row")
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
