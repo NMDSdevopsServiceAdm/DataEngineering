@@ -16,20 +16,20 @@ from utils.column_values.categorical_columns_by_dataset import (
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         AWPClean.ascwds_workplace_import_date: "Date",
-        AWPClean.establishment_id: "String",
+        AWPClean.establishment_id: str(CategoricalColumnTypes.EstablishmentCatType),
         AWPClean.nmds_id: "String",
         AWPClean.master_update_date: "Date",
         AWPClean.master_update_date_org: "Date",
         AWPClean.establishment_created_date: "Date",
         AWPClean.is_parent: str(CategoricalColumnTypes.IsParentCatType),
         AWPClean.parent_id: "String",
-        AWPClean.organisation_id: "String",
+        AWPClean.organisation_id: str(CategoricalColumnTypes.OrganisationIdCatType),
         AWPClean.parent_permission: str(CategoricalColumnTypes.ParentPermissionCatType),
         AWPClean.establishment_type: str(
             CategoricalColumnTypes.EstablishmentTypeCatType
         ),
         AWPClean.registration_type: str(CategoricalColumnTypes.RegistrationTypeCatType),
-        AWPClean.location_id: "String",
+        AWPClean.location_id: str(CategoricalColumnTypes.LocationCatType),
         AWPClean.main_service_id: str(CategoricalColumnTypes.MainServiceIdCatType),
         AWPClean.establishment_name: "String",
         AWPClean.region_id: str(CategoricalColumnTypes.RegionIdCatType),

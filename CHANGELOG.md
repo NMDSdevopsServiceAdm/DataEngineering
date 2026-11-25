@@ -6,6 +6,60 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added imputed hourly pay minus National Living Wage and days sick (straight-line between known values, then carried forward and back) to the Hackathon Worker Turnover job.
+- Added a student destination to the Hackathon Worker Turnover job holding the test split without `is_leaver` or `turnover_rate`; the test split now holds only its key columns, `is_leaver` and `turnover_rate`. Each dataset has its own validation script.
+- Added years in role and years in sector, at the establishment's latest save date (null when the start is after it), to the Hackathon Worker Turnover job output.
+- Added the hourly pay difference from the local median (per import date, CSSR and main job role) to the Hackathon Worker Turnover job output and its validation.
+- Added `keep_value_if_changed_expr` to `cleaning_utils`, an expression that keeps a value only on the import date that first shows its change date. The Hackathon Worker Turnover job uses it for `hourly_pay` and `days_sick`, and no longer includes `pay_save_date`.
+- Added a shared hackathon scoring function that checks students' predictions and returns worker-level (AUC, Brier score) and workplace-level (mean absolute error of leave rate, for workplaces with at least 10 scored workers) scores against the held-back test answers.
+- Added organisation ID and training flag (with labels) to the Hackathon Worker Turnover output.
+- Added CSSR and region, matched from the workplace postcode to the ONS postcode directory, to the Hackathon Worker Turnover job output.
+- Added `keep_value_if_changed_expr` to `cleaning_utils`, an expression that keeps a value only on the import date that first shows its change date. The Hackathon Worker Turnover job uses it for `hourly_pay` and `days_sick`, and no longer includes `pay_save_date`.
+- Added age imputation to the Hackathon Worker Turnover job, with the source of each age.
+- Added ethnicity and within/outside adult social care source of recruitment group labels, imputed, to the Hackathon Worker Turnover job output and its validation.
+- Added a guide to maintaining the Monthly Tracker workbooks, and documented where to find them.
+- Added a train/holdout/test `split` column to the Hackathon Worker Turnover job, with each split written separately and the train and test splits validated.
+- Added a validation job for the Hackathon Worker Turnover output.
+- Added the National Living Wage rate at each snapshot, and hourly pay minus it, to the Hackathon Worker Turnover job.
+- Added `hourly_pay_minus_nlw_clean` to the Hackathon Worker Turnover job, the pay difference from the National Living Wage with negative values and values above the 99th percentile for its import date and job role set to null.
+- Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
+- Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, replacing the raw hourly rate, salary, contracted hours and average hours columns.
+- Added previous run April and short-term cumulative percentage changes, and their differences from the current run, to the Monthly Tracker assessment.
+- Added job group rollup rows to the Monthly Tracker assessment data, validated against the "All job roles" rows and ignored by the reconciliation check.
+- The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
+- Added nationality and country of birth groups (British or UK, EEA, Non-EEA) to the Hackathon Worker Turnover job output.
+- Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
+- Added an `age_clean` column to the Hackathon Worker Turnover job, nulling ages of 80 or more and ages 3 or more years from the worker's median implied birth year; ages are imputed from it.
+
+### Changed
+- Filled null worker attributes in the Hackathon Worker Turnover job from the same worker's other import dates.
+- Updated the `pytest-pattern` skill and STYLEGUIDE.md so tests for functions that only add columns derive the input by dropping the new columns from the expected data.
+- Replaced negative (not known/recorded) values and the not known, not disclosed and unknown codes in the Hackathon Worker Turnover job's raw worker columns with null.
+- Monthly Tracker cumulative percentage change is now null for each group's baseline period, so the data download workbook shows [x] (the assessment workbook is also affected).
+- The assessment workbook's "Comp prev publication" sheet shows percentage changes instead of filled post counts.
+- Replaced negative (not known/recorded) values in the Hackathon Worker Turnover job's raw worker columns with null.
+- Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
+
+### Improved
+
+- Dropped unneeded columns from the hackathon worker turnover output at their last use.
+
+### Fixed
+- Fixed implausible start dates in the Hackathon Worker Turnover job: mistyped centuries are corrected, and dates after the import date or implying a start age under 16 are nulled before and after imputation. Removed `startage` from the output.
+
+
+## [v2026.10.0] - 09/11/2026
+
+### Added
+- Added 25 raw ASC-WDS worker columns to the Hackathon Worker Turnover job output, with start and pay dates as dates.
+- Added a cleaned main service ID (nulls filled from other import dates) to the cleaned ASC-WDS workplace data, now used by the Hackathon Worker Turnover job in place of the worker data's main service type ID.
+- Added run log runbook guidance for fixing AWS permissions errors.
+- Added an `establishment_active` flag, with months since last save at each snapshot, to the Hackathon Worker Turnover job, and carried the save date through the cleaned ASC-WDS worker data.
+- Added main service type ID to the cleaned ASC-WDS worker data, and a `main_service_type` recode to the Hackathon Worker Turnover job, which now also drops workers without a location ID.
+- Added an `is_leaver` flag to the Hackathon Worker Turnover job, true when a worker is absent from the snapshot 12 months later (null if none exists).
+- Added an `establishment_in_both_snapshots` flag to the Hackathon Worker Turnover job; `is_leaver` is null where it is false.
+- Added `turnover_rate`, `plausible_turnover` and `valid_for_analysis` to the Hackathon Worker Turnover job; a turnover rate of 0 (no leavers in the year) or 1 (everyone left) is implausible.
+- Added share scoring (error, Brier, top 1, skill, coverage) to model evaluation utils.
 - Added a manually-run Hackathon Worker Turnover Step Function that filters the cleaned ASC-WDS worker data to permanent and temporary workers, keeping the earliest file in each month from January 2020, then crawls the output.
 - The assessment job fills the assessment workbook and saves it to S3.
 - Added the mapping of assessment data to the Comp prev publication and comparison sheets of the assessment workbook.
@@ -27,6 +81,7 @@ All notable changes to this project will be documented in this file.
 - The assessment workbook writer now fills the B7 heading and B14 criteria note on the long term comparison sheet, and the B7 heading on the No filters sheet.
 - Added the previously published run's filled posts and the percentage change from them to the assessment data.
 - Added a 60-day expiration rule to the job role archive's rolling estimates and metadata datasets; the run log is unaffected.
+- Added 60-day expiration rules to the publication prepared data, assessed data, validation reports and workbooks; `_03_output` is unaffected.
 - Added a long-term archive S3 bucket for promoted job role archive runs, with a bucket policy denying object deletion to everyone except the Admin role.
 - Added a CircleCI workflow that, once approved, tags the selected and reconciled run's commit `vYYYY.MM.N`, records the tag in the archive run log, and opens a PR moving that commit's CHANGELOG entries under the version.
 - Extended the run log update script to automatically copy a selected run's estimates and metadata into the long-term archive bucket, setting a new `promoted` flag.
@@ -36,6 +91,8 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
+- Extended the Publication-Output reconciliation to compare filled posts for each period and job role, failing with the role and period named when a role differs or is in only one source.
+- Changed the Trello card drafting skill to ask open questions first, label cards by dependency tier, and start each description with /new-ticket.
 - Assessment percentage change columns are now Float64 to reduce rounding drift.
 - Changed the assessment workbook titles to show the run number, and excluded the workbook folder from the publication Glue crawler.
 - Converted the CQC ratings assessment flattening to Polars.
@@ -75,9 +132,14 @@ All notable changes to this project will be documented in this file.
 - Changed ASC-WDS workplace cleaning to null starters, leavers and vacancies job role columns where their total is not known, and to cast the totals to integers.
 - Changed the Trello card drafting skill to start each card with a TODO and to rename "Summary" to "The problem to solve".
 - Changed the merge-when-ready GitHub Action to run from `main` rather than the labelled PR's copy of the script and workflow.
+- Cast the CQC location ID to `LocationCatType` in each ingest clean job and removed the later casts that only existed because it arrived as a string.
+- Cast the ASC-WDS establishment ID to `EstablishmentCatType` in the workplace and worker clean jobs, validated in both, and removed the later casts that only existed because it arrived as a string.
+- Renamed the Sub ICB areas based on the May 2026 ONS Postcode Directory.
 - Renamed the filled posts, total employed, location count and cumulative percentage change publication columns to the `<filtered/unfiltered>_<short/medium/long>_<ct/sfc>_<measure>` pattern, and prefixed the remaining filled posts and location count columns with `filtered_` or `unfiltered_`.
+- Changed the merge-when-ready GitHub Action to delete the branch and destroy its dev environment after merging.
 
 ### Improved
+- Split the assessment workbook helpers into text, values and writer modules, with no change to the workbook produced.
 - Rounded percentage values and removed decimals from count tables before writing them to the assessment workbook.
 - Replaced the literal table headings in the assessment cell map with shared column value classes.
 - Removed two Polars warnings from the filtering rule update and the ASC-WDS workplace duplicate cleaning.
@@ -92,6 +154,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the monthly tracker publication's same service type filter to check each term's window, not the whole history.
 - Fixed a flaky thread-count test in the run diagnostics tests.
 - Fixed ASC-WDS workplace cleaning to null all starters, leavers or vacancies job roles when the total or any role is negative or 999.
+- Fixed the CQC API delta downloads failing on short CQC outages: requests now retry for up to 30 minutes in main and about a minute in other workspaces (`CQC_API_RETRY_BUDGET_SECONDS`, set in Terraform) and the Step Function retries failed download tasks.
 
 
 ## [v2026.09.0] - 13/10/2026

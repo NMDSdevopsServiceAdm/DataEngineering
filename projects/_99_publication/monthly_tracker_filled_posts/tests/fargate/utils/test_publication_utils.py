@@ -6,6 +6,7 @@ import pytest
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate.utils.publication_utils as job
 import projects._99_publication.unittest_data.polars_pub_test_data as Data
+from polars_utils.column_types import CategoricalColumnTypes
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import (
@@ -409,6 +410,7 @@ class TestAddRowsForPublicationGroups:
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.main_job_group_labelled, pl.String()),
             (IndCQC.current_region, pl.String()),
             (IndCQC.primary_service_type, _primary_service_type_enum),
             (
@@ -486,6 +488,7 @@ class TestAddRowsForPublicationGroups:
                     "1-101",
                     date(2025, 4, 1),
                     "Registered nurse",
+                    PublishedJobGroupLabels.regulated_professions,
                     "London",
                     "Care home with nursing",
                     10.0,
@@ -496,6 +499,7 @@ class TestAddRowsForPublicationGroups:
                     "1-101",
                     date(2025, 4, 1),
                     "Care worker",
+                    PublishedJobGroupLabels.direct_care,
                     "London",
                     "Care home with nursing",
                     20.0,
@@ -536,9 +540,96 @@ class TestAddRowsForPublicationGroups:
         assert england_total_row.select(
             Pub.unfiltered_filled_posts, Pub.unfiltered_locationid_count
         ).row(0) == (30.0, 1)
+        england_direct_care_row = returned_lf.filter(
+            (pl.col(IndCQC.current_region) == PublishedRegion.england)
+            & (
+                pl.col(IndCQC.main_job_role_clean_labelled)
+                == PublishedJobGroupLabels.direct_care
+            )
+            & (
+                pl.col(IndCQC.primary_service_type).cast(pl.String)
+                == PublishedMainService.all_locations
+            )
+        ).collect()
+        assert england_direct_care_row.select(
+            Pub.unfiltered_filled_posts, Pub.unfiltered_locationid_count
+        ).row(0) == (20.0, 1)
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            case.as_pytest_param()
+            for case in Data.add_rows_for_publication_groups_test_cases
+        ],
+    )
+    def test_leaves_job_role_rows_unchanged(self, case):
+        input_lf = pl.LazyFrame(case.input_data, self.input_schema, orient="row")
+        publication_summary_lf = job.aggregate_to_publication_rows(input_lf)
+        key_columns = [
+            IndCQC.cqc_location_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.current_region,
+            IndCQC.primary_service_type,
+        ]
+        expected_job_role_lf = publication_summary_lf.with_columns(
+            pl.col(IndCQC.primary_service_type).cast(pl.Categorical)
+        )
+
+        returned_lf = job.add_rows_for_publication_groups(
+            input_lf, publication_summary_lf
+        )
+
+        returned_job_role_lf = returned_lf.join(
+            expected_job_role_lf.select(key_columns), on=key_columns, how="semi"
+        )
+        pl_testing.assert_frame_equal(
+            returned_job_role_lf, expected_job_role_lf, check_row_order=False
+        )
+
+    def test_job_group_rows_take_the_job_role_column_dtype(self):
+        # Job role and job group are separate categorical types in production.
+        input_schema = pl.Schema(
+            {
+                **self.input_schema,
+                IndCQC.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleCatType,
+                IndCQC.main_job_group_labelled: CategoricalColumnTypes.JobGroupCatType,
+            }
+        )
+        input_lf = pl.LazyFrame(
+            [
+                (
+                    "1-101",
+                    date(2025, 4, 1),
+                    "Care worker",
+                    PublishedJobGroupLabels.direct_care,
+                    "London",
+                    PrimaryServiceType.care_home_with_nursing,
+                    20.0,
+                    5.0,
+                    *[True] * 9,
+                ),
+            ],
+            input_schema,
+            orient="row",
+        )
+        publication_summary_lf = job.aggregate_to_publication_rows(input_lf)
+
+        returned_lf = job.add_rows_for_publication_groups(
+            input_lf, publication_summary_lf
+        )
+
+        assert (
+            returned_lf.collect_schema()[IndCQC.main_job_role_clean_labelled]
+            == CategoricalColumnTypes.JobRoleCatType
+        )
+        direct_care_rows = returned_lf.filter(
+            pl.col(IndCQC.main_job_role_clean_labelled).cast(pl.String)
+            == PublishedJobGroupLabels.direct_care
+        ).collect()
+        assert direct_care_rows.height > 0
 
 
-class TestAddPrevRunFilledPostsColumns:
+class TestAddPrevRunPctChangeColumns:
     key_schema = pl.Schema(
         [
             (IndCQC.cqc_location_import_date, pl.Date()),
@@ -548,67 +639,75 @@ class TestAddPrevRunFilledPostsColumns:
         ]
     )
     current_schema = pl.Schema(
-        list(key_schema.items()) + [(Pub.unfiltered_filled_posts, pl.Float64())]
+        list(key_schema.items())
+        + [
+            (Pub.unfiltered_filled_posts, pl.Float64()),
+            (Pub.unfiltered_filled_posts_april_pct_change, pl.Float64()),
+            (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float64()),
+        ]
     )
     prev_schema = current_schema
 
     def _current_lf(self) -> pl.LazyFrame:
         return pl.LazyFrame(
             [
-                (date(2026, 4, 1), "A", "North", "care", 110.0),
-                (date(2026, 5, 1), "A", "North", "care", 50.0),
+                (date(2026, 4, 1), "A", "North", "care", 110.0, 0.5, 0.25),
+                (date(2026, 5, 1), "A", "North", "care", 50.0, 0.4, 0.2),
             ],
             self.current_schema,
             orient="row",
         )
 
-    def _prev_lf(self, prev_posts: float = 100.0) -> pl.LazyFrame:
+    def _prev_lf(self) -> pl.LazyFrame:
         return pl.LazyFrame(
-            [(date(2026, 4, 1), "A", "North", "care", prev_posts)],
+            [(date(2026, 4, 1), "A", "North", "care", 100.0, 0.3, 0.1)],
             self.prev_schema,
             orient="row",
         )
 
-    def test_adds_prev_run_filled_posts_on_matching_keys_and_null_on_new_keys(self):
-        returned_df = job.add_prev_run_filled_posts_columns(
-            self._current_lf(), self._prev_lf()
-        ).collect()
-
-        assert returned_df[Pub.unfiltered_filled_posts_prev_run].to_list() == [
-            100.0,
-            None,
-        ]
-
-    def test_adds_perc_change_from_prev_run_as_net_change_fraction(self):
-        returned_df = job.add_prev_run_filled_posts_columns(
+    def test_comparison_is_current_minus_prev_run_pct_change(self):
+        returned_df = job.add_prev_run_pct_change_columns(
             self._current_lf(), self._prev_lf()
         ).collect()
 
         assert returned_df[
-            Pub.unfiltered_filled_posts_pct_change_vs_prev_run
-        ].to_list() == [
-            pytest.approx(0.1),
-            None,
-        ]
-        assert (
-            returned_df.schema[Pub.unfiltered_filled_posts_pct_change_vs_prev_run]
-            == pl.Float64()
+            Pub.unfiltered_filled_posts_april_pct_change_comparison
+        ].to_list() == [pytest.approx(0.2), None]
+        assert returned_df[
+            Pub.unfiltered_short_sfc_cum_pct_change_comparison
+        ].to_list() == [pytest.approx(0.15), None]
+
+    def test_prev_run_pct_changes_are_null_when_prev_run_lacks_them(self):
+        prev_lf = self._prev_lf().select(
+            *self.key_schema.names(), Pub.unfiltered_filled_posts
         )
 
-    def test_perc_change_is_null_when_prev_run_filled_posts_is_zero(self):
-        returned_df = job.add_prev_run_filled_posts_columns(
-            self._current_lf(), self._prev_lf(prev_posts=0.0)
+        returned_df = job.add_prev_run_pct_change_columns(
+            self._current_lf(), prev_lf
+        ).collect()
+
+        for column in [
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run,
+            Pub.unfiltered_short_sfc_cum_pct_change_prev_run,
+            Pub.unfiltered_filled_posts_april_pct_change_comparison,
+            Pub.unfiltered_short_sfc_cum_pct_change_comparison,
+        ]:
+            assert returned_df[column].null_count() == 2
+
+    def test_adds_prev_run_columns_on_matching_keys_and_null_on_new_keys(self):
+        returned_df = job.add_prev_run_pct_change_columns(
+            self._current_lf(), self._prev_lf()
         ).collect()
 
         assert returned_df[
-            Pub.unfiltered_filled_posts_pct_change_vs_prev_run
-        ].to_list() == [
-            None,
-            None,
-        ]
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run
+        ].to_list() == [0.3, None]
+        assert returned_df[
+            Pub.unfiltered_short_sfc_cum_pct_change_prev_run
+        ].to_list() == [0.1, None]
 
     def test_keeps_current_rows_and_columns_unchanged(self):
-        returned_lf = job.add_prev_run_filled_posts_columns(
+        returned_lf = job.add_prev_run_pct_change_columns(
             self._current_lf(), self._prev_lf()
         )
 
@@ -624,14 +723,13 @@ class TestAddPrevRunFilledPostsColumns:
             pl.col(IndCQC.primary_service_type).cast(current_dtype)
         )
 
-        returned_df = job.add_prev_run_filled_posts_columns(
+        returned_df = job.add_prev_run_pct_change_columns(
             current_lf, self._prev_lf()
         ).collect()
 
-        assert returned_df[Pub.unfiltered_filled_posts_prev_run].to_list() == [
-            100.0,
-            None,
-        ]
+        assert returned_df[
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run
+        ].to_list() == [0.3, None]
 
     def test_matches_rows_where_a_key_is_null(self):
         current_lf = self._current_lf().with_columns(
@@ -641,52 +739,30 @@ class TestAddPrevRunFilledPostsColumns:
             .alias(IndCQC.current_region)
         )
         prev_lf = pl.LazyFrame(
-            [(date(2026, 4, 1), "A", None, "care", 100.0)],
+            [(date(2026, 4, 1), "A", None, "care", 100.0, 0.3, 0.1)],
             self.prev_schema,
             orient="row",
         )
 
-        returned_df = job.add_prev_run_filled_posts_columns(
-            current_lf, prev_lf
-        ).collect()
+        returned_df = job.add_prev_run_pct_change_columns(current_lf, prev_lf).collect()
 
-        assert returned_df[Pub.unfiltered_filled_posts_prev_run].to_list() == [
-            100.0,
-            None,
-        ]
-
-    def test_adds_null_columns_when_prev_run_lacks_filled_posts(self):
-        prev_lf = pl.LazyFrame(
-            [(date(2026, 4, 1), "A", "North", "care")],
-            self.key_schema,
-            orient="row",
-        )
-
-        returned_df = job.add_prev_run_filled_posts_columns(
-            self._current_lf(), prev_lf
-        ).collect()
-
-        assert returned_df[Pub.unfiltered_filled_posts_prev_run].null_count() == 2
-        assert (
-            returned_df[Pub.unfiltered_filled_posts_pct_change_vs_prev_run].null_count()
-            == 2
-        )
+        assert returned_df[
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run
+        ].to_list() == [0.3, None]
 
     def test_adds_null_columns_when_there_is_no_prev_run(self):
-        returned_df = job.add_prev_run_filled_posts_columns(
+        returned_df = job.add_prev_run_pct_change_columns(
             self._current_lf(), None
         ).collect()
 
-        assert returned_df.schema[Pub.unfiltered_filled_posts_prev_run] == pl.Float64()
-        assert (
-            returned_df.schema[Pub.unfiltered_filled_posts_pct_change_vs_prev_run]
-            == pl.Float64()
-        )
-        assert returned_df[Pub.unfiltered_filled_posts_prev_run].null_count() == 2
-        assert (
-            returned_df[Pub.unfiltered_filled_posts_pct_change_vs_prev_run].null_count()
-            == 2
-        )
+        for column in [
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run,
+            Pub.unfiltered_short_sfc_cum_pct_change_prev_run,
+            Pub.unfiltered_filled_posts_april_pct_change_comparison,
+            Pub.unfiltered_short_sfc_cum_pct_change_comparison,
+        ]:
+            assert returned_df.schema[column] == pl.Float64()
+            assert returned_df[column].null_count() == 2
 
 
 class TestCalcPercChangeFromPreviousApril:
@@ -746,9 +822,7 @@ class TestCalcPercChangeCumulativeFromGivenPeriodOnwards:
             for case in Data.calc_perc_change_cumulative_from_given_period_onwards_test_cases
         ],
     )
-    def test_returns_cumulative_percentage_change_from_the_first_period_in_the_window(
-        self, case
-    ):
+    def test_returns_null_baseline_then_change_against_it(self, case):
         expected_schema = pl.Schema(
             list(self.perc_change_schema.items()) + [(case.column_alias, pl.Float64())]
         )

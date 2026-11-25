@@ -8,8 +8,8 @@ Retires several duplicate mechanisms:
 - utils/value_labels/reconciliation/ascwds_recon_regionid.py (hand-copied
   region_id code->label dict, used only by reconciliation.py)
 
-main_job_role and employment_status have both a code-side and a label-side
-ColumnValues class; PairedVocab derives their {code: label} mapping by shared
+main_job_role, employment_status and the other coded ASC-WDS worker columns
+have both a code-side and a label-side ColumnValues class; PairedVocab derives their {code: label} mapping by shared
 field name instead of maintaining it a third time. Establishment_type,
 parent_permission, is_parent, main_service_id, and registration_type only
 ever had a label-side ColumnValues class - their raw ASC-WDS code is
@@ -340,6 +340,294 @@ class RegionID(ColumnValues):
     not_known: str = "-1"
 
 
+@dataclass
+class GenderID(ColumnValues):
+    """The valid values of the gender column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
+
+    male: str = "1"
+    female: str = "2"
+    other: str = "4"
+
+
+@dataclass
+class GenderLabels(ColumnValues):
+    """The valid labels of the gender column in ASCWDS worker data"""
+
+    male: str = "Male"
+    female: str = "Female"
+    other: str = "Other"
+
+
+@dataclass
+class EthnicityID(ColumnValues):
+    """The valid values of the ethnicity column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
+
+    english_welsh_scottish_northern_irish_british: str = "31"
+    irish: str = "32"
+    gypsy_or_irish_traveller: str = "33"
+    other_white: str = "34"
+    white_and_black_caribbean: str = "35"
+    white_and_black_african: str = "36"
+    white_and_asian: str = "37"
+    other_mixed: str = "38"
+    indian: str = "39"
+    pakistani: str = "40"
+    bangladeshi: str = "41"
+    chinese: str = "42"
+    other_asian: str = "43"
+    african: str = "44"
+    caribbean: str = "45"
+    other_black_african_caribbean: str = "46"
+    arab: str = "47"
+    other_ethnic_group: str = "98"
+
+
+@dataclass
+class EthnicityLabels(ColumnValues):
+    """The valid labels of the ethnicity column in ASCWDS worker data"""
+
+    english_welsh_scottish_northern_irish_british: str = (
+        "English / Welsh / Scottish / Northern Irish / British"
+    )
+    irish: str = "Irish"
+    gypsy_or_irish_traveller: str = "Gypsy or Irish Traveller"
+    other_white: str = "Any Other White background"
+    white_and_black_caribbean: str = "White and Black Caribbean"
+    white_and_black_african: str = "White and Black African"
+    white_and_asian: str = "White and Asian"
+    other_mixed: str = "Any Other Mixed / multiple ethnic background"
+    indian: str = "Indian"
+    pakistani: str = "Pakistani"
+    bangladeshi: str = "Bangladeshi"
+    chinese: str = "Chinese"
+    other_asian: str = "Any other Asian background"
+    african: str = "African"
+    caribbean: str = "Caribbean"
+    other_black_african_caribbean: str = (
+        "Any other Black / African / Caribbean background"
+    )
+    arab: str = "Arab"
+    other_ethnic_group: str = "Any other ethnic group"
+
+
+@dataclass
+class DisabledID(ColumnValues):
+    """The valid values of the disabled column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
+
+    no: str = "0"
+    yes: str = "1"
+
+
+@dataclass
+class DisabledLabels(ColumnValues):
+    """The valid labels of the disabled column in ASCWDS worker data"""
+
+    no: str = "No"
+    yes: str = "Yes"
+
+
+@dataclass
+class SocialCareQualHeldID(ColumnValues):
+    """The valid values of the social care qualification held column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
+
+    yes: str = "1"
+    no: str = "2"
+
+
+@dataclass
+class SocialCareQualHeldLabels(ColumnValues):
+    """The valid labels of the social care qualification held column in ASCWDS worker data"""
+
+    yes: str = "Yes"
+    no: str = "No"
+
+
+@dataclass
+class LevelSocialCareQualificationHeldID(ColumnValues):
+    """The valid values of the level of social care qualification held column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
+
+    entry: str = "0"
+    level_1: str = "1"
+    level_2: str = "2"
+    level_3: str = "3"
+    level_4: str = "4"
+    level_5: str = "5"
+    level_6: str = "6"
+    level_7: str = "7"
+    level_8_or_above: str = "8"
+
+
+@dataclass
+class LevelSocialCareQualificationHeldLabels(ColumnValues):
+    """The valid labels of the level of social care qualification held column in ASCWDS worker data"""
+
+    entry: str = "Entry"
+    level_1: str = "Level 1"
+    level_2: str = "Level 2"
+    level_3: str = "Level 3"
+    level_4: str = "Level 4"
+    level_5: str = "Level 5"
+    level_6: str = "Level 6"
+    level_7: str = "Level 7"
+    level_8_or_above: str = "Level 8 or above"
+
+
+@dataclass
+class CareCertificateStatusID(ColumnValues):
+    """The possible values of the care certificate status column in ASCWDS worker data"""
+
+    completed: str = "1"
+    not_started: str = "2"
+    in_progress: str = "3"
+
+
+@dataclass
+class CareCertificateStatusLabels(ColumnValues):
+    """The possible labels of the care certificate status column in ASCWDS worker data"""
+
+    completed: str = "Completed"
+    not_started: str = "Not started"
+    in_progress: str = "In progress or partially completed"
+
+
+@dataclass
+class ApprenticeID(ColumnValues):
+    """The valid values of the apprentice column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
+
+    yes: str = "1"
+    no: str = "2"
+
+
+@dataclass
+class ApprenticeLabels(ColumnValues):
+    """The valid labels of the apprentice column in ASCWDS worker data"""
+
+    yes: str = "Yes"
+    no: str = "No"
+
+
+@dataclass
+class ZeroHoursID(ColumnValues):
+    """The possible values of the zero hours column in ASCWDS worker data"""
+
+    no: str = "0"
+    yes: str = "1"
+
+
+@dataclass
+class ZeroHoursLabels(ColumnValues):
+    """The possible labels of the zero hours column in ASCWDS worker data"""
+
+    no: str = "No"
+    yes: str = "Yes"
+
+
+@dataclass
+class TrainFlagID(ColumnValues):
+    """Codes of the training flag column"""
+
+    no: str = "0"
+    yes: str = "1"
+
+
+@dataclass
+class TrainingFlagLabels(ColumnValues):
+    """Labels of the training flag column"""
+
+    no: str = "No"
+    yes: str = "Yes"
+
+
+@dataclass
+class SourceOfRecruitmentID(ColumnValues):
+    """The valid values of the source of recruitment column in ASCWDS worker data (not known codes are in `NotKnownWorkerCodes`)"""
+
+    adult_care_local_authority: str = "210"
+    adult_care_private_or_voluntary: str = "211"
+    health_sector: str = "214"
+    other_sector: str = "216"
+    internal_promotion: str = "217"
+    not_previously_employed: str = "219"
+    agency: str = "221"
+    other_sources: str = "224"
+    childrens_social_care: str = "226"
+    first_role_after_education: str = "227"
+
+
+@dataclass
+class SourceOfRecruitmentLabels(ColumnValues):
+    """The valid labels of the source of recruitment column in ASCWDS worker data"""
+
+    adult_care_local_authority: str = "Adult care sector: local authority"
+    adult_care_private_or_voluntary: str = (
+        "Adult care sector: private or voluntary sector"
+    )
+    health_sector: str = "Health sector"
+    other_sector: str = "Other sector"
+    internal_promotion: str = "Internal promotion or transfer or career development"
+    not_previously_employed: str = "Not previously employed"
+    agency: str = "Agency"
+    other_sources: str = "Other sources"
+    childrens_social_care: str = "Children’s/young people’s social care"
+    first_role_after_education: str = "First role after education"
+
+
+@dataclass
+class NotKnownWorkerCodes(ColumnValues):
+    """The positive codes meaning not known, not recorded or not disclosed in ASCWDS worker data.
+
+    The worker vocabs above hold valid responses only, so these are kept apart.
+    Negative codes, the standard not recorded and not known values, are not listed.
+    """
+
+    gender: str = "3"  # Unknown
+    ethnicity: str = "99"  # Not known
+    disabled: str = "2"  # Not disclosed
+    social_care_qual_held: str = "3"  # Not known
+    level_social_care_qualification_held: str = "10"  # Not known
+    apprentice: str = "3"  # Not known
+    source_of_recruitment: str = "225"  # Not known
+    nationality: str = "999"  # Not known
+    country_of_birth: str = "999"  # Not known
+
+
+@dataclass
+class NationalityGroupLabels(ColumnValues):
+    """The possible values of the grouped nationality column"""
+
+    non_eea: str = "Non-EEA"
+    eea_non_british: str = "EEA (non-British)"
+    british: str = "British"
+
+
+@dataclass
+class CountryOfBirthGroupLabels(ColumnValues):
+    """The possible values of the grouped country of birth column"""
+
+    non_eea: str = "Non-EEA"
+    eea_non_uk: str = "EEA (non-UK)"
+    uk: str = "UK"
+
+
+@dataclass
+class EthnicityGroupLabels(ColumnValues):
+    """The possible values of the grouped ethnicity column"""
+
+    white: str = "White"
+    mixed: str = "Mixed/multiple ethnic groups"
+    asian: str = "Asian/Asian British"
+    black: str = "Black/African/Caribbean/Black British"
+    other: str = "Other ethnic group"
+
+
+@dataclass
+class SourceOfRecruitmentWithinOutsideAscLabels(ColumnValues):
+    """The possible values of the within or outside adult social care source of recruitment column"""
+
+    within_asc: str = "Within asc"
+    outside_asc: str = "Outside asc"
+
+
 @dataclass(frozen=True)
 class PairedVocab:
     """Links a code `ColumnValues` class to its label `ColumnValues` class by field name."""
@@ -401,6 +689,20 @@ class PairedVocab:
 
 MAIN_JOB_ROLE = PairedVocab(MainJobRoleID, MainJobRoleLabels)
 EMPLOYMENT_STATUS = PairedVocab(EmploymentStatusID, EmploymentStatusLabels)
+GENDER = PairedVocab(GenderID, GenderLabels)
+ETHNICITY = PairedVocab(EthnicityID, EthnicityLabels)
+DISABLED = PairedVocab(DisabledID, DisabledLabels)
+SOCIAL_CARE_QUAL_HELD = PairedVocab(SocialCareQualHeldID, SocialCareQualHeldLabels)
+LEVEL_SOCIAL_CARE_QUALIFICATION_HELD = PairedVocab(
+    LevelSocialCareQualificationHeldID, LevelSocialCareQualificationHeldLabels
+)
+CARE_CERTIFICATE_STATUS = PairedVocab(
+    CareCertificateStatusID, CareCertificateStatusLabels
+)
+APPRENTICE = PairedVocab(ApprenticeID, ApprenticeLabels)
+ZERO_HOURS = PairedVocab(ZeroHoursID, ZeroHoursLabels)
+SOURCE_OF_RECRUITMENT = PairedVocab(SourceOfRecruitmentID, SourceOfRecruitmentLabels)
+TRAIN_FLAG = PairedVocab(TrainFlagID, TrainingFlagLabels)
 
 ESTABLISHMENT_TYPE_CODE_TO_LABEL: dict[str, str] = {
     "0": EstablishmentType.not_known,

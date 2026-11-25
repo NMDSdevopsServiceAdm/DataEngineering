@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import polars as pl
 
+from polars_utils.column_types import CategoricalColumnTypes
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -495,6 +496,13 @@ class TestCleanAscwdsWorkplaceUtilsSchemas:
         AWPClean.workplace_last_active_date: pl.Date,
     }
 
+    create_clean_main_service_id_column_schema = {
+        AWPClean.establishment_id: pl.String,
+        AWPClean.ascwds_workplace_import_date: pl.Date,
+        AWPClean.main_service_id: pl.String,
+        AWPClean.main_service_id_clean: pl.String,
+    }
+
     apply_data_corrections_schema = {
         AWPClean.organisation_id: pl.String,
         AWPClean.period: pl.String,
@@ -533,14 +541,14 @@ class TestCleanAscwdsWorkplaceUtilsSchemas:
 class TestCleanAscwdsWorkerUtilsSchemas:
     worker_schema = {
         AWKClean.location_id: pl.String,
-        AWKClean.establishment_id: pl.String,
+        AWKClean.establishment_id: CategoricalColumnTypes.EstablishmentCatType,
         AWKClean.worker_id: pl.String,
         AWKClean.main_job_role_id: pl.String,
         AWKClean.import_date: pl.String,
     }
     workplace_schema = {
         AWPClean.location_id: pl.String,
-        AWPClean.establishment_id: pl.String,
+        AWPClean.establishment_id: CategoricalColumnTypes.EstablishmentCatType,
         AWPClean.import_date: pl.String,
     }
     expected_remove_workers_without_workplaces_schema = worker_schema

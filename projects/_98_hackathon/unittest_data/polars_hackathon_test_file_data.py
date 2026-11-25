@@ -2,25 +2,46 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
+import pytest
+
+from projects._98_hackathon.fargate.utils.worker_turnover_utils import (
+    WORKER_CATEGORICAL_COLUMNS,
+    WORKER_DATE_COLUMNS,
+    WORKER_NUMERIC_COLUMNS,
+)
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
+from utils.column_names.hackathon_columns import AgeSource
+from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
+from utils.column_values.ascwds_labelled_vocab import MainServiceID
+
+START = date(2021, 1, 5)
+END = date(2022, 1, 5)  # 12 months after START
+MID = date(2021, 6, 1)  # between START and END
+BEFORE_START = date(2020, 6, 1)
 
 
-def worker_row(
-    worker_id: str, import_date: date, employment_status_label: str
-) -> tuple[Any, ...]:
-    """Returns a cleaned worker row in schema column order."""
-    return (
-        "1-001",
-        "1-001",
-        worker_id,
-        "1",
-        "1",
-        import_date,
-        "1",
-        "care_worker",
-        "1",
-        employment_status_label,
-    )
+def raw_worker_row(
+    worker_id: str,
+    import_date: str,
+    establishment_id: str = "1-001",
+    **values: str,
+) -> dict[str, str | None]:
+    """Returns a raw worker row with every modelling column null unless set."""
+    modelling_columns = [
+        *WORKER_CATEGORICAL_COLUMNS,
+        *WORKER_NUMERIC_COLUMNS,
+        *WORKER_DATE_COLUMNS,
+    ]
+    return {
+        AWKClean.establishment_id: establishment_id,
+        AWKClean.worker_id: worker_id,
+        AWKClean.import_date: import_date,
+        **{column: None for column in modelling_columns},
+        **values,
+    }
 
 
 @dataclass
@@ -31,101 +52,1587 @@ class FilterWorkerTurnoverDataCase:
 
 
 @dataclass
+class AddIsLeaverFlagCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class AddMainServiceTypeCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class CombinePayAndHoursCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class ImputeWorkerColumnsCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class ImputePayAndSicknessCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class AddNlwAndPayDifferenceCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class AddHourlyPayMinusNlwCleanCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+    upper_percentile: float = 1.0
+
+
+@dataclass
+class CleanAgeCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class AddCodeGroupCase:
+    id: str
+    code_column: str
+    group_column: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+# The EEA codes, written out here rather than imported so the test checks the
+# constant in the job.
+EEA_CODES = [
+    "40", "56", "100", "196", "203", "208", "233", "246", "250", "276",
+    "300", "348", "372", "380", "428", "440", "442", "470", "528", "616",
+    "620", "642", "703", "705", "724", "752", "352", "438", "578", "191",
+]  # fmt: skip
+
+
+def build_code_group_cases(
+    code_column: str, group_column: str, eea_label: str, uk_label: str
+) -> list[AddCodeGroupCase]:
+    """Builds the code to group cases shared by nationality and country of birth."""
+    return [
+        AddCodeGroupCase(
+            id=f"{code_column}_eea_when_code_is_eea",
+            code_column=code_column,
+            group_column=group_column,
+            expected_rows=[("250", eea_label)],
+        ),
+        AddCodeGroupCase(
+            id=f"{code_column}_uk_when_code_is_826",
+            code_column=code_column,
+            group_column=group_column,
+            expected_rows=[("826", uk_label)],
+        ),
+        AddCodeGroupCase(
+            id=f"{code_column}_non_eea_when_code_is_other",
+            code_column=code_column,
+            group_column=group_column,
+            expected_rows=[("356", "Non-EEA")],
+        ),
+        AddCodeGroupCase(
+            id=f"{code_column}_null_when_code_is_null",
+            code_column=code_column,
+            group_column=group_column,
+            expected_rows=[(None, None)],
+        ),
+        AddCodeGroupCase(
+            id=f"{code_column}_null_when_code_is_blank",
+            code_column=code_column,
+            group_column=group_column,
+            expected_rows=[("", None)],
+        ),
+    ]
+
+
+@dataclass
+class GetLatestSaveDatePerEstablishmentCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+    snapshot_rows: list[tuple[Any, ...]] | None = None
+
+
+@dataclass
+class AddEstablishmentActiveFlagCase:
+    id: str
+    worker_rows: list[tuple[Any, ...]]
+    save_date_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+    n_months: int = 6
+
+
+@dataclass
+class AddTurnoverRateCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class AddHeadcountGapCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class AddValidForAnalysisFlagCase:
+    id: str
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class FixStartDateTyposCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class CleanStartDateCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class WorkerTurnoverData:
+    # Rows: (establishment_id, worker_id, import_date,
+    # establishment_in_both_snapshots, is_leaver, turnover_rate).
+    add_turnover_rate_cases = [
+        AddTurnoverRateCase(
+            id="returns_leavers_divided_by_start_employees",
+            expected_rows=[
+                ("est_a", "1", START, True, True, 0.25),
+                ("est_a", "2", START, True, False, 0.25),
+                ("est_a", "3", START, True, False, 0.25),
+                ("est_a", "4", START, True, False, 0.25),
+            ],
+        ),
+        AddTurnoverRateCase(
+            id="returns_zero_when_no_leavers",
+            expected_rows=[("est_a", "1", START, True, False, 0.0)],
+        ),
+        AddTurnoverRateCase(
+            id="calculates_rate_separately_per_establishment",
+            expected_rows=[
+                ("est_a", "1", START, True, True, 0.5),
+                ("est_a", "2", START, True, False, 0.5),
+                ("est_b", "1", START, True, False, 0.0),
+            ],
+        ),
+        AddTurnoverRateCase(
+            id="calculates_rate_separately_per_start_month",
+            expected_rows=[
+                ("est_a", "1", START, True, True, 1.0),
+                ("est_a", "1", date(2021, 2, 5), True, False, 0.0),
+            ],
+        ),
+        AddTurnoverRateCase(
+            id="returns_null_when_establishment_not_in_both_snapshots",
+            expected_rows=[("est_a", "1", START, False, None, None)],
+        ),
+        AddTurnoverRateCase(
+            id="returns_null_when_no_end_snapshot",
+            expected_rows=[("est_a", "1", START, None, None, None)],
+        ),
+    ]
+
+    # Rows: (establishment_id, worker_id, import_date, created_date, is_leaver,
+    # headcount_reconciliation_gap, headcount_gap_within_tolerance). Tolerance is 1.
+    add_headcount_reconciliation_gap_cases = [
+        AddHeadcountGapCase(
+            id="returns_zero_when_headcounts_reconcile",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "2", START, None, False, 0, True),
+                ("est_a", "3", START, None, True, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, None, None, None, None),
+                ("est_a", "4", END, MID, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_positive_gap_when_workers_missing_from_end",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 1, True),
+                ("est_a", "2", START, None, False, 1, True),
+                ("est_a", "1", END, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_negative_gap_when_unexplained_workers_at_end",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -1, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, BEFORE_START, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="flags_false_when_positive_gap_above_tolerance",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 2, False),
+                ("est_a", "2", START, None, False, 2, False),
+                ("est_a", "3", START, None, False, 2, False),
+                ("est_a", "1", END, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="flags_false_when_negative_gap_beyond_tolerance",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -2, False),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, BEFORE_START, None, None, None),
+                ("est_a", "3", END, BEFORE_START, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="does_not_count_worker_created_on_start_date",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -1, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, START, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="counts_worker_created_on_end_date",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, END, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="does_not_count_worker_with_null_created_date",
+            expected_rows=[
+                ("est_a", "1", START, None, False, -1, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_a", "2", END, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_null_when_establishment_not_in_end_snapshot",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_b", "1", START, None, None, None, None),
+            ],
+        ),
+        AddHeadcountGapCase(
+            id="returns_null_when_no_end_snapshot",
+            expected_rows=[("est_a", "1", START, None, None, None, None)],
+        ),
+        AddHeadcountGapCase(
+            id="calculates_gap_separately_per_establishment",
+            expected_rows=[
+                ("est_a", "1", START, None, False, 0, True),
+                ("est_a", "1", END, None, None, None, None),
+                ("est_b", "1", START, None, False, 2, False),
+                ("est_b", "2", START, None, False, 2, False),
+                ("est_b", "3", START, None, False, 2, False),
+                ("est_b", "1", END, None, None, None, None),
+            ],
+        ),
+    ]
+
+    # Rows: (establishment_id, worker_id, import_date,
+    # establishment_in_both_snapshots, establishment_active,
+    # headcount_gap_within_tolerance, turnover_rate, plausible_turnover,
+    # valid_for_analysis).
+    add_valid_for_analysis_flag_cases = [
+        AddValidForAnalysisFlagCase(
+            id="valid_when_all_components_true",
+            expected_rows=[("est_a", "1", START, True, True, True, 0.25, True, True)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="implausible_and_invalid_when_rate_is_zero",
+            expected_rows=[("est_a", "1", START, True, True, True, 0.0, False, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="implausible_and_invalid_when_rate_is_one",
+            expected_rows=[("est_a", "1", START, True, True, True, 1.0, False, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="plausible_when_rate_just_above_zero",
+            expected_rows=[("est_a", "1", START, True, True, True, 0.125, True, True)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="plausible_when_rate_just_below_one",
+            expected_rows=[("est_a", "1", START, True, True, True, 0.875, True, True)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_establishment_inactive",
+            expected_rows=[("est_a", "1", START, True, False, True, 0.25, True, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_headcount_gap_outside_tolerance",
+            expected_rows=[("est_a", "1", START, True, True, False, 0.25, True, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_establishment_not_in_both_snapshots",
+            expected_rows=[("est_a", "1", START, False, None, None, None, None, False)],
+        ),
+        AddValidForAnalysisFlagCase(
+            id="invalid_when_no_end_snapshot",
+            expected_rows=[("est_a", "1", START, None, None, None, None, None, False)],
+        ),
+    ]
+
+    # Rows: (import_date, start_date).
+    fix_start_date_typos_cases = [
+        FixStartDateTyposCase(
+            id="expands_year_00yy_to_20yy",
+            input_rows=[(date(2024, 6, 1), date(15, 4, 1))],
+            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1))],
+        ),
+        FixStartDateTyposCase(
+            id="expands_year_0001_to_2001",
+            input_rows=[(date(2024, 6, 1), date(1, 9, 16))],
+            expected_rows=[(date(2024, 6, 1), date(2001, 9, 16))],
+        ),
+        FixStartDateTyposCase(
+            id="expands_19yy_to_20yy_when_result_is_not_after_import_date",
+            input_rows=[(date(2024, 6, 1), date(1913, 4, 16))],
+            expected_rows=[(date(2024, 6, 1), date(2013, 4, 16))],
+        ),
+        FixStartDateTyposCase(
+            id="keeps_19yy_when_expansion_is_after_import_date",
+            input_rows=[(date(2024, 6, 1), date(1929, 10, 17))],
+            expected_rows=[(date(2024, 6, 1), date(1929, 10, 17))],
+        ),
+        FixStartDateTyposCase(
+            id="nulls_placeholder_date_1_jan_1900",
+            input_rows=[(date(2024, 6, 1), date(1900, 1, 1))],
+            expected_rows=[(date(2024, 6, 1), None)],
+        ),
+        FixStartDateTyposCase(
+            id="does_not_fix_year_0219",
+            input_rows=[(date(2024, 6, 1), date(219, 12, 2))],
+            expected_rows=[(date(2024, 6, 1), date(219, 12, 2))],
+        ),
+        FixStartDateTyposCase(
+            id="does_not_change_plausible_start_date",
+            input_rows=[
+                (date(2024, 6, 1), date(2015, 4, 1)),
+                (date(2024, 6, 1), date(1990, 3, 5)),
+            ],
+            expected_rows=[
+                (date(2024, 6, 1), date(2015, 4, 1)),
+                (date(2024, 6, 1), date(1990, 3, 5)),
+            ],
+        ),
+        FixStartDateTyposCase(
+            id="keeps_null_start_date_null",
+            input_rows=[(date(2024, 6, 1), None)],
+            expected_rows=[(date(2024, 6, 1), None)],
+        ),
+    ]
+
+    # Rows: (import_date, start_date, age).
+    clean_start_date_cases = [
+        CleanStartDateCase(
+            id="keeps_null_start_date_null",
+            input_rows=[(date(2024, 6, 1), None, 30.0)],
+            expected_rows=[(date(2024, 6, 1), None, 30.0)],
+        ),
+        # Age 36 at import and exactly 20 years since start is a start age of 16.
+        CleanStartDateCase(
+            id="keeps_start_date_when_start_age_is_exactly_16",
+            input_rows=[(date(2024, 6, 1), date(2004, 6, 1), 36.0)],
+            expected_rows=[(date(2024, 6, 1), date(2004, 6, 1), 36.0)],
+        ),
+        CleanStartDateCase(
+            id="nulls_start_date_when_start_age_is_just_under_16",
+            input_rows=[(date(2024, 6, 1), date(2004, 5, 31), 36.0)],
+            expected_rows=[(date(2024, 6, 1), None, 36.0)],
+        ),
+        # About 40.5 years since start for a worker aged 40: the date of birth.
+        CleanStartDateCase(
+            id="nulls_start_date_when_it_is_date_of_birth",
+            input_rows=[(date(2024, 6, 1), date(1983, 12, 1), 40.0)],
+            expected_rows=[(date(2024, 6, 1), None, 40.0)],
+        ),
+        CleanStartDateCase(
+            id="nulls_start_date_when_it_is_before_birth",
+            input_rows=[(date(2024, 6, 1), date(1960, 1, 1), 30.0)],
+            expected_rows=[(date(2024, 6, 1), None, 30.0)],
+        ),
+        CleanStartDateCase(
+            id="nulls_start_date_when_it_is_after_import_date",
+            input_rows=[(date(2024, 6, 1), date(2024, 7, 1), 30.0)],
+            expected_rows=[(date(2024, 6, 1), None, 30.0)],
+        ),
+        # Negative ages are not-known codes. Read as an age, -1 would fail the rule.
+        CleanStartDateCase(
+            id="treats_negative_age_code_as_unknown",
+            input_rows=[(date(2024, 6, 1), date(2015, 4, 1), -1.0)],
+            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), -1.0)],
+        ),
+        CleanStartDateCase(
+            id="keeps_start_date_when_age_unknown_and_tenure_under_70_years",
+            input_rows=[(date(2024, 6, 1), date(1960, 1, 1), None)],
+            expected_rows=[(date(2024, 6, 1), date(1960, 1, 1), None)],
+        ),
+        CleanStartDateCase(
+            id="keeps_start_date_when_age_unknown_and_tenure_exactly_70_years",
+            input_rows=[(date(2024, 6, 1), date(1954, 6, 1), None)],
+            expected_rows=[(date(2024, 6, 1), date(1954, 6, 1), None)],
+        ),
+        CleanStartDateCase(
+            id="nulls_start_date_when_age_unknown_and_tenure_over_70_years",
+            input_rows=[(date(2024, 6, 1), date(1954, 5, 31), None)],
+            expected_rows=[(date(2024, 6, 1), None, None)],
+        ),
+    ]
+
+    add_country_code_group_cases = [
+        *build_code_group_cases(
+            code_column=AWKClean.nationality,
+            group_column=HackCols.nationality_group,
+            eea_label="EEA (non-British)",
+            uk_label="British",
+        ),
+        *build_code_group_cases(
+            code_column=AWKClean.country_of_birth,
+            group_column=HackCols.country_of_birth_group,
+            eea_label="EEA (non-UK)",
+            uk_label="UK",
+        ),
+    ]
+
+    # Rows: (worker_id, hourly_rate, salary, contracted_hours, average_hours);
+    # expected rows are (worker_id, hours, hourly_pay). 20800 / (40 * 52) is
+    # exactly 10.
+    combine_pay_and_hours_cases = [
+        CombinePayAndHoursCase(
+            id="rate_without_hours",
+            input_rows=[("1", 12.5, None, None, None)],
+            expected_rows=[("1", None, 12.5)],
+        ),
+        CombinePayAndHoursCase(
+            id="rate_and_salary_uses_rate",
+            input_rows=[("1", 12.5, 20800.0, 40.0, None)],
+            expected_rows=[("1", 40.0, 12.5)],
+        ),
+        CombinePayAndHoursCase(
+            id="rate_with_contracted_hours",
+            input_rows=[("1", 12.5, None, 40.0, None)],
+            expected_rows=[("1", 40.0, 12.5)],
+        ),
+        CombinePayAndHoursCase(
+            id="salary_with_contracted_hours",
+            input_rows=[("1", None, 20800.0, 40.0, None)],
+            expected_rows=[("1", 40.0, 10.0)],
+        ),
+        CombinePayAndHoursCase(
+            id="salary_with_average_hours",
+            input_rows=[("1", None, 10400.0, None, 20.0)],
+            expected_rows=[("1", 20.0, 10.0)],
+        ),
+        CombinePayAndHoursCase(
+            id="salary_without_hours",
+            input_rows=[("1", None, 20800.0, None, None)],
+            expected_rows=[("1", None, None)],
+        ),
+        CombinePayAndHoursCase(
+            id="salary_with_zero_contracted_hours_uses_average_hours",
+            input_rows=[("1", None, 11960.0, 0.0, 23.0)],
+            expected_rows=[("1", 23.0, 10.0)],
+        ),
+        CombinePayAndHoursCase(
+            id="salary_with_zero_hours_in_both",
+            input_rows=[("1", None, 20800.0, 0.0, 0.0)],
+            expected_rows=[("1", None, None)],
+        ),
+        CombinePayAndHoursCase(
+            id="nothing_given",
+            input_rows=[("1", None, None, None, None)],
+            expected_rows=[("1", None, None)],
+        ),
+    ]
+
+    # Rows: (establishment_id, worker_id, import_date, hours).
+    impute_worker_columns_cases = [
+        ImputeWorkerColumnsCase(
+            id="forward_fills_null_from_earlier_value",
+            input_rows=[("e1", "w1", START, 10.0), ("e1", "w1", MID, None)],
+            expected_rows=[("e1", "w1", START, 10.0), ("e1", "w1", MID, 10.0)],
+        ),
+        ImputeWorkerColumnsCase(
+            id="backward_fills_leading_null_from_later_value",
+            input_rows=[("e1", "w1", START, None), ("e1", "w1", MID, 20.0)],
+            expected_rows=[("e1", "w1", START, 20.0), ("e1", "w1", MID, 20.0)],
+        ),
+        ImputeWorkerColumnsCase(
+            id="prefers_earlier_value_over_later_value",
+            input_rows=[
+                ("e1", "w1", START, 10.0),
+                ("e1", "w1", MID, None),
+                ("e1", "w1", END, 30.0),
+            ],
+            expected_rows=[
+                ("e1", "w1", START, 10.0),
+                ("e1", "w1", MID, 10.0),
+                ("e1", "w1", END, 30.0),
+            ],
+        ),
+        ImputeWorkerColumnsCase(
+            id="orders_by_import_date_not_row_order",
+            input_rows=[("e1", "w1", MID, None), ("e1", "w1", START, 10.0)],
+            expected_rows=[("e1", "w1", MID, 10.0), ("e1", "w1", START, 10.0)],
+        ),
+        ImputeWorkerColumnsCase(
+            id="keeps_null_when_never_known",
+            input_rows=[("e1", "w1", START, None), ("e1", "w1", MID, None)],
+            expected_rows=[("e1", "w1", START, None), ("e1", "w1", MID, None)],
+        ),
+        ImputeWorkerColumnsCase(
+            id="does_not_fill_across_workers",
+            input_rows=[("e1", "w1", START, 10.0), ("e1", "w2", START, None)],
+            expected_rows=[("e1", "w1", START, 10.0), ("e1", "w2", START, None)],
+        ),
+        ImputeWorkerColumnsCase(
+            id="does_not_fill_across_establishments",
+            input_rows=[("e1", "w1", START, 10.0), ("e2", "w1", MID, None)],
+            expected_rows=[("e1", "w1", START, 10.0), ("e2", "w1", MID, None)],
+        ),
+    ]
+
+    # Rows: (establishment_id, worker_id, import_date, hourly_pay_minus_nlw_clean,
+    # days_sick, hourly_pay_minus_nlw_clean_imputed, days_sick_imputed).
+    # MID is 4 of the 20 days from START to END, so date weighting gives a fifth of
+    # the way between the known values, not the halfway that row position would.
+    IMPUTE_START = date(2025, 1, 1)
+    IMPUTE_MID = date(2025, 1, 5)
+    IMPUTE_END = date(2025, 1, 21)
+
+    # fmt: off
+    impute_pay_and_sickness_cases = [
+        ImputePayAndSicknessCase(
+            id="interpolates_between_known_values_by_import_date",
+            expected_rows=[
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
+                ("e1", "w1", IMPUTE_MID, None, None, 14.0, 140.0),
+                ("e1", "w1", IMPUTE_END, 30.0, 300.0, 30.0, 300.0),
+            ],
+        ),
+        ImputePayAndSicknessCase(
+            id="forward_fills_after_last_known_value",
+            expected_rows=[
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
+                ("e1", "w1", IMPUTE_MID, None, None, 10.0, 100.0),
+            ],
+        ),
+        ImputePayAndSicknessCase(
+            id="backward_fills_before_first_known_value",
+            expected_rows=[
+                ("e1", "w1", IMPUTE_START, None, None, 20.0, 200.0),
+                ("e1", "w1", IMPUTE_MID, 20.0, 200.0, 20.0, 200.0),
+            ],
+        ),
+        ImputePayAndSicknessCase(
+            id="imputes_each_column_independently",
+            expected_rows=[
+                ("e1", "w1", IMPUTE_START, 10.0, None, 10.0, 200.0),
+                ("e1", "w1", IMPUTE_MID, None, 200.0, 10.0, 200.0),
+            ],
+        ),
+        ImputePayAndSicknessCase(
+            id="keeps_null_when_never_known",
+            expected_rows=[
+                ("e1", "w1", IMPUTE_START, None, None, None, None),
+                ("e1", "w1", IMPUTE_MID, None, None, None, None),
+            ],
+        ),
+        ImputePayAndSicknessCase(
+            id="interpolates_by_import_date_not_row_order",
+            expected_rows=[
+                ("e1", "w1", IMPUTE_MID, None, None, 14.0, 140.0),
+                ("e1", "w1", IMPUTE_END, 30.0, 300.0, 30.0, 300.0),
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
+            ],
+        ),
+        ImputePayAndSicknessCase(
+            id="forward_fills_latest_known_value_not_row_order",
+            expected_rows=[
+                ("e1", "w1", IMPUTE_END, None, None, 30.0, 300.0),
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
+                ("e1", "w1", IMPUTE_MID, 30.0, 300.0, 30.0, 300.0),
+            ],
+        ),
+        ImputePayAndSicknessCase(
+            id="does_not_impute_across_workers",
+            expected_rows=[
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
+                ("e1", "w2", IMPUTE_START, None, None, None, None),
+            ],
+        ),
+        ImputePayAndSicknessCase(
+            id="does_not_impute_across_establishments",
+            expected_rows=[
+                ("e1", "w1", IMPUTE_START, 10.0, 100.0, 10.0, 100.0),
+                ("e2", "w1", IMPUTE_MID, None, None, None, None),
+            ],
+        ),
+    ]
+    # fmt: on
+
+    add_main_service_type_cases = [
+        AddMainServiceTypeCase(
+            id="recodes_chn_as_care_home_with_nursing",
+            input_rows=[(MainServiceID.care_home_services_with_nursing_chn,)],
+            expected_rows=[
+                (
+                    MainServiceID.care_home_services_with_nursing_chn,
+                    "Care home with nursing",
+                )
+            ],
+        ),
+        AddMainServiceTypeCase(
+            id="recodes_chs_as_care_home_without_nursing",
+            input_rows=[(MainServiceID.care_home_services_without_nursing_chs,)],
+            expected_rows=[
+                (
+                    MainServiceID.care_home_services_without_nursing_chs,
+                    "Care home without nursing",
+                )
+            ],
+        ),
+        AddMainServiceTypeCase(
+            id="recodes_any_other_service_as_non_residential",
+            input_rows=[
+                (MainServiceID.adult_placement_home,),
+                (MainServiceID.domestic_services_and_home_help,),
+            ],
+            expected_rows=[
+                (MainServiceID.adult_placement_home, "non-residential"),
+                (MainServiceID.domestic_services_and_home_help, "non-residential"),
+            ],
+        ),
+    ]
+
+    # Rows: (location_id, worker_id, import_date, employment_status_clean_labelled).
     filter_worker_turnover_data_cases = [
         FilterWorkerTurnoverDataCase(
             id="keeps_permanent_and_temporary_workers",
             input_rows=[
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
-                worker_row("2", date(2021, 1, 5), EmpStat.temporary),
+                ("loc_a", "1", START, EmpStat.permanent),
+                ("loc_a", "2", START, EmpStat.temporary),
             ],
             expected_rows=[
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
-                worker_row("2", date(2021, 1, 5), EmpStat.temporary),
+                ("loc_a", "1", START, EmpStat.permanent),
+                ("loc_a", "2", START, EmpStat.temporary),
             ],
         ),
         FilterWorkerTurnoverDataCase(
             id="removes_bank_or_pool_agency_and_other_workers",
             input_rows=[
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
-                worker_row("2", date(2021, 1, 5), EmpStat.bank_or_pool),
-                worker_row("3", date(2021, 1, 5), EmpStat.agency),
-                worker_row("4", date(2021, 1, 5), EmpStat.other),
+                ("loc_a", "1", START, EmpStat.permanent),
+                ("loc_a", "2", START, EmpStat.bank_or_pool),
+                ("loc_a", "3", START, EmpStat.agency),
+                ("loc_a", "4", START, EmpStat.other),
             ],
             expected_rows=[
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
+                ("loc_a", "1", START, EmpStat.permanent),
+            ],
+        ),
+        FilterWorkerTurnoverDataCase(
+            id="removes_workers_with_null_location_id",
+            input_rows=[
+                ("loc_a", "1", START, EmpStat.permanent),
+                (None, "2", START, EmpStat.permanent),
+            ],
+            expected_rows=[
+                ("loc_a", "1", START, EmpStat.permanent),
             ],
         ),
         FilterWorkerTurnoverDataCase(
             id="removes_rows_before_1_jan_2020_and_keeps_rows_from_then",
             input_rows=[
-                worker_row("1", date(2019, 12, 2), EmpStat.permanent),
-                worker_row("2", date(2020, 1, 1), EmpStat.permanent),
-                worker_row("3", date(2020, 2, 3), EmpStat.permanent),
+                ("loc_a", "1", date(2019, 12, 2), EmpStat.permanent),
+                ("loc_a", "2", date(2020, 1, 1), EmpStat.permanent),
+                ("loc_a", "3", date(2020, 2, 3), EmpStat.permanent),
             ],
             expected_rows=[
-                worker_row("2", date(2020, 1, 1), EmpStat.permanent),
-                worker_row("3", date(2020, 2, 3), EmpStat.permanent),
+                ("loc_a", "2", date(2020, 1, 1), EmpStat.permanent),
+                ("loc_a", "3", date(2020, 2, 3), EmpStat.permanent),
             ],
         ),
         FilterWorkerTurnoverDataCase(
             id="keeps_only_earliest_import_date_in_each_month",
             input_rows=[
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
-                worker_row("1", date(2021, 1, 12), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 1, 5), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 1, 12), EmpStat.permanent),
             ],
             expected_rows=[
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 1, 5), EmpStat.permanent),
             ],
         ),
         FilterWorkerTurnoverDataCase(
             id="keeps_all_workers_on_earliest_import_date",
             input_rows=[
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
-                worker_row("2", date(2021, 1, 5), EmpStat.temporary),
-                worker_row("1", date(2021, 1, 12), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 1, 5), EmpStat.permanent),
+                ("loc_a", "2", date(2021, 1, 5), EmpStat.temporary),
+                ("loc_a", "1", date(2021, 1, 12), EmpStat.permanent),
             ],
             expected_rows=[
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
-                worker_row("2", date(2021, 1, 5), EmpStat.temporary),
+                ("loc_a", "1", date(2021, 1, 5), EmpStat.permanent),
+                ("loc_a", "2", date(2021, 1, 5), EmpStat.temporary),
             ],
         ),
         FilterWorkerTurnoverDataCase(
             id="keeps_one_import_date_per_month_across_months",
             input_rows=[
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
-                worker_row("1", date(2021, 1, 12), EmpStat.permanent),
-                worker_row("1", date(2021, 2, 9), EmpStat.permanent),
-                worker_row("1", date(2021, 2, 2), EmpStat.permanent),
-                worker_row("1", date(2021, 3, 1), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 1, 5), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 1, 12), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 2, 9), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 2, 2), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 3, 1), EmpStat.permanent),
             ],
             expected_rows=[
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
-                worker_row("1", date(2021, 2, 2), EmpStat.permanent),
-                worker_row("1", date(2021, 3, 1), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 1, 5), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 2, 2), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 3, 1), EmpStat.permanent),
             ],
         ),
         FilterWorkerTurnoverDataCase(
             id="keeps_one_import_date_per_month_across_years",
             input_rows=[
-                worker_row("1", date(2020, 1, 22), EmpStat.permanent),
-                worker_row("1", date(2020, 1, 15), EmpStat.permanent),
-                worker_row("1", date(2021, 1, 12), EmpStat.permanent),
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
+                ("loc_a", "1", date(2020, 1, 22), EmpStat.permanent),
+                ("loc_a", "1", date(2020, 1, 15), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 1, 12), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 1, 5), EmpStat.permanent),
             ],
             expected_rows=[
-                worker_row("1", date(2020, 1, 15), EmpStat.permanent),
-                worker_row("1", date(2021, 1, 5), EmpStat.permanent),
+                ("loc_a", "1", date(2020, 1, 15), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 1, 5), EmpStat.permanent),
             ],
         ),
         FilterWorkerTurnoverDataCase(
             id="picks_earliest_import_date_after_removing_other_workers",
             input_rows=[
-                worker_row("1", date(2021, 1, 5), EmpStat.agency),
-                worker_row("2", date(2021, 1, 12), EmpStat.permanent),
+                ("loc_a", "1", date(2021, 1, 5), EmpStat.agency),
+                ("loc_a", "2", date(2021, 1, 12), EmpStat.permanent),
             ],
             expected_rows=[
-                worker_row("2", date(2021, 1, 12), EmpStat.permanent),
+                ("loc_a", "2", date(2021, 1, 12), EmpStat.permanent),
+            ],
+        ),
+    ]
+
+    # Input rows: (establishment_id, worker_id, import_date).
+    # Expected rows: input plus (establishment_in_both_snapshots, is_leaver).
+    add_is_leaver_flag_cases = [
+        AddIsLeaverFlagCase(
+            id="flags_worker_in_end_snapshot_as_not_leaver",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_a", "1", END),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, True, False),
+                ("est_a", "1", END, None, None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="flags_worker_missing_from_end_snapshot_as_leaver",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_a", "2", START),
+                ("est_a", "1", END),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, True, False),
+                ("est_a", "2", START, True, True),
+                ("est_a", "1", END, None, None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="matches_end_snapshot_on_month_and_year_ignoring_day",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_a", "1", date(2022, 1, 28)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, True, False),
+                ("est_a", "1", date(2022, 1, 28), None, None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="flags_worker_as_leaver_when_only_in_other_months",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_a", "2", END),
+                ("est_a", "1", date(2022, 2, 5)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, True, True),
+                ("est_a", "2", END, None, None),
+                ("est_a", "1", date(2022, 2, 5), None, None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="flags_same_worker_id_at_other_establishment_as_leaver",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_a", "2", END),
+                ("est_b", "1", END),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, True, True),
+                ("est_a", "2", END, None, None),
+                ("est_b", "1", END, None, None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="nulls_is_leaver_when_establishment_missing_from_end_snapshot",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_b", "2", END),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, None),
+                ("est_b", "2", END, None, None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="nulls_is_leaver_when_establishment_only_in_other_months",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_a", "2", date(2022, 2, 5)),
+                ("est_b", "3", END),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, None),
+                ("est_a", "2", date(2022, 2, 5), None, None),
+                ("est_b", "3", END, None, None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="flags_each_establishment_separately_in_same_month",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_b", "2", START),
+                ("est_b", "2", END),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, None),
+                ("est_b", "2", START, True, False),
+                ("est_b", "2", END, None, None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="nulls_both_flags_when_no_end_snapshot",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_a", "1", date(2021, 2, 5)),
+                ("est_a", "1", END),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, True, False),
+                ("est_a", "1", date(2021, 2, 5), None, None),
+                ("est_a", "1", END, None, None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="keeps_duplicate_stayers_without_multiplying_rows",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_a", "1", START),
+                ("est_a", "1", END),
+                ("est_a", "1", END),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, True, False),
+                ("est_a", "1", START, True, False),
+                ("est_a", "1", END, None, None),
+                ("est_a", "1", END, None, None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="keeps_duplicate_leavers",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_a", "1", START),
+                ("est_a", "2", END),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, True, True),
+                ("est_a", "1", START, True, True),
+                ("est_a", "2", END, None, None),
+            ],
+        ),
+        AddIsLeaverFlagCase(
+            id="keeps_one_row_when_establishment_has_many_end_workers",
+            input_rows=[
+                ("est_a", "1", START),
+                ("est_a", "2", END),
+                ("est_a", "3", END),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, True, True),
+                ("est_a", "2", END, None, None),
+                ("est_a", "3", END, None, None),
+            ],
+        ),
+    ]
+
+    # Input rows: (establishment_id, import_date, save_date).
+    # Expected rows: (establishment_id, import_date, latest_save_date).
+    get_latest_save_date_per_establishment_cases = [
+        GetLatestSaveDatePerEstablishmentCase(
+            id="takes_max_save_date_per_establishment_per_import_date",
+            input_rows=[
+                ("est_a", START, date(2021, 1, 2)),
+                ("est_a", START, date(2021, 1, 4)),
+                ("est_a", START, date(2020, 12, 1)),
+            ],
+            expected_rows=[("est_a", START, date(2021, 1, 4))],
+        ),
+        GetLatestSaveDatePerEstablishmentCase(
+            id="keeps_separate_rows_for_different_import_dates",
+            input_rows=[
+                ("est_a", START, date(2021, 1, 2)),
+                ("est_a", date(2021, 2, 5), date(2021, 1, 20)),
+            ],
+            expected_rows=[
+                ("est_a", START, date(2021, 1, 2)),
+                ("est_a", date(2021, 2, 5), date(2021, 1, 20)),
+            ],
+        ),
+        GetLatestSaveDatePerEstablishmentCase(
+            id="keeps_separate_rows_for_different_establishments",
+            input_rows=[
+                ("est_a", START, date(2021, 1, 2)),
+                ("est_b", START, date(2020, 6, 1)),
+            ],
+            expected_rows=[
+                ("est_a", START, date(2021, 1, 2)),
+                ("est_b", START, date(2020, 6, 1)),
+            ],
+        ),
+        GetLatestSaveDatePerEstablishmentCase(
+            id="ignores_null_save_dates_when_another_exists",
+            input_rows=[
+                ("est_a", START, None),
+                ("est_a", START, date(2021, 1, 3)),
+            ],
+            expected_rows=[("est_a", START, date(2021, 1, 3))],
+        ),
+        GetLatestSaveDatePerEstablishmentCase(
+            id="returns_null_when_all_save_dates_null",
+            input_rows=[("est_a", START, None), ("est_a", START, None)],
+            expected_rows=[("est_a", START, None)],
+        ),
+        GetLatestSaveDatePerEstablishmentCase(
+            id="keeps_only_import_dates_present_in_snapshot_rows",
+            input_rows=[
+                ("est_a", END, date(2021, 4, 1)),
+                ("est_a", date(2022, 1, 20), date(2022, 1, 18)),
+            ],
+            snapshot_rows=[("est_a", END, None)],
+            expected_rows=[("est_a", END, date(2021, 4, 1))],
+        ),
+    ]
+
+    # Worker rows: (establishment_id, worker_id, import_date, is_leaver).
+    # Save date rows: (establishment_id, import_date, latest_save_date).
+    # Expected rows: worker row plus (months_since_save_start,
+    # months_since_save_end, establishment_active).
+    add_establishment_active_flag_cases = [
+        AddEstablishmentActiveFlagCase(
+            id="flags_active_when_both_snapshots_within_n_months",
+            worker_rows=[("est_a", "1", START, False), ("est_a", "1", END, None)],
+            save_date_rows=[
+                ("est_a", START, date(2020, 9, 20)),
+                ("est_a", END, date(2021, 9, 10)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 4, 4, True),
+                ("est_a", "1", END, None, 4, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="flags_inactive_when_start_snapshot_older_than_n_months",
+            worker_rows=[("est_a", "1", START, False), ("est_a", "1", END, None)],
+            save_date_rows=[
+                ("est_a", START, date(2020, 5, 10)),
+                ("est_a", END, date(2021, 11, 2)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 8, 2, False),
+                ("est_a", "1", END, None, 2, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="flags_inactive_when_end_snapshot_older_than_n_months",
+            worker_rows=[("est_a", "1", START, False), ("est_a", "1", END, None)],
+            save_date_rows=[
+                ("est_a", START, date(2020, 12, 1)),
+                ("est_a", END, date(2021, 3, 10)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 1, 10, False),
+                ("est_a", "1", END, None, 10, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="flags_active_when_gap_equals_n_months",
+            worker_rows=[("est_a", "1", START, False), ("est_a", "1", END, None)],
+            save_date_rows=[
+                ("est_a", START, date(2020, 7, 31)),
+                ("est_a", END, date(2021, 7, 1)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 6, 6, True),
+                ("est_a", "1", END, None, 6, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="respects_n_months_parameter",
+            n_months=3,
+            worker_rows=[("est_a", "1", START, False), ("est_a", "1", END, None)],
+            save_date_rows=[
+                ("est_a", START, date(2020, 9, 20)),
+                ("est_a", END, date(2021, 9, 10)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 4, 4, False),
+                ("est_a", "1", END, None, 4, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="calculates_whole_calendar_month_gap_for_both_snapshots",
+            worker_rows=[("est_a", "1", START, False), ("est_a", "1", END, None)],
+            save_date_rows=[
+                ("est_a", START, date(2020, 12, 31)),  # 5 days, 1 month
+                ("est_a", END, date(2020, 1, 1)),  # 24 months
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 1, 24, False),
+                ("est_a", "1", END, None, 24, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="flags_inactive_with_null_gap_when_no_save_date",
+            worker_rows=[
+                ("est_a", "1", START, False),
+                ("est_a", "1", END, None),
+                ("est_b", "1", START, True),
+            ],
+            save_date_rows=[
+                ("est_a", START, None),
+                ("est_a", END, date(2021, 12, 1)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, None, 1, False),
+                ("est_a", "1", END, None, 1, None, None),
+                ("est_b", "1", START, True, None, None, False),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="leaves_flag_and_end_gap_null_when_no_end_snapshot",
+            worker_rows=[("est_a", "1", START, None)],
+            save_date_rows=[("est_a", START, date(2020, 12, 1))],
+            expected_rows=[("est_a", "1", START, None, 1, None, None)],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="keeps_negative_gap_when_save_date_after_import_date",
+            worker_rows=[
+                ("est_a", "1", date(2021, 9, 30), False),
+                ("est_a", "1", date(2022, 9, 30), None),
+            ],
+            save_date_rows=[
+                ("est_a", date(2021, 9, 30), date(2021, 10, 2)),
+                ("est_a", date(2022, 9, 30), date(2022, 9, 29)),
+            ],
+            expected_rows=[
+                ("est_a", "1", date(2021, 9, 30), False, -1, 0, True),
+                ("est_a", "1", date(2022, 9, 30), None, 0, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="keeps_all_input_rows_and_is_leaver_unchanged",
+            worker_rows=[
+                ("est_a", "1", START, False),
+                ("est_a", "1", START, False),
+                ("est_a", "2", START, True),
+                ("est_a", "1", END, None),
+            ],
+            save_date_rows=[
+                ("est_a", START, date(2020, 12, 1)),
+                ("est_a", END, date(2021, 12, 1)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 1, 1, True),
+                ("est_a", "1", START, False, 1, 1, True),
+                ("est_a", "2", START, True, 1, 1, True),
+                ("est_a", "1", END, None, 1, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="matches_end_gap_only_to_snapshot_12_months_later",
+            worker_rows=[
+                ("est_a", "1", START, False),
+                ("est_a", "1", date(2021, 12, 5), None),
+                ("est_a", "1", END, None),
+                ("est_a", "1", date(2022, 2, 5), None),
+            ],
+            save_date_rows=[
+                ("est_a", START, date(2020, 12, 1)),
+                ("est_a", date(2021, 12, 5), date(2021, 1, 1)),  # 11 months later
+                ("est_a", END, date(2021, 12, 1)),
+                ("est_a", date(2022, 2, 5), date(2021, 1, 1)),  # 13 months later
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 1, 1, True),
+                ("est_a", "1", date(2021, 12, 5), None, 11, None, None),
+                ("est_a", "1", END, None, 1, None, None),
+                ("est_a", "1", date(2022, 2, 5), None, 13, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="flags_each_establishment_from_its_own_save_dates",
+            worker_rows=[
+                ("est_a", "1", START, False),
+                ("est_a", "1", END, None),
+                ("est_b", "1", START, False),
+                ("est_b", "1", END, None),
+            ],
+            save_date_rows=[
+                ("est_a", START, date(2020, 12, 1)),
+                ("est_a", END, date(2021, 12, 1)),
+                ("est_b", START, date(2020, 12, 1)),
+                ("est_b", END, date(2020, 1, 1)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, False, 1, 1, True),
+                ("est_a", "1", END, None, 1, None, None),
+                ("est_b", "1", START, False, 1, 24, False),
+                ("est_b", "1", END, None, 24, None, None),
+            ],
+        ),
+        AddEstablishmentActiveFlagCase(
+            id="keeps_gaps_and_nulls_flag_when_is_leaver_null_with_save_dates",
+            worker_rows=[("est_a", "1", START, None), ("est_b", "1", END, None)],
+            save_date_rows=[
+                ("est_a", START, date(2020, 12, 1)),
+                ("est_a", END, date(2021, 12, 1)),
+                ("est_b", END, date(2021, 12, 1)),
+            ],
+            expected_rows=[
+                ("est_a", "1", START, None, 1, 1, None),
+                ("est_b", "1", END, None, 1, None, None),
+            ],
+        ),
+    ]
+
+    # Rows: (import_date, apprentice_labels, age, hourly_pay, nlw_hourly_rate,
+    # hourly_pay_minus_nlw); the input is these rows without the last two columns.
+    add_nlw_and_pay_difference_cases = [
+        AddNlwAndPayDifferenceCase(
+            id="import_on_1_april_uses_previous_rate",
+            expected_rows=[(date(2021, 4, 1), "No", 30.0, 10.0, 8.72, 1.28)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="import_after_1_april_uses_new_rate",
+            expected_rows=[(date(2021, 4, 2), "No", 30.0, 10.0, 8.91, 1.09)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="earliest_import_uses_april_2019_rate",
+            expected_rows=[(date(2020, 1, 1), "No", 30.0, 10.0, 8.21, 1.79)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_17_uses_under_18_rate_2019",
+            expected_rows=[(date(2020, 1, 1), "No", 17.0, 5.0, 4.35, 0.65)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_18_uses_18_to_20_rate_2019",
+            expected_rows=[(date(2020, 1, 1), "No", 18.0, 7.0, 6.15, 0.85)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_24_uses_21_to_24_rate_2019",
+            expected_rows=[(date(2020, 1, 1), "No", 24.0, 8.0, 7.70, 0.30)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_25_uses_oldest_rate_2019",
+            expected_rows=[(date(2020, 1, 1), "No", 25.0, 9.0, 8.21, 0.79)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_22_uses_21_to_22_rate_2021",
+            expected_rows=[(date(2021, 6, 1), "No", 22.0, 9.0, 8.36, 0.64)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_23_uses_oldest_rate_2021",
+            expected_rows=[(date(2021, 6, 1), "No", 23.0, 9.0, 8.91, 0.09)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_21_uses_oldest_rate_2024",
+            expected_rows=[(date(2024, 6, 1), "No", 21.0, 12.0, 11.44, 0.56)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_20_uses_18_to_20_rate_2024",
+            expected_rows=[(date(2024, 6, 1), "No", 20.0, 9.0, 8.60, 0.40)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="latest_rates_from_april_2026",
+            expected_rows=[(date(2026, 4, 2), "No", 30.0, 13.0, 12.71, 0.29)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="apprentice_uses_apprentice_rate_whatever_age",
+            expected_rows=[(date(2024, 6, 1), "Yes", 40.0, 7.0, 6.40, 0.60)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="apprentice_with_null_age_uses_apprentice_rate",
+            expected_rows=[(date(2024, 6, 1), "Yes", None, 7.0, 6.40, 0.60)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="apprentice_not_known_uses_age_band",
+            expected_rows=[(date(2024, 6, 1), "Not known", 19.0, 9.0, 8.60, 0.40)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="null_apprentice_uses_age_band",
+            expected_rows=[(date(2024, 6, 1), None, 19.0, 9.0, 8.60, 0.40)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="null_age_not_apprentice_uses_oldest_rate",
+            expected_rows=[(date(2025, 6, 1), "No", None, 13.0, 12.21, 0.79)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="age_over_lookup_maximum_uses_oldest_rate",
+            expected_rows=[(date(2025, 6, 1), "No", 150.0, 13.0, 12.21, 0.79)],
+        ),
+        AddNlwAndPayDifferenceCase(
+            id="null_hourly_pay_gives_null_difference",
+            expected_rows=[(date(2025, 6, 1), "No", 30.0, None, 12.21, None)],
+        ),
+    ]
+
+    # Rows: (import_date, main_job_role_labels, hourly_pay_minus_nlw,
+    # hourly_pay_minus_nlw_clean); the input is these rows without the last column.
+    # The clean value is the difference when valid, otherwise null.
+    # The percentile is the largest difference unless a case sets `upper_percentile`.
+    add_hourly_pay_minus_nlw_clean_cases = [
+        AddHourlyPayMinusNlwCleanCase(
+            id="keeps_difference_when_zero",
+            expected_rows=[(date(2025, 6, 1), "Care worker", 0.0, 0.0)],
+        ),
+        AddHourlyPayMinusNlwCleanCase(
+            id="keeps_difference_when_positive_below_percentile",
+            expected_rows=[
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+            ],
+        ),
+        AddHourlyPayMinusNlwCleanCase(
+            id="null_when_difference_is_negative",
+            expected_rows=[
+                (date(2025, 6, 1), "Care worker", -1.0, None),
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+            ],
+        ),
+        AddHourlyPayMinusNlwCleanCase(
+            id="null_when_difference_is_null",
+            expected_rows=[
+                (date(2025, 6, 1), "Care worker", None, None),
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+            ],
+        ),
+        AddHourlyPayMinusNlwCleanCase(
+            id="null_when_difference_above_role_percentile",
+            upper_percentile=0.5,
+            expected_rows=[
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 3.0, None),
+            ],
+        ),
+        AddHourlyPayMinusNlwCleanCase(
+            id="keeps_difference_when_equal_to_role_percentile",
+            upper_percentile=0.5,
+            expected_rows=[
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 5.0, None),
+            ],
+        ),
+        AddHourlyPayMinusNlwCleanCase(
+            id="percentile_calculated_separately_per_import_date",
+            upper_percentile=0.5,
+            expected_rows=[
+                (date(2024, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2024, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2024, 6, 1), "Care worker", 3.0, None),
+                (date(2025, 6, 1), "Care worker", 10.0, 10.0),
+                (date(2025, 6, 1), "Care worker", 20.0, 20.0),
+                (date(2025, 6, 1), "Care worker", 30.0, None),
+            ],
+        ),
+        AddHourlyPayMinusNlwCleanCase(
+            id="percentile_calculated_separately_per_job_role",
+            upper_percentile=0.5,
+            expected_rows=[
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 3.0, None),
+                (date(2025, 6, 1), "Registered nurse", 10.0, 10.0),
+                (date(2025, 6, 1), "Registered nurse", 20.0, 20.0),
+                (date(2025, 6, 1), "Registered nurse", 30.0, None),
+            ],
+        ),
+        AddHourlyPayMinusNlwCleanCase(
+            id="null_differences_excluded_from_percentile",
+            upper_percentile=0.5,
+            expected_rows=[
+                (date(2025, 6, 1), "Care worker", None, None),
+                (date(2025, 6, 1), "Care worker", None, None),
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 3.0, None),
+            ],
+        ),
+        AddHourlyPayMinusNlwCleanCase(
+            id="negative_differences_excluded_from_percentile",
+            upper_percentile=0.5,
+            expected_rows=[
+                (date(2025, 6, 1), "Care worker", -10.0, None),
+                (date(2025, 6, 1), "Care worker", -10.0, None),
+                (date(2025, 6, 1), "Care worker", -10.0, None),
+                (date(2025, 6, 1), "Care worker", 1.0, 1.0),
+                (date(2025, 6, 1), "Care worker", 2.0, 2.0),
+                (date(2025, 6, 1), "Care worker", 3.0, None),
+            ],
+        ),
+    ]
+
+    # Rows: (worker_id, establishment_id, import_date, age, age_imputed,
+    # age_source); the input is these rows without the last two columns.
+    impute_age_observed_rows = [
+        ("1", "A", date(2025, 1, 1), 30.0, 30.0, AgeSource.observed),
+    ]
+    impute_age_no_age_rows = [
+        ("1", "A", date(2025, 1, 1), None, None, None),
+        ("1", "A", date(2025, 2, 1), None, None, None),
+    ]
+    # Assumed birth month is June (first observed age).
+    impute_age_steps_up_rows = [
+        ("1", "A", date(2024, 6, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 7, 1), None, 30.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 5, 1), None, 30.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 6, 1), None, 31.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2026, 6, 1), None, 32.0, AgeSource.assumed_birth_month),
+    ]
+    impute_age_steps_down_rows = [
+        ("1", "A", date(2015, 5, 1), None, 24.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2015, 6, 1), None, 25.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2024, 6, 1), None, 34.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 5, 1), None, 34.0, AgeSource.assumed_birth_month),
+        ("1", "A", date(2025, 6, 1), 35.0, 35.0, AgeSource.observed),
+    ]
+    # 30 in January then 31 in February: the birthday month is February.
+    impute_age_pinned_rows = [
+        ("1", "A", date(2023, 12, 1), None, 30.0, AgeSource.pinned_birth_month),
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 2, 1), 31.0, 31.0, AgeSource.observed),
+        ("1", "A", date(2025, 1, 1), None, 31.0, AgeSource.pinned_birth_month),
+        ("1", "A", date(2025, 2, 1), None, 32.0, AgeSource.pinned_birth_month),
+    ]
+    # 30 in January, 31 in March with no adjacent-month change: assumed January.
+    impute_age_gapped_change_cases = [
+        pytest.param(
+            [
+                (
+                    "1",
+                    "A",
+                    date(2023, 12, 1),
+                    None,
+                    29.0,
+                    AgeSource.assumed_birth_month,
+                ),
+                ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+                ("1", "A", date(2024, 3, 1), 31.0, 31.0, AgeSource.observed),
+            ],
+            id="month_between_missing",
+        ),
+        pytest.param(
+            [
+                (
+                    "1",
+                    "A",
+                    date(2023, 12, 1),
+                    None,
+                    29.0,
+                    AgeSource.assumed_birth_month,
+                ),
+                ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+                ("1", "A", date(2024, 2, 1), None, 30.0, AgeSource.assumed_birth_month),
+                ("1", "A", date(2024, 3, 1), 31.0, 31.0, AgeSource.observed),
+            ],
+            id="month_between_null",
+        ),
+    ]
+    # Second observed age is 30 + change; only +1 would pin February.
+    impute_age_not_pinned_cases = [
+        pytest.param(
+            [
+                (
+                    "1",
+                    "A",
+                    date(2023, 12, 1),
+                    None,
+                    29.0,
+                    AgeSource.assumed_birth_month,
+                ),
+                ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+                (
+                    "1",
+                    "A",
+                    date(2024, 2, 1),
+                    30.0 + change,
+                    30.0 + change,
+                    AgeSource.observed,
+                ),
+            ],
+            id=f"change_{change:+.0f}",
+        )
+        for change in [-1, 2, 0]
+    ]
+    # Pins on February (30 to 31) and again on March (31 to 32).
+    impute_age_several_pins_rows = [
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 2, 1), 31.0, 31.0, AgeSource.observed),
+        ("1", "A", date(2024, 3, 1), 32.0, 32.0, AgeSource.observed),
+        ("1", "A", date(2025, 2, 1), None, 32.0, AgeSource.pinned_birth_month),
+    ]
+    # The observed 35 in June disagrees with the January birth month.
+    impute_age_disagreeing_rows = [
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2024, 6, 1), 35.0, 35.0, AgeSource.observed),
+        ("1", "A", date(2025, 1, 1), None, 31.0, AgeSource.assumed_birth_month),
+    ]
+    impute_age_independent_rows = [
+        ("1", "A", date(2024, 1, 1), 30.0, 30.0, AgeSource.observed),
+        ("1", "A", date(2025, 1, 1), None, 31.0, AgeSource.assumed_birth_month),
+        ("1", "B", date(2024, 6, 1), 50.0, 50.0, AgeSource.observed),
+        ("1", "B", date(2023, 12, 1), None, 49.0, AgeSource.assumed_birth_month),
+        ("2", "A", date(2024, 1, 1), None, None, None),
+    ]
+
+    # Rows: (worker_id, establishment_id, import_date, age, age_clean); the input
+    # is these rows without the last column. Ages of 80 or more are nulled. Then
+    # ages implying a birth year 3 or more years from the worker's median (import
+    # year minus age) are nulled, unless half or more of the worker's ages are.
+    clean_age_cases = [
+        CleanAgeCase(
+            id="keeps_age_below_cap_and_nulls_age_at_cap",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 79.0, 79.0),
+                ("1", "A", date(2023, 2, 1), 80.0, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_ages_at_or_above_cap_when_they_are_the_workers_only_ages",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 95.0, None),
+                ("1", "A", date(2023, 2, 1), 96.0, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="applies_cap_before_median_rule",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 100.0, None),
+                ("1", "A", date(2023, 2, 1), 100.0, None),
+                ("1", "A", date(2023, 3, 1), 100.0, None),
+                ("1", "A", date(2023, 4, 1), 63.0, 63.0),
+                ("1", "A", date(2023, 5, 1), 63.0, 63.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_age_far_from_the_workers_other_ages",
+            expected_rows=[
+                ("1", "A", date(2022, 6, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 6, 1), 31.0, 31.0),
+                ("1", "A", date(2024, 1, 1), 75.0, None),
+                ("1", "A", date(2024, 6, 1), 32.0, 32.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_minority_group_of_far_ages",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 62.0, None),
+                ("1", "A", date(2023, 2, 1), 62.0, None),
+                ("1", "A", date(2023, 3, 1), 63.0, None),
+                ("1", "A", date(2023, 4, 1), 20.0, 20.0),
+                ("1", "A", date(2023, 5, 1), 20.0, 20.0),
+                ("1", "A", date(2023, 6, 1), 20.0, 20.0),
+                ("1", "A", date(2023, 7, 1), 21.0, 21.0),
+                ("1", "A", date(2023, 8, 1), 21.0, 21.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_age_two_years_from_median",
+            expected_rows=[
+                ("1", "A", date(2022, 1, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 1, 1), 31.0, 31.0),
+                ("1", "A", date(2024, 1, 1), 32.0, 32.0),
+                ("1", "A", date(2025, 1, 1), 31.0, 31.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="nulls_age_three_years_from_median",
+            expected_rows=[
+                ("1", "A", date(2022, 1, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 1, 1), 31.0, 31.0),
+                ("1", "A", date(2024, 1, 1), 32.0, 32.0),
+                ("1", "A", date(2025, 1, 1), 30.0, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_both_ages_when_there_are_two_that_disagree",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 70.0, 70.0),
+                ("1", "A", date(2023, 2, 1), 30.0, 30.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_all_ages_when_half_disagree_with_the_other_half",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 70.0, 70.0),
+                ("1", "A", date(2023, 2, 1), 70.0, 70.0),
+                ("1", "A", date(2023, 3, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 4, 1), 30.0, 30.0),
+            ],
+        ),
+        CleanAgeCase(
+            id="keeps_null_ages_and_ignores_them_in_the_majority_count",
+            expected_rows=[
+                ("1", "A", date(2023, 1, 1), 30.0, 30.0),
+                ("1", "A", date(2023, 2, 1), 75.0, 75.0),
+                ("1", "A", date(2023, 3, 1), None, None),
+                ("1", "A", date(2023, 4, 1), None, None),
+            ],
+        ),
+        CleanAgeCase(
+            id="does_not_mix_workers_or_establishments",
+            expected_rows=[
+                ("1", "A", date(2022, 6, 1), 30.0, 30.0),
+                ("1", "A", date(2024, 1, 1), 75.0, None),
+                ("1", "A", date(2024, 6, 1), 32.0, 32.0),
+                ("1", "B", date(2024, 1, 1), 75.0, 75.0),
+                ("2", "A", date(2024, 1, 1), 75.0, 75.0),
             ],
         ),
     ]

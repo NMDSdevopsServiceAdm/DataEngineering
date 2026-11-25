@@ -9,10 +9,12 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
     assessment_cell_map as cell_map,
 )
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
+    assessment_sheet_text,
     assessment_workbook_utils,
     merge_utils,
     publication_utils,
     run_log_utils,
+    workbook_helpers,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchiveDateRunNumberPartitionKeys as ArchiveKeys,
@@ -221,7 +223,7 @@ def main(
         )[0]
         print(f"Comparing to previously published run: {prev_run_source}")
         prev_assessment_lf = utils.scan_parquet(prev_run_source)
-    assessment_summary_lf = publication_utils.add_prev_run_filled_posts_columns(
+    assessment_summary_lf = publication_utils.add_prev_run_pct_change_columns(
         assessment_summary_lf, prev_assessment_lf
     )
 
@@ -242,16 +244,15 @@ def main(
     run_assessment_lf = utils.scan_parquet(
         merge_utils.run_partition_path(assessment_destination, run_source)
     )
-    workbook_name = (
-        f"monthly_tracking_summary_{merge_utils.archive_date_from_source(run_source)}"
-        f"_{assessed_run_number}.xlsx"
+    workbook_name = workbook_helpers.generate_workbook_name(
+        "monthly_tracking_summary", run_source
     )
     with tempfile.TemporaryDirectory() as workbook_folder:
         workbook_path = Path(workbook_folder) / workbook_name
         assessment_workbook_utils.fill_assessment_workbook_from_lf(
             run_assessment_lf,
             cell_map.ASSESSMENT_SHEETS,
-            assessment_workbook_utils.TermFromDates(
+            assessment_sheet_text.TermFromDates(
                 short=short_term_from_date,
                 medium=medium_term_from_date,
                 long=long_term_from_date,
@@ -260,7 +261,7 @@ def main(
             cell_map.TEMPLATE_PATH,
             workbook_path,
         )
-        assessment_workbook_utils.upload_to_s3(workbook_path, workbook_destination)
+        workbook_helpers.upload_to_s3(workbook_path, workbook_destination)
 
 
 if __name__ == "__main__":

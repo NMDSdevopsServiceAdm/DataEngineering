@@ -1,19 +1,202 @@
+import polars as pl
+
+import polars_utils.cleaning_utils as cUtils
+import projects._98_hackathon.fargate.utils.validation_utils as vUtils
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
+from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 
-def main(cleaned_ascwds_worker_source: str, flagged_destination: str) -> None:
-    """Filters the cleaned ASC-WDS worker data to the monthly worker turnover input.
+def main(
+    cleaned_ascwds_worker_source: str,
+    cleaned_ascwds_workplace_source: str,
+    raw_ascwds_worker_source: str,
+    ons_postcode_directory_source: str,
+    manual_postcode_corrections_source: str,
+    train_destination: str,
+    holdout_destination: str,
+    test_destination: str,
+    student_destination: str,
+    n_months: int = wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
+    max_gap: int = wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
+) -> None:
+    """Creates the worker-level dataset for the turnover hackathon.
+
+    Combines ASC-WDS worker data with workplace information, adds the leaver flags
+    and workplace turnover measures needed to analyse and model worker turnover.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned ASC-WDS worker data
-        flagged_destination (str): destination for the filtered worker data
+        cleaned_ascwds_workplace_source (str): path to the cleaned ASC-WDS
+            workplace data, used for main service, postcode and organisation ID
+        raw_ascwds_worker_source (str): path to the raw ASC-WDS worker data
+        ons_postcode_directory_source (str): path to the cleaned ONS postcode
+            directory, used with the workplace postcode for CSSR and region
+        manual_postcode_corrections_source (str): S3 URI of the manual postcode
+            corrections csv
+        train_destination (str): destination for the train split
+        holdout_destination (str): destination for the holdout split
+        test_destination (str): destination for the test split's key columns,
+            `is_leaver` and `turnover_rate`
+        student_destination (str): destination for the test split without
+            `is_leaver` and `turnover_rate`
+        n_months (int): most months since an establishment's latest save date for
+            it to count as active
+        max_gap (int): largest absolute headcount reconciliation gap, in workers,
+            for an establishment-month to count as within tolerance
     """
     worker_lf = utils.scan_parquet(cleaned_ascwds_worker_source)
+    workplace_lf = utils.scan_parquet(
+        cleaned_ascwds_workplace_source,
+        selected_columns=[
+            AWPClean.establishment_id,
+            AWPClean.ascwds_workplace_import_date,
+            AWPClean.main_service_id_clean,
+            AWPClean.organisation_id,
+            AWPClean.postcode,
+            AWPClean.location_id,
+            AWPClean.establishment_name,
+            AWPClean.address,
+        ],
+    )
+    ons_lf = utils.scan_parquet(
+        ons_postcode_directory_source,
+        selected_columns=[
+            ONSClean.postcode,
+            ONSClean.contemporary_ons_import_date,
+            ONSClean.contemporary_cssr,
+            ONSClean.contemporary_sub_icb,
+            ONSClean.current_cssr,
+            ONSClean.current_sub_icb,
+            ONSClean.current_region,
+        ],
+    )
 
-    worker_lf = wUtils.filter_worker_turnover_data(worker_lf)
+    filtered_lf = wUtils.filter_worker_turnover_data(worker_lf).drop(
+        AWKClean.location_id,
+        AWKClean.main_job_role_id,
+        AWKClean.main_job_role_clean,
+        AWKClean.employment_status,
+        AWKClean.employment_status_clean,
+    )
+    workplace_lf = wUtils.add_geography_from_postcode(
+        workplace_lf,
+        filtered_lf,
+        ons_lf,
+        manual_postcode_corrections_source,
+    )
+    filtered_lf = filtered_lf.join(
+        workplace_lf,
+        left_on=[AWKClean.establishment_id, AWKClean.ascwds_worker_import_date],
+        right_on=[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
+        how="left",
+    )
+    filtered_lf = wUtils.add_main_service_type(filtered_lf).drop(
+        AWPClean.main_service_id_clean
+    )
 
-    utils.sink_to_parquet(worker_lf, output_path=flagged_destination)
+    # The later steps use this frame several times. Collect once, so each use does
+    # not re-scan and re-filter the cleaned data.
+    filtered_lf = filtered_lf.collect().lazy()
+
+    save_dates_lf = wUtils.get_latest_save_date_per_establishment(
+        worker_lf, filtered_lf
+    )
+    filtered_lf = wUtils.add_is_leaver_flag(filtered_lf)
+    filtered_lf = wUtils.add_establishment_active_flag(
+        filtered_lf, save_dates_lf, n_months
+    )
+    filtered_lf = wUtils.add_turnover_rate(filtered_lf)
+
+    raw_worker_lf = utils.scan_parquet(
+        raw_ascwds_worker_source, schema=wUtils.RAW_WORKER_SCHEMA
+    )
+    filtered_lf = wUtils.add_raw_worker_columns(filtered_lf, raw_worker_lf)
+    filtered_lf = wUtils.fix_start_date_typos(filtered_lf)
+    filtered_lf = wUtils.clean_start_date(filtered_lf)
+    filtered_lf = wUtils.add_headcount_reconciliation_gap(filtered_lf, max_gap)
+    filtered_lf = wUtils.add_valid_for_analysis_flag(filtered_lf).drop(
+        HackCols.establishment_in_both_snapshots,
+        HackCols.months_since_save_start,
+        HackCols.months_since_save_end,
+        HackCols.establishment_active,
+        HackCols.headcount_reconciliation_gap,
+        HackCols.headcount_gap_within_tolerance,
+        HackCols.plausible_turnover,
+    )
+    filtered_lf = wUtils.null_not_known_codes(filtered_lf)
+    filtered_lf = filtered_lf.with_columns(
+        pl.col(wUtils.WORKER_CATEGORICAL_COLUMNS).cast(pl.Categorical)
+    )
+    filtered_lf = wUtils.combine_pay_and_hours(filtered_lf)
+    filtered_lf = filtered_lf.with_columns(
+        cUtils.keep_value_if_changed_expr(
+            HackCols.hourly_pay,
+            change_date_column=AWKClean.pay_change_date,
+            partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
+            import_date_column=AWKClean.ascwds_worker_import_date,
+        ),
+        cUtils.keep_value_if_changed_expr(
+            AWKClean.days_sick,
+            change_date_column=AWKClean.days_sick_change_date,
+            partition_by_columns=[AWKClean.worker_id, AWKClean.establishment_id],
+            import_date_column=AWKClean.ascwds_worker_import_date,
+        ),
+    )
+    filtered_lf = wUtils.add_worker_labels(filtered_lf)
+    filtered_lf = wUtils.add_country_code_group(filtered_lf, AWKClean.nationality)
+    filtered_lf = wUtils.add_country_code_group(
+        filtered_lf, AWKClean.country_of_birth
+    ).drop(wUtils.WORKER_CATEGORICAL_COLUMNS)
+    filtered_lf = wUtils.impute_worker_columns(filtered_lf, wUtils.IMPUTE_COLUMNS)
+    filtered_lf = wUtils.clean_age(filtered_lf)
+    filtered_lf = wUtils.impute_age(filtered_lf)
+    filtered_lf = wUtils.clean_start_date(filtered_lf)
+    filtered_lf = wUtils.add_years_in_role_and_sector(filtered_lf, save_dates_lf)
+    filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
+    filtered_lf = wUtils.add_hourly_pay_minus_nlw_clean(filtered_lf)
+    filtered_lf = wUtils.impute_pay_and_sickness(filtered_lf)
+    filtered_lf = wUtils.add_hourly_pay_diff_to_cssr_median(filtered_lf)
+
+    filtered_lf = wUtils.add_split_column(filtered_lf)
+
+    split_lfs = {
+        split: filtered_lf.filter(pl.col(HackCols.split) == split)
+        for split in ("train", "holdout", "test")
+    }
+    train_holdout_destinations = {
+        "train": train_destination,
+        "holdout": holdout_destination,
+    }
+    split_sinks = [
+        utils.sink_to_parquet(split_lfs[split], output_path=destination, lazy=True)
+        for split, destination in train_holdout_destinations.items()
+    ]
+    # The test split keeps `is_leaver` and `turnover_rate` until the sinks: the
+    # test destination holds only them and the key columns, and the student
+    # destination holds every other column.
+    test_sink = utils.sink_to_parquet(
+        split_lfs["test"].select(*vUtils.KEY_COLUMNS, *wUtils.STUDENT_HIDDEN_COLUMNS),
+        output_path=test_destination,
+        lazy=True,
+    )
+    student_sink = utils.sink_to_parquet(
+        split_lfs["test"].drop(wUtils.STUDENT_HIDDEN_COLUMNS),
+        output_path=student_destination,
+        lazy=True,
+    )
+    # Lazy sinks collected together share one run of the plan above, rather than
+    # re-running it per sink.
+    pl.collect_all([*split_sinks, test_sink, student_sink], engine="streaming")
 
 
 if __name__ == "__main__":
@@ -23,11 +206,60 @@ if __name__ == "__main__":
             "Source s3 directory for cleaned ascwds worker data",
         ),
         (
-            "--flagged_destination",
-            "Destination s3 directory for the filtered worker turnover data",
+            "--cleaned_ascwds_workplace_source",
+            "Source s3 directory for cleaned ascwds workplace data",
+        ),
+        (
+            "--raw_ascwds_worker_source",
+            "Source s3 directory for raw ascwds worker data",
+        ),
+        (
+            "--ons_postcode_directory_source",
+            "Source s3 directory for cleaned ONS postcode directory data",
+        ),
+        (
+            "--manual_postcode_corrections_source",
+            "S3 URI of the manual postcode corrections csv",
+        ),
+        (
+            "--train_destination",
+            "Destination s3 directory for the train split",
+        ),
+        (
+            "--holdout_destination",
+            "Destination s3 directory for the holdout split",
+        ),
+        (
+            "--test_destination",
+            "Destination s3 directory for the test split",
+        ),
+        (
+            "--student_destination",
+            "Destination s3 directory for the student version of the test split",
+        ),
+        (
+            "--n_months",
+            "Most months since an establishment's latest save date to count as active",
+            False,
+            wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
+        ),
+        (
+            "--max_gap",
+            "Largest absolute headcount reconciliation gap to count as within tolerance",
+            False,
+            wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
         ),
     )
     main(
         cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
-        flagged_destination=args.flagged_destination,
+        cleaned_ascwds_workplace_source=args.cleaned_ascwds_workplace_source,
+        raw_ascwds_worker_source=args.raw_ascwds_worker_source,
+        ons_postcode_directory_source=args.ons_postcode_directory_source,
+        manual_postcode_corrections_source=args.manual_postcode_corrections_source,
+        train_destination=args.train_destination,
+        holdout_destination=args.holdout_destination,
+        test_destination=args.test_destination,
+        student_destination=args.student_destination,
+        n_months=int(args.n_months),
+        max_gap=int(args.max_gap),
     )

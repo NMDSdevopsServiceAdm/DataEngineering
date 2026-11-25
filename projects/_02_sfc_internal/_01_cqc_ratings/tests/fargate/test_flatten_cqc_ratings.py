@@ -185,10 +185,10 @@ add_location_id_hash_cases = [
     ),
     AddLocationIdHashTestCase(
         id="keeps_other_columns_unchanged",
-        rows=Data.location_id_hash_date_rows,
-        expected_rows=Data.expected_location_id_hash_date_rows,
-        schema=Schemas.location_id_hash_date_schema,
-        expected_schema=Schemas.expected_location_id_hash_date_schema,
+        rows=Data.location_id_hash_other_column_rows,
+        expected_rows=Data.expected_location_id_hash_other_column_rows,
+        schema=Schemas.location_id_hash_other_column_schema,
+        expected_schema=Schemas.expected_location_id_hash_other_column_schema,
     ),
     AddLocationIdHashTestCase(
         id="hashes_categorical_location_id",

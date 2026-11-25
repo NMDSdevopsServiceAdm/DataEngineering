@@ -56,6 +56,8 @@ After a run has been assessed, record that we are satisfied it is accurate. Seve
 
 Do this when you have reviewed the run's assessment data and are satisfied with it. The assessment data's `archive_date` and `run_number` partitions show which run you assessed.
 
+Each run's assessment workbook is `monthly_tracking_summary_<archive_date>_<run_number>.xlsx` in `s3://<bucket>/domain=99_publication/dataset=monthly_tracker_filled_posts_02_assessment_workbook/`. `Publication-Assessment` builds it, so it exists once that has finished for the run. Files are removed after about 60 days. To change the workbook, see `projects/_99_publication/monthly_tracker_filled_posts/MAINTAINING_WORKBOOKS.md`.
+
 ### Steps
 1. From the repo root, in Git Bash, run `bash scripts/update_run_log.sh`.
 2. Enter the AWS profile and the bucket.
@@ -109,6 +111,8 @@ Rules:
 - The promotion step's own output (see "Promoting a run"), ending `Promoted run <n> (archived <date>) to s3://<workspace>-archive-promoted/.`.
 - The run, commit, tag and tag message from `cut_release_tag.sh plan`, then, after you answer `y`, the result of the cut (see "Cutting the release tag").
 - If you answered `y` at step 10, the execution's ARN and `Started.`. In the Step Functions console the new execution of `<workspace>-Publication-Output` has the input `{"run_number": <n>}`.
+
+`Publication-Output` also builds the public data download workbook, `monthly_tracker_data_download_<archive_date>_<run_number>.xlsx`, in `s3://<bucket>/domain=99_publication/dataset=monthly_tracker_filled_posts_03_output_workbook/`, and the reconciliation step reads it back. The workbook's Frontpage logo is read from `s3://<workspace>-pipeline-resources/publication/logo/skills_for_care_logo.png`; if that is missing the step function fails.
 
 `Publication-Output` builds the public data from the run's prepared data, which `Publication-Assessment` stores per run. `Publication-Assessment` starts itself when the estimates pipeline succeeds in `main`; on a branch it must be started by hand with `{"run_number": <n>}`. The script does not check that the run was prepared.
 
@@ -304,6 +308,15 @@ Use a branch bucket first: it only prints the changes. A branch bucket is seeded
 - **Could not authenticate**: repeat the prerequisites (the MFA credentials have expired after 12 hours).
 - **No run log found in the bucket**: check the bucket name. Nothing is uploaded.
 - **The upload fails part way**: the script names the runs it had already uploaded and the one that failed. The failed run's S3 folder may hold two parquet files, the old one and the new one, which reads as two rows for the run. A rerun then fails with "matches multiple rows". Restore every run it names (on a branch bucket, run the restore commands it prints), then run the script again from the start (see "Undoing an update").
+
+## If the script fails with an AWS permissions error
+Use this when the error comes from the `run-log-updater` role, which the person running the script uses (see `WINDOWS_SETUP.md`). An `sts:AssumeRole` error is the role's trust policy, not its permissions: see `WINDOWS_SETUP.md`. A branch bucket uses the `non-prod` profile, a different role in a different account.
+
+The role is created by hand in the production AWS console, not in Terraform, so a permissions error is fixed by editing its identity policy there. Ask whoever administers the production account if you don't have console access.
+
+1. Read the error. It usually names the denied action and resource, for example `not authorized to perform: <action> on resource: <arn>`. If it doesn't, work out the action from the step that failed. An explicit deny or a bucket policy is not fixed by the role's identity policy.
+2. Add that action to the role's policy for the prefix or resource the script uses, not a single object. Allow only what the step needs, and nothing the runbook says the role is denied: the role can't start `main-Publication-Assessment`, so use another profile (see "Selecting a run for publication" > "If something is wrong").
+3. If the error came before anything was uploaded, run the script again. Otherwise the run log may already be updated and later steps skipped: finish them by hand (see "If something is wrong" under "Selecting a run for publication" and "Promoting a run"). If the upload itself failed part way, restore the run (see "Undoing an update"). Don't rerun the script for a run that is already selected: it rejects it.
 
 ## Undoing an update
 - **Branch bucket**: after a successful upload the script prints one restore command per changed run (an `aws s3 cp --recursive` then `aws s3 sync --delete` from `run_log_original/`). Run all of them to put the runs back as they were. **Run them before running the script again**: every run replaces `run_log_original/`, and restoring from a later copy puts the changed value back. A failed upload prints the same commands for every run it uploaded and for the one that failed, which may be half written. Undoing does not stop a step function execution that was already started.

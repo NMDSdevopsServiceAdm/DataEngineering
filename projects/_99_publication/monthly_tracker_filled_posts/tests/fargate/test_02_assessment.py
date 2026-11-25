@@ -79,7 +79,7 @@ def mocks():
                 )
             ),
             upload_workbook=stack.enter_context(
-                patch(f"{PATCH_PATH}.assessment_workbook_utils.upload_to_s3")
+                patch(f"{PATCH_PATH}.workbook_helpers.upload_to_s3")
             ),
             resolve_run_sources=stack.enter_context(
                 patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources")
@@ -90,7 +90,7 @@ def mocks():
             date=stack.enter_context(patch(f"{PATCH_PATH}.date")),
             add_previous_columns=_patch_publication_utils(
                 stack,
-                "add_prev_run_filled_posts_columns",
+                "add_prev_run_pct_change_columns",
                 side_effect=lambda lazy_df, previous_lf: lazy_df,
             ),
             has_consistent_service=_patch_publication_utils(
@@ -473,7 +473,7 @@ class TestMain:
         args = mocks.fill_workbook.call_args.args
         assert args[0] is mocks.scan_parquet.return_value
         assert args[1] == job.cell_map.ASSESSMENT_SHEETS
-        assert args[2] == job.assessment_workbook_utils.TermFromDates(
+        assert args[2] == job.assessment_sheet_text.TermFromDates(
             short=SHORT_TERM_FROM_DATE,
             medium=MEDIUM_TERM_FROM_DATE,
             long=LONG_TERM_FROM_DATE,
@@ -493,7 +493,7 @@ class TestMain:
         mocks.fill_workbook.assert_called_once_with(
             mocks.scan_parquet.return_value,
             job.cell_map.ASSESSMENT_SHEETS,
-            job.assessment_workbook_utils.TermFromDates(
+            job.assessment_sheet_text.TermFromDates(
                 short=SHORT_TERM_FROM_DATE,
                 medium=MEDIUM_TERM_FROM_DATE,
                 long=LONG_TERM_FROM_DATE,

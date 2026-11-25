@@ -3,6 +3,7 @@ import polars as pl
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 
+from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.expressions import is_care_home, is_not_care_home
 from projects._03_independent_cqc._01_filled_posts._04_model.utils import (
     cross_validation_utils as cv,
@@ -555,7 +556,10 @@ def score_jumpiness(
         .to_list()
     )
     sample = np.random.default_rng(seed).permutation(candidates)[:sample_size]
-    sample_lf = pl.LazyFrame({location: sample.tolist()}, schema={location: pl.String})
+    sample_lf = pl.LazyFrame(
+        {location: sample.tolist()},
+        schema={location: CategoricalColumnTypes.LocationCatType},
+    )
 
     predictions_lf = cv.convert_to_filled_posts(
         cv.predict_in_chunks(

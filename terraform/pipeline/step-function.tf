@@ -20,6 +20,12 @@ locals {
   # Archive" state. Non-main workspaces poll faster so the timeout is quick to test.
   reconciliation_polling_max_attempts = terraform.workspace == "main" ? 10 : 5
   reconciliation_polling_wait_seconds = terraform.workspace == "main" ? 180 : 10
+
+  # Retries and seconds before them for the download tasks in Ingest-CQC-API-Delta.json.
+  # Non-main workspaces retry once after a short wait so a failing branch run
+  # surfaces in minutes (see cqc_api_retry_budget_seconds in fargate.tf).
+  cqc_api_retry_max_attempts     = terraform.workspace == "main" ? 2 : 1
+  cqc_api_retry_interval_seconds = terraform.workspace == "main" ? 300 : 10
 }
 
 # Created explicitly as required by dynamic step functions
@@ -98,6 +104,10 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     # reconciliation polling
     reconciliation_polling_max_attempts = local.reconciliation_polling_max_attempts
     reconciliation_polling_wait_seconds = local.reconciliation_polling_wait_seconds
+
+    # cqc api download retries
+    cqc_api_retry_max_attempts     = local.cqc_api_retry_max_attempts
+    cqc_api_retry_interval_seconds = local.cqc_api_retry_interval_seconds
 
     # dpr
     dpr_version = var.dpr_version

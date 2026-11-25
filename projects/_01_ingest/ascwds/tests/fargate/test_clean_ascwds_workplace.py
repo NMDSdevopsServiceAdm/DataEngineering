@@ -22,6 +22,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.remove_rows_with_duplicate_location_ids")
     @patch(f"{PATCH_PATH}.wUtils.create_purge_date_columns")
     @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
+    @patch(f"{PATCH_PATH}.wUtils.create_clean_main_service_id_column")
     @patch(f"{PATCH_PATH}.cUtils.build_labels_lf")
     @patch(f"{PATCH_PATH}.cUtils.column_to_date")
     @patch(f"{PATCH_PATH}.cUtils.cast_date_strings_to_dates")
@@ -40,6 +41,7 @@ class TestMain:
         cast_date_strings_to_dates_mock: Mock,
         column_to_date_mock: Mock,
         build_labels_lf_mock: Mock,
+        create_clean_main_service_id_column_mock: Mock,
         apply_categorical_labels_mock: Mock,
         create_purge_date_columns_mock: Mock,
         remove_rows_with_duplicate_location_ids_mock: Mock,
@@ -48,6 +50,9 @@ class TestMain:
         merge_legacy_job_role_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
+        recheck_duplicate_establishments_mock.return_value = pl.LazyFrame(
+            schema={AWPClean.establishment_id: pl.String}
+        )
         discover_combined_schema_mock.return_value = {
             "jr09emp": pl.String,
             AWPClean.establishment_id: pl.String,
@@ -73,12 +78,23 @@ class TestMain:
         apply_data_corrections_mock.assert_called_once()
         recheck_duplicate_establishments_mock.assert_called_once()
         exclude_test_accounts_filter_mock.assert_called_once()
-        assert null_duplicate_establishment_numeric_data_mock.call_args_list == [
-            call(ANY, recheck_duplicate_establishments_mock.return_value),
-            call(ANY, recheck_duplicate_establishments_mock.return_value),
-        ]
+        assert null_duplicate_establishment_numeric_data_mock.call_count == 2
+        first_duplicates_lf = (
+            null_duplicate_establishment_numeric_data_mock.call_args_list[0].args[1]
+        )
+        second_duplicates_lf = (
+            null_duplicate_establishment_numeric_data_mock.call_args_list[1].args[1]
+        )
+        assert (
+            first_duplicates_lf.collect_schema()[AWPClean.establishment_id] == pl.String
+        )
+        assert (
+            second_duplicates_lf.collect_schema()[AWPClean.establishment_id]
+            == job.CategoricalColumnTypes.EstablishmentCatType
+        )
         cast_date_strings_to_dates_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
+        create_clean_main_service_id_column_mock.assert_called_once()
         build_labels_lf_mock.assert_called_once_with(
             {
                 job.AWPClean.establishment_type: job.ESTABLISHMENT_TYPE_CODE_TO_LABEL,

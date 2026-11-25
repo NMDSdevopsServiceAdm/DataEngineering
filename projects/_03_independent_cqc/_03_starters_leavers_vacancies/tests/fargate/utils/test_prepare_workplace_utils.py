@@ -79,9 +79,13 @@ class TestReshapeJobRoleColsToRows:
         ],
     )
     def test_reshape_job_role_cols_to_rows(self, case):
-        test_lf = pl.LazyFrame(case.input_data)
-        expected_lf = pl.LazyFrame(case.expected_data).with_columns(
-            pl.col(AWPClean.establishment_id).cast(CatColType.EstablishmentCatType),
+        establishment_schema = {
+            AWPClean.establishment_id: CatColType.EstablishmentCatType
+        }
+        test_lf = pl.LazyFrame(case.input_data, schema_overrides=establishment_schema)
+        expected_lf = pl.LazyFrame(
+            case.expected_data, schema_overrides=establishment_schema
+        ).with_columns(
             pl.col(IndCQC.published_job_role_label).cast(
                 CatColType.PublishedJobRoleLabelCatType
             ),

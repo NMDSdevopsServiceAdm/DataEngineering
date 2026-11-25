@@ -37,15 +37,23 @@ class PublicationColumns:
     unfiltered_short_locationid_count_cum_pct_change: str = (
         "unfiltered_short_locationid_count_cum_pct_change"
     )
-    unfiltered_filled_posts_prev_run: str = "unfiltered_filled_posts_prev_run"
-    unfiltered_filled_posts_pct_change_vs_prev_run: str = (
-        "unfiltered_filled_posts_pct_change_vs_prev_run"
-    )
     unfiltered_filled_posts_april_pct_change: str = (
         "unfiltered_filled_posts_april_pct_change"
     )
     unfiltered_locationid_count_april_pct_change: str = (
         "unfiltered_locationid_count_april_pct_change"
+    )
+    unfiltered_filled_posts_april_pct_change_prev_run: str = (
+        "unfiltered_filled_posts_april_pct_change_prev_run"
+    )
+    unfiltered_short_sfc_cum_pct_change_prev_run: str = (
+        "unfiltered_short_sfc_cum_pct_change_prev_run"
+    )
+    unfiltered_filled_posts_april_pct_change_comparison: str = (
+        "unfiltered_filled_posts_april_pct_change_comparison"
+    )
+    unfiltered_short_sfc_cum_pct_change_comparison: str = (
+        "unfiltered_short_sfc_cum_pct_change_comparison"
     )
     main_service: str = "Main service"
     job_group: str = "Job group"

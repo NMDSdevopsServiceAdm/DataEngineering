@@ -3,6 +3,7 @@ import sys
 import pointblank as pb
 
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
@@ -47,6 +48,17 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             thresholds=GLOBAL_THRESHOLDS,
             brief=True,
             actions=GLOBAL_ACTIONS,
+        )
+        # dataset schema
+        .col_schema_match(
+            schema=pb.Schema(
+                columns={
+                    PIRClean.location_id: str(CategoricalColumnTypes.LocationCatType)
+                }
+            ),
+            complete=False,
+            in_order=False,
+            brief=f"{PIRClean.location_id} should be the LocationCatType dtype",
         )
         # complete columns
         .col_vals_not_null(

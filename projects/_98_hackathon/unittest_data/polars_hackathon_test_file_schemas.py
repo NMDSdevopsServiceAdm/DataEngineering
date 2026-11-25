@@ -6,24 +6,250 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
+from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 
 @dataclass
 class WorkerTurnoverSchemas:
-    cleaned_worker_schema = pl.Schema(
+    filter_worker_schema = pl.Schema(
         [
             (AWKClean.location_id, pl.String()),
-            (AWKClean.establishment_id, pl.String()),
             (AWKClean.worker_id, pl.String()),
-            (AWKClean.main_job_role_id, pl.String()),
-            (AWKClean.employment_status, pl.String()),
             (AWKClean.ascwds_worker_import_date, pl.Date()),
-            (AWKClean.main_job_role_clean, CatColType.MainJobRoleIdCatType),
-            (AWKClean.main_job_role_clean_labelled, CatColType.JobRoleCatType),
-            (AWKClean.employment_status_clean, CatColType.EmploymentStatusIdCatType),
             (
                 AWKClean.employment_status_clean_labelled,
                 CatColType.EmploymentStatusCatType,
             ),
+        ]
+    )
+
+    impute_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.hours, pl.Float32()),
+        ]
+    )
+
+    impute_pay_and_sickness_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.hourly_pay_minus_nlw_clean, pl.Float32()),
+            (AWKClean.days_sick, pl.Float32()),
+            (HackCols.hourly_pay_minus_nlw_clean_imputed, pl.Float32()),
+            (HackCols.days_sick_imputed, pl.Float32()),
+        ]
+    )
+
+    impute_columns = [
+        f"{AWKClean.gender}_labels",
+        f"{AWKClean.ethnicity}_labels",
+        f"{AWKClean.disabled}_labels",
+        HackCols.nationality_group,
+        HackCols.country_of_birth_group,
+        AWKClean.year_of_entry,
+        HackCols.hours,
+        f"{AWKClean.zero_hours}_labels",
+        f"{AWKClean.source_of_recruitment}_labels",
+        AWKClean.start_date,
+        AWKClean.start_in_sector,
+        f"{AWKClean.social_care_qual_held}_labels",
+        f"{AWKClean.level_social_care_qualification_held}_labels",
+        f"{AWKClean.care_certificate_status}_labels",
+        f"{AWKClean.training_flag}_labels",
+        HackCols.ethnicity_group_labels,
+        HackCols.scerec_wo_group_labels,
+    ]
+
+    is_leaver_input_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+        ]
+    )
+
+    is_leaver_output_schema = pl.Schema(
+        [
+            *is_leaver_input_schema.items(),
+            (HackCols.establishment_in_both_snapshots, pl.Boolean()),
+            (HackCols.is_leaver, pl.Boolean()),
+        ]
+    )
+
+    main_service_input_schema = pl.Schema(
+        [(AWPClean.main_service_id_clean, CatColType.MainServiceIdCatType)]
+    )
+
+    main_service_type_schema = pl.Schema(
+        [
+            *main_service_input_schema.items(),
+            (HackCols.main_service_type, CatColType.PrimaryServiceEnumType),
+        ]
+    )
+
+    pay_input_schema = pl.Schema(
+        [
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.hourly_rate, pl.Float32()),
+            (AWKClean.salary, pl.Float32()),
+            (AWKClean.contracted_hours, pl.Float32()),
+            (AWKClean.average_hours, pl.Float32()),
+        ]
+    )
+
+    pay_output_schema = pl.Schema(
+        [
+            (AWKClean.worker_id, pl.String()),
+            (HackCols.hours, pl.Float32()),
+            (HackCols.hourly_pay, pl.Float32()),
+        ]
+    )
+
+    clean_age_schema = pl.Schema(
+        [
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.establishment_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.age, pl.Float32()),
+            (HackCols.age_clean, pl.Float32()),
+        ]
+    )
+
+    impute_age_schema = pl.Schema(
+        [
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.establishment_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.age_clean, pl.Float32()),
+            (HackCols.age_imputed, pl.Float32()),
+            (HackCols.age_source, pl.Categorical()),
+        ]
+    )
+
+    nlw_input_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (f"{AWKClean.apprentice}_{DLC.label}s", pl.Categorical()),
+            (HackCols.age_imputed, pl.Float32()),
+            (HackCols.hourly_pay, pl.Float32()),
+        ]
+    )
+
+    nlw_output_schema = pl.Schema(
+        [
+            *nlw_input_schema.items(),
+            (HackCols.nlw_hourly_rate, pl.Float32()),
+            (HackCols.hourly_pay_minus_nlw, pl.Float32()),
+        ]
+    )
+
+    hourly_pay_minus_nlw_clean_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.main_job_role_clean_labelled, pl.Categorical()),
+            (HackCols.hourly_pay_minus_nlw, pl.Float32()),
+            (HackCols.hourly_pay_minus_nlw_clean, pl.Float32()),
+        ]
+    )
+
+    latest_save_date_input_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.ascwds_worker_save_date, pl.Date()),
+        ]
+    )
+
+    latest_save_date_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.latest_save_date, pl.Date()),
+        ]
+    )
+
+    active_input_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.is_leaver, pl.Boolean()),
+        ]
+    )
+
+    active_output_schema = pl.Schema(
+        [
+            *active_input_schema.items(),
+            (HackCols.months_since_save_start, pl.Int32()),
+            (HackCols.months_since_save_end, pl.Int32()),
+            (HackCols.establishment_active, pl.Boolean()),
+        ]
+    )
+
+    turnover_rate_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.establishment_in_both_snapshots, pl.Boolean()),
+            (HackCols.is_leaver, pl.Boolean()),
+            (HackCols.turnover_rate, pl.Float32()),
+        ]
+    )
+
+    headcount_gap_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.created_date, pl.Date()),
+            (HackCols.is_leaver, pl.Boolean()),
+            (HackCols.headcount_reconciliation_gap, pl.Int32()),
+            (HackCols.headcount_gap_within_tolerance, pl.Boolean()),
+        ]
+    )
+
+    valid_for_analysis_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.establishment_in_both_snapshots, pl.Boolean()),
+            (HackCols.establishment_active, pl.Boolean()),
+            (HackCols.headcount_gap_within_tolerance, pl.Boolean()),
+            (HackCols.turnover_rate, pl.Float32()),
+            (HackCols.plausible_turnover, pl.Boolean()),
+            (HackCols.valid_for_analysis, pl.Boolean()),
+        ]
+    )
+
+    fix_start_date_typos_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.start_date, pl.Date()),
+        ]
+    )
+
+    clean_start_date_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.start_date, pl.Date()),
+            (AWKClean.age, pl.Float32()),
+        ]
+    )
+
+    raw_worker_join_input_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
         ]
     )

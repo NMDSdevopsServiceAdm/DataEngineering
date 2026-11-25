@@ -1,6 +1,9 @@
 from unittest.mock import ANY, Mock, call, patch
 
+import polars as pl
+
 import projects._01_ingest.ascwds.fargate.clean_ascwds_worker_data as job
+from polars_utils.raw_data_adjustments import is_unique_worker_data
 
 PATCH_PATH = "projects._01_ingest.ascwds.fargate.clean_ascwds_worker_data"
 
@@ -29,6 +32,12 @@ class TestMain:
         create_clean_employment_status_column_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
+        scan_parquet_mock.side_effect = lambda source, schema: pl.LazyFrame(
+            schema=schema
+        )
+        column_to_date_mock.side_effect = lambda lf, *args: lf
+        is_unique_worker_data_mock.side_effect = is_unique_worker_data
+
         job.main(
             self.WORKER_SOURCE,
             self.CLEANED_WORKPLACE_SOURCE,
@@ -59,3 +68,14 @@ class TestMain:
         sink_to_parquet_mock.assert_called_once_with(
             ANY, output_path=self.CLEANED_WORKER_DESTINATION
         )
+
+        worker_lf = remove_workers_without_workplaces_mock.call_args.args[0]
+        worker_lf.collect()
+        assert (
+            worker_lf.collect_schema()[job.AWKClean.establishment_id]
+            == job.CategoricalColumnTypes.EstablishmentCatType
+        )
+        assert (
+            worker_lf.collect_schema()[job.AWKClean.ascwds_worker_save_date] == pl.Date
+        )
+        assert job.AWKClean.save_date not in worker_lf.collect_schema()
