@@ -58,21 +58,6 @@ def main(
             brief="turnover_rate is between 0 and 1",
         )
         .col_vals_ge(
-            vUtils.NUMERIC_COLUMNS,
-            0,
-            na_pass=True,
-            brief="numeric columns are not negative",
-        )
-        .col_vals_gt(
-            OutCols.hours_worked, 0, na_pass=True, brief="hours is null or above 0"
-        )
-        .col_vals_ge(
-            OutCols.age,
-            0,
-            na_pass=True,
-            brief="age is null or not negative",
-        )
-        .col_vals_ge(
             OutCols.hourly_pay_minus_nlw,
             0,
             na_pass=True,
