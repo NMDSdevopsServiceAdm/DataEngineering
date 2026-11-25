@@ -59,7 +59,6 @@ class WorkerTurnoverSchemas:
         f"{AWKClean.zero_hours}_labels",
         f"{AWKClean.source_of_recruitment}_labels",
         AWKClean.start_date,
-        AWKClean.start_age,
         AWKClean.start_in_sector,
         f"{AWKClean.social_care_qual_held}_labels",
         f"{AWKClean.level_social_care_qualification_held}_labels",
@@ -229,6 +228,21 @@ class WorkerTurnoverSchemas:
             (HackCols.turnover_rate, pl.Float32()),
             (HackCols.plausible_turnover, pl.Boolean()),
             (HackCols.valid_for_analysis, pl.Boolean()),
+        ]
+    )
+
+    fix_start_date_typos_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.start_date, pl.Date()),
+        ]
+    )
+
+    clean_start_date_schema = pl.Schema(
+        [
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (AWKClean.start_date, pl.Date()),
+            (AWKClean.age, pl.Float32()),
         ]
     )
 

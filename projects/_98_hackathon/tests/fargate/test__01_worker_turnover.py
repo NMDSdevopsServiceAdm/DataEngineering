@@ -36,6 +36,8 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.clean_start_date")
+    @patch(f"{PATCH_PATH}.wUtils.fix_start_date_typos")
     @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
@@ -56,6 +58,8 @@ class TestMain:
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
         add_geography_from_postcode_mock: Mock,
+        fix_start_date_typos_mock: Mock,
+        clean_start_date_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
@@ -95,6 +99,11 @@ class TestMain:
         # The student sink comes after the three split sinks.
         sink_mocks = [Mock() for _ in range(len(splits) + 1)]
         sink_to_parquet_mock.side_effect = sink_mocks
+        plausible_after_typos_lf, plausible_after_imputation_lf = Mock(), Mock()
+        clean_start_date_mock.side_effect = [
+            plausible_after_typos_lf,
+            plausible_after_imputation_lf,
+        ]
 
         job.main(
             self.CLEANED_WORKER_SOURCE,
@@ -192,8 +201,11 @@ class TestMain:
         add_raw_worker_columns_mock.assert_called_once_with(
             add_turnover_rate_mock.return_value, raw_worker_lf_mock
         )
+        fix_start_date_typos_mock.assert_called_once_with(
+            add_raw_worker_columns_mock.return_value
+        )
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value,
+            plausible_after_typos_lf,
             job.wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
         )
         add_valid_for_analysis_flag_mock.assert_called_once_with(
@@ -257,8 +269,12 @@ class TestMain:
         )
         clean_age_mock.assert_called_once_with(impute_worker_columns_mock.return_value)
         impute_age_mock.assert_called_once_with(clean_age_mock.return_value)
+        assert clean_start_date_mock.call_args_list == [
+            call(fix_start_date_typos_mock.return_value),
+            call(impute_age_mock.return_value),
+        ]
         add_years_in_role_and_sector_mock.assert_called_once_with(
-            impute_age_mock.return_value,
+            plausible_after_imputation_lf,
             get_latest_save_date_per_establishment_mock.return_value,
         )
         add_nlw_and_pay_difference_mock.assert_called_once_with(
@@ -313,6 +329,8 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.clean_start_date")
+    @patch(f"{PATCH_PATH}.wUtils.fix_start_date_typos")
     @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
@@ -333,6 +351,8 @@ class TestMain:
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
         add_geography_from_postcode_mock: Mock,
+        fix_start_date_typos_mock: Mock,
+        clean_start_date_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
@@ -370,6 +390,8 @@ class TestMain:
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
     @patch(f"{PATCH_PATH}.wUtils.add_headcount_reconciliation_gap")
+    @patch(f"{PATCH_PATH}.wUtils.clean_start_date")
+    @patch(f"{PATCH_PATH}.wUtils.fix_start_date_typos")
     @patch(f"{PATCH_PATH}.wUtils.add_geography_from_postcode")
     @patch(f"{PATCH_PATH}.wUtils.add_raw_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_turnover_rate")
@@ -390,6 +412,8 @@ class TestMain:
         add_turnover_rate_mock: Mock,
         add_raw_worker_columns_mock: Mock,
         add_geography_from_postcode_mock: Mock,
+        fix_start_date_typos_mock: Mock,
+        clean_start_date_mock: Mock,
         add_headcount_reconciliation_gap_mock: Mock,
         add_valid_for_analysis_flag_mock: Mock,
         combine_pay_and_hours_mock: Mock,
@@ -412,5 +436,5 @@ class TestMain:
         )
 
         add_headcount_reconciliation_gap_mock.assert_called_once_with(
-            add_raw_worker_columns_mock.return_value, 5
+            clean_start_date_mock.return_value, 5
         )

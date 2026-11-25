@@ -195,6 +195,20 @@ class AddValidForAnalysisFlagCase:
 
 
 @dataclass
+class FixStartDateTyposCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
+class CleanStartDateCase:
+    id: str
+    input_rows: list[tuple[Any, ...]]
+    expected_rows: list[tuple[Any, ...]]
+
+
+@dataclass
 class WorkerTurnoverData:
     # Rows: (establishment_id, worker_id, import_date,
     # establishment_in_both_snapshots, is_leaver, turnover_rate).
@@ -374,6 +388,113 @@ class WorkerTurnoverData:
         AddValidForAnalysisFlagCase(
             id="invalid_when_no_end_snapshot",
             expected_rows=[("est_a", "1", START, None, None, None, None, None, False)],
+        ),
+    ]
+
+    # Rows: (import_date, start_date).
+    fix_start_date_typos_cases = [
+        FixStartDateTyposCase(
+            id="expands_year_00yy_to_20yy",
+            input_rows=[(date(2024, 6, 1), date(15, 4, 1))],
+            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1))],
+        ),
+        FixStartDateTyposCase(
+            id="expands_year_0001_to_2001",
+            input_rows=[(date(2024, 6, 1), date(1, 9, 16))],
+            expected_rows=[(date(2024, 6, 1), date(2001, 9, 16))],
+        ),
+        FixStartDateTyposCase(
+            id="expands_19yy_to_20yy_when_result_is_not_after_import_date",
+            input_rows=[(date(2024, 6, 1), date(1913, 4, 16))],
+            expected_rows=[(date(2024, 6, 1), date(2013, 4, 16))],
+        ),
+        FixStartDateTyposCase(
+            id="keeps_19yy_when_expansion_is_after_import_date",
+            input_rows=[(date(2024, 6, 1), date(1929, 10, 17))],
+            expected_rows=[(date(2024, 6, 1), date(1929, 10, 17))],
+        ),
+        FixStartDateTyposCase(
+            id="nulls_placeholder_date_1_jan_1900",
+            input_rows=[(date(2024, 6, 1), date(1900, 1, 1))],
+            expected_rows=[(date(2024, 6, 1), None)],
+        ),
+        FixStartDateTyposCase(
+            id="does_not_fix_year_0219",
+            input_rows=[(date(2024, 6, 1), date(219, 12, 2))],
+            expected_rows=[(date(2024, 6, 1), date(219, 12, 2))],
+        ),
+        FixStartDateTyposCase(
+            id="does_not_change_plausible_start_date",
+            input_rows=[
+                (date(2024, 6, 1), date(2015, 4, 1)),
+                (date(2024, 6, 1), date(1990, 3, 5)),
+            ],
+            expected_rows=[
+                (date(2024, 6, 1), date(2015, 4, 1)),
+                (date(2024, 6, 1), date(1990, 3, 5)),
+            ],
+        ),
+        FixStartDateTyposCase(
+            id="keeps_null_start_date_null",
+            input_rows=[(date(2024, 6, 1), None)],
+            expected_rows=[(date(2024, 6, 1), None)],
+        ),
+    ]
+
+    # Rows: (import_date, start_date, age).
+    clean_start_date_cases = [
+        CleanStartDateCase(
+            id="keeps_null_start_date_null",
+            input_rows=[(date(2024, 6, 1), None, 30.0)],
+            expected_rows=[(date(2024, 6, 1), None, 30.0)],
+        ),
+        # Age 36 at import and exactly 20 years since start is a start age of 16.
+        CleanStartDateCase(
+            id="keeps_start_date_when_start_age_is_exactly_16",
+            input_rows=[(date(2024, 6, 1), date(2004, 6, 1), 36.0)],
+            expected_rows=[(date(2024, 6, 1), date(2004, 6, 1), 36.0)],
+        ),
+        CleanStartDateCase(
+            id="nulls_start_date_when_start_age_is_just_under_16",
+            input_rows=[(date(2024, 6, 1), date(2004, 5, 31), 36.0)],
+            expected_rows=[(date(2024, 6, 1), None, 36.0)],
+        ),
+        # About 40.5 years since start for a worker aged 40: the date of birth.
+        CleanStartDateCase(
+            id="nulls_start_date_when_it_is_date_of_birth",
+            input_rows=[(date(2024, 6, 1), date(1983, 12, 1), 40.0)],
+            expected_rows=[(date(2024, 6, 1), None, 40.0)],
+        ),
+        CleanStartDateCase(
+            id="nulls_start_date_when_it_is_before_birth",
+            input_rows=[(date(2024, 6, 1), date(1960, 1, 1), 30.0)],
+            expected_rows=[(date(2024, 6, 1), None, 30.0)],
+        ),
+        CleanStartDateCase(
+            id="nulls_start_date_when_it_is_after_import_date",
+            input_rows=[(date(2024, 6, 1), date(2024, 7, 1), 30.0)],
+            expected_rows=[(date(2024, 6, 1), None, 30.0)],
+        ),
+        # Negative ages are not-known codes. Read as an age, -1 would fail the rule.
+        CleanStartDateCase(
+            id="treats_negative_age_code_as_unknown",
+            input_rows=[(date(2024, 6, 1), date(2015, 4, 1), -1.0)],
+            expected_rows=[(date(2024, 6, 1), date(2015, 4, 1), -1.0)],
+        ),
+        CleanStartDateCase(
+            id="keeps_start_date_when_age_unknown_and_tenure_under_70_years",
+            input_rows=[(date(2024, 6, 1), date(1960, 1, 1), None)],
+            expected_rows=[(date(2024, 6, 1), date(1960, 1, 1), None)],
+        ),
+        CleanStartDateCase(
+            id="keeps_start_date_when_age_unknown_and_tenure_exactly_70_years",
+            input_rows=[(date(2024, 6, 1), date(1954, 6, 1), None)],
+            expected_rows=[(date(2024, 6, 1), date(1954, 6, 1), None)],
+        ),
+        CleanStartDateCase(
+            id="nulls_start_date_when_age_unknown_and_tenure_over_70_years",
+            input_rows=[(date(2024, 6, 1), date(1954, 5, 31), None)],
+            expected_rows=[(date(2024, 6, 1), None, None)],
         ),
     ]
 

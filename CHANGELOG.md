@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Added a `_labels` column for 9 coded raw worker columns (not nationality or country of birth) to the Hackathon Worker Turnover job output; unmapped codes keep their raw code.
 - Added `hours` and `hourly_pay` columns to the Hackathon Worker Turnover job, replacing the raw hourly rate, salary, contracted hours and average hours columns.
 - Added previous run April and short-term cumulative percentage changes, and their differences from the current run, to the Monthly Tracker assessment.
+- Added job group rollup rows to the Monthly Tracker assessment data, validated against the "All job roles" rows and ignored by the reconciliation check.
 - The publication output job builds the data download workbook and saves it to S3, and the reconciliation check compares it with the prepared tables.
 - Added nationality and country of birth groups (British or UK, EEA, Non-EEA) to the Hackathon Worker Turnover job output.
 - Added a headcount reconciliation gap and tolerance flag to the Hackathon Worker Turnover job; gaps outside tolerance are not valid for analysis.
@@ -44,6 +45,7 @@ All notable changes to this project will be documented in this file.
 - Dropped unneeded columns from the hackathon worker turnover output at their last use.
 
 ### Fixed
+- Fixed implausible start dates in the Hackathon Worker Turnover job: mistyped centuries are corrected, and dates after the import date or implying a start age under 16 are nulled before and after imputation. Removed `startage` from the output.
 
 
 ## [v2026.10.0] - 09/11/2026
