@@ -292,7 +292,7 @@ class TestMain:
             assert filter_call.args[0].meta.eq(pl.col(job.HackCols.split) == split)
         train_lf_mock, predict_lf_mock = split_lf_mocks
         predict_lf_mock.select.assert_called_once_with(
-            *job.vUtils.KEY_COLUMNS, *job.wUtils.ANSWER_COLUMNS
+            *job.wUtils.KEY_COLUMNS, *job.wUtils.ANSWER_COLUMNS
         )
         predict_lf_mock.drop.assert_called_once_with(job.wUtils.ANSWER_COLUMNS)
         assert sink_to_parquet_mock.call_args_list == [
