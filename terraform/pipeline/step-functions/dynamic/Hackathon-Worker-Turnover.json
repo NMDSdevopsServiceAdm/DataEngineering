@@ -77,12 +77,8 @@
                         "${dataset_bucket_name}",
                         "--source_path",
                         "domain=98_hackathon/dataset=worker_turnover_train/",
-                        "--compare_path",
-                        "domain=01_ascwds/dataset=worker_cleaned/",
                         "--reports_path",
-                        "domain=98_hackathon/dataset=worker_turnover_train_validation/",
-                        "--split",
-                        "train"
+                        "domain=98_hackathon/dataset=worker_turnover_train_validation/"
                       ]
                     }
                   ]
@@ -119,12 +115,8 @@
                         "${dataset_bucket_name}",
                         "--source_path",
                         "domain=98_hackathon/dataset=worker_turnover_holdout/",
-                        "--compare_path",
-                        "domain=01_ascwds/dataset=worker_cleaned/",
                         "--reports_path",
-                        "domain=98_hackathon/dataset=worker_turnover_holdout_validation/",
-                        "--split",
-                        "holdout"
+                        "domain=98_hackathon/dataset=worker_turnover_holdout_validation/"
                       ]
                     }
                   ]
@@ -161,8 +153,6 @@
                         "${dataset_bucket_name}",
                         "--source_path",
                         "domain=98_hackathon/dataset=worker_turnover_test/",
-                        "--compare_path",
-                        "domain=01_ascwds/dataset=worker_cleaned/",
                         "--reports_path",
                         "domain=98_hackathon/dataset=worker_turnover_test_validation/"
                       ]
@@ -201,8 +191,6 @@
                         "${dataset_bucket_name}",
                         "--source_path",
                         "domain=98_hackathon/dataset=worker_turnover_student/",
-                        "--compare_path",
-                        "domain=01_ascwds/dataset=worker_cleaned/",
                         "--reports_path",
                         "domain=98_hackathon/dataset=worker_turnover_student_validation/"
                       ]

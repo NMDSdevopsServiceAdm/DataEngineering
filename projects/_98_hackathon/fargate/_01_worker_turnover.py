@@ -14,9 +14,6 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
-from utils.column_names.hackathon_columns import (
-    HackathonOutputColumns as OutCols,
-)
 
 
 def main(
@@ -171,13 +168,16 @@ def main(
     filtered_lf = wUtils.add_hourly_pay_diff_to_cssr_median(filtered_lf)
 
     filtered_lf = wUtils.add_split_column(filtered_lf)
-    filtered_lf = wUtils.select_and_rename_output_columns(filtered_lf)
 
+    # `split` and `valid_for_analysis` are not output columns, so rows are filtered
+    # and split before the output columns are selected.
+    filtered_lf = filtered_lf.filter(pl.col(HackCols.valid_for_analysis))
     split_lfs = {
-        split: filtered_lf.filter(pl.col(OutCols.dataset) == split)
+        split: wUtils.select_and_rename_output_columns(
+            filtered_lf.filter(pl.col(HackCols.split) == split)
+        )
         for split in ("train", "holdout", "test")
     }
-    split_lfs["train"] = split_lfs["train"].filter(pl.col(OutCols.valid_for_analysis))
     train_holdout_destinations = {
         "train": train_destination,
         "holdout": holdout_destination,

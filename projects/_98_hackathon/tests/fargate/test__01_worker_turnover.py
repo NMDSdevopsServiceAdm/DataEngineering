@@ -97,9 +97,11 @@ class TestMain:
         ]
         # One lazy frame per split, so each split's destination is checked.
         split_lf_mocks = [Mock() for _ in splits]
-        select_and_rename_output_columns_mock.return_value.filter.side_effect = (
-            split_lf_mocks
-        )
+        valid_lf_mock = add_split_column_mock.return_value.filter.return_value
+        valid_lf_mock.filter.side_effect = split_lf_mocks
+        # One output frame per split, in the order the splits are selected.
+        output_lf_mocks = [Mock() for _ in splits]
+        select_and_rename_output_columns_mock.side_effect = output_lf_mocks
         # The student sink comes after the three split sinks.
         sink_mocks = [Mock() for _ in range(len(splits) + 1)]
         sink_to_parquet_mock.side_effect = sink_mocks
@@ -297,26 +299,25 @@ class TestMain:
         add_split_column_mock.assert_called_once_with(
             add_hourly_pay_diff_to_cssr_median_mock.return_value
         )
-        select_and_rename_output_columns_mock.assert_called_once_with(
-            add_split_column_mock.return_value
+        valid_filter_mock = add_split_column_mock.return_value.filter
+        valid_filter_mock.assert_called_once()
+        assert valid_filter_mock.call_args.args[0].meta.eq(
+            pl.col(job.HackCols.valid_for_analysis)
         )
-        filter_mock = select_and_rename_output_columns_mock.return_value.filter
-        assert filter_mock.call_count == len(splits)
-        for filter_call, split in zip(filter_mock.call_args_list, splits):
-            assert filter_call.args[0].meta.eq(pl.col(job.OutCols.dataset) == split)
-        train_lf_mock = split_lf_mocks[0]
-        train_lf_mock.filter.assert_called_once()
-        assert train_lf_mock.filter.call_args.args[0].meta.eq(
-            pl.col(job.OutCols.valid_for_analysis)
-        )
-        test_lf_mock = split_lf_mocks[-1]
+        split_filter_mock = valid_lf_mock.filter
+        assert split_filter_mock.call_count == len(splits)
+        for filter_call, split in zip(split_filter_mock.call_args_list, splits):
+            assert filter_call.args[0].meta.eq(pl.col(job.HackCols.split) == split)
+        assert select_and_rename_output_columns_mock.call_args_list == [
+            call(split_lf_mock) for split_lf_mock in split_lf_mocks
+        ]
+        test_lf_mock = output_lf_mocks[-1]
         test_lf_mock.select.assert_called_once_with(
             *job.vUtils.KEY_COLUMNS, *job.wUtils.STUDENT_HIDDEN_COLUMNS
         )
         test_lf_mock.drop.assert_called_once_with(job.wUtils.STUDENT_HIDDEN_COLUMNS)
         sunk_lf_mocks = [
-            train_lf_mock.filter.return_value,
-            *split_lf_mocks[1:-1],
+            *output_lf_mocks[:-1],
             test_lf_mock.select.return_value,
         ]
         assert sink_to_parquet_mock.call_args_list == [

@@ -32,7 +32,7 @@ All notable changes to this project will be documented in this file.
 - Added an `age_clean` column to the Hackathon Worker Turnover job, nulling ages of 80 or more and ages 3 or more years from the worker's median implied birth year; ages are imputed from it.
 
 ### Changed
-- Selected, renamed and ordered the Hackathon Worker Turnover output columns (dropping the rest), and limited the train split to rows valid for analysis. Validations use the new column names.
+- Selected, renamed and ordered the Hackathon Worker Turnover output columns (dropping the rest), and limited every split to rows valid for analysis. Validations use the new column names and no longer check row counts against the cleaned data.
 - Filled null worker attributes in the Hackathon Worker Turnover job from the same worker's other import dates.
 - Updated the `pytest-pattern` skill and STYLEGUIDE.md so tests for functions that only add columns derive the input by dropping the new columns from the expected data.
 - Replaced negative (not known/recorded) values and the not known, not disclosed and unknown codes in the Hackathon Worker Turnover job's raw worker columns with null.

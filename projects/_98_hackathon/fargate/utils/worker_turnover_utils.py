@@ -24,15 +24,13 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
-from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
+from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
-from utils.column_names.hackathon_columns import (
-    HackathonOutputColumns as OutCols,
-)
+from utils.column_names.hackathon_columns import HackathonOutputColumns as OutCols
 from utils.column_values.ascwds_labelled_vocab import (
     APPRENTICE,
     CARE_CERTIFICATE_STATUS,
@@ -44,10 +42,10 @@ from utils.column_values.ascwds_labelled_vocab import (
     SOURCE_OF_RECRUITMENT,
     TRAIN_FLAG,
     ZERO_HOURS,
+    CountryOfBirthGroupLabels,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import (
-    CountryOfBirthGroupLabels,
     EthnicityGroupLabels,
     EthnicityID,
     MainServiceID,
@@ -177,8 +175,6 @@ GROUP_LABEL_RECODES = {
 # Output column -> source column, in output order. Columns not listed are dropped.
 OUTPUT_COLUMN_SOURCES = {
     OutCols.snapshot_date: AWKClean.ascwds_worker_import_date,
-    OutCols.save_date: AWKClean.ascwds_worker_save_date,
-    OutCols.created_date: AWKClean.created_date,
     OutCols.orgid: AWPClean.organisation_id,
     OutCols.establishmentid: AWKClean.establishment_id,
     OutCols.workerid: AWKClean.worker_id,
@@ -188,20 +184,16 @@ OUTPUT_COLUMN_SOURCES = {
     OutCols.region: ONSClean.current_region,
     OutCols.service_type: HackCols.main_service_type,
     OutCols.job_role: AWKClean.main_job_role_clean_labelled,
-    OutCols.employment_status: AWKClean.employment_status_clean_labelled,
     OutCols.age: HackCols.age_imputed,
     OutCols.gender: f"{AWKClean.gender}_{DLC.label}s",
     OutCols.ethnicity_group: HackCols.ethnicity_group_labels,
     OutCols.disabled: f"{AWKClean.disabled}_{DLC.label}s",
     OutCols.nationality_group: HackCols.nationality_group,
     OutCols.country_of_birth_group: HackCols.country_of_birth_group,
-    OutCols.year_of_entry_to_uk: AWKClean.year_of_entry,
     OutCols.distance_home_work: AWKClean.distance_to_work_in_miles,
     OutCols.hours_worked: HackCols.hours,
     OutCols.zerohours_contract: f"{AWKClean.zero_hours}_{DLC.label}s",
     OutCols.sickness_days: HackCols.days_sick_imputed,
-    OutCols.hourly_pay: HackCols.hourly_pay,
-    OutCols.nlw_hourly_rate: HackCols.nlw_hourly_rate,
     OutCols.hourly_pay_minus_nlw: HackCols.hourly_pay_minus_nlw_clean_imputed,
     OutCols.hourly_pay_diff_to_local_authority_median: (
         HackCols.hourly_pay_diff_to_cssr_median
@@ -210,19 +202,12 @@ OUTPUT_COLUMN_SOURCES = {
     OutCols.has_social_care_qualification_held: (
         f"{AWKClean.social_care_qual_held}_{DLC.label}s"
     ),
-    OutCols.social_care_qualification_held_level: (
-        f"{AWKClean.level_social_care_qualification_held}_{DLC.label}s"
-    ),
     OutCols.care_certificate_status: (
         f"{AWKClean.care_certificate_status}_{DLC.label}s"
     ),
-    OutCols.apprentice: f"{AWKClean.apprentice}_{DLC.label}s",
-    OutCols.source_of_recruitment: f"{AWKClean.source_of_recruitment}_{DLC.label}s",
     OutCols.source_of_recruitment_group: HackCols.scerec_wo_group_labels,
     OutCols.years_in_role: HackCols.years_in_role,
     OutCols.years_in_sector: HackCols.years_in_sector,
-    OutCols.dataset: HackCols.split,
-    OutCols.valid_for_analysis: HackCols.valid_for_analysis,
 }
 
 WORKER_NUMERIC_COLUMNS = [

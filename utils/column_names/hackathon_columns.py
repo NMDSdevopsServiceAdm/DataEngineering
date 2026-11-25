@@ -49,8 +49,6 @@ class HackathonColumns:
 @dataclass
 class HackathonOutputColumns:
     snapshot_date: str = "snapshot_date"
-    save_date: str = "save_date"
-    created_date: str = "created_date"
     orgid: str = "orgid"
     establishmentid: str = "establishmentid"
     workerid: str = "workerid"
@@ -60,35 +58,26 @@ class HackathonOutputColumns:
     region: str = "region"
     service_type: str = "service_type"
     job_role: str = "job_role"
-    employment_status: str = "employment_status"
     age: str = "age"
     gender: str = "gender"
     ethnicity_group: str = "ethnicity_group"
     disabled: str = "disabled"
     nationality_group: str = "nationality_group"
     country_of_birth_group: str = "country_of_birth_group"
-    year_of_entry_to_uk: str = "year_of_entry_to_uk"
     distance_home_work: str = "distance_home_work"
     hours_worked: str = "hours_worked"
     zerohours_contract: str = "zerohours_contract"
     sickness_days: str = "sickness_days"
-    hourly_pay: str = "hourly_pay"
-    nlw_hourly_rate: str = "nlw_hourly_rate"
     hourly_pay_minus_nlw: str = "hourly_pay_minus_nlw"
     hourly_pay_diff_to_local_authority_median: str = (
         "hourly_pay_diff_to_local_authority_median"
     )
     training: str = "training"
     has_social_care_qualification_held: str = "has_social_care_qualification_held"
-    social_care_qualification_held_level: str = "social_care_qualification_held_level"
     care_certificate_status: str = "care_certificate_status"
-    apprentice: str = "apprentice"
-    source_of_recruitment: str = "source_of_recruitment"
     source_of_recruitment_group: str = "source_of_recruitment_group"
     years_in_role: str = "years_in_role"
     years_in_sector: str = "years_in_sector"
-    dataset: str = "dataset"
-    valid_for_analysis: str = "valid_for_analysis"
 
 
 @dataclass

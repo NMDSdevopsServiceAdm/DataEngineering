@@ -32,6 +32,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_names.hackathon_columns import (
     HackathonOutputColumns as OutCols,
@@ -1360,6 +1361,17 @@ class TestSelectAndRenameOutputColumns:
         HackCols.age_source,
         HackCols.hourly_pay_minus_nlw,
         HackCols.hourly_pay_minus_nlw_clean,
+        HackCols.hourly_pay,
+        HackCols.nlw_hourly_rate,
+        HackCols.split,
+        HackCols.valid_for_analysis,
+        AWKClean.ascwds_worker_save_date,
+        AWKClean.created_date,
+        AWKClean.employment_status_clean_labelled,
+        AWKClean.year_of_entry,
+        f"{AWKClean.level_social_care_qualification_held}_{DLC.label}s",
+        f"{AWKClean.apprentice}_{DLC.label}s",
+        f"{AWKClean.source_of_recruitment}_{DLC.label}s",
     ]
 
     @classmethod
@@ -1391,11 +1403,6 @@ class TestSelectAndRenameOutputColumns:
         assert returned_df[OutCols.hourly_pay_minus_nlw].to_list() == [
             HackCols.hourly_pay_minus_nlw_clean_imputed
         ]
-
-    def test_hourly_pay_is_kept_unrenamed(self):
-        returned_df = job.select_and_rename_output_columns(self.build_lf()).collect()
-
-        assert returned_df[OutCols.hourly_pay].to_list() == [HackCols.hourly_pay]
 
     def test_drops_columns_not_in_output(self):
         returned_lf = job.select_and_rename_output_columns(self.build_lf())

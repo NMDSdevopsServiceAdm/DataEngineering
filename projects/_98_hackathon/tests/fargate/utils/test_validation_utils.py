@@ -7,9 +7,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
-from utils.column_names.hackathon_columns import (
-    HackathonOutputColumns as OutCols,
-)
+from utils.column_names.hackathon_columns import HackathonOutputColumns as OutCols
 
 
 class TestHasNoHiddenColumns:
