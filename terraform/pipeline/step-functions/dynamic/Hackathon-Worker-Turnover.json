@@ -43,7 +43,14 @@
           ]
         }
       },
-      "Next": "Handle Error and Run Crawler"
+      "Next": "Handle Error and Run Crawler",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "Handle Error and Run Crawler"
+        }
+      ]
     },
     "Handle Error and Run Crawler": {
       "Type": "Parallel",
