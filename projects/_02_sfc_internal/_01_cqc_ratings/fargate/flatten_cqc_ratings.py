@@ -108,8 +108,8 @@ def main(
 
     # Benchmarks only need current ratings of registered locations.
     benchmark_ratings_lf = ratings_lf.filter(
-        (pl.col(CQCL.registration_status) == RegistrationStatus.registered)
-        & (pl.col(CQCRatings.current_or_historic) == CQCCurrentOrHistoricValues.current)
+        (pl.col(CQCRatings.current_or_historic) == CQCCurrentOrHistoricValues.current)
+        & (pl.col(CQCL.registration_status) == RegistrationStatus.registered)
     )
     benchmark_ratings_lf = rUtils.add_good_and_outstanding_flag_column(
         benchmark_ratings_lf
