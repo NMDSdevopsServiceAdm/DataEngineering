@@ -25,8 +25,8 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
 
     Args:
         predictions_df (pl.DataFrame): Predictions, one row per worker.
-        answers_df (pl.DataFrame): Every worker in the predict dataset, one row each, with the
-            worker key columns.
+        answers_df (pl.DataFrame): Every worker in the predict dataset, one row
+            each, with the worker key columns.
 
     Raises:
         ValueError: If the predictions fail any check, or the answers have
@@ -210,7 +210,8 @@ def score_predictions(
     collected for scoring.
 
     Args:
-        predictions (pd.DataFrame | pl.DataFrame | pl.LazyFrame): One row per worker with exactly `establishmentid`, `workerid` and
+        predictions (pd.DataFrame | pl.DataFrame | pl.LazyFrame): One row per
+            worker with exactly `establishmentid`, `workerid` and
             `predicted_probability` (between 0 and 1).
         answers_source (str): S3 path of the answers dataset.
 
