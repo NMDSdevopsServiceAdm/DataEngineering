@@ -106,6 +106,7 @@ def main(
     standard_ratings_lf = create_standard_ratings_dataset(ratings_lf)
     standard_ratings_lf = add_location_id_hash(standard_ratings_lf)
 
+    # Benchmarks only need current ratings of registered locations.
     benchmark_ratings_lf = ratings_lf.filter(
         (pl.col(CQCL.registration_status) == RegistrationStatus.registered)
         & (pl.col(CQCRatings.current_or_historic) == CQCCurrentOrHistoricValues.current)
