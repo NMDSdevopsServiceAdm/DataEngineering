@@ -41,7 +41,7 @@ All notable changes to this project will be documented in this file.
 - Publication output rows list England, Eastern and East Midlands first, then the other regions alphabetically, with main services in their published order.
 
 ### Improved
-
+- Moved `create_standard_ratings_dataset` and `add_location_id_hash` into the CQC ratings utils module alongside the other flattening helpers.
 - Dropped unneeded columns from the hackathon worker turnover output at their last use.
 
 ### Fixed
