@@ -122,6 +122,13 @@ def main(
     is_leaver = pl.col(HackCols.is_leaver)
     turnover_rate = pl.col(HackCols.turnover_rate)
     hourly_pay = pl.col(HackCols.hourly_pay)
+    start_date = pl.col(AWKClean.start_date)
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    age = pl.col(AWKClean.age)
+    age_known = age.fill_null(0) > 0
+    years_since_start = (import_date - start_date).dt.total_days() / 365.25
+    min_age = wUtils.MIN_START_AGE
+    max_years = wUtils.MAX_YEARS_SINCE_START_WITHOUT_AGE
     pay_difference = pl.col(HackCols.hourly_pay_minus_nlw)
     pay_difference_clean = pl.col(HackCols.hourly_pay_minus_nlw_clean)
     current_cssr_values = CurrentCSSR(ONSClean.current_cssr).categorical_values
@@ -193,6 +200,22 @@ def main(
             .is_not_null()
             .eq(hourly_pay.is_not_null()),
             brief="hourly_pay_minus_nlw is populated exactly when hourly_pay is populated",
+        )
+        .col_vals_expr(
+            expr=start_date.is_null() | (start_date <= import_date),
+            brief="start date is on or before the import date",
+        )
+        .col_vals_expr(
+            expr=start_date.is_null()
+            | ~age_known
+            | (age - years_since_start >= min_age),
+            brief=f"start date implies a start age of {min_age} or over where age is known",
+        )
+        .col_vals_expr(
+            expr=start_date.is_null()
+            | age_known
+            | (start_date >= import_date.dt.offset_by(f"-{max_years}y")),
+            brief=f"start date is within {max_years} years of the import date where age is unknown",
         )
         .col_vals_expr(
             expr=(pay_difference.is_null() & pay_difference_clean.is_not_null()).not_(),

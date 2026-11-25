@@ -58,6 +58,8 @@ from utils.column_values.categorical_column_values import PrimaryServiceType
 DEFAULT_MAX_MONTHS_SINCE_SAVE = 6
 DEFAULT_MAX_HEADCOUNT_GAP = 0
 EARLIEST_IMPORT_DATE = date(2020, 1, 1)
+MIN_START_AGE = 16
+MAX_YEARS_SINCE_START_WITHOUT_AGE = 70
 
 # The answers: written to the test destination, dropped from the student one.
 STUDENT_HIDDEN_COLUMNS = [HackCols.is_leaver, HackCols.turnover_rate]
@@ -176,7 +178,6 @@ WORKER_NUMERIC_COLUMNS = [
     AWKClean.contracted_hours,
     AWKClean.average_hours,
     AWKClean.distance_to_work_in_miles,
-    AWKClean.start_age,
     AWKClean.days_sick,
     AWKClean.start_in_sector,
     AWKClean.year_of_entry,
@@ -221,7 +222,6 @@ IMPUTE_COLUMNS = [
     f"{AWKClean.zero_hours}_labels",
     f"{AWKClean.source_of_recruitment}_labels",
     AWKClean.start_date,
-    AWKClean.start_age,
     AWKClean.start_in_sector,
     f"{AWKClean.social_care_qual_held}_labels",
     f"{AWKClean.level_social_care_qualification_held}_labels",
@@ -279,6 +279,79 @@ def add_raw_worker_columns(
     )
 
     return worker_lf.join(raw_worker_lf, on=keys, how="left")
+
+
+def fix_start_date_typos(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Fixes start dates with a mistyped century.
+
+    - 1 January 1900, a placeholder, becomes null.
+    - A year from 0001 to 0099 becomes the same year in the 2000s (`0015` is 2015).
+    - A year from 1900 to 1999 becomes the same year in the 2000s (`1913` is 2013),
+      unless that is after `ascwds_worker_import_date`, when it is left as it is.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `start_date` and
+            `ascwds_worker_import_date`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `start_date` fixed.
+    """
+    placeholder_start_date = date(1900, 1, 1)
+    start_date = pl.col(AWKClean.start_date)
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    start_year = start_date.dt.year()
+    next_century = start_date.dt.offset_by("100y")
+
+    return worker_lf.with_columns(
+        pl.when(start_date == placeholder_start_date)
+        .then(None)
+        .when(start_year < 100)
+        .then(start_date.dt.offset_by("2000y"))
+        .when(start_year.is_between(1900, 1999) & (next_century <= import_date))
+        .then(next_century)
+        .otherwise(start_date)
+        .alias(AWKClean.start_date)
+    )
+
+
+def clean_start_date(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Nulls `start_date` where implausible.
+
+    A `start_date` is implausible if:
+    - it is after `ascwds_worker_import_date`, or
+    - `age` is above 0 and the worker was under `MIN_START_AGE` at `start_date`
+      (`age` minus years since `start_date`), or
+    - `age` is null or not above 0 and `start_date` is more than
+      `MAX_YEARS_SINCE_START_WITHOUT_AGE` years before `ascwds_worker_import_date`.
+
+    A null `start_date` stays null.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with `start_date`,
+            `ascwds_worker_import_date` and `age`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `start_date` nulled where implausible.
+    """
+    start_date = pl.col(AWKClean.start_date)
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+    age = pl.col(AWKClean.age)
+    years_since_start = (import_date - start_date).dt.total_days() / 365.25
+
+    plausible = (
+        pl.when(start_date > import_date)
+        .then(False)
+        .when(age > 0)
+        .then(age - years_since_start >= MIN_START_AGE)
+        .otherwise(
+            start_date
+            >= import_date.dt.offset_by(f"-{MAX_YEARS_SINCE_START_WITHOUT_AGE}y")
+        )
+    )
+
+    return worker_lf.with_columns(
+        pl.when(plausible).then(start_date).alias(AWKClean.start_date)
+    )
 
 
 def add_geography_from_postcode(
