@@ -575,14 +575,6 @@ class FlattenCQCRatings:
         ]
     )
 
-    select_ratings_for_benchmarks_schema = pl.Schema(
-        [
-            (CQCL.location_id, pl.String),
-            (CQCL.registration_status, pl.String),
-            (CQCRatingsColumns.current_or_historic, pl.String),
-        ]
-    )
-
     add_good_and_outstanding_flag_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String),

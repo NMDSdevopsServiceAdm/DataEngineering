@@ -931,16 +931,19 @@ class FlattenCQCRatings:
     main_snapshot_rows = [
         ("1-001", "Registered", "Social Care Org"),
         ("1-002", "Registered", "Independent Healthcare Org"),  # not social care - excluded
+        ("1-003", "Deregistered", "Social Care Org"),  # kept in ratings, not in benchmarks
     ]
 
     main_delta_rows = [
         ("1-001", "20240101", _current_ratings("1-001", _all_key_questions)[2], [_historic_entry("2023-01-01", _all_key_questions)], [_asg_entry("2024-01-01 00:00:00", "AP1", [_asg_kq("Safe")])]),
         ("1-001", "20230101", _current_ratings("1-001", _short_key_questions)[2], [], []),  # older import - excluded
         ("1-002", "20240101", _current_ratings("1-002", _all_key_questions)[2], [], []),
+        ("1-003", "20240101", _current_ratings("1-003", _all_key_questions)[2], [], []),
     ]
 
     main_ascwds_workplace_rows = [
         ("20240101", "2024", "01", "01", "100", "1-001"),
+        ("20240101", "2024", "01", "01", "300", "1-003"),
     ]
     # fmt: on
 
@@ -1201,26 +1204,6 @@ class FlattenCQCRatings:
         ("1-002", date(2024, 1, 1), None, "Historic", 0),
         ("1-001", date(2024, 1, 1), None, "Historic", 1),
         ("1-002", date(2024, 4, 1), None, "Current", 1),
-    ]
-
-    select_ratings_for_benchmarks_registered_current_rows = [
-        ("1-001", "Registered", "Current"),
-    ]
-
-    select_ratings_for_benchmarks_deregistered_rows = [
-        ("1-001", "Deregistered", "Current"),
-        ("1-002", "Registered", "Current"),
-    ]
-    expected_select_ratings_for_benchmarks_deregistered_rows = [
-        ("1-002", "Registered", "Current"),
-    ]
-
-    select_ratings_for_benchmarks_historic_rows = [
-        ("1-001", "Registered", "Historic"),
-        ("1-002", "Registered", "Current"),
-    ]
-    expected_select_ratings_for_benchmarks_historic_rows = [
-        ("1-002", "Registered", "Current"),
     ]
 
     add_good_and_outstanding_flag_good_rows = [("1-001", 3)]

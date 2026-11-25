@@ -65,8 +65,9 @@ class TestMain:
         assert set(sinks) == {"ratings_dest/", "benchmark_dest/"}
 
         ratings_df = sinks["ratings_dest/"].collect()
-        assert set(ratings_df[CQCL.location_id]) == {"1-001"}
+        assert set(ratings_df[CQCL.location_id]) == {"1-001", "1-003"}
         assert sorted(ratings_df[CQCL.dataset]) == [
+            CQCRatingsDatasetValues.pre_saf,
             CQCRatingsDatasetValues.pre_saf,
             CQCRatingsDatasetValues.pre_saf,
             CQCRatingsDatasetValues.saf,
@@ -219,50 +220,6 @@ class TestAddLocationIdHash:
 
         expected_lf = pl.LazyFrame(expected_rows, schema=expected_schema, orient="row")
         pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
-
-
-@dataclass
-class SelectRatingsForBenchmarksTestCase:
-    id: str
-    rows: list[Any]
-    expected_rows: list[Any]
-
-    def as_pytest_param(self):
-        return pytest.param(self.rows, self.expected_rows, id=self.id)
-
-
-select_ratings_for_benchmarks_cases = [
-    SelectRatingsForBenchmarksTestCase(
-        id="keeps_registered_current_rating",
-        rows=Data.select_ratings_for_benchmarks_registered_current_rows,
-        expected_rows=Data.select_ratings_for_benchmarks_registered_current_rows,
-    ),
-    SelectRatingsForBenchmarksTestCase(
-        id="removes_deregistered_rows",
-        rows=Data.select_ratings_for_benchmarks_deregistered_rows,
-        expected_rows=Data.expected_select_ratings_for_benchmarks_deregistered_rows,
-    ),
-    SelectRatingsForBenchmarksTestCase(
-        id="removes_historic_rows",
-        rows=Data.select_ratings_for_benchmarks_historic_rows,
-        expected_rows=Data.expected_select_ratings_for_benchmarks_historic_rows,
-    ),
-]
-
-
-class TestSelectRatingsForBenchmarks:
-    @pytest.mark.parametrize(
-        "rows, expected_rows",
-        [case.as_pytest_param() for case in select_ratings_for_benchmarks_cases],
-    )
-    def test_returns_expected_rows(self, rows, expected_rows):
-        schema = Schemas.select_ratings_for_benchmarks_schema
-        input_lf = pl.LazyFrame(rows, schema=schema, orient="row")
-
-        returned_lf = job.select_ratings_for_benchmarks(input_lf)
-
-        expected_lf = pl.LazyFrame(expected_rows, schema=schema, orient="row")
-        pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
 
 @dataclass

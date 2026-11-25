@@ -106,7 +106,10 @@ def main(
     standard_ratings_lf = create_standard_ratings_dataset(ratings_lf)
     standard_ratings_lf = add_location_id_hash(standard_ratings_lf)
 
-    benchmark_ratings_lf = select_ratings_for_benchmarks(ratings_lf)
+    benchmark_ratings_lf = ratings_lf.filter(
+        (pl.col(CQCL.registration_status) == RegistrationStatus.registered)
+        & (pl.col(CQCRatings.current_or_historic) == CQCCurrentOrHistoricValues.current)
+    )
     benchmark_ratings_lf = add_good_and_outstanding_flag_column(benchmark_ratings_lf)
     benchmark_ratings_lf = join_establishment_ids(
         benchmark_ratings_lf, ascwds_workplace_lf
@@ -183,23 +186,6 @@ def add_location_id_hash(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
         )
         .str.slice(0, 20)
         .alias(CQCRatings.location_id_hash)
-    )
-
-
-def select_ratings_for_benchmarks(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Keeps current ratings of registered locations.
-
-    Args:
-        ratings_lf (pl.LazyFrame): CQC ratings containing the columns
-            registration_status and current_or_historic.
-
-    Returns:
-        pl.LazyFrame: The registered locations' current ratings.
-    """
-    return ratings_lf.filter(
-        (pl.col(CQCL.registration_status) == RegistrationStatus.registered)
-        & (pl.col(CQCRatings.current_or_historic) == CQCCurrentOrHistoricValues.current)
     )
 
 
