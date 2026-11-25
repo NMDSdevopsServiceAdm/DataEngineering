@@ -40,9 +40,9 @@ class TestHasOneImportDatePerMonth:
             [date(2024, 1, 1), date(2024, 1, 1), date(2024, 2, 1), date(2025, 1, 1)]
         )
 
-        assert vUtils.has_one_import_date_per_month(df) is True
+        assert vUtils.has_one_snapshot_date_per_month(df) is True
 
     def test_returns_false_when_two_import_dates_in_one_month(self):
         df = self.build_df([date(2024, 1, 1), date(2024, 1, 15), date(2025, 1, 1)])
 
-        assert vUtils.has_one_import_date_per_month(df) is False
+        assert vUtils.has_one_snapshot_date_per_month(df) is False

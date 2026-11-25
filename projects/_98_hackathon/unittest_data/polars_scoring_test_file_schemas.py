@@ -15,7 +15,6 @@ class ScoringSchemas:
             (AWKClean.establishment_id, pl.String()),
             (AWKClean.worker_id, pl.String()),
             (HackCols.is_leaver, pl.Boolean()),
-            (HackCols.valid_for_analysis, pl.Boolean()),
         ]
     )
 

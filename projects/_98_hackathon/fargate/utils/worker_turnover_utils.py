@@ -63,7 +63,7 @@ MIN_START_AGE = 16
 MAX_YEARS_SINCE_START_WITHOUT_AGE = 70
 
 # The answers: written to the test destination, dropped from the student one.
-STUDENT_HIDDEN_COLUMNS = [HackCols.is_leaver, HackCols.turnover_rate]
+STUDENT_HIDDEN_COLUMNS = [OutCols.is_leaver, OutCols.turnover_rate]
 
 WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.gender,

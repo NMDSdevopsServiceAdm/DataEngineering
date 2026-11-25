@@ -73,7 +73,7 @@ def has_no_hidden_columns(column_names: list[str]) -> bool:
     return not set(wUtils.STUDENT_HIDDEN_COLUMNS) & set(column_names)
 
 
-def has_one_import_date_per_month(df: pl.DataFrame) -> bool:
+def has_one_snapshot_date_per_month(df: pl.DataFrame) -> bool:
     """Checks each calendar month has at most one snapshot date.
 
     Args:
@@ -109,7 +109,7 @@ def add_worker_data_checks(validation: pb.Validate) -> pb.Validate:
             brief="establishment, worker and snapshot date are unique",
         )
         .specially(
-            has_one_import_date_per_month,
+            has_one_snapshot_date_per_month,
             brief="each month has at most one snapshot date",
         )
         .col_vals_ge(

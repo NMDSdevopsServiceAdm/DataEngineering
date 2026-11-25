@@ -51,7 +51,7 @@ class TestCheckPredictions:
 
     def test_raises_when_answers_have_duplicated_workers(self):
         answers_df = pl.DataFrame(
-            CHECK_ANSWER_ROWS + [("1-001", "w1", False, True)],
+            CHECK_ANSWER_ROWS + [("1-001", "w1", False)],
             schema=Schemas.answers_schema,
             orient="row",
         )
@@ -176,7 +176,6 @@ class TestScorePredictions:
                 AWKClean.establishment_id,
                 AWKClean.worker_id,
                 HackCols.is_leaver,
-                HackCols.valid_for_analysis,
             ],
         )
 
