@@ -1206,25 +1206,14 @@ class FlattenCQCRatings:
         ("1-002", date(2024, 4, 1), None, "Current", 1),
     ]
 
-    add_good_and_outstanding_flag_good_rows = [("1-001", 3)]
     expected_add_good_and_outstanding_flag_good_rows = [("1-001", 3, 1)]
 
-    add_good_and_outstanding_flag_below_good_rows = [
-        ("1-001", 4),
-        ("1-001", 2),
-    ]
     expected_add_good_and_outstanding_flag_below_good_rows = [
         ("1-001", 4, 0),
         ("1-001", 2, 0),
     ]
 
     # Rows of the two locations alternate to show each location is flagged on its own.
-    add_good_and_outstanding_flag_two_locations_rows = [
-        ("1-001", 4),
-        ("1-002", 4),
-        ("1-001", 3),
-        ("1-002", 2),
-    ]
     expected_add_good_and_outstanding_flag_two_locations_rows = [
         ("1-001", 4, 1),
         ("1-002", 4, 0),
@@ -1232,8 +1221,17 @@ class FlattenCQCRatings:
         ("1-002", 2, 0),
     ]
 
-    add_good_and_outstanding_flag_null_rows = [("1-001", None)]
     expected_add_good_and_outstanding_flag_null_rows = [("1-001", None, 0)]
+
+    # Nulls are ignored when taking the minimum rating value.
+    expected_add_good_and_outstanding_flag_null_and_good_rows = [
+        ("1-001", 3, 1),
+        ("1-001", None, 1),
+    ]
+    expected_add_good_and_outstanding_flag_null_and_below_good_rows = [
+        ("1-001", 2, 0),
+        ("1-001", None, 0),
+    ]
 
     join_establishment_ids_matching_ratings_rows = [("1-001", "Good")]
     join_establishment_ids_matching_ascwds_rows = [("1-001", "100", "20240101")]
@@ -1249,14 +1247,16 @@ class FlattenCQCRatings:
         ("1-002", "Good", None),
     ]
 
-    # Repeated location ID, with a null and two establishment IDs; the lowest is kept.
+    # Repeated location ID, with a null and three establishment IDs; the smallest by
+    # string order is kept ("10" sorts before "9").
     join_establishment_ids_repeated_ratings_rows = [("1-001", "Good")]
     join_establishment_ids_repeated_ascwds_rows = [
         ("1-001", "200", "20240101"),
         ("1-001", None, "20240101"),
-        ("1-001", "100", "20240101"),
+        ("1-001", "10", "20240101"),
+        ("1-001", "9", "20240101"),
     ]
-    expected_join_establishment_ids_repeated_rows = [("1-001", "Good", "100")]
+    expected_join_establishment_ids_repeated_rows = [("1-001", "Good", "10")]
 
     # Input column order: location_id, establishment_id, name, dataset, flag,
     # overall_rating, date, safe_rating (dropped from the output).

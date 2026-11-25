@@ -544,54 +544,55 @@ class TestAddLatestRatingFlagColumn:
 @dataclass
 class AddGoodAndOutstandingFlagColumnTestCase:
     id: str
-    rows: list[Any]
     expected_rows: list[Any]
 
     def as_pytest_param(self):
-        return pytest.param(self.rows, self.expected_rows, id=self.id)
+        return pytest.param(self.expected_rows, id=self.id)
 
 
 add_good_and_outstanding_flag_column_cases = [
     AddGoodAndOutstandingFlagColumnTestCase(
         id="flags_one_when_min_rating_is_good_or_outstanding",
-        rows=Data.add_good_and_outstanding_flag_good_rows,
         expected_rows=Data.expected_add_good_and_outstanding_flag_good_rows,
     ),
     AddGoodAndOutstandingFlagColumnTestCase(
         id="flags_zero_when_any_rating_below_good",
-        rows=Data.add_good_and_outstanding_flag_below_good_rows,
         expected_rows=Data.expected_add_good_and_outstanding_flag_below_good_rows,
     ),
     AddGoodAndOutstandingFlagColumnTestCase(
         id="applies_flag_to_every_row_of_location",
-        rows=Data.add_good_and_outstanding_flag_two_locations_rows,
         expected_rows=Data.expected_add_good_and_outstanding_flag_two_locations_rows,
     ),
     AddGoodAndOutstandingFlagColumnTestCase(
         id="flags_zero_when_overall_rating_value_is_null",
-        rows=Data.add_good_and_outstanding_flag_null_rows,
         expected_rows=Data.expected_add_good_and_outstanding_flag_null_rows,
+    ),
+    AddGoodAndOutstandingFlagColumnTestCase(
+        id="ignores_null_when_other_rating_is_good",
+        expected_rows=Data.expected_add_good_and_outstanding_flag_null_and_good_rows,
+    ),
+    AddGoodAndOutstandingFlagColumnTestCase(
+        id="ignores_null_when_other_rating_is_below_good",
+        expected_rows=Data.expected_add_good_and_outstanding_flag_null_and_below_good_rows,
     ),
 ]
 
 
 class TestAddGoodAndOutstandingFlagColumn:
     @pytest.mark.parametrize(
-        "rows, expected_rows",
+        "expected_rows",
         [case.as_pytest_param() for case in add_good_and_outstanding_flag_column_cases],
     )
-    def test_adds_expected_flag(self, rows, expected_rows):
-        input_lf = pl.LazyFrame(
-            rows, schema=Schemas.add_good_and_outstanding_flag_schema, orient="row"
-        )
-
-        returned_lf = job.add_good_and_outstanding_flag_column(input_lf)
-
+    def test_adds_expected_flag(self, expected_rows):
         expected_lf = pl.LazyFrame(
             expected_rows,
             schema=Schemas.expected_add_good_and_outstanding_flag_schema,
             orient="row",
         )
+        input_lf = expected_lf.drop(CQCRatings.good_or_outstanding_flag)
+
+        returned_lf = job.add_good_and_outstanding_flag_column(input_lf)
+
         pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
 

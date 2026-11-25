@@ -567,7 +567,7 @@ def join_establishment_ids(
     """
     Adds the ASC-WDS establishment ID of each location.
 
-    A location in ASC-WDS more than once keeps its lowest non-null establishment ID,
+    A location in ASC-WDS more than once keeps its smallest non-null establishment ID (string order),
     so each rating row matches at most one establishment ID. Locations not in ASC-WDS
     get a null establishment ID.
 
