@@ -6,6 +6,24 @@ import projects._98_hackathon.fargate.utils.validation_utils as vUtils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.hackathon_columns import HackathonColumns as HackCols
+
+
+class TestHasNoHiddenColumns:
+    def test_returns_true_when_no_hidden_columns_present(self):
+        column_names = [AWKClean.worker_id, HackCols.valid_for_analysis]
+
+        assert vUtils.has_no_hidden_columns(column_names) is True
+
+    def test_returns_false_when_is_leaver_present(self):
+        column_names = [AWKClean.worker_id, HackCols.is_leaver]
+
+        assert vUtils.has_no_hidden_columns(column_names) is False
+
+    def test_returns_false_when_turnover_rate_present(self):
+        column_names = [AWKClean.worker_id, HackCols.turnover_rate]
+
+        assert vUtils.has_no_hidden_columns(column_names) is False
 
 
 class TestHasOneImportDatePerMonth:

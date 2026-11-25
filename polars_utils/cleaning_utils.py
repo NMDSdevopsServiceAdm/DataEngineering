@@ -339,3 +339,46 @@ def remove_repeated_values_over_time(
         )
 
     return lf.with_columns(dedup_exprs)
+
+
+def keep_value_if_changed_expr(
+    column: str,
+    change_date_column: str,
+    partition_by_columns: str | list[str],
+    import_date_column: str,
+) -> pl.Expr:
+    """
+    Keeps a value when previous date < change date <= this date, otherwise null.
+
+    The previous date is the prior row's import date within each
+    partition_by_columns group, ordered by import_date_column. A first row has no
+    previous date, so its window starts one month before its import date. A null
+    change date is not a change. The result is named after column.
+
+    Args:
+        column (str): Column whose value the change date describes.
+        change_date_column (str): Date the column's value last changed.
+        partition_by_columns (str | list[str]): Column(s) identifying each entity's
+            timeline.
+        import_date_column (str): Column to order rows by within each partition.
+
+    Returns:
+        pl.Expr: The column's value where it changed, otherwise null.
+    """
+    previous_date = (
+        pl.col(import_date_column)
+        .shift(1)
+        .over(partition_by=partition_by_columns, order_by=import_date_column)
+    )
+    window_start = pl.coalesce(
+        previous_date, pl.col(import_date_column).dt.offset_by("-1mo")
+    )
+
+    return (
+        pl.when(
+            (pl.col(change_date_column) > window_start)
+            & (pl.col(change_date_column) <= pl.col(import_date_column))
+        )
+        .then(pl.col(column))
+        .otherwise(None)
+    )

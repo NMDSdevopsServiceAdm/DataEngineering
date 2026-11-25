@@ -16,16 +16,21 @@ class TestMain:
     TRAIN_DESTINATION = "some/train"
     HOLDOUT_DESTINATION = "some/holdout"
     TEST_DESTINATION = "some/test"
+    STUDENT_DESTINATION = "some/student"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_split_column")
+    @patch(f"{PATCH_PATH}.wUtils.add_hourly_pay_diff_to_cssr_median")
+    @patch(f"{PATCH_PATH}.wUtils.add_years_in_role_and_sector")
     @patch(f"{PATCH_PATH}.wUtils.impute_age")
     @patch(f"{PATCH_PATH}.wUtils.clean_age")
     @patch(f"{PATCH_PATH}.wUtils.impute_worker_columns")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
+    @patch(f"{PATCH_PATH}.wUtils.add_hourly_pay_minus_nlw_clean")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
+    @patch(f"{PATCH_PATH}.cUtils.keep_value_if_changed_expr")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
     @patch(f"{PATCH_PATH}.wUtils.add_valid_for_analysis_flag")
@@ -58,12 +63,16 @@ class TestMain:
         add_valid_for_analysis_flag_mock: Mock,
         null_not_known_codes_mock: Mock,
         combine_pay_and_hours_mock: Mock,
+        keep_value_if_changed_expr_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
+        add_hourly_pay_minus_nlw_clean_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
         impute_worker_columns_mock: Mock,
         clean_age_mock: Mock,
         impute_age_mock: Mock,
+        add_years_in_role_and_sector_mock: Mock,
+        add_hourly_pay_diff_to_cssr_median_mock: Mock,
         add_split_column_mock: Mock,
         collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -85,7 +94,8 @@ class TestMain:
         # One lazy frame per split, so each split's destination is checked.
         split_lf_mocks = [Mock() for _ in splits]
         add_split_column_mock.return_value.filter.side_effect = split_lf_mocks
-        sink_mocks = [Mock() for _ in splits]
+        # The student sink comes after the three split sinks.
+        sink_mocks = [Mock() for _ in range(len(splits) + 1)]
         sink_to_parquet_mock.side_effect = sink_mocks
         plausible_after_typos_lf, plausible_after_imputation_lf = Mock(), Mock()
         clean_start_date_mock.side_effect = [
@@ -102,6 +112,7 @@ class TestMain:
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
+            self.STUDENT_DESTINATION,
         )
 
         assert scan_parquet_mock.call_args_list == [
@@ -214,8 +225,31 @@ class TestMain:
         combine_pay_and_hours_mock.assert_called_once_with(
             null_not_known_codes_mock.return_value.with_columns.return_value
         )
+        timeline_kwargs = {
+            "partition_by_columns": [
+                job.AWKClean.worker_id,
+                job.AWKClean.establishment_id,
+            ],
+            "import_date_column": job.AWKClean.ascwds_worker_import_date,
+        }
+        assert keep_value_if_changed_expr_mock.call_args_list == [
+            call(
+                job.HackCols.hourly_pay,
+                change_date_column=job.AWKClean.pay_change_date,
+                **timeline_kwargs,
+            ),
+            call(
+                job.AWKClean.days_sick,
+                change_date_column=job.AWKClean.days_sick_change_date,
+                **timeline_kwargs,
+            ),
+        ]
+        combine_pay_and_hours_mock.return_value.with_columns.assert_called_once_with(
+            keep_value_if_changed_expr_mock.return_value,
+            keep_value_if_changed_expr_mock.return_value,
+        )
         add_worker_labels_mock.assert_called_once_with(
-            combine_pay_and_hours_mock.return_value
+            combine_pay_and_hours_mock.return_value.with_columns.return_value
         )
         assert add_country_code_group_mock.call_args_list == [
             call(add_worker_labels_mock.return_value, job.AWKClean.nationality),
@@ -237,19 +271,46 @@ class TestMain:
             call(fix_start_date_typos_mock.return_value),
             call(impute_age_mock.return_value),
         ]
+        add_years_in_role_and_sector_mock.assert_called_once_with(
+            plausible_after_imputation_lf,
+            get_latest_save_date_per_establishment_mock.return_value,
+        )
         add_nlw_and_pay_difference_mock.assert_called_once_with(
-            plausible_after_imputation_lf
+            add_years_in_role_and_sector_mock.return_value
+        )
+        add_hourly_pay_minus_nlw_clean_mock.assert_called_once_with(
+            add_nlw_and_pay_difference_mock.return_value
+        )
+
+        add_hourly_pay_diff_to_cssr_median_mock.assert_called_once_with(
+            add_hourly_pay_minus_nlw_clean_mock.return_value
         )
         add_split_column_mock.assert_called_once_with(
-            add_nlw_and_pay_difference_mock.return_value
+            add_hourly_pay_diff_to_cssr_median_mock.return_value
         )
         filter_mock = add_split_column_mock.return_value.filter
         assert filter_mock.call_count == len(splits)
         for filter_call, split in zip(filter_mock.call_args_list, splits):
             assert filter_call.args[0].meta.eq(pl.col(job.HackCols.split) == split)
+        test_lf_mock = split_lf_mocks[-1]
+        test_lf_mock.select.assert_called_once_with(
+            *job.vUtils.KEY_COLUMNS, *job.wUtils.STUDENT_HIDDEN_COLUMNS
+        )
+        test_lf_mock.drop.assert_called_once_with(job.wUtils.STUDENT_HIDDEN_COLUMNS)
+        sunk_lf_mocks = [
+            *split_lf_mocks[:-1],
+            test_lf_mock.select.return_value,
+        ]
         assert sink_to_parquet_mock.call_args_list == [
-            call(split_lf_mock, output_path=destination, lazy=True)
-            for split_lf_mock, destination in zip(split_lf_mocks, destinations)
+            *[
+                call(sunk_lf_mock, output_path=destination, lazy=True)
+                for sunk_lf_mock, destination in zip(sunk_lf_mocks, destinations)
+            ],
+            call(
+                test_lf_mock.drop.return_value,
+                output_path=self.STUDENT_DESTINATION,
+                lazy=True,
+            ),
         ]
         collect_all_mock.assert_called_once_with(sink_mocks, engine="streaming")
 
@@ -257,6 +318,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_country_code_group")
     @patch(f"{PATCH_PATH}.wUtils.add_worker_labels")
+    @patch(f"{PATCH_PATH}.wUtils.add_hourly_pay_minus_nlw_clean")
     @patch(f"{PATCH_PATH}.wUtils.add_nlw_and_pay_difference")
     @patch(f"{PATCH_PATH}.wUtils.combine_pay_and_hours")
     @patch(f"{PATCH_PATH}.wUtils.null_not_known_codes")
@@ -291,6 +353,7 @@ class TestMain:
         null_not_known_codes_mock: Mock,
         combine_pay_and_hours_mock: Mock,
         add_nlw_and_pay_difference_mock: Mock,
+        add_hourly_pay_minus_nlw_clean_mock: Mock,
         add_worker_labels_mock: Mock,
         add_country_code_group_mock: Mock,
         collect_all_mock: Mock,
@@ -305,6 +368,7 @@ class TestMain:
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
+            self.STUDENT_DESTINATION,
             n_months=3,
         )
 
@@ -362,6 +426,7 @@ class TestMain:
             self.TRAIN_DESTINATION,
             self.HOLDOUT_DESTINATION,
             self.TEST_DESTINATION,
+            self.STUDENT_DESTINATION,
             max_gap=5,
         )
 
