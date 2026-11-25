@@ -8,10 +8,9 @@ import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
-    AscwdsWorkerCleanedColumns as AWKClean,
+from utils.column_names.hackathon_columns import (
+    HackathonOutputColumns as OutCols,
 )
-from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 SOURCE_COLUMNS = [*vUtils.KEY_COLUMNS, *wUtils.STUDENT_HIDDEN_COLUMNS]
 
@@ -43,12 +42,9 @@ def main(
     )
     expected_row_count = vUtils.count_expected_rows(compare_lf, split)
 
-    establishment_month = [
-        AWKClean.establishment_id,
-        AWKClean.ascwds_worker_import_date,
-    ]
-    is_leaver = pl.col(HackCols.is_leaver)
-    turnover_rate = pl.col(HackCols.turnover_rate)
+    establishment_month = [OutCols.establishmentid, OutCols.snapshot_date]
+    is_leaver = pl.col(OutCols.is_leaver)
+    turnover_rate = pl.col(OutCols.turnover_rate)
 
     validation = (
         pb.Validate(
@@ -65,10 +61,10 @@ def main(
         .col_vals_not_null(vUtils.KEY_COLUMNS, brief="key columns have no nulls")
         .rows_distinct(
             vUtils.KEY_COLUMNS,
-            brief="establishment, worker and import date are unique",
+            brief="establishment, worker and snapshot date are unique",
         )
         .col_vals_between(
-            HackCols.turnover_rate,
+            OutCols.turnover_rate,
             0,
             1,
             na_pass=True,

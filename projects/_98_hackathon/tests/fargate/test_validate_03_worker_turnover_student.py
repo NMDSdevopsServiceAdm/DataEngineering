@@ -4,90 +4,25 @@ from unittest.mock import Mock, patch
 
 import polars as pl
 
-import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 import projects._98_hackathon.fargate.validate_03_worker_turnover_student as job
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from projects._98_hackathon.tests.fargate.test_validate_01_worker_turnover import (
+    build_source_df as build_worker_df,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.hackathon_columns import AgeSource
-from utils.column_names.cleaned_data_files.ons_cleaned import (
-    OnsCleanedColumns as ONSClean,
-)
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
-from utils.column_names.hackathon_columns import HackathonColumns as HackCols
-from utils.column_values.ascwds_labelled_vocab import (
-    CountryOfBirthGroupLabels,
-    NationalityGroupLabels,
+from utils.column_names.hackathon_columns import (
+    HackathonOutputColumns as OutCols,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
-from utils.column_values.categorical_column_values import (
-    CurrentCSSR,
-    PrimaryServiceType,
-    Region,
-)
 
 PATCH_PATH = "projects._98_hackathon.fargate.validate_03_worker_turnover_student"
 
 
 def build_source_df() -> pl.DataFrame:
     """Two rows of the student data, which has no is_leaver or turnover_rate."""
-    return pl.DataFrame(
-        data={
-            AWKClean.establishment_id: ["100", "100"],
-            AWKClean.worker_id: ["1", "1"],
-            AWKClean.ascwds_worker_import_date: [date(2025, 11, 1)] * 2,
-            AWKClean.employment_status_clean_labelled: [EmpStat.permanent] * 2,
-            AWKClean.main_job_role_clean_labelled: ["Care worker"] * 2,
-            AWPClean.organisation_id: ["1-ORG"] * 2,
-            HackCols.main_service_type: [PrimaryServiceType.non_residential] * 2,
-            HackCols.split: ["test"] * 2,
-            HackCols.valid_for_analysis: [True, False],
-            HackCols.hours: [30.0, None],
-            HackCols.hourly_pay: [12.0, None],
-            HackCols.nlw_hourly_rate: [11.0, 11.0],
-            HackCols.hourly_pay_minus_nlw: [1.0, None],
-            HackCols.age_imputed: [30.0, 31.0],
-            HackCols.age_source: [AgeSource.observed, AgeSource.assumed_birth_month],
-            HackCols.nationality_group: [NationalityGroupLabels.non_eea] * 2,
-            HackCols.country_of_birth_group: [CountryOfBirthGroupLabels.non_eea] * 2,
-            ONSClean.current_cssr: [CurrentCSSR.barnet] * 2,
-            ONSClean.current_region: [Region.london] * 2,
-            **{column: [1.0] * 2 for column in job.vUtils.NUMERIC_COLUMNS},
-            **{
-                label_column: [vocabulary.label_cls(label_column).categorical_values[0]]
-                * 2
-                for label_column, vocabulary in zip(
-                    wUtils.LABEL_COLUMNS, wUtils.LABEL_VOCABULARIES.values()
-                )
-            },
-        },
-        schema={
-            AWKClean.establishment_id: CatColType.EstablishmentCatType,
-            AWKClean.worker_id: pl.String,
-            AWKClean.ascwds_worker_import_date: pl.Date,
-            AWKClean.employment_status_clean_labelled: CatColType.EmploymentStatusCatType,
-            AWKClean.main_job_role_clean_labelled: pl.Categorical,
-            AWPClean.organisation_id: pl.Categorical,
-            HackCols.main_service_type: CatColType.PrimaryServiceEnumType,
-            HackCols.split: pl.Categorical,
-            HackCols.valid_for_analysis: pl.Boolean,
-            HackCols.hours: pl.Float32,
-            HackCols.hourly_pay: pl.Float32,
-            HackCols.nlw_hourly_rate: pl.Float32,
-            HackCols.hourly_pay_minus_nlw: pl.Float32,
-            HackCols.age_imputed: pl.Float32,
-            HackCols.age_source: pl.Categorical,
-            HackCols.nationality_group: pl.Categorical,
-            HackCols.country_of_birth_group: pl.Categorical,
-            ONSClean.current_cssr: pl.Categorical,
-            ONSClean.current_region: pl.Categorical,
-            **{column: pl.Float32 for column in job.vUtils.NUMERIC_COLUMNS},
-            **{column: pl.Categorical for column in wUtils.LABEL_COLUMNS},
-        },
-    )
+    return build_worker_df(split="test").drop(OutCols.is_leaver, OutCols.turnover_rate)
 
 
 def build_compare_lf() -> pl.LazyFrame:
@@ -151,8 +86,8 @@ class TestMain:
         mock_write_reports: Mock,
     ):
         source_df = build_source_df().with_columns(
-            pl.lit(True).alias(HackCols.is_leaver),
-            pl.lit(0.5).alias(HackCols.turnover_rate),
+            pl.lit(True).alias(OutCols.is_leaver),
+            pl.lit(0.5).alias(OutCols.turnover_rate),
         )
         mock_read_parquet.return_value = source_df
         mock_scan_parquet.side_effect = [source_df.lazy(), build_compare_lf()]

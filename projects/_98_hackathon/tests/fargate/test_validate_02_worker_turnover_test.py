@@ -9,7 +9,9 @@ from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.hackathon_columns import HackathonColumns as HackCols
+from utils.column_names.hackathon_columns import (
+    HackathonOutputColumns as OutCols,
+)
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 
 PATCH_PATH = "projects._98_hackathon.fargate.validate_02_worker_turnover_test"
@@ -19,11 +21,11 @@ def build_answers_df() -> pl.DataFrame:
     """Two rows of answers: key columns, is_leaver and turnover_rate."""
     return pl.DataFrame(
         {
-            AWKClean.establishment_id: ["100", "100"],
-            AWKClean.worker_id: ["1", "2"],
-            AWKClean.ascwds_worker_import_date: [date(2025, 11, 1)] * 2,
-            HackCols.is_leaver: [True, False],
-            HackCols.turnover_rate: [0.5, 0.5],
+            OutCols.establishmentid: ["100", "100"],
+            OutCols.workerid: ["1", "2"],
+            OutCols.snapshot_date: [date(2025, 11, 1)] * 2,
+            OutCols.is_leaver: [True, False],
+            OutCols.turnover_rate: [0.5, 0.5],
         }
     )
 
@@ -95,7 +97,7 @@ class TestMain:
         mock_write_reports: Mock,
     ):
         answers_df = build_answers_df().with_columns(
-            pl.Series(HackCols.is_leaver, [True, None])
+            pl.Series(OutCols.is_leaver, [True, None])
         )
         run_main(mock_read_parquet, mock_scan_parquet, answers_df)
 

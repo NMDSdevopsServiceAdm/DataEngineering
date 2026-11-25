@@ -7,6 +7,9 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
+from utils.column_names.hackathon_columns import (
+    HackathonOutputColumns as OutCols,
+)
 
 
 class TestHasNoHiddenColumns:
@@ -30,8 +33,8 @@ class TestHasOneImportDatePerMonth:
     @staticmethod
     def build_df(import_dates: list[date]) -> pl.DataFrame:
         return pl.DataFrame(
-            {AWKClean.ascwds_worker_import_date: import_dates},
-            schema={AWKClean.ascwds_worker_import_date: pl.Date},
+            {OutCols.snapshot_date: import_dates},
+            schema={OutCols.snapshot_date: pl.Date},
         )
 
     def test_returns_true_when_one_import_date_per_month(self):

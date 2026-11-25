@@ -6,22 +6,26 @@ from polars_utils.validation import actions as vl
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
-from utils.column_names.cleaned_data_files.ons_cleaned import (
-    OnsCleanedColumns as ONSClean,
-)
-from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
-from utils.column_values.ascwds_labelled_vocab import (
-    CountryOfBirthGroupLabels,
+from utils.column_names.hackathon_columns import (
+    HackathonOutputColumns as OutCols,
 )
-from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import (
+    APPRENTICE,
+    CARE_CERTIFICATE_STATUS,
+    DISABLED,
+    GENDER,
+    LEVEL_SOCIAL_CARE_QUALIFICATION_HELD,
+    SOCIAL_CARE_QUAL_HELD,
+    SOURCE_OF_RECRUITMENT,
+    ZERO_HOURS,
+    CountryOfBirthGroupLabels,
+    EthnicityGroupLabels,
     NationalityGroupLabels,
+    SourceOfRecruitmentWithinOutsideAscLabels,
     TrainingFlagLabels,
 )
+from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.categorical_column_values import (
     CurrentCSSR,
     PrimaryServiceType,
@@ -31,41 +35,50 @@ from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerCleanedCategoricalValues as CatValues,
 )
 
-
-KEY_COLUMNS = [
-    AWKClean.establishment_id,
-    AWKClean.worker_id,
-    AWKClean.ascwds_worker_import_date,
-]
+KEY_COLUMNS = [OutCols.establishmentid, OutCols.workerid, OutCols.snapshot_date]
 
 NUMERIC_COLUMNS = [
-    column
-    for column in wUtils.WORKER_NUMERIC_COLUMNS
-    if column not in wUtils.PAY_AND_HOURS_COLUMNS
+    OutCols.age,
+    OutCols.year_of_entry_to_uk,
+    OutCols.distance_home_work,
+    OutCols.sickness_days,
 ]
+
+# Output label columns and the vocabulary each is checked against.
+LABEL_VOCABULARIES = {
+    OutCols.gender: GENDER,
+    OutCols.disabled: DISABLED,
+    OutCols.zerohours_contract: ZERO_HOURS,
+    OutCols.has_social_care_qualification_held: SOCIAL_CARE_QUAL_HELD,
+    OutCols.social_care_qualification_held_level: (
+        LEVEL_SOCIAL_CARE_QUALIFICATION_HELD
+    ),
+    OutCols.care_certificate_status: CARE_CERTIFICATE_STATUS,
+    OutCols.apprentice: APPRENTICE,
+    OutCols.source_of_recruitment: SOURCE_OF_RECRUITMENT,
+}
 
 WORKER_DATA_COLUMNS = [
     *KEY_COLUMNS,
-    AWKClean.employment_status_clean_labelled,
-    AWKClean.main_job_role_clean_labelled,
-    AWPClean.organisation_id,
-    HackCols.main_service_type,
-    HackCols.split,
-    HackCols.valid_for_analysis,
-    HackCols.hours,
-    HackCols.hourly_pay,
-    HackCols.nlw_hourly_rate,
-    HackCols.hourly_pay_minus_nlw,
-    HackCols.age_imputed,
-    HackCols.age_source,
-    HackCols.nationality_group,
-    HackCols.country_of_birth_group,
-    ONSClean.current_cssr,
-    ONSClean.current_region,
+    OutCols.orgid,
+    OutCols.employment_status,
+    OutCols.job_role,
+    OutCols.service_type,
+    OutCols.local_authority,
+    OutCols.region,
+    OutCols.dataset,
+    OutCols.valid_for_analysis,
+    OutCols.hours_worked,
+    OutCols.hourly_pay,
+    OutCols.nlw_hourly_rate,
+    OutCols.nationality_group,
+    OutCols.country_of_birth_group,
+    OutCols.ethnicity_group,
+    OutCols.source_of_recruitment_group,
+    OutCols.training,
     *NUMERIC_COLUMNS,
-    *wUtils.LABEL_COLUMNS,
+    *LABEL_VOCABULARIES,
 ]
-
 
 COMPARE_COLUMNS = [
     AWKClean.location_id,
@@ -112,20 +125,20 @@ def has_no_hidden_columns(column_names: list[str]) -> bool:
 
 
 def has_one_import_date_per_month(df: pl.DataFrame) -> bool:
-    """Checks each calendar month has at most one import date.
+    """Checks each calendar month has at most one snapshot date.
 
     Args:
-        df (pl.DataFrame): Worker turnover data with `ascwds_worker_import_date`.
+        df (pl.DataFrame): Worker turnover data with `snapshot_date`.
 
     Returns:
-        bool: True if no month has more than one distinct import date.
+        bool: True if no month has more than one distinct snapshot date.
     """
-    import_dates = df.get_column(AWKClean.ascwds_worker_import_date)
-    return import_dates.n_unique() == import_dates.dt.truncate("1mo").n_unique()
+    snapshot_dates = df.get_column(OutCols.snapshot_date)
+    return snapshot_dates.n_unique() == snapshot_dates.dt.truncate("1mo").n_unique()
 
 
 def add_worker_data_checks(
-    validation: pb.Validate, split: str, expected_row_count: int
+    validation: pb.Validate, split: str, expected_row_count: int | None
 ) -> pb.Validate:
     """Adds every check on worker turnover data except those on `is_leaver` and
     `turnover_rate`.
@@ -133,128 +146,108 @@ def add_worker_data_checks(
     Args:
         validation (pb.Validate): Validation of data holding `WORKER_DATA_COLUMNS`.
         split (str): The split the data holds, "train", "holdout" or "test".
-        expected_row_count (int): The rows the split should hold.
+        expected_row_count (int | None): The rows the split should hold, or None to
+            skip the row count check.
 
     Returns:
         pb.Validate: The validation with the checks added.
     """
-    hourly_pay = pl.col(HackCols.hourly_pay)
-    current_cssr_values = CurrentCSSR(ONSClean.current_cssr).categorical_values
-    current_region_values = Region(ONSClean.current_region).categorical_values
-    training_flag_labels = f"{AWKClean.training_flag}_labels"
+    local_authority_values = CurrentCSSR(OutCols.local_authority).categorical_values
+    region_values = Region(OutCols.region).categorical_values
 
-    validation = (
-        validation
-        # Row and key checks
-        .row_count_match(
+    if expected_row_count is not None:
+        validation = validation.row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
         )
+
+    validation = (
+        validation
+        # Key checks
         .col_vals_not_null(KEY_COLUMNS, brief="key columns have no nulls")
-        .col_vals_not_null(
-            AWPClean.organisation_id, brief="organisation_id has no nulls"
-        )
+        .col_vals_not_null(OutCols.orgid, brief="orgid has no nulls")
         .rows_distinct(
             KEY_COLUMNS,
-            brief="establishment, worker and import date are unique",
+            brief="establishment, worker and snapshot date are unique",
         )
         .specially(
             has_one_import_date_per_month,
-            brief="each month has at most one import date",
+            brief="each month has at most one snapshot date",
         )
         .col_vals_ge(
-            AWKClean.ascwds_worker_import_date,
+            OutCols.snapshot_date,
             wUtils.EARLIEST_IMPORT_DATE,
-            brief=f"import date is on or after {wUtils.EARLIEST_IMPORT_DATE}",
+            brief=f"snapshot date is on or after {wUtils.EARLIEST_IMPORT_DATE}",
         )
         # Categorical checks
-        .col_vals_in_set(HackCols.split, [split], brief=f"split is {split}")
+        .col_vals_in_set(OutCols.dataset, [split], brief=f"dataset is {split}")
         .col_vals_in_set(
-            AWKClean.employment_status_clean_labelled,
+            OutCols.employment_status,
             [EmpStat.permanent, EmpStat.temporary],
             brief="employment status is permanent or temporary",
         )
         .col_vals_in_set(
-            AWKClean.main_job_role_clean_labelled,
+            OutCols.job_role,
             CatValues.main_job_role_labels_column_values.categorical_values,
-            brief="main job role label is a known value",
+            brief="job role is a known value",
         )
         .col_vals_in_set(
-            HackCols.main_service_type,
-            PrimaryServiceType(HackCols.main_service_type).categorical_values,
-            brief="main_service_type is a known value",
+            OutCols.service_type,
+            PrimaryServiceType(OutCols.service_type).categorical_values,
+            brief="service_type is a known value",
         )
         .col_vals_in_set(
-            ONSClean.current_cssr,
-            current_cssr_values,
-            brief="current_cssr is a known value",
+            OutCols.local_authority,
+            local_authority_values,
+            brief="local_authority is a known value",
         )
         .col_vals_in_set(
-            ONSClean.current_region,
-            current_region_values,
-            brief="current_region is a known value",
+            OutCols.region,
+            region_values,
+            brief="region is a known value",
         )
         # Numerical checks
         .col_vals_ge(
-            [*NUMERIC_COLUMNS, HackCols.hourly_pay],
+            [*NUMERIC_COLUMNS, OutCols.hourly_pay],
             0,
             na_pass=True,
-            brief="numeric raw columns and hourly_pay are not negative",
+            brief="numeric columns and hourly_pay are not negative",
         )
-        .col_vals_gt(HackCols.hours, 0, na_pass=True, brief="hours is null or above 0")
         .col_vals_gt(
-            HackCols.nlw_hourly_rate,
+            OutCols.hours_worked,
+            0,
+            na_pass=True,
+            brief="hours_worked is null or above 0",
+        )
+        .col_vals_gt(
+            OutCols.nlw_hourly_rate,
             0,
             brief="nlw_hourly_rate is populated and above 0",
         )
-        .col_vals_ge(
-            HackCols.age_imputed,
-            0,
-            na_pass=True,
-            brief="age_imputed is null or not negative",
-        )
         # Cross-column checks
         .col_vals_not_null(
-            HackCols.valid_for_analysis, brief="valid_for_analysis has no nulls"
-        )
-        .col_vals_expr(
-            expr=pl.col(HackCols.hourly_pay_minus_nlw)
-            .is_not_null()
-            .eq(hourly_pay.is_not_null()),
-            brief="hourly_pay_minus_nlw is populated exactly when hourly_pay is populated",
-        )
-        .col_vals_in_set(
-            HackCols.age_source,
-            [
-                AgeSource.observed,
-                AgeSource.pinned_birth_month,
-                AgeSource.assumed_birth_month,
-                None,
-            ],
-            brief="age_source is a known value or null",
-        )
-        .col_vals_expr(
-            expr=pl.col(HackCols.age_imputed)
-            .is_not_null()
-            .eq(pl.col(HackCols.age_source).is_not_null()),
-            brief="age_imputed is populated exactly when age_source is populated",
+            OutCols.valid_for_analysis, brief="valid_for_analysis has no nulls"
         )
     )
 
     expected_labels = {
         label_column: vocabulary.label_cls(label_column, contains_null_values=True)
-        for label_column, vocabulary in zip(
-            wUtils.LABEL_COLUMNS, wUtils.LABEL_VOCABULARIES.values()
-        )
+        for label_column, vocabulary in LABEL_VOCABULARIES.items()
     } | {
-        HackCols.nationality_group: NationalityGroupLabels(
-            HackCols.nationality_group, contains_null_values=True
+        OutCols.nationality_group: NationalityGroupLabels(
+            OutCols.nationality_group, contains_null_values=True
         ),
-        HackCols.country_of_birth_group: CountryOfBirthGroupLabels(
-            HackCols.country_of_birth_group, contains_null_values=True
+        OutCols.country_of_birth_group: CountryOfBirthGroupLabels(
+            OutCols.country_of_birth_group, contains_null_values=True
         ),
-        training_flag_labels: TrainingFlagLabels(
-            training_flag_labels, contains_null_values=False
+        OutCols.ethnicity_group: EthnicityGroupLabels(
+            OutCols.ethnicity_group, contains_null_values=True
+        ),
+        OutCols.source_of_recruitment_group: SourceOfRecruitmentWithinOutsideAscLabels(
+            OutCols.source_of_recruitment_group, contains_null_values=True
+        ),
+        OutCols.training: TrainingFlagLabels(
+            OutCols.training, contains_null_values=False
         ),
     }
 
