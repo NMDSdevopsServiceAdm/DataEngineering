@@ -25,11 +25,17 @@ PATCH_PATH = "projects._02_sfc_internal._01_cqc_ratings.fargate.flatten_cqc_rati
 
 
 class TestMain:
+    @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_sinks_social_care_ratings_to_both_destinations(
-        self, scan_parquet_mock: Mock, sink_to_parquet_mock: Mock
+        self,
+        scan_parquet_mock: Mock,
+        sink_to_parquet_mock: Mock,
+        collect_all_mock: Mock,
     ):
+        standard_sink, benchmark_sink = Mock(), Mock()
+        sink_to_parquet_mock.side_effect = [standard_sink, benchmark_sink]
         scan_parquet_mock.side_effect = [
             pl.LazyFrame(
                 Data.main_snapshot_rows,
@@ -60,6 +66,11 @@ class TestMain:
             "delta_source/",
             "ascwds_source/",
         ]
+
+        assert all(c.kwargs["lazy"] for c in sink_to_parquet_mock.call_args_list)
+        collect_all_mock.assert_called_once_with(
+            [standard_sink, benchmark_sink], engine="streaming"
+        )
 
         sinks = {c.args[1]: c.args[0] for c in sink_to_parquet_mock.call_args_list}
         assert set(sinks) == {"ratings_dest/", "benchmark_dest/"}

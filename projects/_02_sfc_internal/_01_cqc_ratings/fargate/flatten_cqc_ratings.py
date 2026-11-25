@@ -113,8 +113,14 @@ def main(
     # benchmark_ratings_lf = join_establishment_ids(benchmark_ratings_lf, ascwds_workplace_lf)
     # benchmark_ratings_lf = create_benchmark_ratings_dataset(benchmark_ratings_lf)
 
-    utils.sink_to_parquet(standard_ratings_lf, cqc_ratings_destination)
-    utils.sink_to_parquet(benchmark_ratings_lf, benchmark_ratings_destination)
+    standard_sink = utils.sink_to_parquet(
+        standard_ratings_lf, cqc_ratings_destination, lazy=True
+    )
+    benchmark_sink = utils.sink_to_parquet(
+        benchmark_ratings_lf, benchmark_ratings_destination, lazy=True
+    )
+    # Sinks collected together share one run of the ratings plan.
+    pl.collect_all([standard_sink, benchmark_sink], engine="streaming")
 
 
 def create_standard_ratings_dataset(ratings_lf: pl.LazyFrame) -> pl.LazyFrame:

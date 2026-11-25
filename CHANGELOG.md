@@ -42,6 +42,7 @@ All notable changes to this project will be documented in this file.
 
 ### Improved
 
+- The Flatten CQC Ratings job now runs the ratings plan once for both outputs.
 - Dropped unneeded columns from the hackathon worker turnover output at their last use.
 
 ### Fixed
