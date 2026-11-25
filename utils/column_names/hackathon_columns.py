@@ -17,6 +17,8 @@ class HackathonColumns:
     nlw_hourly_rate: str = "nlw_hourly_rate"
     hourly_pay_minus_nlw: str = "hourly_pay_minus_nlw"
     hourly_pay_minus_nlw_clean: str = "hourly_pay_minus_nlw_clean"
+    hourly_pay_minus_nlw_clean_imputed: str = f"{hourly_pay_minus_nlw_clean}_imputed"
+    days_sick_imputed: str = "days_sick_imputed"
     hourly_pay_diff_to_cssr_median: str = "hourly_pay_diff_to_cssr_median"
     nlw_effective_date: str = "nlw_effective_date"
     nlw_is_apprentice: str = "nlw_is_apprentice"

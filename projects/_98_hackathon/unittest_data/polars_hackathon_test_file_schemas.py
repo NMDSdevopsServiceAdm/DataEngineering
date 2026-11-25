@@ -36,6 +36,18 @@ class WorkerTurnoverSchemas:
         ]
     )
 
+    impute_pay_and_sickness_schema = pl.Schema(
+        [
+            (AWKClean.establishment_id, CatColType.EstablishmentCatType),
+            (AWKClean.worker_id, pl.String()),
+            (AWKClean.ascwds_worker_import_date, pl.Date()),
+            (HackCols.hourly_pay_minus_nlw_clean, pl.Float32()),
+            (AWKClean.days_sick, pl.Float32()),
+            (HackCols.hourly_pay_minus_nlw_clean_imputed, pl.Float32()),
+            (HackCols.days_sick_imputed, pl.Float32()),
+        ]
+    )
+
     impute_columns = [
         f"{AWKClean.gender}_labels",
         f"{AWKClean.ethnicity}_labels",

@@ -974,6 +974,49 @@ def impute_worker_columns(worker_lf: pl.LazyFrame, columns: list[str]) -> pl.Laz
     )
 
 
+def impute_pay_and_sickness(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Adds imputed copies of `hourly_pay_minus_nlw_clean` and `days_sick`.
+
+    Per worker and establishment, ordered by `ascwds_worker_import_date`, nulls
+    between known values are filled on a straight line weighted by import date.
+    Nulls outside the known values take the nearest known value. A worker with no
+    value on any date stays null.
+
+    Uses `.over()`, which the streaming engine does not cover, so the sink may
+    fall back to the in-memory engine.
+
+    Args:
+        worker_lf (pl.LazyFrame): Worker data with the establishment ID, worker ID,
+            `ascwds_worker_import_date`, `hourly_pay_minus_nlw_clean` and
+            `days_sick`.
+
+    Returns:
+        pl.LazyFrame: The input rows with `hourly_pay_minus_nlw_clean_imputed` and
+            `days_sick_imputed` (`Float32`) added.
+    """
+    import_date = pl.col(AWKClean.ascwds_worker_import_date)
+
+    return worker_lf.with_columns(
+        pl.col(column)
+        .cast(pl.Float32)
+        .interpolate_by(import_date)
+        .forward_fill()
+        .backward_fill()
+        .over(
+            [AWKClean.worker_id, AWKClean.establishment_id],
+            order_by=AWKClean.ascwds_worker_import_date,
+        )
+        .alias(imputed_column)
+        for column, imputed_column in [
+            (
+                HackCols.hourly_pay_minus_nlw_clean,
+                HackCols.hourly_pay_minus_nlw_clean_imputed,
+            ),
+            (AWKClean.days_sick, HackCols.days_sick_imputed),
+        ]
+    )
+
+
 def filter_worker_turnover_data(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Filters worker data to the rows kept for turnover analysis.
 
