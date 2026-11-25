@@ -1487,17 +1487,13 @@ def add_is_leaver_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def select_and_rename_output_columns(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Selects, renames and orders the columns written to the hackathon sinks.
-
-    Columns not in `OUTPUT_COLUMN_SOURCES` are dropped.
+    """Keeps the output columns, renamed and ordered per `OUTPUT_COLUMN_SOURCES`.
 
     Args:
-        worker_lf (pl.LazyFrame): Worker turnover data holding every source column
-            in `OUTPUT_COLUMN_SOURCES`.
+        worker_lf (pl.LazyFrame): Worker data holding every source column.
 
     Returns:
-        pl.LazyFrame: The output columns, named and ordered as in
-            `OUTPUT_COLUMN_SOURCES`.
+        pl.LazyFrame: The output columns only.
     """
     return worker_lf.select(
         pl.col(source).alias(output) for output, source in OUTPUT_COLUMN_SOURCES.items()
