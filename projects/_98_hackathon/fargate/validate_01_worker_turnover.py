@@ -100,9 +100,9 @@ def main(
 
     Args:
         bucket_name (str): the bucket (name only) for the datasets and reports
-        source_path (str): the worker turnover split dataset path to validate
+        source_path (str): the worker turnover train dataset path to validate
         compare_path (str): the cleaned ASC-WDS worker dataset path; its rows kept
-            by `filter_worker_turnover_data` and in the split give the expected row
+            by `filter_worker_turnover_data` and in the train split give the expected row
             count
         reports_path (str): the output path to write reports to
         split (str): the split the source holds, "train"

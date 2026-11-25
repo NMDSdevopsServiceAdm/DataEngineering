@@ -6,7 +6,7 @@ from projects._98_hackathon.unittest_data.polars_scoring_test_file_schemas impor
     ScoringSchemas as Schemas,
 )
 
-# (establishment_id, worker_id, is_leaver, valid_for_analysis): every test worker.
+# (establishment_id, worker_id, is_leaver, valid_for_analysis): every worker in the predict dataset.
 CHECK_ANSWER_ROWS = [
     ("1-001", "w1", True, True),
     ("1-001", "w2", False, True),
