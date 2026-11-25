@@ -9,10 +9,10 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 WORKER_KEY_COLUMNS = [AWKClean.establishment_id, AWKClean.worker_id]
-# Placeholder bucket: replace with the bucket holding the test dataset in the
+# Placeholder bucket: replace with the bucket holding the answers dataset in the
 # hackathon AWS account.
 DEFAULT_ANSWERS_SOURCE = (
-    "s3://<hackathon-bucket>/domain=98_hackathon/dataset=worker_turnover_test/"
+    "s3://<hackathon-bucket>/domain=98_hackathon/dataset=worker_turnover_answers/"
 )
 
 
@@ -21,11 +21,11 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
 
     Predictions must have exactly the worker key columns and
     `predicted_probability`, with one non-null probability between 0 and 1 for
-    every test worker, and no other workers.
+    every worker in the predict dataset, and no other workers.
 
     Args:
         predictions_df (pl.DataFrame): Predictions, one row per worker.
-        answers_df (pl.DataFrame): Every test worker, one row each, with the
+        answers_df (pl.DataFrame): Every worker in the predict dataset, one row each, with the
             worker key columns.
 
     Raises:
@@ -59,7 +59,7 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
     )
     if duplicated_answers_count:
         raise ValueError(
-            f"Test answers have {duplicated_answers_count} duplicated workers, "
+            f"Answers have {duplicated_answers_count} duplicated workers, "
             "so scores would be distorted. Report this to the organisers"
         )
 
@@ -100,7 +100,7 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
     )
     if missing_df.height:
         raise ValueError(
-            f"Predictions are missing {missing_df.height} test workers, "
+            f"Predictions are missing {missing_df.height} workers from the predict dataset, "
             f"e.g. {missing_df.head(example_count).rows()}"
         )
 
@@ -109,7 +109,7 @@ def check_predictions(predictions_df: pl.DataFrame, answers_df: pl.DataFrame) ->
     )
     if unknown_df.height:
         raise ValueError(
-            f"Predictions have {unknown_df.height} workers not in the test set, "
+            f"Predictions have {unknown_df.height} workers not in the predict dataset, "
             f"e.g. {unknown_df.head(example_count).rows()}"
         )
 
@@ -128,9 +128,8 @@ def calculate_scores(
     small enough for memory.
 
     Args:
-        predictions_df (pl.DataFrame): Checked predictions, one row per test
-            worker.
-        answers_df (pl.DataFrame): Test workers with `is_leaver` and
+        predictions_df (pl.DataFrame): Checked predictions, one row per worker.
+        answers_df (pl.DataFrame): Answers with `is_leaver` and
             `valid_for_analysis`.
 
     Returns:
@@ -204,17 +203,16 @@ def score_predictions(
     predictions: pd.DataFrame | pl.DataFrame | pl.LazyFrame,
     answers_source: str = DEFAULT_ANSWERS_SOURCE,
 ) -> dict[str, float | int]:
-    """Scores predicted leaving probabilities against the held-back test answers.
+    """Scores predicted leaving probabilities against the held-back answers.
 
     Reads the answers itself, so callers never open them. Reads only the worker
-    key, `is_leaver` and `valid_for_analysis` columns: one row per test worker,
+    key, `is_leaver` and `valid_for_analysis` columns: one row per worker,
     collected for scoring.
 
     Args:
-        predictions (pd.DataFrame | pl.DataFrame | pl.LazyFrame): One row per test
-            worker with exactly `establishmentid`, `workerid` and
+        predictions (pd.DataFrame | pl.DataFrame | pl.LazyFrame): One row per worker with exactly `establishmentid`, `workerid` and
             `predicted_probability` (between 0 and 1).
-        answers_source (str): S3 path of the test dataset with the answers.
+        answers_source (str): S3 path of the answers dataset.
 
     Returns:
         dict[str, float | int]: `worker_auc`, `worker_brier`, `workplace_mae`,

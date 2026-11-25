@@ -94,7 +94,7 @@ def main(
     reports_path: str,
     split: str,
 ) -> None:
-    """Validates the train or holdout split of the worker turnover data.
+    """Validates the train split of the worker turnover data.
 
     Only the columns the checks need are read, as the dataset is large.
 
@@ -105,7 +105,7 @@ def main(
             by `filter_worker_turnover_data` and in the split give the expected row
             count
         reports_path (str): the output path to write reports to
-        split (str): the split the source holds, "train" or "holdout"
+        split (str): the split the source holds, "train"
     """
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}", selected_columns=SOURCE_COLUMNS
@@ -314,7 +314,7 @@ if __name__ == "__main__":
         ("--source_path", "The filepath of the dataset to validate"),
         ("--compare_path", "The filepath of the dataset to compare against"),
         ("--reports_path", "The filepath to output reports"),
-        ("--split", "The split the dataset holds, train or holdout"),
+        ("--split", "The split the dataset holds, train"),
     )
     print(f"Starting validation for {args.source_path}")
 

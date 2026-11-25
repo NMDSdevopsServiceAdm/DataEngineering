@@ -14,9 +14,8 @@ class TestMain:
     ONS_POSTCODE_DIRECTORY_SOURCE = "some/ons/source"
     MANUAL_POSTCODE_CORRECTIONS_SOURCE = "some/corrections.csv"
     TRAIN_DESTINATION = "some/train"
-    HOLDOUT_DESTINATION = "some/holdout"
-    TEST_DESTINATION = "some/test"
-    STUDENT_DESTINATION = "some/student"
+    ANSWERS_DESTINATION = "some/answers"
+    PREDICT_DESTINATION = "some/predict"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.collect_all")
@@ -87,17 +86,12 @@ class TestMain:
             ons_lf_mock,
             raw_worker_lf_mock,
         ]
-        splits = ["train", "holdout", "test"]
-        destinations = [
-            self.TRAIN_DESTINATION,
-            self.HOLDOUT_DESTINATION,
-            self.TEST_DESTINATION,
-        ]
+        splits = ["train", "predict"]
         # One lazy frame per split, so each split's destination is checked.
         split_lf_mocks = [Mock() for _ in splits]
         add_split_column_mock.return_value.filter.side_effect = split_lf_mocks
-        # The student sink comes after the three split sinks.
-        sink_mocks = [Mock() for _ in range(len(splits) + 1)]
+        # Sinks: train, answers, predict.
+        sink_mocks = [Mock() for _ in range(3)]
         sink_to_parquet_mock.side_effect = sink_mocks
         plausible_after_typos_lf, plausible_after_imputation_lf = Mock(), Mock()
         clean_start_date_mock.side_effect = [
@@ -112,9 +106,8 @@ class TestMain:
             self.ONS_POSTCODE_DIRECTORY_SOURCE,
             self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
             self.TRAIN_DESTINATION,
-            self.HOLDOUT_DESTINATION,
-            self.TEST_DESTINATION,
-            self.STUDENT_DESTINATION,
+            self.ANSWERS_DESTINATION,
+            self.PREDICT_DESTINATION,
         )
 
         assert scan_parquet_mock.call_args_list == [
@@ -297,23 +290,21 @@ class TestMain:
         assert filter_mock.call_count == len(splits)
         for filter_call, split in zip(filter_mock.call_args_list, splits):
             assert filter_call.args[0].meta.eq(pl.col(job.HackCols.split) == split)
-        test_lf_mock = split_lf_mocks[-1]
-        test_lf_mock.select.assert_called_once_with(
-            *job.vUtils.KEY_COLUMNS, *job.wUtils.STUDENT_HIDDEN_COLUMNS
+        train_lf_mock, predict_lf_mock = split_lf_mocks
+        predict_lf_mock.select.assert_called_once_with(
+            *job.vUtils.KEY_COLUMNS, *job.wUtils.ANSWER_COLUMNS
         )
-        test_lf_mock.drop.assert_called_once_with(job.wUtils.STUDENT_HIDDEN_COLUMNS)
-        sunk_lf_mocks = [
-            *split_lf_mocks[:-1],
-            test_lf_mock.select.return_value,
-        ]
+        predict_lf_mock.drop.assert_called_once_with(job.wUtils.ANSWER_COLUMNS)
         assert sink_to_parquet_mock.call_args_list == [
-            *[
-                call(sunk_lf_mock, output_path=destination, lazy=True)
-                for sunk_lf_mock, destination in zip(sunk_lf_mocks, destinations)
-            ],
+            call(train_lf_mock, output_path=self.TRAIN_DESTINATION, lazy=True),
             call(
-                test_lf_mock.drop.return_value,
-                output_path=self.STUDENT_DESTINATION,
+                predict_lf_mock.select.return_value,
+                output_path=self.ANSWERS_DESTINATION,
+                lazy=True,
+            ),
+            call(
+                predict_lf_mock.drop.return_value,
+                output_path=self.PREDICT_DESTINATION,
                 lazy=True,
             ),
         ]
@@ -371,9 +362,8 @@ class TestMain:
             self.ONS_POSTCODE_DIRECTORY_SOURCE,
             self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
             self.TRAIN_DESTINATION,
-            self.HOLDOUT_DESTINATION,
-            self.TEST_DESTINATION,
-            self.STUDENT_DESTINATION,
+            self.ANSWERS_DESTINATION,
+            self.PREDICT_DESTINATION,
             n_months=3,
         )
 
@@ -429,9 +419,8 @@ class TestMain:
             self.ONS_POSTCODE_DIRECTORY_SOURCE,
             self.MANUAL_POSTCODE_CORRECTIONS_SOURCE,
             self.TRAIN_DESTINATION,
-            self.HOLDOUT_DESTINATION,
-            self.TEST_DESTINATION,
-            self.STUDENT_DESTINATION,
+            self.ANSWERS_DESTINATION,
+            self.PREDICT_DESTINATION,
             max_gap=5,
         )
 

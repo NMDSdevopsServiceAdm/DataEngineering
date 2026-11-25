@@ -79,7 +79,7 @@ def count_expected_rows(compare_lf: pl.LazyFrame, split: str) -> int:
 
     Args:
         compare_lf (pl.LazyFrame): Cleaned ASC-WDS worker data with `COMPARE_COLUMNS`.
-        split (str): The split to count, "train", "holdout" or "test".
+        split (str): The split to count, "train" or "predict".
 
     Returns:
         int: Rows kept by `filter_worker_turnover_data` that fall in the split.
@@ -102,13 +102,12 @@ def has_no_hidden_columns(column_names: list[str]) -> bool:
     """Checks `is_leaver` and `turnover_rate` are both absent.
 
     Args:
-        column_names (list[str]): Column names of the student version of the test
-            split.
+        column_names (list[str]): Column names of the predict split.
 
     Returns:
         bool: True if neither hidden column is present.
     """
-    return not set(wUtils.STUDENT_HIDDEN_COLUMNS) & set(column_names)
+    return not set(wUtils.ANSWER_COLUMNS) & set(column_names)
 
 
 def has_one_import_date_per_month(df: pl.DataFrame) -> bool:
@@ -132,7 +131,7 @@ def add_worker_data_checks(
 
     Args:
         validation (pb.Validate): Validation of data holding `WORKER_DATA_COLUMNS`.
-        split (str): The split the data holds, "train", "holdout" or "test".
+        split (str): The split the data holds, "train" or "predict".
         expected_row_count (int): The rows the split should hold.
 
     Returns:

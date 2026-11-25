@@ -8,15 +8,15 @@ TODO: write once this moves to the separate locked-down AWS account (how student
 
 ## 2. Build your predictions
 
-One row per test worker, with exactly these three columns (any other column is rejected):
+One row per worker in the predict dataset, with exactly these three columns (any other column is rejected):
 
 | Column | Meaning |
 | --- | --- |
-| `establishmentid` | Establishment id from the test dataset |
-| `workerid` | Worker id from the test dataset |
+| `establishmentid` | Establishment id from the predict dataset |
+| `workerid` | Worker id from the predict dataset |
 | `predicted_probability` | Your probability that the worker leaves, from 0 to 1 |
 
-Every test worker needs exactly one row, with no nulls or NaNs. A polars DataFrame, polars LazyFrame or pandas DataFrame all work.
+Every worker needs exactly one row, with no nulls or NaNs. A polars DataFrame, polars LazyFrame or pandas DataFrame all work.
 
 ## 3. Score
 
@@ -34,7 +34,7 @@ If the predictions are invalid, `score_predictions` raises a `ValueError` saying
 | `worker_brier` | Lower (0 is perfect) | How well calibrated your probabilities are |
 | `workplace_mae` | Lower (0 is perfect) | How far each establishment's predicted leave rate is from its observed rate, averaged equally across establishments with at least 10 scored workers |
 
-`n_workers` is the number of workers scored and `n_workplaces` the number of establishments used in `workplace_mae`. Only workers valid for analysis with a known outcome are scored, but you still need predictions for every test worker. Establishments with fewer than 10 scored workers are left out of `workplace_mae` because their observed leave rates are mostly noise, but their workers still count towards `worker_auc` and `worker_brier`.
+`n_workers` is the number of workers scored and `n_workplaces` the number of establishments used in `workplace_mae`. Only workers valid for analysis with a known outcome are scored, but you still need predictions for every worker in the predict dataset. Establishments with fewer than 10 scored workers are left out of `workplace_mae` because their observed leave rates are mostly noise, but their workers still count towards `worker_auc` and `worker_brier`.
 
 The workplace leave rate is your summed probabilities divided by headcount, so calibrated probabilities matter as much as ranking.
 
@@ -48,6 +48,6 @@ The workplace leave rate is your summed probabilities divided by headcount, so c
 | `Predictions have N null, NaN or non-numeric probabilities` | Fill or fix them |
 | `Predictions have N probabilities outside 0 to 1` | Clip or rescale to probabilities |
 | `Predictions have N duplicated workers` | Keep one row per worker |
-| `Predictions are missing N test workers` | Predict for every test worker |
-| `Predictions have N workers not in the test set` | Remove them |
-| `Test answers have N duplicated workers` | Not your fault: report it to the organisers |
+| `Predictions are missing N workers from the predict dataset` | Predict for every worker |
+| `Predictions have N workers not in the predict dataset` | Remove them |
+| `Answers have N duplicated workers` | Not your fault: report it to the organisers |

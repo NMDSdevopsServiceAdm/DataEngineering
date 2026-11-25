@@ -197,15 +197,15 @@ class TestAddSplitColumn:
     @pytest.mark.parametrize(
         "import_date, expected_split",
         [
-            pytest.param(date(2019, 12, 1), "holdout", id="before_train_start"),
+            pytest.param(date(2019, 12, 1), None, id="before_train_start"),
             pytest.param(date(2020, 1, 1), "train", id="train_start"),
             pytest.param(date(2023, 6, 1), "train", id="within_train"),
             pytest.param(date(2024, 11, 1), "train", id="train_end"),
-            pytest.param(date(2024, 12, 1), "holdout", id="after_train_end"),
-            pytest.param(date(2025, 10, 1), "holdout", id="before_test"),
-            pytest.param(date(2025, 11, 1), "test", id="test_date"),
-            pytest.param(date(2025, 12, 1), "holdout", id="after_test"),
-            pytest.param(None, "holdout", id="null_date"),
+            pytest.param(date(2024, 12, 1), None, id="after_train_end"),
+            pytest.param(date(2025, 10, 1), None, id="before_predict"),
+            pytest.param(date(2025, 11, 1), "predict", id="predict_date"),
+            pytest.param(date(2025, 12, 1), None, id="after_predict"),
+            pytest.param(None, None, id="null_date"),
         ],
     )
     def test_returns_expected_split(self, import_date, expected_split):

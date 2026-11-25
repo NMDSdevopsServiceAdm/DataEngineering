@@ -59,7 +59,7 @@ class TestCheckPredictions:
             VALID_PREDICTION_ROWS, schema=Schemas.predictions_schema, orient="row"
         )
 
-        with pytest.raises(ValueError, match="Test answers have 1 duplicated workers"):
+        with pytest.raises(ValueError, match="Answers have 1 duplicated workers"):
             job.check_predictions(predictions_df, answers_df)
 
     @pytest.mark.parametrize(
@@ -171,7 +171,7 @@ class TestScorePredictions:
         job.score_predictions(predictions_df)
 
         scan_parquet_mock.assert_called_once_with(
-            "s3://<hackathon-bucket>/domain=98_hackathon/dataset=worker_turnover_test/",
+            "s3://<hackathon-bucket>/domain=98_hackathon/dataset=worker_turnover_answers/",
             selected_columns=[
                 AWKClean.establishment_id,
                 AWKClean.worker_id,
@@ -187,7 +187,9 @@ class TestScorePredictions:
             self.prediction_rows[:-1], schema=Schemas.predictions_schema, orient="row"
         )
 
-        with pytest.raises(ValueError, match="missing 1 test workers"):
+        with pytest.raises(
+            ValueError, match="missing 1 workers from the predict dataset"
+        ):
             job.score_predictions(predictions_df)
 
     @patch(f"{PATCH_PATH}.utils.scan_parquet")

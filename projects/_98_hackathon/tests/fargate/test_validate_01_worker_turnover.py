@@ -257,7 +257,7 @@ class TestMain:
         mock_read_parquet.return_value = build_source_df()
         mock_scan_parquet.return_value = build_compare_lf()
 
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/", "holdout")
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/", "predict")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())

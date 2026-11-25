@@ -258,15 +258,15 @@ class ScoringData:
             error_match="1 duplicated workers",
         ),
         CheckPredictionsErrorCase(
-            id="raises_when_test_worker_missing",
+            id="raises_when_worker_missing",
             rows=VALID_PREDICTION_ROWS[:2],
             schema=Schemas.predictions_schema,
-            error_match="missing 1 test workers",
+            error_match="missing 1 workers from the predict dataset",
         ),
         CheckPredictionsErrorCase(
-            id="raises_when_worker_not_in_test_set",
+            id="raises_when_worker_not_in_predict_dataset",
             rows=VALID_PREDICTION_ROWS + [("1-009", "w9", 0.5)],
             schema=Schemas.predictions_schema,
-            error_match="1 workers not in the test set",
+            error_match="1 workers not in the predict dataset",
         ),
     ]
