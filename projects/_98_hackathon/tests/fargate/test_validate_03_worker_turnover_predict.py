@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import polars as pl
 
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
-import projects._98_hackathon.fargate.validate_03_worker_turnover_student as job
+import projects._98_hackathon.fargate.validate_03_worker_turnover_predict as job
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -29,11 +29,11 @@ from utils.column_values.categorical_column_values import (
     Region,
 )
 
-PATCH_PATH = "projects._98_hackathon.fargate.validate_03_worker_turnover_student"
+PATCH_PATH = "projects._98_hackathon.fargate.validate_03_worker_turnover_predict"
 
 
 def build_source_df() -> pl.DataFrame:
-    """Two rows of the student data, which has no is_leaver or turnover_rate."""
+    """Two rows of the predict data, which has no is_leaver or turnover_rate."""
     return pl.DataFrame(
         data={
             AWKClean.establishment_id: ["100", "100"],
@@ -43,7 +43,7 @@ def build_source_df() -> pl.DataFrame:
             AWKClean.main_job_role_clean_labelled: ["Care worker"] * 2,
             AWPClean.organisation_id: ["1-ORG"] * 2,
             HackCols.main_service_type: [PrimaryServiceType.non_residential] * 2,
-            HackCols.split: ["test"] * 2,
+            HackCols.split: ["predict"] * 2,
             HackCols.valid_for_analysis: [True, False],
             HackCols.hours: [30.0, None],
             HackCols.hourly_pay: [12.0, None],
@@ -173,7 +173,7 @@ class TestMain:
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_expected_row_count_is_the_test_split_row_count(
+    def test_expected_row_count_is_the_predict_split_row_count(
         self,
         mock_read_parquet: Mock,
         mock_scan_parquet: Mock,

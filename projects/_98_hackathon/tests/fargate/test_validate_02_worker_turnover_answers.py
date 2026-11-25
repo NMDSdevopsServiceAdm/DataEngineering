@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import polars as pl
 
-import projects._98_hackathon.fargate.validate_02_worker_turnover_test as job
+import projects._98_hackathon.fargate.validate_02_worker_turnover_answers as job
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -12,7 +12,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 
-PATCH_PATH = "projects._98_hackathon.fargate.validate_02_worker_turnover_test"
+PATCH_PATH = "projects._98_hackathon.fargate.validate_02_worker_turnover_answers"
 
 
 def build_answers_df() -> pl.DataFrame:

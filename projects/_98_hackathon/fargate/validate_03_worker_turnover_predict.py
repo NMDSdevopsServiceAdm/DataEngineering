@@ -14,7 +14,7 @@ def main(
     compare_path: str,
     reports_path: str,
 ) -> None:
-    """Validates the student data: the test split without `is_leaver` and
+    """Validates the predict data: the predict split without `is_leaver` and
     `turnover_rate`.
 
     Only the columns the checks need are read, as the dataset is large.
@@ -23,13 +23,13 @@ def main(
 
     Args:
         bucket_name (str): the bucket (name only) for the datasets and reports
-        source_path (str): the worker turnover student dataset path to validate
+        source_path (str): the worker turnover predict dataset path to validate
         compare_path (str): the cleaned ASC-WDS worker dataset path; its rows kept
-            by `filter_worker_turnover_data` and in the test split give the expected
+            by `filter_worker_turnover_data` and in the predict split give the expected
             row count
         reports_path (str): the output path to write reports to
     """
-    split = "test"
+    split = "predict"
     source_uri = f"s3://{bucket_name}/{source_path}"
     source_df = utils.read_parquet(
         source=source_uri, selected_columns=vUtils.WORKER_DATA_COLUMNS
@@ -50,7 +50,7 @@ def main(
     validation = vUtils.add_worker_data_checks(validation, split, expected_row_count)
     validation = validation.specially(
         lambda _: vUtils.has_no_hidden_columns(source_column_names),
-        brief="student data has no is_leaver or turnover_rate column",
+        brief="predict data has no is_leaver or turnover_rate column",
     ).interrogate()
 
     vl.write_reports(validation, bucket_name, reports_path)
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     args = utils.get_args(
         ("--bucket_name", "S3 bucket for source dataset and validation report"),
-        ("--source_path", "The filepath of the student dataset to validate"),
+        ("--source_path", "The filepath of the predict dataset to validate"),
         ("--compare_path", "The filepath of the dataset to compare against"),
         ("--reports_path", "The filepath to output reports"),
     )

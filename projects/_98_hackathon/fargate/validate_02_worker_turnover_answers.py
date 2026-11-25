@@ -13,7 +13,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 )
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
-SOURCE_COLUMNS = [*vUtils.KEY_COLUMNS, *wUtils.STUDENT_HIDDEN_COLUMNS]
+SOURCE_COLUMNS = [*vUtils.KEY_COLUMNS, *wUtils.ANSWER_COLUMNS]
 
 
 def main(
@@ -22,19 +22,19 @@ def main(
     compare_path: str,
     reports_path: str,
 ) -> None:
-    """Validates the test split of the worker turnover data.
+    """Validates the answers to the predict split of the worker turnover data.
 
-    The test split holds only the key columns, `is_leaver` and `turnover_rate`.
+    The answers hold only the key columns, `is_leaver` and `turnover_rate`.
 
     Args:
         bucket_name (str): the bucket (name only) for the datasets and reports
-        source_path (str): the worker turnover test dataset path to validate
+        source_path (str): the worker turnover answers dataset path to validate
         compare_path (str): the cleaned ASC-WDS worker dataset path; its rows kept
-            by `filter_worker_turnover_data` and in the test split give the expected
+            by `filter_worker_turnover_data` and in the predict split give the expected
             row count
         reports_path (str): the output path to write reports to
     """
-    split = "test"
+    split = "predict"
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}", selected_columns=SOURCE_COLUMNS
     )
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     args = utils.get_args(
         ("--bucket_name", "S3 bucket for source dataset and validation report"),
-        ("--source_path", "The filepath of the test dataset to validate"),
+        ("--source_path", "The filepath of the answers dataset to validate"),
         ("--compare_path", "The filepath of the dataset to compare against"),
         ("--reports_path", "The filepath to output reports"),
     )
