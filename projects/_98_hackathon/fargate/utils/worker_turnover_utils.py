@@ -788,40 +788,6 @@ def add_hourly_pay_minus_nlw_clean(
     )
 
 
-def add_hourly_pay_diff_to_cssr_median(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Adds `hourly_pay_diff_to_cssr_median`: `hourly_pay` minus the local median.
-
-    The median `hourly_pay` is taken per import date, `current_cssr` and main job
-    role. The difference is null when `hourly_pay`, `current_cssr` or the job role
-    is null. Uses `.over()`, which the streaming engine does not cover, so the sink
-    may fall back to the in-memory engine.
-
-    Args:
-        worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`,
-            `current_cssr`, `main_job_role_clean_labelled` and `hourly_pay`.
-
-    Returns:
-        pl.LazyFrame: The input rows with `hourly_pay_diff_to_cssr_median`
-            (`Float32`) added.
-    """
-    group_columns = [
-        AWKClean.ascwds_worker_import_date,
-        ONSClean.current_cssr,
-        AWKClean.main_job_role_clean_labelled,
-    ]
-    median_pay = pl.col(HackCols.hourly_pay).median().over(group_columns)
-
-    return worker_lf.with_columns(
-        pl.when(
-            pl.col(ONSClean.current_cssr).is_not_null()
-            & pl.col(AWKClean.main_job_role_clean_labelled).is_not_null()
-        )
-        .then(pl.col(HackCols.hourly_pay) - median_pay)
-        .cast(pl.Float32)
-        .alias(HackCols.hourly_pay_diff_to_cssr_median)
-    )
-
-
 def add_years_in_role_and_sector(
     worker_lf: pl.LazyFrame, save_dates_lf: pl.LazyFrame
 ) -> pl.LazyFrame:

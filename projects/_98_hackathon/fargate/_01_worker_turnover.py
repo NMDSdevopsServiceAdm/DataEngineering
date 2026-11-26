@@ -163,7 +163,6 @@ def main(
     filtered_lf = wUtils.add_nlw_and_pay_difference(filtered_lf)
     filtered_lf = wUtils.add_hourly_pay_minus_nlw_clean(filtered_lf)
     filtered_lf = wUtils.impute_pay_and_sickness(filtered_lf)
-    filtered_lf = wUtils.add_hourly_pay_diff_to_cssr_median(filtered_lf)
 
     filtered_lf = wUtils.add_split_column(filtered_lf)
 
@@ -192,9 +191,6 @@ def main(
         pl.col(HackCols.days_sick_imputed).alias("sickness_days"),
         pl.col(HackCols.hourly_pay_minus_nlw_clean_imputed).alias(
             "hourly_pay_minus_nlw"
-        ),
-        pl.col(HackCols.hourly_pay_diff_to_cssr_median).alias(
-            "hourly_pay_diff_to_local_authority_median"
         ),
         pl.col(f"{AWKClean.training_flag}_{DLC.label}s").alias("training"),
         pl.col(f"{AWKClean.social_care_qual_held}_{DLC.label}s").alias(
