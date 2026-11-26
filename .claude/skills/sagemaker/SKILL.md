@@ -9,6 +9,13 @@ Ad-hoc analysis runs as Jupyter notebooks on the `data-engineering-notebook` Sag
 
 Claude can't reach AWS or the instance. Claude writes the `.ipynb`; the user gets it onto the instance, runs it and stops the instance. Never run a notebook against AWS from here.
 
+## Start: does this work need a branch?
+
+Ask first: "Does this need its own dev environment (branch data copied from main)?" A pushed branch builds its own buckets and copies main's datasets in (`copy-main-data` in `.circleci/config.yml`); an unpushed one has none.
+
+- **Yes:** create the branch (`<trello-number>-<short-description>`, ≤16 characters), then `git commit --allow-empty -m "<trello-number> - Start branch"` and push it (`commit-push`), so the environment builds while the notebook is written.
+- **No** (e.g. reading main's datasets only): no branch or commit.
+
 ## Templates
 
 They live in `notebooks/sagemaker/` — outside `.claude/`, which JupyterLab hides, so they are visible in the cloned repo on the instance.
