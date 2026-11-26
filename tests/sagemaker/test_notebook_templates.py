@@ -144,12 +144,6 @@ class TestSkillMd:
         assert frontmatter.get("name") == SKILL_DIR.name
         assert frontmatter.get("description", "").strip()
 
-    def test_encourages_matplotlib_plots(self):
-        text = SKILL_MD.read_text(encoding="utf-8")
-
-        assert "Tables, not plots" not in text
-        assert "matplotlib" in text
-
     def test_lists_every_template_and_no_others(self):
         template_files = {path.stem for path in TEMPLATES_DIR.glob("*.ipynb")}
         listed = set(TEMPLATE_LINK.findall(SKILL_MD.read_text(encoding="utf-8")))

@@ -5,7 +5,7 @@ description: Use when creating or editing a Jupyter notebook for the `data-engin
 
 # SageMaker notebooks
 
-Ad-hoc analysis runs as Jupyter notebooks on the `data-engineering-notebook` SageMaker instance (launch steps in `NOTEBOOKS.md`). The instance has Polars and matplotlib installed by its lifecycle config (`conda_python3` kernel; the templates need Polars 1.24 or later for `nulls_equal` and were tested on 1.44) but notebooks don't import this repo (`projects/`, `utils/`) — they stay self-contained. The repo is cloned onto the instance only to deliver the templates (see below).
+Ad-hoc analysis runs as Jupyter notebooks on the `data-engineering-notebook` SageMaker instance (launch steps in `NOTEBOOKS.md`). The instance has Polars and matplotlib installed by its lifecycle config (`conda_python3` kernel), but notebooks don't import this repo (`projects/`, `utils/`) — they stay self-contained. The repo is cloned onto the instance only to deliver the templates (see below).
 
 Claude can't reach AWS or the instance. Claude writes the `.ipynb`; the user gets it onto the instance, runs it and stops the instance. Never run a notebook against AWS from here.
 
