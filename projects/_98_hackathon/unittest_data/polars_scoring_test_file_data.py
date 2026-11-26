@@ -6,11 +6,11 @@ from projects._98_hackathon.unittest_data.polars_scoring_test_file_schemas impor
     ScoringSchemas as Schemas,
 )
 
-# (establishment_id, worker_id, is_leaver, valid_for_analysis): every worker in the predict dataset.
+# (establishment_id, worker_id, is_leaver): every worker in the predict dataset.
 CHECK_ANSWER_ROWS = [
-    ("1-001", "w1", True, True),
-    ("1-001", "w2", False, True),
-    ("1-002", "w3", None, False),
+    ("1-001", "w1", True),
+    ("1-001", "w2", False),
+    ("1-002", "w3", None),
 ]
 
 VALID_PREDICTION_ROWS = [
@@ -42,7 +42,6 @@ def build_workplace(
     stayer_probability: float,
     n_leavers: int = 5,
     n_stayers: int = 5,
-    valid_for_analysis: bool = True,
 ) -> tuple[list[tuple], list[tuple]]:
     """Returns answer and prediction rows for one workplace.
 
@@ -57,9 +56,7 @@ def build_workplace(
     for prefix, is_leaver, probability, count in workers:
         for number in range(count):
             worker_id = f"{prefix}{number}"
-            answer_rows.append(
-                (establishment_id, worker_id, is_leaver, valid_for_analysis)
-            )
+            answer_rows.append((establishment_id, worker_id, is_leaver))
             prediction_rows.append((establishment_id, worker_id, probability))
     return answer_rows, prediction_rows
 
@@ -70,8 +67,8 @@ ONE_WORKPLACE_ANSWER_ROWS, ONE_WORKPLACE_PREDICTION_ROWS = build_workplace(
 )
 
 ONE_CLASS_ANSWER_ROWS = [
-    ("1-001", "w1", False, True),
-    ("1-001", "w2", False, True),
+    ("1-001", "w1", False),
+    ("1-001", "w2", False),
 ]
 ONE_CLASS_PREDICTION_ROWS = [("1-001", "w1", 0.1), ("1-001", "w2", 0.2)]
 
@@ -84,18 +81,13 @@ NINE_WORKER_ANSWERS, NINE_WORKER_PREDICTIONS = build_workplace(
 )
 TEN_WORKER_ANSWERS, TEN_WORKER_PREDICTIONS = build_workplace("1-002", 0.0, 0.0)
 
-# One of ten workers is not valid for analysis, so 9 are scored.
-ONE_INVALID_ANSWERS, ONE_INVALID_PREDICTIONS = build_workplace("1-002", 0.0, 0.0)
-ONE_INVALID_ANSWERS[0] = (*ONE_INVALID_ANSWERS[0][:3], False)
-
-NOT_VALID_ANSWERS, NOT_VALID_PREDICTIONS = build_workplace(
-    "1-002", 0.0, 1.0, valid_for_analysis=False
-)
+# One of ten workers has an unknown `is_leaver`, so 9 are scored.
+ONE_UNKNOWN_ANSWERS, ONE_UNKNOWN_PREDICTIONS = build_workplace("1-002", 0.0, 0.0)
+ONE_UNKNOWN_ANSWERS[0] = (*ONE_UNKNOWN_ANSWERS[0][:2], None)
 
 UNKNOWN_LEAVER_ANSWERS, UNKNOWN_LEAVER_PREDICTIONS = build_workplace("1-002", 0.0, 1.0)
 UNKNOWN_LEAVER_ANSWERS = [
-    (establishment, worker, None, valid)
-    for establishment, worker, _, valid in UNKNOWN_LEAVER_ANSWERS
+    (establishment, worker, None) for establishment, worker, _ in UNKNOWN_LEAVER_ANSWERS
 ]
 
 SECOND_WORKPLACE_ANSWERS, SECOND_WORKPLACE_PREDICTIONS = build_workplace(
@@ -149,12 +141,6 @@ class ScoringData:
             expected_scores={"workplace_mae": 0.375},
         ),
         CalculateScoresCase(
-            id="excludes_workers_not_valid_for_analysis",
-            answer_rows=ONE_WORKPLACE_ANSWER_ROWS + NOT_VALID_ANSWERS,
-            prediction_rows=ONE_WORKPLACE_PREDICTION_ROWS + NOT_VALID_PREDICTIONS,
-            expected_scores={"worker_auc": 1.0, "n_workers": 10, "n_workplaces": 1},
-        ),
-        CalculateScoresCase(
             id="excludes_workers_with_null_is_leaver",
             answer_rows=ONE_WORKPLACE_ANSWER_ROWS + UNKNOWN_LEAVER_ANSWERS,
             prediction_rows=ONE_WORKPLACE_PREDICTION_ROWS + UNKNOWN_LEAVER_PREDICTIONS,
@@ -188,8 +174,8 @@ class ScoringData:
         ),
         CalculateScoresCase(
             id="counts_only_scored_workers_towards_workplace_minimum",
-            answer_rows=RATE_MATCHED_ANSWERS + ONE_INVALID_ANSWERS,
-            prediction_rows=RATE_MATCHED_PREDICTIONS + ONE_INVALID_PREDICTIONS,
+            answer_rows=RATE_MATCHED_ANSWERS + ONE_UNKNOWN_ANSWERS,
+            prediction_rows=RATE_MATCHED_PREDICTIONS + ONE_UNKNOWN_PREDICTIONS,
             expected_scores={"workplace_mae": 0.0, "n_workers": 19, "n_workplaces": 1},
         ),
     ]

@@ -6,6 +6,38 @@ import projects._98_hackathon.fargate._01_worker_turnover as job
 
 PATCH_PATH = "projects._98_hackathon.fargate._01_worker_turnover"
 
+EXPECTED_OUTPUT_COLUMNS = [
+    "snapshot_date",
+    "orgid",
+    "establishmentid",
+    "workerid",
+    "is_leaver",
+    "turnover_rate",
+    "local_authority",
+    "region",
+    "service_type",
+    "job_role",
+    "age",
+    "gender",
+    "ethnicity_group",
+    "disabled",
+    "nationality_group",
+    "country_of_birth_group",
+    "distance_home_work",
+    "hours_worked",
+    "zerohours_contract",
+    "sickness_days",
+    "hourly_pay_minus_nlw",
+    "hourly_pay_diff_to_local_authority_median",
+    "training",
+    "has_social_care_qualification_held",
+    "care_certificate_status",
+    "source_of_recruitment_group",
+    "years_in_role",
+    "years_in_sector",
+    "split",
+]
+
 
 class TestMain:
     CLEANED_WORKER_SOURCE = "some/worker/source"
@@ -89,7 +121,13 @@ class TestMain:
         splits = ["train", "predict"]
         # One lazy frame per split, so each split's destination is checked.
         split_lf_mocks = [Mock() for _ in splits]
-        add_split_column_mock.return_value.filter.side_effect = split_lf_mocks
+        valid_lf_mock = add_split_column_mock.return_value.filter.return_value
+        selected_lf_mock = valid_lf_mock.select.return_value
+        selected_lf_mock.filter.side_effect = split_lf_mocks
+        # Each split is sunk with `split` dropped.
+        train_lf_mock, predict_lf_mock = [
+            mock.drop.return_value for mock in split_lf_mocks
+        ]
         # Sinks: train, answers, predict.
         sink_mocks = [Mock() for _ in range(3)]
         sink_to_parquet_mock.side_effect = sink_mocks
@@ -286,11 +324,22 @@ class TestMain:
         add_split_column_mock.assert_called_once_with(
             add_hourly_pay_diff_to_cssr_median_mock.return_value
         )
-        filter_mock = add_split_column_mock.return_value.filter
-        assert filter_mock.call_count == len(splits)
-        for filter_call, split in zip(filter_mock.call_args_list, splits):
+        valid_filter_mock = add_split_column_mock.return_value.filter
+        valid_filter_mock.assert_called_once()
+        assert valid_filter_mock.call_args.args[0].meta.eq(
+            pl.col(job.HackCols.valid_for_analysis)
+        )
+        valid_lf_mock.select.assert_called_once()
+        selected_columns = [
+            expr.meta.output_name() for expr in valid_lf_mock.select.call_args.args
+        ]
+        assert selected_columns == EXPECTED_OUTPUT_COLUMNS
+        split_filter_mock = selected_lf_mock.filter
+        assert split_filter_mock.call_count == len(splits)
+        for filter_call, split in zip(split_filter_mock.call_args_list, splits):
             assert filter_call.args[0].meta.eq(pl.col(job.HackCols.split) == split)
-        train_lf_mock, predict_lf_mock = split_lf_mocks
+        for split_lf_mock in split_lf_mocks:
+            split_lf_mock.drop.assert_called_once_with(job.HackCols.split)
         predict_lf_mock.select.assert_called_once_with(
             *job.wUtils.KEY_COLUMNS, *job.wUtils.ANSWER_COLUMNS
         )

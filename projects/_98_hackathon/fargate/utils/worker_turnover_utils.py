@@ -64,7 +64,7 @@ MAX_YEARS_SINCE_START_WITHOUT_AGE = 70
 KEY_COLUMNS = [
     AWKClean.establishment_id,
     AWKClean.worker_id,
-    AWKClean.ascwds_worker_import_date,
+    "snapshot_date",
 ]
 
 # Written to the answers destination, dropped from the predict one.

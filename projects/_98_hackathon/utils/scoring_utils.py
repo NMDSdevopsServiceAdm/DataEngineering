@@ -119,7 +119,7 @@ def calculate_scores(
 ) -> dict[str, float | int]:
     """Calculates worker-level and workplace-level scores.
 
-    Scores workers with `valid_for_analysis` true and a known `is_leaver`.
+    Scores workers with a known `is_leaver`.
     Worker scores are AUC and Brier score, over all scored workers. The workplace
     score is the mean, over establishments with at least 10 scored workers, of
     the absolute difference between predicted leave rate (summed probabilities /
@@ -129,8 +129,7 @@ def calculate_scores(
 
     Args:
         predictions_df (pl.DataFrame): Checked predictions, one row per worker.
-        answers_df (pl.DataFrame): Answers with `is_leaver` and
-            `valid_for_analysis`.
+        answers_df (pl.DataFrame): Answers with `is_leaver`.
 
     Returns:
         dict[str, float | int]: `worker_auc`, `worker_brier`, `workplace_mae`,
@@ -147,7 +146,7 @@ def calculate_scores(
     is_leaver = pl.col(HackCols.is_leaver)
 
     scored_df = (
-        answers_df.filter(pl.col(HackCols.valid_for_analysis) & is_leaver.is_not_null())
+        answers_df.filter(is_leaver.is_not_null())
         .select(pl.col(WORKER_KEY_COLUMNS).cast(pl.String), is_leaver)
         .join(
             predictions_df.select(
@@ -206,7 +205,7 @@ def score_predictions(
     """Scores predicted leaving probabilities against the held-back answers.
 
     Reads the answers itself, so callers never open them. Reads only the worker
-    key, `is_leaver` and `valid_for_analysis` columns: one row per worker,
+    key and `is_leaver` columns: one row per worker,
     collected for scoring.
 
     Args:
@@ -232,8 +231,7 @@ def score_predictions(
 
     answers_df = utils.scan_parquet(
         answers_source,
-        selected_columns=WORKER_KEY_COLUMNS
-        + [HackCols.is_leaver, HackCols.valid_for_analysis],
+        selected_columns=WORKER_KEY_COLUMNS + [HackCols.is_leaver],
     ).collect()
 
     check_predictions(predictions_df, answers_df)

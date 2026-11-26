@@ -12,6 +12,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
 
 
@@ -166,8 +167,54 @@ def main(
 
     filtered_lf = wUtils.add_split_column(filtered_lf)
 
-    train_lf = filtered_lf.filter(pl.col(HackCols.split) == "train")
-    predict_lf = filtered_lf.filter(pl.col(HackCols.split) == "predict")
+    # Rows are filtered first as `valid_for_analysis` is not kept. `split` is kept
+    # to split on, then dropped.
+    filtered_lf = filtered_lf.filter(pl.col(HackCols.valid_for_analysis)).select(
+        pl.col(AWKClean.ascwds_worker_import_date).alias("snapshot_date"),
+        pl.col(AWPClean.organisation_id).alias("orgid"),
+        pl.col(AWKClean.establishment_id).alias("establishmentid"),
+        pl.col(AWKClean.worker_id).alias("workerid"),
+        pl.col(HackCols.is_leaver),
+        pl.col(HackCols.turnover_rate),
+        pl.col(ONSClean.current_cssr).alias("local_authority"),
+        pl.col(ONSClean.current_region).alias("region"),
+        pl.col(HackCols.main_service_type).alias("service_type"),
+        pl.col(AWKClean.main_job_role_clean_labelled).alias("job_role"),
+        pl.col(HackCols.age_imputed).alias("age"),
+        pl.col(f"{AWKClean.gender}_{DLC.label}s").alias("gender"),
+        pl.col(HackCols.ethnicity_group_labels).alias("ethnicity_group"),
+        pl.col(f"{AWKClean.disabled}_{DLC.label}s").alias("disabled"),
+        pl.col(HackCols.nationality_group),
+        pl.col(HackCols.country_of_birth_group),
+        pl.col(AWKClean.distance_to_work_in_miles).alias("distance_home_work"),
+        pl.col(HackCols.hours).alias("hours_worked"),
+        pl.col(f"{AWKClean.zero_hours}_{DLC.label}s").alias("zerohours_contract"),
+        pl.col(HackCols.days_sick_imputed).alias("sickness_days"),
+        pl.col(HackCols.hourly_pay_minus_nlw_clean_imputed).alias(
+            "hourly_pay_minus_nlw"
+        ),
+        pl.col(HackCols.hourly_pay_diff_to_cssr_median).alias(
+            "hourly_pay_diff_to_local_authority_median"
+        ),
+        pl.col(f"{AWKClean.training_flag}_{DLC.label}s").alias("training"),
+        pl.col(f"{AWKClean.social_care_qual_held}_{DLC.label}s").alias(
+            "has_social_care_qualification_held"
+        ),
+        pl.col(f"{AWKClean.care_certificate_status}_{DLC.label}s").alias(
+            "care_certificate_status"
+        ),
+        pl.col(HackCols.scerec_wo_group_labels).alias("source_of_recruitment_group"),
+        pl.col(HackCols.years_in_role),
+        pl.col(HackCols.years_in_sector),
+        pl.col(HackCols.split),
+    )
+
+    train_lf = filtered_lf.filter(pl.col(HackCols.split) == "train").drop(
+        HackCols.split
+    )
+    predict_lf = filtered_lf.filter(pl.col(HackCols.split) == "predict").drop(
+        HackCols.split
+    )
 
     train_sink = utils.sink_to_parquet(
         train_lf, output_path=train_destination, lazy=True
