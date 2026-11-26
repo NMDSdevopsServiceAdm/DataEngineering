@@ -17,10 +17,11 @@ def main(
     run_number: int,
 ) -> None:
     """
-    Writes the publication data for one assessed run: every job role and job
-    group row, one per year historically and monthly for the current financial
-    year, with period, region, job role, main service, rounded filled posts,
-    location count and percentage change columns.
+    Writes the publication data for one assessed run: every job role, job group
+    and rollup row (rollups overlap, so don't sum across job roles), one per
+    year historically and monthly for the current financial year, with period,
+    region, job role, main service, rounded filled posts, location count and
+    percentage change columns.
 
     Args:
         assessment_source (str): s3 directory holding the assessed data of every run

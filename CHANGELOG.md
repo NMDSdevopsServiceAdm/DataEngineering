@@ -35,7 +35,7 @@ All notable changes to this project will be documented in this file.
 - Added a GitHub Action that merges PRs labelled `ready-to-merge` to main one at a time, waiting for the previous prod deploy.
 
 ### Changed
-- Included all job role and job group rows, with a job role column, in the monthly tracker publication output data.
+- Included all job role and job group rows, with a job role column, in the monthly tracker output.
 - Converted the CQC ratings assessment flattening to Polars.
 - Changed the period label column names to `period_label_short` and `period_label_long`, so output column names change.
 - Changed the assessment template to fixed "Cumulative % change" table headings, no longer written per run.
