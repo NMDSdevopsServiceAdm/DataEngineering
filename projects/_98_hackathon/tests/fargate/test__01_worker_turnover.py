@@ -28,7 +28,6 @@ EXPECTED_OUTPUT_COLUMNS = [
     "zerohours_contract",
     "sickness_days",
     "hourly_pay_minus_nlw",
-    "hourly_pay_diff_to_local_authority_median",
     "training",
     "has_social_care_qualification_held",
     "care_certificate_status",
@@ -52,7 +51,6 @@ class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pl.collect_all")
     @patch(f"{PATCH_PATH}.wUtils.add_split_column")
-    @patch(f"{PATCH_PATH}.wUtils.add_hourly_pay_diff_to_cssr_median")
     @patch(f"{PATCH_PATH}.wUtils.impute_pay_and_sickness")
     @patch(f"{PATCH_PATH}.wUtils.add_years_in_role_and_sector")
     @patch(f"{PATCH_PATH}.wUtils.impute_age")
@@ -105,7 +103,6 @@ class TestMain:
         impute_age_mock: Mock,
         add_years_in_role_and_sector_mock: Mock,
         impute_pay_and_sickness_mock: Mock,
-        add_hourly_pay_diff_to_cssr_median_mock: Mock,
         add_split_column_mock: Mock,
         collect_all_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -318,11 +315,8 @@ class TestMain:
         impute_pay_and_sickness_mock.assert_called_once_with(
             add_hourly_pay_minus_nlw_clean_mock.return_value
         )
-        add_hourly_pay_diff_to_cssr_median_mock.assert_called_once_with(
-            impute_pay_and_sickness_mock.return_value
-        )
         add_split_column_mock.assert_called_once_with(
-            add_hourly_pay_diff_to_cssr_median_mock.return_value
+            impute_pay_and_sickness_mock.return_value
         )
         valid_filter_mock = add_split_column_mock.return_value.filter
         valid_filter_mock.assert_called_once()
