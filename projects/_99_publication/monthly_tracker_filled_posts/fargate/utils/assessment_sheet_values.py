@@ -345,7 +345,7 @@ def _comp_prev_values(
     return cells
 
 
-def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, object]:
+def comp_prev_ms_values(assessment_df: pl.DataFrame) -> dict[str, object]:
     """Cell values for the "Comp prev publication - MS" sheet.
 
     Args:
@@ -435,7 +435,7 @@ def comparison_sheet_values(
 
 SHEET_VALUE_BUILDERS: dict[str, Callable[[pl.DataFrame, TermFromDates], dict]] = {
     cell_map.FILLED_POSTS.name: lambda df, _: filled_posts_values(df),
-    cell_map.COMP_PREV_MS.name: lambda df, _: comp_prev_publication_values(df),
+    cell_map.COMP_PREV_MS.name: lambda df, _: comp_prev_ms_values(df),
     cell_map.COMP_PREV_JR.name: lambda df, _: comp_prev_job_role_values(df),
     cell_map.COMP_SHORT_TERM.name: lambda df, dates: comparison_sheet_values(
         df, cell_map.COMP_SHORT_TERM, dates.short

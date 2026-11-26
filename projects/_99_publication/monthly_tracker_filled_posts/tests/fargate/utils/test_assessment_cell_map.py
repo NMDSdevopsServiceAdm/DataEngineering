@@ -121,6 +121,14 @@ class TestAssessmentSheets:
         ] == [filled_posts_source, ct_source, filled_posts_source, ct_source]
 
 
+def _sources(sheet: job.SheetMap) -> dict[str, tuple[str | None, str | None]]:
+    return {
+        r.key: (r.source_column, r.monthly_source_column)
+        for r in sheet.input_ranges
+        if r.key
+    }
+
+
 COMP_PREV_SHEETS = [
     pytest.param(job.COMP_PREV_MS, "H", id="main_service"),
     pytest.param(job.COMP_PREV_JR, "K", id="job_role"),
@@ -153,11 +161,4 @@ class TestCompPrevSheets:
         ]
 
     def test_both_sheets_read_the_same_source_columns(self):
-        def sources(sheet: job.SheetMap) -> dict[str, tuple[str | None, str | None]]:
-            return {
-                r.key: (r.source_column, r.monthly_source_column)
-                for r in sheet.input_ranges
-                if r.key
-            }
-
-        assert sources(job.COMP_PREV_JR) == sources(job.COMP_PREV_MS)
+        assert _sources(job.COMP_PREV_JR) == _sources(job.COMP_PREV_MS)

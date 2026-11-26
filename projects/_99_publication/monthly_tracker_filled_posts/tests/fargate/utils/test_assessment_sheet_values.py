@@ -247,7 +247,7 @@ class TestFilledPostsValues:
 class TestCompPrevPublicationValues:
     @pytest.fixture(scope="class")
     def cells(self) -> dict[str, object]:
-        return job.comp_prev_publication_values(
+        return job.comp_prev_ms_values(
             job.prepare_assessment_df(_assessment_lf(IMPORT_DATES), VALUE_COLUMNS)
         )
 
@@ -288,14 +288,14 @@ class TestCompPrevPublicationValues:
         import_dates = [*IMPORT_DATES, datetime.date(2026, 6, 1)]
         df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
 
-        cells = job.comp_prev_publication_values(df)
+        cells = job.comp_prev_ms_values(df)
 
         assert [cells[f"D{row}"] for row in (26, 27)] == pytest.approx([2.4, 3.0])
 
     def test_all_rows_read_april_columns_when_there_are_no_later_rows(self):
         df = job.prepare_assessment_df(_assessment_lf(IMPORT_DATES[:3]), VALUE_COLUMNS)
 
-        cells = job.comp_prev_publication_values(df)
+        cells = job.comp_prev_ms_values(df)
 
         assert [cells[f"D{row}"] for row in (23, 24, 25)] == pytest.approx(
             [0.5, 1.0, 1.5]
@@ -307,7 +307,7 @@ class TestCompPrevPublicationValues:
         df = job.prepare_assessment_df(_assessment_lf(april_dates), VALUE_COLUMNS)
 
         with pytest.raises(ValueError, match="exceed the 37 rows"):
-            job.comp_prev_publication_values(df)
+            job.comp_prev_ms_values(df)
 
 
 class TestPrepareJobRoleAssessmentDf:
