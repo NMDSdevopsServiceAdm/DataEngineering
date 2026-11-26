@@ -61,6 +61,12 @@ EARLIEST_IMPORT_DATE = date(2020, 1, 1)
 MIN_START_AGE = 16
 MAX_YEARS_SINCE_START_WITHOUT_AGE = 70
 
+KEY_COLUMNS = [
+    AWKClean.establishment_id,
+    AWKClean.worker_id,
+    AWKClean.ascwds_worker_import_date,
+]
+
 # Written to the answers destination, dropped from the predict one.
 ANSWER_COLUMNS = [HackCols.is_leaver, HackCols.turnover_rate]
 

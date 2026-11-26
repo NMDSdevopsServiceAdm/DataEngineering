@@ -1,7 +1,6 @@
 import polars as pl
 
 import polars_utils.cleaning_utils as cUtils
-import projects._98_hackathon.fargate.utils.validation_utils as vUtils
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
@@ -177,7 +176,7 @@ def main(
     # destination holds only them and the key columns, and the predict
     # destination holds every other column.
     answers_sink = utils.sink_to_parquet(
-        predict_lf.select(*vUtils.KEY_COLUMNS, *wUtils.ANSWER_COLUMNS),
+        predict_lf.select(*wUtils.KEY_COLUMNS, *wUtils.ANSWER_COLUMNS),
         output_path=answers_destination,
         lazy=True,
     )
