@@ -136,11 +136,6 @@ def _header_labels(
     )
 
 
-def _service_type_labels(row: int, first_col: str) -> tuple[tuple[str, str], ...]:
-    """Service type header labels across a row, starting at `first_col`."""
-    return _header_labels(row, first_col, _SERVICE_TYPE_HEADERS)
-
-
 _COMPARISON_LABELS = (
     ("B23", AssessmentMainService.care_homes),
     ("K23", PublishedMainService.non_residential),
@@ -289,14 +284,14 @@ FILLED_POSTS = SheetMap(
         ("B80", "Monthly CQC locations"),
         ("J63", "Cumulative % change"),
         ("J82", "Cumulative % change"),
-        *_service_type_labels(23, "C"),
-        *_service_type_labels(23, "J"),
-        *_service_type_labels(43, "C"),
-        *_service_type_labels(43, "J"),
-        *_service_type_labels(64, "C"),
-        *_service_type_labels(64, "J"),
-        *_service_type_labels(83, "C"),
-        *_service_type_labels(83, "J"),
+        *_header_labels(23, "C", _SERVICE_TYPE_HEADERS),
+        *_header_labels(23, "J", _SERVICE_TYPE_HEADERS),
+        *_header_labels(43, "C", _SERVICE_TYPE_HEADERS),
+        *_header_labels(43, "J", _SERVICE_TYPE_HEADERS),
+        *_header_labels(64, "C", _SERVICE_TYPE_HEADERS),
+        *_header_labels(64, "J", _SERVICE_TYPE_HEADERS),
+        *_header_labels(83, "C", _SERVICE_TYPE_HEADERS),
+        *_header_labels(83, "J", _SERVICE_TYPE_HEADERS),
     ),
 )
 
