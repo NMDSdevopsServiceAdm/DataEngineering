@@ -157,7 +157,16 @@ class TestSheetText:
         with pytest.raises(ValueError, match="no March"):
             job.sheet_text(["Sep 2025", "Oct 2025"], TERM_FROM_DATES, RUN_NUMBER)
 
-    def test_comp_prev_publication_labels_are_annual_rows_then_monthly_rows(self):
+    @pytest.mark.parametrize(
+        "sheet",
+        [
+            pytest.param(cell_map.COMP_PREV_MS, id="main_service"),
+            pytest.param(cell_map.COMP_PREV_JR, id="job_role"),
+        ],
+    )
+    def test_comp_prev_publication_labels_are_annual_rows_then_monthly_rows(
+        self, sheet
+    ):
         # Sep 2025 is between the Marches, so it is not a row; May 2026 is repeated.
         period_labels = [
             "Mar 2025",
@@ -169,9 +178,7 @@ class TestSheetText:
             "May 2026",
         ]
 
-        text = job.sheet_text(period_labels, TERM_FROM_DATES, RUN_NUMBER)[
-            cell_map.COMP_PREV_PUBLICATION.name
-        ]
+        text = job.sheet_text(period_labels, TERM_FROM_DATES, RUN_NUMBER)[sheet.name]
 
         labels = {cell: value for cell, value in text.items() if cell != "B3"}
         expected_rows = ["Annual", "Annual", "Monthly", "Monthly", "Monthly"]

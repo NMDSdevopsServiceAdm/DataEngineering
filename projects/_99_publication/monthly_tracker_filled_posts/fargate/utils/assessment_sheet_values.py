@@ -89,6 +89,50 @@ def prepare_assessment_df(
     )
 
 
+def prepare_job_role_assessment_df(
+    assessment_lf: pl.LazyFrame, value_columns: list[str]
+) -> pl.DataFrame:
+    """Filters, sorts and widens the assessment data by job role and group.
+
+    Keeps the "All locations" rows for England and the job roles and groups of
+    `cell_map.COMP_PREV_JOB_ROLES`, then pivots them across columns named
+    `<value column>|<job role>`, one row per import date. The pivot raises if a
+    job role has more than one row for an import date. Collects once: the result
+    has one row per period, so it is small.
+
+    Args:
+        assessment_lf (pl.LazyFrame): assessment data.
+        value_columns (list[str]): columns to spread across job roles.
+
+    Returns:
+        pl.DataFrame: one row per import date, sorted by import date.
+    """
+    return (
+        assessment_lf.filter(
+            pl.col(IndCQC.primary_service_type).cast(pl.String)
+            == PublishedMainService.all_locations,
+            pl.col(IndCQC.current_region) == PublishedRegion.england,
+            pl.col(IndCQC.main_job_role_clean_labelled)
+            .cast(pl.String)
+            .is_in(cell_map.COMP_PREV_JOB_ROLES),
+        )
+        .select(
+            IndCQC.cqc_location_import_date,
+            Pub.period_label_short,
+            pl.col(IndCQC.main_job_role_clean_labelled).cast(pl.String),
+            *value_columns,
+        )
+        .collect()
+        .pivot(
+            on=IndCQC.main_job_role_clean_labelled,
+            index=[IndCQC.cqc_location_import_date, Pub.period_label_short],
+            values=value_columns,
+            separator=SERVICE_TYPE_SEPARATOR,
+        )
+        .sort(IndCQC.cqc_location_import_date)
+    )
+
+
 def block_cells(top_left: str, rows: list[list[object]]) -> dict[str, object]:
     """Cells for a block of rows, written down and across from `top_left`.
 
@@ -151,10 +195,10 @@ def _table_cells(
     period_df: pl.DataFrame,
     date_keys: tuple[str, ...],
     value_keys: tuple[str, ...],
-    service_types: tuple[str, ...] = tuple(SERVICE_TYPE_ORDER),
+    column_labels: tuple[str, ...] = tuple(SERVICE_TYPE_ORDER),
     monthly_from_row: int | None = None,
 ) -> dict[str, object]:
-    """Cells for one table: period dates, service type values and % changes.
+    """Cells for one table: period dates and value columns, one per column label.
 
     Percent ranges are rounded to one decimal place of a percentage and all other
     value ranges to whole numbers.
@@ -164,10 +208,10 @@ def _table_cells(
         period_df (pl.DataFrame): the table's periods, in workbook order.
         date_keys (tuple[str, ...]): keys of the ranges that hold the period
             months. The first sets how many periods fit.
-        value_keys (tuple[str, ...]): keys of the ranges that hold service type
-            values, read from each range's source column.
-        service_types (tuple[str, ...]): service types the value ranges spread
-            across, in column order.
+        value_keys (tuple[str, ...]): keys of the ranges that hold the values,
+            read from each range's source column.
+        column_labels (tuple[str, ...]): pivot labels (service types or job roles)
+            the value ranges spread across, in column order.
         monthly_from_row (int | None): index of the first April-or-later row of
             `period_df`. From there a range with a `monthly_source_column` reads
             that column instead of its `source_column`. None reads `source_column`
@@ -214,8 +258,8 @@ def _table_cells(
             for row in source_df.select(
                 round_values(column).alias(column)
                 for column in (
-                    f"{source_column}{SERVICE_TYPE_SEPARATOR}{service_type}"
-                    for service_type in service_types
+                    f"{source_column}{SERVICE_TYPE_SEPARATOR}{label}"
+                    for label in column_labels
                 )
             ).rows()
         ]
@@ -259,8 +303,12 @@ def filled_posts_values(assessment_df: pl.DataFrame) -> dict[str, object]:
     return cells
 
 
-def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, object]:
-    """Cell values for the "Comp prev publication" sheet.
+def _comp_prev_values(
+    sheet: cell_map.SheetMap,
+    assessment_df: pl.DataFrame,
+    column_labels: tuple[str, ...],
+) -> dict[str, object]:
+    """Cell values for a "Comp prev publication" sheet.
 
     Each of the previous publication, current publication and difference blocks
     lists its rows in the order of `comp_prev_rows`, which the labels also follow.
@@ -268,7 +316,10 @@ def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, objec
     (April or later) rows read its `monthly_source_column`.
 
     Args:
-        assessment_df (pl.DataFrame): output of `prepare_assessment_df`.
+        sheet (cell_map.SheetMap): the comp prev sheet.
+        assessment_df (pl.DataFrame): prepared assessment data.
+        column_labels (tuple[str, ...]): pivot labels the blocks spread across, in
+            column order.
 
     Returns:
         dict[str, object]: value by A1 cell.
@@ -284,13 +335,42 @@ def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, objec
     cells = {}
     for block in ("previous", "current", "difference"):
         cells |= _table_cells(
-            cell_map.COMP_PREV_PUBLICATION,
+            sheet,
             period_df,
             (f"{block}.dates",),
             (f"{block}.values",),
+            column_labels,
             monthly_from_row=annual_row_count,
         )
     return cells
+
+
+def comp_prev_publication_values(assessment_df: pl.DataFrame) -> dict[str, object]:
+    """Cell values for the "Comp prev publication - MS" sheet.
+
+    Args:
+        assessment_df (pl.DataFrame): output of `prepare_assessment_df`.
+
+    Returns:
+        dict[str, object]: value by A1 cell, one column per service type.
+    """
+    return _comp_prev_values(
+        cell_map.COMP_PREV_MS, assessment_df, tuple(SERVICE_TYPE_ORDER)
+    )
+
+
+def comp_prev_job_role_values(assessment_df: pl.DataFrame) -> dict[str, object]:
+    """Cell values for the "Comp prev publication - JR" sheet.
+
+    Args:
+        assessment_df (pl.DataFrame): output of `prepare_job_role_assessment_df`.
+
+    Returns:
+        dict[str, object]: value by A1 cell, one column per job role.
+    """
+    return _comp_prev_values(
+        cell_map.COMP_PREV_JR, assessment_df, cell_map.COMP_PREV_JOB_ROLES
+    )
 
 
 def comparison_sheet_values(
@@ -355,7 +435,8 @@ def comparison_sheet_values(
 
 SHEET_VALUE_BUILDERS: dict[str, Callable[[pl.DataFrame, TermFromDates], dict]] = {
     cell_map.FILLED_POSTS.name: lambda df, _: filled_posts_values(df),
-    cell_map.COMP_PREV_PUBLICATION.name: lambda df, _: comp_prev_publication_values(df),
+    cell_map.COMP_PREV_MS.name: lambda df, _: comp_prev_publication_values(df),
+    cell_map.COMP_PREV_JR.name: lambda df, _: comp_prev_job_role_values(df),
     cell_map.COMP_SHORT_TERM.name: lambda df, dates: comparison_sheet_values(
         df, cell_map.COMP_SHORT_TERM, dates.short
     ),
@@ -369,3 +450,9 @@ SHEET_VALUE_BUILDERS: dict[str, Callable[[pl.DataFrame, TermFromDates], dict]] =
         df, cell_map.NO_FILTERS, dates.long, QUARTERLY_PERIOD_MONTHS
     ),
 }
+
+# Prepares the assessment data for each sheet; sheets sharing a preparer share its
+# frame.
+SHEET_PREPARERS: dict[str, Callable[[pl.LazyFrame, list[str]], pl.DataFrame]] = {
+    sheet.name: prepare_assessment_df for sheet in cell_map.ASSESSMENT_SHEETS
+} | {cell_map.COMP_PREV_JR.name: prepare_job_role_assessment_df}

@@ -15,9 +15,11 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.templat
     TEMPLATES_DIR,
 )
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_values.ascwds_labelled_vocab import PublishedJobRoleLabels
 from utils.column_values.categorical_column_values import (
     AssessmentHeadings,
     AssessmentMainService,
+    PublishedJobGroupLabels,
     PublishedMainService,
 )
 
@@ -111,12 +113,32 @@ _SERVICE_TYPE_HEADERS = (
 )
 
 
-def _service_type_labels(row: int, first_col: str) -> tuple[tuple[str, str], ...]:
-    """Service type header labels across a row, starting at `first_col`."""
+# Job role and group columns of "Comp prev publication - JR", in column order.
+COMP_PREV_JOB_ROLES = (
+    PublishedJobGroupLabels.all_job_roles,
+    PublishedJobGroupLabels.direct_care,
+    PublishedJobGroupLabels.managers,
+    PublishedJobGroupLabels.regulated_professions,
+    PublishedJobGroupLabels.other,
+    PublishedJobRoleLabels.care_worker,
+    PublishedJobRoleLabels.registered_nurse,
+    PublishedJobRoleLabels.registered_manager,
+)
+
+
+def _header_labels(
+    row: int, first_col: str, headers: tuple[str, ...]
+) -> tuple[tuple[str, str], ...]:
+    """Header labels across a row, starting at `first_col`."""
     return tuple(
         (f"{get_column_letter(column_index_from_string(first_col) + i)}{row}", text)
-        for i, text in enumerate(_SERVICE_TYPE_HEADERS)
+        for i, text in enumerate(headers)
     )
+
+
+def _service_type_labels(row: int, first_col: str) -> tuple[tuple[str, str], ...]:
+    """Service type header labels across a row, starting at `first_col`."""
+    return _header_labels(row, first_col, _SERVICE_TYPE_HEADERS)
 
 
 _COMPARISON_LABELS = (
@@ -282,69 +304,98 @@ FILLED_POSTS = SheetMap(
 # Ranges of the Annual/Monthly labels: previous publication, current publication,
 # difference.
 COMP_PREV_LABEL_RANGES = ("B23:B59", "B64:B100", "B106:B142")
-COMP_PREV_PUBLICATION = SheetMap(
-    name="Comp prev publication",
-    input_ranges=(
-        InputRange(TITLE_CELL, Pub.period_label_long, note=TITLE_NOTE),
-        InputRange(COMP_PREV_LABEL_RANGES[0], note="previous publication labels"),
-        InputRange(
-            "C23:C59",
-            PERIOD_COL,
-            note="previous publication dates",
-            key="previous.dates",
-            number_format="date",
+
+
+def _comp_prev_sheet(name: str, heading: str, headers: tuple[str, ...]) -> SheetMap:
+    """Builds the map for a previous-vs-current publication comparison sheet.
+
+    Each of the three blocks (previous, current, difference) has one figure
+    column per header, starting at column D.
+
+    Args:
+        name (str): sheet name in the template.
+        heading (str): fixed heading the template holds in `HEADING_CELL`.
+        headers (tuple[str, ...]): column headers, in column order.
+
+    Returns:
+        SheetMap: the sheet's cell map.
+    """
+    last_col = get_column_letter(column_index_from_string("D") + len(headers) - 1)
+    return SheetMap(
+        name=name,
+        input_ranges=(
+            InputRange(TITLE_CELL, Pub.period_label_long, note=TITLE_NOTE),
+            InputRange(COMP_PREV_LABEL_RANGES[0], note="previous publication labels"),
+            InputRange(
+                "C23:C59",
+                PERIOD_COL,
+                note="previous publication dates",
+                key="previous.dates",
+                number_format="date",
+            ),
+            InputRange(
+                f"D23:{last_col}59",
+                Pub.unfiltered_filled_posts_april_pct_change_prev_run,
+                note="previous publication figures",
+                key="previous.values",
+                number_format="percent",
+                monthly_source_column=Pub.unfiltered_short_sfc_cum_pct_change_prev_run,
+            ),
+            InputRange(COMP_PREV_LABEL_RANGES[1], note="current publication labels"),
+            InputRange(
+                "C64:C100",
+                PERIOD_COL,
+                note="current publication dates",
+                key="current.dates",
+                number_format="date",
+            ),
+            InputRange(
+                f"D64:{last_col}100",
+                Pub.unfiltered_filled_posts_april_pct_change,
+                note="current publication figures",
+                key="current.values",
+                number_format="percent",
+                monthly_source_column=Pub.unfiltered_short_sfc_cum_pct_change,
+            ),
+            InputRange(COMP_PREV_LABEL_RANGES[2], note="difference labels"),
+            InputRange(
+                "C106:C142",
+                PERIOD_COL,
+                note="difference dates",
+                key="difference.dates",
+                number_format="date",
+            ),
+            InputRange(
+                f"D106:{last_col}142",
+                Pub.unfiltered_filled_posts_april_pct_change_comparison,
+                note="difference as percentage",
+                key="difference.values",
+                number_format="percent",
+                monthly_source_column=Pub.unfiltered_short_sfc_cum_pct_change_comparison,
+            ),
         ),
-        InputRange(
-            "D23:H59",
-            Pub.unfiltered_filled_posts_april_pct_change_prev_run,
-            note="previous publication figures",
-            key="previous.values",
-            number_format="percent",
-            monthly_source_column=Pub.unfiltered_short_sfc_cum_pct_change_prev_run,
+        chart_count=0,
+        labels=(
+            (HEADING_CELL, heading),
+            ("B20", "Previous publication"),
+            ("B61", "Current publication"),
+            ("B103", "Difference as percentage"),
+            *_header_labels(22, "D", headers),
+            *_header_labels(63, "D", headers),
+            *_header_labels(105, "D", headers),
         ),
-        InputRange(COMP_PREV_LABEL_RANGES[1], note="current publication labels"),
-        InputRange(
-            "C64:C100",
-            PERIOD_COL,
-            note="current publication dates",
-            key="current.dates",
-            number_format="date",
-        ),
-        InputRange(
-            "D64:H100",
-            Pub.unfiltered_filled_posts_april_pct_change,
-            note="current publication figures",
-            key="current.values",
-            number_format="percent",
-            monthly_source_column=Pub.unfiltered_short_sfc_cum_pct_change,
-        ),
-        InputRange(COMP_PREV_LABEL_RANGES[2], note="difference labels"),
-        InputRange(
-            "C106:C142",
-            PERIOD_COL,
-            note="difference dates",
-            key="difference.dates",
-            number_format="date",
-        ),
-        InputRange(
-            "D106:H142",
-            Pub.unfiltered_filled_posts_april_pct_change_comparison,
-            note="difference as percentage",
-            key="difference.values",
-            number_format="percent",
-            monthly_source_column=Pub.unfiltered_short_sfc_cum_pct_change_comparison,
-        ),
-    ),
-    chart_count=0,
-    labels=(
-        ("B7", "Comparison of previous publications"),
-        ("B20", "Previous publication"),
-        ("B61", "Current publication"),
-        ("B103", "Difference as percentage"),
-        *_service_type_labels(22, "D"),
-        *_service_type_labels(63, "D"),
-        *_service_type_labels(105, "D"),
-    ),
+    )
+
+
+COMP_PREV_MS = _comp_prev_sheet(
+    "Comp prev publication - MS",
+    "Comparison of previous publications",
+    _SERVICE_TYPE_HEADERS,
+)
+COMP_PREV_JR = _comp_prev_sheet(
+    "Comp prev publication - JR",
+    "Comparison of previous publications by job role",
+    COMP_PREV_JOB_ROLES,
 )
 
 
@@ -570,7 +621,8 @@ NO_FILTERS = _comparison_sheet(
 
 ASSESSMENT_SHEETS: tuple[SheetMap, ...] = (
     FILLED_POSTS,
-    COMP_PREV_PUBLICATION,
+    COMP_PREV_MS,
+    COMP_PREV_JR,
     COMP_SHORT_TERM,
     COMP_MEDIUM_TERM,
     COMP_LONG_TERM,

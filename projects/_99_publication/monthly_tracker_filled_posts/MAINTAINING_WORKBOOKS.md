@@ -41,7 +41,7 @@ Don't write formulas into the template. It has none: the writer writes every val
 
 ## Roll the template slots forward
 
-The template has blank rows provisioned in advance. Constants in `assessment_cell_map.py`: `MONTHLY_SLOTS` (13 rows: the short term sheet, and the chart series span of `Filled posts`), `MEDIUM_TERM_SLOTS` (25) and `LONG_TERM_SLOTS` (34, the long term and no filters sheets, with 3 spare years). The `Filled posts` monthly and annual input ranges (13 rows each) and the `Comp prev publication` blocks (37 rows) are written out in the cell map, so changing a constant does not resize them.
+The template has blank rows provisioned in advance. Constants in `assessment_cell_map.py`: `MONTHLY_SLOTS` (13 rows: the short term sheet, and the chart series span of `Filled posts`), `MEDIUM_TERM_SLOTS` (25) and `LONG_TERM_SLOTS` (34, the long term and no filters sheets, with 3 spare years). The `Filled posts` monthly and annual input ranges (13 rows each) and the blocks of the two `Comp prev publication` sheets (37 rows each) are written out in the cell map, so changing a constant does not resize them.
 
 When the spare slots run out:
 
@@ -55,7 +55,15 @@ When the spare slots run out:
 2. Add a `SheetMap` to `assessment_cell_map.py`. `_comparison_sheet` builds the standard care homes (`B:F`) and non-residential (`K:O`) layout from a first and last row and the dataset columns that feed it. Use `SheetMap` directly for a different layout.
 3. Add it to `ASSESSMENT_SHEETS`, in the same position as the sheet's tab in the template: the writer and the template tests only know the sheets listed there, and `test_template_cells.py` compares the template's tab order with that list.
 4. Add a values builder for the sheet to `SHEET_VALUE_BUILDERS` in `assessment_sheet_values.py` (the writer raises for a sheet without one), and its heading and notes to `assessment_sheet_text.py`: only the title is set for every sheet automatically.
-5. Update the docstring of `test_has_expected_sheet_names_in_order`, which says "six sheets".
+5. Update the sheet count in the docstring of `test_has_expected_sheet_names_in_order` ("seven sheets" now).
+
+A sheet that needs the data pivoted differently from the service type pivot also needs an entry in `SHEET_PREPARERS` (`assessment_sheet_values.py`). The writer prepares the data once per distinct preparer, so each such sheet gets its own frame.
+
+## The Comp prev publication sheets
+
+`Comp prev publication - MS` (main service, columns `D:H`) and `Comp prev publication - JR` (job role, columns `D:K`) share one layout, built by `_comp_prev_sheet` in `assessment_cell_map.py`. Both show the previous publication, current publication and difference blocks, with April % change on the Annual rows and short-term cumulative % change on the Monthly rows.
+
+The JR columns are `COMP_PREV_JOB_ROLES`, filled from the England, "All locations" rows by `prepare_job_role_assessment_df`. To add a job role or group, add it to `COMP_PREV_JOB_ROLES` and add a header column to the JR sheet's three blocks (rows 22, 63 and 105) in the template. A job role label with more than one row for an import date makes the pivot fail.
 
 ## Change the data download's text
 

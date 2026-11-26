@@ -27,6 +27,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import (
     PublishedJobGroupLabels,
+    PublishedMainService,
     PublishedRegion,
 )
 
@@ -54,6 +55,22 @@ def _assessment_lf(import_dates: list[datetime.date]) -> pl.LazyFrame:
         | {column: 1000 for column in value_columns}
         for import_date in import_dates
         for service_type in sheet_values.SERVICE_TYPE_ORDER
+    ]
+    # Job role rows for "All locations"; each job role's values are 1000 plus its index.
+    rows += [
+        {
+            IndCQC.cqc_location_import_date: import_date,
+            Pub.period_label_short: (import_date - datetime.timedelta(days=1)).strftime(
+                "%b %Y"
+            ),
+            IndCQC.main_job_role_clean_labelled: label,
+            IndCQC.current_region: PublishedRegion.england,
+            IndCQC.primary_service_type: PublishedMainService.all_locations,
+        }
+        | {column: 1000 + k for column in value_columns}
+        for import_date in import_dates
+        for k, label in enumerate(cell_map.COMP_PREV_JOB_ROLES)
+        if label != PublishedJobGroupLabels.all_job_roles
     ]
     return pl.LazyFrame(rows)
 
@@ -289,7 +306,16 @@ class TestFillAssessmentWorkbook:
 
 
 class TestFillAssessmentWorkbookFromLf:
-    def test_comp_prev_labels_match_the_period_dates_beside_them(self, tmp_path):
+    @pytest.mark.parametrize(
+        "comp_prev_sheet",
+        [
+            pytest.param(cell_map.COMP_PREV_MS, id="main_service"),
+            pytest.param(cell_map.COMP_PREV_JR, id="job_role"),
+        ],
+    )
+    def test_comp_prev_labels_match_the_period_dates_beside_them(
+        self, tmp_path, comp_prev_sheet
+    ):
         import_dates = [
             datetime.date(2024, 4, 1),
             datetime.date(2024, 5, 1),
@@ -303,14 +329,14 @@ class TestFillAssessmentWorkbookFromLf:
 
         job.fill_assessment_workbook_from_lf(
             _assessment_lf(import_dates),
-            (cell_map.COMP_PREV_PUBLICATION,),
+            (comp_prev_sheet,),
             TERM_FROM_DATES,
             RUN_NUMBER,
             cell_map.TEMPLATE_PATH,
             output,
         )
 
-        sheet = openpyxl.load_workbook(output)[cell_map.COMP_PREV_PUBLICATION.name]
+        sheet = openpyxl.load_workbook(output)[comp_prev_sheet.name]
         for first_row in (23, 64, 106):
             rows = [
                 (sheet[f"B{first_row + i}"].value, sheet[f"C{first_row + i}"].value)
@@ -345,7 +371,7 @@ class TestFillAssessmentWorkbookFromLf:
 
         job.fill_assessment_workbook_from_lf(
             _assessment_lf(IMPORT_DATES),
-            (cell_map.FILLED_POSTS, cell_map.COMP_PREV_PUBLICATION),
+            (cell_map.FILLED_POSTS, cell_map.COMP_PREV_MS),
             TERM_FROM_DATES,
             RUN_NUMBER,
             cell_map.TEMPLATE_PATH,
@@ -355,7 +381,7 @@ class TestFillAssessmentWorkbookFromLf:
         saved = openpyxl.load_workbook(output)
         titles = {
             sheet.name: saved[sheet.name][cell_map.TITLE_CELL].value
-            for sheet in (cell_map.FILLED_POSTS, cell_map.COMP_PREV_PUBLICATION)
+            for sheet in (cell_map.FILLED_POSTS, cell_map.COMP_PREV_MS)
         }
         assert set(titles.values()) == {"End of April 2026 (run 7)"}
 
@@ -369,3 +395,28 @@ class TestFillAssessmentWorkbookFromLf:
                 cell_map.TEMPLATE_PATH,
                 tmp_path / "out.xlsx",
             )
+
+    def test_main_service_and_job_role_sheets_are_each_filled_from_their_own_pivot(
+        self, tmp_path
+    ):
+        output = tmp_path / "out.xlsx"
+
+        job.fill_assessment_workbook_from_lf(
+            _assessment_lf(IMPORT_DATES),
+            (cell_map.COMP_PREV_MS, cell_map.COMP_PREV_JR),
+            TERM_FROM_DATES,
+            RUN_NUMBER,
+            cell_map.TEMPLATE_PATH,
+            output,
+        )
+
+        saved = openpyxl.load_workbook(output)
+        main_service = saved[cell_map.COMP_PREV_MS.name]
+        job_role = saved[cell_map.COMP_PREV_JR.name]
+        assert (
+            [main_service[f"{col}23"].value for col in "DEFGH"],
+            [job_role[f"{col}23"].value for col in "DEFGHIJK"],
+        ) == (
+            pytest.approx([1000] * 5),
+            pytest.approx([1000 + k for k in range(8)]),
+        )

@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a "Comp prev publication - JR" sheet to the Monthly Tracker assessment workbook, comparing previous and current publication percentage changes by job role; the existing sheet is now "Comp prev publication - MS".
 - Added imputed hourly pay minus National Living Wage and days sick (straight-line between known values, then carried forward and back) to the Hackathon Worker Turnover job.
 - Added a student destination to the Hackathon Worker Turnover job holding the test split without `is_leaver` or `turnover_rate`; the test split now holds only its key columns, `is_leaver` and `turnover_rate`. Each dataset has its own validation script.
 - Added years in role and years in sector, at the establishment's latest save date (null when the start is after it), to the Hackathon Worker Turnover job output.
