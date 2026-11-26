@@ -5,7 +5,7 @@ description: Use when creating or editing a Jupyter notebook for the `data-engin
 
 # SageMaker notebooks
 
-Ad-hoc analysis runs as Jupyter notebooks on the `data-engineering-notebook` SageMaker instance (launch steps in `NOTEBOOKS.md`). The instance has Polars preinstalled (`conda_python3` kernel; the templates need Polars 1.24 or later for `nulls_equal` and were tested on 1.44) but notebooks don't import this repo (`projects/`, `utils/`) — they stay self-contained. The repo is cloned onto the instance only to deliver the templates (see below).
+Ad-hoc analysis runs as Jupyter notebooks on the `data-engineering-notebook` SageMaker instance (launch steps in `NOTEBOOKS.md`). The instance has Polars and matplotlib installed by its lifecycle config (`conda_python3` kernel; the templates need Polars 1.24 or later for `nulls_equal` and were tested on 1.44) but notebooks don't import this repo (`projects/`, `utils/`) — they stay self-contained. The repo is cloned onto the instance only to deliver the templates (see below).
 
 Claude can't reach AWS or the instance. Claude writes the `.ipynb`; the user gets it onto the instance, runs it and stops the instance. Never run a notebook against AWS from here.
 
@@ -53,7 +53,7 @@ Follow the templates:
 - **No saved outputs** in committed notebooks (clear all outputs before committing), and no AWS account IDs, keys or ticket-specific bucket names — use `<bucket>`-style placeholders.
 - **Writes** only to the output location named in the parameters cell; say so in the title cell.
 - Docstrings and comments describe what the code does, not what it replaced.
-- **Tables, not plots.** Only Polars is known to be on the instance; don't assume matplotlib or other plotting libraries.
+- **Plots welcome.** Use matplotlib where a chart clarifies a result (trends, distributions). Plot collected aggregates, never raw rows; keep the table alongside; end the cell with `plt.show()`.
 - **Output.** `print(...)` when a cell shows several tables; a bare last expression for a single one.
 - **Re-scanning is fine.** Each section may scan the datasets again; don't materialise a joined intermediate just to avoid it.
 - **Example values** (job roles, column names) are placeholders — keep them neutral and say in the parameters cell to edit them.
