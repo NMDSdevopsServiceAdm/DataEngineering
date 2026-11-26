@@ -1,11 +1,11 @@
 ---
 name: sagemaker
-description: Use when creating or editing a Jupyter notebook for the `data-engineering-notebook` SageMaker instance, or when asked to "compare two outputs", "diff old vs new dataset", "score a rolling-average duration", or "write an ad-hoc notebook". Provides committed notebook templates for common SageMaker tasks, which double as examples of how to structure ad-hoc notebooks in this repo.
+description: Use when creating or editing a Jupyter notebook for the `data-engineering-notebook` SageMaker instance, or when asked to "compare two outputs", "diff old vs new dataset", "score a rolling-average duration", "write an ad-hoc notebook", or "plot/chart/visualise" results in a notebook. Provides committed notebook templates for common SageMaker tasks, which double as examples of how to structure ad-hoc notebooks in this repo.
 ---
 
 # SageMaker notebooks
 
-Ad-hoc analysis runs as Jupyter notebooks on the `data-engineering-notebook` SageMaker instance (launch steps in `NOTEBOOKS.md`). The instance has Polars and matplotlib installed by its lifecycle config (`conda_python3` kernel), but notebooks don't import this repo (`projects/`, `utils/`) — they stay self-contained. The repo is cloned onto the instance only to deliver the templates (see below).
+Ad-hoc analysis runs as Jupyter notebooks on the `data-engineering-notebook` SageMaker instance (launch steps in `NOTEBOOKS.md`). The instance has Polars and matplotlib installed by its lifecycle config (`conda_python3` kernel; Polars comes from conda, so avoid very new Polars APIs), but notebooks don't import this repo (`projects/`, `utils/`) — they stay self-contained. The repo is cloned onto the instance only to deliver the templates (see below).
 
 Claude can't reach AWS or the instance. Claude writes the `.ipynb`; the user gets it onto the instance, runs it and stops the instance. Never run a notebook against AWS from here.
 
@@ -13,26 +13,16 @@ Claude can't reach AWS or the instance. Claude writes the `.ipynb`; the user get
 
 They live in `notebooks/sagemaker/` — outside `.claude/`, which JupyterLab hides, so they are visible in the cloned repo on the instance.
 
-- `notebooks/sagemaker/sagemaker_setup.ipynb` — the bootstrap notebook: clones the repo on the instance (first run) or updates it (later runs), then copies the latest templates into `~/SageMaker/templates/`. Edit: `BRANCH` (and `REPO_URL`, `CLONE_DIR`, `TEMPLATES_DIR` if they change).
-- `notebooks/sagemaker/compare_outputs.ipynb` — diff a source dataset against a compare dataset (e.g. the same output before and after a code change): schema, row counts, row-level and per-column differences on key columns, written to CSV. Edit: `SOURCE_PATH`, `COMPARE_PATH`, `OUTPUT_PATH`, `KEY_COLUMNS`, `SLICE_COLUMN`, `COMPARE_COLUMNS`.
-- `notebooks/sagemaker/compare_before_after_filter.ipynb` — compare a dataset before and after a filter (matched on keys), split by whether each row is in the filtered values: rows nulled, trendline over time, value distribution (summary stats + histogram), effect on the final estimates column. Edit: `BEFORE_PATH`, `AFTER_PATH`, `KEY_COLUMNS`, `DATE_COLUMN`, `FILTER_COLUMN`, `FILTERED_VALUES`, `VALUE_COLUMN`, `ESTIMATE_COLUMN`.
-- `notebooks/sagemaker/interpolation_durations.ipynb` — score a rolling-average duration on imputed data: jumpiness and accuracy against known values per split and status. Edit: `IMPUTED_DATA_PATH`, `ROLLING_AVERAGE_PERIOD`, `SCORE_FROM_DATE`, the column constants.
+- `notebooks/sagemaker/sagemaker_setup.ipynb` — the bootstrap notebook: clones the repo on the instance (first run) or updates it (later runs), then copies the latest templates into `~/SageMaker/templates/`.
+- `notebooks/sagemaker/compare_outputs.ipynb` — diff a source dataset against a compare dataset (e.g. the same output before and after a code change): schema, row counts, row-level and per-column differences on key columns, written to CSV.
+- `notebooks/sagemaker/compare_before_after_filter.ipynb` — compare a dataset before and after a filter (matched on keys), split by whether each row is in the filtered values: rows nulled, trendline over time, value distribution (summary stats + histogram), effect on the final estimates column.
+- `notebooks/sagemaker/interpolation_durations.ipynb` — score a rolling-average duration on imputed data: jumpiness and accuracy against known values per split and status.
 
-Separate from the templates: the rolling average experiment for a categorical's shares (first used for employment status, ticket 2260) is not in this repo. It lives on the `dev-models-notebook` instance (`~/SageMaker/Categorical/rolling_average/`: `experiment.ipynb`, `compare.ipynb`, `experiment_utils.py`, README), so it is not a template.
+Users open a template from `~/SageMaker/templates/`, **Save As** into their own folder and edit only the parameters cell. Never edit a committed template for a one-off run. First-time setup and instance launch are in `NOTEBOOKS.md`.
 
-To use one: open it from `~/SageMaker/templates/`, **Save As** into your own folder, edit **only the parameters cell**. Never work inside `~/SageMaker/templates/` or the clone — both are overwritten on every run — and don't edit a committed template for a one-off run.
+To try a template before it merges, push the branch and set `BRANCH` in `sagemaker_setup.ipynb` to it (it only sees pushed commits).
 
-## Getting the templates onto the instance
-
-Start the instance (`NOTEBOOKS.md`) and open JupyterLab. `sagemaker_setup.ipynb` can't fetch itself, so the **first time only** put it on the instance by hand. In JupyterLab, **File → New → Terminal**, then run the command under "Notebook templates" in `NOTEBOOKS.md` (it uses `--branch main`; use `--branch <ticket-branch>` for a branch that hasn't merged yet).
-
-All templates, including `sagemaker_setup.ipynb`, are now in `~/SageMaker/templates/`. (No git or GitHub access? Download `sagemaker_setup.ipynb` from GitHub and use **Upload files** into `~/SageMaker`.) Then:
-
-1. Run `sagemaker_setup.ipynb` top to bottom at the start of each piece of work. It needs `git` and GitHub access on the instance (already set up). The first run clones the repo; later runs fetch and hard-reset to `BRANCH`, so the clone always matches GitHub and local edits in it are discarded.
-2. Open the template you need from `~/SageMaker/templates/` and Save As into your own folder.
-3. **Stop the instance when finished** — it is billed while running.
-
-`BRANCH` is `main`. To try a template before it merges, push the branch and set `BRANCH` to it (the notebook only sees pushed commits). A template deleted from the repo isn't removed from `~/SageMaker/templates/`.
+**Stop the instance when finished** — it is billed while running. The lifecycle config also stops it after an hour idle, as a backstop.
 
 ## Structure of an ad-hoc notebook
 
@@ -50,21 +40,16 @@ Follow the templates:
 - **Concise.** No dead or commented-out code, no empty or duplicate cells, as few words as possible. Functions only for logic worth naming; plain code otherwise.
 - **Documented.** Markdown before every code cell; explain how to read each output, not just what the code does.
 - **Column names are constants in the parameters cell.** This is an exception to CLAUDE.md's `utils/column_names` rule, because the repo isn't importable on the instance. Define each name once there; never inline a column-name string in analysis cells.
-- **No saved outputs** in committed notebooks (clear all outputs before committing), and no AWS account IDs, keys or ticket-specific bucket names — use `<bucket>`-style placeholders.
+- **No saved outputs** in committed notebooks (clear all outputs, plots included, before committing), and no AWS account IDs, keys or ticket-specific bucket names — use `<bucket>`-style placeholders.
 - **Writes** only to the output location named in the parameters cell; say so in the title cell.
-- Docstrings and comments describe what the code does, not what it replaced.
-- **Plots welcome.** Use matplotlib where a chart clarifies a result (trends, distributions). Plot collected aggregates, never raw rows; keep the table alongside; end the cell with `plt.show()`.
+- **Plots welcome.** Use matplotlib where a chart clarifies a result (trends, distributions); see the `dataviz` skill for chart design. Import `matplotlib.pyplot as plt` in Setup. Plot collected aggregates (`.to_list()`), never raw rows; keep the table alongside. Give every chart a title and labelled axes, use the same colours for the same series across a notebook, and end the cell with `plt.show()`.
 - **Output.** `print(...)` when a cell shows several tables; a bare last expression for a single one.
 - **Re-scanning is fine.** Each section may scan the datasets again; don't materialise a joined intermediate just to avoid it.
 - **Example values** (job roles, column names) are placeholders — keep them neutral and say in the parameters cell to edit them.
 
 ## Writing the `.ipynb`
 
-No notebook editor is available, so write nbformat-4 JSON (a short throwaway script that builds the cell list and `json.dumps` it works well; don't commit the script). Match the existing templates:
-
-- top level: `cells`, `metadata` (`kernelspec` `conda_python3`, `language_info`), `nbformat: 4`, `nbformat_minor: 5`; 1-space indent, trailing newline
-- every cell has `cell_type`, `metadata`, `source` (list of lines ending `\n`) and an `id` (`cell-00`, `cell-01`, …)
-- code cells also have `execution_count: null` and `outputs: []`; the parameters cell has `metadata: {"tags": ["parameters"]}`
+No notebook editor is available, so write nbformat-4 JSON (a short throwaway script that builds the cell list and `json.dumps` it works well; don't commit the script). Match an existing template's layout: 1-space indent, trailing newline, `conda_python3` kernelspec, `cell-00`, `cell-01`, … ids, and the `parameters` tag on the parameters cell.
 
 ## Adding or changing a template
 

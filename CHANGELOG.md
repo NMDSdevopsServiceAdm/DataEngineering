@@ -32,7 +32,7 @@ All notable changes to this project will be documented in this file.
 - Added an `age_clean` column to the Hackathon Worker Turnover job, nulling ages of 80 or more and ages 3 or more years from the worker's median implied birth year; ages are imputed from it.
 
 ### Changed
-- Updated the SageMaker skill to encourage matplotlib plots in notebooks now that it is installed on the instance.
+- Updated the SageMaker skill to encourage matplotlib plots in notebooks now that it is installed on the instance, and trimmed it to what Claude needs.
 - Removed the pre-commit hook that blocked `.show()` in Python files, as it only guarded against PySpark debugging calls.
 - Selected, renamed and ordered the Hackathon Worker Turnover output columns (dropping the rest), and limited every split to rows valid for analysis.
 - Removed the Hackathon Worker Turnover validation jobs and their tests, and the validation step from its state machine; the state machine is now the filter job then the crawler.
