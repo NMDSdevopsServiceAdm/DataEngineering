@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a `catch-up` skill that summarises merged work over a date range for an engineer returning from leave, leading with new or changed shared code and conventions.
 - Added imputed hourly pay minus National Living Wage and days sick (straight-line between known values, then carried forward and back) to the Hackathon Worker Turnover job.
 - Added a student destination to the Hackathon Worker Turnover job holding the test split without `is_leaver` or `turnover_rate`; the test split now holds only its key columns, `is_leaver` and `turnover_rate`. Each dataset has its own validation script.
 - Added years in role and years in sector, at the establishment's latest save date (null when the start is after it), to the Hackathon Worker Turnover job output.
