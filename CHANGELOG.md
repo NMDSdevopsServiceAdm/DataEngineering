@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - Added an `age_clean` column to the Hackathon Worker Turnover job, nulling ages of 80 or more and ages 3 or more years from the worker's median implied birth year; ages are imputed from it.
 
 ### Changed
+- Updated the SageMaker skill to encourage matplotlib plots in notebooks, asks up front whether the work needs a branch (pushed with an empty commit so its dev environment builds), and trimmed it to what Claude needs.
 - Selected, renamed and ordered the Hackathon Worker Turnover output columns (dropping the rest), and limited every split to rows valid for analysis.
 - Removed the Hackathon Worker Turnover validation jobs and their tests, and the validation step from its state machine; the state machine is now the filter job then the crawler.
 - Renamed the Hackathon Worker Turnover datasets: `worker_turnover_test` is now `worker_turnover_answers` and `worker_turnover_student` is now `worker_turnover_predict`. The holdout dataset and its validation are removed, and `split` values are now `train` and `predict`.
