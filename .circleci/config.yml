@@ -562,13 +562,6 @@ jobs:
                 aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-10-15/run_number=2/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/archive_date=2026-10-15/run_number=2/" --delete && \
                 aws s3 sync "s3://sfc-main-datasets/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/archive_date=2026-10-15/run_number=2/" "s3://$BRANCH_DATASET_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_run_log/archive_date=2026-10-15/run_number=2/" --delete
             fi
-      # TEMP: remove once all Publication-Output step function runs are verified.
-      - run:
-          name: TEMP Seed branch promoted archive bucket
-          command: |
-            PROMOTED_BUCKET="${BRANCH_DATASET_BUCKET%-datasets}-archive-promoted"
-            aws s3 sync "s3://sfc-main-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/" "s3://$PROMOTED_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates_metadata/" && \
-              aws s3 sync "s3://sfc-main-archive-promoted/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/" "s3://$PROMOTED_BUCKET/domain=03_ind_cqc/dataset=01_filled_posts_08_archived_job_role_estimates/"
 
   terraform-destroy:
     working_directory: /tmp/project
