@@ -1,14 +1,17 @@
 import io
 import unittest
 from contextlib import redirect_stdout
+from dataclasses import dataclass
 from http.client import HTTPMessage
 from typing import Generator
 from unittest.mock import Mock, call, patch
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from requests.exceptions import RetryError
+from urllib3.util.retry import RequestHistory, Retry
 
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 
@@ -129,187 +132,176 @@ class GetPageObjectsTests(CqcApiTests):
         )
 
 
-class CallApiTests(CqcApiTests):
+CALL_API_ARGS = {
+    "url": "test_url",
+    "id": "1-001",
+    "query_params": {"test": "body"},
+    "headers_dict": {"some": "header"},
+}
+RETRY_URL = "https://api.service.cqc.org.uk/test"
+
+
+@dataclass
+class StatusCodeTestCase:
+    id: str
+    status_code: int
+
+    def as_pytest_param(self):
+        return pytest.param(self.status_code, id=self.id)
+
+
+unexpected_status_cases = [
+    StatusCodeTestCase(id="unauthorized_401", status_code=401),
+    StatusCodeTestCase(id="forbidden_403", status_code=403),
+    StatusCodeTestCase(id="bad_request_400_when_id_is_uppercase", status_code=400),
+]
+
+retryable_status_cases = [
+    StatusCodeTestCase(id=f"status_{code}", status_code=code)
+    for code in [429, 500, 502, 503, 504]
+]
+
+
+def mock_connection_responses(
+    getconn_mock: Mock, response_mock: Mock, statuses: list[int]
+) -> None:
+    """Returns the given statuses from the mocked connection, in order.
+
+    A 200 is built into a response whose JSON is `{"data": "success"}`.
+    """
+    conn_responses = []
+    for status in statuses:
+        conn_response = Mock(name=f"conn_response_{status}")
+        conn_response.status = status
+        conn_response.headers = {}
+        conn_response.msg = HTTPMessage()
+        conn_response.get_redirect_location.return_value = False
+        conn_responses.append(conn_response)
+    getconn_mock.side_effect = conn_responses
+
+    response_mock.return_value = Mock(name="mock_response_200", history=False)
+    response_mock.return_value.status_code = 200
+    response_mock.return_value.json.return_value = {"data": "success"}
+
+
+class TestCallApi:
     @patch("requests.Session.get")
-    def test_call_api_handles_200(self, get_mock: Mock):
-        test_response = TestResponse(200, {})
-        get_mock.return_value = test_response
+    def test_returns_json_on_200(self, get_mock: Mock):
+        get_mock.return_value = TestResponse(200, {"data": "success"})
 
-        response_json = cqc.call_api(
-            self.test_url,
-            self.test_location_id,
-            {"test": "body"},
-            headers_dict={"some": "header"},
-        )
-        self.assertEqual(response_json, {})
+        assert cqc.call_api(**CALL_API_ARGS) == {"data": "success"}
+
+    @pytest.mark.parametrize(
+        "status_code", [c.as_pytest_param() for c in unexpected_status_cases]
+    )
+    @patch("requests.Session.get")
+    def test_raises_api_response_error_on_unexpected_status(
+        self, get_mock: Mock, status_code: int
+    ):
+        get_mock.return_value = TestResponse(status_code, {})
+
+        with pytest.raises(Exception, match=f"^API response: {status_code} -"):
+            cqc.call_api(**CALL_API_ARGS)
 
     @patch("requests.Session.get")
-    def test_call_api_handles_500(self, get_mock: Mock):
-        test_response = TestResponse(500, {})
-        get_mock.return_value = test_response
+    def test_raises_user_agent_hint_on_403_without_headers(self, get_mock: Mock):
+        get_mock.return_value = TestResponse(403, {})
 
-        with self.assertRaisesRegex(Exception, "^API response: 500 -.*"):
-            cqc.call_api(
-                self.test_url,
-                self.test_location_id,
-                {"test": "body"},
-                headers_dict={"some": "header"},
-            )
-
-    @patch("requests.Session.get")
-    def test_call_api_handles_400_when_not_lowercase_id(self, get_mock: Mock):
-        test_response = TestResponse(400, {})
-        get_mock.return_value = test_response
-
-        with self.assertRaisesRegex(Exception, "^API response: 400 -.*"):
-            cqc.call_api(
-                self.test_url,
-                self.test_location_id,
-                {"test": "body"},
-                headers_dict={"some": "header"},
-            )
-
-    @patch("requests.Session.get")
-    def test_call_api_handles_400_when_lowercase_id(self, get_mock: Mock):
-        test_response_success = TestResponse(200, {})
-        test_response_fail = TestResponse(400, {})
-        get_mock.side_effect = [test_response_fail, test_response_success]
-
-        response_json = cqc.call_api(
-            self.test_url,
-            self.test_lc_location_id,
-            {"test": "body"},
-            headers_dict={"some": "header"},
-        )
-
-        expected_call_args = [
-            call("test_urllower", params={"test": "body"}, headers={"some": "header"}),
-            call("test_urlLOWER", params={"test": "body"}, headers={"some": "header"}),
-        ]
-        get_mock.assert_has_calls(expected_call_args)
-        self.assertEqual(response_json, {})
-
-    @patch("requests.Session.get")
-    def test_call_api_handles_404(self, get_mock: Mock):
-        test_response = TestResponse(404, {})
-        get_mock.return_value = test_response
-
-        with self.assertRaisesRegex(
-            cqc.NoProviderOrLocationException, "^API response: 404 -.*"
+        with pytest.raises(
+            Exception,
+            match="API response: 403, ensure you have set a User-Agent header",
         ):
-            cqc.call_api(
-                self.test_url,
-                self.test_location_id,
-                {"test": "body"},
-                headers_dict={"some": "header"},
-            )
+            cqc.call_api(**{**CALL_API_ARGS, "headers_dict": None})
 
     @patch("requests.Session.get")
-    def test_call_api_handles_403_with_headers(self, get_mock: Mock):
-        test_response = TestResponse(403, {})
-        get_mock.return_value = test_response
+    def test_raises_no_provider_or_location_on_404(self, get_mock: Mock):
+        get_mock.return_value = TestResponse(404, {})
 
-        with self.assertRaisesRegex(Exception, "^API response: 403 -.*"):
-            cqc.call_api(
-                self.test_url,
-                self.test_location_id,
-                {"test": "body"},
-                headers_dict={"some": "header"},
-            )
+        with pytest.raises(
+            cqc.NoProviderOrLocationException, match="^API response: 404 -"
+        ):
+            cqc.call_api(**CALL_API_ARGS)
 
     @patch("requests.Session.get")
-    def test_call_api_handles_403_without_headers(self, get_mock: Mock):
-        test_response = TestResponse(403, {})
-        get_mock.return_value = test_response
+    def test_retries_with_uppercase_id_on_400_lowercase_id(self, get_mock: Mock):
+        get_mock.side_effect = [TestResponse(400, {}), TestResponse(200, {})]
 
-        with self.assertRaises(Exception) as context:
-            cqc.call_api(
-                self.test_url,
-                self.test_location_id,
-                {"test": "body"},
-                headers_dict=None,
-            )
+        response_json = cqc.call_api(**{**CALL_API_ARGS, "id": "lower"})
 
-        self.assertTrue(
-            "API response: 403, ensure you have set a User-Agent header"
-            in str(context.exception)
+        get_mock.assert_has_calls(
+            [
+                call(
+                    "test_urllower", params={"test": "body"}, headers={"some": "header"}
+                ),
+                call(
+                    "test_urlLOWER", params={"test": "body"}, headers={"some": "header"}
+                ),
+            ]
         )
+        assert response_json == {}
 
+    @pytest.mark.parametrize(
+        "status_code", [c.as_pytest_param() for c in retryable_status_cases]
+    )
+    @patch(f"{PATCH_PATH}.CQC_ADAPTER", PATCHED_CQC_ADAPTER)
     @patch("requests.sessions.SessionRedirectMixin.resolve_redirects")
     @patch("requests.adapters.HTTPAdapter.build_response")
     @patch("urllib3.connectionpool.HTTPConnectionPool._make_request")
-    def test_retry_on_server_error(self, getconn_mock, response_mock, _):
-        # Given
-        response_500 = Mock(name="conn_response_500")
-        response_500.status = 500
-        response_500.headers = {"Retry-After": "1"}
-        response_500.msg = HTTPMessage()
-
-        response_200 = Mock(name="conn_response_200")
-        response_200.status = 200
-        response_200.headers = {"Retry-After": "1"}
-        response_200.msg = HTTPMessage()
-
-        getconn_mock.side_effect = [response_500, response_500, response_200]
-
-        response_mock.return_value = Mock(name="mock_response_200", history=False)
-        response_mock.return_value.status_code = 200
-        response_mock.return_value.json.return_value = {"data": "success"}
-
-        # When
-        result = cqc.call_api(
-            url="https://api.service.cqc.org.uk/test",
-            id=self.test_location_id,
-            query_params={"param": "value"},
+    def test_retries_on_retryable_status(
+        self, getconn_mock: Mock, response_mock: Mock, _, status_code: int
+    ):
+        mock_connection_responses(
+            getconn_mock, response_mock, [status_code, status_code, 200]
         )
-        # Then
+
+        result = cqc.call_api(
+            url=RETRY_URL, id="1-001", query_params={"param": "value"}
+        )
+
         assert result == {"data": "success"}
-        assert getconn_mock.call_count == 3  # only 3 calls as 3rd should succeed
+        assert getconn_mock.call_count == 3
 
     @patch(f"{PATCH_PATH}.CQC_ADAPTER", PATCHED_CQC_ADAPTER)
     @patch("requests.sessions.SessionRedirectMixin.resolve_redirects")
     @patch("requests.adapters.HTTPAdapter.build_response")
     @patch("urllib3.connectionpool.HTTPConnectionPool._make_request")
-    def test_max_retries_on_server_error(self, getconn_mock, response_mock, _):
-        # Given
-        response_500 = Mock(name="conn_response_500")
-        response_500.status = 500
-        response_500.headers = {"Retry-After": "1"}
-        response_500.msg = HTTPMessage()
+    def test_raises_retries_exhausted_after_max_retries(
+        self, getconn_mock: Mock, response_mock: Mock, _
+    ):
+        mock_connection_responses(getconn_mock, response_mock, [502] * 4 + [200])
 
-        response_200 = Mock(name="conn_response_200")
-        response_200.status = 200
-        response_200.headers = {"Retry-After": "1"}
-        response_200.msg = HTTPMessage()
+        with pytest.raises(
+            Exception,
+            match="^CQC API retries exhausted: .*too many 502 error responses",
+        ):
+            cqc.call_api(url=RETRY_URL, id="1-001", query_params={"param": "value"})
 
-        getconn_mock.side_effect = [
-            response_500,
-            response_500,
-            response_500,
-            response_500,
-            response_200,
+        assert getconn_mock.call_count == 4  # total=3 allows 3 retries after the first
+
+    @patch("requests.Session.get")
+    def test_raises_retries_exhausted_on_retry_error(self, get_mock: Mock):
+        get_mock.side_effect = RetryError("too many 502 error responses")
+
+        with pytest.raises(
+            Exception,
+            match="^CQC API retries exhausted: .*too many 502 error responses",
+        ):
+            cqc.call_api(**CALL_API_ARGS)
+
+    @patch("requests.Session.get")
+    def test_raises_retries_exhausted_on_retry_error_when_retrying_uppercase_id(
+        self, get_mock: Mock
+    ):
+        get_mock.side_effect = [
+            TestResponse(400, {}),
+            RetryError("too many 502 error responses"),
         ]
 
-        response_mock.return_value = Mock(name="mock_response_200", history=False)
-        response_mock.return_value.status_code = 200
-        response_mock.return_value.json.return_value = {"data": "success"}
-
-        response_mock.return_value = {"data": "success"}
-
-        # When
-        with self.assertRaises(Exception) as context:
-            result = cqc.call_api(
-                url="https://api.service.cqc.org.uk/test",
-                id=self.test_location_id,
-                query_params={"param": "value"},
-            )
-            # Then
-            self.assertIsNone(result)
-            self.assertTrue("Max retries exceeded" in str(context.exception))
-
-        assert (
-            getconn_mock.call_count == 4
-        )  # only 4 successful calls as 5th should fail
+        with pytest.raises(
+            Exception,
+            match="^CQC API retries exhausted: .*too many 502 error responses",
+        ):
+            cqc.call_api(**{**CALL_API_ARGS, "id": "lower"})
 
 
 class GetUpdatedObjectsTests(CqcApiTests):
@@ -627,6 +619,92 @@ class BuildDataframeFromApi(CqcApiTests):
 class DaysToRollbackStartTimestampTest(unittest.TestCase):
     def test_expected_value(self):
         self.assertEqual(cqc.days_to_rollback_start_timestamp, 30)
+
+
+def backoff_schedule(retry: Retry) -> list[float]:
+    """Returns the sleep urllib3 applies before each retry, using its own schedule."""
+    history = RequestHistory("GET", "/", None, None, None)
+    return [
+        retry.new(history=(history,) * attempt).get_backoff_time()
+        for attempt in range(1, retry.total + 1)
+    ]
+
+
+@dataclass
+class RetryBudgetTestCase:
+    id: str
+    budget_seconds: int
+
+    def as_pytest_param(self):
+        return pytest.param(self.budget_seconds, id=self.id)
+
+
+retry_budget_cases = [
+    RetryBudgetTestCase(id="five_minutes", budget_seconds=300),
+    RetryBudgetTestCase(id="fifteen_minutes", budget_seconds=900),
+    RetryBudgetTestCase(id="thirty_minutes", budget_seconds=1800),
+]
+
+
+class TestBuildRetryStrategy:
+    @pytest.mark.parametrize(
+        "budget_seconds", [c.as_pytest_param() for c in retry_budget_cases]
+    )
+    def test_total_retries_cover_the_budget(self, budget_seconds: int):
+        retry = cqc.build_retry_strategy(budget_seconds)
+
+        assert sum(backoff_schedule(retry)) >= budget_seconds
+
+    @pytest.mark.parametrize(
+        "budget_seconds", [c.as_pytest_param() for c in retry_budget_cases]
+    )
+    def test_overshoot_is_below_backoff_max(self, budget_seconds: int):
+        retry = cqc.build_retry_strategy(budget_seconds)
+
+        overshoot = sum(backoff_schedule(retry)) - budget_seconds
+        assert overshoot < retry.backoff_max
+
+    def test_backoff_is_capped_at_two_minutes(self):
+        retry = cqc.build_retry_strategy(1800)
+
+        assert max(backoff_schedule(retry)) == 120
+
+    @patch("time.sleep")
+    def test_retry_after_header_does_not_replace_backoff(self, sleep_mock: Mock):
+        retry = cqc.build_retry_strategy(1800)
+
+        retry.sleep(Mock(headers={"Retry-After": "1000"}))
+
+        sleep_mock.assert_not_called()
+
+
+class TestGetRetryBudgetSeconds:
+    def test_raises_when_env_var_unset(self, monkeypatch):
+        monkeypatch.delenv("CQC_API_RETRY_BUDGET_SECONDS", raising=False)
+
+        with pytest.raises(ValueError, match="integer between 1 and 86400, got None"):
+            cqc.get_retry_budget_seconds()
+
+    def test_returns_env_var_value_when_set(self, monkeypatch):
+        monkeypatch.setenv("CQC_API_RETRY_BUDGET_SECONDS", "600")
+
+        assert cqc.get_retry_budget_seconds() == 600
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            pytest.param("0", id="zero"),
+            pytest.param("-5", id="negative"),
+            pytest.param("ten", id="not_a_number"),
+            pytest.param("86401", id="too_large"),
+            pytest.param("\u00b2", id="superscript_digit"),
+        ],
+    )
+    def test_raises_when_env_var_is_not_a_positive_integer(self, monkeypatch, value):
+        monkeypatch.setenv("CQC_API_RETRY_BUDGET_SECONDS", value)
+
+        with pytest.raises(ValueError, match="integer between 1 and 86400"):
+            cqc.get_retry_budget_seconds()
 
 
 if __name__ == "__main__":

@@ -20,6 +20,12 @@ locals {
   # Archive" state. Non-main workspaces poll faster so the timeout is quick to test.
   reconciliation_polling_max_attempts = terraform.workspace == "main" ? 10 : 5
   reconciliation_polling_wait_seconds = terraform.workspace == "main" ? 180 : 10
+
+  # Retries and seconds before them for the download tasks in Ingest-CQC-API-Delta.json.
+  # Non-main workspaces retry once after a short wait so a failing branch run
+  # surfaces in minutes (see cqc_api_retry_budget_seconds in fargate.tf).
+  cqc_api_retry_max_attempts     = terraform.workspace == "main" ? 2 : 1
+  cqc_api_retry_interval_seconds = terraform.workspace == "main" ? 300 : 10
 }
 
 # Created explicitly as required by dynamic step functions
@@ -99,6 +105,10 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     reconciliation_polling_max_attempts = local.reconciliation_polling_max_attempts
     reconciliation_polling_wait_seconds = local.reconciliation_polling_wait_seconds
 
+    # cqc api download retries
+    cqc_api_retry_max_attempts     = local.cqc_api_retry_max_attempts
+    cqc_api_retry_interval_seconds = local.cqc_api_retry_interval_seconds
+
     # dpr
     dpr_version = var.dpr_version
 
@@ -124,6 +134,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     ons_crawler_name         = module.ons_crawler.crawler_name
     sfc_crawler_name         = module.sfc_crawler.crawler_name
     ct_crawler_name          = module.capacity_tracker_crawler.crawler_name
+    hackathon_crawler_name   = module.hackathon_crawler.crawler_name
     publication_crawler_name = module.publication_crawler.crawler_name
 
     # parameter store
@@ -143,6 +154,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     independent_cqc_task_arn       = module._03_independent_cqc.task_arn
     independent_cqc_model_task_arn = module._03_independent_cqc_model.task_arn
     direct_payments_task_arn       = module._04_direct_payments.task_arn
+    hackathon_task_arn             = module._98_hackathon.task_arn
     publication_task_arn           = module._99_publication.task_arn
 
     # ecs task security groups
@@ -152,6 +164,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     independent_cqc_security_group_id       = module._03_independent_cqc.security_group_id
     independent_cqc_model_security_group_id = module._03_independent_cqc_model.security_group_id
     direct_payments_security_group_id       = module._04_direct_payments.security_group_id
+    hackathon_security_group_id             = module._98_hackathon.security_group_id
     publication_security_group_id           = module._99_publication.security_group_id
 
     # models
@@ -311,6 +324,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._03_independent_cqc.task_arn,
           module._03_independent_cqc_model.task_arn,
           module._04_direct_payments.task_arn,
+          module._98_hackathon.task_arn,
           module._99_publication.task_arn,
           aws_ecs_cluster.polars_cluster.arn
         ]
@@ -341,6 +355,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._03_independent_cqc_model.task_role_arn,
           module._04_direct_payments.task_exc_role_arn,
           module._04_direct_payments.task_role_arn,
+          module._98_hackathon.task_exc_role_arn,
+          module._98_hackathon.task_role_arn,
           module._99_publication.task_exc_role_arn,
           module._99_publication.task_role_arn
         ],

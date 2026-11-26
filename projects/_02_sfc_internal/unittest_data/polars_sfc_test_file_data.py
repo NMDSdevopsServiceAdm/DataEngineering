@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -558,7 +559,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2024-01-01",
+            date(2024, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -578,7 +579,7 @@ class FlattenCQCRatings:
         (
             "1-002",
             "Registered",
-            "2024-01-01",
+            date(2024, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -620,7 +621,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2023-01-01",
+            date(2023, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -653,7 +654,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2023-01-01",
+            date(2023, 1, 1),
             "Good",
             "safe_rating",
             "well_led_rating",
@@ -666,7 +667,7 @@ class FlattenCQCRatings:
         (
             "1-001",
             "Registered",
-            "2023-01-01",
+            date(2023, 1, 1),
             "Good",
             "other_safe_rating",
             "well_led_rating",
@@ -723,21 +724,21 @@ class FlattenCQCRatings:
     expected_prepare_assessment_ratings_data = {
         CQCL.location_id: ["1-001"],
         CQCL.registration_status: ["Registered"],
-        CQCL.assessment_plan_published_datetime: ["2024-01-01 00:00:00"],
+        CQCRatings.date: [date(2024, 1, 1)],
         CQCL.assessment_plan_id: ["AP1"],
         CQCL.title: ["Care Home Assessment"],
         CQCL.assessment_date: ["2024-01-02"],
         CQCL.assessment_plan_status: ["Assessed"],
         CQCL.dataset: ["SAF"],
         CQCL.name: ["Care Homes"],
-        CQCL.status: ["Current"],
-        CQCL.rating: ["Good"],
+        CQCRatings.current_or_historic: ["Current"],
+        CQCRatings.overall_rating: ["Good"],
         CQCL.source_path: ["assessment.ratings.asg_ratings"],
-        CQCL.safe: ["Good"],
-        CQCL.effective: ["Good"],
-        CQCL.caring: ["Good"],
-        CQCL.responsive: ["Good"],
-        CQCL.well_led: ["Good"],
+        CQCRatings.safe_rating: ["Good"],
+        CQCRatings.effective_rating: ["Good"],
+        CQCRatings.caring_rating: ["Good"],
+        CQCRatings.responsive_rating: ["Good"],
+        CQCRatings.well_led_rating: ["Good"],
     }
 
     # "Safe" appears twice; the first in raw array order must win
@@ -764,21 +765,21 @@ class FlattenCQCRatings:
     expected_prepare_assessment_ratings_tiebreaker_data = {
         CQCL.location_id: ["1-001"],
         CQCL.registration_status: ["Registered"],
-        CQCL.assessment_plan_published_datetime: ["2024-02-01 00:00:00"],
+        CQCRatings.date: [date(2024, 2, 1)],
         CQCL.assessment_plan_id: ["AP2"],
         CQCL.title: ["Care Home Assessment"],
         CQCL.assessment_date: ["2024-01-02"],
         CQCL.assessment_plan_status: ["Assessed"],
         CQCL.dataset: ["SAF"],
         CQCL.name: ["Care Homes"],
-        CQCL.status: ["Current"],
-        CQCL.rating: ["Good"],
+        CQCRatings.current_or_historic: ["Current"],
+        CQCRatings.overall_rating: ["Good"],
         CQCL.source_path: ["assessment.ratings.asg_ratings"],
-        CQCL.safe: ["Good"],
-        CQCL.effective: ["Good"],
-        CQCL.caring: ["Good"],
-        CQCL.responsive: ["Good"],
-        CQCL.well_led: ["Good"],
+        CQCRatings.safe_rating: ["Good"],
+        CQCRatings.effective_rating: ["Good"],
+        CQCRatings.caring_rating: ["Good"],
+        CQCRatings.responsive_rating: ["Good"],
+        CQCRatings.well_led_rating: ["Good"],
     }
 
     # 1-002 has null (not empty) keyQuestionRatings and must be dropped. 1-001 keeps
@@ -836,26 +837,6 @@ class FlattenCQCRatings:
             ],
         ),
     ]
-    expected_prepare_assessment_ratings_overall_data = {
-        CQCL.location_id: ["1-001"],
-        CQCL.registration_status: ["Registered"],
-        CQCL.assessment_plan_published_datetime: ["2024-01-01 00:00:00"],
-        CQCL.assessment_plan_id: [None],
-        CQCL.title: [None],
-        CQCL.assessment_date: [None],
-        CQCL.assessment_plan_status: [None],
-        CQCL.dataset: ["SAF"],
-        CQCL.name: [None],
-        CQCL.status: ["Assessed"],
-        CQCL.rating: ["Good"],
-        CQCL.source_path: ["assessment.ratings.overall"],
-        CQCL.safe: ["Good"],
-        CQCL.effective: ["Good"],
-        CQCL.caring: ["Good"],
-        CQCL.responsive: ["Good"],
-        CQCL.well_led: ["Good"],
-    }
-
     prepare_assessment_ratings_unknown_key_question_rows = [
         (
             "1-001",
@@ -880,6 +861,72 @@ class FlattenCQCRatings:
         expected_prepare_assessment_ratings_data
     )
 
+    # Input column order: rating_sequence, reversed_rating_sequence, registration_status,
+    # date, assessment_plan_id, title, assessment_date, assessment_plan_status, name,
+    # source_path, dataset, latest_rating_flag, current_or_historic, overall/safe/
+    # well_led/caring/responsive/effective ratings, five rating values, total, location_id.
+    # fmt: off
+    create_standard_ratings_dataset_rows = [
+        (1, 1, "Registered", date(2024, 1, 1), "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-001"),
+    ]
+    expected_create_standard_ratings_dataset_rows = [
+        ("1-001", "Registered", date(2024, 1, 1), "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15),
+    ]
+
+    # Rows 1 and 2 differ only in the dropped sequence columns; row 3 has a different safe rating.
+    create_standard_ratings_dataset_duplicate_rows = [
+        (1, 3, "Registered", date(2024, 1, 1), "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-001"),
+        (2, 2, "Registered", date(2024, 1, 1), "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-001"),
+        (3, 1, "Registered", date(2024, 1, 1), "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Requires improvement", "Good", "Good", "Good", "Good", 2, 3, 3, 3, 3, 14, "1-001"),
+    ]
+    expected_create_standard_ratings_dataset_duplicate_rows = [
+        ("1-001", "Registered", date(2024, 1, 1), "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15),
+        ("1-001", "Registered", date(2024, 1, 1), "AP1", "Care Home Assessment", "2024-01-02", "Assessed", "Care Homes", "assessment.ratings.asg_ratings", "SAF", 1, "Current", "Good", "Requires improvement", "Good", "Good", "Good", "Good", 2, 3, 3, 3, 3, 14),
+    ]
+
+    # Both rows have nulls in the assessment columns and differ only in the dropped sequence columns.
+    create_standard_ratings_dataset_null_rows = [
+        (1, 2, "Registered", date(2024, 1, 1), None, None, None, None, None, None, "Pre SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-002"),
+        (2, 1, "Registered", date(2024, 1, 1), None, None, None, None, None, None, "Pre SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15, "1-002"),
+    ]
+    expected_create_standard_ratings_dataset_null_rows = [
+        ("1-002", "Registered", date(2024, 1, 1), None, None, None, None, None, None, "Pre SAF", 1, "Current", "Good", "Good", "Good", "Good", "Good", "Good", 3, 3, 3, 3, 3, 15),
+    ]
+    # fmt: on
+
+    _short_location_id_hash = "b022a7e5cc45cf3dc578"  # sha256("1-123")[:20]
+    _long_location_id_hash = "cf16d3a6b6648d845fda"  # sha256("1-12345678901")[:20]
+
+    location_id_hash_short_rows = [("1-123",)]
+    expected_location_id_hash_short_rows = [("1-123", _short_location_id_hash)]
+
+    location_id_hash_long_rows = [("1-12345678901",)]
+    expected_location_id_hash_long_rows = [("1-12345678901", _long_location_id_hash)]
+
+    location_id_hash_repeated_rows = [("1-123",), ("1-123",)]
+    expected_location_id_hash_repeated_rows = [
+        ("1-123", _short_location_id_hash),
+        ("1-123", _short_location_id_hash),
+    ]
+
+    location_id_hash_null_rows = [(None,), ("1-123",)]
+    expected_location_id_hash_null_rows = [
+        (None, None),
+        ("1-123", _short_location_id_hash),
+    ]
+
+    location_id_hash_categorical_rows = [("1-123",)]
+    expected_location_id_hash_categorical_rows = [("1-123", _short_location_id_hash)]
+
+    location_id_hash_other_column_rows = [
+        ("1-123", "Care Home Assessment"),
+        ("1-12345678901", "Homecare Assessment"),
+    ]
+    expected_location_id_hash_other_column_rows = [
+        ("1-123", "Care Home Assessment", _short_location_id_hash),
+        ("1-12345678901", "Homecare Assessment", _long_location_id_hash),
+    ]
+
     # fmt: off
     main_snapshot_rows = [
         ("1-001", "Registered", "Social Care Org"),
@@ -887,12 +934,271 @@ class FlattenCQCRatings:
     ]
 
     main_delta_rows = [
-        ("1-001", "20240101", _current_ratings("1-001", _all_key_questions)[2], [_historic_entry("2023-01-01", _all_key_questions)]),
-        ("1-001", "20230101", _current_ratings("1-001", _short_key_questions)[2], []),  # older import - excluded
-        ("1-002", "20240101", _current_ratings("1-002", _all_key_questions)[2], []),
+        ("1-001", "20240101", _current_ratings("1-001", _all_key_questions)[2], [_historic_entry("2023-01-01", _all_key_questions)], [_asg_entry("2024-01-01 00:00:00", "AP1", [_asg_kq("Safe")])]),
+        ("1-001", "20230101", _current_ratings("1-001", _short_key_questions)[2], [], []),  # older import - excluded
+        ("1-002", "20240101", _current_ratings("1-002", _all_key_questions)[2], [], []),
     ]
 
     main_ascwds_workplace_rows = [
         ("20240101", "2024", "01", "01", "100", "1-001"),
     ]
     # fmt: on
+
+    def _formatted_ratings_row(
+        location_id,
+        ratings,
+        registration_status="Registered",
+        rating_date=date(2024, 1, 1),
+    ):
+        return (
+            location_id,
+            registration_status,
+            rating_date,
+            *ratings,
+            "Current",
+            "Pre SAF",
+        )
+
+    _valid_ratings = (
+        "Outstanding",
+        "Good",
+        "Requires improvement",
+        "Inadequate",
+        "Good",
+        "Good",
+    )
+
+    recode_unknown_codes_valid_ratings_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings),
+    ]
+
+    recode_unknown_codes_unknown_label_rows = [
+        _formatted_ratings_row("1-001", ("Inspected but not rated",) * 6),
+        _formatted_ratings_row("1-002", ("No published rating",) * 6),
+        _formatted_ratings_row("1-003", ("Insufficient evidence to rate",) * 6),
+        _formatted_ratings_row(
+            "1-004", ("Evidence requirements partially / not yet scored",) * 6
+        ),
+        _formatted_ratings_row("1-005", ("No Approved Rating",) * 6),
+        _formatted_ratings_row("1-006", ("",) * 6),
+    ]
+    expected_recode_unknown_codes_unknown_label_rows = [
+        _formatted_ratings_row("1-001", (None,) * 6),
+        _formatted_ratings_row("1-002", (None,) * 6),
+        _formatted_ratings_row("1-003", (None,) * 6),
+        _formatted_ratings_row("1-004", (None,) * 6),
+        _formatted_ratings_row("1-005", (None,) * 6),
+        _formatted_ratings_row("1-006", (None,) * 6),
+    ]
+
+    recode_unknown_codes_null_ratings_rows = [
+        _formatted_ratings_row("1-001", ("Good", None, None, None, None, None)),
+    ]
+
+    # Unknown labels outside the rating columns must survive.
+    recode_unknown_codes_non_rating_columns_rows = [
+        _formatted_ratings_row(
+            "1-001",
+            ("No published rating",) * 6,
+            registration_status="No published rating",
+        ),
+    ]
+    expected_recode_unknown_codes_non_rating_columns_rows = [
+        _formatted_ratings_row(
+            "1-001",
+            (None,) * 6,
+            registration_status="No published rating",
+        ),
+    ]
+
+    # One populated rating column per row: each must keep its row.
+    remove_blank_rows_one_rating_populated_rows = [
+        _formatted_ratings_row("1-001", ("Good", None, None, None, None, None)),
+        _formatted_ratings_row("1-002", (None, "Good", None, None, None, None)),
+        _formatted_ratings_row("1-003", (None, None, "Good", None, None, None)),
+        _formatted_ratings_row("1-004", (None, None, None, "Good", None, None)),
+        _formatted_ratings_row("1-005", (None, None, None, None, "Good", None)),
+        _formatted_ratings_row("1-006", (None, None, None, None, None, "Good")),
+    ]
+
+    # 1-002 has no ratings and must be removed. 1-001 keeps the output non-empty.
+    remove_blank_rows_all_ratings_null_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings),
+        _formatted_ratings_row("1-002", (None,) * 6),
+    ]
+    expected_remove_blank_rows_all_ratings_null_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings),
+    ]
+
+    remove_blank_rows_duplicate_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings),
+        _formatted_ratings_row("1-001", _valid_ratings),
+    ]
+    expected_remove_blank_rows_duplicate_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings),
+    ]
+
+    remove_blank_rows_differing_rows = [
+        _formatted_ratings_row("1-001", _valid_ratings, rating_date=date(2024, 1, 1)),
+        _formatted_ratings_row("1-001", _valid_ratings, rating_date=date(2024, 2, 1)),
+    ]
+
+    def _numerical_ratings_row(location_id, ratings, values, total):
+        return (location_id, *ratings, *values, total)
+
+    add_numerical_ratings_rating_rows = [
+        ("1-001", *(("Outstanding",) * 6)),
+        ("1-002", *(("Good",) * 6)),
+        ("1-003", *(("Requires improvement",) * 6)),
+        ("1-004", *(("Inadequate",) * 6)),
+    ]
+    expected_add_numerical_ratings_rating_rows = [
+        _numerical_ratings_row("1-001", ("Outstanding",) * 6, (4,) * 6, 20),
+        _numerical_ratings_row("1-002", ("Good",) * 6, (3,) * 6, 15),
+        _numerical_ratings_row("1-003", ("Requires improvement",) * 6, (2,) * 6, 10),
+        _numerical_ratings_row("1-004", ("Inadequate",) * 6, (1,) * 6, 5),
+    ]
+
+    add_numerical_ratings_mixed_case_rows = [
+        (
+            "1-001",
+            "OUTSTANDING",
+            "good",
+            "rEQUIRES improvement",
+            "INADEQUATE",
+            "Good",
+            "Good",
+        ),
+    ]
+    expected_add_numerical_ratings_mixed_case_rows = [
+        _numerical_ratings_row(
+            "1-001",
+            (
+                "OUTSTANDING",
+                "good",
+                "rEQUIRES improvement",
+                "INADEQUATE",
+                "Good",
+                "Good",
+            ),
+            (4, 3, 2, 1, 3, 3),
+            12,
+        ),
+    ]
+
+    add_numerical_ratings_null_rows = [
+        ("1-001", *((None,) * 6)),
+    ]
+    expected_add_numerical_ratings_null_rows = [
+        _numerical_ratings_row("1-001", (None,) * 6, (0,) * 6, 0),
+    ]
+
+    add_numerical_ratings_unrecognised_rows = [
+        ("1-001", *(("Excellent",) * 6)),
+    ]
+    expected_add_numerical_ratings_unrecognised_rows = [
+        _numerical_ratings_row("1-001", ("Excellent",) * 6, (0,) * 6, 0),
+    ]
+
+    # Each column maps to its own value column. Overall (4) is left out of the total.
+    add_numerical_ratings_total_rows = [
+        (
+            "1-001",
+            "Outstanding",
+            "Good",
+            "Requires improvement",
+            "Inadequate",
+            "Good",
+            "Outstanding",
+        ),
+    ]
+    expected_add_numerical_ratings_total_rows = [
+        _numerical_ratings_row(
+            "1-001",
+            (
+                "Outstanding",
+                "Good",
+                "Requires improvement",
+                "Inadequate",
+                "Good",
+                "Outstanding",
+            ),
+            (4, 3, 2, 1, 3, 4),
+            13,
+        ),
+    ]
+
+    # (location_id, rating_date, assessment_date, current_or_historic)
+    add_latest_rating_flag_latest_date_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current"),
+        ("1-001", date(2024, 3, 1), None, "Current"),
+        ("1-001", date(2024, 2, 1), None, "Current"),
+    ]
+    expected_add_latest_rating_flag_latest_date_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current", 0),
+        ("1-001", date(2024, 3, 1), None, "Current", 1),
+        ("1-001", date(2024, 2, 1), None, "Current", 0),
+    ]
+
+    add_latest_rating_flag_two_locations_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current"),
+        ("1-001", date(2024, 2, 1), None, "Current"),
+        ("1-002", date(2023, 5, 1), None, "Current"),
+        ("1-002", date(2022, 5, 1), None, "Current"),
+    ]
+    expected_add_latest_rating_flag_two_locations_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current", 0),
+        ("1-001", date(2024, 2, 1), None, "Current", 1),
+        ("1-002", date(2023, 5, 1), None, "Current", 1),
+        ("1-002", date(2022, 5, 1), None, "Current", 0),
+    ]
+
+    add_latest_rating_flag_assessment_date_rows = [
+        ("1-001", date(2024, 1, 1), "2024-01-05", "Current"),
+        ("1-001", date(2024, 1, 1), "2024-02-05", "Current"),
+    ]
+    expected_add_latest_rating_flag_assessment_date_rows = [
+        ("1-001", date(2024, 1, 1), "2024-01-05", "Current", 0),
+        ("1-001", date(2024, 1, 1), "2024-02-05", "Current", 1),
+    ]
+
+    add_latest_rating_flag_null_assessment_date_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current"),
+        ("1-001", date(2024, 1, 1), "2023-01-01", "Current"),
+    ]
+    expected_add_latest_rating_flag_null_assessment_date_rows = [
+        ("1-001", date(2024, 1, 1), None, "Current", 0),
+        ("1-001", date(2024, 1, 1), "2023-01-01", "Current", 1),
+    ]
+
+    add_latest_rating_flag_null_rating_date_rows = [
+        (
+            "1-001",
+            None,
+            "2025-01-01",
+            "Current",
+        ),
+        ("1-001", date(2020, 1, 1), None, "Current"),
+    ]
+    expected_add_latest_rating_flag_null_rating_date_rows = [
+        ("1-001", None, "2025-01-01", "Current", 0),
+        ("1-001", date(2020, 1, 1), None, "Current", 1),
+    ]
+
+    add_latest_rating_flag_tied_rows = [
+        ("1-001", date(2024, 1, 1), "2024-01-02", "Current"),
+        ("1-001", date(2024, 1, 1), "2024-01-02", "Historic"),
+        ("1-001", date(2024, 1, 1), "2024-01-02", None),
+    ]
+
+    # 1-001 sits between the two 1-002 rows.
+    add_latest_rating_flag_non_adjacent_rows = [
+        ("1-002", date(2024, 1, 1), None, "Historic"),
+        ("1-001", date(2024, 1, 1), None, "Historic"),
+        ("1-002", date(2024, 4, 1), None, "Current"),
+    ]
+    expected_add_latest_rating_flag_non_adjacent_rows = [
+        ("1-002", date(2024, 1, 1), None, "Historic", 0),
+        ("1-001", date(2024, 1, 1), None, "Historic", 1),
+        ("1-002", date(2024, 4, 1), None, "Current", 1),
+    ]

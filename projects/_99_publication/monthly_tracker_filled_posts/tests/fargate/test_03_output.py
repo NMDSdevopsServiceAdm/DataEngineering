@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -7,12 +8,16 @@ import pytest
 from polars.testing import assert_frame_equal
 
 import projects._99_publication.monthly_tracker_filled_posts.fargate._03_output as job
+from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.workbook_helpers import (
+    LogoUnavailableError,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     PublishedJobGroupLabels,
     PublishedMainService,
+    PublishedRegion,
 )
 
 PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._03_output"
@@ -20,6 +25,9 @@ PATCH_PATH = "projects._99_publication.monthly_tracker_filled_posts.fargate._03_
 TEST_SOURCE = "some/assessment/directory/"
 TEST_RUN_SOURCE = "some/assessment/directory/archive_date=2026-10-01/run_number=2/"
 TEST_DESTINATION = "some/other/directory"
+TEST_WORKBOOK_DESTINATION = "some/workbook/directory/"
+TEST_LOGO_SOURCE = "s3://bucket/publication/logo/logo.png"
+TEST_LOGO_BYTES = b"png bytes"
 TEST_TODAY = date(2026, 10, 6)
 
 input_schema = pl.Schema(
@@ -30,14 +38,14 @@ input_schema = pl.Schema(
         (IndCQC.main_job_role_clean_labelled, pl.String()),
         (IndCQC.current_region, pl.String()),
         (IndCQC.primary_service_type, pl.String()),
-        (Pub.filled_posts, pl.Float32()),
-        (Pub.locationid_count, pl.UInt32()),
-        (Pub.filled_posts_april_perc_change, pl.Float32()),
-        (Pub.filled_posts_cum_perc_change_short, pl.Float32()),
-        (Pub.locationid_count_april_perc_change, pl.Float32()),
+        (Pub.unfiltered_filled_posts, pl.Float32()),
+        (Pub.unfiltered_locationid_count, pl.UInt32()),
+        (Pub.unfiltered_filled_posts_april_pct_change, pl.Float64()),
+        (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float64()),
+        (Pub.unfiltered_locationid_count_april_pct_change, pl.Float64()),
         (
-            Pub.locationid_count_cum_perc_change_short,
-            pl.Float32(),
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
+            pl.Float64(),
         ),
     ]
 )
@@ -51,12 +59,12 @@ expected_schema = pl.Schema(
         (Pub.main_service, pl.String()),
         (Pub.estimated_filled_posts_rounded, pl.Float32()),
         (Pub.cqc_locations, pl.UInt32()),
-        (Pub.filled_posts_april_perc_change, pl.Float32()),
-        (Pub.filled_posts_cum_perc_change_short, pl.Float32()),
-        (Pub.locationid_count_april_perc_change, pl.Float32()),
+        (Pub.unfiltered_filled_posts_april_pct_change, pl.Float64()),
+        (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float64()),
+        (Pub.unfiltered_locationid_count_april_pct_change, pl.Float64()),
         (
-            Pub.locationid_count_cum_perc_change_short,
-            pl.Float32(),
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
+            pl.Float64(),
         ),
     ]
 )
@@ -66,6 +74,7 @@ def _input_row(
     import_date: date,
     job_role: str = PublishedJobGroupLabels.all_job_roles,
     region: str = "London",
+    service: str = PrimaryServiceType.care_home_with_nursing,
     values: tuple = (100.0, 10, None, None, None, None),
     period_label_short: str = "Mar 2026",
     period_label_long: str = "March 2026",
@@ -76,35 +85,86 @@ def _input_row(
         period_label_long,
         job_role,
         region,
-        PrimaryServiceType.care_home_with_nursing,
+        service,
         *values,
     )
+
+
+def _written_lf(
+    job_roles: tuple[str, ...] = (PublishedJobGroupLabels.all_job_roles,),
+) -> pl.LazyFrame:
+    """The publication data as read back after it was written (one row per job role)."""
+    rows = [
+        (
+            date(2026, 4, 1),
+            "Mar 2026",
+            "March 2026",
+            "London",
+            job_role,
+            PublishedMainService.care_home_with_nursing,
+            100.0,
+            10,
+            None,
+            None,
+            None,
+            None,
+        )
+        for job_role in job_roles
+    ]
+    return pl.LazyFrame(rows, expected_schema, orient="row")
 
 
 @pytest.fixture
 def mocks():
     """Replaces the job's inputs and outputs with mocks and fixes today's date."""
+    calls: list[str] = []
     with (
         patch(f"{PATCH_PATH}.utils.scan_parquet") as scan_parquet,
         patch(f"{PATCH_PATH}.utils.sink_to_parquet") as sink_to_parquet,
         patch(f"{PATCH_PATH}.merge_utils.resolve_run_sources") as resolve_run_sources,
+        patch(f"{PATCH_PATH}.workbook_helpers.get_logo_bytes") as get_logo_bytes,
+        patch(
+            f"{PATCH_PATH}.output_workbook_utils.build_download_workbook"
+        ) as build_download_workbook,
+        patch(f"{PATCH_PATH}.workbook_helpers.upload_to_s3") as upload_to_s3,
         patch(f"{PATCH_PATH}.date") as date_mock,
     ):
         resolve_run_sources.return_value = [TEST_RUN_SOURCE]
         date_mock.today.return_value = TEST_TODAY
+        get_logo_bytes.return_value = TEST_LOGO_BYTES
+        sink_to_parquet.side_effect = lambda **kwargs: calls.append("sink")
+        build_download_workbook.side_effect = lambda *args, **kwargs: calls.append(
+            "build"
+        )
         yield SimpleNamespace(
             scan_parquet=scan_parquet,
             sink_to_parquet=sink_to_parquet,
             resolve_run_sources=resolve_run_sources,
+            get_logo_bytes=get_logo_bytes,
+            build_download_workbook=build_download_workbook,
+            upload_to_s3=upload_to_s3,
+            calls=calls,
         )
 
 
-def _run_main(mocks, input_rows: list[tuple], run_number: int = 2) -> pl.LazyFrame:
+def _run_main(
+    mocks,
+    input_rows: list[tuple],
+    run_number: int = 2,
+    written_lf: pl.LazyFrame | None = None,
+) -> pl.LazyFrame:
     """Runs main on the input rows and returns the frame it sinks."""
-    mocks.scan_parquet.return_value = pl.LazyFrame(
-        input_rows, input_schema, orient="row"
+    mocks.scan_parquet.side_effect = [
+        pl.LazyFrame(input_rows, input_schema, orient="row"),
+        _written_lf() if written_lf is None else written_lf,
+    ]
+    job.main(
+        TEST_SOURCE,
+        TEST_DESTINATION,
+        run_number=run_number,
+        workbook_destination=TEST_WORKBOOK_DESTINATION,
+        logo_source=TEST_LOGO_SOURCE,
     )
-    job.main(TEST_SOURCE, TEST_DESTINATION, run_number=run_number)
     return mocks.sink_to_parquet.call_args.kwargs["lazy_df"]
 
 
@@ -113,7 +173,7 @@ class TestMain:
         _run_main(mocks, [_input_row(date(2026, 4, 1))], run_number=3)
 
         mocks.resolve_run_sources.assert_called_once_with([TEST_SOURCE], 3)
-        mocks.scan_parquet.assert_called_once_with(TEST_RUN_SOURCE)
+        assert mocks.scan_parquet.call_args_list[0].args == (TEST_RUN_SOURCE,)
 
     def test_main_sinks_one_output_to_the_output_destination(self, mocks):
         _run_main(mocks, [_input_row(date(2026, 4, 1))])
@@ -204,15 +264,92 @@ class TestMain:
         input_rows = [
             _input_row(date(2026, 5, 1), region="London"),
             _input_row(date(2026, 4, 1), region="South West"),
+            _input_row(
+                date(2026, 4, 1),
+                region="London",
+                service=PrimaryServiceType.non_residential,
+            ),
             _input_row(date(2026, 4, 1), region="London"),
         ]
 
         returned_lf = _run_main(mocks, input_rows)
 
-        assert returned_lf.select(Pub.period, Pub.region).collect().rows() == [
-            (date(2026, 4, 1), "London"),
-            (date(2026, 4, 1), "South West"),
-            (date(2026, 5, 1), "London"),
+        assert returned_lf.select(
+            Pub.period, Pub.region, Pub.main_service
+        ).collect().rows() == [
+            (date(2026, 4, 1), "London", PublishedMainService.care_home_with_nursing),
+            (date(2026, 4, 1), "London", PublishedMainService.non_residential),
+            (
+                date(2026, 4, 1),
+                "South West",
+                PublishedMainService.care_home_with_nursing,
+            ),
+            (date(2026, 5, 1), "London", PublishedMainService.care_home_with_nursing),
+        ]
+
+    def test_main_orders_regions_england_eastern_east_midlands_then_alphabetical(
+        self, mocks
+    ):
+        input_rows = [
+            _input_row(date(2026, 4, 1), region=PublishedRegion.south_west),
+            _input_row(date(2026, 4, 1), region=PublishedRegion.london),
+            _input_row(date(2026, 4, 1), region=PublishedRegion.east_midlands),
+            _input_row(date(2026, 4, 1), region=PublishedRegion.england),
+            _input_row(date(2026, 4, 1), region=PublishedRegion.eastern),
+        ]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.select(Pub.region).collect()[Pub.region].to_list() == [
+            PublishedRegion.england,
+            PublishedRegion.eastern,
+            PublishedRegion.east_midlands,
+            PublishedRegion.london,
+            PublishedRegion.south_west,
+        ]
+
+    def test_main_sorts_region_before_main_service(self, mocks):
+        input_rows = [
+            _input_row(
+                date(2026, 4, 1),
+                region="East Midlands",
+                service=PublishedMainService.all_locations,
+            ),
+            _input_row(
+                date(2026, 4, 1),
+                region=PublishedRegion.england,
+                service=PrimaryServiceType.non_residential,
+            ),
+        ]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.select(Pub.region).collect()[Pub.region].to_list() == [
+            PublishedRegion.england,
+            "East Midlands",
+        ]
+
+    def test_main_orders_main_services_in_published_order(self, mocks):
+        input_rows = [
+            _input_row(date(2026, 4, 1), service=PrimaryServiceType.non_residential),
+            _input_row(date(2026, 4, 1), service=PublishedMainService.all_care_homes),
+            _input_row(date(2026, 4, 1), service=PrimaryServiceType.care_home_only),
+            _input_row(date(2026, 4, 1), service=PublishedMainService.all_locations),
+            _input_row(
+                date(2026, 4, 1), service=PrimaryServiceType.care_home_with_nursing
+            ),
+        ]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.select(Pub.main_service).collect()[
+            Pub.main_service
+        ].to_list() == [
+            PublishedMainService.all_locations,
+            PublishedMainService.all_care_homes,
+            PublishedMainService.care_home_with_nursing,
+            PublishedMainService.care_home_only,
+            PublishedMainService.non_residential,
         ]
 
     def test_main_passes_percentage_change_columns_through_unchanged(self, mocks):
@@ -225,10 +362,10 @@ class TestMain:
         returned_lf = _run_main(mocks, input_rows)
 
         assert returned_lf.select(
-            Pub.filled_posts_april_perc_change,
-            Pub.filled_posts_cum_perc_change_short,
-            Pub.locationid_count_april_perc_change,
-            Pub.locationid_count_cum_perc_change_short,
+            Pub.unfiltered_filled_posts_april_pct_change,
+            Pub.unfiltered_short_sfc_cum_pct_change,
+            Pub.unfiltered_locationid_count_april_pct_change,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
         ).collect().rows() == [
             (
                 pytest.approx(0.1),
@@ -252,3 +389,66 @@ class TestMain:
 
         assert returned_lf[Pub.period_label_short].to_list() == ["Some label"]
         assert returned_lf[Pub.period_label_long].to_list() == ["Some long label"]
+
+
+class TestMainDataDownloadWorkbook:
+    def test_writes_the_workbook_after_the_publication_parquet(self, mocks):
+        _run_main(mocks, [_input_row(date(2026, 4, 1))])
+
+        assert mocks.calls == ["sink", "build"]
+
+    def test_builds_the_workbook_from_the_written_publication_data(self, mocks):
+        _run_main(mocks, [_input_row(date(2026, 4, 1))])
+
+        assert mocks.scan_parquet.call_args_list[1].args == (TEST_DESTINATION,)
+
+    def test_builds_the_workbook_from_all_job_roles_rows_only(self, mocks):
+        written_lf = _written_lf(
+            ("Care worker", PublishedJobGroupLabels.all_job_roles, "Direct care")
+        )
+
+        _run_main(mocks, [_input_row(date(2026, 4, 1))], written_lf=written_lf)
+
+        built_lf = mocks.build_download_workbook.call_args.args[0]
+        assert built_lf.collect()[Pub.job_role].to_list() == [
+            PublishedJobGroupLabels.all_job_roles
+        ]
+
+    def test_names_the_workbook_by_archive_date_and_run_number(self, mocks):
+        _run_main(mocks, [_input_row(date(2026, 4, 1))])
+
+        built_path = mocks.build_download_workbook.call_args.args[1]
+        assert (
+            Path(built_path).name == "monthly_tracker_data_download_2026-10-01_2.xlsx"
+        )
+
+    def test_uploads_the_workbook_to_the_workbook_destination(self, mocks):
+        _run_main(mocks, [_input_row(date(2026, 4, 1))])
+
+        uploaded_path, destination = mocks.upload_to_s3.call_args.args
+        built_path = mocks.build_download_workbook.call_args.args[1]
+        assert uploaded_path == built_path
+        assert destination == TEST_WORKBOOK_DESTINATION
+
+    def test_passes_the_fetched_logo_bytes_to_the_builder(self, mocks):
+        _run_main(mocks, [_input_row(date(2026, 4, 1))])
+
+        mocks.get_logo_bytes.assert_called_once_with(TEST_LOGO_SOURCE)
+        assert mocks.build_download_workbook.call_args.kwargs["logo"] == TEST_LOGO_BYTES
+
+    def test_raises_when_the_logo_cannot_be_fetched(self, mocks):
+        mocks.get_logo_bytes.side_effect = LogoUnavailableError("no logo")
+
+        with pytest.raises(LogoUnavailableError):
+            _run_main(mocks, [_input_row(date(2026, 4, 1))])
+
+        mocks.build_download_workbook.assert_not_called()
+        mocks.upload_to_s3.assert_not_called()
+
+    def test_does_not_upload_when_the_workbook_build_fails(self, mocks):
+        mocks.build_download_workbook.side_effect = RuntimeError("build failed")
+
+        with pytest.raises(RuntimeError, match="build failed"):
+            _run_main(mocks, [_input_row(date(2026, 4, 1))])
+
+        mocks.upload_to_s3.assert_not_called()

@@ -12,9 +12,6 @@ from utils.column_names.capacity_tracker_columns import (
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
-    AscwdsWorkerCleanedColumns as AWKClean,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -50,23 +47,17 @@ from utils.column_values.categorical_columns_by_dataset import (
 class PrepareJobRoleCountsUtilsSchemas:
     aggregate_ascwds_worker_job_roles_per_establishment_schema = pl.Schema(
         [
-            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.establishment_id, CatColType.EstablishmentCatType),
             (IndCQC.ascwds_worker_import_date, pl.Date()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
         ]
     )
     expected_aggregate_ascwds_worker_job_roles_per_establishment_schema = pl.Schema(
         [
-            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.establishment_id, CatColType.EstablishmentCatType),
             (IndCQC.ascwds_worker_import_date, pl.Date()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.ascwds_job_role_counts, pl.UInt32()),
-        ]
-    )
-
-    filter_to_cqc_locations_schema = pl.Schema(
-        [
-            (AWKClean.location_id, pl.String()),
         ]
     )
 
@@ -368,7 +359,7 @@ class ValidateMergeIndCQCSchemas:
             (IndCQC.current_lsoa21, pl.String()),
             (IndCQC.current_msoa21, pl.String()),
             (IndCQC.pir_people_directly_employed_cleaned, pl.Int64()),
-            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.establishment_id, CatColType.EstablishmentCatType),
             (IndCQC.organisation_id, pl.String()),
             (IndCQC.total_staff_bounded, pl.Int64()),
             (IndCQC.worker_records_bounded, pl.Int64()),
@@ -414,7 +405,7 @@ class ValidateCleanIndCQCSchemas:
             (IndCQC.current_lsoa21, pl.String()),
             (IndCQC.current_msoa21, pl.String()),
             (IndCQC.pir_people_directly_employed_cleaned, pl.Int64()),
-            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.establishment_id, CatColType.EstablishmentCatType),
             (IndCQC.organisation_id, pl.String()),
             (IndCQC.total_staff_bounded, pl.Int64()),
             (IndCQC.worker_records_bounded, pl.Int64()),
@@ -823,7 +814,7 @@ class NullGroupedProvidersSchema:
             (IndCQC.name, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
             (IndCQC.care_home, pl.String()),
-            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.establishment_id, CatColType.EstablishmentCatType),
             (AWPClean.nmds_id, pl.String()),
             (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
             (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
@@ -840,7 +831,7 @@ class NullGroupedProvidersSchema:
             (IndCQC.provider_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
             (IndCQC.care_home, pl.String()),
-            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.establishment_id, CatColType.EstablishmentCatType),
             (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
             (IndCQC.number_of_beds, pl.Int64()),
             (IndCQC.pir_people_directly_employed_dedup, pl.Float64()),
@@ -1299,13 +1290,13 @@ class TestJoinEstimatesToAscwds:
         {
             IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.ascwds_workplace_import_date: pl.String,
-            IndCQC.establishment_id: pl.String,
+            IndCQC.establishment_id: CatColType.EstablishmentCatType,
         }
     )
     ascwds_schema = pl.Schema(
         {
             IndCQC.ascwds_workplace_import_date: pl.String,
-            IndCQC.establishment_id: pl.String,
+            IndCQC.establishment_id: CatColType.EstablishmentCatType,
             IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
             "value": pl.Float64,
         }

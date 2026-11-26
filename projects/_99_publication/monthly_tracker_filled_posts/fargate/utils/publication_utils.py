@@ -16,30 +16,58 @@ from utils.column_values.categorical_column_values import (
 _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 
-DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
-    Pub.period,
-    Pub.region,
-    Pub.job_role,
-    Pub.main_service,
+# Period, then region (England, Eastern and East Midlands first, the rest
+# alphabetical), then job role, then main service in its published order. An
+# unlisted region or main service fails the cast.
+DOWNLOAD_TABLE_SORT_KEYS: list[pl.Expr] = [
+    pl.col(Pub.period),
+    pl.col(Pub.region).cast(
+        pl.Enum(
+            [
+                PublishedRegion.england,
+                PublishedRegion.eastern,
+                PublishedRegion.east_midlands,
+                PublishedRegion.london,
+                PublishedRegion.north_east,
+                PublishedRegion.north_west,
+                PublishedRegion.south_east,
+                PublishedRegion.south_west,
+                PublishedRegion.west_midlands,
+                PublishedRegion.yorkshire_and_the_humber,
+            ]
+        )
+    ),
+    pl.col(Pub.job_role),
+    pl.col(Pub.main_service).cast(
+        pl.Enum(
+            [
+                PublishedMainService.all_locations,
+                PublishedMainService.all_care_homes,
+                PublishedMainService.care_home_with_nursing,
+                PublishedMainService.care_home_only,
+                PublishedMainService.non_residential,
+            ]
+        )
+    ),
 ]
 
 # The summed columns of the publication summary, and the extra ones added for
 # the assessment (see aggregate_to_publication_rows).
 _PUBLICATION_METRIC_COLUMNS: list[str] = [
-    Pub.filled_posts,
-    Pub.locationid_count,
+    Pub.unfiltered_filled_posts,
+    Pub.unfiltered_locationid_count,
 ]
 _ASSESSMENT_METRIC_COLUMNS: list[str] = [
-    Pub.filtered_filled_posts_long,
-    Pub.filtered_locationid_count_long,
-    Pub.filtered_ct_total_employed_long,
-    Pub.filtered_filled_posts_medium,
-    Pub.filtered_locationid_count_medium,
-    Pub.filtered_ct_total_employed_medium,
-    Pub.filtered_filled_posts_short,
-    Pub.filtered_locationid_count_short,
-    Pub.filtered_ct_total_employed_short,
-    Pub.unfiltered_ct_total_employed_long,
+    Pub.filtered_long_sfc_filled_posts,
+    Pub.filtered_long_locationid_count,
+    Pub.filtered_long_ct_total_employed,
+    Pub.filtered_medium_sfc_filled_posts,
+    Pub.filtered_medium_locationid_count,
+    Pub.filtered_medium_ct_total_employed,
+    Pub.filtered_short_sfc_filled_posts,
+    Pub.filtered_short_locationid_count,
+    Pub.filtered_short_ct_total_employed,
+    Pub.unfiltered_long_ct_total_employed,
 ]
 
 # The publication's controlled-rounding bands (see round_to_publication_bands):
@@ -514,43 +542,43 @@ def _assessment_aggregations() -> list[pl.Expr]:
         pl.col(filled_posts_col)
         .filter(long_term_filter)
         .sum()
-        .alias(Pub.filtered_filled_posts_long),
+        .alias(Pub.filtered_long_sfc_filled_posts),
         pl.col(IndCQC.location_id)
         .filter(long_term_filter)
         .n_unique()
-        .alias(Pub.filtered_locationid_count_long),
+        .alias(Pub.filtered_long_locationid_count),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(long_term_filter & first_row_per_location)
         .sum()
-        .alias(Pub.filtered_ct_total_employed_long),
+        .alias(Pub.filtered_long_ct_total_employed),
         pl.col(filled_posts_col)
         .filter(medium_term_filter)
         .sum()
-        .alias(Pub.filtered_filled_posts_medium),
+        .alias(Pub.filtered_medium_sfc_filled_posts),
         pl.col(IndCQC.location_id)
         .filter(medium_term_filter)
         .n_unique()
-        .alias(Pub.filtered_locationid_count_medium),
+        .alias(Pub.filtered_medium_locationid_count),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(medium_term_filter & first_row_per_location)
         .sum()
-        .alias(Pub.filtered_ct_total_employed_medium),
+        .alias(Pub.filtered_medium_ct_total_employed),
         pl.col(filled_posts_col)
         .filter(short_term_filter)
         .sum()
-        .alias(Pub.filtered_filled_posts_short),
+        .alias(Pub.filtered_short_sfc_filled_posts),
         pl.col(IndCQC.location_id)
         .filter(short_term_filter)
         .n_unique()
-        .alias(Pub.filtered_locationid_count_short),
+        .alias(Pub.filtered_short_locationid_count),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(short_term_filter & first_row_per_location)
         .sum()
-        .alias(Pub.filtered_ct_total_employed_short),
+        .alias(Pub.filtered_short_ct_total_employed),
         pl.col(Pub.ct_total_employed_imputed)
         .filter(first_row_per_location)
         .sum()
-        .alias(Pub.unfiltered_ct_total_employed_long),
+        .alias(Pub.unfiltered_long_ct_total_employed),
     ]
 
 
@@ -596,8 +624,10 @@ def aggregate_to_publication_rows(
         ]
 
     aggregations = [
-        pl.col(IndCQC.estimate_filled_posts_by_job_role).sum().alias(Pub.filled_posts),
-        pl.col(IndCQC.location_id).n_unique().alias(Pub.locationid_count),
+        pl.col(IndCQC.estimate_filled_posts_by_job_role)
+        .sum()
+        .alias(Pub.unfiltered_filled_posts),
+        pl.col(IndCQC.location_id).n_unique().alias(Pub.unfiltered_locationid_count),
     ]
     if include_assessment:
         aggregations += _assessment_aggregations()
@@ -611,18 +641,18 @@ def add_rows_for_publication_groups(
     include_assessment: bool = True,
 ) -> pl.LazyFrame:
     """
-    Adds "All job roles", "All CQC care homes", "All CQC locations" and
-    "England" rollup rows for the Tableau/Excel filter dropdowns.
+    Adds job group, "All job roles", "All CQC care homes", "All CQC locations"
+    and "England" rollup rows for the Tableau/Excel filter dropdowns.
 
-    Built recursively - job role, then service type, then region - so
-    England has a row for every job role/service type combination,
-    including the other rollups.
+    Built recursively - job role (with job groups in the same column), then
+    service type, then region - so England has a row for every job
+    role/service type combination, including the other rollups.
 
-    Job role is rebuilt from prepared_lf via aggregate_to_publication_rows
-    with job role dropped from the group keys, since summing per-job-role
-    counts would double-count a location (one row per job role it employs).
-    Region and service type are single-valued per location, so those
-    rollups re-sum the aggregated columns.
+    "All job roles" and job group rows are rebuilt from prepared_lf via
+    aggregate_to_publication_rows, since summing per-job-role counts would
+    double-count a location (one row per job role it employs). Region and
+    service type are single-valued per location, so those rollups re-sum
+    the aggregated columns.
 
     primary_service_type is a closed Enum in production, so it is cast to
     Categorical here before the new labels are written into it. The shared
@@ -635,7 +665,7 @@ def add_rows_for_publication_groups(
 
     Args:
         prepared_lf (pl.LazyFrame): location-level data, as passed into
-            aggregate_to_publication_rows.
+            aggregate_to_publication_rows, with the job group column.
         publication_summary_lf (pl.LazyFrame): output of
             aggregate_to_publication_rows on prepared_lf.
         include_assessment (bool): whether publication_summary_lf has the
@@ -643,8 +673,8 @@ def add_rows_for_publication_groups(
 
     Returns:
         pl.LazyFrame: publication_summary_lf with rollup rows added for
-            "All job roles", "All CQC care homes", "All CQC locations" and
-            "England".
+            each job group, "All job roles", "All CQC care homes", "All CQC
+            locations" and "England".
     """
     publication_summary_lf = publication_summary_lf.with_columns(
         pl.col(IndCQC.primary_service_type).cast(pl.Categorical)
@@ -674,8 +704,28 @@ def add_rows_for_publication_groups(
         )
         .select(column_order)
     )
+    job_group_lf = (
+        aggregate_to_publication_rows(
+            prepared_lf,
+            group_keys=[
+                IndCQC.cqc_location_import_date,
+                IndCQC.main_job_group_labelled,
+                IndCQC.current_region,
+                IndCQC.primary_service_type,
+            ],
+            include_assessment=include_assessment,
+        )
+        .with_columns(
+            pl.col(IndCQC.main_job_group_labelled)
+            .cast(pl.String)
+            .cast(column_schema[IndCQC.main_job_role_clean_labelled])
+            .alias(IndCQC.main_job_role_clean_labelled),
+            pl.col(IndCQC.primary_service_type).cast(pl.Categorical),
+        )
+        .select(column_order)
+    )
     job_role_enlarged_lf = pl.concat(
-        [publication_summary_lf, all_job_roles_lf], how="vertical"
+        [publication_summary_lf, all_job_roles_lf, job_group_lf], how="vertical"
     )
     job_role_enlarged_lf = job_role_enlarged_lf.collect(engine="streaming").lazy()
 
@@ -747,8 +797,7 @@ def calc_perc_change_from_previous_april(
     so 0.25 = +25%.
 
     Null on non-April rows, a group's first April, and (not inf/NaN) when the
-    previous April is 0. Cast to Float32 so integer counts don't widen the
-    result to Float64.
+    previous April is 0. Calculated as Float64 to avoid rounding drift.
 
     Args:
         column_name (str): the value column to measure change in.
@@ -761,7 +810,7 @@ def calc_perc_change_from_previous_april(
     """
     april_value = (
         pl.when(pl.col(IndCQC.cqc_location_import_date).dt.month() == 4)
-        .then(pl.col(column_name).cast(pl.Float32))
+        .then(pl.col(column_name).cast(pl.Float64))
         .otherwise(None)
     )
     previous_april_value = april_value.forward_fill().shift(1)
@@ -784,14 +833,13 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     Cumulative percentage change in column_name within each group, as a net
     change fraction against the group's first in-window value (the
     baseline): (current - baseline) / baseline. The baseline period itself
-    is 0.0.
+    is null, so it is published as [x] rather than a 0.0% change.
 
     Restricted to periods on or after from_date: earlier periods are null,
     since a term's window never borrows a baseline from before its own
     start. Null (not inf/NaN) when the baseline is exactly 0, since column_name
     is a sum over a filter and can legitimately be 0.
-    column_name is cast to Float32 before dividing, so an integer count
-    column (e.g. a location count) doesn't widen the result to Float64.
+    Calculated as Float64 to avoid rounding drift.
 
     Args:
         column_name (str): the value column to measure change in.
@@ -805,12 +853,13 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     """
     in_window_value = (
         pl.when(pl.col(IndCQC.cqc_location_import_date) >= from_date)
-        .then(pl.col(column_name).cast(pl.Float32))
+        .then(pl.col(column_name).cast(pl.Float64))
         .otherwise(None)
     )
     baseline_value = in_window_value.filter(in_window_value.is_not_null()).first()
+    is_baseline_period = in_window_value.is_not_null().cum_sum() == 1
     return (
-        pl.when(baseline_value == 0)
+        pl.when((baseline_value == 0) | is_baseline_period)
         .then(None)
         .otherwise((in_window_value - baseline_value) / baseline_value)
         .over(group_columns, order_by=IndCQC.cqc_location_import_date)
@@ -818,20 +867,18 @@ def calc_perc_change_cumulative_from_given_period_onwards(
     )
 
 
-def add_prev_run_filled_posts_columns(
+def add_prev_run_pct_change_columns(
     assessment_summary_lf: pl.LazyFrame,
     prev_assessment_lf: pl.LazyFrame | None,
 ) -> pl.LazyFrame:
     """
-    Adds the previous run's filled posts and the percentage change
-    from it, matched on import date, job role, region and service type.
+    Adds the previous run's April % change and short-term SFC cumulative % change,
+    matched on import date, job role, region and service type, plus comparisons
+    with the current run (current minus previous).
 
-    The percentage change is a net change fraction, (current - previous) /
-    previous, so 0.25 = +25%. Null (not inf/NaN) when previous is 0.
-
-    Rows with no match are null, as is every row when there is no previous run
-    or it lacks filled_posts. The previous keys are cast to the
-    current dtypes so Enum/Categorical differences don't block the join.
+    Unmatched rows are null, as are columns the previous run lacks (all of them
+    when there is no previous run). Previous keys are cast to the current dtypes
+    so Enum/Categorical differences don't block the join.
 
     Args:
         assessment_summary_lf (pl.LazyFrame): the current run's assessment data.
@@ -839,15 +886,36 @@ def add_prev_run_filled_posts_columns(
             data, or None when there is no earlier run.
 
     Returns:
-        pl.LazyFrame: assessment_summary_lf with prev_run_filled_posts and
-            filled_posts_perc_change_vs_prev_run added.
+        pl.LazyFrame: assessment_summary_lf with the `_prev_run` and `_comparison`
+            columns added.
     """
+    prev_run_columns = {
+        Pub.unfiltered_filled_posts_april_pct_change: (
+            Pub.unfiltered_filled_posts_april_pct_change_prev_run
+        ),
+        Pub.unfiltered_short_sfc_cum_pct_change: (
+            Pub.unfiltered_short_sfc_cum_pct_change_prev_run
+        ),
+    }
+    comparison_columns = {
+        Pub.unfiltered_filled_posts_april_pct_change: (
+            Pub.unfiltered_filled_posts_april_pct_change_comparison
+        ),
+        Pub.unfiltered_short_sfc_cum_pct_change: (
+            Pub.unfiltered_short_sfc_cum_pct_change_comparison
+        ),
+    }
+
     current_schema = assessment_summary_lf.collect_schema()
-    has_prev_filled_posts = (
-        prev_assessment_lf is not None
-        and Pub.filled_posts in prev_assessment_lf.collect_schema().names()
+    prev_names = (
+        prev_assessment_lf.collect_schema().names()
+        if prev_assessment_lf is not None
+        else []
     )
-    if has_prev_filled_posts:
+    available = {k: v for k, v in prev_run_columns.items() if k in prev_names}
+    missing = {k: v for k, v in prev_run_columns.items() if k not in available}
+
+    if available:
         join_keys = [
             IndCQC.cqc_location_import_date,
             IndCQC.main_job_role_clean_labelled,
@@ -857,9 +925,8 @@ def add_prev_run_filled_posts_columns(
         prev_assessment_lf = prev_assessment_lf.select(
             [pl.col(key).cast(current_schema[key]) for key in join_keys]
             + [
-                pl.col(Pub.filled_posts)
-                .cast(current_schema[Pub.filled_posts])
-                .alias(Pub.prev_run_filled_posts)
+                pl.col(column).cast(current_schema[column]).alias(prev_column)
+                for column, prev_column in available.items()
             ]
         )
         assessment_summary_lf = assessment_summary_lf.join(
@@ -869,20 +936,16 @@ def add_prev_run_filled_posts_columns(
             validate="1:1",
             nulls_equal=True,
         )
-    else:
-        assessment_summary_lf = assessment_summary_lf.with_columns(
-            pl.lit(None, dtype=current_schema[Pub.filled_posts]).alias(
-                Pub.prev_run_filled_posts
-            )
-        )
+    assessment_summary_lf = assessment_summary_lf.with_columns(
+        [
+            pl.lit(None, dtype=current_schema[column]).alias(prev_column)
+            for column, prev_column in missing.items()
+        ]
+    )
 
-    current_posts = pl.col(Pub.filled_posts).cast(pl.Float32)
-    prev_posts = pl.col(Pub.prev_run_filled_posts).cast(pl.Float32)
     return assessment_summary_lf.with_columns(
-        pl.when(prev_posts == 0)
-        .then(None)
-        .otherwise((current_posts - prev_posts) / prev_posts)
-        .alias(Pub.filled_posts_perc_change_vs_prev_run)
+        (pl.col(column) - pl.col(prev_run_columns[column])).alias(comparison)
+        for column, comparison in comparison_columns.items()
     )
 
 

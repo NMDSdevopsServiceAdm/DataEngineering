@@ -1699,6 +1699,46 @@ class TestCleanAscwdsWorkplaceUtilsData:
         ),
     ]
 
+    create_clean_main_service_id_column_test_cases = [
+        CleanWorkplaceUtilsTestCase(
+            id="fills_null_with_previous_value",
+            expected_data=[
+                ("1001", date(2024, 1, 1), "1", "1"),
+                ("1001", date(2024, 2, 1), None, "1"),
+                ("1001", date(2024, 3, 1), None, "1"),
+            ],
+        ),
+        CleanWorkplaceUtilsTestCase(
+            id="fills_leading_null_with_next_value",
+            expected_data=[
+                ("1001", date(2024, 1, 1), None, "2"),
+                ("1001", date(2024, 2, 1), "2", "2"),
+            ],
+        ),
+        CleanWorkplaceUtilsTestCase(
+            id="fills_from_same_establishment_only",
+            expected_data=[
+                ("1001", date(2024, 1, 1), "1", "1"),
+                ("1002", date(2024, 1, 1), "2", "2"),
+                ("1002", date(2024, 2, 1), None, "2"),
+            ],
+        ),
+        CleanWorkplaceUtilsTestCase(
+            id="keeps_known_values_unchanged",
+            expected_data=[
+                ("1001", date(2024, 1, 1), "1", "1"),
+                ("1001", date(2024, 2, 1), "2", "2"),
+            ],
+        ),
+        CleanWorkplaceUtilsTestCase(
+            id="keeps_null_when_never_known",
+            expected_data=[
+                ("1001", date(2024, 1, 1), None, None),
+                ("1001", date(2024, 2, 1), None, None),
+            ],
+        ),
+    ]
+
     add_master_update_date_org_test_cases = [
         CleanWorkplaceUtilsTestCase(
             id="org_max_is_maximum_within_org_and_import_date",

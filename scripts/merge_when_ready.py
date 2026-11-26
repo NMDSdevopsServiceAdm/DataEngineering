@@ -538,6 +538,29 @@ def _merge_pr(
             "--match-head-commit", head_sha,
         )  # fmt: skip
         print(f"Merged PR {number}.")
+        # Cleanup is best effort: a merged PR must never be reported as not merged.
+        try:
+            # Deleting a branch closes PRs based on it, so move them to main first.
+            stacked_prs = _gh_json(
+                "pr", "list", "--repo", repo, "--base", head_branch,
+                "--state", "open", "--json", "number",
+            )  # fmt: skip
+            for stacked_pr in stacked_prs:
+                _gh(
+                    "pr", "edit", str(stacked_pr["number"]), "--repo", repo,
+                    "--base", "main",
+                )  # fmt: skip
+            _gh("api", "-X", "DELETE", f"repos/{repo}/git/refs/heads/{head_branch}")
+        except ERRORS as error:
+            print(f"Could not delete branch for PR {number}: {_describe(error)}")
+        # A GITHUB_TOKEN branch delete doesn't fire `on: delete`, so dispatch the destroy.
+        try:
+            _gh(
+                "workflow", "run", "delete-development-environments.yml",
+                "--repo", repo, "-f", f"branch={head_branch}",
+            )  # fmt: skip
+        except subprocess.CalledProcessError as error:
+            print(f"Could not destroy dev env for PR {number}: {_describe(error)}")
     _remove_label(repo, label, number)
 
 

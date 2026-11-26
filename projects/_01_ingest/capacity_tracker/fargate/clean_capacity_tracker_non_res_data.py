@@ -72,7 +72,8 @@ def main(
 
     # Cast to Categorical/Enum here so it's saved in the output parquet file.
     non_res_lf = non_res_lf.with_columns(
-        pl.col(CTNRClean.care_home).cast(CategoricalColumnTypes.CareHomeEnumType)
+        pl.col(CTNRClean.care_home).cast(CategoricalColumnTypes.CareHomeEnumType),
+        pl.col(CTNRClean.cqc_id).cast(CategoricalColumnTypes.LocationCatType),
     )
 
     utils.sink_to_parquet(non_res_lf, cleaned_capacity_tracker_non_res_destination)

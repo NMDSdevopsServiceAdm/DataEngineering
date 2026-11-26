@@ -1,3 +1,4 @@
+import copy
 import zipfile
 from datetime import date
 
@@ -40,11 +41,11 @@ PUBLICATION_SCHEMA = pl.Schema(
         (Pub.main_service, pl.String),
         (Pub.estimated_filled_posts_rounded, pl.Float64),
         (Pub.cqc_locations, pl.Int64),
-        (Pub.filled_posts_april_perc_change, pl.Float64),
-        (Pub.filled_posts_cum_perc_change_short, pl.Float64),
-        (Pub.locationid_count_april_perc_change, pl.Float64),
+        (Pub.unfiltered_filled_posts_april_pct_change, pl.Float64),
+        (Pub.unfiltered_short_sfc_cum_pct_change, pl.Float64),
+        (Pub.unfiltered_locationid_count_april_pct_change, pl.Float64),
         (
-            Pub.locationid_count_cum_perc_change_short,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
             pl.Float64,
         ),
     ]
@@ -76,8 +77,8 @@ class TestPrepareT0ForPublication:
 
 class TestPreparePercChangeForPublication:
     input_schema = PUBLICATION_SCHEMA
-    april_column = Pub.filled_posts_april_perc_change
-    cumulative_column = Pub.filled_posts_cum_perc_change_short
+    april_column = Pub.unfiltered_filled_posts_april_pct_change
+    cumulative_column = Pub.unfiltered_short_sfc_cum_pct_change
     expected_columns = [
         Pub.period,
         Pub.region,
@@ -475,3 +476,19 @@ class TestEnableTableFilters:
 
         assert path.read_bytes() == original
         assert [file.name for file in tmp_path.iterdir()] == ["workbook.xlsx"]
+
+
+class TestBuildDownloadWorkbookRepeatedBuilds:
+    def test_build_does_not_alter_the_shared_theme_config(self, tmp_path):
+        config_before = copy.deepcopy(job._THEME_CONFIG)
+
+        job.build_download_workbook(
+            pl.LazyFrame(
+                Data.download_workbook_publication_data,
+                PUBLICATION_SCHEMA,
+                orient="row",
+            ),
+            tmp_path / "download.xlsx",
+        )
+
+        assert job._THEME_CONFIG == config_before

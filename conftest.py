@@ -12,6 +12,7 @@ from pyspark.sql import SparkSession
 def pytest_sessionstart(session):
     """Hook to run before the session starts - set env vars here."""
     os.environ["SPARK_VERSION"] = "3.5"
+    os.environ["CQC_API_RETRY_BUDGET_SECONDS"] = "60"
 
 
 @pytest.fixture(scope="session")

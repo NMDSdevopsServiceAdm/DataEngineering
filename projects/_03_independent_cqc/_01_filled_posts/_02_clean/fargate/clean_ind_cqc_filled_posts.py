@@ -2,6 +2,7 @@ import polars as pl
 
 import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from projects._03_independent_cqc._01_filled_posts._02_clean.fargate.utils.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
@@ -92,6 +93,11 @@ def main(
         grouped_providers_lf = pl.LazyFrame(schema=GROUPED_PROVIDER_SCHEMA)
         print("No existing grouped providers found, starting fresh")
 
+    # The history is stored with a String location ID, so it stays readable across versions.
+    grouped_providers_lf = grouped_providers_lf.with_columns(
+        pl.col(IndCQC.location_id).cast(CategoricalColumnTypes.LocationCatType)
+    )
+
     locations_lf, grouped_providers_lf = clean_ascwds_filled_post_outliers(
         locations_lf, grouped_providers_lf
     )
@@ -121,7 +127,7 @@ def main(
     )
 
     utils.sink_to_parquet(
-        grouped_providers_lf,
+        grouped_providers_lf.with_columns(pl.col(IndCQC.location_id).cast(pl.String)),
         grouped_providers_destination,
     )
 

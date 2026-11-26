@@ -26,6 +26,21 @@ MERGE_CALL = (
     "--match-head-commit",
     "headsha",
 )
+DELETE_BRANCH_CALL = (
+    "api",
+    "-X",
+    "DELETE",
+    f"repos/{REPO}/git/refs/heads/feature-branch",
+)
+DESTROY_CALL = (
+    "workflow",
+    "run",
+    "delete-development-environments.yml",
+    "--repo",
+    REPO,
+    "-f",
+    "branch=feature-branch",
+)
 
 
 @dataclass
@@ -359,6 +374,7 @@ def stubs():
             _pr_head=DEFAULT,
             _behind_by=DEFAULT,
             _gh=DEFAULT,
+            _gh_json=DEFAULT,
             _pr_checks=DEFAULT,
             _statuses_for_commit=DEFAULT,
             _main_tip=DEFAULT,
@@ -370,6 +386,7 @@ def stubs():
     ):
         mocks["_pr_head"].return_value = ("headsha", "feature-branch")
         mocks["_behind_by"].return_value = 0
+        mocks["_gh_json"].return_value = []  # no PRs stacked on the merged branch
         mocks["_pr_checks"].return_value = [PASS]
         mocks["_statuses_for_commit"].return_value = ["success"]
         mocks["_main_tip"].return_value = "tipsha123"
@@ -398,6 +415,97 @@ class TestMergePr:
         calls = gh_calls(stubs)
         assert not any(c[:2] == ("pr", "merge") for c in calls)
         assert ("pr", "edit", "7", "--repo", REPO, "--remove-label", LABEL) in calls
+
+    def test_deletes_branch_then_destroys_dev_environment_after_merge(self, stubs):
+        merge_pr()
+
+        calls = gh_calls(stubs)
+        assert DELETE_BRANCH_CALL in calls
+        assert DESTROY_CALL in calls
+        assert calls.index(MERGE_CALL) < calls.index(DELETE_BRANCH_CALL)
+        assert calls.index(DELETE_BRANCH_CALL) < calls.index(DESTROY_CALL)
+
+    def test_dry_run_does_not_delete_branch_or_destroy_dev_environment(self, stubs):
+        job._merge_pr(REPO, LABEL, 7, SLUG, dry_run=True)
+
+        calls = gh_calls(stubs)
+        assert DELETE_BRANCH_CALL not in calls
+        assert DESTROY_CALL not in calls
+
+    def test_does_not_delete_branch_when_merge_fails(self, stubs):
+        def gh(*args, check=True):
+            if args[:2] == ("pr", "merge"):
+                raise subprocess.CalledProcessError(1, "gh", stderr="head changed")
+
+        stubs["_gh"].side_effect = gh
+
+        with pytest.raises(subprocess.CalledProcessError):
+            merge_pr()
+
+        calls = gh_calls(stubs)
+        assert DELETE_BRANCH_CALL not in calls
+        assert DESTROY_CALL not in calls
+
+    def test_retargets_stacked_prs_to_main_before_deleting_branch(self, stubs):
+        stubs["_gh_json"].return_value = [{"number": 8}, {"number": 9}]
+
+        merge_pr()
+
+        calls = gh_calls(stubs)
+        retarget_8 = ("pr", "edit", "8", "--repo", REPO, "--base", "main")
+        retarget_9 = ("pr", "edit", "9", "--repo", REPO, "--base", "main")
+        assert retarget_8 in calls
+        assert retarget_9 in calls
+        assert calls.index(retarget_9) < calls.index(DELETE_BRANCH_CALL)
+
+    def test_lists_open_prs_based_on_merged_branch(self, stubs):
+        merge_pr()
+
+        stubs["_gh_json"].assert_called_with(
+            "pr", "list", "--repo", REPO, "--base", "feature-branch",
+            "--state", "open", "--json", "number",
+        )  # fmt: skip
+
+    def test_keeps_branch_but_still_destroys_dev_environment_when_retarget_fails(
+        self, stubs
+    ):
+        stubs["_gh_json"].return_value = [{"number": 8}]
+
+        def gh(*args, check=True):
+            if args[:3] == ("pr", "edit", "8"):
+                raise subprocess.CalledProcessError(1, "gh", stderr="HTTP 500")
+
+        stubs["_gh"].side_effect = gh
+
+        merge_pr()
+
+        calls = gh_calls(stubs)
+        assert DELETE_BRANCH_CALL not in calls
+        assert DESTROY_CALL in calls
+
+    def test_still_destroys_dev_environment_when_branch_delete_fails(self, stubs):
+        def gh(*args, check=True):
+            if args[:3] == ("api", "-X", "DELETE"):
+                raise subprocess.CalledProcessError(1, "gh", stderr="HTTP 422")
+
+        stubs["_gh"].side_effect = gh
+
+        merge_pr()
+
+        assert DESTROY_CALL in gh_calls(stubs)
+
+    def test_removes_label_when_cleanup_after_merge_fails(self, stubs):
+        def gh(*args, check=True):
+            if args[:2] == ("workflow", "run"):
+                raise subprocess.CalledProcessError(1, "gh", stderr="HTTP 500")
+
+        stubs["_gh"].side_effect = gh
+
+        merge_pr()
+
+        assert ("pr", "edit", "7", "--repo", REPO, "--remove-label", LABEL) in gh_calls(
+            stubs
+        )
 
     def test_updates_branch_when_behind_main_then_merges(self, stubs):
         # Behind at the start, then up to date before and after the deploy wait.

@@ -1,32 +1,43 @@
+import tempfile
 from datetime import date
+from pathlib import Path
 
 import polars as pl
 
 from polars_utils import utils
 from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import (
     merge_utils,
+    output_workbook_utils,
     publication_utils,
+    workbook_helpers,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_values.categorical_column_values import PublishedJobGroupLabels
 
 
 def main(
     assessment_source: str,
     output_destination: str,
     run_number: int,
+    workbook_destination: str,
+    logo_source: str,
 ) -> None:
     """
     Writes the publication data for one assessed run: every job role, job group
     and rollup row (rollups overlap, so don't sum across job roles), one per
     year historically and monthly for the current financial year, with period,
     region, job role, main service, rounded filled posts, location count and
-    percentage change columns.
+    percentage change columns. Then builds the public data download workbook
+    from that data and saves it to S3. A missing or empty logo fails the job.
 
     Args:
         assessment_source (str): s3 directory holding the assessed data of every run
         output_destination (str): destination s3 directory for the publication data
         run_number (int): the assessed run to publish
+        workbook_destination (str): s3 directory for the data download workbook,
+            named by archive_date and run_number
+        logo_source (str): s3 uri of the PNG logo shown on the workbook's Frontpage
     """
     run_source = merge_utils.resolve_run_sources([assessment_source], run_number)[0]
     print(f"Publishing assessed run: {run_source}")
@@ -52,21 +63,38 @@ def main(
             .replace(publication_utils.PUBLISHED_MAIN_SERVICE_BY_CATEGORY)
             .alias(Pub.main_service),
             publication_utils.round_to_publication_bands(
-                Pub.filled_posts, Pub.estimated_filled_posts_rounded
+                Pub.unfiltered_filled_posts, Pub.estimated_filled_posts_rounded
             ),
-            pl.col(Pub.locationid_count).alias(Pub.cqc_locations),
-            Pub.filled_posts_april_perc_change,
-            Pub.filled_posts_cum_perc_change_short,
-            Pub.locationid_count_april_perc_change,
-            Pub.locationid_count_cum_perc_change_short,
+            pl.col(Pub.unfiltered_locationid_count).alias(Pub.cqc_locations),
+            Pub.unfiltered_filled_posts_april_pct_change,
+            Pub.unfiltered_short_sfc_cum_pct_change,
+            Pub.unfiltered_locationid_count_april_pct_change,
+            Pub.unfiltered_short_locationid_count_cum_pct_change,
         )
-        .sort(publication_utils.DOWNLOAD_TABLE_SORT_COLUMNS)
+        .sort(publication_utils.DOWNLOAD_TABLE_SORT_KEYS)
     )
 
     utils.sink_to_parquet(
         lazy_df=publication_output_lf,
         output_path=output_destination,
     )
+
+    # Read back the small written output so the plan above isn't computed twice.
+    # The workbook tables have no job role column, so they keep the national
+    # "All job roles" rows only.
+    written_output_lf = utils.scan_parquet(output_destination).filter(
+        pl.col(Pub.job_role) == PublishedJobGroupLabels.all_job_roles
+    )
+    logo = workbook_helpers.get_logo_bytes(logo_source)
+    workbook_name = workbook_helpers.generate_workbook_name(
+        output_workbook_utils.DOWNLOAD_WORKBOOK_STEM, run_source
+    )
+    with tempfile.TemporaryDirectory() as workbook_folder:
+        workbook_path = Path(workbook_folder) / workbook_name
+        output_workbook_utils.build_download_workbook(
+            written_output_lf, workbook_path, logo=logo
+        )
+        workbook_helpers.upload_to_s3(workbook_path, workbook_destination)
 
 
 if __name__ == "__main__":
@@ -83,9 +111,19 @@ if __name__ == "__main__":
             "--run_number",
             "Assessed run number to publish",
         ),
+        (
+            "--workbook_destination",
+            "Destination s3 directory for the data download workbook",
+        ),
+        (
+            "--logo_source",
+            "S3 uri of the PNG logo shown on the data download workbook's Frontpage",
+        ),
     )
     main(
         assessment_source=args.assessment_source,
         output_destination=args.output_destination,
         run_number=merge_utils.parse_run_number(args.run_number, required=True),
+        workbook_destination=args.workbook_destination,
+        logo_source=args.logo_source,
     )

@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 
 import polars as pl
 import polars.testing as pl_testing
@@ -10,6 +11,10 @@ from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_data import (
 )
 from projects._02_sfc_internal.unittest_data.polars_sfc_test_file_schemas import (
     FlattenCQCRatings as Schemas,
+)
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
 )
 
 
@@ -226,11 +231,6 @@ prepare_assessment_ratings_cases = [
         expected_data=Data.expected_prepare_assessment_ratings_null_key_question_ratings_data,
     ),
     PrepareAssessmentRatingsCase(
-        id="overall_ratings_have_null_asg_only_columns",
-        rows=Data.prepare_assessment_ratings_overall_rows,
-        expected_data=Data.expected_prepare_assessment_ratings_overall_data,
-    ),
-    PrepareAssessmentRatingsCase(
         id="unknown_key_question_is_ignored",
         rows=Data.prepare_assessment_ratings_unknown_key_question_rows,
         expected_data=Data.expected_prepare_assessment_ratings_unknown_key_question_data,
@@ -254,3 +254,412 @@ class TestPrepareAssessmentRatings:
             expected_data, schema=Schemas.assessment_ratings_output_schema
         ).collect()
         pl_testing.assert_frame_equal(expected_df, returned_df, check_row_order=False)
+
+    def test_raises_when_overall_rating_is_populated(self):
+        input_lf = pl.LazyFrame(
+            Data.prepare_assessment_ratings_overall_rows,
+            schema=Schemas.assessment_ratings_input_schema,
+            orient="row",
+        )
+
+        with pytest.raises(ValueError, match="overall object within the assessments"):
+            job.prepare_assessment_ratings(input_lf)
+
+
+class TestRaiseErrorWhenAssessmentLfContainsOverallData:
+    def test_raises_when_overall_rating_is_populated(self):
+        input_lf = pl.LazyFrame({CQCL.rating: ["Good"]})
+
+        with pytest.raises(ValueError, match="contains 1 values"):
+            job.raise_error_when_assessment_lf_contains_overall_data(input_lf)
+
+    def test_does_not_raise_when_overall_has_no_rating(self):
+        input_lf = pl.LazyFrame({CQCL.rating: [None]}, schema={CQCL.rating: pl.String})
+
+        job.raise_error_when_assessment_lf_contains_overall_data(input_lf)
+
+
+@dataclass
+class RecodeUnknownCodesToNullCase:
+    id: str
+    rows: list
+    expected_rows: list
+
+    def as_pytest_param(self):
+        return pytest.param(self.rows, self.expected_rows, id=self.id)
+
+
+recode_unknown_codes_to_null_cases = [
+    RecodeUnknownCodesToNullCase(
+        id="keeps_valid_ratings",
+        rows=Data.recode_unknown_codes_valid_ratings_rows,
+        expected_rows=Data.recode_unknown_codes_valid_ratings_rows,
+    ),
+    RecodeUnknownCodesToNullCase(
+        id="nulls_every_unknown_label_in_each_rating_column",
+        rows=Data.recode_unknown_codes_unknown_label_rows,
+        expected_rows=Data.expected_recode_unknown_codes_unknown_label_rows,
+    ),
+    RecodeUnknownCodesToNullCase(
+        id="keeps_null_ratings_null",
+        rows=Data.recode_unknown_codes_null_ratings_rows,
+        expected_rows=Data.recode_unknown_codes_null_ratings_rows,
+    ),
+    RecodeUnknownCodesToNullCase(
+        id="leaves_non_rating_columns_unchanged",
+        rows=Data.recode_unknown_codes_non_rating_columns_rows,
+        expected_rows=Data.expected_recode_unknown_codes_non_rating_columns_rows,
+    ),
+]
+
+
+class TestRecodeUnknownCodesToNull:
+    @pytest.mark.parametrize(
+        "rows,expected_rows",
+        [case.as_pytest_param() for case in recode_unknown_codes_to_null_cases],
+    )
+    def test_returns_expected_values(self, rows, expected_rows):
+        input_lf = pl.LazyFrame(
+            rows,
+            schema=Schemas.flattened_ratings_with_current_or_historic_schema,
+            orient="row",
+        )
+
+        returned_lf = job.recode_unknown_codes_to_null(input_lf)
+
+        expected_lf = pl.LazyFrame(
+            expected_rows,
+            schema=Schemas.flattened_ratings_with_current_or_historic_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
+
+
+@dataclass
+class RemoveBlankAndDuplicateRowsCase:
+    id: str
+    rows: list
+    expected_rows: list
+
+    def as_pytest_param(self):
+        return pytest.param(self.rows, self.expected_rows, id=self.id)
+
+
+remove_blank_and_duplicate_rows_cases = [
+    RemoveBlankAndDuplicateRowsCase(
+        id="keeps_row_when_any_one_rating_column_is_populated",
+        rows=Data.remove_blank_rows_one_rating_populated_rows,
+        expected_rows=Data.remove_blank_rows_one_rating_populated_rows,
+    ),
+    RemoveBlankAndDuplicateRowsCase(
+        id="removes_row_when_all_ratings_null",
+        rows=Data.remove_blank_rows_all_ratings_null_rows,
+        expected_rows=Data.expected_remove_blank_rows_all_ratings_null_rows,
+    ),
+    RemoveBlankAndDuplicateRowsCase(
+        id="removes_exact_duplicate_rows",
+        rows=Data.remove_blank_rows_duplicate_rows,
+        expected_rows=Data.expected_remove_blank_rows_duplicate_rows,
+    ),
+    RemoveBlankAndDuplicateRowsCase(
+        id="keeps_rows_that_differ_in_one_column",
+        rows=Data.remove_blank_rows_differing_rows,
+        expected_rows=Data.remove_blank_rows_differing_rows,
+    ),
+]
+
+
+class TestRemoveBlankAndDuplicateRows:
+    @pytest.mark.parametrize(
+        "rows,expected_rows",
+        [case.as_pytest_param() for case in remove_blank_and_duplicate_rows_cases],
+    )
+    def test_returns_expected_values(self, rows, expected_rows):
+        input_lf = pl.LazyFrame(
+            rows,
+            schema=Schemas.flattened_ratings_with_current_or_historic_schema,
+            orient="row",
+        )
+
+        returned_lf = job.remove_blank_and_duplicate_rows(input_lf)
+
+        expected_lf = pl.LazyFrame(
+            expected_rows,
+            schema=Schemas.flattened_ratings_with_current_or_historic_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
+
+
+@dataclass
+class AddNumericalRatingsCase:
+    id: str
+    rows: list
+    expected_rows: list
+
+    def as_pytest_param(self):
+        return pytest.param(self.rows, self.expected_rows, id=self.id)
+
+
+add_numerical_ratings_cases = [
+    AddNumericalRatingsCase(
+        id="maps_each_rating_to_its_value",
+        rows=Data.add_numerical_ratings_rating_rows,
+        expected_rows=Data.expected_add_numerical_ratings_rating_rows,
+    ),
+    AddNumericalRatingsCase(
+        id="matches_rating_case_insensitively",
+        rows=Data.add_numerical_ratings_mixed_case_rows,
+        expected_rows=Data.expected_add_numerical_ratings_mixed_case_rows,
+    ),
+    AddNumericalRatingsCase(
+        id="maps_null_to_zero",
+        rows=Data.add_numerical_ratings_null_rows,
+        expected_rows=Data.expected_add_numerical_ratings_null_rows,
+    ),
+    AddNumericalRatingsCase(
+        id="maps_unrecognised_rating_to_zero",
+        rows=Data.add_numerical_ratings_unrecognised_rows,
+        expected_rows=Data.expected_add_numerical_ratings_unrecognised_rows,
+    ),
+    AddNumericalRatingsCase(
+        id="total_sums_five_key_questions_excluding_overall",
+        rows=Data.add_numerical_ratings_total_rows,
+        expected_rows=Data.expected_add_numerical_ratings_total_rows,
+    ),
+]
+
+
+class TestAddNumericalRatings:
+    @pytest.mark.parametrize(
+        "rows,expected_rows",
+        [case.as_pytest_param() for case in add_numerical_ratings_cases],
+    )
+    def test_returns_expected_values(self, rows, expected_rows):
+        input_lf = pl.LazyFrame(
+            rows, schema=Schemas.add_numerical_ratings_schema, orient="row"
+        )
+
+        returned_lf = job.add_numerical_ratings(input_lf)
+
+        expected_lf = pl.LazyFrame(
+            expected_rows,
+            schema=Schemas.expected_add_numerical_ratings_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
+
+
+@dataclass
+class AddLatestRatingFlagColumnCase:
+    id: str
+    rows: list
+    expected_rows: list
+
+    def as_pytest_param(self):
+        return pytest.param(self.rows, self.expected_rows, id=self.id)
+
+
+add_latest_rating_flag_column_cases = [
+    AddLatestRatingFlagColumnCase(
+        id="flags_row_with_latest_rating_date",
+        rows=Data.add_latest_rating_flag_latest_date_rows,
+        expected_rows=Data.expected_add_latest_rating_flag_latest_date_rows,
+    ),
+    AddLatestRatingFlagColumnCase(
+        id="flags_each_location_independently",
+        rows=Data.add_latest_rating_flag_two_locations_rows,
+        expected_rows=Data.expected_add_latest_rating_flag_two_locations_rows,
+    ),
+    AddLatestRatingFlagColumnCase(
+        id="uses_assessment_date_when_rating_dates_tie",
+        rows=Data.add_latest_rating_flag_assessment_date_rows,
+        expected_rows=Data.expected_add_latest_rating_flag_assessment_date_rows,
+    ),
+    AddLatestRatingFlagColumnCase(
+        id="ranks_null_assessment_date_below_populated_date",
+        rows=Data.add_latest_rating_flag_null_assessment_date_rows,
+        expected_rows=Data.expected_add_latest_rating_flag_null_assessment_date_rows,
+    ),
+    AddLatestRatingFlagColumnCase(
+        id="flags_one_row_per_location_when_location_rows_are_not_adjacent",
+        rows=Data.add_latest_rating_flag_non_adjacent_rows,
+        expected_rows=Data.expected_add_latest_rating_flag_non_adjacent_rows,
+    ),
+    AddLatestRatingFlagColumnCase(
+        id="ranks_null_rating_date_last",
+        rows=Data.add_latest_rating_flag_null_rating_date_rows,
+        expected_rows=Data.expected_add_latest_rating_flag_null_rating_date_rows,
+    ),
+]
+
+
+class TestAddLatestRatingFlagColumn:
+    @pytest.mark.parametrize(
+        "rows,expected_rows",
+        [case.as_pytest_param() for case in add_latest_rating_flag_column_cases],
+    )
+    def test_returns_expected_values(self, rows, expected_rows):
+        input_lf = pl.LazyFrame(
+            rows, schema=Schemas.add_latest_rating_flag_schema, orient="row"
+        )
+
+        returned_lf = job.add_latest_rating_flag_column(input_lf)
+
+        expected_lf = pl.LazyFrame(
+            expected_rows,
+            schema=Schemas.expected_add_latest_rating_flag_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
+
+    def test_flags_exactly_one_row_when_both_dates_tie(self):
+        input_lf = pl.LazyFrame(
+            Data.add_latest_rating_flag_tied_rows,
+            schema=Schemas.add_latest_rating_flag_schema,
+            orient="row",
+        )
+
+        returned_df = job.add_latest_rating_flag_column(input_lf).collect()
+
+        assert returned_df[CQCRatings.latest_rating_flag].sum() == 1
+
+    def test_tie_break_is_independent_of_input_row_order(self):
+        rows = Data.add_latest_rating_flag_tied_rows
+
+        flagged_lfs = [
+            job.add_latest_rating_flag_column(
+                pl.LazyFrame(
+                    ordered_rows,
+                    schema=Schemas.add_latest_rating_flag_schema,
+                    orient="row",
+                )
+            ).filter(pl.col(CQCRatings.latest_rating_flag) == 1)
+            for ordered_rows in (rows, rows[::-1])
+        ]
+
+        pl_testing.assert_frame_equal(*flagged_lfs)
+
+
+class TestCreateStandardRatingsDataset:
+    def test_keeps_only_standard_columns_in_order(self):
+        input_lf = pl.LazyFrame(
+            Data.create_standard_ratings_dataset_rows,
+            schema=Schemas.create_standard_ratings_dataset_schema,
+            orient="row",
+        )
+
+        returned_lf = job.create_standard_ratings_dataset(input_lf)
+
+        expected_lf = pl.LazyFrame(
+            Data.expected_create_standard_ratings_dataset_rows,
+            schema=Schemas.standard_ratings_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
+
+    def test_removes_duplicate_rows_left_after_dropping_columns(self):
+        input_lf = pl.LazyFrame(
+            Data.create_standard_ratings_dataset_duplicate_rows,
+            schema=Schemas.create_standard_ratings_dataset_schema,
+            orient="row",
+        )
+
+        returned_lf = job.create_standard_ratings_dataset(input_lf)
+
+        expected_lf = pl.LazyFrame(
+            Data.expected_create_standard_ratings_dataset_duplicate_rows,
+            schema=Schemas.standard_ratings_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)
+
+    def test_removes_duplicate_rows_containing_nulls(self):
+        input_lf = pl.LazyFrame(
+            Data.create_standard_ratings_dataset_null_rows,
+            schema=Schemas.create_standard_ratings_dataset_schema,
+            orient="row",
+        )
+
+        returned_lf = job.create_standard_ratings_dataset(input_lf)
+
+        expected_lf = pl.LazyFrame(
+            Data.expected_create_standard_ratings_dataset_null_rows,
+            schema=Schemas.standard_ratings_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
+
+
+@dataclass
+class AddLocationIdHashTestCase:
+    id: str
+    rows: list[Any]
+    expected_rows: list[Any]
+    schema: pl.Schema = field(default_factory=lambda: Schemas.location_id_hash_schema)
+    expected_schema: pl.Schema = field(
+        default_factory=lambda: Schemas.expected_location_id_hash_schema
+    )
+
+    def as_pytest_param(self):
+        return pytest.param(
+            self.rows,
+            self.expected_rows,
+            self.schema,
+            self.expected_schema,
+            id=self.id,
+        )
+
+
+add_location_id_hash_cases = [
+    AddLocationIdHashTestCase(
+        id="hashes_short_location_id",
+        rows=Data.location_id_hash_short_rows,
+        expected_rows=Data.expected_location_id_hash_short_rows,
+    ),
+    AddLocationIdHashTestCase(
+        id="hashes_long_location_id",
+        rows=Data.location_id_hash_long_rows,
+        expected_rows=Data.expected_location_id_hash_long_rows,
+    ),
+    AddLocationIdHashTestCase(
+        id="gives_repeated_location_ids_the_same_hash",
+        rows=Data.location_id_hash_repeated_rows,
+        expected_rows=Data.expected_location_id_hash_repeated_rows,
+    ),
+    AddLocationIdHashTestCase(
+        id="keeps_other_columns_unchanged",
+        rows=Data.location_id_hash_other_column_rows,
+        expected_rows=Data.expected_location_id_hash_other_column_rows,
+        schema=Schemas.location_id_hash_other_column_schema,
+        expected_schema=Schemas.expected_location_id_hash_other_column_schema,
+    ),
+    AddLocationIdHashTestCase(
+        id="hashes_categorical_location_id",
+        rows=Data.location_id_hash_categorical_rows,
+        expected_rows=Data.expected_location_id_hash_categorical_rows,
+        schema=Schemas.location_id_hash_categorical_schema,
+        expected_schema=Schemas.expected_location_id_hash_categorical_schema,
+    ),
+    AddLocationIdHashTestCase(
+        id="returns_null_hash_when_location_id_is_null",
+        rows=Data.location_id_hash_null_rows,
+        expected_rows=Data.expected_location_id_hash_null_rows,
+    ),
+]
+
+
+class TestAddLocationIdHash:
+    @pytest.mark.parametrize(
+        "rows, expected_rows, schema, expected_schema",
+        [case.as_pytest_param() for case in add_location_id_hash_cases],
+    )
+    def test_adds_expected_location_id_hash(
+        self, rows, expected_rows, schema, expected_schema
+    ):
+        input_lf = pl.LazyFrame(rows, schema=schema, orient="row")
+
+        returned_lf = job.add_location_id_hash(input_lf)
+
+        expected_lf = pl.LazyFrame(expected_rows, schema=expected_schema, orient="row")
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, check_row_order=False)

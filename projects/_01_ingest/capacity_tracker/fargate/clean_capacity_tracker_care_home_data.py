@@ -91,7 +91,8 @@ def main(
 
     # Cast to Categorical/Enum here so it's saved in the output parquet file.
     care_home_lf = care_home_lf.with_columns(
-        pl.col(CTCHClean.care_home).cast(CategoricalColumnTypes.CareHomeEnumType)
+        pl.col(CTCHClean.care_home).cast(CategoricalColumnTypes.CareHomeEnumType),
+        pl.col(CTCHClean.cqc_id).cast(CategoricalColumnTypes.LocationCatType),
     )
 
     utils.sink_to_parquet(care_home_lf, cleaned_capacity_tracker_care_home_destination)
