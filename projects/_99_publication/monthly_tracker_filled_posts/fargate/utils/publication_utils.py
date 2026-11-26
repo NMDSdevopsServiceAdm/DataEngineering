@@ -19,6 +19,7 @@ _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 DOWNLOAD_TABLE_SORT_COLUMNS: list[str] = [
     Pub.period,
     Pub.region,
+    Pub.job_role,
     Pub.main_service,
 ]
 

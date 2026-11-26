@@ -47,6 +47,7 @@ expected_schema = pl.Schema(
         (Pub.period_label_short, pl.String()),
         (Pub.period_label_long, pl.String()),
         (Pub.region, pl.String()),
+        (Pub.job_role, pl.String()),
         (Pub.main_service, pl.String()),
         (Pub.estimated_filled_posts_rounded, pl.Float32()),
         (Pub.cqc_locations, pl.UInt32()),
@@ -139,6 +140,7 @@ class TestMain:
                     "Apr 2026",
                     "April 2026",
                     "London",
+                    PublishedJobGroupLabels.all_job_roles,
                     PublishedMainService.care_home_with_nursing,
                     125.0,
                     12,
@@ -153,15 +155,32 @@ class TestMain:
         )
         assert_frame_equal(returned_lf, expected_lf)
 
-    def test_main_keeps_only_all_job_roles_rows(self, mocks):
+    def test_main_keeps_every_job_role_and_job_group_row(self, mocks):
+        job_roles = [
+            "Registered nurse",
+            PublishedJobGroupLabels.direct_care,
+            PublishedJobGroupLabels.all_job_roles,
+        ]
+        input_rows = [_input_row(date(2026, 4, 1), job_role=role) for role in job_roles]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert sorted(returned_lf.collect()[Pub.job_role].to_list()) == sorted(
+            job_roles
+        )
+
+    def test_main_sorts_by_job_role_within_period_and_region(self, mocks):
         input_rows = [
             _input_row(date(2026, 4, 1), job_role="Registered nurse"),
-            _input_row(date(2026, 4, 1)),
+            _input_row(date(2026, 4, 1), job_role="Care worker"),
         ]
 
         returned_lf = _run_main(mocks, input_rows)
 
-        assert returned_lf.collect().height == 1
+        assert returned_lf.collect()[Pub.job_role].to_list() == [
+            "Care worker",
+            "Registered nurse",
+        ]
 
     def test_main_keeps_one_row_per_year_historically_and_every_current_month(
         self, mocks

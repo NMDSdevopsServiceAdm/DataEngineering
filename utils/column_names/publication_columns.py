@@ -52,6 +52,7 @@ class PublicationColumns:
     locationid_count_april_perc_change: str = "locationid_count_april_perc_change"
     main_service: str = "Main service"
     job_group: str = "Job group"
+    job_role: str = "Job role"
     region: str = "Region"
     estimated_filled_posts: str = "Estimated filled posts"
     cqc_locations: str = "CQC locations"
