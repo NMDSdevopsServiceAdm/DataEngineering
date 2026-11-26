@@ -22,8 +22,5 @@ COPY utils/value_labels /app/utils/value_labels
 
 # Copy python jobs to WORKDIR
 COPY projects/_98_hackathon/fargate/_01_worker_turnover.py /app/_01_worker_turnover.py
-COPY projects/_98_hackathon/fargate/validate_01_worker_turnover.py /app/validate_01_worker_turnover.py
-COPY projects/_98_hackathon/fargate/validate_02_worker_turnover_test.py /app/validate_02_worker_turnover_test.py
-COPY projects/_98_hackathon/fargate/validate_03_worker_turnover_student.py /app/validate_03_worker_turnover_student.py
 
 ENTRYPOINT ["python"]

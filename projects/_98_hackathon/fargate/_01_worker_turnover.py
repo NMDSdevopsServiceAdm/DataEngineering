@@ -1,7 +1,6 @@
 import polars as pl
 
 import polars_utils.cleaning_utils as cUtils
-import projects._98_hackathon.fargate.utils.validation_utils as vUtils
 import projects._98_hackathon.fargate.utils.worker_turnover_utils as wUtils
 from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
@@ -23,9 +22,8 @@ def main(
     ons_postcode_directory_source: str,
     manual_postcode_corrections_source: str,
     train_destination: str,
-    holdout_destination: str,
-    test_destination: str,
-    student_destination: str,
+    answers_destination: str,
+    predict_destination: str,
     n_months: int = wUtils.DEFAULT_MAX_MONTHS_SINCE_SAVE,
     max_gap: int = wUtils.DEFAULT_MAX_HEADCOUNT_GAP,
 ) -> None:
@@ -44,10 +42,9 @@ def main(
         manual_postcode_corrections_source (str): S3 URI of the manual postcode
             corrections csv
         train_destination (str): destination for the train split
-        holdout_destination (str): destination for the holdout split
-        test_destination (str): destination for the test split's key columns,
-            `is_leaver` and `turnover_rate`
-        student_destination (str): destination for the test split without
+        answers_destination (str): destination for the predict split's key
+            columns, `is_leaver` and `turnover_rate`
+        predict_destination (str): destination for the predict split without
             `is_leaver` and `turnover_rate`
         n_months (int): most months since an establishment's latest save date for
             it to count as active
@@ -172,36 +169,32 @@ def main(
     # `split` and `valid_for_analysis` are not output columns, so rows are filtered
     # and split before the output columns are selected.
     filtered_lf = filtered_lf.filter(pl.col(HackCols.valid_for_analysis))
-    split_lfs = {
-        split: wUtils.select_and_rename_output_columns(
-            filtered_lf.filter(pl.col(HackCols.split) == split)
-        )
-        for split in ("train", "holdout", "test")
-    }
-    train_holdout_destinations = {
-        "train": train_destination,
-        "holdout": holdout_destination,
-    }
-    split_sinks = [
-        utils.sink_to_parquet(split_lfs[split], output_path=destination, lazy=True)
-        for split, destination in train_holdout_destinations.items()
-    ]
-    # The test split keeps `is_leaver` and `turnover_rate` until the sinks: the
-    # test destination holds only them and the key columns, and the student
+    train_lf = wUtils.select_and_rename_output_columns(
+        filtered_lf.filter(pl.col(HackCols.split) == "train")
+    )
+    predict_lf = wUtils.select_and_rename_output_columns(
+        filtered_lf.filter(pl.col(HackCols.split) == "predict")
+    )
+
+    train_sink = utils.sink_to_parquet(
+        train_lf, output_path=train_destination, lazy=True
+    )
+    # `is_leaver` and `turnover_rate` stay until the sinks: the answers
+    # destination holds only them and the key columns, and the predict
     # destination holds every other column.
-    test_sink = utils.sink_to_parquet(
-        split_lfs["test"].select(*vUtils.KEY_COLUMNS, *wUtils.STUDENT_HIDDEN_COLUMNS),
-        output_path=test_destination,
+    answers_sink = utils.sink_to_parquet(
+        predict_lf.select(*wUtils.KEY_COLUMNS, *wUtils.ANSWER_COLUMNS),
+        output_path=answers_destination,
         lazy=True,
     )
-    student_sink = utils.sink_to_parquet(
-        split_lfs["test"].drop(wUtils.STUDENT_HIDDEN_COLUMNS),
-        output_path=student_destination,
+    predict_sink = utils.sink_to_parquet(
+        predict_lf.drop(wUtils.ANSWER_COLUMNS),
+        output_path=predict_destination,
         lazy=True,
     )
     # Lazy sinks collected together share one run of the plan above, rather than
     # re-running it per sink.
-    pl.collect_all([*split_sinks, test_sink, student_sink], engine="streaming")
+    pl.collect_all([train_sink, answers_sink, predict_sink], engine="streaming")
 
 
 if __name__ == "__main__":
@@ -231,16 +224,12 @@ if __name__ == "__main__":
             "Destination s3 directory for the train split",
         ),
         (
-            "--holdout_destination",
-            "Destination s3 directory for the holdout split",
+            "--answers_destination",
+            "Destination s3 directory for the answers to the predict split",
         ),
         (
-            "--test_destination",
-            "Destination s3 directory for the test split",
-        ),
-        (
-            "--student_destination",
-            "Destination s3 directory for the student version of the test split",
+            "--predict_destination",
+            "Destination s3 directory for the predict split without the answers",
         ),
         (
             "--n_months",
@@ -262,9 +251,8 @@ if __name__ == "__main__":
         ons_postcode_directory_source=args.ons_postcode_directory_source,
         manual_postcode_corrections_source=args.manual_postcode_corrections_source,
         train_destination=args.train_destination,
-        holdout_destination=args.holdout_destination,
-        test_destination=args.test_destination,
-        student_destination=args.student_destination,
+        answers_destination=args.answers_destination,
+        predict_destination=args.predict_destination,
         n_months=int(args.n_months),
         max_gap=int(args.max_gap),
     )

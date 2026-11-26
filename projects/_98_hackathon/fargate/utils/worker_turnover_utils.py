@@ -62,8 +62,10 @@ EARLIEST_IMPORT_DATE = date(2020, 1, 1)
 MIN_START_AGE = 16
 MAX_YEARS_SINCE_START_WITHOUT_AGE = 70
 
-# The answers: written to the test destination, dropped from the student one.
-STUDENT_HIDDEN_COLUMNS = [OutCols.is_leaver, OutCols.turnover_rate]
+KEY_COLUMNS = [OutCols.establishmentid, OutCols.workerid, OutCols.snapshot_date]
+
+# Written to the answers destination, dropped from the predict one.
+ANSWER_COLUMNS = [OutCols.is_leaver, OutCols.turnover_rate]
 
 WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.gender,
@@ -1347,8 +1349,8 @@ def add_split_column(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Values:
     - "train" for 1 January 2020 to 1 November 2024 inclusive.
-    - "test" for 1 November 2025.
-    - "holdout" for any other date, including null.
+    - "predict" for 1 November 2025.
+    - Null for any other date or a null date; these rows are not written.
 
     Args:
         worker_lf (pl.LazyFrame): Worker data with `ascwds_worker_import_date`.
@@ -1362,8 +1364,7 @@ def add_split_column(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.when(import_date.is_between(date(2020, 1, 1), date(2024, 11, 1)))
         .then(pl.lit("train"))
         .when(import_date == date(2025, 11, 1))
-        .then(pl.lit("test"))
-        .otherwise(pl.lit("holdout"))
+        .then(pl.lit("predict"))
         .cast(pl.Categorical)
         .alias(HackCols.split)
     )
