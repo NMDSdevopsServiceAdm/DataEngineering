@@ -24,13 +24,12 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
+from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
-from utils.column_names.hackathon_columns import AgeSource
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
-from utils.column_names.hackathon_columns import HackathonOutputColumns as OutCols
 from utils.column_values.ascwds_labelled_vocab import (
     APPRENTICE,
     CARE_CERTIFICATE_STATUS,
@@ -42,10 +41,10 @@ from utils.column_values.ascwds_labelled_vocab import (
     SOURCE_OF_RECRUITMENT,
     TRAIN_FLAG,
     ZERO_HOURS,
-    CountryOfBirthGroupLabels,
 )
 from utils.column_values.ascwds_labelled_vocab import EmploymentStatusLabels as EmpStat
 from utils.column_values.ascwds_labelled_vocab import (
+    CountryOfBirthGroupLabels,
     EthnicityGroupLabels,
     EthnicityID,
     MainServiceID,
@@ -62,10 +61,14 @@ EARLIEST_IMPORT_DATE = date(2020, 1, 1)
 MIN_START_AGE = 16
 MAX_YEARS_SINCE_START_WITHOUT_AGE = 70
 
-KEY_COLUMNS = [OutCols.establishmentid, OutCols.workerid, OutCols.snapshot_date]
+KEY_COLUMNS = [
+    AWKClean.establishment_id,
+    AWKClean.worker_id,
+    "snapshot_date",
+]
 
 # Written to the answers destination, dropped from the predict one.
-ANSWER_COLUMNS = [OutCols.is_leaver, OutCols.turnover_rate]
+ANSWER_COLUMNS = [HackCols.is_leaver, HackCols.turnover_rate]
 
 WORKER_CATEGORICAL_COLUMNS = [
     AWKClean.gender,
@@ -172,44 +175,6 @@ GROUP_LABEL_RECODES = {
             ),
         },
     ),
-}
-
-# Output column -> source column, in output order. Columns not listed are dropped.
-OUTPUT_COLUMN_SOURCES = {
-    OutCols.snapshot_date: AWKClean.ascwds_worker_import_date,
-    OutCols.orgid: AWPClean.organisation_id,
-    OutCols.establishmentid: AWKClean.establishment_id,
-    OutCols.workerid: AWKClean.worker_id,
-    OutCols.is_leaver: HackCols.is_leaver,
-    OutCols.turnover_rate: HackCols.turnover_rate,
-    OutCols.local_authority: ONSClean.current_cssr,
-    OutCols.region: ONSClean.current_region,
-    OutCols.service_type: HackCols.main_service_type,
-    OutCols.job_role: AWKClean.main_job_role_clean_labelled,
-    OutCols.age: HackCols.age_imputed,
-    OutCols.gender: f"{AWKClean.gender}_{DLC.label}s",
-    OutCols.ethnicity_group: HackCols.ethnicity_group_labels,
-    OutCols.disabled: f"{AWKClean.disabled}_{DLC.label}s",
-    OutCols.nationality_group: HackCols.nationality_group,
-    OutCols.country_of_birth_group: HackCols.country_of_birth_group,
-    OutCols.distance_home_work: AWKClean.distance_to_work_in_miles,
-    OutCols.hours_worked: HackCols.hours,
-    OutCols.zerohours_contract: f"{AWKClean.zero_hours}_{DLC.label}s",
-    OutCols.sickness_days: HackCols.days_sick_imputed,
-    OutCols.hourly_pay_minus_nlw: HackCols.hourly_pay_minus_nlw_clean_imputed,
-    OutCols.hourly_pay_diff_to_local_authority_median: (
-        HackCols.hourly_pay_diff_to_cssr_median
-    ),
-    OutCols.training: f"{AWKClean.training_flag}_{DLC.label}s",
-    OutCols.has_social_care_qualification_held: (
-        f"{AWKClean.social_care_qual_held}_{DLC.label}s"
-    ),
-    OutCols.care_certificate_status: (
-        f"{AWKClean.care_certificate_status}_{DLC.label}s"
-    ),
-    OutCols.source_of_recruitment_group: HackCols.scerec_wo_group_labels,
-    OutCols.years_in_role: HackCols.years_in_role,
-    OutCols.years_in_sector: HackCols.years_in_sector,
 }
 
 WORKER_NUMERIC_COLUMNS = [
@@ -1485,17 +1450,3 @@ def add_is_leaver_flag(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
     return pl.concat(
         [stayers_lf, leavers_lf, establishment_missing_lf, no_end_snapshot_lf]
     ).drop(HackCols.import_month, HackCols.end_month)
-
-
-def select_and_rename_output_columns(worker_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Keeps the output columns, renamed and ordered per `OUTPUT_COLUMN_SOURCES`.
-
-    Args:
-        worker_lf (pl.LazyFrame): Worker data holding every source column.
-
-    Returns:
-        pl.LazyFrame: The output columns only.
-    """
-    return worker_lf.select(
-        pl.col(source).alias(output) for output, source in OUTPUT_COLUMN_SOURCES.items()
-    )

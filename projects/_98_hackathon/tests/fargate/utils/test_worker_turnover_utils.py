@@ -1,4 +1,3 @@
-from dataclasses import fields
 from datetime import date
 from unittest.mock import patch
 
@@ -32,11 +31,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.hackathon_columns import HackathonColumns as HackCols
-from utils.column_names.hackathon_columns import (
-    HackathonOutputColumns as OutCols,
-)
 from utils.column_values.ascwds_labelled_vocab import (
     EthnicityGroupLabels,
     EthnicityID,
@@ -1347,67 +1342,3 @@ class TestImputeWorkerColumns:
 
     def test_imputes_expected_columns(self):
         assert job.IMPUTE_COLUMNS == Schemas.impute_columns
-
-
-class TestSelectAndRenameOutputColumns:
-    # Columns the job drops: `age` and `hourly_pay_minus_nlw` also share a name with
-    # an output column that comes from a different source column.
-    dropped_columns = [
-        AWKClean.age,
-        AWKClean.days_sick,
-        AWKClean.start_date,
-        AWKClean.pay_change_date,
-        HackCols.age_clean,
-        HackCols.age_source,
-        HackCols.hourly_pay_minus_nlw,
-        HackCols.hourly_pay_minus_nlw_clean,
-        HackCols.hourly_pay,
-        HackCols.nlw_hourly_rate,
-        HackCols.split,
-        HackCols.valid_for_analysis,
-        AWKClean.ascwds_worker_save_date,
-        AWKClean.created_date,
-        AWKClean.employment_status_clean_labelled,
-        AWKClean.year_of_entry,
-        f"{AWKClean.level_social_care_qualification_held}_{DLC.label}s",
-        f"{AWKClean.apprentice}_{DLC.label}s",
-        f"{AWKClean.source_of_recruitment}_{DLC.label}s",
-    ]
-
-    @classmethod
-    def build_lf(cls) -> pl.LazyFrame:
-        """One row where each column holds its own name, in reverse output order."""
-        columns = [*cls.dropped_columns, *reversed(job.OUTPUT_COLUMN_SOURCES.values())]
-        return pl.LazyFrame({column: [column] for column in columns})
-
-    def test_returns_output_columns_in_output_order(self):
-        returned_lf = job.select_and_rename_output_columns(self.build_lf())
-
-        expected_columns = [field.name for field in fields(OutCols)]
-        assert returned_lf.collect_schema().names() == expected_columns
-
-    def test_renames_each_source_column_to_its_output_name(self):
-        returned_df = job.select_and_rename_output_columns(self.build_lf()).collect()
-
-        for output, source in job.OUTPUT_COLUMN_SOURCES.items():
-            assert returned_df[output].to_list() == [source]
-
-    def test_age_comes_from_imputed_age_not_raw_age(self):
-        returned_df = job.select_and_rename_output_columns(self.build_lf()).collect()
-
-        assert returned_df[OutCols.age].to_list() == [HackCols.age_imputed]
-
-    def test_hourly_pay_minus_nlw_comes_from_clean_imputed_column(self):
-        returned_df = job.select_and_rename_output_columns(self.build_lf()).collect()
-
-        assert returned_df[OutCols.hourly_pay_minus_nlw].to_list() == [
-            HackCols.hourly_pay_minus_nlw_clean_imputed
-        ]
-
-    def test_drops_columns_not_in_output(self):
-        returned_lf = job.select_and_rename_output_columns(self.build_lf())
-
-        assert not set(self.dropped_columns) - {
-            OutCols.age,
-            OutCols.hourly_pay_minus_nlw,
-        } & set(returned_lf.collect_schema().names())

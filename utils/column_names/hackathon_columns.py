@@ -47,40 +47,6 @@ class HackathonColumns:
 
 
 @dataclass
-class HackathonOutputColumns:
-    snapshot_date: str = "snapshot_date"
-    orgid: str = "orgid"
-    establishmentid: str = "establishmentid"
-    workerid: str = "workerid"
-    is_leaver: str = "is_leaver"
-    turnover_rate: str = "turnover_rate"
-    local_authority: str = "local_authority"
-    region: str = "region"
-    service_type: str = "service_type"
-    job_role: str = "job_role"
-    age: str = "age"
-    gender: str = "gender"
-    ethnicity_group: str = "ethnicity_group"
-    disabled: str = "disabled"
-    nationality_group: str = "nationality_group"
-    country_of_birth_group: str = "country_of_birth_group"
-    distance_home_work: str = "distance_home_work"
-    hours_worked: str = "hours_worked"
-    zerohours_contract: str = "zerohours_contract"
-    sickness_days: str = "sickness_days"
-    hourly_pay_minus_nlw: str = "hourly_pay_minus_nlw"
-    hourly_pay_diff_to_local_authority_median: str = (
-        "hourly_pay_diff_to_local_authority_median"
-    )
-    training: str = "training"
-    has_social_care_qualification_held: str = "has_social_care_qualification_held"
-    care_certificate_status: str = "care_certificate_status"
-    source_of_recruitment_group: str = "source_of_recruitment_group"
-    years_in_role: str = "years_in_role"
-    years_in_sector: str = "years_in_sector"
-
-
-@dataclass
 class AgeSource:
     observed: str = "observed"
     pinned_birth_month: str = "pinned_birth_month"
