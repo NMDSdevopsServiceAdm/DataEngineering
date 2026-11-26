@@ -10,7 +10,6 @@ All notable changes to this project will be documented in this file.
 - Added a student destination to the Hackathon Worker Turnover job holding the test split without `is_leaver` or `turnover_rate`; the test split now holds only its key columns, `is_leaver` and `turnover_rate`. Each dataset has its own validation script.
 - Added years in role and years in sector, at the establishment's latest save date (null when the start is after it), to the Hackathon Worker Turnover job output.
 - Added the hourly pay difference from the local median (per import date, CSSR and main job role) to the Hackathon Worker Turnover job output and its validation.
-- Removed the hourly pay difference from the local median from the Hackathon Worker Turnover job output.
 - Added `keep_value_if_changed_expr` to `cleaning_utils`, an expression that keeps a value only on the import date that first shows its change date. The Hackathon Worker Turnover job uses it for `hourly_pay` and `days_sick`, and no longer includes `pay_save_date`.
 - Added a shared hackathon scoring function that checks students' predictions and returns worker-level (AUC, Brier score) and workplace-level (mean absolute error of leave rate, for workplaces with at least 10 scored workers) scores against the held-back test answers.
 - Added organisation ID and training flag (with labels) to the Hackathon Worker Turnover output.
@@ -33,6 +32,7 @@ All notable changes to this project will be documented in this file.
 - Added an `age_clean` column to the Hackathon Worker Turnover job, nulling ages of 80 or more and ages 3 or more years from the worker's median implied birth year; ages are imputed from it.
 
 ### Changed
+- Removed the hourly pay difference from the local median from the Hackathon Worker Turnover job output.
 - Selected, renamed and ordered the Hackathon Worker Turnover output columns (dropping the rest), and limited every split to rows valid for analysis.
 - Removed the Hackathon Worker Turnover validation jobs and their tests, and the validation step from its state machine; the state machine is now the filter job then the crawler.
 - Renamed the Hackathon Worker Turnover datasets: `worker_turnover_test` is now `worker_turnover_answers` and `worker_turnover_student` is now `worker_turnover_predict`. The holdout dataset and its validation are removed, and `split` values are now `train` and `predict`.
