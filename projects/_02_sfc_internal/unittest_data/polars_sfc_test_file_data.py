@@ -931,16 +931,19 @@ class FlattenCQCRatings:
     main_snapshot_rows = [
         ("1-001", "Registered", "Social Care Org"),
         ("1-002", "Registered", "Independent Healthcare Org"),  # not social care - excluded
+        ("1-003", "Deregistered", "Social Care Org"),  # kept in ratings, not in benchmarks
     ]
 
     main_delta_rows = [
         ("1-001", "20240101", _current_ratings("1-001", _all_key_questions)[2], [_historic_entry("2023-01-01", _all_key_questions)], [_asg_entry("2024-01-01 00:00:00", "AP1", [_asg_kq("Safe")])]),
         ("1-001", "20230101", _current_ratings("1-001", _short_key_questions)[2], [], []),  # older import - excluded
         ("1-002", "20240101", _current_ratings("1-002", _all_key_questions)[2], [], []),
+        ("1-003", "20240101", _current_ratings("1-003", _all_key_questions)[2], [], []),
     ]
 
     main_ascwds_workplace_rows = [
         ("20240101", "2024", "01", "01", "100", "1-001"),
+        ("20240101", "2024", "01", "01", "300", "1-003"),
     ]
     # fmt: on
 
@@ -1202,3 +1205,82 @@ class FlattenCQCRatings:
         ("1-001", date(2024, 1, 1), None, "Historic", 1),
         ("1-002", date(2024, 4, 1), None, "Current", 1),
     ]
+
+    expected_add_good_and_outstanding_flag_good_rows = [("1-001", 3, 1)]
+
+    expected_add_good_and_outstanding_flag_below_good_rows = [
+        ("1-001", 4, 0),
+        ("1-001", 2, 0),
+    ]
+
+    # Rows of the two locations alternate to show each location is flagged on its own.
+    expected_add_good_and_outstanding_flag_two_locations_rows = [
+        ("1-001", 4, 1),
+        ("1-002", 4, 0),
+        ("1-001", 3, 1),
+        ("1-002", 2, 0),
+    ]
+
+    expected_add_good_and_outstanding_flag_null_rows = [("1-001", None, 0)]
+
+    # Nulls are ignored when taking the minimum rating value.
+    expected_add_good_and_outstanding_flag_null_and_good_rows = [
+        ("1-001", 3, 1),
+        ("1-001", None, 1),
+    ]
+    expected_add_good_and_outstanding_flag_null_and_below_good_rows = [
+        ("1-001", 2, 0),
+        ("1-001", None, 0),
+    ]
+
+    join_establishment_ids_matching_ratings_rows = [("1-001", "Good")]
+    join_establishment_ids_matching_ascwds_rows = [("1-001", "100", "20240101")]
+    expected_join_establishment_ids_matching_rows = [("1-001", "Good", "100")]
+
+    join_establishment_ids_unmatched_ratings_rows = [
+        ("1-001", "Good"),
+        ("1-002", "Good"),
+    ]
+    join_establishment_ids_unmatched_ascwds_rows = [("1-001", "100", "20240101")]
+    expected_join_establishment_ids_unmatched_rows = [
+        ("1-001", "Good", "100"),
+        ("1-002", "Good", None),
+    ]
+
+    # Repeated location ID, with a null and three establishment IDs; the smallest by
+    # string order is kept ("10" sorts before "9").
+    join_establishment_ids_repeated_ratings_rows = [("1-001", "Good")]
+    join_establishment_ids_repeated_ascwds_rows = [
+        ("1-001", "200", "20240101"),
+        ("1-001", None, "20240101"),
+        ("1-001", "10", "20240101"),
+        ("1-001", "9", "20240101"),
+    ]
+    expected_join_establishment_ids_repeated_rows = [("1-001", "Good", "10")]
+
+    # Input column order: location_id, establishment_id, name, dataset, flag,
+    # overall_rating, date, safe_rating (dropped from the output).
+    # fmt: off
+    create_benchmark_ratings_dataset_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1), "Good"),
+    ]
+    expected_create_benchmark_ratings_dataset_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1)),
+    ]
+
+    create_benchmark_ratings_dataset_null_establishment_id_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1), "Good"),
+        ("1-002", None, "Care Homes", "SAF", 1, "Good", date(2024, 1, 1), "Good"),
+    ]
+    expected_create_benchmark_ratings_dataset_null_establishment_id_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1)),
+    ]
+
+    create_benchmark_ratings_dataset_null_overall_rating_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1), "Good"),
+        ("1-002", "200", "Care Homes", "SAF", 0, None, date(2024, 1, 1), "Good"),
+    ]
+    expected_create_benchmark_ratings_dataset_null_overall_rating_rows = [
+        ("1-001", "100", "Care Homes", "SAF", 1, "Good", date(2024, 1, 1)),
+    ]
+    # fmt: on

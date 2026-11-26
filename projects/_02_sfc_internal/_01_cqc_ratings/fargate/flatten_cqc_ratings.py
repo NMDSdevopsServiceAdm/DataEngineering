@@ -4,6 +4,7 @@ import polars as pl
 
 from polars_utils import utils
 from projects._02_sfc_internal._01_cqc_ratings.fargate.utils import utils as rUtils
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
@@ -13,7 +14,11 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_values.categorical_column_values import LocationType
+from utils.column_values.categorical_column_values import (
+    CQCCurrentOrHistoricValues,
+    LocationType,
+    RegistrationStatus,
+)
 
 DELTA_COLUMNS_TO_IMPORT = [
     CQCL.location_id,
@@ -48,10 +53,6 @@ def main(
 ) -> None:
     """Flattens CQC ratings and assessments into standard and benchmark datasets.
 
-    Commented-out calls are placeholders for steps not yet implemented. Until then,
-    the benchmark destination receives the cleaned current, historic and assessment
-    ratings with numerical rating values.
-
     Args:
         cqc_full_snapshot_source (str): Source s3 directory for the latest full
             snapshot of CQC registered and deregistered locations.
@@ -80,7 +81,6 @@ def main(
 
     cqc_ratings_lf = cqc_snapshot_lf.join(cqc_delta_lf, on=CQCL.location_id, how="left")
 
-    # ascwds_workplace_lf is only used by the benchmark placeholders below.
     ascwds_workplace_lf = utils.scan_parquet(
         ascwds_workplace_source, selected_columns=ASCWDS_WORKPLACE_COLUMNS_TO_IMPORT
     )
@@ -105,11 +105,18 @@ def main(
     standard_ratings_lf = rUtils.create_standard_ratings_dataset(ratings_lf)
     standard_ratings_lf = rUtils.add_location_id_hash(standard_ratings_lf)
 
-    benchmark_ratings_lf = ratings_lf
-    # benchmark_ratings_lf = select_ratings_for_benchmarks(ratings_lf)
-    # benchmark_ratings_lf = add_good_and_outstanding_flag_column(benchmark_ratings_lf)
-    # benchmark_ratings_lf = join_establishment_ids(benchmark_ratings_lf, ascwds_workplace_lf)
-    # benchmark_ratings_lf = create_benchmark_ratings_dataset(benchmark_ratings_lf)
+    # Benchmarks only need current ratings of registered locations.
+    benchmark_ratings_lf = ratings_lf.filter(
+        (pl.col(CQCRatings.current_or_historic) == CQCCurrentOrHistoricValues.current)
+        & (pl.col(CQCL.registration_status) == RegistrationStatus.registered)
+    )
+    benchmark_ratings_lf = rUtils.add_good_and_outstanding_flag_column(
+        benchmark_ratings_lf
+    )
+    benchmark_ratings_lf = rUtils.join_establishment_ids(
+        benchmark_ratings_lf, ascwds_workplace_lf
+    )
+    benchmark_ratings_lf = rUtils.create_benchmark_ratings_dataset(benchmark_ratings_lf)
 
     utils.sink_to_parquet(standard_ratings_lf, cqc_ratings_destination)
     utils.sink_to_parquet(benchmark_ratings_lf, benchmark_ratings_destination)

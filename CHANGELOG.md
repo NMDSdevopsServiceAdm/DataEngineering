@@ -102,6 +102,7 @@ All notable changes to this project will be documented in this file.
 - Converted the CQC ratings standard dataset creation and location ID hashing to Polars.
 - Converted the CQC ratings formatting steps to Polars.
 - Converted the merging of CQC ratings to Polars.
+- Converted the CQC ratings benchmark dataset creation to Polars. A location in ASC-WDS more than once now keeps one establishment ID, so benchmark row counts can differ.
 - Changed the period label column names to `period_label_short` and `period_label_long`, so output column names change.
 - Changed the assessment template to fixed "Cumulative % change" table headings, no longer written per run.
 - Removed the unused GitHub merge queue CircleCI workflow and `gh-readonly-queue` branch exclusions.
