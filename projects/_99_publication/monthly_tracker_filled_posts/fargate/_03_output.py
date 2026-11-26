@@ -13,7 +13,6 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils import 
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
-from utils.column_values.categorical_column_values import PublishedJobGroupLabels
 
 
 def main(
@@ -80,11 +79,7 @@ def main(
     )
 
     # Read back the small written output so the plan above isn't computed twice.
-    # The workbook tables have no job role column, so they keep the national
-    # "All job roles" rows only.
-    written_output_lf = utils.scan_parquet(output_destination).filter(
-        pl.col(Pub.job_role) == PublishedJobGroupLabels.all_job_roles
-    )
+    written_output_lf = utils.scan_parquet(output_destination)
     logo = workbook_helpers.get_logo_bytes(logo_source)
     workbook_name = workbook_helpers.generate_workbook_name(
         output_workbook_utils.DOWNLOAD_WORKBOOK_STEM, run_source

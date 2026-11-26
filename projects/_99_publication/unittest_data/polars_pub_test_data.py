@@ -1998,7 +1998,7 @@ prepare_perc_change_for_publication_test_cases = [
 
 # Raw period dates are CQC import dates, one month ahead of their labels,
 # so the latest here is 2026-09-01 (Aug 2026) and it publishes on 2026-09-15.
-# Columns: period, label, region, service, rounded posts, locations, then the
+# Columns: period, label, region, job role, service, rounded posts, locations, then the
 # filled posts April and cumulative change, and the location count April and
 # cumulative change.
 download_workbook_publication_data = [
@@ -2006,6 +2006,7 @@ download_workbook_publication_data = [
         date(2026, 8, 1),
         "Jul 2026",
         "England",
+        PublishedJobGroupLabels.all_job_roles,
         _ALL_CQC_LOCATIONS,
         1230000.0,
         22000,
@@ -2018,6 +2019,7 @@ download_workbook_publication_data = [
         date(2026, 9, 1),
         "Aug 2026",
         "England",
+        PublishedJobGroupLabels.all_job_roles,
         _ALL_CQC_LOCATIONS,
         1240000.0,
         22100,
@@ -2030,6 +2032,7 @@ download_workbook_publication_data = [
         date(2026, 9, 1),
         "Aug 2026",
         "London",
+        PublishedJobGroupLabels.all_job_roles,
         _ALL_CQC_LOCATIONS,
         None,
         3,

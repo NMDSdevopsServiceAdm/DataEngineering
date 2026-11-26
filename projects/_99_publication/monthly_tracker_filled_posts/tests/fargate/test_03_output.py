@@ -398,21 +398,12 @@ class TestMainDataDownloadWorkbook:
         assert mocks.calls == ["sink", "build"]
 
     def test_builds_the_workbook_from_the_written_publication_data(self, mocks):
-        _run_main(mocks, [_input_row(date(2026, 4, 1))])
-
-        assert mocks.scan_parquet.call_args_list[1].args == (TEST_DESTINATION,)
-
-    def test_builds_the_workbook_from_all_job_roles_rows_only(self, mocks):
-        written_lf = _written_lf(
-            ("Care worker", PublishedJobGroupLabels.all_job_roles, "Direct care")
-        )
+        written_lf = _written_lf()
 
         _run_main(mocks, [_input_row(date(2026, 4, 1))], written_lf=written_lf)
 
-        built_lf = mocks.build_download_workbook.call_args.args[0]
-        assert built_lf.collect()[Pub.job_role].to_list() == [
-            PublishedJobGroupLabels.all_job_roles
-        ]
+        assert mocks.scan_parquet.call_args_list[1].args == (TEST_DESTINATION,)
+        assert mocks.build_download_workbook.call_args.args[0] is written_lf
 
     def test_names_the_workbook_by_archive_date_and_run_number(self, mocks):
         _run_main(mocks, [_input_row(date(2026, 4, 1))])

@@ -51,6 +51,12 @@ PUBLICATION_SCHEMA = pl.Schema(
     ]
 )
 
+DOWNLOAD_SCHEMA = pl.Schema(
+    list(PUBLICATION_SCHEMA.items())[:3]
+    + [(Pub.job_role, pl.String)]
+    + list(PUBLICATION_SCHEMA.items())[3:]
+)
+
 
 class TestPrepareT0ForPublication:
     input_schema = PUBLICATION_SCHEMA
@@ -124,11 +130,23 @@ class TestPreparePercChangeForPublication:
         assert returned_df[Pub.monthly_percentage_change].tolist() == [0.012]
 
 
+class TestPrepareDownloadTables:
+    def test_function_keeps_only_all_job_roles_rows(self):
+        row = Data.download_workbook_publication_data[0]
+        role_index = list(DOWNLOAD_SCHEMA.names()).index(Pub.job_role)
+        care_worker_row = row[:role_index] + ("Care worker",) + row[role_index + 1 :]
+        input_lf = pl.LazyFrame([care_worker_row, row], DOWNLOAD_SCHEMA, orient="row")
+
+        returned_tables = job.prepare_download_tables(input_lf)
+
+        assert all(len(table) == 1 for table in returned_tables.values())
+
+
 class TestGetLatestPeriod:
     def test_function_returns_month_before_latest_period_date(self):
         publication_lf = pl.LazyFrame(
             Data.download_workbook_publication_data,
-            PUBLICATION_SCHEMA,
+            DOWNLOAD_SCHEMA,
             orient="row",
         )
 
@@ -143,7 +161,7 @@ class TestBuildDownloadWorkbook:
     def publication_lf():
         return pl.LazyFrame(
             Data.download_workbook_publication_data,
-            PUBLICATION_SCHEMA,
+            DOWNLOAD_SCHEMA,
             orient="row",
         )
 
@@ -485,7 +503,7 @@ class TestBuildDownloadWorkbookRepeatedBuilds:
         job.build_download_workbook(
             pl.LazyFrame(
                 Data.download_workbook_publication_data,
-                PUBLICATION_SCHEMA,
+                DOWNLOAD_SCHEMA,
                 orient="row",
             ),
             tmp_path / "download.xlsx",
