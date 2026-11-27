@@ -213,26 +213,30 @@ def check_main(promoted_metadata_source: str, run_number: int) -> int:
     return 0 if promoted else NOT_PROMOTED_EXIT_CODE
 
 
-def _total_by_period_and_label(
-    lf: pl.LazyFrame, value_column: str, label_column: str
+def _total_by_period_and_labels(
+    lf: pl.LazyFrame, value_column: str, label_columns: list[str]
 ) -> pl.DataFrame:
     """
-    Sums one column for each import date and label, as Float64 so the
-    comparison isn't skewed by Float32 accumulation error. The label is cast to
-    String so both sources join on the same type.
+    Sums one column for each import date and combination of labels, as Float64
+    so the comparison isn't skewed by Float32 accumulation error. The labels are
+    cast to String so both sources join on the same type.
+
+    Collects once, after the aggregation, so a large frame is scanned once and
+    the result is one row per import date and label combination.
 
     Args:
-        lf (pl.LazyFrame): rows holding the import date, label and value
+        lf (pl.LazyFrame): rows holding the import date, labels and value
         value_column (str): the column to sum
-        label_column (str): the column to total by, such as job role or job group
+        label_columns (list[str]): the columns to total by, such as job role or
+            job role and job group
 
     Returns:
-        pl.DataFrame: one row per import date and label
+        pl.DataFrame: one row per import date and label combination
     """
     return (
-        lf.group_by(IndCQC.cqc_location_import_date, label_column)
+        lf.group_by(IndCQC.cqc_location_import_date, *label_columns)
         .agg(pl.col(value_column).cast(pl.Float64).sum().alias(value_column))
-        .with_columns(pl.col(label_column).cast(pl.String))
+        .with_columns(pl.col(label_columns).cast(pl.String))
         .collect()
     )
 
@@ -383,13 +387,13 @@ def main(
         [assessment_source, promoted_archive_source], run_number
     )
 
-    public_by_role = _total_by_period_and_label(
+    public_by_role = _total_by_period_and_labels(
         utils.scan_parquet(assessment_run_source).filter(
             pl.col(IndCQC.current_region) == PublishedRegion.england,
             pl.col(IndCQC.primary_service_type) == PublishedMainService.all_locations,
         ),
         Pub.unfiltered_filled_posts,
-        IndCQC.main_job_role_clean_labelled,
+        [IndCQC.main_job_role_clean_labelled],
     )
     is_all_job_roles = (
         pl.col(IndCQC.main_job_role_clean_labelled)
@@ -419,7 +423,9 @@ def main(
             f"roles' row in the assessment data: "
             f"{', '.join(str(period) for period in sorted(periods_without_total))}"
         )
-    archive_lf = (
+    # One pass over the archive; the role and group totals are summed from this
+    # small frame.
+    archive_by_role_and_group = _total_by_period_and_labels(
         utils.scan_parquet(archive_run_source)
         .select(
             IndCQC.cqc_location_import_date,
@@ -427,19 +433,23 @@ def main(
             IndCQC.main_job_group_labelled,
             IndCQC.estimate_filled_posts_by_job_role,
         )
-        .filter(pl.col(IndCQC.cqc_location_import_date).is_in(public_periods.implode()))
-    )
-    archive_by_role = _total_by_period_and_label(
-        archive_lf,
+        .filter(
+            pl.col(IndCQC.cqc_location_import_date).is_in(public_periods.implode())
+        ),
         IndCQC.estimate_filled_posts_by_job_role,
-        IndCQC.main_job_role_clean_labelled,
+        [IndCQC.main_job_role_clean_labelled, IndCQC.main_job_group_labelled],
     )
+    archive_by_role = archive_by_role_and_group.group_by(
+        IndCQC.cqc_location_import_date, IndCQC.main_job_role_clean_labelled
+    ).agg(pl.col(IndCQC.estimate_filled_posts_by_job_role).sum())
     # Renamed to the job role column so the totals join with the public ones.
-    archive_by_group = _total_by_period_and_label(
-        archive_lf,
-        IndCQC.estimate_filled_posts_by_job_role,
-        IndCQC.main_job_group_labelled,
-    ).rename({IndCQC.main_job_group_labelled: IndCQC.main_job_role_clean_labelled})
+    archive_by_group = (
+        archive_by_role_and_group.group_by(
+            IndCQC.cqc_location_import_date, IndCQC.main_job_group_labelled
+        )
+        .agg(pl.col(IndCQC.estimate_filled_posts_by_job_role).sum())
+        .rename({IndCQC.main_job_group_labelled: IndCQC.main_job_role_clean_labelled})
+    )
     archive_by_period = archive_by_role.group_by(IndCQC.cqc_location_import_date).agg(
         pl.col(IndCQC.estimate_filled_posts_by_job_role).sum()
     )

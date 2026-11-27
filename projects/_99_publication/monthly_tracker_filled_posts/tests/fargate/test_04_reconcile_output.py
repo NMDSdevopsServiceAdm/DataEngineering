@@ -165,7 +165,7 @@ def _set_sources(
 
 
 def _set_group_sources(
-    mocks,
+    mocks: SimpleNamespace,
     assessment_groups: dict[str, float],
     archive_groups: dict[str, float],
 ) -> None:
@@ -174,7 +174,7 @@ def _set_group_sources(
     job role per archive group, so only the job group rows can differ.
 
     Args:
-        mocks: the job's mocks
+        mocks (SimpleNamespace): the job's mocks
         assessment_groups (dict[str, float]): the assessment's posts per job group
         archive_groups (dict[str, float]): the archive's posts per job group
     """
