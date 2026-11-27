@@ -195,7 +195,9 @@ def fill_assessment_workbook_from_lf(
 ) -> None:
     """Writes the assessment data into the given sheets of the template.
 
-    The workbook is written once, so every sheet's values are built first.
+    The workbook is written once, so every sheet's values are built first. The data
+    is prepared once per distinct preparer in `sheet_values.SHEET_PREPARERS`, so
+    sheets that pivot the data differently each get their own frame.
 
     Args:
         assessment_lf (pl.LazyFrame): assessment data.
@@ -213,14 +215,25 @@ def fill_assessment_workbook_from_lf(
     if unsupported:
         raise ValueError(f"No values builder for sheets: {', '.join(unsupported)}")
 
-    assessment_df = sheet_values.prepare_assessment_df(
-        assessment_lf, sheet_values.value_columns(sheets)
-    )
-    values = {
-        sheet.name: builders[sheet.name](assessment_df, term_from_dates)
-        for sheet in sheets
-    }
-    period_labels = assessment_df.get_column(Pub.period_label_short).unique().to_list()
+    sheets_by_preparer = {}
+    for sheet in sheets:
+        preparer = sheet_values.SHEET_PREPARERS[sheet.name]
+        sheets_by_preparer.setdefault(preparer, []).append(sheet)
+
+    values = {}
+    period_labels = set()
+    for preparer, preparer_sheets in sheets_by_preparer.items():
+        assessment_df = preparer(
+            assessment_lf, sheet_values.value_columns(preparer_sheets)
+        )
+        period_labels |= set(assessment_df.get_column(Pub.period_label_short))
+        for sheet in preparer_sheets:
+            values[sheet.name] = builders[sheet.name](assessment_df, term_from_dates)
     fill_assessment_workbook(
-        period_labels, term_from_dates, run_number, values, template_path, output_path
+        list(period_labels),
+        term_from_dates,
+        run_number,
+        values,
+        template_path,
+        output_path,
     )

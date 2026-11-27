@@ -19,7 +19,7 @@ TYPED_VALUE_TYPES = (int, float, datetime.date, datetime.datetime)
 
 class TestTemplateCells:
     def test_has_expected_sheet_names_in_order(self, workbook: openpyxl.Workbook):
-        """The six sheets keep their undated names, in order."""
+        """The seven sheets keep their undated names, in order."""
         assert workbook.sheetnames == [s.name for s in cell_map.ASSESSMENT_SHEETS]
 
     @pytest.mark.parametrize("sheet", support.sheet_params)

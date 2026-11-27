@@ -119,3 +119,46 @@ class TestAssessmentSheets:
                 "non_res.ct_change",
             )
         ] == [filled_posts_source, ct_source, filled_posts_source, ct_source]
+
+
+def _sources(sheet: job.SheetMap) -> dict[str, tuple[str | None, str | None]]:
+    return {
+        r.key: (r.source_column, r.monthly_source_column)
+        for r in sheet.input_ranges
+        if r.key
+    }
+
+
+COMP_PREV_SHEETS = [
+    pytest.param(job.COMP_PREV_MS, "H", id="main_service"),
+    pytest.param(job.COMP_PREV_JR, "K", id="job_role"),
+]
+
+
+class TestCompPrevSheets:
+    def test_sheets_are_named_and_registered_in_tab_order(self):
+        names = [s.name for s in job.ASSESSMENT_SHEETS]
+
+        assert names[:4] == [
+            "Filled posts",
+            "Comp prev publication - MS",
+            "Comp prev publication - JR",
+            "Comp SfC and CT - short term",
+        ]
+
+    @pytest.mark.parametrize("sheet, last_column", COMP_PREV_SHEETS)
+    def test_figure_blocks_span_column_d_to_the_last_column(
+        self, sheet: job.SheetMap, last_column: str
+    ):
+        cells = {r.key: r.cells for r in sheet.input_ranges if r.key}
+
+        assert [
+            cells[f"{block}.values"] for block in ("previous", "current", "difference")
+        ] == [
+            f"D23:{last_column}59",
+            f"D64:{last_column}100",
+            f"D106:{last_column}142",
+        ]
+
+    def test_both_sheets_read_the_same_source_columns(self):
+        assert _sources(job.COMP_PREV_JR) == _sources(job.COMP_PREV_MS)
