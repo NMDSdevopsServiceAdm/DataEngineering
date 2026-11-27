@@ -229,17 +229,39 @@ class TestMain:
             job_roles
         )
 
-    def test_main_sorts_by_job_role_within_period_and_region(self, mocks):
+    def test_main_sorts_by_region_then_job_role_then_main_service(self, mocks):
         input_rows = [
+            _input_row(date(2026, 4, 1), job_role="Care worker", region="South West"),
             _input_row(date(2026, 4, 1), job_role="Registered nurse"),
+            _input_row(
+                date(2026, 4, 1),
+                job_role="Care worker",
+                service=PrimaryServiceType.non_residential,
+            ),
             _input_row(date(2026, 4, 1), job_role="Care worker"),
         ]
 
         returned_lf = _run_main(mocks, input_rows)
 
-        assert returned_lf.collect()[Pub.job_role].to_list() == [
-            "Care worker",
-            "Registered nurse",
+        assert returned_lf.select(
+            Pub.region, Pub.job_role, Pub.main_service
+        ).collect().rows() == [
+            (
+                "London",
+                "Care worker",
+                PublishedMainService.care_home_with_nursing,
+            ),
+            ("London", "Care worker", PublishedMainService.non_residential),
+            (
+                "London",
+                "Registered nurse",
+                PublishedMainService.care_home_with_nursing,
+            ),
+            (
+                "South West",
+                "Care worker",
+                PublishedMainService.care_home_with_nursing,
+            ),
         ]
 
     def test_main_keeps_one_row_per_year_historically_and_every_current_month(

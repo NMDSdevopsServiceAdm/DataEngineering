@@ -131,15 +131,19 @@ class TestPreparePercChangeForPublication:
 
 
 class TestPrepareDownloadTables:
-    def test_function_keeps_only_all_job_roles_rows(self):
+    def test_function_excludes_rows_that_are_not_all_job_roles(self):
         row = Data.download_workbook_publication_data[0]
-        role_index = list(DOWNLOAD_SCHEMA.names()).index(Pub.job_role)
-        care_worker_row = row[:role_index] + ("Care worker",) + row[role_index + 1 :]
-        input_lf = pl.LazyFrame([care_worker_row, row], DOWNLOAD_SCHEMA, orient="row")
+        all_job_roles_lf = pl.LazyFrame([row], DOWNLOAD_SCHEMA, orient="row")
+        care_worker_lf = all_job_roles_lf.with_columns(
+            pl.lit("Care worker").alias(Pub.job_role),
+            pl.lit(5.0).alias(Pub.estimated_filled_posts_rounded),
+        )
 
-        returned_tables = job.prepare_download_tables(input_lf)
+        returned_tables = job.prepare_download_tables(
+            pl.concat([care_worker_lf, all_job_roles_lf])
+        )
 
-        assert all(len(table) == 1 for table in returned_tables.values())
+        assert returned_tables["T0"][Pub.estimated_filled_posts].tolist() == [row[5]]
 
 
 class TestGetLatestPeriod:

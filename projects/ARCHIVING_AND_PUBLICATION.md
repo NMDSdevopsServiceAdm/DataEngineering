@@ -43,7 +43,7 @@ Several runs can be approved in a month, so choosing the one to publish is a sep
 Select it with `scripts/update_run_log.sh`, setting `selected_for_publication`.
 Only an approved run archived since the 1st of the month can be selected, and selecting another run moves the selection.
 The script can then start the `Publication-Output` step function with `{"run_number": N}`; otherwise start it by hand with that input.
-It builds the public data from that run's prepared data: the publication summary behind the Tableau output and the T0, T1 and T2 data-download tables.
+It builds the public data from that run's prepared data: the publication summary behind the Tableau output (every job role, job group and rollup row) and the T0, T1 and T2 data-download tables ("All job roles" rows only).
 Public data is only built for a selected run, so the step function fails without a `run_number`.
 It also builds the data download workbook from that data and saves `monthly_tracker_data_download_<archive_date>_<run_number>.xlsx` under `dataset=monthly_tracker_filled_posts_03_output_workbook/`, which the publication crawler excludes.
 The workbook's Frontpage logo is read from `publication/logo/skills_for_care_logo.png` in the pipeline resources bucket; the job fails if it is missing or empty, so upload it before the first run.
