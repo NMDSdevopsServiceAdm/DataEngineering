@@ -63,7 +63,7 @@ A sheet that needs the data pivoted differently from the service type pivot also
 
 `Comp prev publication - MS` (main service, columns `D:H`) and `Comp prev publication - JR` (job role, columns `D:K`) share one layout, built by `_comp_prev_sheet` in `assessment_cell_map.py`. Both show the previous publication, current publication and difference blocks, with April % change on the Annual rows and short-term cumulative % change on the Monthly rows.
 
-The JR columns are `COMP_PREV_JOB_ROLES`, filled from the England, "All locations" rows by `prepare_job_role_assessment_df`. To add a job role or group, add it to `COMP_PREV_JOB_ROLES` and add a header column to the JR sheet's three blocks (rows 22, 63 and 105) in the template. A job role label with more than one row for an import date makes the pivot fail.
+The JR columns are `COMP_PREV_JOB_ROLES`, filled from the England, "All locations" rows by `prepare_job_role_assessment_df`. To add a job role or group, add it to `COMP_PREV_JOB_ROLES` and add a header column to the JR sheet's three blocks (rows 22, 63 and 105) in the template.
 
 ## Change the data download's text
 
