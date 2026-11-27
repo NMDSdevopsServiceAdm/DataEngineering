@@ -124,35 +124,13 @@ def mocks():
 
 
 def _set_sources(
-    mocks,
+    mocks: SimpleNamespace,
     assessment_rows: list[tuple],
     archive_rows: list[tuple],
     assessment_role_type: pl.DataType = pl.String(),
     archive_role_type: pl.DataType = pl.String(),
-    derive_group_rows: bool = True,
 ) -> None:
-    """
-    Points the mocked scan_parquet at the right fixture frame for each source.
-
-    By default, adds a national job group row to the assessment for each group
-    and assessment period, totalling the archive's rows, so tests of other
-    checks pass the group comparison. Pass derive_group_rows=False to supply
-    the group rows explicitly.
-    """
-    if derive_group_rows:
-        periods = {row[0] for row in assessment_rows}
-        group_totals: dict[tuple, float] = {}
-        for import_date, _, group, estimate in archive_rows:
-            if import_date in periods:
-                key = (import_date, group)
-                group_totals[key] = group_totals.get(key, 0.0) + estimate
-        assessment_rows = [
-            *assessment_rows,
-            *(
-                _assessment_row(import_date, total, job_role=group)
-                for (import_date, group), total in group_totals.items()
-            ),
-        ]
+    """Points the mocked scan_parquet at the right fixture frame for each source."""
     role = pl.col(IndCQC.main_job_role_clean_labelled)
     assessment_lf = pl.LazyFrame(
         assessment_rows, ASSESSMENT_SCHEMA, orient="row"
@@ -162,6 +140,37 @@ def _set_sources(
     )
     sources = {ASSESSMENT_RUN_SOURCE: assessment_lf, ARCHIVE_RUN_SOURCE: archive_lf}
     mocks.scan_parquet.side_effect = lambda source: sources[source]
+
+
+def _set_sources_with_group_rows(
+    mocks: SimpleNamespace,
+    assessment_rows: list[tuple],
+    archive_rows: list[tuple],
+    assessment_role_type: pl.DataType = pl.String(),
+    archive_role_type: pl.DataType = pl.String(),
+) -> None:
+    """
+    Like _set_sources, but adds a national job group row to the assessment for
+    each archive job group and assessment period, totalling the archive's rows,
+    so the job group comparison passes. For tests of the other checks.
+    """
+    periods = {row[0] for row in assessment_rows}
+    group_totals: dict[tuple, float] = {}
+    for import_date, _, group, estimate in archive_rows:
+        if import_date in periods:
+            key = (import_date, group)
+            group_totals[key] = group_totals.get(key, 0.0) + estimate
+    group_rows = [
+        _assessment_row(import_date, total, job_role=group)
+        for (import_date, group), total in group_totals.items()
+    ]
+    _set_sources(
+        mocks,
+        [*assessment_rows, *group_rows],
+        archive_rows,
+        assessment_role_type,
+        archive_role_type,
+    )
 
 
 def _set_group_sources(
@@ -195,7 +204,6 @@ def _set_group_sources(
             _archive_row(IN_PERIOD, posts, job_role=f"role of {group}", job_group=group)
             for group, posts in archive_groups.items()
         ],
-        derive_group_rows=False,
     )
 
 
@@ -212,7 +220,7 @@ def _run_main(mocks, run_number: int = 2) -> None:
 
 class TestMain:
     def test_passes_when_totals_are_within_tolerance(self, mocks):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.05)],  # 0.005% diff, within tolerance
@@ -275,7 +283,7 @@ class TestMain:
         assert str(IN_PERIOD) not in str(error.value)
 
     def test_passes_when_every_role_is_within_tolerance(self, mocks):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             [
                 _assessment_row(IN_PERIOD, 1000.0),
@@ -371,7 +379,7 @@ class TestMain:
 
     def test_passes_when_a_role_has_no_posts_in_either_source(self, mocks):
         # A role not yet in use in a period totals 0 on both sides (0 / 0 is NaN).
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             [
                 _assessment_row(IN_PERIOD, 1000.0),
@@ -430,7 +438,7 @@ class TestMain:
     def test_matches_roles_whatever_their_type_in_each_source(
         self, mocks, assessment_role_type, archive_role_type
     ):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.0)],
@@ -461,7 +469,7 @@ class TestMain:
         assert str(OTHER_PERIOD) in str(error.value)
 
     def test_reports_the_largest_job_role_difference(self, mocks, capsys):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.05)],
@@ -475,7 +483,7 @@ class TestMain:
         self, mocks
     ):
         # Neither the "All job roles" rollup nor regional/service rollups are roles.
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             [
                 _assessment_row(IN_PERIOD, 1000.0),
@@ -521,7 +529,6 @@ class TestMain:
                     IN_PERIOD, 1000.0, job_role="Registered nurse", job_group=job_group
                 )
             ],
-            derive_group_rows=False,
         )
 
         _run_main(mocks)  # does not raise
@@ -556,7 +563,6 @@ class TestMain:
                 _archive_row(IN_PERIOD, 400.0, job_role="Support worker"),
                 _archive_row(IN_PERIOD, 600.0, job_role="Care worker"),
             ],
-            derive_group_rows=False,
         )
 
         _run_main(mocks)  # does not raise
@@ -718,7 +724,7 @@ class TestMain:
         assert str(error.value).count("role_") == job.MAX_DIFFERENCES_REPORTED
 
     def test_resolves_both_sources_for_the_requested_run_number(self, mocks):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.0)],
@@ -733,7 +739,7 @@ class TestMain:
     def test_sums_every_job_role_row_on_the_archive_side(self, mocks):
         # The archive has no "All job roles" row: a filter on that label would
         # match nothing and total 0.
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             [
                 _assessment_row(IN_PERIOD, 1000.0),
@@ -751,7 +757,7 @@ class TestMain:
     def test_uses_only_the_national_all_job_roles_row_on_the_public_side(self, mocks):
         # The assessment data holds overlapping rollups (regions, service groups,
         # job roles), so summing them would count each location several times.
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             [
                 _assessment_row(IN_PERIOD, 1000.0),
@@ -772,7 +778,7 @@ class TestMain:
     def test_ignores_archive_periods_the_public_data_does_not_hold(self, mocks):
         # The archive keeps every period back to 2013; only the public data's own
         # periods are compared.
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [
@@ -817,7 +823,7 @@ class TestMain:
             _run_main(mocks)
 
     def test_marks_the_run_reconciled_on_match(self, mocks):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.0)],
@@ -863,7 +869,7 @@ class TestMain:
     def test_marks_the_run_reconciled_only_when_archive_and_download_both_match(
         self, mocks
     ):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.0)],
@@ -879,7 +885,7 @@ class TestMain:
         )
 
     def test_does_not_mark_the_run_reconciled_when_the_download_differs(self, mocks):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.0)],
