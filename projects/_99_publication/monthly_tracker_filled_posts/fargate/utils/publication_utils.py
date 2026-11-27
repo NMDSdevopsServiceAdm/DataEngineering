@@ -10,6 +10,9 @@ from utils.column_values.categorical_column_values import (
     PublishedMainService,
     PublishedRegion,
 )
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
+)
 
 # A location is filtered out when its capacity tracker data swings further from
 # the national average swing than this many standard deviations.
@@ -17,8 +20,9 @@ _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 
 # Period, then region (England, Eastern and East Midlands first, the rest
-# alphabetical), then main service in its published order. An unlisted region
-# or main service fails the cast.
+# alphabetical), then job group and role ("All job roles", the job groups, then
+# job roles alphabetically), then main service in its published order. An
+# unlisted region, job group or role, or main service fails the cast.
 DOWNLOAD_TABLE_SORT_KEYS: list[pl.Expr] = [
     pl.col(Pub.period),
     pl.col(Pub.region).cast(
@@ -34,6 +38,20 @@ DOWNLOAD_TABLE_SORT_KEYS: list[pl.Expr] = [
                 PublishedRegion.south_west,
                 PublishedRegion.west_midlands,
                 PublishedRegion.yorkshire_and_the_humber,
+            ]
+        )
+    ),
+    pl.col(Pub.job_group_and_role).cast(
+        pl.Enum(
+            [
+                PublishedJobGroupLabels.all_job_roles,
+                PublishedJobGroupLabels.direct_care,
+                PublishedJobGroupLabels.managers,
+                PublishedJobGroupLabels.regulated_professions,
+                PublishedJobGroupLabels.other,
+                *sorted(
+                    CatValues.main_job_role_labels_column_values.categorical_values
+                ),
             ]
         )
     ),
@@ -660,7 +678,9 @@ def add_rows_for_publication_groups(
 
     The job role rows (small, post-aggregation) are collected so every
     rollup and sink reuses one evaluation of prepared_lf; left lazy, Polars
-    re-runs the whole upstream plan per consumer.
+    re-runs the whole upstream plan per consumer. The collected rows are also
+    checked for a job role sharing its label with a job group (both are "Other"
+    in the published labels), as their rows would be summed together.
 
     Args:
         prepared_lf (pl.LazyFrame): location-level data, as passed into
@@ -674,6 +694,9 @@ def add_rows_for_publication_groups(
         pl.LazyFrame: publication_summary_lf with rollup rows added for
             each job group, "All job roles", "All CQC care homes", "All CQC
             locations" and "England".
+
+    Raises:
+        ValueError: if a job role label is also a job group label.
     """
     publication_summary_lf = publication_summary_lf.with_columns(
         pl.col(IndCQC.primary_service_type).cast(pl.Categorical)
@@ -723,10 +746,28 @@ def add_rows_for_publication_groups(
         )
         .select(column_order)
     )
-    job_role_enlarged_lf = pl.concat(
+    job_role_enlarged_df = pl.concat(
         [publication_summary_lf, all_job_roles_lf, job_group_lf], how="vertical"
+    ).collect(engine="streaming")
+
+    row_keys = [
+        IndCQC.cqc_location_import_date,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.current_region,
+        IndCQC.primary_service_type,
+    ]
+    overlapping_labels = (
+        job_role_enlarged_df.filter(pl.struct(row_keys).is_duplicated())
+        .get_column(IndCQC.main_job_role_clean_labelled)
+        .unique()
+        .to_list()
     )
-    job_role_enlarged_lf = job_role_enlarged_lf.collect(engine="streaming").lazy()
+    if overlapping_labels:
+        raise ValueError(
+            "Job role labels shared with a job group or 'All job roles' would have"
+            f" their rows summed together: {sorted(overlapping_labels)}"
+        )
+    job_role_enlarged_lf = job_role_enlarged_df.lazy()
 
     service_type_group_keys = [
         IndCQC.cqc_location_import_date,

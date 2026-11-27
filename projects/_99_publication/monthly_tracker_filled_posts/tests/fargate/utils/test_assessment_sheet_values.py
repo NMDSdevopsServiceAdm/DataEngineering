@@ -16,6 +16,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.publication_columns import PublicationColumns as Pub
 from utils.column_values.categorical_column_values import (
     PublishedJobGroupLabels,
+    PublishedMainService,
     PublishedRegion,
 )
 
@@ -81,6 +82,51 @@ APRIL_2025 = datetime.date(2025, 4, 1)
 APRIL_2026 = datetime.date(2026, 4, 1)
 IMPORT_DATES = [APRIL_2024, APRIL_2025, APRIL_2026, datetime.date(2026, 5, 1)]
 TERM_FROM_DATES = TermFromDates(short=APRIL_2026, medium=APRIL_2025, long=APRIL_2024)
+
+JOB_ROLE_LABELS = [
+    "All job roles",
+    "Direct care",
+    "Managers",
+    "Regulated professions",
+    "Other",
+    "Care worker",
+    "Registered nurse",
+    "Registered manager",
+]
+JOB_ROLE_VALUE_COLUMNS = job.value_columns([cell_map.COMP_PREV_JR])
+# Each column's value rises by this much per import date, and by 10 per job role.
+JOB_ROLE_STEPS = {
+    Pub.unfiltered_filled_posts_april_pct_change_prev_run: 0.5,
+    Pub.unfiltered_short_sfc_cum_pct_change_prev_run: 0.6,
+    Pub.unfiltered_filled_posts_april_pct_change: 0.1,
+    Pub.unfiltered_short_sfc_cum_pct_change: 0.3,
+    Pub.unfiltered_filled_posts_april_pct_change_comparison: 0.7,
+    Pub.unfiltered_short_sfc_cum_pct_change_comparison: 0.8,
+}
+
+
+def _job_role_assessment_lf(
+    import_dates: list[datetime.date],
+    labels: list[str] = JOB_ROLE_LABELS,
+    region: str = PublishedRegion.england,
+    service_type: str = PublishedMainService.all_locations,
+) -> pl.LazyFrame:
+    """One row per import date and job role label; values rise with the date."""
+    rows = [
+        {
+            IndCQC.cqc_location_import_date: import_date,
+            Pub.period_label_short: (import_date - datetime.timedelta(days=1)).strftime(
+                "%b %Y"
+            ),
+            IndCQC.main_job_role_clean_labelled: label,
+            IndCQC.current_region: region,
+            IndCQC.primary_service_type: service_type,
+        }
+        | {column: step * (i + 1) + 10 * k for column, step in JOB_ROLE_STEPS.items()}
+        for i, import_date in enumerate(import_dates)
+        for k, label in enumerate(labels)
+    ]
+    return pl.LazyFrame(rows)
 
 
 class TestPrepareAssessmentDf:
@@ -201,7 +247,7 @@ class TestFilledPostsValues:
 class TestCompPrevPublicationValues:
     @pytest.fixture(scope="class")
     def cells(self) -> dict[str, object]:
-        return job.comp_prev_publication_values(
+        return job.comp_prev_ms_values(
             job.prepare_assessment_df(_assessment_lf(IMPORT_DATES), VALUE_COLUMNS)
         )
 
@@ -242,14 +288,14 @@ class TestCompPrevPublicationValues:
         import_dates = [*IMPORT_DATES, datetime.date(2026, 6, 1)]
         df = job.prepare_assessment_df(_assessment_lf(import_dates), VALUE_COLUMNS)
 
-        cells = job.comp_prev_publication_values(df)
+        cells = job.comp_prev_ms_values(df)
 
         assert [cells[f"D{row}"] for row in (26, 27)] == pytest.approx([2.4, 3.0])
 
     def test_all_rows_read_april_columns_when_there_are_no_later_rows(self):
         df = job.prepare_assessment_df(_assessment_lf(IMPORT_DATES[:3]), VALUE_COLUMNS)
 
-        cells = job.comp_prev_publication_values(df)
+        cells = job.comp_prev_ms_values(df)
 
         assert [cells[f"D{row}"] for row in (23, 24, 25)] == pytest.approx(
             [0.5, 1.0, 1.5]
@@ -261,7 +307,140 @@ class TestCompPrevPublicationValues:
         df = job.prepare_assessment_df(_assessment_lf(april_dates), VALUE_COLUMNS)
 
         with pytest.raises(ValueError, match="exceed the 37 rows"):
-            job.comp_prev_publication_values(df)
+            job.comp_prev_ms_values(df)
+
+
+class TestPrepareJobRoleAssessmentDf:
+    def test_keeps_only_england_all_locations_rows(self):
+        lf = pl.concat(
+            [
+                _job_role_assessment_lf(IMPORT_DATES[:1]),
+                _job_role_assessment_lf(IMPORT_DATES[:1], region="North East"),
+                _job_role_assessment_lf(
+                    IMPORT_DATES[:1], service_type=PublishedMainService.all_care_homes
+                ),
+            ]
+        )
+
+        df = job.prepare_job_role_assessment_df(lf, JOB_ROLE_VALUE_COLUMNS)
+
+        assert df.height == 1
+
+    def test_spreads_each_value_column_across_job_roles(self):
+        df = job.prepare_job_role_assessment_df(
+            _job_role_assessment_lf(IMPORT_DATES[:1]), JOB_ROLE_VALUE_COLUMNS
+        )
+
+        assert df.select(
+            [
+                f"{Pub.unfiltered_filled_posts_april_pct_change}|{label}"
+                for label in JOB_ROLE_LABELS
+            ]
+        ).row(0) == pytest.approx((0.1, 10.1, 20.1, 30.1, 40.1, 50.1, 60.1, 70.1))
+
+    def test_ignores_job_roles_outside_the_sheet_columns(self):
+        lf = _job_role_assessment_lf(
+            IMPORT_DATES[:1], labels=[*JOB_ROLE_LABELS, "Social worker"]
+        )
+
+        df = job.prepare_job_role_assessment_df(lf, JOB_ROLE_VALUE_COLUMNS)
+
+        assert [c for c in df.columns if c.endswith("|Social worker")] == []
+
+    def test_keeps_every_import_date_sorted(self):
+        lf = _job_role_assessment_lf(IMPORT_DATES).sort(
+            IndCQC.cqc_location_import_date, descending=True
+        )
+
+        df = job.prepare_job_role_assessment_df(lf, JOB_ROLE_VALUE_COLUMNS)
+
+        assert df[IndCQC.cqc_location_import_date].to_list() == IMPORT_DATES
+
+    def test_raises_when_a_job_role_has_two_rows_for_an_import_date(self):
+        # The "Other" job group and "Other" job role share a label.
+        lf = pl.concat(
+            [
+                _job_role_assessment_lf(IMPORT_DATES[:1]),
+                _job_role_assessment_lf(IMPORT_DATES[:1], labels=["Other"]),
+            ]
+        )
+
+        with pytest.raises(pl.exceptions.PolarsError):
+            job.prepare_job_role_assessment_df(lf, JOB_ROLE_VALUE_COLUMNS)
+
+
+class TestCompPrevJobRoleValues:
+    @pytest.fixture(scope="class")
+    def cells(self) -> dict[str, object]:
+        return job.comp_prev_job_role_values(
+            job.prepare_job_role_assessment_df(
+                _job_role_assessment_lf(IMPORT_DATES), JOB_ROLE_VALUE_COLUMNS
+            )
+        )
+
+    def test_blocks_list_annual_rows_then_monthly_rows_as_period_months(self, cells):
+        expected_dates = [
+            datetime.date(2024, 3, 1),
+            datetime.date(2025, 3, 1),
+            datetime.date(2026, 3, 1),
+            datetime.date(2026, 4, 1),
+        ]
+        for first_row in (23, 64, 106):
+            assert [cells[f"C{first_row + i}"] for i in range(4)] == expected_dates
+            assert f"C{first_row + 4}" not in cells
+
+    @pytest.mark.parametrize(
+        "first_row, april_step, cumulative_step",
+        [
+            pytest.param(23, 0.5, 0.6, id="previous"),
+            pytest.param(64, 0.1, 0.3, id="current"),
+            pytest.param(106, 0.7, 0.8, id="difference"),
+        ],
+    )
+    def test_each_column_holds_its_job_roles_figures(
+        self, cells, first_row, april_step, cumulative_step
+    ):
+        # First row is a March (April column) and fourth row is monthly (cumulative).
+        for k, col in enumerate("DEFGHIJK"):
+            assert cells[f"{col}{first_row}"] == pytest.approx(april_step + 10 * k)
+            assert cells[f"{col}{first_row + 3}"] == pytest.approx(
+                cumulative_step * 4 + 10 * k
+            )
+
+    def test_writes_nothing_beyond_column_k(self, cells):
+        assert [cell for cell in cells if cell.startswith("L")] == []
+
+    def test_raises_when_periods_exceed_the_block_rows(self):
+        april_dates = [datetime.date(1990 + year, 4, 1) for year in range(38)]
+        df = job.prepare_job_role_assessment_df(
+            _job_role_assessment_lf(april_dates), JOB_ROLE_VALUE_COLUMNS
+        )
+
+        with pytest.raises(ValueError, match="exceed the 37 rows"):
+            job.comp_prev_job_role_values(df)
+
+
+class TestSheetRegistries:
+    def test_every_sheet_has_a_values_builder_and_a_preparer(self):
+        names = [sheet.name for sheet in cell_map.ASSESSMENT_SHEETS]
+
+        assert (
+            [n in job.SHEET_VALUE_BUILDERS for n in names],
+            [n in job.SHEET_PREPARERS for n in names],
+        ) == ([True] * len(names), [True] * len(names))
+
+    def test_job_role_sheet_has_its_own_preparer(self):
+        assert (
+            job.SHEET_PREPARERS[cell_map.COMP_PREV_JR.name]
+            is job.prepare_job_role_assessment_df
+        )
+
+    def test_other_sheets_use_the_service_type_preparer(self):
+        others = [s for s in cell_map.ASSESSMENT_SHEETS if s != cell_map.COMP_PREV_JR]
+
+        assert all(
+            job.SHEET_PREPARERS[s.name] is job.prepare_assessment_df for s in others
+        )
 
 
 class TestComparisonSheetValues:

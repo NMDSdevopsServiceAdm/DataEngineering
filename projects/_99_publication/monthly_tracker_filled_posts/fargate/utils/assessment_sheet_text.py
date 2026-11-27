@@ -83,7 +83,7 @@ def title_text(period_labels: list[str], run_number: int) -> str:
 def comp_prev_rows(
     period_months: list[datetime.date],
 ) -> list[tuple[datetime.date, str]]:
-    """The rows of "Comp prev publication" in order, with their labels.
+    """The rows of each "Comp prev publication" sheet in order, with their labels.
 
     An "Annual" row for each March period, then a "Monthly" row for each period
     after the latest March. The labels and the figures both follow this list.
@@ -117,8 +117,9 @@ def sheet_text(
       note dated from the month before the term's start.
     - "No filters - long term" gets the long term heading only.
     - "Filled posts" gets a chart heading dated from the short term start.
-    - "Comp prev publication" gets an "Annual" row for each March period, then a
-      "Monthly" row for each period after the latest March, in each label range.
+    - Both "Comp prev publication" sheets get an "Annual" row for each March
+      period, then a "Monthly" row for each period after the latest March, in each
+      label range.
 
     Args:
         period_labels (list[str]): period labels such as "Mar 2026".
@@ -169,15 +170,16 @@ def sheet_text(
         date=long_term_period.strftime(PERIOD_LABEL_LONG_FORMAT)
     )
 
-    # Comp prev publication: an Annual or Monthly label for each period row
+    # Comp prev publication sheets: an Annual or Monthly label for each period row
     row_labels = [label for _, label in comp_prev_rows([d.date() for d in dates])]
-    for label_range in cell_map.COMP_PREV_LABEL_RANGES:
-        cells = CellRange(label_range)
-        if len(row_labels) > cells.size["rows"]:
-            raise ValueError(
-                f"{len(row_labels)} periods exceed the {cells.size['rows']} rows in"
-                f" {label_range}"
-            )
-        for i, label in enumerate(row_labels):
-            text[cell_map.COMP_PREV_PUBLICATION.name][f"B{cells.min_row + i}"] = label
+    for sheet in (cell_map.COMP_PREV_MS, cell_map.COMP_PREV_JR):
+        for label_range in cell_map.COMP_PREV_LABEL_RANGES:
+            cells = CellRange(label_range)
+            if len(row_labels) > cells.size["rows"]:
+                raise ValueError(
+                    f"{len(row_labels)} periods exceed the {cells.size['rows']} rows"
+                    f" in {label_range}"
+                )
+            for i, label in enumerate(row_labels):
+                text[sheet.name][f"B{cells.min_row + i}"] = label
     return text

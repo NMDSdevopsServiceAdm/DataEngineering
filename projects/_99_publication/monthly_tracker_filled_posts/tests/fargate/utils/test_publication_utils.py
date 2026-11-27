@@ -628,6 +628,31 @@ class TestAddRowsForPublicationGroups:
         ).collect()
         assert direct_care_rows.height > 0
 
+    def test_raises_when_a_job_role_label_is_also_a_job_group_label(self):
+        input_lf = pl.LazyFrame(
+            [
+                (
+                    "1-101",
+                    date(2025, 4, 1),
+                    PublishedJobGroupLabels.other,
+                    PublishedJobGroupLabels.other,
+                    "London",
+                    PrimaryServiceType.care_home_with_nursing,
+                    20.0,
+                    5.0,
+                    *[True] * 9,
+                ),
+            ],
+            self.input_schema,
+            orient="row",
+        )
+        publication_summary_lf = job.aggregate_to_publication_rows(input_lf)
+
+        with pytest.raises(ValueError, match="Other"):
+            job.add_rows_for_publication_groups(
+                input_lf, publication_summary_lf
+            ).collect()
+
 
 class TestAddPrevRunPctChangeColumns:
     key_schema = pl.Schema(

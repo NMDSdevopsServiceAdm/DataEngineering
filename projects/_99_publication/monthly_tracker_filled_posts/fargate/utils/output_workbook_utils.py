@@ -29,6 +29,7 @@ from projects._99_publication.monthly_tracker_filled_posts.fargate.utils.output_
     TABLE_TITLES,
 )
 from utils.column_names.publication_columns import PublicationColumns as Pub
+from utils.column_values.categorical_column_values import PublishedJobGroupLabels
 
 _PUBLICATION_DAY_OF_MONTH: int = 15
 _FIRST_WEEKEND_WEEKDAY: int = 5  # date.weekday(): Saturday
@@ -176,7 +177,8 @@ def prepare_perc_change_for_publication(
 
 def prepare_download_tables(publication_lf: pl.LazyFrame) -> dict[str, pd.DataFrame]:
     """
-    Builds the published T0, T1 and T2 tables, keyed by sheet name.
+    Builds the published T0, T1 and T2 tables, keyed by sheet name, from the
+    "All job roles" rows only (the tables have no job role column).
 
     Args:
         publication_lf (pl.LazyFrame): the publication data written by the
@@ -185,6 +187,9 @@ def prepare_download_tables(publication_lf: pl.LazyFrame) -> dict[str, pd.DataFr
     Returns:
         dict[str, pd.DataFrame]: the table to publish on each sheet.
     """
+    publication_lf = publication_lf.filter(
+        pl.col(Pub.job_group_and_role) == PublishedJobGroupLabels.all_job_roles
+    )
     return {
         "T0": prepare_t0_for_publication(publication_lf),
         "T1": prepare_perc_change_for_publication(

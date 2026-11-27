@@ -57,6 +57,7 @@ class PublicationColumns:
     )
     main_service: str = "Main service"
     job_group: str = "Job group"
+    job_group_and_role: str = "Job group and role"
     region: str = "Region"
     estimated_filled_posts: str = "Estimated filled posts"
     cqc_locations: str = "CQC locations"
