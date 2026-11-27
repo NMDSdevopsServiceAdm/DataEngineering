@@ -55,6 +55,7 @@ expected_schema = pl.Schema(
         (Pub.period_label_short, pl.String()),
         (Pub.period_label_long, pl.String()),
         (Pub.region, pl.String()),
+        (Pub.job_group_and_role, pl.String()),
         (Pub.main_service, pl.String()),
         (Pub.estimated_filled_posts_rounded, pl.Float32()),
         (Pub.cqc_locations, pl.UInt32()),
@@ -89,14 +90,17 @@ def _input_row(
     )
 
 
-def _written_lf() -> pl.LazyFrame:
-    """The publication data as read back after it was written (one row)."""
+def _written_lf(
+    job_roles: tuple[str, ...] = (PublishedJobGroupLabels.all_job_roles,),
+) -> pl.LazyFrame:
+    """The publication data as read back after it was written (one row per job role)."""
     rows = [
         (
             date(2026, 4, 1),
             "Mar 2026",
             "March 2026",
             "London",
+            job_role,
             PublishedMainService.care_home_with_nursing,
             100.0,
             10,
@@ -105,6 +109,7 @@ def _written_lf() -> pl.LazyFrame:
             None,
             None,
         )
+        for job_role in job_roles
     ]
     return pl.LazyFrame(rows, expected_schema, orient="row")
 
@@ -195,6 +200,7 @@ class TestMain:
                     "Apr 2026",
                     "April 2026",
                     "London",
+                    PublishedJobGroupLabels.all_job_roles,
                     PublishedMainService.care_home_with_nursing,
                     125.0,
                     12,
@@ -209,15 +215,77 @@ class TestMain:
         )
         assert_frame_equal(returned_lf, expected_lf)
 
-    def test_main_keeps_only_all_job_roles_rows(self, mocks):
+    def test_main_keeps_every_job_role_and_job_group_row(self, mocks):
+        job_roles = [
+            "Registered nurse",
+            PublishedJobGroupLabels.direct_care,
+            PublishedJobGroupLabels.all_job_roles,
+        ]
+        input_rows = [_input_row(date(2026, 4, 1), job_role=role) for role in job_roles]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert sorted(
+            returned_lf.collect()[Pub.job_group_and_role].to_list()
+        ) == sorted(job_roles)
+
+    def test_main_orders_all_job_roles_then_job_groups_then_job_roles(self, mocks):
         input_rows = [
             _input_row(date(2026, 4, 1), job_role="Registered nurse"),
-            _input_row(date(2026, 4, 1)),
+            _input_row(date(2026, 4, 1), job_role=PublishedJobGroupLabels.other),
+            _input_row(date(2026, 4, 1), job_role="Care worker"),
+            _input_row(date(2026, 4, 1), job_role=PublishedJobGroupLabels.managers),
+            _input_row(date(2026, 4, 1), job_role=PublishedJobGroupLabels.direct_care),
+            _input_row(
+                date(2026, 4, 1), job_role=PublishedJobGroupLabels.all_job_roles
+            ),
         ]
 
         returned_lf = _run_main(mocks, input_rows)
 
-        assert returned_lf.collect().height == 1
+        assert returned_lf.collect()[Pub.job_group_and_role].to_list() == [
+            PublishedJobGroupLabels.all_job_roles,
+            PublishedJobGroupLabels.direct_care,
+            PublishedJobGroupLabels.managers,
+            PublishedJobGroupLabels.other,
+            "Care worker",
+            "Registered nurse",
+        ]
+
+    def test_main_sorts_by_region_then_job_role_then_main_service(self, mocks):
+        input_rows = [
+            _input_row(date(2026, 4, 1), job_role="Care worker", region="South West"),
+            _input_row(date(2026, 4, 1), job_role="Registered nurse"),
+            _input_row(
+                date(2026, 4, 1),
+                job_role="Care worker",
+                service=PrimaryServiceType.non_residential,
+            ),
+            _input_row(date(2026, 4, 1), job_role="Care worker"),
+        ]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.select(
+            Pub.region, Pub.job_group_and_role, Pub.main_service
+        ).collect().rows() == [
+            (
+                "London",
+                "Care worker",
+                PublishedMainService.care_home_with_nursing,
+            ),
+            ("London", "Care worker", PublishedMainService.non_residential),
+            (
+                "London",
+                "Registered nurse",
+                PublishedMainService.care_home_with_nursing,
+            ),
+            (
+                "South West",
+                "Care worker",
+                PublishedMainService.care_home_with_nursing,
+            ),
+        ]
 
     def test_main_keeps_one_row_per_year_historically_and_every_current_month(
         self, mocks

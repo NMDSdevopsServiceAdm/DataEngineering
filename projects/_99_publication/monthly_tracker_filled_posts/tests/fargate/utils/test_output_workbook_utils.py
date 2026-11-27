@@ -38,6 +38,7 @@ PUBLICATION_SCHEMA = pl.Schema(
         (Pub.period, pl.Date),
         (Pub.period_label_short, pl.String),
         (Pub.region, pl.String),
+        (Pub.job_group_and_role, pl.String),
         (Pub.main_service, pl.String),
         (Pub.estimated_filled_posts_rounded, pl.Float64),
         (Pub.cqc_locations, pl.Int64),
@@ -122,6 +123,24 @@ class TestPreparePercChangeForPublication:
 
         assert returned_df[Pub.annual_percentage_change].tolist() == [0.1]
         assert returned_df[Pub.monthly_percentage_change].tolist() == [0.012]
+
+
+class TestPrepareDownloadTables:
+    def test_function_ignores_job_role_rows(self):
+        all_job_roles_lf = pl.LazyFrame(
+            Data.download_workbook_publication_data, PUBLICATION_SCHEMA, orient="row"
+        )
+        care_worker_lf = all_job_roles_lf.with_columns(
+            pl.lit("Care worker").alias(Pub.job_group_and_role)
+        )
+
+        expected_tables = job.prepare_download_tables(all_job_roles_lf)
+        returned_tables = job.prepare_download_tables(
+            pl.concat([all_job_roles_lf, care_worker_lf])
+        )
+
+        for name, expected_df in expected_tables.items():
+            assert returned_tables[name].equals(expected_df)
 
 
 class TestGetLatestPeriod:

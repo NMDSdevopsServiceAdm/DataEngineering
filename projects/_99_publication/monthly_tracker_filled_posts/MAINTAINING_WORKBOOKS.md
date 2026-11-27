@@ -94,7 +94,7 @@ A text page and a data table sheet are added differently. The YAML only holds wo
 **A data table sheet** (like T0, T1 and T2):
 
 1. Add a `prepare_<name>_for_publication` function to `output_workbook_utils.py`, like `prepare_t0_for_publication` and `prepare_perc_change_for_publication`. It returns the table to publish as a pandas DataFrame, with `[s]` and `[x]` for suppressed and not-published values.
-2. Add the table to `prepare_download_tables`. The reconciliation check (`fargate/_04_reconcile_output.py`) builds its prepared tables from this function and reads each sheet in `TABLE_NAMES`, so it needs no change.
+2. Add the table to `prepare_download_tables`. The reconciliation check (`fargate/_04_reconcile_output.py`) builds its prepared tables from this function and reads each sheet in `TABLE_NAMES`, so it needs no change. This function also filters the publication data to "All job roles" rows, so a new table sees only those.
 3. Add the sheet to `TABLE_NAMES`, and its entries to `titles` and `value_formats` in `build_download_workbook`.
 4. In `output_workbook_text.py`, add its `TABLE_TITLES` entry and a `T*_TITLE` constant. Contents is built from `TABLE_TITLES`.
 5. In the YAML, add a `revisions` note and a Definitions row if the table needs them.
