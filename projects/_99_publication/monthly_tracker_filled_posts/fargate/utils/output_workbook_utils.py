@@ -188,7 +188,7 @@ def prepare_download_tables(publication_lf: pl.LazyFrame) -> dict[str, pd.DataFr
         dict[str, pd.DataFrame]: the table to publish on each sheet.
     """
     publication_lf = publication_lf.filter(
-        pl.col(Pub.job_role) == PublishedJobGroupLabels.all_job_roles
+        pl.col(Pub.job_group_and_role) == PublishedJobGroupLabels.all_job_roles
     )
     return {
         "T0": prepare_t0_for_publication(publication_lf),

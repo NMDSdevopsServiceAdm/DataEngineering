@@ -23,12 +23,9 @@ def main(
     logo_source: str,
 ) -> None:
     """
-    Writes the publication data for one assessed run: every job role, job group
-    and rollup row (rollups overlap, so don't sum across job roles), one per
-    year historically and monthly for the current financial year, with period,
-    region, job role, main service, rounded filled posts, location count and
-    percentage change columns. Then builds the public data download workbook
-    from that data and saves it to S3. A missing or empty logo fails the job.
+    Writes the publication data for one assessed run to output_destination,
+    then builds the public data download workbook from that data and saves it
+    to workbook_destination. A missing or empty logo fails the job.
 
     Args:
         assessment_source (str): s3 directory holding the assessed data of every run
@@ -56,7 +53,7 @@ def main(
             Pub.period_label_short,
             Pub.period_label_long,
             pl.col(IndCQC.current_region).alias(Pub.region),
-            pl.col(IndCQC.main_job_role_clean_labelled).alias(Pub.job_role),
+            pl.col(IndCQC.main_job_role_clean_labelled).alias(Pub.job_group_and_role),
             pl.col(IndCQC.primary_service_type)
             .cast(pl.Utf8)
             .replace(publication_utils.PUBLISHED_MAIN_SERVICE_BY_CATEGORY)

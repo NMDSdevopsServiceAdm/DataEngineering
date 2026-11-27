@@ -646,7 +646,7 @@ PUBLICATION_SCHEMA = pl.Schema(
         (Pub.period, pl.Date()),
         (Pub.period_label_short, pl.String()),
         (Pub.region, pl.String()),
-        (Pub.job_role, pl.String()),
+        (Pub.job_group_and_role, pl.String()),
         (Pub.main_service, pl.String()),
         (Pub.estimated_filled_posts_rounded, pl.Float64()),
         (Pub.cqc_locations, pl.Int64()),

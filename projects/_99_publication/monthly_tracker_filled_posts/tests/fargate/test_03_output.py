@@ -55,7 +55,7 @@ expected_schema = pl.Schema(
         (Pub.period_label_short, pl.String()),
         (Pub.period_label_long, pl.String()),
         (Pub.region, pl.String()),
-        (Pub.job_role, pl.String()),
+        (Pub.job_group_and_role, pl.String()),
         (Pub.main_service, pl.String()),
         (Pub.estimated_filled_posts_rounded, pl.Float32()),
         (Pub.cqc_locations, pl.UInt32()),
@@ -225,9 +225,32 @@ class TestMain:
 
         returned_lf = _run_main(mocks, input_rows)
 
-        assert sorted(returned_lf.collect()[Pub.job_role].to_list()) == sorted(
-            job_roles
-        )
+        assert sorted(
+            returned_lf.collect()[Pub.job_group_and_role].to_list()
+        ) == sorted(job_roles)
+
+    def test_main_orders_all_job_roles_then_job_groups_then_job_roles(self, mocks):
+        input_rows = [
+            _input_row(date(2026, 4, 1), job_role="Registered nurse"),
+            _input_row(date(2026, 4, 1), job_role=PublishedJobGroupLabels.other),
+            _input_row(date(2026, 4, 1), job_role="Care worker"),
+            _input_row(date(2026, 4, 1), job_role=PublishedJobGroupLabels.managers),
+            _input_row(date(2026, 4, 1), job_role=PublishedJobGroupLabels.direct_care),
+            _input_row(
+                date(2026, 4, 1), job_role=PublishedJobGroupLabels.all_job_roles
+            ),
+        ]
+
+        returned_lf = _run_main(mocks, input_rows)
+
+        assert returned_lf.collect()[Pub.job_group_and_role].to_list() == [
+            PublishedJobGroupLabels.all_job_roles,
+            PublishedJobGroupLabels.direct_care,
+            PublishedJobGroupLabels.managers,
+            PublishedJobGroupLabels.other,
+            "Care worker",
+            "Registered nurse",
+        ]
 
     def test_main_sorts_by_region_then_job_role_then_main_service(self, mocks):
         input_rows = [
@@ -244,7 +267,7 @@ class TestMain:
         returned_lf = _run_main(mocks, input_rows)
 
         assert returned_lf.select(
-            Pub.region, Pub.job_role, Pub.main_service
+            Pub.region, Pub.job_group_and_role, Pub.main_service
         ).collect().rows() == [
             (
                 "London",

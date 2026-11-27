@@ -38,6 +38,7 @@ PUBLICATION_SCHEMA = pl.Schema(
         (Pub.period, pl.Date),
         (Pub.period_label_short, pl.String),
         (Pub.region, pl.String),
+        (Pub.job_group_and_role, pl.String),
         (Pub.main_service, pl.String),
         (Pub.estimated_filled_posts_rounded, pl.Float64),
         (Pub.cqc_locations, pl.Int64),
@@ -49,12 +50,6 @@ PUBLICATION_SCHEMA = pl.Schema(
             pl.Float64,
         ),
     ]
-)
-
-DOWNLOAD_SCHEMA = pl.Schema(
-    list(PUBLICATION_SCHEMA.items())[:3]
-    + [(Pub.job_role, pl.String)]
-    + list(PUBLICATION_SCHEMA.items())[3:]
 )
 
 
@@ -131,26 +126,28 @@ class TestPreparePercChangeForPublication:
 
 
 class TestPrepareDownloadTables:
-    def test_function_excludes_rows_that_are_not_all_job_roles(self):
-        row = Data.download_workbook_publication_data[0]
-        all_job_roles_lf = pl.LazyFrame([row], DOWNLOAD_SCHEMA, orient="row")
+    def test_function_ignores_job_role_rows(self):
+        all_job_roles_lf = pl.LazyFrame(
+            Data.download_workbook_publication_data, PUBLICATION_SCHEMA, orient="row"
+        )
         care_worker_lf = all_job_roles_lf.with_columns(
-            pl.lit("Care worker").alias(Pub.job_role),
-            pl.lit(5.0).alias(Pub.estimated_filled_posts_rounded),
+            pl.lit("Care worker").alias(Pub.job_group_and_role)
         )
 
+        expected_tables = job.prepare_download_tables(all_job_roles_lf)
         returned_tables = job.prepare_download_tables(
-            pl.concat([care_worker_lf, all_job_roles_lf])
+            pl.concat([all_job_roles_lf, care_worker_lf])
         )
 
-        assert returned_tables["T0"][Pub.estimated_filled_posts].tolist() == [row[5]]
+        for name, expected_df in expected_tables.items():
+            assert returned_tables[name].equals(expected_df)
 
 
 class TestGetLatestPeriod:
     def test_function_returns_month_before_latest_period_date(self):
         publication_lf = pl.LazyFrame(
             Data.download_workbook_publication_data,
-            DOWNLOAD_SCHEMA,
+            PUBLICATION_SCHEMA,
             orient="row",
         )
 
@@ -165,7 +162,7 @@ class TestBuildDownloadWorkbook:
     def publication_lf():
         return pl.LazyFrame(
             Data.download_workbook_publication_data,
-            DOWNLOAD_SCHEMA,
+            PUBLICATION_SCHEMA,
             orient="row",
         )
 
@@ -507,7 +504,7 @@ class TestBuildDownloadWorkbookRepeatedBuilds:
         job.build_download_workbook(
             pl.LazyFrame(
                 Data.download_workbook_publication_data,
-                DOWNLOAD_SCHEMA,
+                PUBLICATION_SCHEMA,
                 orient="row",
             ),
             tmp_path / "download.xlsx",

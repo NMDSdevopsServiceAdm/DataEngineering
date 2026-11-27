@@ -10,6 +10,9 @@ from utils.column_values.categorical_column_values import (
     PublishedMainService,
     PublishedRegion,
 )
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
+)
 
 # A location is filtered out when its capacity tracker data swings further from
 # the national average swing than this many standard deviations.
@@ -17,8 +20,9 @@ _DISPERSION_BOUNDARY_STD_DEVS: int = 2
 _DISPERSION_COLUMN_SUFFIX: str = "_dispersion"
 
 # Period, then region (England, Eastern and East Midlands first, the rest
-# alphabetical), then job role, then main service in its published order. An
-# unlisted region or main service fails the cast.
+# alphabetical), then job group and role ("All job roles", the job groups, then
+# job roles alphabetically), then main service in its published order. An
+# unlisted region, job group or role, or main service fails the cast.
 DOWNLOAD_TABLE_SORT_KEYS: list[pl.Expr] = [
     pl.col(Pub.period),
     pl.col(Pub.region).cast(
@@ -37,7 +41,20 @@ DOWNLOAD_TABLE_SORT_KEYS: list[pl.Expr] = [
             ]
         )
     ),
-    pl.col(Pub.job_role),
+    pl.col(Pub.job_group_and_role).cast(
+        pl.Enum(
+            [
+                PublishedJobGroupLabels.all_job_roles,
+                PublishedJobGroupLabels.direct_care,
+                PublishedJobGroupLabels.managers,
+                PublishedJobGroupLabels.regulated_professions,
+                PublishedJobGroupLabels.other,
+                *sorted(
+                    CatValues.main_job_role_labels_column_values.categorical_values
+                ),
+            ]
+        )
+    ),
     pl.col(Pub.main_service).cast(
         pl.Enum(
             [
