@@ -56,9 +56,15 @@ ARCHIVE_SCHEMA = pl.Schema(
     [
         (IndCQC.cqc_location_import_date, pl.Date()),
         (IndCQC.main_job_role_clean_labelled, pl.String()),
+        (IndCQC.main_job_group_labelled, pl.String()),
         (IndCQC.estimate_filled_posts_by_job_role, pl.Float32()),
     ]
 )
+ROLE_JOB_GROUPS = {
+    "Registered nurse": PublishedJobGroupLabels.regulated_professions,
+    "Care worker": PublishedJobGroupLabels.direct_care,
+    "Support worker": PublishedJobGroupLabels.direct_care,
+}
 
 
 def _assessment_row(
@@ -83,10 +89,20 @@ def _national_rows(
 
 
 def _archive_row(
-    import_date: date, estimate: float, job_role: str = "Registered nurse"
+    import_date: date,
+    estimate: float,
+    job_role: str = "Registered nurse",
+    job_group: str | None = None,
 ) -> tuple:
-    """A row of the archive, which holds one row per location and job role."""
-    return (import_date, job_role, estimate)
+    """
+    A row of the archive, which holds one row per location and job role.
+
+    The job group defaults to the role's group in ROLE_JOB_GROUPS, else "Other".
+    """
+    job_group = job_group or ROLE_JOB_GROUPS.get(
+        job_role, PublishedJobGroupLabels.other
+    )
+    return (import_date, job_role, job_group, estimate)
 
 
 @pytest.fixture
@@ -108,7 +124,7 @@ def mocks():
 
 
 def _set_sources(
-    mocks,
+    mocks: SimpleNamespace,
     assessment_rows: list[tuple],
     archive_rows: list[tuple],
     assessment_role_type: pl.DataType = pl.String(),
@@ -126,6 +142,71 @@ def _set_sources(
     mocks.scan_parquet.side_effect = lambda source: sources[source]
 
 
+def _set_sources_with_group_rows(
+    mocks: SimpleNamespace,
+    assessment_rows: list[tuple],
+    archive_rows: list[tuple],
+    assessment_role_type: pl.DataType = pl.String(),
+    archive_role_type: pl.DataType = pl.String(),
+) -> None:
+    """
+    Like _set_sources, but adds a national job group row to the assessment for
+    each archive job group and assessment period, totalling the archive's rows,
+    so the job group comparison passes. For tests of the other checks.
+    """
+    periods = {row[0] for row in assessment_rows}
+    group_totals: dict[tuple, float] = {}
+    for import_date, _, group, estimate in archive_rows:
+        if import_date in periods:
+            key = (import_date, group)
+            group_totals[key] = group_totals.get(key, 0.0) + estimate
+    group_rows = [
+        _assessment_row(import_date, total, job_role=group)
+        for (import_date, group), total in group_totals.items()
+    ]
+    _set_sources(
+        mocks,
+        [*assessment_rows, *group_rows],
+        archive_rows,
+        assessment_role_type,
+        archive_role_type,
+    )
+
+
+def _set_group_sources(
+    mocks: SimpleNamespace,
+    assessment_groups: dict[str, float],
+    archive_groups: dict[str, float],
+) -> None:
+    """
+    Sets sources whose national total and job role rows match, with one archive
+    job role per archive group, so only the job group rows can differ.
+
+    Args:
+        mocks (SimpleNamespace): the job's mocks
+        assessment_groups (dict[str, float]): the assessment's posts per job group
+        archive_groups (dict[str, float]): the archive's posts per job group
+    """
+    _set_sources(
+        mocks,
+        [
+            _assessment_row(IN_PERIOD, sum(archive_groups.values())),
+            *(
+                _assessment_row(IN_PERIOD, posts, job_role=f"role of {group}")
+                for group, posts in archive_groups.items()
+            ),
+            *(
+                _assessment_row(IN_PERIOD, posts, job_role=group)
+                for group, posts in assessment_groups.items()
+            ),
+        ],
+        [
+            _archive_row(IN_PERIOD, posts, job_role=f"role of {group}", job_group=group)
+            for group, posts in archive_groups.items()
+        ],
+    )
+
+
 def _run_main(mocks, run_number: int = 2) -> None:
     job.main(
         assessment_source=ASSESSMENT_SOURCE,
@@ -139,7 +220,7 @@ def _run_main(mocks, run_number: int = 2) -> None:
 
 class TestMain:
     def test_passes_when_totals_are_within_tolerance(self, mocks):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.05)],  # 0.005% diff, within tolerance
@@ -202,7 +283,7 @@ class TestMain:
         assert str(IN_PERIOD) not in str(error.value)
 
     def test_passes_when_every_role_is_within_tolerance(self, mocks):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             [
                 _assessment_row(IN_PERIOD, 1000.0),
@@ -298,7 +379,7 @@ class TestMain:
 
     def test_passes_when_a_role_has_no_posts_in_either_source(self, mocks):
         # A role not yet in use in a period totals 0 on both sides (0 / 0 is NaN).
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             [
                 _assessment_row(IN_PERIOD, 1000.0),
@@ -357,7 +438,7 @@ class TestMain:
     def test_matches_roles_whatever_their_type_in_each_source(
         self, mocks, assessment_role_type, archive_role_type
     ):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.0)],
@@ -388,7 +469,7 @@ class TestMain:
         assert str(OTHER_PERIOD) in str(error.value)
 
     def test_reports_the_largest_job_role_difference(self, mocks, capsys):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.05)],
@@ -402,7 +483,7 @@ class TestMain:
         self, mocks
     ):
         # Neither the "All job roles" rollup nor regional/service rollups are roles.
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             [
                 _assessment_row(IN_PERIOD, 1000.0),
@@ -433,18 +514,196 @@ class TestMain:
         ],
     )
     def test_excludes_job_group_rows_from_the_role_comparison(self, mocks, job_group):
-        # A job group is a rollup of job roles, so it is not a role missing from
-        # the archive.
+        # Assessment: a job group row, stored in the job role column. Archive: the
+        # Registered nurse row, labelled with that job group in its job group
+        # column. Both sources hold the group with equal posts, so only the role
+        # comparison could fail, and only if it counted the group row as a role.
         _set_sources(
             mocks,
             [
                 *_national_rows(IN_PERIOD, 1000.0),
                 _assessment_row(IN_PERIOD, 1000.0, job_role=job_group),
             ],
-            [_archive_row(IN_PERIOD, 1000.0, job_role="Registered nurse")],
+            [
+                _archive_row(
+                    IN_PERIOD, 1000.0, job_role="Registered nurse", job_group=job_group
+                )
+            ],
         )
 
         _run_main(mocks)  # does not raise
+
+    def test_passes_when_every_job_group_is_within_tolerance(self, mocks):
+        _set_group_sources(
+            mocks,
+            assessment_groups={
+                PublishedJobGroupLabels.direct_care: 400.02,
+                PublishedJobGroupLabels.managers: 600.03,
+            },
+            archive_groups={
+                PublishedJobGroupLabels.direct_care: 400.0,
+                PublishedJobGroupLabels.managers: 600.0,
+            },
+        )
+
+        _run_main(mocks)  # does not raise
+
+    def test_sums_the_archive_job_roles_in_each_job_group(self, mocks):
+        _set_sources(
+            mocks,
+            [
+                _assessment_row(IN_PERIOD, 1000.0),
+                _assessment_row(IN_PERIOD, 400.0, job_role="Support worker"),
+                _assessment_row(IN_PERIOD, 600.0, job_role="Care worker"),
+                _assessment_row(
+                    IN_PERIOD, 1000.0, job_role=PublishedJobGroupLabels.direct_care
+                ),
+            ],
+            [
+                _archive_row(IN_PERIOD, 400.0, job_role="Support worker"),
+                _archive_row(IN_PERIOD, 600.0, job_role="Care worker"),
+            ],
+        )
+
+        _run_main(mocks)  # does not raise
+
+    def test_raises_when_a_job_group_total_differs(self, mocks):
+        _set_group_sources(
+            mocks,
+            assessment_groups={PublishedJobGroupLabels.direct_care: 2000.0},
+            archive_groups={PublishedJobGroupLabels.direct_care: 1000.0},
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError, match="job group totals"):
+            _run_main(mocks)
+
+    def test_raises_when_two_job_groups_are_off_in_opposite_directions(self, mocks):
+        # The groups' errors cancel, so the national total still matches.
+        _set_group_sources(
+            mocks,
+            assessment_groups={
+                PublishedJobGroupLabels.direct_care: 1100.0,
+                PublishedJobGroupLabels.managers: 900.0,
+            },
+            archive_groups={
+                PublishedJobGroupLabels.direct_care: 1000.0,
+                PublishedJobGroupLabels.managers: 1000.0,
+            },
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError, match="job group totals"):
+            _run_main(mocks)
+
+    def test_names_the_job_group_and_period_that_differ(self, mocks):
+        _set_group_sources(
+            mocks,
+            assessment_groups={
+                PublishedJobGroupLabels.direct_care: 1000.0,
+                PublishedJobGroupLabels.managers: 2000.0,
+            },
+            archive_groups={
+                PublishedJobGroupLabels.direct_care: 1000.0,
+                PublishedJobGroupLabels.managers: 1000.0,
+            },
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError) as error:
+            _run_main(mocks)
+
+        assert f"{IN_PERIOD} {PublishedJobGroupLabels.managers}" in str(error.value)
+        assert PublishedJobGroupLabels.direct_care not in str(error.value)
+
+    def test_raises_when_a_job_group_is_only_in_the_assessment(self, mocks):
+        _set_group_sources(
+            mocks,
+            assessment_groups={
+                PublishedJobGroupLabels.direct_care: 1000.0,
+                PublishedJobGroupLabels.managers: 500.0,
+            },
+            archive_groups={PublishedJobGroupLabels.direct_care: 1000.0},
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError) as error:
+            _run_main(mocks)
+
+        assert (
+            f"{IN_PERIOD} {PublishedJobGroupLabels.managers} (only in the public "
+            "output)"
+        ) in str(error.value)
+
+    def test_raises_when_a_job_group_is_only_in_the_archive(self, mocks):
+        _set_group_sources(
+            mocks,
+            assessment_groups={PublishedJobGroupLabels.direct_care: 1000.0},
+            archive_groups={
+                PublishedJobGroupLabels.direct_care: 1000.0,
+                PublishedJobGroupLabels.managers: 500.0,
+            },
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError) as error:
+            _run_main(mocks)
+
+        assert (
+            f"{IN_PERIOD} {PublishedJobGroupLabels.managers} (only in the archive)"
+        ) in str(error.value)
+
+    def test_names_job_group_not_job_role_in_the_error(self, mocks):
+        _set_group_sources(
+            mocks,
+            assessment_groups={PublishedJobGroupLabels.direct_care: 2000.0},
+            archive_groups={PublishedJobGroupLabels.direct_care: 1000.0},
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError) as error:
+            _run_main(mocks)
+
+        assert "job group" in str(error.value)
+        assert "job role" not in str(error.value)
+
+    def test_names_job_group_in_the_error_when_a_group_is_in_only_one_source(
+        self, mocks
+    ):
+        _set_group_sources(
+            mocks,
+            assessment_groups={PublishedJobGroupLabels.direct_care: 1000.0},
+            archive_groups={
+                PublishedJobGroupLabels.direct_care: 1000.0,
+                PublishedJobGroupLabels.managers: 500.0,
+            },
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError) as error:
+            _run_main(mocks)
+
+        assert "job group" in str(error.value)
+        assert "job role" not in str(error.value)
+
+    def test_does_not_mark_the_run_reconciled_when_only_a_job_group_differs(
+        self, mocks
+    ):
+        _set_group_sources(
+            mocks,
+            assessment_groups={PublishedJobGroupLabels.direct_care: 2000.0},
+            archive_groups={PublishedJobGroupLabels.direct_care: 1000.0},
+        )
+
+        with pytest.raises(job.ReconciliationMismatchError):
+            _run_main(mocks)
+
+        mocks.mark_run_log_flag.assert_not_called()
+        mocks.reconcile_download.assert_not_called()
+
+    def test_reports_the_largest_job_group_difference(self, mocks, capsys):
+        _set_group_sources(
+            mocks,
+            assessment_groups={PublishedJobGroupLabels.direct_care: 1000.05},
+            archive_groups={PublishedJobGroupLabels.direct_care: 1000.0},
+        )
+
+        _run_main(mocks)
+
+        assert "largest job group difference 0.0050%" in capsys.readouterr().out
 
     def test_limits_the_roles_named_in_the_error(self, mocks):
         # Alternating over and under so the national total still matches.
@@ -465,7 +724,7 @@ class TestMain:
         assert str(error.value).count("role_") == job.MAX_DIFFERENCES_REPORTED
 
     def test_resolves_both_sources_for_the_requested_run_number(self, mocks):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.0)],
@@ -480,7 +739,7 @@ class TestMain:
     def test_sums_every_job_role_row_on_the_archive_side(self, mocks):
         # The archive has no "All job roles" row: a filter on that label would
         # match nothing and total 0.
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             [
                 _assessment_row(IN_PERIOD, 1000.0),
@@ -498,7 +757,7 @@ class TestMain:
     def test_uses_only_the_national_all_job_roles_row_on_the_public_side(self, mocks):
         # The assessment data holds overlapping rollups (regions, service groups,
         # job roles), so summing them would count each location several times.
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             [
                 _assessment_row(IN_PERIOD, 1000.0),
@@ -519,7 +778,7 @@ class TestMain:
     def test_ignores_archive_periods_the_public_data_does_not_hold(self, mocks):
         # The archive keeps every period back to 2013; only the public data's own
         # periods are compared.
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [
@@ -564,7 +823,7 @@ class TestMain:
             _run_main(mocks)
 
     def test_marks_the_run_reconciled_on_match(self, mocks):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.0)],
@@ -610,7 +869,7 @@ class TestMain:
     def test_marks_the_run_reconciled_only_when_archive_and_download_both_match(
         self, mocks
     ):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.0)],
@@ -626,7 +885,7 @@ class TestMain:
         )
 
     def test_does_not_mark_the_run_reconciled_when_the_download_differs(self, mocks):
-        _set_sources(
+        _set_sources_with_group_rows(
             mocks,
             _national_rows(IN_PERIOD, 1000.0),
             [_archive_row(IN_PERIOD, 1000.0)],
@@ -888,9 +1147,11 @@ def _role_totals(rows: list[tuple], value_column: str) -> pl.DataFrame:
     return pl.DataFrame(rows, schema, orient="row")
 
 
-def _compare_posts(posts_by_role: dict[str, tuple[float, float]]) -> None:
+def _compare_posts(
+    posts_by_role: dict[str, tuple[float, float]], label: str = "job role"
+) -> None:
     """Compares one period's totals, given each role's (public, archive) posts."""
-    job._raise_if_roles_differ(
+    job._raise_if_labels_differ(
         _role_totals(
             [(IN_PERIOD, role, public) for role, (public, _) in posts_by_role.items()],
             Pub.unfiltered_filled_posts,
@@ -903,6 +1164,7 @@ def _compare_posts(posts_by_role: dict[str, tuple[float, float]]) -> None:
             IndCQC.estimate_filled_posts_by_job_role,
         ),
         run_number=2,
+        label=label,
     )
 
 
@@ -929,7 +1191,14 @@ totals_differ_cases = [
 ]
 
 
-class TestRaiseIfRolesDiffer:
+class TestRaiseIfLabelsDiffer:
+    @pytest.mark.parametrize("label", ["job role", "job group"])
+    def test_names_the_label_in_the_error(self, label):
+        with pytest.raises(job.ReconciliationMismatchError) as error:
+            _compare_posts({"Care worker": (2000.0, 1000.0)}, label)
+
+        assert f"{label} totals" in str(error.value)
+
     @pytest.mark.parametrize(
         "public_posts, archive_posts",
         [c.as_pytest_param() for c in totals_differ_cases],

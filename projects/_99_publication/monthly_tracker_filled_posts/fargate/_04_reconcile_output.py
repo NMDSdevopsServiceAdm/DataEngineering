@@ -213,25 +213,30 @@ def check_main(promoted_metadata_source: str, run_number: int) -> int:
     return 0 if promoted else NOT_PROMOTED_EXIT_CODE
 
 
-def _total_by_period_and_role(lf: pl.LazyFrame, value_column: str) -> pl.DataFrame:
+def _total_by_period_and_labels(
+    lf: pl.LazyFrame, value_column: str, label_columns: list[str]
+) -> pl.DataFrame:
     """
-    Sums one column for each import date and job role, as Float64 so the
-    comparison isn't skewed by Float32 accumulation error. The job role is
+    Sums one column for each import date and combination of labels, as Float64
+    so the comparison isn't skewed by Float32 accumulation error. The labels are
     cast to String so both sources join on the same type.
 
+    Collects once, after the aggregation, so a large frame is scanned once and
+    the result is one row per import date and label combination.
+
     Args:
-        lf (pl.LazyFrame): rows holding the import date, job role and value
+        lf (pl.LazyFrame): rows holding the import date, labels and value
         value_column (str): the column to sum
+        label_columns (list[str]): the columns to total by, such as job role or
+            job role and job group
 
     Returns:
-        pl.DataFrame: one row per import date and job role
+        pl.DataFrame: one row per import date and label combination
     """
     return (
-        lf.group_by(
-            IndCQC.cqc_location_import_date, IndCQC.main_job_role_clean_labelled
-        )
+        lf.group_by(IndCQC.cqc_location_import_date, *label_columns)
         .agg(pl.col(value_column).cast(pl.Float64).sum().alias(value_column))
-        .with_columns(pl.col(IndCQC.main_job_role_clean_labelled).cast(pl.String))
+        .with_columns(pl.col(label_columns).cast(pl.String))
         .collect()
     )
 
@@ -257,34 +262,39 @@ def _relative_difference() -> pl.Expr:
     )
 
 
-def _raise_if_roles_differ(
-    public_by_role: pl.DataFrame, archive_by_role: pl.DataFrame, run_number: int
+def _raise_if_labels_differ(
+    public_totals: pl.DataFrame,
+    archive_totals: pl.DataFrame,
+    run_number: int,
+    label: str,
 ) -> None:
     """
-    Raises if any period and job role differs between the public output and
+    Raises if any period and label differs between the public output and
     promoted archive, naming up to MAX_DIFFERENCES_REPORTED of them.
 
-    A period and job role in only one source is reported before any difference
-    in value, since a missing role has nothing to compare.
+    A period and label in only one source is reported before any difference in
+    value, since a missing label has nothing to compare.
 
     Args:
-        public_by_role (pl.DataFrame): public filled posts per period and job role
-        archive_by_role (pl.DataFrame): archive estimates per period and job role
+        public_totals (pl.DataFrame): public filled posts per period and label,
+            with the label in the job role column
+        archive_totals (pl.DataFrame): archive estimates per period and label,
+            with the label in the job role column
         run_number (int): the run being reconciled, for the error message
+        label (str): what the labels are, for the messages: "job role" or
+            "job group"
 
     Raises:
-        ReconciliationMismatchError: if a period and job role is in only one
+        ReconciliationMismatchError: if a period and label is in only one
             source, or differs by more than RECONCILIATION_RELATIVE_TOLERANCE
     """
     public_column = Pub.unfiltered_filled_posts
     archive_column = IndCQC.estimate_filled_posts_by_job_role
-    sort_columns = [
-        IndCQC.cqc_location_import_date,
-        IndCQC.main_job_role_clean_labelled,
-    ]
+    label_column = IndCQC.main_job_role_clean_labelled
+    sort_columns = [IndCQC.cqc_location_import_date, label_column]
 
-    comparison_df = public_by_role.join(
-        archive_by_role, on=sort_columns, how="full", coalesce=True
+    comparison_df = public_totals.join(
+        archive_totals, on=sort_columns, how="full", coalesce=True
     )
 
     one_sided_df = comparison_df.filter(
@@ -293,12 +303,12 @@ def _raise_if_roles_differ(
     if not one_sided_df.is_empty():
         details = "; ".join(
             f"{row[IndCQC.cqc_location_import_date]} "
-            f"{row[IndCQC.main_job_role_clean_labelled]} (only in the "
+            f"{row[label_column]} (only in the "
             f"{'archive' if row[public_column] is None else 'public output'})"
             for row in one_sided_df.head(MAX_DIFFERENCES_REPORTED).iter_rows(named=True)
         )
         raise ReconciliationMismatchError(
-            f"Run {run_number}: {one_sided_df.height} period and job role "
+            f"Run {run_number}: {one_sided_df.height} period and {label} "
             f"combinations are in only one of the public output and promoted "
             f"archive ({details})"
         )
@@ -309,22 +319,22 @@ def _raise_if_roles_differ(
     differing_df = comparison_df.filter(
         ~(pl.col(RELATIVE_DIFFERENCE) <= RECONCILIATION_RELATIVE_TOLERANCE)
     ).sort([RELATIVE_DIFFERENCE, *sort_columns], descending=[True, False, False])
-    # max() skips NaN, so the count is what shows a NaN role.
+    # max() skips NaN, so the count is what shows a NaN label.
     print(
-        f"Run {run_number}: largest job role difference "
+        f"Run {run_number}: largest {label} difference "
         f"{comparison_df[RELATIVE_DIFFERENCE].max():.4%}, {differing_df.height} of "
-        f"{comparison_df.height} period and job role totals over tolerance"
+        f"{comparison_df.height} period and {label} totals over tolerance"
     )
     if not differing_df.is_empty():
         details = "; ".join(
             f"{row[IndCQC.cqc_location_import_date]} "
-            f"{row[IndCQC.main_job_role_clean_labelled]}: "
+            f"{row[label_column]}: "
             f"public {row[public_column]}, archive {row[archive_column]}"
             for row in differing_df.head(MAX_DIFFERENCES_REPORTED).iter_rows(named=True)
         )
         raise ReconciliationMismatchError(
             f"Run {run_number}: {differing_df.height} of {comparison_df.height} "
-            f"period and job role totals differ by more than "
+            f"period and {label} totals differ by more than "
             f"{RECONCILIATION_RELATIVE_TOLERANCE:.2%} between the public output "
             f"and promoted archive ({details})"
         )
@@ -340,16 +350,16 @@ def main(
 ) -> None:
     """
     Compares a run's public and promoted archive filled posts for each period,
-    and for each period and job role, then checks its data download workbook
-    holds the prepared values, marking the run reconciled in the run log only if
-    all pass.
+    and for each period and job role, and for each period and job group, then
+    checks its data download workbook holds the prepared values, marking the run
+    reconciled in the run log only if all pass.
 
     Periods are those in the assessment data; other archive periods are
     ignored. The public figures are the assessment's pre-rounding national rows
     (the public output only holds banded figures, and the assessment's other
-    rows are overlapping rollups): "All job roles" for each period's total, and
-    one row per job role. The job group rows are rollups too, so they are
-    ignored. The archive has no rollups, so its figures sum the job-role rows.
+    rows are overlapping rollups): "All job roles" for each period's total, one
+    row per job role and one row per job group. The archive has no rollups, so
+    its figures sum the job-role rows, by period, by job role and by job group.
 
     Args:
         assessment_source (str): S3 directory holding the assessed data of every
@@ -364,10 +374,10 @@ def main(
 
     Raises:
         ReconciliationMismatchError: if
-            - a period, or period and job role, differs by more than
-              RECONCILIATION_RELATIVE_TOLERANCE
+            - a period, period and job role, or period and job group, differs
+              by more than RECONCILIATION_RELATIVE_TOLERANCE
             - a public period is missing from the archive
-            - a job role is in only one source
+            - a job role or job group is in only one source
             - the assessment has no national rows, or a period's job role rows
               lack its "All job roles" row
             - the data download workbook is missing or differs from the
@@ -377,12 +387,13 @@ def main(
         [assessment_source, promoted_archive_source], run_number
     )
 
-    public_by_role = _total_by_period_and_role(
+    public_by_role = _total_by_period_and_labels(
         utils.scan_parquet(assessment_run_source).filter(
             pl.col(IndCQC.current_region) == PublishedRegion.england,
             pl.col(IndCQC.primary_service_type) == PublishedMainService.all_locations,
         ),
         Pub.unfiltered_filled_posts,
+        [IndCQC.main_job_role_clean_labelled],
     )
     is_all_job_roles = (
         pl.col(IndCQC.main_job_role_clean_labelled)
@@ -395,10 +406,12 @@ def main(
         raise ReconciliationMismatchError(
             f"Run {run_number}: no national 'All job roles' rows in the assessment data"
         )
-    # Job groups are rollups with no archive row to compare with.
+    # Job groups are rollups with no archive job role row, so they are compared
+    # separately, with the archive summed by job group.
     is_job_group = pl.col(IndCQC.main_job_role_clean_labelled).is_in(
         CatValues.main_job_group_labels_column_values.categorical_values
     )
+    public_by_group = public_by_role.filter(is_job_group)
     public_by_role = public_by_role.filter(~is_all_job_roles & ~is_job_group)
     public_periods = public_by_period[IndCQC.cqc_location_import_date]
     periods_without_total = set(public_by_role[IndCQC.cqc_location_import_date]) - set(
@@ -410,11 +423,32 @@ def main(
             f"roles' row in the assessment data: "
             f"{', '.join(str(period) for period in sorted(periods_without_total))}"
         )
-    archive_by_role = _total_by_period_and_role(
-        utils.scan_parquet(archive_run_source).filter(
+    # One pass over the archive; the role and group totals are summed from this
+    # small frame.
+    archive_by_role_and_group = _total_by_period_and_labels(
+        utils.scan_parquet(archive_run_source)
+        .select(
+            IndCQC.cqc_location_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.main_job_group_labelled,
+            IndCQC.estimate_filled_posts_by_job_role,
+        )
+        .filter(
             pl.col(IndCQC.cqc_location_import_date).is_in(public_periods.implode())
         ),
         IndCQC.estimate_filled_posts_by_job_role,
+        [IndCQC.main_job_role_clean_labelled, IndCQC.main_job_group_labelled],
+    )
+    archive_by_role = archive_by_role_and_group.group_by(
+        IndCQC.cqc_location_import_date, IndCQC.main_job_role_clean_labelled
+    ).agg(pl.col(IndCQC.estimate_filled_posts_by_job_role).sum())
+    # Renamed to the job role column so the totals join with the public ones.
+    archive_by_group = (
+        archive_by_role_and_group.group_by(
+            IndCQC.cqc_location_import_date, IndCQC.main_job_group_labelled
+        )
+        .agg(pl.col(IndCQC.estimate_filled_posts_by_job_role).sum())
+        .rename({IndCQC.main_job_group_labelled: IndCQC.main_job_role_clean_labelled})
     )
     archive_by_period = archive_by_role.group_by(IndCQC.cqc_location_import_date).agg(
         pl.col(IndCQC.estimate_filled_posts_by_job_role).sum()
@@ -456,7 +490,8 @@ def main(
             f"between the public output and promoted archive ({details})"
         )
 
-    _raise_if_roles_differ(public_by_role, archive_by_role, run_number)
+    _raise_if_labels_differ(public_by_role, archive_by_role, run_number, "job role")
+    _raise_if_labels_differ(public_by_group, archive_by_group, run_number, "job group")
 
     reconcile_download(output_source, workbook_source, assessment_run_source)
 
